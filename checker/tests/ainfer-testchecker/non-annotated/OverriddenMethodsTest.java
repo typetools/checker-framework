@@ -7,15 +7,16 @@ public class OverriddenMethodsTest {
 
     public void bar(@AinferSibling1 OverriddenMethodsTestParent this, @AinferSibling2 Object obj) {}
 
-    public void barz(@AinferSibling1 OverriddenMethodsTestParent this, @AinferSibling2 Object obj) {}
+    public void barz(
+        @AinferSibling1 OverriddenMethodsTestParent this, @AinferSibling2 Object obj) {}
 
     public void qux(Object obj1, Object obj2) {
-      // :: warning: argument
+      // :: warning: (argument)
       foo(obj1, obj2);
     }
 
     public void thud(Object obj1, Object obj2) {
-      // :: warning: argument
+      // :: warning: (argument)
       foo(obj1, obj2);
     }
   }

@@ -14,8 +14,7 @@ class GenericAnnotatedTypeFactory<
   }
 
   // The difference between this version of this test and the all-systems version is the "extends
-  // Object" on
-  // the next line.
+  // Object" on the next line.
   public static <T extends Object> T invokeConstructorFor() {
     return null;
   }

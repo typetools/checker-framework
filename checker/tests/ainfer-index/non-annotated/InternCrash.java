@@ -4,7 +4,7 @@
 
 public final class InternCrash {
 
-  public static String [] intern(String [] a) {
+  public static String[] intern(String[] a) {
     return a;
   }
 

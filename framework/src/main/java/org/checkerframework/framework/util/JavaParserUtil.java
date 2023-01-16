@@ -129,9 +129,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the source code has parser errors
    */
   public static StubUnit parseStubUnit(InputStream inputStream) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
-    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
-    // has to be created each time.
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one
+    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
+    // JavaParser has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
     // Store the tokens so that errors have line and column numbers.
@@ -176,9 +176,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the expression has parser errors
    */
   public static Expression parseExpression(String expression, LanguageLevel languageLevel) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
-    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
-    // has to be created each time.
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one
+    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
+    // JavaParser has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setLanguageLevel(languageLevel);
     configuration.setStoreTokens(false);
@@ -370,8 +370,8 @@ public class JavaParserUtil {
         case "RELEASE_17":
           currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
           break;
-          // As of 2022-11-28, JavaParser's ParserConfiguration.LanguageLevel does not yet have a
-          // constant for JDK 18 or JDK 19.
+          // As of 2022-11-28, JavaParser's ParserConfiguration.LanguageLevel does not yet
+          // have a constant for JDK 18 or JDK 19.
           // case "RELEASE_18":
           //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
           //   break;

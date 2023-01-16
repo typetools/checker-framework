@@ -9,7 +9,7 @@ public class FileDescriptorTest {
   // not caught; therefore, file might still be open.
   public static void readPropertiesFile(File from) throws IOException {
     // This is a false positive.
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     RandomAccessFile file = new RandomAccessFile(from, "rws");
     FileInputStream in = null;
     try {
@@ -25,8 +25,9 @@ public class FileDescriptorTest {
 
   // This is a similar test to the above, but without using the indirection through getFD().
   // This test case demonstrates that the problem is not related to getFD().
-  // This warning is a false positive, and should be resolved at the same time as the warning above.
-  // :: error: required.method.not.called
+  // This warning is a false positive, and should be resolved at the same time as the warning
+  // above.
+  // :: error: (required.method.not.called)
   public static void sameScenario_noFD(@Owning Socket sock) throws IOException {
     InputStream in = null;
     try {

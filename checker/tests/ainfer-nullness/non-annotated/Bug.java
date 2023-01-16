@@ -13,8 +13,10 @@ public class Bug {
     /** List the known repositories. */
     LIST
   }
+
   private @MonotonicNonNull Action action;
   public static String home = System.getProperty("user.home");
+
   void other() {
     this.action = Action.LIST;
     expandTilde("");
@@ -32,12 +34,12 @@ public class Bug {
   public static void main(String[] args) {
     Bug b = new Bug();
     Bug.expandTilde("");
-
   }
 
   Bug() {
     parseArgs(new String[0]);
   }
+
   @EnsuresNonNull("action")
   public void parseArgs(@UnknownInitialization Bug this, String[] args) {
     String actionString = args[0];

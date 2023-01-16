@@ -689,7 +689,7 @@ public class AnnotationFileParser {
       afp.process(ajavaAnnos);
     } catch (ParseProblemException e) {
       for (Problem p : e.getProblems()) {
-        afp.warn(null, p.getVerboseMessage());
+        afp.warn(null, filename + ": " + p.getVerboseMessage());
       }
     }
   }
@@ -812,8 +812,8 @@ public class AnnotationFileParser {
     String packageName = packDecl.getNameAsString();
     typeBeingParsed = new FqName(packageName, null);
     Element elem = elements.getPackageElement(packageName);
-    // If the element lookup fails (that is, elem == null), it's because we have an annotation for a
-    // package that isn't on the classpath, which is fine.
+    // If the element lookup fails (that is, elem == null), it's because we have an annotation
+    // for a package that isn't on the classpath, which is fine.
     if (elem != null) {
       recordDeclAnnotation(elem, packDecl.getAnnotations(), packDecl);
     }
@@ -839,10 +839,10 @@ public class AnnotationFileParser {
    * @return true if the given program construct is in the annotated JDK and is private
    */
   private boolean skipNode(NodeWithAccessModifiers<?> node) {
-    // Must include everything with no access modifier, because stub files are allowed to omit the
-    // access modifier.  Also, interface methods have no access modifier, but they are still public.
-    // Must include protected JDK methods.  For example, Object.clone is protected, but it contains
-    // annotations that apply to calls like `super.clone()` and `myArray.clone()`.
+    // Must include everything with no access modifier, because stub files are allowed to omit
+    // the access modifier.  Also, interface methods have no access modifier, but they are still
+    // public.  Must include protected JDK methods.  For example, Object.clone is protected, but
+    // it contains annotations that apply to calls like `super.clone()` and `myArray.clone()`.
     return (fileType == AnnotationFileType.BUILTIN_STUB
             || (fileType.isStub()
                 && fileType != AnnotationFileType.AJAVA_AS_STUB
@@ -1594,7 +1594,8 @@ public class AnnotationFileParser {
     }
     markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type annotations
+    // AnnotationFileParser parses all annotations in type annotation position as type
+    // annotations
     recordDeclAnnotation(elt, decl.getElementType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
@@ -1621,7 +1622,8 @@ public class AnnotationFileParser {
   private RecordComponentStub processRecordField(Parameter decl, VariableElement elt) {
     markAsFromStubFile(elt);
     recordDeclAnnotation(elt, decl.getAnnotations(), decl);
-    // AnnotationFileParser parses all annotations in type annotation position as type annotations.
+    // AnnotationFileParser parses all annotations in type annotation position as type
+    // annotations.
     recordDeclAnnotation(elt, decl.getType().getAnnotations(), decl);
     AnnotatedTypeMirror fieldType = atypeFactory.fromElement(elt);
 
@@ -2439,8 +2441,9 @@ public class AnnotationFileParser {
     @FullyQualifiedName String annoNameFq = annotation.getNameAsString();
     TypeElement annoTypeElt = allAnnotations.get(annoNameFq);
     if (annoTypeElt == null) {
-      // If the annotation was not imported, then #getImportedAnnotations did not add it to the
-      // allAnnotations field. This code adds the annotation when it is encountered (i.e. here).
+      // If the annotation was not imported, then #getImportedAnnotations did not add it to
+      // the allAnnotations field. This code adds the annotation when it is encountered (i.e.
+      // here).
       // Note that this does not call AnnotationFileParser#getTypeElement to avoid a spurious
       // diagnostic if the annotation is actually unknown.
       annoTypeElt = elements.getTypeElement(annoNameFq);
@@ -2919,7 +2922,8 @@ public class AnnotationFileParser {
       AnnotatedTypeMirror existingType = m.get(key);
       // If the newType is from a JDK stub file, then keep the existing type.  This
       // way user-supplied stub files override JDK stub files.
-      // This works because the JDK is always parsed last, on demand, after all other stub files.
+      // This works because the JDK is always parsed last, on demand, after all other stub
+      // files.
       if (fileType != AnnotationFileType.JDK_STUB) {
         atypeFactory.replaceAnnotations(newType, existingType);
       }

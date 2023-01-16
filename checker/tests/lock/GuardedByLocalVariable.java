@@ -14,15 +14,15 @@ public class GuardedByLocalVariable {
       @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
       final Map<Object, Integer> m0 = someValue();
       @GuardedBy("m0") Object k = "key";
-      // If the type of kk were legal, this assignment would be illegal because the two instances of
-      // "m0" would refer to different variables.
+      // If the type of kk were legal, this assignment would be illegal because the two
+      // instances of "m0" would refer to different variables.
       kk = k;
     }
     {
       @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
       final Map<Object, Integer> m0 = someValue();
-      // If the type of kk were legal, this assignment would be illegal because the two instances of
-      // "m0" would refer to different variables.
+      // If the type of kk were legal, this assignment would be illegal because the two
+      // instances of "m0" would refer to different variables.
       @GuardedBy("m0") Object k2 = kk;
     }
   }

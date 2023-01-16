@@ -7,31 +7,31 @@ import org.checkerframework.checker.mustcall.qual.*;
 class ConnectingSockets {
 
   static void simple_ns_test(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = new Socket();
     s.bind(sa);
   }
 
   static void simple_ns_test2(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = new Socket();
     // s.bind(sa);
   }
 
   static void simple_ns_test3(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = new Socket();
     s.connect(sa);
   }
 
   static void simple_ns_test4(SocketAddress sa, int to) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = new Socket();
     s.connect(sa, to);
   }
 
   static @MustCall({}) Socket makeUnconnected() throws Exception {
-    // :: error: return
+    // :: error: (return)
     return new Socket();
   }
 

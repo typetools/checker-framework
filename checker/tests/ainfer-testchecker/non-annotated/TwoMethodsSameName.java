@@ -7,14 +7,14 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 public class TwoMethodsSameName {
 
   void test(int x, int y) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 int x1 = x;
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling2 int y1 = y;
   }
 
   void test(int z) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling2 int z1 = z;
   }
 

@@ -13,7 +13,7 @@ public class LiveVariablePlayground {
   /**
    * Run live variable analysis for a specific file and create a PDF of the CFG in the end.
    *
-   * @param args input arguments
+   * @param args command-line arguments, not used
    */
   public static void main(String[] args) {
 

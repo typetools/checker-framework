@@ -184,9 +184,10 @@ public class NullnessVisitor
         MemberSelectTree mst = (MemberSelectTree) varTree;
         ExpressionTree receiver = mst.getExpression();
         // This recognizes "this.fieldname = ..." but not "MyClass.fieldname = ..." or
-        // "MyClass.this.fieldname = ...".  The latter forms are probably rare in a constructor.
-        // Note that this method should return non-null only for fields of this class, not fields of
-        // any other class, including outer classes.
+        // "MyClass.this.fieldname = ...".  The latter forms are probably rare in a
+        // constructor.
+        // Note that this method should return non-null only for fields of this class, not
+        // fields of any other class, including outer classes.
         if (receiver.getKind() != Tree.Kind.IDENTIFIER
             || !((IdentifierTree) receiver).getName().contentEquals("this")) {
           return null;
@@ -211,9 +212,9 @@ public class NullnessVisitor
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    // Use the valueExp as the context because data flow will have a value for that tree.  It might
-    // not have a value for the var tree.  This is sound because if data flow has determined
-    // @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
+    // Use the valueExp as the context because data flow will have a value for that tree.  It
+    // might not have a value for the var tree.  This is sound because if data flow has
+    // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
     atypeFactory.replacePolyQualifier(varType, valueExp);
     super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
   }
@@ -370,9 +371,10 @@ public class NullnessVisitor
     // See also
     // org.checkerframework.dataflow.cfg.builder.CFGBuilder.CFGTranslationPhaseOne.visitAssert
 
-    // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are turned
-    // on and @AssumeAssertions is not used, checkForNullability is still called since the
-    // CFGBuilder will have generated one branch for which asserts are assumed to be enabled.
+    // In cases where neither assumeAssertionsAreEnabled nor assumeAssertionsAreDisabled are
+    // turned on and @AssumeAssertions is not used, checkForNullability is still called since
+    // the CFGBuilder will have generated one branch for which asserts are assumed to be
+    // enabled.
 
     boolean doVisitAssert;
     if (checker.hasOption("assumeAssertionsAreEnabled")
@@ -639,8 +641,8 @@ public class NullnessVisitor
       AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
       AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
       treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
-      // If receiver is Nullable, then we don't want to issue a warning about method invocability
-      // (we'd rather have only the "dereference.of.nullable" message).
+      // If receiver is Nullable, then we don't want to issue a warning about method
+      // invocability (we'd rather have only the "dereference.of.nullable" message).
       if (treeReceiver.hasAnnotation(NULLABLE) || receiverAnnos.contains(MONOTONIC_NONNULL)) {
         return;
       }
@@ -660,9 +662,9 @@ public class NullnessVisitor
       // if one (or both) of them is null
       return isPrimitive(tree.getLeftOperand()) != isPrimitive(tree.getRightOperand());
     } else {
-      // All BinaryTree's are of type String, a primitive type or the reference type equivalent of a
-      // primitive type. Furthermore, Strings don't have a primitive type, and therefore only
-      // BinaryTrees that aren't String can cause unboxing.
+      // All BinaryTree's are of type String, a primitive type or the reference type
+      // equivalent of a primitive type. Furthermore, Strings don't have a primitive type, and
+      // therefore only BinaryTrees that aren't String can cause unboxing.
       return !isString(tree);
     }
   }
@@ -759,8 +761,8 @@ public class NullnessVisitor
     }
 
     // Don't call super.
-    // BasetypeVisitor forces annotations on exception parameters to be top, but because exceptions
-    // can never be null, the Nullness Checker does not require this check.
+    // BasetypeVisitor forces annotations on exception parameters to be top, but because
+    // exceptions can never be null, the Nullness Checker does not require this check.
   }
 
   @Override

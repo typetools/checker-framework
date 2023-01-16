@@ -339,11 +339,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
           return isSubtype(outsideLower, inside);
         }
       }
-      // If inside is a wildcard, then isSubtype(outsideLower, inside) calls isSubtype(outsideLower,
-      // inside.getLowerBound()) and isSubtype(inside, outsideUpper) calls
-      // isSubtype(inside.getUpperBound(), outsideUpper). This is slightly different from the
-      // algorithm in the JLS.  Only one of the Java type bounds can be specified, but there can be
-      // annotations on both the upper and lower bound of a wildcard.
+      // If inside is a wildcard, then isSubtype(outsideLower, inside) calls
+      // isSubtype(outsideLower, inside.getLowerBound()) and isSubtype(inside, outsideUpper)
+      // calls isSubtype(inside.getUpperBound(), outsideUpper). This is slightly different
+      // from the algorithm in the JLS.  Only one of the Java type bounds can be specified,
+      // but there can be annotations on both the upper and lower bound of a wildcard.
       return isSubtype(outsideLower, inside) && isSubtype(inside, outsideUpper);
     } catch (Throwable ex) {
       // Work around:
@@ -844,7 +844,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, Void p) {
 
     if (AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
-      // The underlying types of subtype and supertype are uses of the same type parameter, but they
+      // The underlying types of subtype and supertype are uses of the same type parameter,
+      // but they
       // may have different primary annotations.
       boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
       boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
@@ -1073,12 +1074,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return isSubtypeCaching(subtypeUpperBound, supertype);
     } catch (BugInCF e) {
       if (TypesUtils.isCapturedTypeVariable(subtype.underlyingType)) {
-        // The upper bound of captured type variable may be computed incorrectly by javac. javac
-        // computes the upper bound as a declared type, when it should be an intersection type.
+        // The upper bound of captured type variable may be computed incorrectly by javac.
+        // javac computes the upper bound as a declared type, when it should be an
+        // intersection type.
         // (This is a bug in the GLB algorithm; see
         // https://bugs.openjdk.org/browse/JDK-8039222)
-        // In this case, the upperbound is not a subtype of `supertype` and the Checker Framework
-        // crashes. So catch that crash and just return false.
+        // In this case, the upperbound is not a subtype of `supertype` and the Checker
+        // Framework crashes. So catch that crash and just return false.
+        // TODO: catch the problem more locally.
         return false;
       }
       throw e;

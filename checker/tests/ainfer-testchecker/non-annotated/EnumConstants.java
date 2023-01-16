@@ -15,7 +15,7 @@ public class EnumConstants {
   void requiresS1(@AinferSibling1 MyEnum e) {}
 
   void test() {
-    // :: warning: argument
+    // :: warning: (argument)
     requiresS1(MyEnum.ONE);
   }
 }

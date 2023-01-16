@@ -14,22 +14,22 @@ public class FromReceiver {
   }
 
   public void sinkNoThis() {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 
   public void sinkExplicitThis(FromReceiver this) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 
   public void sinkNoThis2() {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 
   public void sinkExplicitThis2(FromReceiver this) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 
@@ -39,12 +39,12 @@ public class FromReceiver {
   }
 
   public void sinkNoThis3() {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 
   public void sinkExplicitThis3(FromReceiver this) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 FromReceiver f = this;
   }
 }

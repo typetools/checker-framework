@@ -30,12 +30,12 @@ class MustCallAliasExamples {
     b.close();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_no_close(@Owning InputStream b) {
     DataInputStream d = new DataInputStream(b);
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_no_assign(@Owning InputStream b) {
     new DataInputStream(new BufferedInputStream(b));
   }

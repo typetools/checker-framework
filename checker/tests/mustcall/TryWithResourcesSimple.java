@@ -19,10 +19,11 @@ public class TryWithResourcesSimple {
   }
 
   void test_fancy_sock(String address, int port) {
-    // This is illegal, because getFancySock()'s return type has another MC method beyond "close",
+    // This is illegal, because getFancySock()'s return type has another MC method beyond
+    // "close",
     // which is the only MC method for Socket itself.
     try (Socket socket = getFancySocket()) {
-      // :: error: assignment
+      // :: error: (assignment)
       @MustCall({}) Object s = socket;
     } catch (Exception e) {
 

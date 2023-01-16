@@ -182,7 +182,8 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
     }
 
-    // Could do more optimization to merge with a literal at end of `exprString`.  Is that needed?
+    // Could do more optimization to merge with a literal at end of `exprString`.  Is that
+    // needed?
     return expr + " + 1";
   }
 }

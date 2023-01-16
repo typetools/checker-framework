@@ -279,7 +279,7 @@ Here is a good way to proceed.
   void testHierarchy(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    // :: error: assignment
+    // :: error: (assignment)
     @NonNegative int c = us;  // expected error on this line
     @NonNegative int d = nn;
   }

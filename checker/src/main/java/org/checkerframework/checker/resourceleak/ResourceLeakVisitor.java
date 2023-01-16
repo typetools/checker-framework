@@ -152,14 +152,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       return;
     }
     if (!isMustCallMethod(methodTree)) {
-      // In this case, the method has an EnsuresCalledMethods annotation but is not a destructor,
-      // so no further checking is required.
+      // In this case, the method has an EnsuresCalledMethods annotation but is not a
+      // destructor, so no further checking is required.
       return;
     }
     CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
     if (exitStore == null) {
-      // If there is no exceptional exitStore, then the method cannot throw an exception and there
-      // is no need to check anything else.
+      // If there is no exceptional exitStore, then the method cannot throw an exception and
+      // there is no need to check anything else.
     } else {
       CFAbstractValue<?> value = exitStore.getValue(expression);
       AnnotationMirror inferredAnno = null;
@@ -354,7 +354,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           }
 
           if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
-            // This variable could be set immediately before reporting the error, but IMO
+            // This variable could be set immediately before reporting the error, but
+            // IMO
             // it is more clear to set it here.
             error =
                 " @EnsuresCalledMethods written on MustCall methods doesn't contain "

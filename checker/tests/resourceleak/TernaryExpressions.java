@@ -28,10 +28,10 @@ class TernaryExpressions {
     Foo ternary1 = b ? new Foo() : makeFoo();
     ternary1.a();
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo ternary2 = b ? new Foo() : makeFoo();
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x = new Foo();
     Foo ternary3 = b ? new Foo() : x;
     ternary3.a();
@@ -42,14 +42,14 @@ class TernaryExpressions {
 
     takeOwnership(b ? new Foo() : makeFoo());
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x2 = new Foo();
     takeOwnership(b ? x2 : null);
 
     int i = 10;
     Foo ternaryInLoop = null;
     while (i > 0) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       ternaryInLoop = b ? null : new Foo();
       i--;
     }
@@ -63,12 +63,12 @@ class TernaryExpressions {
    * variable
    */
   void testTernaryCastUnassigned(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if ((b ? new Foo() : null) != null) {
       b = !b;
     }
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if ((b ? makeFoo() : null) != null) {
       b = !b;
     }
@@ -79,7 +79,7 @@ class TernaryExpressions {
     }
     x.a();
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if (((Foo) new Foo()) != null) {
       b = !b;
     }
@@ -100,7 +100,7 @@ class TernaryExpressions {
 
   @Owning
   Foo testTernaryReturnBad(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x = new Foo();
     return b ? x : makeFoo();
   }
@@ -112,10 +112,10 @@ class TernaryExpressions {
   static class Sub2 extends Object {}
 
   static void testTernarySubtyping(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Object toStringAndClone = b ? new Sub1() : new Sub2();
-    // at this point, for soundness, we should be responsible for calling both toString and clone on
-    // obj...
+    // at this point, for soundness, we should be responsible for calling both toString and
+    // clone on obj...
     toStringAndClone.toString();
   }
 }

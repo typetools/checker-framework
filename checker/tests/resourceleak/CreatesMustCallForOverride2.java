@@ -43,7 +43,7 @@ class CreatesMustCallForOverride2 {
     // this version isn't permitted, since it adds a new obligation
     @Override
     @CreatesMustCallFor("this.myFoo")
-    // :: error: creates.mustcall.for.override.invalid
+    // :: error: (creates.mustcall.for.override.invalid)
     public void b() {}
   }
 
@@ -62,71 +62,70 @@ class CreatesMustCallForOverride2 {
     @Override
     @CreatesMustCallFor("this.myFoo")
     @CreatesMustCallFor("this")
-    // :: error: creates.mustcall.for.override.invalid
+    // :: error: (creates.mustcall.for.override.invalid)
     public void b() {}
   }
 
   static class Thudless extends Thud {
     // this method override is also NOT permitted, because the @CreatesMustCallFor("this.myFoo")
-    // annotation
-    // from Thud is inherited!
+    // annotation from Thud is inherited!
     @Override
     @CreatesMustCallFor("this")
-    // :: error: creates.mustcall.for.override.invalid
+    // :: error: (creates.mustcall.for.override.invalid)
     public void b() {}
   }
 
   static void test1() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Foo();
     foo.a();
     foo.b();
   }
 
   static void test2() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Bar();
     foo.a();
     foo.b();
   }
 
   static void test3() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Baz();
     foo.a();
     foo.b();
   }
 
   static void test4() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Qux();
     foo.a();
     foo.b();
   }
 
   static void test5() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Bar foo = new Bar();
     foo.a();
     foo.b();
   }
 
   static void test6() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Baz foo = new Baz();
     foo.a();
     foo.b();
   }
 
   static void test7() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Qux foo = new Qux();
     foo.a();
     foo.b();
   }
 
   static void test8() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Razz();
     foo.a();
     foo.b();
@@ -141,35 +140,35 @@ class CreatesMustCallForOverride2 {
   }
 
   static void test10() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Thud();
     foo.a();
     foo.b();
   }
 
   static void test11() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Thud foo = new Thud();
     foo.a();
     foo.b();
   }
 
   static void test12() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Thudless();
     foo.a();
     foo.b();
   }
 
   static void test13() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Thud foo = new Thudless();
     foo.a();
     foo.b();
   }
 
   static void test14() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Thudless foo = new Thudless();
     foo.a();
     foo.b();

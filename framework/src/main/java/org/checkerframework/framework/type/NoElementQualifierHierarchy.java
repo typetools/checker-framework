@@ -92,7 +92,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
     Map<QualifierKind, AnnotationMirror> quals = new TreeMap<>();
     for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
       if (kind.hasElements()) {
-        throw new TypeSystemError(kind + "has elements");
+        throw new TypeSystemError(kind + " has elements");
       }
       quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
     }
@@ -177,8 +177,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings(
-      "nullness:return" // every QualifierKind is a key in its corresponding kindToAnnotationMirror
+  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
+  // kindToAnnotationMirror
   )
   public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
@@ -191,8 +191,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings(
-      "nullness:return" // every QualifierKind is a key in its corresponding kindToAnnotationMirror
+  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
+  // kindToAnnotationMirror
   )
   public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);

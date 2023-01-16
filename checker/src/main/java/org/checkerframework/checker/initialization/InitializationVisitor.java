@@ -289,8 +289,9 @@ public class InitializationVisitor<
 
     // Warn about uninitialized static fields.
     Tree.Kind nodeKind = node.getKind();
-    // Skip interfaces (and annotations, which are interfaces).  In an interface, every static field
-    // must be initialized.  Java forbids uninitialized variables and static initalizer blocks.
+    // Skip interfaces (and annotations, which are interfaces).  In an interface, every static
+    // field must be initialized.  Java forbids uninitialized variables and static initalizer
+    // blocks.
     if (nodeKind != Tree.Kind.INTERFACE && nodeKind != Tree.Kind.ANNOTATION_TYPE) {
       boolean isStatic = true;
       // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
@@ -338,8 +339,9 @@ public class InitializationVisitor<
   private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree node) {
     // TODO: get access to a Types instance and use it to get receiver type
     // Or, extend ExecutableElement with such a method.
-    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that would
-    // only have the nullness annotations; here we want to see all annotations on the receiver.
+    // Note that we cannot use the receiver type from AnnotatedExecutableType, because that
+    // would only have the nullness annotations; here we want to see all annotations on the
+    // receiver.
     List<? extends AnnotationMirror> rcvannos = null;
     if (TreeUtils.isConstructor(node)) {
       com.sun.tools.javac.code.Symbol meth =

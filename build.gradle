@@ -36,7 +36,7 @@ ext {
 
     // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
     // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
-    isJava17compatible = JavaVersion.current() >= JavaVersion.VERSION_17
+    isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
 
     errorproneJavacVersion = '9+181-r4173-1'
 
@@ -192,8 +192,51 @@ allprojects {
       endWithNewline()
     }
     java {
+      def targets = [
+          // add target folders here
+          'checker',
+          'checker-qual',
+          'checker-util',
+          'dataflow',
+          'docs/examples',
+          'docs/tutorial',
+          'framework',
+          'framework-test',
+          'javacutil',
+      ]
+      targets = targets.collectMany {[
+          // must call toString() to convert GString to String
+          "${it}/**/*.java".toString(),
+          "${it}/**/*.ajava".toString()
+      ]}
+      target targets
+
+      def doNotFormat = [ 'dataflow/manual/examples/',
+        '**/nullness-javac-errors/*',
+        '**/calledmethods-delomboked/*',
+        '**/returnsreceiverdelomboked/*',
+        '*/build/**',
+        '*/dist/**',
+        '*/tests/build/**',
+        '**/input-annotation-files/*'
+      ]
+      if (isJava17orHigher) {
+        targetExclude doNotFormat
+      } else {
+        targetExclude doNotFormat, '**/java17/', '**/*record*/'
+      }
+
       googleJavaFormat()
       formatAnnotations()
+            // Remove addTypeAnnotation after a Spotless release is made (2022-01-15).
+                .addTypeAnnotation("AinferDefaultType")
+                .addTypeAnnotation("AinferParent")
+                .addTypeAnnotation("AinferSibling1")
+                .addTypeAnnotation("AinferSibling2")
+                .addTypeAnnotation("AinferTop")
+                .addTypeAnnotation("AinferImplicitAnno")
+                .addTypeAnnotation("AinferSiblingWithFields")
+                .addTypeAnnotation("DoesNotMatchRegex")
     }
   }
   // The Spotless plugin uses the latest version of google-java-format
@@ -215,9 +258,11 @@ allprojects {
           canBeResolved = true
         }
       }
+
       dependencies {
         checkerFatJar(project(path: ':checker', configuration: 'fatJar'))
       }
+
         // Add the fat checker.jar to the classpath of every Javadoc task. This allows Javadoc in
         // any module to reference classes in any other module.
         // Also, build and use ManualTaglet as a taglet.

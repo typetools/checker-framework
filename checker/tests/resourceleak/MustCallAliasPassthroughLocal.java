@@ -12,7 +12,7 @@ class MustCallAliasPassthroughLocal extends FilterInputStream {
   }
 
   static void test(File f) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     new MustCallAliasPassthroughLocal(f);
   }
 

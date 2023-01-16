@@ -7,7 +7,7 @@ import org.checkerframework.checker.mustcall.qual.*;
 class ConnectingServerSockets {
 
   static void simple_ss_test(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     ServerSocket s = new ServerSocket();
     s.bind(sa);
   }
@@ -18,7 +18,7 @@ class ConnectingServerSockets {
   }
 
   static void simple_ss_test4(SocketAddress sa, int to) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     ServerSocket s = new ServerSocket();
     s.bind(sa, to);
   }
@@ -28,7 +28,7 @@ class ConnectingServerSockets {
   }
 
   static void simple_ss_test5(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     ServerSocket s = makeUnconnected();
     s.bind(sa);
   }
@@ -39,7 +39,7 @@ class ConnectingServerSockets {
   }
 
   static void simple_ss_test8(SocketAddress sa, int to) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     ServerSocket s = makeUnconnected();
     s.bind(sa, to);
   }

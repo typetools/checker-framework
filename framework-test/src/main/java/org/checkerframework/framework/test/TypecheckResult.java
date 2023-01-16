@@ -107,13 +107,13 @@ public class TypecheckResult {
     if (!unexpectedDiagnostics.isEmpty()) {
       int numUnexpected = unexpectedDiagnostics.size();
       if (numUnexpected == 1) {
-        summaryBuilder.add("1 unexpected diagnostic was found");
+        summaryBuilder.add("1 unexpected diagnostic was found:");
       } else {
-        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found");
+        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found:");
       }
 
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
-        summaryBuilder.add(unexpected.toString());
+        summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
@@ -126,7 +126,7 @@ public class TypecheckResult {
               + " not found:");
 
       for (TestDiagnostic missing : missingDiagnostics) {
-        summaryBuilder.add(missing.toString());
+        summaryBuilder.add("  " + missing.toString());
       }
     }
 

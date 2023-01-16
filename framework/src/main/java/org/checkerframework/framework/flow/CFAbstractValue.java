@@ -320,8 +320,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           && analysis
               .getTypeFactory()
               .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
-        // Both types have qualifier parameters, so they are related by invariance rather than
-        // subtyping.
+        // Both types have qualifier parameters, so they are related by invariance rather
+        // than subtyping.
         if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
           return b;
         }
@@ -484,13 +484,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (canCombinedSetBeMissingAnnos) {
-        // anno is the primary annotation on the use of a type variable. typeVar is a use of the
-        // same type variable that does not have a primary annotation. The lub of the two type
-        // variables is computed as follows. If anno is a subtype (or equal) to the annotation on
-        // the lower bound of typeVar, then typeVar is the lub, so no annotation is added to lubset.
-        // If anno is a supertype of the annotation on the lower bound of typeVar, then the lub is
-        // typeVar with a primary annotation of lub(anno, upperBound), where upperBound is the
-        // annotation on the upper bound of typeVar.
+        // anno is the primary annotation on the use of a type variable. typeVar is a use of
+        // the same type variable that does not have a primary annotation. The lub of the
+        // two type variables is computed as follows. If anno is a subtype (or equal) to the
+        // annotation on the lower bound of typeVar, then typeVar is the lub, so no
+        // annotation is added to lubset.
+        // If anno is a supertype of the annotation on the lower bound of typeVar, then the
+        // lub is typeVar with a primary annotation of lub(anno, upperBound), where
+        // upperBound is the annotation on the upper bound of typeVar.
         Set<AnnotationMirror> lBSet =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
         AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
@@ -583,13 +584,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (canCombinedSetBeMissingAnnos) {
-        // anno is the primary annotation on the use of a type variable. typeVar is a use of the
-        // same type variable that does not have a primary annotation. The glb of the two type
-        // variables is computed as follows. If anno is a supertype (or equal) to the annotation on
-        // the upper bound of typeVar, then typeVar is the glb, so no annotation is added to glbset.
-        // If anno is a subtype of the annotation on the upper bound of typeVar, then the glb is
-        // typeVar with a primary annotation of glb(anno, lowerBound), where lowerBound is the
-        // annotation on the lower bound of typeVar.
+        // anno is the primary annotation on the use of a type variable. typeVar is a use of
+        // the same type variable that does not have a primary annotation. The glb of the
+        // two type variables is computed as follows. If anno is a supertype (or equal) to
+        // the annotation on the upper bound of typeVar, then typeVar is the glb, so no
+        // annotation is added to glbset.
+        // If anno is a subtype of the annotation on the upper bound of typeVar, then the
+        // glb is typeVar with a primary annotation of glb(anno, lowerBound), where
+        // lowerBound is the annotation on the lower bound of typeVar.
         AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
         if (hierarchy.isSubtype(upperBound, annotation)) {
           return null;

@@ -604,8 +604,8 @@ public class ElementUtils {
     try {
       superTypeMirror = typeElt.getSuperclass();
     } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
-      // Looking up a supertype failed. This sometimes happens when transitive dependencies are not
-      // on the classpath.  As javac didn't complain, let's also not complain.
+      // Looking up a supertype failed. This sometimes happens when transitive dependencies
+      // are not on the classpath.  As javac didn't complain, let's also not complain.
       return null;
     }
 

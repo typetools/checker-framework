@@ -38,6 +38,7 @@ final javacUtilPom(publication) {
         }
     }
 }
+
 publishing {
     publications {
         javacUtil(MavenPublication) {
@@ -45,6 +46,7 @@ publishing {
         }
     }
 }
+
 signing {
     sign publishing.publications.javacUtil
 }

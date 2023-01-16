@@ -45,7 +45,7 @@ public class Issue293 {
         s = null;
       }
     } finally {
-      // :: error: argument
+      // :: error: (argument)
       write(s);
     }
   }

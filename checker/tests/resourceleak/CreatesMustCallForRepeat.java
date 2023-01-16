@@ -17,26 +17,26 @@ class CreatesMustCallForRepeat {
   }
 
   static void test1() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos1 = makeNoMC();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos2 = makeNoMC();
     @MustCall({}) CreatesMustCallForRepeat a = cos2;
     @MustCall({}) CreatesMustCallForRepeat a2 = cos2;
     cos2.a();
     cos1.reset(cos2);
-    // :: error: assignment
+    // :: error: (assignment)
     @CalledMethods({"reset"}) CreatesMustCallForRepeat b = cos1;
     @CalledMethods({}) CreatesMustCallForRepeat c = cos1;
     @CalledMethods({}) CreatesMustCallForRepeat d = cos2;
-    // :: error: assignment
+    // :: error: (assignment)
     @CalledMethods({"a"}) CreatesMustCallForRepeat e = cos2;
   }
 
   static void test3() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos = new CreatesMustCallForRepeat();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos2 = new CreatesMustCallForRepeat();
     cos.a();
     cos.reset(cos2);
@@ -44,7 +44,7 @@ class CreatesMustCallForRepeat {
 
   static void test4() {
     CreatesMustCallForRepeat cos = new CreatesMustCallForRepeat();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos2 = new CreatesMustCallForRepeat();
     cos.a();
     cos.reset(cos2);
@@ -52,7 +52,7 @@ class CreatesMustCallForRepeat {
   }
 
   static void test5() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForRepeat cos = new CreatesMustCallForRepeat();
     CreatesMustCallForRepeat cos2 = new CreatesMustCallForRepeat();
     cos.a();

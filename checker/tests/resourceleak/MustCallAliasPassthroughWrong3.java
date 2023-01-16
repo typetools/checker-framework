@@ -15,7 +15,7 @@ class MustCallAliasPassthroughWrong3 {
     return is;
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void use_bad(@Owning InputStream is) throws Exception {
     InputStream is2 = missingMCA(is);
     is2.close();
