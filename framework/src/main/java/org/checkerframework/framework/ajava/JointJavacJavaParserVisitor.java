@@ -85,6 +85,7 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
+import com.github.javaparser.printer.YamlPrinter;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -2308,8 +2309,12 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode) {
     throw new BugInCF(
-        "desynced trees: %s [%s], %s [%s]",
-        javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass());
+        "desynced trees: %s [%s], %s [%s] %s",
+        javacTree,
+        javacTree.getClass(),
+        javaParserNode,
+        javaParserNode.getClass(),
+        new YamlPrinter(true).output(javaParserNode)); // There is also XmlPrinter
   }
 
   /**
@@ -2327,8 +2332,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode, Class<?> expectedType) {
     throw new BugInCF(
-        "desynced trees: %s [%s], %s [%s (expected %s)]",
-        javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass(), expectedType);
+        "desynced trees: %s [%s], %s [%s (expected %s)] %s",
+        javacTree,
+        javacTree.getClass(),
+        javaParserNode,
+        javaParserNode.getClass(),
+        expectedType,
+        new YamlPrinter(true).output(javaParserNode));
   }
 
   /**
