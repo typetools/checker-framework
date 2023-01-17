@@ -18,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -249,7 +250,7 @@ public class ValueCheckerUtils {
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
     List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
-    return CollectionsPlume.withoutDuplicates(lengths);
+    return SystemUtil.withoutDuplicatesSorted(lengths);
   }
 
   /**

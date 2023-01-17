@@ -174,8 +174,8 @@ public class ValueTransfer extends CFTransfer {
       // characters always have length 1
       return Collections.singletonList(1);
     } else if (isIntRange(subNode, p)) {
-      // Try to get a list of lengths from a range of integer values converted to string @IntVal is
-      // not checked for, because if it is present, we would already have the actual string values
+      // Try to get a list of lengths from a range of integer values converted to string. @IntVal is
+      // not checked for, because if it is present, we would already have the actual string values.
       Range lengthRange = getIntRangeStringLengthRange(subNode, p);
       return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
     } else if (subNodeTypeKind == TypeKind.BYTE) {

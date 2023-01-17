@@ -1310,6 +1310,8 @@ public final class TreeUtils {
         }
       }
     }
+
+    // Didn't find an answer.  Compose an error message.
     List<String> candidates = new ArrayList<>();
     for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
       if (exec.getSimpleName().contentEquals(methodName)) {
@@ -1943,8 +1945,9 @@ public final class TreeUtils {
           typeTree = ((ParameterizedTypeTree) typeTree).getType();
           break;
         case UNION_TYPE:
-          List<AnnotationTree> result = new ArrayList<>();
-          for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+          List<? extends Tree> alternatives = ((UnionTypeTree) typeTree).getTypeAlternatives();
+          List<AnnotationTree> result = new ArrayList<>(alternatives.size());
+          for (Tree alternative : alternatives) {
             result.addAll(getExplicitAnnotationTrees(null, alternative));
           }
           return result;
