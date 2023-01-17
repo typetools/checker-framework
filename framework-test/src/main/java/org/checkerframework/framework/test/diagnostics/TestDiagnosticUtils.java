@@ -200,7 +200,7 @@ public class TestDiagnosticUtils {
   }
 
   /**
-   * Given a javax diagnostic, return a pair of (trimmed, fileame), where "trimmed" is the first
+   * Given a javax diagnostic, return a pair of (trimmed, filename), where "trimmed" is the first
    * line of the message, without the leading filename.
    *
    * @param original a javax diagnostic
