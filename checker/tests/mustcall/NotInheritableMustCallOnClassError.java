@@ -5,7 +5,7 @@
 import org.checkerframework.checker.mustcall.qual.*;
 
 @MustCall("foo")
-// :: warning: mustcall.not.inheritable
+// :: warning: (mustcall.not.inheritable)
 public class NotInheritableMustCallOnClassError {
   public void foo() {}
 }

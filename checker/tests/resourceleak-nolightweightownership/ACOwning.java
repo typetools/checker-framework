@@ -30,15 +30,15 @@ class ACOwning {
   }
 
   static void callGetNonOwningFoo() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     getNonOwningFoo();
   }
 
   static void ownershipInCallee() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = new Foo();
     takeOwnership(f);
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo g = new Foo();
     noOwnership(g);
   }
@@ -49,12 +49,12 @@ class ACOwning {
   }
 
   void owningAtReturnTest() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = owningAtReturn();
   }
 
   void ownershipTest() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     takeOwnership(new Foo());
   }
 }

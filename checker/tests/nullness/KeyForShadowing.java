@@ -19,8 +19,8 @@ public class KeyForShadowing {
     getMap3(m0, m1, k).toString();
 
     // We expect an error for the next one since although we are respecting the method contract,
-    // since the key is for the first parameter, the Nullness Checker is misinterpreting "m1" to be
-    // the local m1 to this method, and not the first parameter to the method.
+    // since the key is for the first parameter, the Nullness Checker is misinterpreting "m1" to
+    // be the local m1 to this method, and not the first parameter to the method.
 
     // :: error: (argument)
     getMap2(m0, m1, k).toString();

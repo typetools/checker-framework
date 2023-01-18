@@ -12,7 +12,7 @@ class ManualMustCallEmptyOnConstructor {
   static class Foo {
     final @Owning InputStream is;
 
-    // :: error: inconsistent.constructor.type
+    // :: error: (inconsistent.constructor.type)
     @MustCall({}) Foo(@Owning InputStream is) {
       this.is = is;
     }

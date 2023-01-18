@@ -14,9 +14,9 @@ class CreatesMustCallForInnerClass {
     /** non-static inner class */
     class Bar {
       @CreatesMustCallFor
-      // :: error: creates.mustcall.for.invalid.target
+      // :: error: (creates.mustcall.for.invalid.target)
       void bar() {
-        // :: error: reset.not.owning
+        // :: error: (reset.not.owning)
         resetFoo();
       }
     }
@@ -26,7 +26,7 @@ class CreatesMustCallForInnerClass {
       // If this call to bar() were permitted with no errors, this would be unsound.
       // b is in fact an owning pointer, but we don't track it as such because
       // Bar objects cannot have must-call obligations created for them.
-      // :: error: reset.not.owning
+      // :: error: (reset.not.owning)
       b.bar();
     }
   }

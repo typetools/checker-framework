@@ -676,7 +676,7 @@ public class RequireJavadoc {
         Path path =
             (relative
                 ? (filename.isAbsolute() ? workingDirAbsolute : workingDirRelative)
-                .relativize(filename)
+                    .relativize(filename)
                 : filename);
         return String.format(
             "%s:%d:%d: missing documentation for %s", path, begin.line, begin.column, simpleName);
@@ -926,9 +926,9 @@ public class RequireJavadoc {
    *     implementation uses this to minimize the diffs against upstream.
    */
   @SuppressWarnings({
-      "JdkObsolete", // for LinkedList
-      "interning:not.interned", // element of a list
-      "ReferenceEquality",
+    "JdkObsolete", // for LinkedList
+    "interning:not.interned", // element of a list
+    "ReferenceEquality",
   })
   // This implementation is from Randoop's `Minimize.java` file, and before that from JavaParser's
   // PrettyPrintVisitor.printOrphanCommentsBeforeThisChildNode.  The JavaParser maintainers refuse

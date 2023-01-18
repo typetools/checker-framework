@@ -119,8 +119,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     overriddenType.getUnderlyingType().asElement(), PolyUIType.class)
                 != null;
         // TODO: How much validation do I need here?  Do I need to check that the overridden
-        // receiver was really @PolyUI and the method is really an @PolyUIEffect?  I don't think so
-        // - we know it's a polymorphic parent type, so all receivers would be @PolyUI.
+        // receiver was really @PolyUI and the method is really an @PolyUIEffect?  I don't
+        // think so - we know it's a polymorphic parent type, so all receivers would be
+        // @PolyUI.
         // Java would already reject before running type annotation processors if the Java
         // types were wrong.
         // The *only* extra leeway we want to permit is overriding @PolyUI receiver to
@@ -298,9 +299,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       final DeclaredType callerReceiverType = classType.getUnderlyingType();
       assert callerReceiverType != null;
       final TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
-      // Note: All these checks should be fast in the common case, but happen for every method call
-      // inside the anonymous class. Consider a cache here if profiling surfaces this as taking too
-      // long.
+      // Note: All these checks should be fast in the common case, but happen for every method
+      // call inside the anonymous class. Consider a cache here if profiling surfaces this as
+      // taking too long.
       if (TypesUtils.isAnonymous(callerReceiverType)
           // Skip if already inferred @UI
           && !effStack.peek().isUI()
@@ -371,18 +372,19 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     AnnotatedDeclaredType previousReceiverType = receiverType;
     receiverType = methodType.getReceiverType();
 
-    // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver must
-    // be @PolyUI.  Otherwise a "non-polymorphic" method of a polymorphic type could be called on a
-    // UI instance, which then gets a Safe reference to itself (unsound!) that it can then pass off
-    // elsewhere (dangerous!).  So all receivers in methods of a @PolyUIType must be @PolyUI.
+    // TODO: If the type we're in is a polymorphic (over effect qualifiers) type, the receiver
+    // must be @PolyUI.  Otherwise a "non-polymorphic" method of a polymorphic type could be
+    // called on a UI instance, which then gets a Safe reference to itself (unsound!) that it
+    // can then pass off elsewhere (dangerous!).  So all receivers in methods of a @PolyUIType
+    // must be @PolyUI.
 
     // TODO: What do we do then about classes that inherit from a concrete instantiation?  If it
-    // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then the
-    // receivers should probably be @UI in both new and override methods, so calls to polymorphic
-    // methods of the parent class will work correctly.  In which case for proving anything, the
-    // qualifier on sublasses of UI instantiations would always have to be @UI... Need to write down
-    // |- t for this system!  And the judgments for method overrides and inheritance!  Those are
-    // actually the hardest part of the system.
+    // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
+    // the receivers should probably be @UI in both new and override methods, so calls to
+    // polymorphic methods of the parent class will work correctly.  In which case for proving
+    // anything, the qualifier on sublasses of UI instantiations would always have to be @UI...
+    // Need to write down |- t for this system!  And the judgments for method overrides and
+    // inheritance!  Those are actually the hardest part of the system.
 
     ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
     if (debugSpew) {

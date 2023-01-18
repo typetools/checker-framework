@@ -21,13 +21,14 @@ public class DependentTypesViewpointAdaptationTest {
     // content doesn't matter
   }
 
-  public static void receiverTest(@SameLen("#2") DependentTypesViewpointAdaptationTest t1,
+  public static void receiverTest(
+      @SameLen("#2") DependentTypesViewpointAdaptationTest t1,
       @SameLen("#1") DependentTypesViewpointAdaptationTest t2) {
     t1.compute2(t2);
   }
 
-  public void compute2(DependentTypesViewpointAdaptationTest this,
-      DependentTypesViewpointAdaptationTest other) {
+  public void compute2(
+      DependentTypesViewpointAdaptationTest this, DependentTypesViewpointAdaptationTest other) {
     // content doesn't matter
   }
 
@@ -35,8 +36,8 @@ public class DependentTypesViewpointAdaptationTest {
     compute3(this, t1);
   }
 
-  public static void compute3(DependentTypesViewpointAdaptationTest t1,
-      DependentTypesViewpointAdaptationTest t2) {
+  public static void compute3(
+      DependentTypesViewpointAdaptationTest t1, DependentTypesViewpointAdaptationTest t2) {
     // content doesn't matter
   }
 
@@ -44,26 +45,27 @@ public class DependentTypesViewpointAdaptationTest {
     compute4(t1, t1);
   }
 
-  public static void compute4(DependentTypesViewpointAdaptationTest t1,
-      DependentTypesViewpointAdaptationTest t2) {
+  public static void compute4(
+      DependentTypesViewpointAdaptationTest t1, DependentTypesViewpointAdaptationTest t2) {
     // content doesn't matter
   }
 
-  public static void testThisInference(DependentTypesViewpointAdaptationTest t1,
+  public static void testThisInference(
+      DependentTypesViewpointAdaptationTest t1,
       @SameLen("#1") DependentTypesViewpointAdaptationTest t2) {
     t1.compute5(t2);
     t1.compute6(t2);
   }
 
-  public void compute5(DependentTypesViewpointAdaptationTest this,
-      DependentTypesViewpointAdaptationTest other) {
-    // :: warning: assignment
+  public void compute5(
+      DependentTypesViewpointAdaptationTest this, DependentTypesViewpointAdaptationTest other) {
+    // :: warning: (assignment)
     @SameLen("this") DependentTypesViewpointAdaptationTest myOther = other;
   }
 
   // Same as compute5, but without an explicit this parameter.
   public void compute6(DependentTypesViewpointAdaptationTest other) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @SameLen("this") DependentTypesViewpointAdaptationTest myOther = other;
   }
 }

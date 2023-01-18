@@ -4,7 +4,7 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 abstract class MethodDefinedInSupertype {
 
   void test() {
-    // :: warning: argument
+    // :: warning: (argument)
     expectsAinferSibling1(shouldReturnAinferSibling1());
   }
 
@@ -13,7 +13,7 @@ abstract class MethodDefinedInSupertype {
   public abstract int shouldReturnAinferSibling1();
 
   void testMultipleOverrides() {
-    // :: warning: argument
+    // :: warning: (argument)
     expectsParent(shouldReturnParent());
   }
 

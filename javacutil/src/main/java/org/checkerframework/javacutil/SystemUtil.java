@@ -50,7 +50,8 @@ public class SystemUtil {
    * @return the major version of the Java runtime
    * @deprecated use field {@link #jreVersion} instead
    */
-  @Deprecated // 2022-07-14 not for removal, just to make private (and then it won't be deprecated)
+  @Deprecated // 2022-07-14 not for removal, just to make private (and then it won't be
+  // deprecated)
   public static int getJreVersion() {
     String version = System.getProperty("java.version");
 
@@ -152,8 +153,8 @@ public class SystemUtil {
    * @param source a list of elements to add
    * @deprecated use CollectionsPlume.adjoinAll
    */
-  @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible with
-  // null and `source` might contain null.
+  @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible
+  // with null and `source` might contain null.
   )
   @Deprecated // 2023-01-08
   public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {

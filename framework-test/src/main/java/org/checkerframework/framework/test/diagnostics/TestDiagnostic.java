@@ -112,4 +112,15 @@ public class TestDiagnostic {
     }
     return filename + ":" + lineNumber + ": " + kind.parseString + ": (" + message + ")";
   }
+
+  /**
+   * Returns the internal representation of this, formatted.
+   *
+   * @return the internal representation of this, formatted
+   */
+  public String repr() {
+    return String.format(
+        "[TestDiagnostic: filename=%s, lineNumber=%d, kind=%s, message=%s]",
+        filename, lineNumber, kind, message);
+  }
 }

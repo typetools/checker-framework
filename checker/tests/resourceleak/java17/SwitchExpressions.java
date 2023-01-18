@@ -33,14 +33,14 @@ class SwitchExpressions {
         };
     switch1.a();
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo switch2 =
         switch (i) {
           case 3 -> new Foo();
           default -> makeFoo();
         };
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x = new Foo();
     Foo switch3 =
         switch (i) {
@@ -63,7 +63,7 @@ class SwitchExpressions {
           default -> makeFoo();
         });
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x2 = new Foo();
     takeOwnership(
         switch (i) {
@@ -74,7 +74,7 @@ class SwitchExpressions {
     int j = 10;
     Foo switchInLoop = null;
     while (j > 0) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       switchInLoop =
           switch (i) {
             case 3 -> null;
@@ -96,7 +96,7 @@ class SwitchExpressions {
    * variable
    */
   void testSwitchCastUnassigned(int i) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if ((switch (i) {
           case 3 -> new Foo();
           default -> null;
@@ -105,7 +105,7 @@ class SwitchExpressions {
       i = -i;
     }
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if (switch (i) {
           case 3 -> makeFoo();
           default -> null;
@@ -124,7 +124,7 @@ class SwitchExpressions {
     }
     x.a();
 
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if (((Foo) new Foo()) != null) {
       i = -i;
     }
@@ -155,7 +155,7 @@ class SwitchExpressions {
 
   @Owning
   Foo testSwitchReturnBad(int i) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo x = new Foo();
     return switch (i) {
       case 3 -> x;
@@ -170,14 +170,14 @@ class SwitchExpressions {
   static class Sub2 extends Object {}
 
   static void testSwitchSubtyping(int i) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Object toStringAndClone =
         switch (i) {
           case 3 -> new Sub1();
           default -> new Sub2();
         };
-    // at this point, for soundness, we should be responsible for calling both toString and clone on
-    // obj...
+    // at this point, for soundness, we should be responsible for calling both toString and
+    // clone on obj...
     toStringAndClone.toString();
   }
 }

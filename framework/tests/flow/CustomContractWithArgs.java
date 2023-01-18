@@ -37,8 +37,7 @@ public class CustomContractWithArgs {
   class Base {
     Object o;
 
-    @ValueTypeAnno(10)
-    Object o10;
+    @ValueTypeAnno(10) Object o10;
 
     @EnsuresValue(value = "o", targetValue = 10)
     void ensures() {

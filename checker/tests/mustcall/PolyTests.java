@@ -10,7 +10,7 @@ class PolyTests {
 
   static void test1(@Owning @MustCall("close") Object o) {
     @MustCall("close") Object o1 = id(o);
-    // :: error: assignment
+    // :: error: (assignment)
     @MustCall({}) Object o2 = id(o);
   }
 
@@ -25,7 +25,7 @@ class PolyTests {
 
   static void test3(@Owning @MustCall({"close"}) Object o) {
     @MustCall("close") Object o1 = new PolyTests(o);
-    // :: error: assignment
+    // :: error: (assignment)
     @MustCall({}) Object o2 = new PolyTests(o);
   }
 
@@ -36,7 +36,7 @@ class PolyTests {
 
   static void testArbitary(@Owning PolyTests p) {
     @MustCall("close") Object o1 = p;
-    // :: error: assignment
+    // :: error: (assignment)
     @MustCall({}) Object o2 = p;
   }
 }

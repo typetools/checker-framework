@@ -30,7 +30,7 @@ abstract class BuilderGetter {
   static void wrong() {
     Builder b = builder();
     b.name();
-    // :: error: finalizer.invocation
+    // :: error: (finalizer.invocation)
     b.build();
   }
 }

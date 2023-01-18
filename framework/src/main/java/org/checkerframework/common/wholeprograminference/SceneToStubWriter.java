@@ -436,7 +436,8 @@ public final class SceneToStubWriter {
           basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
     }
 
-    // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
+    // fields don't need their generic types, and sometimes they are wrong. Just don't print
+    // them.
     while (basetypeToPrint.contains("<")) {
       int openCount = 1;
       int pos = basetypeToPrint.indexOf('<');
@@ -732,7 +733,8 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
-    // An alternate approach would be to delete the file after it is closed, if the file is empty.
+    // An alternate approach would be to delete the file after it is closed, if the file is
+    // empty.
     // It's not worth rewriting this code, since .stub files are obsolescent.
 
     FileWriter fileWriter = null;
