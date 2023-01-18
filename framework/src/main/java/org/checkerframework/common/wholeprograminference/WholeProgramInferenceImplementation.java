@@ -711,8 +711,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     //  * when finished, propagate the final result to overridden methods
     //
     for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair : overriddenMethods.entrySet()) {
-
-      AnnotatedDeclaredType superclassDecl = pair.getKey();
       ExecutableElement overriddenMethodElement = pair.getValue();
 
       // Don't infer types for code that isn't presented as source.
@@ -721,12 +719,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
 
       AnnotatedExecutableType overriddenMethod =
-          AnnotatedTypes.asMemberOf(
-              atypeFactory.getProcessingEnv().getTypeUtils(),
-              atypeFactory,
-              superclassDecl,
-              overriddenMethodElement);
-
+          atypeFactory.getAnnotatedType(overriddenMethodElement);
       String superClassFile = storage.getFileForElement(overriddenMethodElement);
       AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
       T storedOverriddenMethodReturnTypeAnnotations =
