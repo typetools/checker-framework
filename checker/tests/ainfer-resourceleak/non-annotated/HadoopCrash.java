@@ -1,5 +1,5 @@
 class NullReceiverTest {
-  public static void testReceiver(NullReceiverTest nrt){
+  public static void testReceiver(NullReceiverTest nrt) {
     nrt.nullReceiver();
   }
 

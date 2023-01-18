@@ -250,7 +250,8 @@ public class QualifierDefaults {
     for (TypeUseLocation loc : STANDARD_CLIMB_DEFAULTS_TOP) {
       for (AnnotationMirror top : tops) {
         if (!conflictsWithExistingDefaults(checkedCodeDefaults, top, loc)) {
-          // Only add standard defaults in locations where a default has not been specified
+          // Only add standard defaults in locations where a default has not been
+          // specified
           addCheckedCodeDefault(top, loc);
         }
       }
@@ -259,7 +260,8 @@ public class QualifierDefaults {
     for (TypeUseLocation loc : STANDARD_CLIMB_DEFAULTS_BOTTOM) {
       for (AnnotationMirror bottom : bottoms) {
         if (!conflictsWithExistingDefaults(checkedCodeDefaults, bottom, loc)) {
-          // Only add standard defaults in locations where a default has not been specified
+          // Only add standard defaults in locations where a default has not been
+          // specified
           addCheckedCodeDefault(bottom, loc);
         }
       }
@@ -449,9 +451,10 @@ public class QualifierDefaults {
             }
           }
           if (prev != null && prev.getKind() == Tree.Kind.MODIFIERS) {
-            // Annotations are modifiers. We do not want to apply the local variable default to
-            // annotations. Without this, test fenum/TestSwitch failed, because the default for an
-            // argument became incompatible with the declared type.
+            // Annotations are modifiers. We do not want to apply the local variable
+            // default to annotations. Without this, test fenum/TestSwitch failed,
+            // because the default for an argument became incompatible with the declared
+            // type.
             break;
           }
           return TreeUtils.elementFromDeclaration((VariableTree) t);
@@ -942,8 +945,8 @@ public class QualifierDefaults {
                 && scope.getKind() == ElementKind.CONSTRUCTOR
                 && t.getKind() == TypeKind.EXECUTABLE
                 && isTopLevelType) {
-              // This is the return type of a constructor declaration (not a constructor
-              // invocation).
+              // This is the return type of a constructor declaration (not a
+              // constructor invocation).
               final AnnotatedTypeMirror returnType = ((AnnotatedExecutableType) t).getReturnType();
               if (shouldBeAnnotated(returnType, false)) {
                 addAnnotation(returnType, qual);

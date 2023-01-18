@@ -159,8 +159,8 @@ public class AnnotationFileElementTypes {
       // This preps but does not parse the JDK files (except package-info.java files).
       // The JDK source code files will be parsed later, on demand.
       prepJdkStubs();
-      // prepping the JDK parses all package-info.java files, which sets the `parsing` field to
-      // false, so re-set it to true.
+      // prepping the JDK parses all package-info.java files, which sets the `parsing` field
+      // to false, so re-set it to true.
       parsing = true;
     }
 
@@ -270,9 +270,10 @@ public class AnnotationFileElementTypes {
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
           try (InputStream annotationFileStream = resource.getInputStream()) {
-            // We use parseStubFile here even for ajava files because at this stage ajava
-            // files are parsed as stub files. The extra annotation data in an ajava file is
-            // parsed when type-checking the ajava file's corresponding Java file.
+            // We use parseStubFile here even for ajava files because at this stage
+            // ajava files are parsed as stub files. The extra annotation data in an
+            // ajava file is parsed when type-checking the ajava file's corresponding
+            // Java file.
             AnnotationFileParser.parseStubFile(
                 resource.getDescription(),
                 annotationFileStream,
@@ -302,8 +303,9 @@ public class AnnotationFileElementTypes {
 
             // When using a compound checker, the target file may be found by the
             // current checker's parent checkers. Also check this to avoid a false
-            // warning. Currently, only the original checker will try to parse the target
-            // file, the parent checkers are only used to reduce false warnings.
+            // warning. Currently, only the original checker will try to parse the
+            // target file, the parent checkers are only used to reduce false
+            // warnings.
             SourceChecker currentChecker = checker;
             boolean findByParentCheckers = false;
             while (currentChecker != null) {
@@ -322,7 +324,8 @@ public class AnnotationFileElementTypes {
                 currentChecker = currentChecker.getParentChecker();
               }
             }
-            // If there exists one parent checker that can find this file, don't report a warning.
+            // If there exists one parent checker that can find this file, don't report
+            // a warning.
             if (!findByParentCheckers) {
               File parentPath = new File(path).getParentFile();
               String parentPathDescription =
@@ -468,11 +471,11 @@ public class AnnotationFileElementTypes {
         AnnotationFileParser.RecordStub recordComponentType =
             annotationFileAnnos.records.get(recordName);
         if (recordComponentType != null) {
-          // If the record component has an annotation in the stub, the component annotation
-          // replaces any from the same hierarchy on the accessor method, unless there is an
-          // accessor in the stubs file (which may or may not have an annotation in the same
-          // hierarchy;
-          // the user may want to specify the annotation or deliberately not annotate the accessor).
+          // If the record component has an annotation in the stub, the component
+          // annotation replaces any from the same hierarchy on the accessor method,
+          // unless there is an accessor in the stubs file (which may or may not have an
+          // annotation in the same hierarchy; the user may want to specify the annotation
+          // or deliberately not annotate the accessor).
           // We thus only replace the method annotation with the component annotation
           // if there is no accessor in the stubs file:
           RecordComponentStub recordComponentStub =

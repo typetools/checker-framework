@@ -5,7 +5,7 @@ import java.net.*;
 
 class UnconnectedSocketAlias {
   void test(SocketAddress sa) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = new Socket();
     Socket t = s;
     t.close();

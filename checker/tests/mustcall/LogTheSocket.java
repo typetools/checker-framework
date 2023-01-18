@@ -30,7 +30,7 @@ class LogTheSocket {
 
   void testAssign(@Owning ServerSocket s1) {
     s = s1;
-    // :: error: assignment
+    // :: error: (assignment)
     s2 = s1;
   }
 

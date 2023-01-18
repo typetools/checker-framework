@@ -10,12 +10,12 @@ class MustCallAliasPassthroughLocal extends FilterInputStream {
   MustCallAliasPassthroughLocal(File f) throws Exception {
     // This is safe - this MCA constructor of FilterInputStream means that the result of this
     // constructor - i.e. the caller - is taking ownership of this newly-created output stream.
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     super(new FileInputStream(f));
   }
 
   static void test(File f) throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     new MustCallAliasPassthroughLocal(f);
   }
 

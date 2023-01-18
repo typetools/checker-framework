@@ -30,20 +30,20 @@ class NonFinalFieldOnlyOverwrittenIfNull {
   @CreatesMustCallFor
   void set_error(String fn, boolean b) throws FileNotFoundException {
     if (b) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       is = new FileInputStream(fn);
     }
   }
 
   // These three methods are copies of the three above, without the appropriate annotation.
-  // :: error: missing.creates.mustcall.for
+  // :: error: (missing.creates.mustcall.for)
   void set2(String fn) throws FileNotFoundException {
     if (is == null) {
       is = new FileInputStream(fn);
     }
   }
 
-  // :: error: missing.creates.mustcall.for
+  // :: error: (missing.creates.mustcall.for)
   void set_after_close2(String fn, boolean b) throws IOException {
     if (b) {
       is.close();
@@ -51,10 +51,10 @@ class NonFinalFieldOnlyOverwrittenIfNull {
     }
   }
 
-  // :: error: missing.creates.mustcall.for
+  // :: error: (missing.creates.mustcall.for)
   void set_error2(String fn, boolean b) throws FileNotFoundException {
     if (b) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       is = new FileInputStream(fn);
     }
   }
@@ -80,7 +80,7 @@ class NonFinalFieldOnlyOverwrittenIfNull {
   }
 
   public static void test_leak() throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     NonFinalFieldOnlyOverwrittenIfNull n = new NonFinalFieldOnlyOverwrittenIfNull();
     n.close();
     n.set_after_close("bar.txt", true);

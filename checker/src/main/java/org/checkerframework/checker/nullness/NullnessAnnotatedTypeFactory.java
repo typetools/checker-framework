@@ -625,9 +625,9 @@ public class NullnessAnnotatedTypeFactory
         List<? extends ExpressionTree> args = tree.getArguments();
         ExpressionTree lengthArg = args.get(1);
         if (TreeUtils.isArrayLengthAccess(lengthArg)) {
-          // TODO: This syntactic test may not be not correct if the array expression has a side
-          // effect that affects the array length.  This code could require that the expression has
-          // no method calls, assignments, etc.
+          // TODO: This syntactic test may not be not correct if the array expression has
+          // a side effect that affects the array length.  This code could require that
+          // the expression has no method calls, assignments, etc.
           ExpressionTree arrayArg = args.get(0);
           if (TreeUtils.sameTree(arrayArg, ((MemberSelectTree) lengthArg).getExpression())) {
             AnnotatedArrayType arrayArgType = (AnnotatedArrayType) getAnnotatedType(arrayArg);
@@ -891,7 +891,8 @@ public class NullnessAnnotatedTypeFactory
       AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
       @Nullable List<AnnotationMirror> preconds) {
-    // TODO: This does not handle the possibility that the user set a different default annotation.
+    // TODO: This does not handle the possibility that the user set a different default
+    // annotation.
     if (!(declaredType.hasAnnotation(NULLABLE)
         || declaredType.hasAnnotation(POLYNULL)
         || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
@@ -901,7 +902,8 @@ public class NullnessAnnotatedTypeFactory
     if (preOrPost == BeforeOrAfter.AFTER
         && declaredType.hasAnnotation(MONOTONIC_NONNULL)
         && preconds.contains(requiresNonNullAnno(expression))) {
-      // The postcondition is implied by the precondition and the field being @MonotonicNonNull.
+      // The postcondition is implied by the precondition and the field being
+      // @MonotonicNonNull.
       return null;
     }
 

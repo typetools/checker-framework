@@ -36,7 +36,7 @@ public class GenerateDataKeyRequestExamples {
     GenerateDataKeyRequest request = new GenerateDataKeyRequest();
     request.setKeySpec(DataKeySpec.AES_256);
     request.setNumberOfBytes(32);
-    // :: error: argument
+    // :: error: (argument)
     client.generateDataKey(request);
   }
 
@@ -44,7 +44,7 @@ public class GenerateDataKeyRequestExamples {
     GenerateDataKeyRequest request = new GenerateDataKeyRequest();
     request.withKeySpec(DataKeySpec.AES_256);
     request.setNumberOfBytes(32);
-    // :: error: argument
+    // :: error: (argument)
     client.generateDataKey(request);
   }
 
@@ -52,7 +52,7 @@ public class GenerateDataKeyRequestExamples {
     GenerateDataKeyRequest request = new GenerateDataKeyRequest();
     request.setKeySpec(DataKeySpec.AES_256);
     request.withNumberOfBytes(32);
-    // :: error: argument
+    // :: error: (argument)
     client.generateDataKey(request);
   }
 
@@ -60,14 +60,14 @@ public class GenerateDataKeyRequestExamples {
     GenerateDataKeyRequest request = new GenerateDataKeyRequest();
     request.withKeySpec(DataKeySpec.AES_256);
     request.withNumberOfBytes(32);
-    // :: error: argument
+    // :: error: (argument)
     client.generateDataKey(request);
   }
 
   // This example is "neither"
   void incorrect5(AWSKMS client) {
     GenerateDataKeyRequest request = new GenerateDataKeyRequest();
-    // :: error: argument
+    // :: error: (argument)
     client.generateDataKey(request);
   }
 
@@ -105,7 +105,7 @@ public class GenerateDataKeyRequestExamples {
 
   void callee2(
       AWSKMS client,
-          @CalledMethodsPredicate("(!withNumberOfBytes) && (!setNumberOfBytes)") GenerateDataKeyRequest request) {
+      @CalledMethodsPredicate("(!withNumberOfBytes) && (!setNumberOfBytes)") GenerateDataKeyRequest request) {
     request.withKeySpec(DataKeySpec.AES_256);
     client.generateDataKey(request);
   }

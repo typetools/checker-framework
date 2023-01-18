@@ -64,8 +64,8 @@ public class TypecheckExecutor {
 
       // Even though the method compiler.getTask takes a list of processors, it fails if
       // processors are passed this way with the message:
-      //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
-      //   accepted if annotation processing is explicitly requested
+      //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are
+      //   only accepted if annotation processing is explicitly requested
       // Therefore, we now add them to the beginning of the options list.
       final List<String> options = new ArrayList<>();
       options.add("-processor");

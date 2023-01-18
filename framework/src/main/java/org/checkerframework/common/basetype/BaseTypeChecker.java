@@ -102,8 +102,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
       // subchecker A would complain about a lint option for subchecker B.
       checker.setSupportedLintOptions(this.getSupportedLintOptions());
 
-      // initChecker validates the passed options, so call it after setting supported options and
-      // lints.
+      // initChecker validates the passed options, so call it after setting supported options
+      // and lints.
       checker.initChecker();
     }
 
@@ -530,8 +530,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     // All other messages are printed immediately.  This includes errors issued because the
     // checker threw an exception.
 
-    // In order to run the next checker on this compilation unit even if the previous issued errors,
-    // the next checker's errsOnLastExit needs to include all errors issued by previous checkers.
+    // In order to run the next checker on this compilation unit even if the previous issued
+    // errors, the next checker's errsOnLastExit needs to include all errors issued by previous
+    // checkers.
 
     Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
     Log log = Log.instance(context);

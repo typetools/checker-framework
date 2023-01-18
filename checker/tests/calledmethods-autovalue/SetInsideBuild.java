@@ -28,7 +28,7 @@ abstract class SetInsideBuild {
 
   public static void buildSomethingWrong() {
     Builder b = builder();
-    // :: error: finalizer.invocation
+    // :: error: (finalizer.invocation)
     b.build();
   }
 

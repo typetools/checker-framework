@@ -56,9 +56,9 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
       if (f.getAbsolutePath().endsWith(endswith)) {
         if (removeIndex != -1) {
           Assert.fail(
-              "When attempting to exclude a file, found more than one "
-                  + "match in the test suite. Check the test code and use a more-specific "
-                  + "removal key. Attempting to exclude: "
+              "When attempting to exclude a file, found more than one match in the"
+                  + " test suite. Check the test code and use a more-specific removal"
+                  + " key. Attempting to exclude: "
                   + endswith);
         }
         removeIndex = i;

@@ -318,8 +318,8 @@ public abstract class CFAbstractTransfer<
         // Try to find an enclosing initializer block.
         // Would love to know if there was a better way.
         // Find any enclosing element of the lambda (using trees).
-        // Then go up the elements to find an initializer element (which can't be found with the
-        // tree).
+        // Then go up the elements to find an initializer element (which can't be found with
+        // the tree).
         TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
         Element anEnclosingElement = null;
         while (loopTree.getLeaf() != enclosingTree) {
@@ -394,8 +394,8 @@ public abstract class CFAbstractTransfer<
 
       // Maybe insert the declared type:
       if (!isConstructor) {
-        // If it's not a constructor, use the declared type if the receiver of the method is fully
-        // initialized.
+        // If it's not a constructor, use the declared type if the receiver of the method is
+        // fully initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
           store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
@@ -429,14 +429,15 @@ public abstract class CFAbstractTransfer<
       // final local values from b() would be visible in the store for c(),
       // even though they should only be visible in b() and in classes
       // defined inside the method body of b().
-      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call itself
-      // recursively to analyze inner classes, but instead pops classes off of a queue, and the
-      // information about known final local values is stored by GenericAnnotatedTypeFactory.analyze
-      // in GenericAnnotatedTypeFactory.flowResult, which is visible to all classes in the queue
-      // regardless of their level of recursion.
+      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call
+      // itself recursively to analyze inner classes, but instead pops classes off of a queue,
+      // and the information about known final local values is stored by
+      // GenericAnnotatedTypeFactory.analyze in GenericAnnotatedTypeFactory.flowResult, which
+      // is visible to all classes in the queue regardless of their level of recursion.
 
-      // We work around this here by ensuring that we only add a final local value to a method's
-      // store if that method is enclosed by the method where the local variables were declared.
+      // We work around this here by ensuring that we only add a final local value to a
+      // method's store if that method is enclosed by the method where the local variables
+      // were declared.
 
       // Find the enclosing method of the element
       Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
@@ -498,8 +499,8 @@ public abstract class CFAbstractTransfer<
               analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
       JavaExpression exprJe;
       try {
-        // TODO: currently, these expressions are parsed at the declaration (i.e. here) and for
-        // every use. this could be optimized to store the result the first time.
+        // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
+        // for every use. this could be optimized to store the result the first time.
         // (same for other annotations)
         exprJe = StringToJavaExpression.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
       } catch (JavaExpressionParseException e) {
@@ -599,7 +600,8 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     V storeValue = store.getValue(n);
     // look up value in factory, and take the more specific one
-    // TODO: handle cases, where this is not allowed (e.g. constructors in non-null type systems)
+    // TODO: handle cases, where this is not allowed (e.g. constructors in non-null type
+    // systems)
     V factoryValue = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(factoryValue, storeValue);
     return new RegularTransferResult<>(finishValue(value, store), store);
@@ -909,8 +911,8 @@ public abstract class CFAbstractTransfer<
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
       ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
       if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just don't infer
-        // annotations for those new class trees.
+        // TODO: WPI could be changed to handle the synthetic argument, but for now just
+        // don't infer annotations for those new class trees.
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -1138,9 +1140,10 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
-    // represents the selector expression to the type of the case constant if it is more precise.
-    // If there are multiple case constants then a new store is created for each case constant and
-    // then they are lubbed. This method returns the lubbed result.
+    // represents the selector expression to the type of the case constant if it is more
+    // precise.
+    // If there are multiple case constants then a new store is created for each case constant
+    // and then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(

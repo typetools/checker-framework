@@ -48,7 +48,8 @@ public abstract class BlockImpl implements Block {
 
   @Override
   public List<Block> getPredecessors() {
-    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration order.
+    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
+    // order.
     return new ArrayList<>(predecessors);
   }
 

@@ -12,11 +12,11 @@ public class Issue3622 {
   public class ImmutableIntList1 {
 
     @Override
-    public boolean equals(@Nullable Object obj1) {
-      if (obj1 instanceof ImmutableIntList1) {
+    public boolean equals(@Nullable Object obj) {
+      if (obj instanceof ImmutableIntList1) {
         return true;
       } else {
-        return obj1 instanceof List;
+        return obj instanceof List;
       }
     }
   }
@@ -24,16 +24,16 @@ public class Issue3622 {
   public class ImmutableIntList2 {
 
     @Override
-    public boolean equals(@Nullable Object obj2) {
-      return obj2 instanceof ImmutableIntList2;
+    public boolean equals(@Nullable Object obj) {
+      return obj instanceof ImmutableIntList2;
     }
   }
 
   public class ImmutableIntList3 {
 
     @Override
-    public boolean equals(@Nullable Object obj3) {
-      if (obj3 instanceof ImmutableIntList3) {
+    public boolean equals(@Nullable Object obj) {
+      if (obj instanceof ImmutableIntList3) {
         return true;
       } else {
         return false;
@@ -73,7 +73,8 @@ public class Issue3622 {
 
     @Override
     @SuppressWarnings(
-        "contracts.conditional.postcondition" // TODO: give `if` the BOTH_TO_THEN treatment like ?:
+        "contracts.conditional.postcondition" // TODO: give `if` the BOTH_TO_THEN treatment
+    // like ?:
     )
     public boolean equals(@Nullable Object obj4) {
       boolean b;
@@ -90,8 +91,8 @@ public class Issue3622 {
 
     @Override
     @SuppressWarnings(
-        "contracts.conditional.postcondition" // TODO: Need special treatment for true and false
-    // boolean  literals (cut off dead parts of graph).
+        "contracts.conditional.postcondition" // TODO: Need special treatment for true and
+    // false boolean literals (cut off dead parts of graph).
     )
     public boolean equals(@Nullable Object obj5) {
       return true ? obj5 instanceof ImmutableIntList5 : obj5 instanceof ImmutableIntList5;
