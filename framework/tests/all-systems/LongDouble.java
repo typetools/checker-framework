@@ -17,4 +17,11 @@ public abstract class LongDouble<T> {
       return Double.MAX_VALUE;
     }
   }
+
+  public class FloatLongDouble extends LongDouble<Float> {
+    @java.lang.Override
+    public Float getMaxValue() {
+      return Float.MAX_VALUE;
+    }
+  }
 }
