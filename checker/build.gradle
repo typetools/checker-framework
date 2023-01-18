@@ -362,7 +362,6 @@ task delombok {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
-      // As of 2022-11-30, delombok crashes under JDK 19.
       if(!skipDelombok) {
         def collection = files(configurations.testCompileClasspath)
         ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',

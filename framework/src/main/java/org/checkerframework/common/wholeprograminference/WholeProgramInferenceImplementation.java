@@ -256,16 +256,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       AnnotatedTypeMirror receiverArgATM = atypeFactory.getReceiverType(invocationTree);
       AnnotatedExecutableType methodDeclType = atypeFactory.getAnnotatedType(methodElt);
       AnnotatedTypeMirror receiverParamATM = methodDeclType.getReceiverType();
-      atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
-      T receiverAnnotations =
-          storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
-      if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
-        ((GenericAnnotatedTypeFactory) this.atypeFactory)
-            .getDependentTypesHelper()
-            .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+      // update the set of annotations for the receiver type if it is not null.
+      if (receiverParamATM != null) {
+        atypeFactory.wpiAdjustForUpdateNonField(receiverArgATM);
+        T receiverAnnotations =
+            storage.getReceiverAnnotations(methodElt, receiverParamATM, atypeFactory);
+        if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
+          ((GenericAnnotatedTypeFactory) this.atypeFactory)
+              .getDependentTypesHelper()
+              .delocalizeAtCallsite(receiverArgATM, invocationTree, arguments, receiver, methodElt);
+        }
+        updateAnnotationSet(
+            receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
       }
-      updateAnnotationSet(
-          receiverAnnotations, TypeUseLocation.RECEIVER, receiverArgATM, receiverParamATM, file);
     }
 
     for (int i = 0; i < arguments.size(); i++) {
@@ -708,8 +711,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     //  * when finished, propagate the final result to overridden methods
     //
     for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair : overriddenMethods.entrySet()) {
-
-      AnnotatedDeclaredType superclassDecl = pair.getKey();
       ExecutableElement overriddenMethodElement = pair.getValue();
 
       // Don't infer types for code that isn't presented as source.
@@ -718,12 +719,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
 
       AnnotatedExecutableType overriddenMethod =
-          AnnotatedTypes.asMemberOf(
-              atypeFactory.getProcessingEnv().getTypeUtils(),
-              atypeFactory,
-              superclassDecl,
-              overriddenMethodElement);
-
+          atypeFactory.getAnnotatedType(overriddenMethodElement);
       String superClassFile = storage.getFileForElement(overriddenMethodElement);
       AnnotatedTypeMirror overriddenMethodReturnType = overriddenMethod.getReturnType();
       T storedOverriddenMethodReturnTypeAnnotations =
