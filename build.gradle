@@ -11,6 +11,7 @@ plugins {
     // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
     id 'org.ajoberstar.grgit' version '4.1.1' apply false
 
+    id 'groovy' // needed for formatting Gradle files
     // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
     // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
     id 'com.diffplug.spotless' version '6.12.0'
@@ -90,7 +91,7 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
 }
 
 spotless {
-  // Resolve the spottless plugin dependencies from the buildscript repositories rather than the
+  // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
   // project repositories.  That way the spotless plugin does not use the locally built version of
   // checker-qual as a dependency. Without this, errors like the follow are issued when running
   // a spotless task without a locally-built version of checker-qual.jar:
@@ -111,6 +112,9 @@ spotlessPredeclare {
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
     googleJavaFormat()
+  }
+  groovyGradle {
+    greclipse()
   }
 }
 
@@ -180,9 +184,9 @@ allprojects {
   }
 
   spotless {
-
-    // If you add any formatters to this block that require dependencies here, then you must also
+    // If you add any formatters to this block that require dependencies, then you must also
     // add them to spotlessPredeclare block.
+
     format 'misc', {
       // define the files to apply `misc` to
       target '*.gradle', '*.md', '.gitignore'
@@ -192,6 +196,7 @@ allprojects {
       indentWithSpaces(2)
       endWithNewline()
     }
+
     java {
       def targets = [
           // add target folders here
@@ -237,6 +242,15 @@ allprojects {
                 .addTypeAnnotation("AinferSiblingWithFields")
                 .addTypeAnnotation("DoesNotMatchRegex")
     }
+
+    groovyGradle {
+      target '**/*.gradle'
+      greclipse()  // which formatter Spotless should use to format .gradle files.
+      indentWithSpaces(4)
+      trimTrailingWhitespace()
+      endWithNewline()
+    }
+
   }
   // The Spotless plugin uses the latest version of google-java-format
   // that is compatible with the currently running JVM. Under Java 8,
