@@ -60,4 +60,5 @@ public class Bug {
       System.exit(1);
     }
   }
+  public static final  @Nullable String VERSION = Bug.class.getPackage() != null ? Bug.class.getPackage().getImplementationVersion() : null;
 }

@@ -850,7 +850,8 @@ public class NullnessAnnotatedTypeFactory
   @Override
   public void wpiAdjustForUpdateField(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
-    if (!rhsATM.hasAnnotation(Nullable.class)) {
+    // Synthetic variable names contain "#". Ignore them.
+    if (!rhsATM.hasAnnotation(Nullable.class) || fieldName.contains("#")) {
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
