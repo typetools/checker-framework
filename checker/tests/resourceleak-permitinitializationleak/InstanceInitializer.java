@@ -6,7 +6,7 @@ import java.net.Socket;
 import org.checkerframework.checker.mustcall.qual.*;
 
 class InstanceInitializer {
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   private @Owning Socket s;
 
   private final int DEFAULT_PORT = 5;
@@ -22,8 +22,8 @@ class InstanceInitializer {
 
   {
     try {
-      // This assignment is not OK, because it's a reassignment without satisfying the mustcall
-      // obligations of the previous value of `s`.
+      // This assignment is not OK, because it's a reassignment without satisfying the
+      // mustcall obligations of the previous value of `s`.
       // With -ApermitInitializationLeak, the Resource Leak Checker unsoundly permits it.
       s = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
     } catch (Exception e) {
@@ -32,7 +32,7 @@ class InstanceInitializer {
 
   {
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Socket s1 = new Socket(DEFAULT_ADDR, DEFAULT_PORT);
     } catch (Exception e) {
     }

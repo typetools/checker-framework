@@ -25,7 +25,7 @@ class InputOutputStreams {
   // and third case our checker has to verify that close is called on the underlying resource.
   // So, because sock.getInputStream() can throw IOException, "is" can be null, then sock will
   // remain open. So, it's a true positive warning.
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_is(@Owning Socket sock) throws IOException {
     InputStream is = null;
     OutputStream os = null;
@@ -39,14 +39,14 @@ class InputOutputStreams {
     }
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_os(@Owning Socket sock) throws IOException {
     InputStream is = sock.getInputStream();
     OutputStream os = sock.getOutputStream();
     os.close();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_os2(@Owning Socket sock) throws IOException {
     OutputStream os = null;
     InputStream is = null;
@@ -62,7 +62,7 @@ class InputOutputStreams {
     }
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_os3(@Owning Socket sock) throws IOException {
     OutputStream os = null;
     try {
@@ -82,7 +82,7 @@ class InputOutputStreams {
   // it does not know that os is definitely null, and it is only tracking sock as a name for
   // the resource. So, it analyzes a path through the "then" branch of the conditional,
   // where sock.close() is not invoked, and reports an error.
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_os4(@Owning Socket sock) throws IOException {
     OutputStream os = null;
     try {
@@ -100,7 +100,7 @@ class InputOutputStreams {
     }
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_buff(@Owning Socket sock) throws IOException {
     BufferedOutputStream buff = null;
     try {

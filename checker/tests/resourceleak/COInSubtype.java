@@ -12,7 +12,7 @@ class COInSubtype {
     // This is not supported, even though a sub-class may have must-call obligations.
     // This pattern is not used in realistic code, and supporting it hurts checker performance.
     @CreatesMustCallFor("this")
-    // :: error: creates.mustcall.for.invalid.target
+    // :: error: (creates.mustcall.for.invalid.target)
     void resetFoo() {}
   }
 
@@ -22,7 +22,7 @@ class COInSubtype {
   }
 
   static void test() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     @MustCall("a") Foo f = new Bar();
     f.resetFoo();
   }

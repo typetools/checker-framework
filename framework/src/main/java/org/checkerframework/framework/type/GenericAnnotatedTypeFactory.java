@@ -947,7 +947,8 @@ public abstract class GenericAnnotatedTypeFactory<
       if (store != null) {
         Value value = store.getValue(expr);
         if (value != null) {
-          // Is it possible that this lacks some annotations that appear in the type factory?
+          // Is it possible that this lacks some annotations that appear in the type
+          // factory?
           return value.getAnnotations();
         }
       }
@@ -1323,14 +1324,15 @@ public abstract class GenericAnnotatedTypeFactory<
       Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
       // Queue up classes (for top-level `while` loop) and methods (for within this `try`
-      // construct); analyze top-level blocks and variable initializers as they are encountered.
+      // construct); analyze top-level blocks and variable initializers as they are
+      // encountered.
       try {
         List<CFGMethod> methods = new ArrayList<>();
         List<? extends Tree> members = ct.getMembers();
         if (!Ordering.from(sortVariablesFirst).isOrdered(members)) {
           members = new ArrayList<>(members);
-          // Process variables before methods, so all field initializers are observed before the
-          // constructor is analyzed and reports uninitialized variables.
+          // Process variables before methods, so all field initializers are observed
+          // before the constructor is analyzed and reports uninitialized variables.
           members.sort(sortVariablesFirst);
         }
         for (Tree m : members) {
@@ -1867,9 +1869,9 @@ public abstract class GenericAnnotatedTypeFactory<
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
     }
     if (!analysis.isRunning() && flowResult == null) {
-      // When parsing stub or ajava files, the analysis is not running (it has not yet started),
-      // and flowResult is null (no analysis has occurred). Instead of attempting to find a
-      // non-existent inferred type, return null.
+      // When parsing stub or ajava files, the analysis is not running (it has not yet
+      // started), and flowResult is null (no analysis has occurred). Instead of attempting to
+      // find a non-existent inferred type, return null.
       return null;
     }
     Value as = null;
@@ -2093,8 +2095,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @SuppressWarnings(
-        "unchecked" // This might not be safe, but the caller of the method should use the correct
-    // type.
+        "unchecked" // This might not be safe, but the caller of the method should use the
+    // correct type.
     )
     T subFactory = (T) subchecker.getTypeFactory();
     if (subFactory != null) {
@@ -2234,7 +2236,8 @@ public abstract class GenericAnnotatedTypeFactory<
       @Nullable Element element, AnnotatedTypeMirror type) {
     if (element != null && ElementUtils.isLocalVariable(element)) {
       if (type.getKind() == TypeKind.DECLARED) {
-        // If this is a type for a local variable, don't apply the default to the primary location.
+        // If this is a type for a local variable, don't apply the default to the primary
+        // location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         if (declaredType.getEnclosingType() != null) {
           defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());

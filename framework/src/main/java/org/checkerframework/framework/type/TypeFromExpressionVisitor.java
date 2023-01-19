@@ -261,7 +261,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // outer type.
       return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(node)), node);
     } else {
-      // node must be a field access, so get the type of the expression, and then call asMemberOf.
+      // node must be a field access, so get the type of the expression, and then call
+      // asMemberOf.
       AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
       t = f.applyCaptureConversion(t);
       return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
@@ -373,9 +374,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
     if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(node))) {
-      // Sometimes javac types an expression as the upper bound of a captured type variable instead
-      // of the captured type variable itself. This seems to be a bug in javac. Detect this case and
-      // match the annotated type to the Java type.
+      // Sometimes javac types an expression as the upper bound of a captured type variable
+      // instead of the captured type variable itself. This seems to be a bug in javac. Detect
+      // this case and match the annotated type to the Java type.
       returnT = ((AnnotatedTypeVariable) returnT).getUpperBound();
     }
     return f.applyCaptureConversion(returnT);

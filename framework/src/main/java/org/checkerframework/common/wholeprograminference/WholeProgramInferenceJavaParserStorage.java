@@ -560,20 +560,20 @@ public class WholeProgramInferenceJavaParserStorage
           public void processNewClass(NewClassTree javacTree, ObjectCreationExpr javaParserNode) {
             ClassTree body = javacTree.getClassBody();
             if (body != null) {
-              // elementFromTree returns null instead of crashing when no element exists for
-              // the class tree, which can happen for certain kinds of anonymous classes, such as
-              // Ordering$1 in PolyCollectorTypeVar.java in the all-systems test suite.
-              // addClass(ClassTree) in the then branch just below assumes that such an element
-              // exists.
+              // elementFromTree returns null instead of crashing when no element exists
+              // for the class tree, which can happen for certain kinds of anonymous
+              // classes, such as Ordering$1 in PolyCollectorTypeVar.java in the
+              // all-systems test suite.  addClass(ClassTree) in the then branch just
+              // below assumes that such an element exists.
               Element classElt = TreeUtils.elementFromDeclaration(body);
               if (classElt != null) {
                 addClass(body, null);
               } else {
-                // If such an element does not exist, compute the name of the class, instead.
-                // This method of computing the name is not 100% guaranteed to be reliable,
-                // but it should be sufficient for WPI's purposes here: if the wrong name
-                // is computed, the worst outcome is a false positive because WPI inferred an
-                // untrue annotation.
+                // If such an element does not exist, compute the name of the class,
+                // instead.  This method of computing the name is not 100% guaranteed to
+                // be reliable, but it should be sufficient for WPI's purposes here: if
+                // the wrong name is computed, the worst outcome is a false positive
+                // because WPI inferred an untrue annotation.
                 @BinaryName String className;
                 if ("".contentEquals(body.getSimpleName())) {
                   @SuppressWarnings("signature:assignment") // computed from string concatenation
@@ -662,9 +662,10 @@ public class WholeProgramInferenceJavaParserStorage
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
             ExecutableElement element = TreeUtils.elementFromDeclaration(javacTree);
             if (element == null) {
-              // element can be null if there is no element corresponding to the method,
-              // which happens for certain kinds of anonymous classes, such as Ordering$1 in
-              // PolyCollectorTypeVar.java in the all-systems test suite.
+              // element can be null if there is no element corresponding to the
+              // method, which happens for certain kinds of anonymous classes,
+              // such as Ordering$1 in PolyCollectorTypeVar.java in the
+              // all-systems test suite.
               return;
             }
             String className = ElementUtils.getEnclosingClassName(element);
@@ -689,10 +690,11 @@ public class WholeProgramInferenceJavaParserStorage
             String fieldName = javacTree.getName().toString();
             enclosingClass.enumConstants.add(fieldName);
 
-            // Ensure that if an enum constant defines a class, that class gets registered properly.
-            // See e.g. https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.9.1 for
-            // the specification of an enum constant, which does permit it to define an anonymous
-            // class.
+            // Ensure that if an enum constant defines a class, that class gets
+            // registered properly.  See
+            // e.g. https://docs.oracle.com/javase/specs/jls/se17/html/jls-8.html#jls-8.9.1
+            // for the specification of an enum constant, which does permit it to
+            // define an anonymous class.
             NewClassTree constructor = (NewClassTree) javacTree.getInitializer();
             ClassTree constructorClassBody = constructor.getClassBody();
             if (constructorClassBody != null) {
@@ -858,10 +860,11 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
-      // JavaParser can output using lexical preserving printing, which writes the file such that
-      // its formatting is close to the original source file it was parsed from as
-      // possible. Currently, this feature is very buggy and crashes when adding annotations in
-      // certain locations. This implementation could be used instead if it's fixed in JavaParser.
+      // JavaParser can output using lexical preserving printing, which writes the file such
+      // that its formatting is close to the original source file it was parsed from as
+      // possible. Currently, this feature is very buggy and crashes when adding annotations
+      // in certain locations. This implementation could be used instead if it's fixed in
+      // JavaParser.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
@@ -1395,7 +1398,8 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (returnType != null) {
-        // If a return type exists, then the declaration must be a method, not a constructor.
+        // If a return type exists, then the declaration must be a method, not a
+        // constructor.
         WholeProgramInferenceJavaParserStorage.transferAnnotations(
             returnType, declaration.asMethodDeclaration().getType());
       }

@@ -145,9 +145,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(
                 processingEnv, baseUnitAnnoClass, prefix);
 
-        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the supported
-        // type qualifiers list currently this breaks for externally loaded annotations if the order
-        // was an alias before a base annotation.
+        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the
+        // supported type qualifiers list currently this breaks for externally loaded
+        // annotations if the order was an alias before a base annotation.
         // assert isSupportedQualifier(result);
 
         built = true;
@@ -466,7 +466,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (bestres != null) {
         type.replaceAnnotation(bestres);
       } else {
-        // If none of the units relations classes could resolve the units, then apply default rules
+        // If none of the units relations classes could resolve the units, then apply
+        // default rules.
 
         switch (kind) {
           case MINUS:
@@ -613,8 +614,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness, but the
-    // outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
+        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
+    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
     )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,

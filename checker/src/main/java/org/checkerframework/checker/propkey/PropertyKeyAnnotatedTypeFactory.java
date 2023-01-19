@@ -170,8 +170,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           if (in != null) {
             prop.load(in);
           } else {
-            // if the classloader didn't manage to load the file, try whether a FileInputStream
-            // works. For absolute paths this might help.
+            // If the classloader didn't manage to load the file, try whether a
+            // FileInputStream works. For absolute paths this might help.
             try (InputStream fis = new FileInputStream(name)) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
@@ -186,7 +186,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         result.addAll(prop.stringPropertyNames());
 
       } catch (Exception e) {
-        // TODO: is there a nicer way to report messages, that are not connected to an AST node?
+        // TODO: is there a nicer way to report messages, that are not connected to an AST
+        // node?
         // One cannot use `report`, because it needs a node.
         checker.message(Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
         e.printStackTrace();

@@ -18,18 +18,18 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class MavenExample {
 
-    public static @Nullable Object nullable = null;
-    public Map<Object, Object> map = new HashMap<>();
+  public static @Nullable Object nullable = null;
+  public Map<Object, Object> map = new HashMap<>();
 
-    public static void main(final String[] args) {
-        System.out.println("Hello World!");
+  public static void main(final String[] args) {
+    System.out.println("Hello World!");
 
-        StrBuilder stb = new StrBuilder();
+    StrBuilder stb = new StrBuilder();
 
-        @NonNull Object nn = nullable; // error on this line
-        System.out.println(nn);
-    }
+    @NonNull Object nn = nullable; // error on this line
+    System.out.println(nn);
+  }
 
-    // Test for -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED.
-    void mapTest(@KeyFor("map") Object k) {}
+  // Test for -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED.
+  void mapTest(@KeyFor("map") Object k) {}
 }

@@ -520,8 +520,9 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     UBQualifier glb = t.glb(s);
     if (left.isLessThanLengthQualifier() && right.isLessThanLengthQualifier()) {
-      // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
-      // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2").
+      // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and
+      // expression j is less than or equal to the length of f1, then the type of i + j is
+      // @LTLengthOf("f2").
       UBQualifier r = removeSequenceLengths((LessThanLengthOf) left, (LessThanLengthOf) right);
       glb = glb.glb(r);
       UBQualifier l = removeSequenceLengths((LessThanLengthOf) right, (LessThanLengthOf) left);
@@ -604,11 +605,12 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
           try {
             je = UpperBoundVisitor.parseJavaExpressionString(b, atypeFactory, currentPath);
           } catch (NullPointerException npe) {
-            // I have no idea why this seems to happen only on a few JDK classes.  It appears to
-            // only happen during the preprocessing step - the NPE is thrown while trying to find
-            // the enclosing class of a class tree, which is null. I can't find a reproducible test
-            // case that's smaller than the size of DualPivotQuicksort.  Since this refinement is
-            // optional, but useful elsewhere, catching this NPE here and returning is always safe.
+            // I have no idea why this seems to happen only on a few JDK classes.  It
+            // appears to only happen during the preprocessing step - the NPE is thrown
+            // while trying to find the enclosing class of a class tree, which is null.
+            // I can't find a reproducible test case that's smaller than the size of
+            // DualPivotQuicksort.  Since this refinement is optional, but useful
+            // elsewhere, catching this NPE here and returning is always safe.
             return createTransferResult(n, in, leftWithOffset);
           }
 

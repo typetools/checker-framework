@@ -1,4 +1,5 @@
 import org.checkerframework.checker.mustcall.qual.*;
+
 class OwningField {
 
   @InheritableMustCall("a")
@@ -14,6 +15,7 @@ class OwningField {
       // :: warning: (required.method.not.called)
       f = new Foo();
     }
+
     void dispose() {
       f.a();
     }

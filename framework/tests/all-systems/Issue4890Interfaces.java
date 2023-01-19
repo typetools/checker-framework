@@ -1,6 +1,7 @@
 @SuppressWarnings("all") // Just check for crashes.
 public class Issue4890Interfaces {
-  // The capture of BigClass2<Interface1, ? extends SubInterface2<?>> is BigClass<Interface1, cap1>
+  // The capture of BigClass2<Interface1, ? extends SubInterface2<?>> is BigClass<Interface1,
+  // cap1>
   // where cap1 is a fresh type variable with upper bound of
   // SubInterface2<?> & Interface2<Interface1> and lower bound of nulltype.
   BigClass2<Interface1, ? extends SubInterface2<?>> r;

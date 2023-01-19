@@ -29,7 +29,7 @@ class EnhancedFor {
     // the foreach loop under the hood assigns the result of a call
     // to Iterator#next into it (which is owning by default, because it's
     // a method return type).
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     for (Socket s : list) {}
   }
 }

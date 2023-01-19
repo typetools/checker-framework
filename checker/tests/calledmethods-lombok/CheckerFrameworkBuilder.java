@@ -21,13 +21,13 @@ public class CheckerFrameworkBuilder {
    * the copied code correctly.
    */
   public static void testOldCalledMethodsGood(
-          @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
+      @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
     pb.build();
   }
 
   public static void testOldCalledMethodsBad(
-          @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
-    // :: error: finalizer.invocation
+      @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
+    // :: error: (finalizer.invocation)
     pb.build(); // pb requires y, z
   }
 
@@ -37,7 +37,7 @@ public class CheckerFrameworkBuilder {
 
   public static void testOldRRBad() {
     CheckerFrameworkBuilder b =
-        // :: error: finalizer.invocation
+        // :: error: (finalizer.invocation)
         CheckerFrameworkBuilder.builder().z(6).build(); // also needs to call y
   }
 
@@ -84,8 +84,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder
             this,
         final int x) {
       this.x$value = x;
@@ -96,8 +95,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder
             this,
         final int y) {
       this.y = y;
@@ -107,8 +105,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder
             this,
         final int z) {
       this.z = z;
@@ -151,8 +148,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.dataflow.qual.SideEffectFree
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder build(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder
             this) {
       java.util.List<String> names;
       switch (this.names == null ? 0 : this.names.size()) {
@@ -191,8 +187,7 @@ public class CheckerFrameworkBuilder {
 
   @org.checkerframework.dataflow.qual.SideEffectFree
   @java.lang.SuppressWarnings("all")
-  public static CheckerFrameworkBuilder.
-      @org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
+  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
     return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
   }
 }

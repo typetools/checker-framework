@@ -338,7 +338,7 @@ public class ControlFlowGraph implements UniqueId {
     }
 
     StringJoiner result = new StringJoiner(String.format("%n  "));
-    result.add(className + "{");
+    result.add(className + " #" + getUid() + " {");
     result.add("entryBlock=" + entryBlock);
     result.add("regularExitBlock=" + regularExitBlock);
     result.add("exceptionalExitBlock=" + exceptionalExitBlock);

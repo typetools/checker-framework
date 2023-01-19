@@ -532,7 +532,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @param tree the type's tree
    */
   protected Void visitParameterizedType(AnnotatedDeclaredType type, ParameterizedTypeTree tree) {
-    // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n", type, tree);
+    // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s%n", type,
+    // tree);
 
     if (TreeUtils.isDiamondTree(tree)) {
       return null;
@@ -557,12 +558,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         element.getTypeParameters());
 
     @SuppressWarnings(
-        "interning:not.interned") // applyCaptureConversion returns the passed type if type does not
-    // have wildcards.
+        "interning:not.interned") // applyCaptureConversion returns the passed type if type
+    // does not have wildcards.
     boolean hasCapturedTypeVariables = capturedType != type;
     if (hasCapturedTypeVariables) {
-      // Check that the extends bound of the captured type variable is a subtype of the extends
-      // bound of the wildcard.
+      // Check that the extends bound of the captured type variable is a subtype of the
+      // extends bound of the wildcard.
       int numTypeArgs = capturedType.getTypeArguments().size();
       // First create a mapping from captured type variable to its wildcard.
       Map<TypeVariable, AnnotatedTypeMirror> typeVarToWildcard =
@@ -583,8 +584,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
           if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
             AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
-            // Substitute the captured type variables with their wildcards. Without this, the
-            // isSubtype check crashes because wildcards aren't comparable with type variables.
+            // Substitute the captured type variables with their wildcards. Without
+            // this, the isSubtype check crashes because wildcards aren't comparable
+            // with type variables.
             AnnotatedTypeMirror catpureTypeVarUB =
                 atypeFactory
                     .getTypeVarSubstitutor()
@@ -602,13 +604,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                   capturedTypeVar.getUpperBound());
             }
           } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
-            // If the super bound of the wildcard is the same as the upper bound of the type
-            // parameter, then javac uses the bound rather than creating a fresh type variable.
+            // If the super bound of the wildcard is the same as the upper bound of the
+            // type parameter, then javac uses the bound rather than creating a fresh
+            // type variable.
             // (See https://bugs.openjdk.org/browse/JDK-8054309.)
-            // In this case, the Checker Framework uses the annotations on the super bound of the
-            // wildcard and ignores the annotations on the extends bound. So, issue a warning if
-            // the annotations on the extends bound are not the same as the annotations on the super
-            // bound.
+            // In this case, the Checker Framework uses the annotations on the super
+            // bound of the wildcard and ignores the annotations on the extends bound.
+            // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
+            // So, issue a warning if the annotations on the extends bound are not the
+            // same as the annotations on the super bound.
             if (!(atypeFactory
                     .getQualifierHierarchy()
                     .isSubtype(

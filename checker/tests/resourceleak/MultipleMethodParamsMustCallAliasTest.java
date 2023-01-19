@@ -39,7 +39,7 @@ class MultipleMethodParamsMustCallAliasTest {
     }
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void testMultiMethodParamsWrong1(@Owning InputStream in1, @Owning InputStream in2)
       throws IOException {
 
@@ -48,7 +48,7 @@ class MultipleMethodParamsMustCallAliasTest {
     in1.close();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void testMultiMethodParamsWrong2(@Owning InputStream in1, @Owning InputStream in2)
       throws IOException {
 
@@ -57,9 +57,9 @@ class MultipleMethodParamsMustCallAliasTest {
     in2.close();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void testMultiMethodParamsWrong3(@Owning InputStream in1) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket socket = new Socket("address", 12);
     ReplicaInputStreams r = new ReplicaInputStreams(in1, socket.getInputStream());
   }
@@ -82,7 +82,7 @@ class MultipleMethodParamsMustCallAliasTest {
     @EnsuresCalledMethods(
         value = {"this.in1", "this.in2"},
         methods = {"close"})
-    // :: error: destructor.exceptional.postcondition
+    // :: error: (destructor.exceptional.postcondition)
     public void close() throws IOException {
       in1.close();
       in2.close();

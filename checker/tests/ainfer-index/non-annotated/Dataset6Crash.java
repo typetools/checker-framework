@@ -7,8 +7,8 @@ import java.util.Iterator;
 
 public class Dataset6Crash {
 
-  public static <T> Iterator<T> limit(final Iterator<? extends T> base, final CountingPredicate<?
-      super T> filter) {
+  public static <T> Iterator<T> limit(
+      final Iterator<? extends T> base, final CountingPredicate<? super T> filter) {
     return new Iterator<T>() {
 
       private T next;
@@ -47,7 +47,6 @@ public class Dataset6Crash {
       }
     };
   }
-
 
   private static class CountingPredicate<T> {
     public boolean apply(int i, T next) {
