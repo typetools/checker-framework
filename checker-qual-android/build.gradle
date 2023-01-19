@@ -1,21 +1,21 @@
 evaluationDependsOn(':checker-qual')
 
 task copySources(type: Copy) {
-    description 'Copy checker-qual source to checker-qual-android'
+  description 'Copy checker-qual source to checker-qual-android'
 
-    includeEmptyDirs = false
-    doFirst {
-        // Delete the directory in case a previously copied file should no longer be in checker-qual
-        delete file('src')
-    }
-    from files('../checker-qual/src/main')
-    include '**/*.java'
-    exclude '**/SignednessUtilExtra.java'
-    into file('src/main')
+  includeEmptyDirs = false
+  doFirst {
+    // Delete the directory in case a previously copied file should no longer be in checker-qual
+    delete file('src')
+  }
+  from files('../checker-qual/src/main')
+  include '**/*.java'
+  exclude '**/SignednessUtilExtra.java'
+  into file('src/main')
 
-    // Not read only because "replaceAnnotations" tasks writes to the files.
-    fileMode(0666)
-    dirMode(0777)
+  // Not read only because "replaceAnnotations" tasks writes to the files.
+  fileMode(0666)
+  dirMode(0777)
 }
 
 sourcesJar.dependsOn(copySources)
@@ -27,52 +27,52 @@ sourcesJar.dependsOn(copySources)
  * By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
  */
 task replaceAnnotations {
-    doLast {
-        fileTree(dir: 'src', include: '**/*.java').each {
-            it.text = it.text.replaceAll('RetentionPolicy.RUNTIME', 'RetentionPolicy.CLASS')
-        }
+  doLast {
+    fileTree(dir: 'src', include: '**/*.java').each {
+      it.text = it.text.replaceAll('RetentionPolicy.RUNTIME', 'RetentionPolicy.CLASS')
     }
+  }
 }
 replaceAnnotations.dependsOn copySources
 
 compileJava.dependsOn replaceAnnotations
 
 clean {
-    delete file('src')
+  delete file('src')
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading to Maven repositories. */
 final checkerQualAndroidPom(publication) {
-    sharedPublicationConfiguration(publication)
-    publication.from components.java
-    publication.pom {
-        name = 'Checker Qual Android'
-        description = 'checker-qual-android contains annotations (type qualifiers) that a programmer\n' +
-                'writes to specify Java code for type-checking by the Checker Framework.\n' +
-                '\n' +
-                'The checker-qual-android artifact is identical to the checker-qual\n' +
-                'artifact, except that in checker-qual-android annotations have classfile\n' +
-                'retention.  The default Android Gradle plugin retains types annotated with\n' +
-                'runtime annotations in the main dex, but strips out class-retention\n' +
-                'annotations.\n'
-        licenses {
-            license {
-                name = 'The MIT License'
-                url = 'http://opensource.org/licenses/MIT'
-                distribution = 'repo'
-            }
-        }
+  sharedPublicationConfiguration(publication)
+  publication.from components.java
+  publication.pom {
+    name = 'Checker Qual Android'
+    description = 'checker-qual-android contains annotations (type qualifiers) that a programmer\n' +
+        'writes to specify Java code for type-checking by the Checker Framework.\n' +
+        '\n' +
+        'The checker-qual-android artifact is identical to the checker-qual\n' +
+        'artifact, except that in checker-qual-android annotations have classfile\n' +
+        'retention.  The default Android Gradle plugin retains types annotated with\n' +
+        'runtime annotations in the main dex, but strips out class-retention\n' +
+        'annotations.\n'
+    licenses {
+      license {
+        name = 'The MIT License'
+        url = 'http://opensource.org/licenses/MIT'
+        distribution = 'repo'
+      }
     }
+  }
 }
 publishing {
-    publications {
-        checkerQualAndroid(MavenPublication) {
-            checkerQualAndroidPom it
-        }
+  publications {
+    checkerQualAndroid(MavenPublication) {
+      checkerQualAndroidPom it
     }
+  }
 }
 signing {
-    sign publishing.publications.checkerQualAndroid
+  sign publishing.publications.checkerQualAndroid
 }
