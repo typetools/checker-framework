@@ -9,7 +9,10 @@ sourceSets {
     main {
         resources {
             // Stub files, message.properties, etc.
-            srcDirs += ['src/main/java', "${buildDir}/generated/resources"]
+            srcDirs += [
+                'src/main/java',
+                "${buildDir}/generated/resources"
+            ]
         }
     }
     testannotations
@@ -21,12 +24,12 @@ sourcesJar {
 }
 
 def versions = [
-        autoValue       : '1.7.4',
-        lombok          : '1.18.24',
+    autoValue       : '1.7.4',
+    lombok          : '1.18.24',
 ]
 
 configurations {
-  implementation.extendsFrom(annotatedGuava)
+    implementation.extendsFrom(annotatedGuava)
 }
 
 dependencies {
@@ -74,7 +77,14 @@ task cloneTypetoolsJdk() {
             exec {
                 workingDir "${annotatedJdkHome}/../"
                 executable 'git'
-                args = ['clone', '-q', '--depth', '1', 'https://github.com/typetools/jdk.git', 'jdk']
+                args = [
+                    'clone',
+                    '-q',
+                    '--depth',
+                    '1',
+                    'https://github.com/typetools/jdk.git',
+                    'jdk'
+                ]
             }
         }
     }
@@ -166,10 +176,10 @@ shadowJar {
 }
 
 createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     options.compilerArgs += [
-            '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+        '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
     ]
 }
 
@@ -182,7 +192,11 @@ task loaderTests(dependsOn: 'shadowJar', group: 'Verification') {
     doLast {
         exec {
             executable 'make'
-            args = ['-C', 'tests/annotationclassloader/', 'all']
+            args = [
+                '-C',
+                'tests/annotationclassloader/',
+                'all'
+            ]
         }
     }
 }
@@ -208,12 +222,12 @@ task delombok {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
-      if(!skipDelombok) {
-        def collection = files(configurations.testCompileClasspath)
-        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+        if(!skipDelombok) {
+            def collection = files(configurations.testCompileClasspath)
+            ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
             classpath: collection.asPath)
-        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
-      }
+            ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+        }
     }
 }
 

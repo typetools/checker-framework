@@ -19,11 +19,11 @@ sourcesJar {
 }
 
 configurations {
-  implementation.extendsFrom(annotatedGuava)
-  fatJar {
-    canBeConsumed = true
-    canBeResolved = false
-  }
+    implementation.extendsFrom(annotatedGuava)
+    fatJar {
+        canBeConsumed = true
+        canBeResolved = false
+    }
 }
 
 dependencies {
@@ -218,12 +218,12 @@ clean {
 
 // Add non-junit tests
 createCheckTypeTask(project.name, 'CompilerMessages',
-    'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
+        'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
 checkCompilerMessages {
     doFirst {
         options.compilerArgs += [
-                '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
-                        + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
+            '-Apropfiles=' + sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath + File.pathSeparator
+            + project(':framework').sourceSets.main.resources.filter { file -> file.name.equals('messages.properties') }.asPath
         ]
     }
 }
@@ -267,13 +267,21 @@ task demosTests(dependsOn: copyJarsToDist, group: 'Verification') {
                 exec {
                     workingDir file(demosDir.toString() + '/../')
                     executable 'git'
-                    args = ['clone', '--depth', '1', 'https://github.com/typetools/checker-framework.demos.git']
+                    args = [
+                        'clone',
+                        '--depth',
+                        '1',
+                        'https://github.com/typetools/checker-framework.demos.git'
+                    ]
                 }
             } else {
                 exec {
                     workingDir demosDir
                     executable 'git'
-                    args = ['pull', 'https://github.com/typetools/checker-framework.demos.git']
+                    args = [
+                        'pull',
+                        'https://github.com/typetools/checker-framework.demos.git'
+                    ]
                     ignoreExitValue = true
                 }
             }
@@ -315,27 +323,27 @@ task jtregJdk11Tests(group: 'Verification') {
         exec {
             executable 'jtreg'
             args = [
-                    "-dir:${projectDir}/jtregJdk11",
-                    "-workDir:${jtregOutput}/${name}/work",
-                    "-reportDir:${jtregOutput}/${name}/report",
-                    '-verbose:summary',
-                    '-javacoptions:-g',
-                    '-keywords:!ignore',
-                    '-samevm',
-                    "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-                    "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-                    '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-                    "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
-                    // Location of jtreg tests
-                    '.'
+                "-dir:${projectDir}/jtregJdk11",
+                "-workDir:${jtregOutput}/${name}/work",
+                "-reportDir:${jtregOutput}/${name}/report",
+                '-verbose:summary',
+                '-javacoptions:-g',
+                '-keywords:!ignore',
+                '-samevm',
+                "-javacoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                "-vmoptions:-classpath ${tasks.shadowJar.archiveFile.get()}:${sourceSets.test.output.asPath}",
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+                "-javacoptions:-classpath ${sourceSets.testannotations.output.asPath}",
+                // Location of jtreg tests
+                '.'
             ]
         }
 
@@ -362,12 +370,12 @@ task delombok {
     dependsOn project(':checker-qual').tasks.jar
 
     doLast {
-      if(!skipDelombok) {
-        def collection = files(configurations.testCompileClasspath)
-        ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
+        if(!skipDelombok) {
+            def collection = files(configurations.testCompileClasspath)
+            ant.taskdef(name: 'delombok', classname: 'lombok.delombok.ant.Tasks$Delombok',
             classpath: collection.asPath)
-        ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
-      }
+            ant.delombok(from: srcJava, to: srcDelomboked, classpath: collection.asPath)
+        }
     }
 }
 
@@ -611,7 +619,10 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
             // Script argument -cp must precede Java program argument -i.
             // checker-qual is needed for Constant Value Checker annotations.
             // Note that "/" works on Windows as well as on Linux.
-            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file('tests/build/testclasses')]
+            args = [
+                '-cp',
+                "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file('tests/build/testclasses')
+            ]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
@@ -827,7 +838,10 @@ task ainferNullnessGenerateJaifs(type: Test) {
             executable "${afu}/scripts/insert-annotations-to-source"
             // Script argument -cp must precede Java program argument -i.
             // Note that "/" works on Windows as well as on Linux.
-            args = ['-cp', "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file('tests/build/testclasses')]
+            args = [
+                '-cp',
+                "${sourceSets.test.output.asPath}:${project(':checker-qual').tasks.jar.archivePath}:" + file('tests/build/testclasses')
+            ]
             args += ['-i']
             for (File jaif : jaifs) {
                 args += [jaif.toString()]
@@ -962,7 +976,7 @@ task wpiManyTest(group: 'Verification') {
                 println("======== end of contents of ${filename} ========")
             }
             throw new GradleException("Failure: Too few *-typecheck.out files in ${typecheckFilesDir}: " +
-                    "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
+            "found ${actualTypecheckFileCount} but expected ${expectedTypecheckFileCount}.")
         }
 
         // check that WPI causes the expected builds to succeed
@@ -974,8 +988,8 @@ task wpiManyTest(group: 'Verification') {
             }
             file.eachLine { line ->
                 if (
-                        // Ignore the line that WPI echoes with the javac command being run.
-                        line.startsWith('Running ')
+                // Ignore the line that WPI echoes with the javac command being run.
+                line.startsWith('Running ')
                         // Warnings about bad path elements aren't related to WPI and are ignored.
                         || line.startsWith('warning: [path]')
                         // Ignore bootstrap classpath warning:
@@ -988,14 +1002,14 @@ task wpiManyTest(group: 'Verification') {
                         || line.endsWith(' warning')
                         || line.endsWith(' warnings')
                         || line.startsWith('warning: No processor claimed any of these annotations: ')) {
-                  return;
+                    return;
                 }
                 if (!line.trim().equals('')) {
                     println("======== printing contents of ${filename} ========")
                     details.getFile().eachLine { l -> println(l) }
                     println("======== end of contents of ${filename} ========")
                     throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +
-                            'Failing line is the following: ' + line)
+                    'Failing line is the following: ' + line)
                 }
             }
         }

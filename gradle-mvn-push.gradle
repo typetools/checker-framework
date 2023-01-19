@@ -12,7 +12,7 @@ publishing {
             url = (isSnapshot
                     ? project.properties.getOrDefault('SNAPSHOT_REPOSITORY_URL', 'https://oss.sonatype.org/content/repositories/snapshots/')
                     : project.properties.getOrDefault('RELEASE_REPOSITORY_URL', 'https://oss.sonatype.org/service/local/staging/deploy/maven2/')
-            )
+                    )
             credentials {
                 username = project.properties.get('SONATYPE_NEXUS_USERNAME')
                 password = project.properties.get('SONATYPE_NEXUS_PASSWORD')

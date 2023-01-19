@@ -21,11 +21,11 @@ task copySources(type: Copy) {
 sourcesJar.dependsOn(copySources)
 
 /**
-* Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
-* Using the standard Checker Framework annotations can lead to main dex overflows;
-* users of the Checker Framework may find themselves unable to build their Android apps.
-* By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
-*/
+ * Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
+ * Using the standard Checker Framework annotations can lead to main dex overflows;
+ * users of the Checker Framework may find themselves unable to build their Android apps.
+ * By contrast, class-retention annotations are stripped out before packaging by all build systems as a convention.
+ */
 task replaceAnnotations {
     doLast {
         fileTree(dir: 'src', include: '**/*.java').each {
@@ -50,13 +50,13 @@ final checkerQualAndroidPom(publication) {
     publication.pom {
         name = 'Checker Qual Android'
         description = 'checker-qual-android contains annotations (type qualifiers) that a programmer\n' +
-                        'writes to specify Java code for type-checking by the Checker Framework.\n' +
-                        '\n' +
-                        'The checker-qual-android artifact is identical to the checker-qual\n' +
-                        'artifact, except that in checker-qual-android annotations have classfile\n' +
-                        'retention.  The default Android Gradle plugin retains types annotated with\n' +
-                        'runtime annotations in the main dex, but strips out class-retention\n' +
-                        'annotations.\n'
+                'writes to specify Java code for type-checking by the Checker Framework.\n' +
+                '\n' +
+                'The checker-qual-android artifact is identical to the checker-qual\n' +
+                'artifact, except that in checker-qual-android annotations have classfile\n' +
+                'retention.  The default Android Gradle plugin retains types annotated with\n' +
+                'runtime annotations in the main dex, but strips out class-retention\n' +
+                'annotations.\n'
         licenses {
             license {
                 name = 'The MIT License'

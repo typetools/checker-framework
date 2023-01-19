@@ -30,7 +30,7 @@ final checkerQualPom(publication) {
     publication.pom {
         name = 'Checker Qual'
         description = 'checker-qual contains annotations (type qualifiers) that a programmer\n' +
-                        'writes to specify Java code for type-checking by the Checker Framework.\n'
+                'writes to specify Java code for type-checking by the Checker Framework.\n'
         licenses {
             license {
                 name = 'The MIT License'
