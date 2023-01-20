@@ -68,7 +68,8 @@ import org.plumelib.util.CollectionsPlume;
  * <ol>
  *   <li>Converts the expression strings in an {@link AnnotationMirror} {@code am}, by creating a
  *       new annotation whose Java expression elements are the result of the conversion. See {@link
- *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
+ *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}, though clients do not
+ *       call it (they call other methods in this class, which eventually call it). Subclasses can
  *       specialize this process by overriding methods in this class. Methods in this class always
  *       standardize Java expressions and may additionally viewpoint-adapt or delocalize
  *       expressions. Below is an explanation of each kind of conversion.
@@ -276,7 +277,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapts a method or constructor invocation.
+   * Viewpoint-adapts dependent type annotations in a method or constructor type.
    *
    * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
    * type annotations. (For example, type variables have been substituted and polymorphic qualifiers
