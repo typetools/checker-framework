@@ -314,9 +314,13 @@ else
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
         echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
-        echo "---------------- start of log files from which results_available.txt was constructed ----------------"
-        cat "${OUTDIR}-results/"*.log
-        echo "---------------- end of log files from which results_available.txt was constructed ----------------"
+        echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
+        ls -l "${OUTDIR}-results/"*.log
+        echo "---------------- end of nmes of log files from which results_available.txt was constructed ----------------"
+        ## This is too much output; Azure cuts it off.
+        # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
+        # cat "${OUTDIR}-results/"*.log
+        # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
         exit 1
     fi
 
@@ -337,9 +341,13 @@ else
       echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
       cat "${OUTDIR}-results/results_available.txt"
       echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
-      echo "---------------- start of log files from which results_available.txt was constructed ----------------"
-      cat "${OUTDIR}-results/"*.log
-      echo "---------------- end of log files from which results_available.txt was constructed ----------------"
+      echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
+      ls -l "${OUTDIR}-results/"*.log
+      echo "---------------- end of nmes of log files from which results_available.txt was constructed ----------------"
+      ## This is too much output; Azure cuts it off.
+      # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
+      # cat "${OUTDIR}-results/"*.log
+      # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
       exit 1
     fi
     rm -f "${listpath}"
