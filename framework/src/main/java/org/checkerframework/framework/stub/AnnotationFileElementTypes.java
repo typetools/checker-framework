@@ -91,6 +91,13 @@ public class AnnotationFileElementTypes {
   private final boolean parseAllJdkFiles;
 
   /**
+   * Stores the fully qualified name of top-level classes (from any type of stub file) that are
+   * currently being parsed. This can stop recursively parsing an annotated JDK class that is
+   * currently being processed, which prevents conflicts of definition and infinite loops.
+   */
+  private final Set<String> processingClasses = new LinkedHashSet<>();
+
+  /**
    * Creates an empty annotation source.
    *
    * @param factory AnnotatedTypeFactory
@@ -622,11 +629,19 @@ public class AnnotationFileElementTypes {
    * @param e element whose outermost enclosing class will be parsed
    */
   private void parseEnclosingJdkClass(Element e) {
-    if (!shouldParseJdk) {
+    if (!shouldParseJdk
+        || e.getKind() == ElementKind.PACKAGE
+        || e.getKind() == ElementKind.MODULE) {
       return;
     }
     String className = getOutermostEnclosingClass(e);
     if (className == null || className.isEmpty()) {
+      return;
+    }
+
+    if (processingClasses.contains(className)) {
+      // TODO: some declaration annotations in the enclosing class may still
+      //  be missing, we can revisit this part if it's causing issues
       return;
     }
     if (jdkStubFiles.containsKey(className)) {
