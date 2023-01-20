@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +96,7 @@ public class AnnotationFileElementTypes {
    * currently being parsed. This can stop recursively parsing an annotated JDK class that is
    * currently being processed, which prevents conflicts of definition and infinite loops.
    */
-  private final Set<String> processingClasses = new LinkedHashSet<>();
+  private final Set<String> processingClasses = new HashSet<>();
 
   /**
    * Creates an empty annotation source.
