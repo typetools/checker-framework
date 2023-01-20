@@ -72,7 +72,9 @@ test_wpi_plume_lib() {
     # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
     "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
+    echo "wpi-many.sh about to call wpi.sh at $(date)"
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
+    echo "wpi-many.sh returned from wpi.sh at $(date)"
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     DLJC_OUT_DIR="$TESTDIR/$project/dljc-out"
@@ -85,8 +87,12 @@ test_wpi_plume_lib() {
       diff -u expected.txt actual.txt
       if [ -n "$AZURE_HTTP_USER_AGENT" ] || [ -n "$CIRCLE_PR_USERNAME" ] || [ -n "$GITHUB_HEAD_REF" ] || [ "$TRAVIS" = "true" ] ; then
         # Running under continuous integration.  Output files that may be useful for debugging.
+        echo "TESTDIR = ${TESTDIR}"
+        echo "project = ${project}"
+        echo "DLJC_OUT_DIR = ${DLJC_OUT_DIR}"
         rm -f "$DLJC_OUT_DIR"/dljc.cache
         more "$DLJC_OUT_DIR"/*
+        # The string is printed by `tools/wpi.py` in the do_like_javac repository.
         AJAVADIR="$(sed -n 's/Directory for generated annotation files: \(.*\)$/\1/p' "$DLJC_OUT_DIR"/dljc-stdout-*)"
         echo "AJAVADIR=$AJAVADIR"
         find "$AJAVADIR" -type f -print0 | xargs -0 more
