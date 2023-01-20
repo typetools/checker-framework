@@ -630,11 +630,9 @@ public class AnnotationFileElementTypes {
       return;
     }
     if (jdkStubFiles.containsKey(className)) {
-      parseJdkStubFile(jdkStubFiles.get(className));
-      jdkStubFiles.remove(className);
+      parseJdkStubFile(jdkStubFiles.remove(className));
     } else if (jdkStubFilesJar.containsKey(className)) {
-      parseJdkJarEntry(jdkStubFilesJar.get(className));
-      jdkStubFilesJar.remove(className);
+      parseJdkJarEntry(jdkStubFilesJar.remove(className));
     }
   }
 
