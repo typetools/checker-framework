@@ -825,11 +825,12 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \begin{enumerate}
 
 \item
-Run \code{./gradlew assemble} to build the Checker Framework:
+Run \code{./gradlew copyJarsToDist} to build the Checker Framework (ignore
+the Javadoc errors):
 
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
-  ./gradlew assemble
+  ./gradlew copyJarsToDist
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
