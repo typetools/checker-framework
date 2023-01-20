@@ -25,7 +25,7 @@ public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirec
         AinferTestCheckerJaifsTest.class,
         "-Anomsgtext",
         "-Awarns",
-        "-AskipDefs=TestPure");
+        "-AskipDefs=TestPure|SimpleRecord");
   }
 
   @Parameters

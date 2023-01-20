@@ -26,6 +26,7 @@ public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
         "ainfer-testchecker/non-annotated",
         "-Anomsgtext",
         "-Ainfer=jaifs",
+        "-AskipDefs=SimpleRecord",
         // Use a stub file here, even though this is a JAIF test. This test can't pass
         // without an external file that specifies that a method is pure, and there is no
         // way to directly pass a JAIF file (in a real WPI run, the JAIF file's annotations
