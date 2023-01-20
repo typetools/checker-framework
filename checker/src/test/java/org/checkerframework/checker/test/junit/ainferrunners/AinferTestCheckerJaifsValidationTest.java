@@ -26,6 +26,8 @@ public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirec
         "-Anomsgtext",
         "-Awarns",
         "-AskipDefs=TestPure");
+    // AFU jaif generation (IndexFileWriter) doesn't support records
+    this.doNotTypecheck("all-systems/SimpleRecord.java");
   }
 
   @Parameters

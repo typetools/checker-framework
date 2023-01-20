@@ -32,6 +32,8 @@ public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
         // would have been inserted into the source).
         "-Astubs=tests/ainfer-testchecker/input-annotation-files/ExistingPurityAnnotations-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.astub",
         "-Awarns");
+    // AFU jaif generation (IndexFileWriter) doesn't support records
+    this.doNotTypecheck("all-systems/SimpleRecord.java");
   }
 
   @Parameters
