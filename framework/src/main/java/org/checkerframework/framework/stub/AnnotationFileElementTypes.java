@@ -365,7 +365,7 @@ public class AnnotationFileElementTypes {
    *     appear in an annotation file.
    */
   public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
-    if (parsing) {
+    if (isParsing()) {
       return null;
     }
     parseEnclosingJdkClass(e);
@@ -400,7 +400,7 @@ public class AnnotationFileElementTypes {
    *     not appear in an annotation file.
    */
   public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-    if (parsing) {
+    if (isParsing()) {
       return Collections.emptySet();
     }
 
@@ -461,7 +461,7 @@ public class AnnotationFileElementTypes {
    */
   public void injectRecordComponentType(
       Types types, Element elt, AnnotatedExecutableType memberType) {
-    if (parsing) {
+    if (isParsing()) {
       throw new BugInCF("parsing while calling injectRecordComponentType");
     }
 
@@ -529,7 +529,7 @@ public class AnnotationFileElementTypes {
    */
   public @Nullable AnnotatedExecutableType getFakeOverride(
       Element elt, AnnotatedTypeMirror receiverType) {
-    if (parsing) {
+    if (isParsing()) {
       throw new BugInCF("parsing while calling getFakeOverride");
     }
 
