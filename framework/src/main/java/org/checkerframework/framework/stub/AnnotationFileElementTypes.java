@@ -214,16 +214,19 @@ public class AnnotationFileElementTypes {
   /** Parses the ajava files passed through the -Aajava command-line option. */
   public void parseAjavaFiles() {
     parsing = true;
-    // TODO: Error if this is called more than once?
-    SourceChecker checker = factory.getChecker();
-    List<String> ajavaFiles = new ArrayList<>();
-    String ajavaOption = checker.getOption("ajava");
-    if (ajavaOption != null) {
-      Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
-    }
+    try {
+      // TODO: Error if this is called more than once?
+      SourceChecker checker = factory.getChecker();
+      List<String> ajavaFiles = new ArrayList<>();
+      String ajavaOption = checker.getOption("ajava");
+      if (ajavaOption != null) {
+        Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
+      }
 
-    parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
-    parsing = false;
+      parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
+    } finally {
+      parsing = false;
+    }
   }
 
   /**
@@ -244,9 +247,9 @@ public class AnnotationFileElementTypes {
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
       checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+    } finally {
+      parsing = false;
     }
-
-    parsing = false;
   }
 
   /**
