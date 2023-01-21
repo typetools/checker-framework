@@ -484,7 +484,9 @@ public class AnnotationFileElementTypes {
           RecordComponentStub recordComponentStub =
               recordComponentType.componentsByName.get(elt.getSimpleName().toString());
           if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs()) {
-            replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
+            memberType
+                .getReturnType()
+                .replaceAnnotations(recordComponentStub.type.getAnnotations());
           }
         }
       }
@@ -498,27 +500,15 @@ public class AnnotationFileElementTypes {
               recordComponentType.getComponentsInCanonicalConstructor();
           if (componentsInCanonicalConstructor != null) {
             for (int i = 0; i < componentsInCanonicalConstructor.size(); i++) {
-              replaceAnnotations(
-                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+              memberType
+                  .getParameterTypes()
+                  .get(i)
+                  .replaceAnnotations(componentsInCanonicalConstructor.get(i).getAnnotations());
             }
           }
         }
       }
     }
-  }
-
-  /**
-   * Replace annotations on destType with those from srcType, first removing any annotations on
-   * destType that are in the same hierarchy as any on srcType.
-   *
-   * @param destType the type whose annotations to remove/replace
-   * @param srcType the type whose annotations are copied to {@code destType}
-   */
-  private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
-    for (AnnotationMirror annotation : srcType.getAnnotations()) {
-      destType.removeAnnotationInHierarchy(annotation);
-    }
-    destType.addAnnotations(srcType.getAnnotations());
   }
 
   /**
