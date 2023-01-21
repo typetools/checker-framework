@@ -12,11 +12,7 @@ public class FormatterTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public FormatterTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.formatter.FormatterChecker.class,
-        "formatter",
-        "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.formatter.FormatterChecker.class, "formatter");
   }
 
   @Parameters

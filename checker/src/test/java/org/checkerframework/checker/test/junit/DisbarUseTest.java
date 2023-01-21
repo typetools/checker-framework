@@ -18,7 +18,6 @@ public class DisbarUseTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         DisbarUseChecker.class,
         "disbaruse-records",
-        "-Anomsgtext",
         "-Astubs=tests/disbaruse-records",
         "-AstubWarnIfNotFound");
   }

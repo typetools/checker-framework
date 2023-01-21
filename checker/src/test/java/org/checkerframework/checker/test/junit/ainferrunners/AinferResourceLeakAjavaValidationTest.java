@@ -25,7 +25,6 @@ public class AinferResourceLeakAjavaValidationTest extends AinferValidatePerDire
         "resourceleak",
         "ainfer-resourceleak/annotated",
         AinferResourceLeakAjavaTest.class,
-        "-Anomsgtext",
         ajavaArgFromFiles(testFiles, "resourceleak"),
         "-Awarns");
   }

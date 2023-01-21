@@ -23,7 +23,6 @@ public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirec
         "testchecker",
         "ainfer-testchecker/non-annotated",
         AinferTestCheckerJaifsTest.class,
-        "-Anomsgtext",
         "-Awarns",
         "-AskipDefs=TestPure");
   }
