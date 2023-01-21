@@ -3,6 +3,11 @@ Version 3.29.1 (February 1, 2023)
 
 **User-visible changes:**
 
+If you supply the `-AinvocationPreservesArgumentNullness` command-line
+option, the Nullness Checker unsoundly assumes that arguments passed to
+non-null parameters in an invocation remain non-null after the invocation.
+This assumption is unsound in general, but it holds for most code.
+
 **Implementation details:**
 
 **Closed issues:**
