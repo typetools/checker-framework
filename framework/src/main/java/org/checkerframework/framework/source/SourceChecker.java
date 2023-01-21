@@ -178,6 +178,10 @@ import org.plumelib.util.UtilPlume;
   // See Issue 979.
   "conservativeUninferredTypeArguments",
 
+  // Issues a "redundant.anno" warning if the annotation explicitly written on the type is
+  // the same as the default annotation for this type and location.
+  "warnRedundantAnnotations",
+
   // Whether to ignore all subtype tests for type arguments that
   // were inferred for a raw type. Defaults to true.
   // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments

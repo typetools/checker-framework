@@ -3,6 +3,10 @@ Version 3.29.1 (February 1, 2023)
 
 **User-visible changes:**
 
+The new command-line argument `-AwarnRedundantAnnotations` warns about redundant annotations.
+With this flag, a warning is issued if an explicitly written annotation on a type is the same
+as the default annotation for this type and location.
+
 **Implementation details:**
 
 **Closed issues:**

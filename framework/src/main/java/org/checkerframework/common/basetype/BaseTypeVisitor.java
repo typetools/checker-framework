@@ -232,6 +232,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private final boolean checkPurity;
 
+  /** True if "-AwarnRedundantAnnotations" was passed on the command line */
+  private final boolean warnRedundantAnnotations;
+
   /** The tree of the enclosing method that is currently being visited. */
   protected @Nullable MethodTree methodTree = null;
 
@@ -265,6 +268,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
     checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    warnRedundantAnnotations = checker.hasOption("warnRedundantAnnotations");
   }
 
   /** An array containing just {@code BaseTypeChecker.class}. */
@@ -892,6 +896,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (node.getReturnType() != null) {
       visitAnnotatedType(node.getModifiers().getAnnotations(), node.getReturnType());
+      warnRedundantAnnotations(node.getReturnType(), methodType.getReturnType());
     }
 
     try {
@@ -1454,7 +1459,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so only validate if commonAssignmentCheck wasn't called
       validateTypeOf(node);
     }
+    warnRedundantAnnotations(node, variableType);
     return super.visitVariable(node, p);
+  }
+
+  /**
+   * Issues a "redundant.anno" warning if the annotation written on the type is the same as the
+   * default annotation for this type and location.
+   *
+   * @param tree an AST node
+   * @param type get the explicit annotation on this type and compare it with the default one for
+   *     this type and location.
+   */
+  protected void warnRedundantAnnotations(Tree tree, AnnotatedTypeMirror type) {
+    if (!warnRedundantAnnotations) {
+      return;
+    }
+    Set<AnnotationMirror> explicitAnnos = type.getExplicitAnnotations();
+    if (explicitAnnos.isEmpty()) {
+      return;
+    }
+    if (tree == null) {
+      throw new BugInCF("unexpected null tree argument!");
+    }
+
+    AnnotatedTypeMirror defaultAtms = atypeFactory.getDefaultAnnotations(tree, type);
+    for (AnnotationMirror explicitAnno : explicitAnnos) {
+      AnnotationMirror defaultAtm = defaultAtms.getAnnotationInHierarchy(explicitAnno);
+      if (AnnotationUtils.areSame(defaultAtm, explicitAnno)) {
+        checker.reportWarning(tree, "redundant.anno", defaultAtm);
+      }
+    }
   }
 
   /**
