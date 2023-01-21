@@ -29,8 +29,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
     // @GuardedBy({}) since for such operators, both operands are of type @GuardedBy({}) boolean
     // to begin with.
 
-    if (TreeUtils.isBinaryComparison(node.getKind())
-        || TypesUtils.isString(type.getUnderlyingType())) {
+    if (TreeUtils.isBinaryComparison(node) || TypesUtils.isString(type.getUnderlyingType())) {
       // A boolean or String is always @GuardedBy({}). LockVisitor determines whether
       // the LHS and RHS of this operation can be legally dereferenced.
       type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
