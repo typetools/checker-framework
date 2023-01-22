@@ -2307,6 +2307,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       adaptGetClassReturnTypeToReceiver(methodType, receiverType, tree);
     }
 
+    methodType.setReturnType(applyCaptureConversion(methodType.getReturnType()));
     return new ParameterizedExecutableType(methodType, typeargs);
   }
 
@@ -2618,6 +2619,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // 4. copy annotations on the return type to `con`.
       AnnotatedExecutableType superCon = getAnnotatedType(TreeUtils.getSuperConstructor(tree));
       constructorFromUsePreSubstitution(tree, superCon);
+      // no viewpoint adaptation needed for super invocation
       superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
       if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
         con.setParameterTypes(superCon.getParameterTypes());
@@ -2724,6 +2726,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Type may already have explicit dependent type annotations that have not yet been vpa.
     type.clearPrimaryAnnotations();
     type.addAnnotations(explicitAnnos);
+    // Use the receiver type as enclosing type, if present.
+    AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+    if (enclosingType != null) {
+      type.setEnclosingType(enclosingType);
+    }
     return type;
   }
 
