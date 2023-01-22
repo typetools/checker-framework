@@ -1464,6 +1464,7 @@ public abstract class UBQualifier {
     }
   }
 
+  /** The polymorphic qualifier. */
   private static class PolyQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier POLY = new PolyQualifier();
