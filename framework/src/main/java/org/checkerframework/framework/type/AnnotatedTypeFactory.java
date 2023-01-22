@@ -1136,7 +1136,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     the returned set, for example, it is used frequently to add Bottom qualifiers
    * @return a set of annotation class instances
    */
-  @SuppressWarnings({"varargs", "unchecked"}) // @SafeVarargs is only applicable to static methods
+  @SafeVarargs
+  @SuppressWarnings("varargs")
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
     if (loader != null) {
@@ -3576,7 +3577,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the class tree enclosing {@code tree}
    * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
    */
-  @Deprecated
+  @Deprecated // 2021-11-01
   protected final ClassTree getCurrentClassTree(Tree tree) {
     return TreePathUtil.enclosingClass(getPath(tree));
   }
@@ -3590,7 +3591,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return receiver type of the most enclosing method being visited
    * @deprecated Use {@link #getSelfType(Tree)} instead
    */
-  @Deprecated
+  @Deprecated // 2021-11-01
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
     TreePath path = getPath(tree);
     if (path == null) {
@@ -3908,7 +3909,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>This is the private implementation of the same-named, public method.
    *
-   * <p>An option is provided to not to check for aliases of annotations. For example, an annotated
+   * <p>An option is provided to not check for aliases of annotations. For example, an annotated
    * type factory may use aliasing for a pair of annotations for convenience while needing in some
    * cases to determine a strict ordering between them, such as when determining whether the
    * annotations on an overrider method are more specific than the annotations of an overridden
@@ -4708,6 +4709,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
+  // TODO: method always returns true, pick a better name/documentation
   private boolean isFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
       // Ignore wildcards, because they are uninferred type arguments.
@@ -4920,7 +4922,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
 
     // If the type contains uninferred type arguments, don't capture, but mark all wildcards
-    // that shuuld have been captured as "uninferred" before it is returned.
+    // that should have been captured as "uninferred" before it is returned.
     if (type.containsUninferredTypeArguments()
         && typeMirror.getKind() == TypeKind.DECLARED
         && type.getKind() == TypeKind.DECLARED) {
