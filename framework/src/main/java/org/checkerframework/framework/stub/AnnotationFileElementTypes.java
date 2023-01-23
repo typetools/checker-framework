@@ -214,16 +214,19 @@ public class AnnotationFileElementTypes {
   /** Parses the ajava files passed through the -Aajava command-line option. */
   public void parseAjavaFiles() {
     parsing = true;
-    // TODO: Error if this is called more than once?
-    SourceChecker checker = factory.getChecker();
-    List<String> ajavaFiles = new ArrayList<>();
-    String ajavaOption = checker.getOption("ajava");
-    if (ajavaOption != null) {
-      Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
-    }
+    try {
+      // TODO: Error if this is called more than once?
+      SourceChecker checker = factory.getChecker();
+      List<String> ajavaFiles = new ArrayList<>();
+      String ajavaOption = checker.getOption("ajava");
+      if (ajavaOption != null) {
+        Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
+      }
 
-    parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
-    parsing = false;
+      parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
+    } finally {
+      parsing = false;
+    }
   }
 
   /**
@@ -244,9 +247,9 @@ public class AnnotationFileElementTypes {
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
       checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+    } finally {
+      parsing = false;
     }
-
-    parsing = false;
   }
 
   /**
@@ -365,7 +368,7 @@ public class AnnotationFileElementTypes {
    *     appear in an annotation file.
    */
   public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
-    if (parsing) {
+    if (isParsing()) {
       return null;
     }
     parseEnclosingJdkClass(e);
@@ -400,7 +403,7 @@ public class AnnotationFileElementTypes {
    *     not appear in an annotation file.
    */
   public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
-    if (parsing) {
+    if (isParsing()) {
       return Collections.emptySet();
     }
 
@@ -461,7 +464,7 @@ public class AnnotationFileElementTypes {
    */
   public void injectRecordComponentType(
       Types types, Element elt, AnnotatedExecutableType memberType) {
-    if (parsing) {
+    if (isParsing()) {
       throw new BugInCF("parsing while calling injectRecordComponentType");
     }
 
@@ -481,7 +484,9 @@ public class AnnotationFileElementTypes {
           RecordComponentStub recordComponentStub =
               recordComponentType.componentsByName.get(elt.getSimpleName().toString());
           if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs()) {
-            replaceAnnotations(memberType.getReturnType(), recordComponentStub.type);
+            memberType
+                .getReturnType()
+                .replaceAnnotations(recordComponentStub.type.getAnnotations());
           }
         }
       }
@@ -495,27 +500,15 @@ public class AnnotationFileElementTypes {
               recordComponentType.getComponentsInCanonicalConstructor();
           if (componentsInCanonicalConstructor != null) {
             for (int i = 0; i < componentsInCanonicalConstructor.size(); i++) {
-              replaceAnnotations(
-                  memberType.getParameterTypes().get(i), componentsInCanonicalConstructor.get(i));
+              memberType
+                  .getParameterTypes()
+                  .get(i)
+                  .replaceAnnotations(componentsInCanonicalConstructor.get(i).getAnnotations());
             }
           }
         }
       }
     }
-  }
-
-  /**
-   * Replace annotations on destType with those from srcType, first removing any annotations on
-   * destType that are in the same hierarchy as any on srcType.
-   *
-   * @param destType the type whose annotations to remove/replace
-   * @param srcType the type whose annotations are copied to {@code destType}
-   */
-  private void replaceAnnotations(AnnotatedTypeMirror destType, AnnotatedTypeMirror srcType) {
-    for (AnnotationMirror annotation : srcType.getAnnotations()) {
-      destType.removeAnnotationInHierarchy(annotation);
-    }
-    destType.addAnnotations(srcType.getAnnotations());
   }
 
   /**
@@ -529,7 +522,7 @@ public class AnnotationFileElementTypes {
    */
   public @Nullable AnnotatedExecutableType getFakeOverride(
       Element elt, AnnotatedTypeMirror receiverType) {
-    if (parsing) {
+    if (isParsing()) {
       throw new BugInCF("parsing while calling getFakeOverride");
     }
 
@@ -630,11 +623,9 @@ public class AnnotationFileElementTypes {
       return;
     }
     if (jdkStubFiles.containsKey(className)) {
-      parseJdkStubFile(jdkStubFiles.get(className));
-      jdkStubFiles.remove(className);
+      parseJdkStubFile(jdkStubFiles.remove(className));
     } else if (jdkStubFilesJar.containsKey(className)) {
-      parseJdkJarEntry(jdkStubFilesJar.get(className));
-      jdkStubFilesJar.remove(className);
+      parseJdkJarEntry(jdkStubFilesJar.remove(className));
     }
   }
 

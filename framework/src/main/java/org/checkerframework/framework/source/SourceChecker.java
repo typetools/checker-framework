@@ -1072,7 +1072,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+  // Not a format method.  However, messageKey should be either a format string for `args`, or a
   // property key that maps to a format string for `args`.
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
