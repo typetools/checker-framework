@@ -2,6 +2,7 @@
 
 import java.util.*;
 
+@SuppressWarnings("allcheckers") // Only check for crashes
 class ArrayComparator {
 
   private final SortedMap<byte[], byte[]> map = new TreeMap<>();
