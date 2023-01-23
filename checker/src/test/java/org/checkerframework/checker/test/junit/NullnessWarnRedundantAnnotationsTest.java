@@ -18,7 +18,6 @@ public class NullnessWarnRedundantAnnotationsTest extends CheckerFrameworkPerDir
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-Anomsgtext", // remove when #5556 is merged
         "-AwarnRedundantAnnotations");
   }
 
