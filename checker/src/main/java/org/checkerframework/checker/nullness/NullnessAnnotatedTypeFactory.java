@@ -685,7 +685,7 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new NullnessQualifierHierarchy();
   }
 
