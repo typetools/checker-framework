@@ -17,7 +17,6 @@ public class PuritySuggestionsTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         FlowTestChecker.class,
         "flow",
-        "-Anomsgtext",
         "-AsuggestPureMethods",
         "-AcheckPurityAnnotations");
   }

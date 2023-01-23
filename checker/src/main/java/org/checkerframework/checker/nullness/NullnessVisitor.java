@@ -707,6 +707,10 @@ public class NullnessVisitor
 
   @Override
   public Void visitNewClass(NewClassTree node, Void p) {
+    ExpressionTree enclosingExpr = node.getEnclosingExpression();
+    if (enclosingExpr != null) {
+      checkForNullability(enclosingExpr, DEREFERENCE_OF_NULLABLE);
+    }
     AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
     ExpressionTree identifier = node.getIdentifier();
     if (identifier instanceof AnnotatedTypeTree) {

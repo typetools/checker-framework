@@ -25,7 +25,7 @@ import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 // The use of reflection in ReflectiveEvaluator is troubling.
-// A static analysis such as  the Checker Framework should always use compiler APIs, never
+// A static analysis such as the Checker Framework should always use compiler APIs, never
 // reflection, to obtain values, for these reasons:
 //  * The program being compiled is not necessarily on the classpath nor the processorpath.
 //  * There might even be a different class of the same fully-qualified name on the processorpath.
