@@ -751,7 +751,7 @@ public class WholeProgramInferenceScenesStorage
         updateAtmFromATypeElement(atv.getUpperBound(), innerType);
       }
     }
-  }
+  }MustCall
 
   @Override
   public void updateStorageLocationFromAtm(
@@ -858,13 +858,14 @@ public class WholeProgramInferenceScenesStorage
     // Clears only the annotations that are supported by the relevant AnnotatedTypeFactory.
     // The others stay intact.
     Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
-    // This method may be called consecutive times for the same ATypeElement.  Each time it is
-    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
-    // it is not a problem to remove all annotations before inserting the new annotations.
-    typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
+
 
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
+      // This method may be called consecutive times for the same ATypeElement.  Each time it is
+      // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
+      // it is not a problem to remove all annotations before inserting the new annotations.
+      typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
       for (AnnotationMirror am : newATM.getAnnotations()) {
         addAnnotationsToATypeElement(
             newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));

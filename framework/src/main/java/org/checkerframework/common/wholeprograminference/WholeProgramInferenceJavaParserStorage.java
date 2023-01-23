@@ -415,15 +415,15 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    // This method may be called consecutive times to modify the same AnnotatedTypeMirror.
-    // Each time it is called, the AnnotatedTypeMirror has a better type
-    // estimate for the modified AnnotatedTypeMirror. Therefore, it is not a problem to remove
-    // all annotations before inserting the new annotations.
-    typeToUpdate.removeAnnotations(annosToRemove);
 
     // Only update the AnnotatedTypeMirror if there are no explicit annotations
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
-      for (AnnotationMirror am : newATM.getAnnotations()) {
+      // This method may be called consecutive times to modify the same AnnotatedTypeMirror.
+      // Each time it is called, the AnnotatedTypeMirror has a better type
+      // estimate for the modified AnnotatedTypeMirror. Therefore, it is not a problem to remove
+      // all annotations before inserting the new annotations.
+      typeToUpdate.removeAnnotations(annosToRemove);
+      for (AnnotationMirror am : newATM.getEffectiveAnnotations()) {
         typeToUpdate.addAnnotation(am);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
@@ -437,7 +437,7 @@ public class WholeProgramInferenceJavaParserStorage
           break;
         }
 
-        typeToUpdate.addAnnotation(am);
+        typeToUpdate.replaceAnnotation(am);
       }
     }
 
