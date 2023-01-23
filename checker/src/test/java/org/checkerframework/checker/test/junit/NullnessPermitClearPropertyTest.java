@@ -19,7 +19,6 @@ public class NullnessPermitClearPropertyTest extends CheckerFrameworkPerDirector
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-Anomsgtext",
         "-Alint=permitClearProperty");
   }
 

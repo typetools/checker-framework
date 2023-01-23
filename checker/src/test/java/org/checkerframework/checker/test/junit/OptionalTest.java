@@ -14,11 +14,7 @@ public class OptionalTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public OptionalTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.optional.OptionalChecker.class,
-        "optional",
-        "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.optional.OptionalChecker.class, "optional");
   }
 
   @Parameters
