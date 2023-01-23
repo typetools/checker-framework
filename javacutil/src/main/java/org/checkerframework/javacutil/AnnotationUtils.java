@@ -704,9 +704,11 @@ public class AnnotationUtils {
     } else {
       valmap = anno.getElementValues();
     }
-    for (ExecutableElement elem : valmap.keySet()) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        valmap.entrySet()) {
+      ExecutableElement elem = entry.getKey();
       if (elem.getSimpleName().contentEquals(elementName)) {
-        AnnotationValue val = valmap.get(elem);
+        AnnotationValue val = entry.getValue();
         try {
           return expectedType.cast(val.getValue());
         } catch (ClassCastException e) {

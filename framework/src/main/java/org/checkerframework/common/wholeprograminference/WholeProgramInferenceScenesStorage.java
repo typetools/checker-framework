@@ -603,7 +603,7 @@ public class WholeProgramInferenceScenesStorage
     Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
-      // amJaif only contains  annotations from the jaif, so it might be missing
+      // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
         amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);

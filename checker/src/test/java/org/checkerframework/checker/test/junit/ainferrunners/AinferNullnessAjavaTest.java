@@ -27,7 +27,6 @@ public class AinferNullnessAjavaTest extends AinferGeneratePerDirectoryTest {
         testFiles,
         NullnessChecker.class,
         "ainfer-nullness/non-annotated",
-        "-Anomsgtext",
         "-Ainfer=ajava",
         // "-Aajava=tests/ainfer-nullness/input-annotation-files/",
         "-Awarns");
