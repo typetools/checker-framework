@@ -29,7 +29,6 @@ public class NullnessNoDelombokTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness-nodelombok",
-        "-Anomsgtext",
         "-nowarn");
   }
 

@@ -28,8 +28,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
         "nullness",
         "-AuseConservativeDefaultsForUncheckedCode=source",
         "-cp",
-        "dist/checker.jar:tests/build/testclasses/",
-        "-Anomsgtext");
+        "dist/checker.jar:tests/build/testclasses/");
   }
 
   @Parameters
@@ -42,8 +41,7 @@ public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirec
     boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
     List<String> customizedOptions1 =
         customizeOptions(
-            Arrays.asList(
-                "-AuseConservativeDefaultsForUncheckedCode=source,bytecode", "-Anomsgtext"));
+            Arrays.asList("-AuseConservativeDefaultsForUncheckedCode=source,bytecode"));
     TestConfiguration config1 =
         TestConfigurationBuilder.buildDefaultConfiguration(
             "tests/nullness-safedefaultssourcecodelib",

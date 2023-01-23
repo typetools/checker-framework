@@ -299,7 +299,7 @@ public class AnnotatedTypes {
       }
       if (enclosingType == null) {
         // TODO: https://github.com/typetools/checker-framework/issues/724
-        // testcase javacheck -processor nullness  src/java/util/AbstractMap.java
+        // testcase javacheck -processor nullness src/java/util/AbstractMap.java
         //                SourceChecker checker =  atypeFactory.getChecker().getChecker();
         //                String msg = (String.format("OuterAsSuper did not find outer
         // class. type: %s superType: %s", type, superType));

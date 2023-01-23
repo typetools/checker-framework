@@ -13,7 +13,6 @@ public class ResourceLeakPermitStaticOwning extends CheckerFrameworkPerDirectory
         testFiles,
         ResourceLeakChecker.class,
         "resourceleak-permitstaticowning",
-        "-Anomsgtext",
         "-ApermitStaticOwning",
         "-AwarnUnneededSuppressions",
         "-encoding",

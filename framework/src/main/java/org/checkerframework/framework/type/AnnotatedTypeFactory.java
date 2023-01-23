@@ -5202,7 +5202,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // framework/tests/all-systems/Issue4890Interfaces.java,
       // framework/tests/all-systems/Issue4890.java and
       // framework/tests/all-systems/Issue4877.java.
-      // (I think this is  https://bugs.openjdk.org/browse/JDK-8039222.)
+      // (I think this is https://bugs.openjdk.org/browse/JDK-8039222.)
       for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
         if (types.isSameType(
             bound.underlyingType, capturedTypeVar.getUpperBound().getUnderlyingType())) {

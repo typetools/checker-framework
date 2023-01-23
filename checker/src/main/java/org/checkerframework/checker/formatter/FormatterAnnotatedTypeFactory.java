@@ -69,7 +69,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new FormatterQualifierHierarchy();
   }
 
