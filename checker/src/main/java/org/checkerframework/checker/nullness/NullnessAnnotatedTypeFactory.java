@@ -895,6 +895,12 @@ public class NullnessAnnotatedTypeFactory
     return result;
   }
 
+  /** A non-null reference to an object stays non-null under mutation. */
+  @Override
+  public boolean isImmutable(TypeMirror type) {
+    return true;
+  }
+
   // If
   //  1. rhs is @Nullable
   //  2. lhs is a field of this
