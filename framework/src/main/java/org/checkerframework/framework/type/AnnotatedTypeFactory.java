@@ -4709,7 +4709,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  // TODO: method always returns true, pick a better name/documentation
   private boolean isFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
       // Ignore wildcards, because they are uninferred type arguments.
