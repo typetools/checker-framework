@@ -1419,6 +1419,11 @@ public class WholeProgramInferenceJavaParserStorage
 
       for (int i = 0; i < parameterTypes.size(); i++) {
         AnnotatedTypeMirror inferredType = parameterTypes.get(i);
+        if (inferredType == null) {
+          // Can occur if the only places that this method was called were
+          // outside the compilation unit.
+          continue;
+        }
         Parameter param = declaration.getParameter(i);
         Type javaParserType = param.getType();
         if (param.isVarArgs()) {
