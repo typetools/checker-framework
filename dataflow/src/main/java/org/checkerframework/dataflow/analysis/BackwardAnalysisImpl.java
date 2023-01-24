@@ -206,6 +206,7 @@ public class BackwardAnalysisImpl<
     List<ReturnNode> returnNodes = cfg.getReturnNodes();
     assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
     S normalInitialStore = transferFunction.initialNormalExitStore(underlyingAST, returnNodes);
+    assert transferFunction != null : "@AssumeAssertion(nullness): invariant";
     S exceptionalInitialStore = transferFunction.initialExceptionalExitStore(underlyingAST);
     // If regularExitBlock or exceptionExitBlock is reachable in the control flow graph, then
     // initialize it as a start point of the analysis.
