@@ -1142,7 +1142,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the node
    * @return true if must-call type of node only contains close
    */
-  boolean isMustCallClose(Node node) {
+  private boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
@@ -1837,7 +1837,8 @@ class MustCallConsistencyAnalyzer {
                     obligationGoesOutOfScopeBeforeSuccessor,
                     currentBlock, // 1a. (MC)
                     successor); // 1b. (MC)
-          } else { // In this case, current block has at least one node.
+          } else {
+            // In this case, current block has at least one node.
             // Use the called-methods store immediately after the last node in
             // currentBlock.
             Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)

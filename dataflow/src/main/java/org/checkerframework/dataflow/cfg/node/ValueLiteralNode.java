@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -69,6 +70,7 @@ public abstract class ValueLiteralNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.emptyList();
   }
