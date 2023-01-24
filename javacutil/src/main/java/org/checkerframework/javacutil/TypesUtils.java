@@ -24,6 +24,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -180,6 +181,12 @@ public final class TypesUtils {
         return ((TypeVariable) type).asElement().getSimpleName().toString();
       case DECLARED:
         return ((DeclaredType) type).asElement().getSimpleName().toString();
+      case INTERSECTION:
+        StringJoiner sjI = new StringJoiner(" & ");
+        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+          sjI.add(simpleTypeName(bound));
+        }
+        return sjI.toString();
       case NULL:
         return "<nulltype>";
       case VOID:
@@ -869,8 +876,8 @@ public final class TypesUtils {
     }
     // Special case for primitives.
     if (isPrimitive(t1) || isPrimitive(t2)) {
-      // NOTE: we need to know which type is primitive because e.g. int and Integer are assignable
-      // to each other.
+      // NOTE: we need to know which type is primitive because e.g. int and Integer
+      // are assignable to each other.
       if (isPrimitive(t1) && types.isAssignable(t1, t2)) {
         return t2;
       } else if (isPrimitive(t2) && types.isAssignable(t2, t1)) {
@@ -1141,7 +1148,7 @@ public final class TypesUtils {
    */
   public static List<TypeVariable> order(Collection<TypeVariable> collection, Types types) {
     List<TypeVariable> list = new ArrayList<>(collection);
-    List<TypeVariable> ordered = new ArrayList<>();
+    List<TypeVariable> ordered = new ArrayList<>(list.size());
     while (!list.isEmpty()) {
       TypeVariable free = doesNotContainOthers(list, types);
       list.remove(free);

@@ -64,8 +64,8 @@ public class TypecheckExecutor {
 
       // Even though the method compiler.getTask takes a list of processors, it fails if
       // processors are passed this way with the message:
-      //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are only
-      //   accepted if annotation processing is explicitly requested
+      //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are
+      //   only accepted if annotation processing is explicitly requested
       // Therefore, we now add them to the beginning of the options list.
       final List<String> options = new ArrayList<>();
       options.add("-processor");
@@ -85,6 +85,12 @@ public class TypecheckExecutor {
 
       nonJvmOptions.add("-ApermitMissingJdk");
       nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
+
+      // -Anomsgtext is needed to ensure expected errors can be matched.
+      // Note: Since "-Anomsgtext" is always added to the non-JVM options,
+      //  we are passing `true` as the `noMsgText` argument to all invocations
+      //  of `TestDiagnosticUtils.fromJavaxDiagnosticList`.
+      nonJvmOptions.add("-Anomsgtext");
 
       options.addAll(nonJvmOptions);
 

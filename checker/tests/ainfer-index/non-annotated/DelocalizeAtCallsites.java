@@ -10,22 +10,20 @@ public class DelocalizeAtCallsites {
     int[] z = a[y];
   }
 
-  void a2(int y, int x) {
-
-  }
+  void a2(int y, int x) {}
 
   void testArrayAccess() {
     int[][] arr = new int[5][5];
     int x1 = 3;
     @SuppressWarnings("all")
-    @IndexFor(value={"arr[x1]", "arr"}) int y1 = 2;
+    @IndexFor(value = {"arr[x1]", "arr"}) int y1 = 2;
     // test that out-of-scope indices are handled properly
     a1(arr, y1);
     // test that out-of-scope arrays are handled properly
     a2(y1, x1);
   }
 
-  void a3(int x) { }
+  void a3(int x) {}
 
   void testArrayCreation() {
     int x = 10;

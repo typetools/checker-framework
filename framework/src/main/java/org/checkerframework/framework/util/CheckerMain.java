@@ -431,13 +431,13 @@ public class CheckerMain {
     } else {
       args.addAll(
           // Keep this list in sync with the lists in checker-framework/build.gradle in
-          // compilerArgsForRunningCFs, the sections with labels "javac-jdk11-non-modularized",
-          // "maven", and "sbt" in the manual, and in the checker-framework-gradle-plugin,
-          // CheckerFrameworkPlugin#applyToProject
+          // compilerArgsForRunningCFs, the sections with labels
+          // "javac-jdk11-non-modularized", "maven", and "sbt" in the manual, and in the
+          // checker-framework-gradle-plugin, CheckerFrameworkPlugin#applyToProject
           Arrays.asList(
-              // These are required in Java 17+ because the --illegal-access option is set to deny
-              // by default.  None of these packages are accessed via reflection, so the module
-              // only needs to be exported, but not opened.
+              // These are required in Java 17+ because the --illegal-access option is
+              // set to deny by default.  None of these packages are accessed via
+              // reflection, so the module only needs to be exported, but not opened.
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
               "--add-exports",
@@ -454,8 +454,8 @@ public class CheckerMain {
               "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-              // Required because the Checker Framework reflectively accesses private members in
-              // com.sun.tools.javac.comp.
+              // Required because the Checker Framework reflectively accesses private
+              // members in com.sun.tools.javac.comp.
               "--add-opens",
               "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
     }
@@ -739,8 +739,8 @@ public class CheckerMain {
           throw new UserError(
               "Could not find "
                   + missingFile.getAbsolutePath()
-                  + ". This may be because you built the Checker Framework under Java 11 but are"
-                  + " running it under Java 8.");
+                  + ". This may be because you built the Checker Framework under"
+                  + " Java 11 but are running it under Java 8.");
         }
       }
       List<String> missingAbsoluteFilenames =
@@ -824,7 +824,8 @@ public class CheckerMain {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {
         final String name = entry.getName();
-        // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+        // Checkers ending in "Subchecker" are not included in this list used by
+        // CheckerMain.
         if ((name.startsWith(CHECKER_BASE_DIR_NAME) || name.startsWith(COMMON_BASE_DIR_NAME))
             && name.endsWith("Checker.class")) {
           // Forward slash is used instead of File.separator because checker.jar uses / as

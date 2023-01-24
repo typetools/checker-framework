@@ -44,7 +44,7 @@ class ZookeeperReport1 {
   }
 
   static void use2(SocketAddress endpoint) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = createSocket();
     s.connect(endpoint);
   }
@@ -54,7 +54,7 @@ class ZookeeperReport1 {
   }
 
   static void use4(SocketAddress endpoint) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = createSocket2();
     s.connect(endpoint);
   }
@@ -64,7 +64,7 @@ class ZookeeperReport1 {
   }
 
   static void use6(SocketAddress endpoint, boolean b) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = createSocket3(b);
     s.connect(endpoint);
   }

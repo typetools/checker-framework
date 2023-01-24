@@ -13,12 +13,12 @@ public class Distinct {
   @InternedDistinct Foo d2;
 
   public void testEquals() {
-    // :: error: not.interned
+    // :: error: (not.interned)
     if (f1 == f2) {}
-    // :: error: not.interned
+    // :: error: (not.interned)
     if (f1 == i2) {}
     if (f1 == d2) {}
-    // :: error: not.interned
+    // :: error: (not.interned)
     if (i1 == f2) {}
     if (i1 == i2) {}
     if (i1 == d2) {}
@@ -40,7 +40,7 @@ public class Distinct {
   }
 
   public void testAssignment4() {
-    // :: error: assignment
+    // :: error: (assignment)
     i1 = f2;
   }
 
@@ -53,12 +53,12 @@ public class Distinct {
   }
 
   public void testAssignment7() {
-    // :: error: assignment
+    // :: error: (assignment)
     d1 = f2;
   }
 
   public void testAssignment8() {
-    // :: error: assignment
+    // :: error: (assignment)
     d1 = i2;
   }
 

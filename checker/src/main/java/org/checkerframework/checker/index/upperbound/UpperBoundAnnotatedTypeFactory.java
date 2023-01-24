@@ -282,8 +282,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-      // If there is an LTLengthOf annotation whose argument lengths don't match, replace it with
-      // bottom.
+      // If there is an LTLengthOf annotation whose argument lengths don't match, replace it
+      // with bottom.
       AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
@@ -674,7 +674,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
         AnnotationMirror annotation = getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
-        // For non-negative numbers, right shift is equivalent to division by a power of two.
+        // For non-negative numbers, right shift is equivalent to division by a power of
+        // two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
         // differences.
         Long shiftAmount = ValueCheckerUtils.getExactValue(right, getValueAnnotatedTypeFactory());
@@ -852,7 +853,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         }
 
         if (imf.isRandomNextDouble(mitree, processingEnv)) {
-          // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+          // Okay, so this is Random.nextDouble() * array.length, which must be
+          // NonNegative
           type.addAnnotation(createLTLengthOfAnnotation(seqTree.toString()));
           return true;
         }

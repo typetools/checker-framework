@@ -16,7 +16,5 @@ public class RequireJavadocCrash {
 
   private RequireJavadocCrash() {}
 
-  private void setJavaFiles(String[] args) {
-
-  }
+  private void setJavaFiles(String[] args) {}
 }

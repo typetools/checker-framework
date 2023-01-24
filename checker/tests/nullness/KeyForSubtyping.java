@@ -12,8 +12,8 @@ public class KeyForSubtyping {
       @KeyFor("this.mapB") String b,
       @KeyFor({"this.mapA", "this.mapB"}) String ab) {
     // Try the error cases first, otherwise dataflow will change the inferred annotations on the
-    // variables such that a line of code can have an effect on a subsequent line of code. We want
-    // each of these tests to be independent.
+    // variables such that a line of code can have an effect on a subsequent line of code. We
+    // want each of these tests to be independent.
 
     // :: error: (assignment)
     ab = a;

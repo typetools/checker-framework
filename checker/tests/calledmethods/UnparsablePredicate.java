@@ -2,16 +2,16 @@ import org.checkerframework.checker.calledmethods.qual.*;
 
 public class UnparsablePredicate {
 
-  // :: error: predicate
+  // :: error: (predicate)
   void unclosedOpen(@CalledMethodsPredicate("(foo && bar") Object x) {}
 
-  // :: error: predicate
+  // :: error: (predicate)
   void unopenedClose(@CalledMethodsPredicate("foo || bar)") Object x) {}
 
-  // :: error: predicate
+  // :: error: (predicate)
   void badKeywords1(@CalledMethodsPredicate("foo OR bar") Object x) {}
 
-  // :: error: predicate
+  // :: error: (predicate)
   void badKeywords2(@CalledMethodsPredicate("foo AND bar") Object x) {}
 
   // These tests check that valid Java identifiers don't cause problems

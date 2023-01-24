@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +12,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
@@ -112,7 +112,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
-    Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+    // Most annotations have no elements.
+    Map<ExecutableElement, AnnotationValue> nonDefaults = new ArrayMap<>(0);
     elementValues.forEach(
         (element, value) -> {
           if (element.getDefaultValue() == null

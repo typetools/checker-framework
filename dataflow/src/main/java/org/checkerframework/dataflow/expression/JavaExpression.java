@@ -236,7 +236,8 @@ public abstract class JavaExpression {
     Node receiverNode = node.getReceiver();
     String fieldName = node.getFieldName();
     if (fieldName.equals("this")) {
-      // The CFG represents "className.this" as a FieldAccessNode, but it isn't a field access.
+      // The CFG represents "className.this" as a FieldAccessNode, but it isn't a field
+      // access.
       return new ThisReference(receiverNode.getType());
     } else if (fieldName.equals("class")) {
       // The CFG represents "className.class" as a FieldAccessNode; bit it is a class literal.

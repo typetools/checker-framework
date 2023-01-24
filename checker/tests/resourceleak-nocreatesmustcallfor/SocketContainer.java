@@ -13,7 +13,7 @@ class SocketContainer {
 
   public SocketContainer(String host, int port) throws Exception {
     // Assignments to owning fields should not be permitted.
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     sock = new Socket(host, port);
   }
 
@@ -21,7 +21,7 @@ class SocketContainer {
   public void reassign(String host, int port) throws Exception {
     sock.close();
     // For the RHS, because the field can't take ownership
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket sr = new Socket(host, port);
     // No warning for overwriting the field, since it can't take ownership!
     sock = sr;

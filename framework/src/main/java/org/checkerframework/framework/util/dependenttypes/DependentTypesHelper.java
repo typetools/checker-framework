@@ -68,7 +68,8 @@ import org.plumelib.util.CollectionsPlume;
  * <ol>
  *   <li>Converts the expression strings in an {@link AnnotationMirror} {@code am}, by creating a
  *       new annotation whose Java expression elements are the result of the conversion. See {@link
- *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}. Subclasses can
+ *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}, though clients do not
+ *       call it (they call other methods in this class, which eventually call it). Subclasses can
  *       specialize this process by overriding methods in this class. Methods in this class always
  *       standardize Java expressions and may additionally viewpoint-adapt or delocalize
  *       expressions. Below is an explanation of each kind of conversion.
@@ -276,7 +277,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapts a method or constructor invocation.
+   * Viewpoint-adapts dependent type annotations in a method or constructor type.
    *
    * <p>{@code methodType} has been viewpoint-adapted to the call site, except for any dependent
    * type annotations. (For example, type variables have been substituted and polymorphic qualifiers
@@ -573,13 +574,15 @@ public class DependentTypesHelper {
           if (elt.getKind() == ElementKind.PARAMETER) {
             // The tree might be null when
             // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory() gets the
-            // assignment context for a pseudo assignment of an argument to a method parameter.
+            // assignment context for a pseudo assignment of an argument to a method
+            // parameter.
             return;
           }
           throw new BugInCF(this.getClass() + ": tree not found");
         } else if (TreeUtils.typeOf(declarationTree) == null) {
-          // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory() gets the
-          // assignment context for a pseudo assignment of an argument to a method parameter.
+          // org.checkerframework.framework.flow.CFAbstractTransfer.getValueFromFactory()
+          // gets the assignment context for a pseudo assignment of an argument to a
+          // method parameter.
           return;
         }
 
@@ -676,8 +679,9 @@ public class DependentTypesHelper {
       @Nullable Node receiver,
       ExecutableElement methodElt) {
 
-    // TODO: this method should also take the receiver parameter, if there was one at the callsite,
-    // as an argument. Before it does, WPI needs to infer receiver types from callsites.
+    // TODO: this method should also take the receiver parameter, if there was one at the
+    // callsite, as an argument. Before it does, WPI needs to infer receiver types from
+    // callsites.
 
     if (!hasDependentType(atm)) {
       return;
@@ -711,7 +715,8 @@ public class DependentTypesHelper {
 
                 // Local variables and this references at the call site that do not
                 // correspond to any parameter need to be removed from the dependent
-                // type annotation, which returning null from these methods accomplishes.
+                // type annotation, which returning null from these methods
+                // accomplishes.
                 @Override
                 public JavaExpression visitLocalVariable(LocalVariable local, Void unused) {
                   throw new FoundLocalException();
@@ -930,10 +935,11 @@ public class DependentTypesHelper {
       }
       visitedNodes.put(type, null);
 
-      // If the type variable has a primary annotation, then it is viewpoint-adapted before this
-      // method is called.  The viewpoint-adapted primary annotation was already copied to the upper
-      // and lower bounds.  These annotations cannot be viewpoint-adapted again, so remove them,
-      // viewpoint-adapt any other annotations in the bound, and then add them back.
+      // If the type variable has a primary annotation, then it is viewpoint-adapted before
+      // this method is called.  The viewpoint-adapted primary annotation was already copied
+      // to the upper and lower bounds.  These annotations cannot be viewpoint-adapted again,
+      // so remove them, viewpoint-adapt any other annotations in the bound, and then add them
+      // back.
       Set<AnnotationMirror> primarys = type.getAnnotations();
       type.getLowerBound().removeAnnotations(primarys);
       Void r = scan(type.getLowerBound(), func);
@@ -998,8 +1004,8 @@ public class DependentTypesHelper {
         for (AnnotationTree annoTree : modifiers.getAnnotations()) {
           String annoString = annoTree.toString();
           for (String annoName : annoToElements.keySet()) {
-            // TODO: Simple string containment seems too simplistic.  At least check for a word
-            // boundary.
+            // TODO: Simple string containment seems too simplistic.  At least check for
+            // a word boundary.
             if (annoString.contains(annoName)) {
               errorTree = annoTree;
               break;

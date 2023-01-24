@@ -29,9 +29,10 @@ public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatte
     @Override
     public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
       if (type.getAnnotation(Nullable.class) != null) {
-        // The null type will be understood as nullable by readers (I hope), therefore omit the
-        // annotations if they are @Nullable.
-        // Note: The visitTypeVariable will still print lower bounds with Null kind as "Void"
+        // The null type will be understood as nullable by readers (I hope), therefore omit
+        // the annotations if they are @Nullable.
+        // Note: The visitTypeVariable will still print lower bounds with Null kind as
+        // "Void"
         if (!currentPrintInvisibleSetting) {
           return "null (NullType)";
         }

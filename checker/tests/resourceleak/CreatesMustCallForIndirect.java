@@ -16,7 +16,7 @@ class CreatesMustCallForIndirect {
   }
 
   public static void resetIndirect_no_anno(CreatesMustCallForIndirect r) {
-    // :: error: reset.not.owning
+    // :: error: (reset.not.owning)
     r.reset();
   }
 
@@ -26,7 +26,7 @@ class CreatesMustCallForIndirect {
   }
 
   public static void reset_local() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForIndirect r = new CreatesMustCallForIndirect();
     r.reset();
   }
@@ -38,22 +38,21 @@ class CreatesMustCallForIndirect {
   }
 
   public static void reset_local3() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForIndirect r = new CreatesMustCallForIndirect();
-    // Ideally, we'd issue a reset.not.owning error on the next line instead, but not being able to
-    // parse
-    // the case and requiring it to be in a local var is okay too.
-    // :: error: createsmustcallfor.target.unparseable
+    // Ideally, we'd issue a reset.not.owning error on the next line instead, but not being able
+    // to parse the case and requiring it to be in a local var is okay too.
+    // :: error: (createsmustcallfor.target.unparseable)
     ((CreatesMustCallForIndirect) r).reset();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   public static void test(@Owning CreatesMustCallForIndirect r) {
     resetIndirect_anno(r);
   }
 
   public static void test2(CreatesMustCallForIndirect r) {
-    // :: error: reset.not.owning
+    // :: error: (reset.not.owning)
     resetIndirect_anno(r);
   }
 

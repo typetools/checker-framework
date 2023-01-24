@@ -143,6 +143,7 @@ public class LockEffectAnnotations {
   @GuardedBy("lock") class MyClass3 {}
 
   @GuardedBy({}) class MyClass4 {}
+
   // :: error: (guardsatisfied.location.disallowed)
   @GuardSatisfied class MyClass5 {}
 

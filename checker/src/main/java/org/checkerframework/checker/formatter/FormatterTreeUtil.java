@@ -191,8 +191,9 @@ public class FormatterTreeUtil {
     ExecutableElement methodElement = TreeUtils.elementFromUse(invocationTree);
     int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
     if (formatStringIndex == -1) {
-      // Reporting the error is redundant if the method was declared in source code, because the
-      // visitor will have reported it; but it is necessary if the method was declared in byte code.
+      // Reporting the error is redundant if the method was declared in source code, because
+      // the visitor will have reported it; but it is necessary if the method was declared in
+      // byte code.
       atypeFactory
           .getChecker()
           .reportError(invocationTree, "format.method", methodElement.getSimpleName());
@@ -209,7 +210,7 @@ public class FormatterTreeUtil {
   /** Represents a format method invocation in the syntax tree. */
   public class FormatCall {
     /** The call itself. */
-    final MethodInvocationTree invocationTree;
+    /*package-private*/ final MethodInvocationTree invocationTree;
     /** The format string argument. */
     private final ExpressionTree formatStringTree;
     /** The type of the format string argument. */

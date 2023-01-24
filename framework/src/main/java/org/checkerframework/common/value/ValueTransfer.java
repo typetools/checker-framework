@@ -1,7 +1,6 @@
 package org.checkerframework.common.value;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -174,8 +173,9 @@ public class ValueTransfer extends CFTransfer {
       // characters always have length 1
       return Collections.singletonList(1);
     } else if (isIntRange(subNode, p)) {
-      // Try to get a list of lengths from a range of integer values converted to string @IntVal is
-      // not checked for, because if it is present, we would already have the actual string values
+      // Try to get a list of lengths from a range of integer values converted to string.
+      // @IntVal is not checked for, because if it is present, we would already have the
+      // actual string values.
       Range lengthRange = getIntRangeStringLengthRange(subNode, p);
       return ValueCheckerUtils.getValuesFromRange(lengthRange, Integer.class);
     } else if (subNodeTypeKind == TypeKind.BYTE) {
@@ -1180,10 +1180,10 @@ public class ValueTransfer extends CFTransfer {
         || atypeFactory.isIntRange(rightAnno)
         || isIntegralUnknownVal(rightNode, rightAnno)
         || isIntegralUnknownVal(leftNode, leftAnno)) {
-      // If either is @UnknownVal, then refineIntRanges will treat it as the max range and thus
-      // refine it if possible.  Also, if either is an @IntVal, then it will be converted to a
-      // range.  This is less precise in some cases, but avoids the complexity of comparing a list
-      // of values to a range. (This could be implemented in the future.)
+      // If either is @UnknownVal, then refineIntRanges will treat it as the max range and
+      // thus refine it if possible.  Also, if either is an @IntVal, then it will be converted
+      // to a range.  This is less precise in some cases, but avoids the complexity of
+      // comparing a list of values to a range. (This could be implemented in the future.)
       return refineIntRanges(leftNode, leftAnno, rightNode, rightAnno, op, thenStore, elseStore);
     }
 
@@ -1368,7 +1368,8 @@ public class ValueTransfer extends CFTransfer {
           (currentValueFromStore == null
               ? atypeFactory.UNKNOWNVAL
               : getValueAnnotation(currentValueFromStore));
-      // Combine the new annotations based on the results of the comparison with the existing type.
+      // Combine the new annotations based on the results of the comparison with the existing
+      // type.
       AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
       store.insertValue(je, newAnno);
 
@@ -1496,12 +1497,11 @@ public class ValueTransfer extends CFTransfer {
   protected void processConditionalPostconditions(
       MethodInvocationNode n,
       ExecutableElement methodElement,
-      Tree tree,
+      ExpressionTree tree,
       CFStore thenStore,
       CFStore elseStore) {
     // For String.startsWith(String) and String.endsWith(String), refine the minimum length
     // of the receiver to the minimum length of the argument.
-
     ValueMethodIdentifier methodIdentifier = atypeFactory.getMethodIdentifier();
     if (methodIdentifier.isStartsWithMethod(methodElement)
         || methodIdentifier.isEndsWithMethod(methodElement)) {

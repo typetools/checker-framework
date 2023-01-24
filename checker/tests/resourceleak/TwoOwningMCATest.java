@@ -1,7 +1,7 @@
 // Test case for issue 5453: https://github.com/typetools/checker-framework/issues/5453
 
-import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.checker.mustcall.qual.*;
 
 @InheritableMustCall({"finish1", "finish2"})
 class TwoOwningMCATest {
@@ -16,12 +16,12 @@ class TwoOwningMCATest {
     this.f2 = g;
   }
 
-  @EnsuresCalledMethods(value="this.f1", methods="a")
+  @EnsuresCalledMethods(value = "this.f1", methods = "a")
   void finish1() {
     this.f1.a();
   }
 
-  @EnsuresCalledMethods(value="this.f2", methods="a")
+  @EnsuresCalledMethods(value = "this.f2", methods = "a")
   void finish2() {
     this.f2.a();
   }

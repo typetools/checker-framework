@@ -209,8 +209,9 @@ public class AnnotatedTypeCopier
     List<AnnotatedTypeVariable> copyTypeVarTypes = new ArrayList<>(originalTypeVariables.size());
     for (final AnnotatedTypeVariable typeVariable : originalTypeVariables) {
       // This field is needed to identify exactly when the declaration of an executable's
-      // type parameter is visited.  When subtypes of this class visit the type parameter's
-      // component types, they will likely set visitingExecutableTypeParam to false.
+      // type parameter is visited.  When subtypes of this class visit the type
+      // parameter's component types, they will likely set visitingExecutableTypeParam to
+      // false.
       // Therefore, we set this variable on each iteration of the loop.
       // See TypeVariableSubstitutor.Visitor.visitTypeVariable for an example of this.
       visitingExecutableTypeParam = true;

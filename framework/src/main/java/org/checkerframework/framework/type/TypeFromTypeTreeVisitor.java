@@ -270,7 +270,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
       // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
       // none of which are declarations.  But `cls.getTypeParameters()` returns a list
-      // of type parameter declarations (`TypeParameterTree`), so this  call
+      // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
       return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
     } else if (elt instanceof ExecutableElement) {
@@ -335,7 +335,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitIntersectionType(
       IntersectionTypeTree node, AnnotatedTypeFactory f) {
-    // This method is only called for IntersectionTypes in casts.  There is no IntersectionTypeTree
+    // This method is only called for IntersectionTypes in casts.  There is no
+    // IntersectionTypeTree
     // for a type variable bound that is an intersection.  See #visitTypeParameter.
     AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(node);
     List<AnnotatedTypeMirror> bounds =
