@@ -14,9 +14,16 @@ import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 
 /** Formats units-of-measure annotations. */
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
+  /** The checker. */
   protected final BaseTypeChecker checker;
+  /** Javac element utilities. */
   protected final Elements elements;
 
+  /**
+   * Create a UnitsAnnotatedTypeFormatter.
+   *
+   * @param checker the checker
+   */
   public UnitsAnnotatedTypeFormatter(BaseTypeChecker checker) {
     // Utilize the Default Type Formatter, but force it to print out Invisible Qualifiers
     // keep super call in sync with implementation in DefaultAnnotatedTypeFormatter
