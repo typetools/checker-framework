@@ -8,9 +8,9 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
   protected final BaseTypeChecker checker;

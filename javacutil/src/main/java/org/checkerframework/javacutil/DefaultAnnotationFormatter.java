@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,8 +10,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
@@ -25,7 +23,13 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   public static boolean isInvisibleQualified(AnnotationMirror anno) {
     TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
-    return annoElement.getAnnotation(InvisibleQualifier.class) != null;
+    for (AnnotationMirror metaAnno : annoElement.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(
+          metaAnno, "org.checkerframework.framework.qual.InvisibleQualifier")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
