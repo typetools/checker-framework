@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class FrameworkTest extends CheckerFrameworkPerFileTest {
 
   public FrameworkTest(File testFile) {
-    super(testFile, EvenOddChecker.class, "framework", "-Anomsgtext");
+    super(testFile, EvenOddChecker.class, "framework");
   }
 
   @Parameters

@@ -25,7 +25,6 @@ public class AinferIndexAjavaValidationTest extends AinferValidatePerDirectoryTe
         "index",
         "ainfer-index/annotated",
         AinferIndexAjavaTest.class,
-        "-Anomsgtext",
         ajavaArgFromFiles(testFiles, "index"),
         "-Awarns");
   }

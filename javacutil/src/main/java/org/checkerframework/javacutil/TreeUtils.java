@@ -131,6 +131,16 @@ public final class TreeUtils {
   /** The {@code YieldTree.getValue()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method yieldGetValue = null;
 
+  /** Tree kinds that represent a binary comparison. */
+  private static final Set<Tree.Kind> BINARY_COMPARISON_TREE_KINDS =
+      EnumSet.of(
+          Tree.Kind.EQUAL_TO,
+          Tree.Kind.NOT_EQUAL_TO,
+          Tree.Kind.LESS_THAN,
+          Tree.Kind.GREATER_THAN,
+          Tree.Kind.LESS_THAN_EQUAL,
+          Tree.Kind.GREATER_THAN_EQUAL);
+
   static {
     if (SystemUtil.jreVersion >= 12) {
       try {
@@ -2366,5 +2376,15 @@ public final class TreeUtils {
       kind = Tree.Kind.CLASS;
     }
     return kind;
+  }
+
+  /**
+   * Returns true if the {@code tree} is a binary tree that performs a comparison.
+   *
+   * @param tree the tree to check
+   * @return whether the tree represents a binary comparison
+   */
+  public static boolean isBinaryComparison(BinaryTree tree) {
+    return BINARY_COMPARISON_TREE_KINDS.contains(tree.getKind());
   }
 }
