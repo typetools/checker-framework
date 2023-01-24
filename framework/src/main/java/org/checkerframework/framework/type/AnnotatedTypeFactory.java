@@ -3529,7 +3529,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param elt an element
    * @return the tree declaration of the element if found
    */
-  public final Tree declarationFromElement(Element elt) {
+  public final @Nullable Tree declarationFromElement(Element elt) {
     // if root is null, we cannot find any declaration
     if (root == null) {
       return null;

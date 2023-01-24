@@ -518,7 +518,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * The first two arugments are a javac tree and a JavaParser node representing the same class.
+   * The first two arguments are a javac tree and a JavaParser node representing the same class.
    * This method creates wrappers around all the classes, fields, and methods in that class, and
    * stores those wrappers in {@code sourceAnnos}.
    *
