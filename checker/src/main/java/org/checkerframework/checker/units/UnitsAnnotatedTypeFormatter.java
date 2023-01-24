@@ -12,6 +12,7 @@ import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 
+/** Formats units-of-measure annotations. */
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
   protected final BaseTypeChecker checker;
   protected final Elements elements;

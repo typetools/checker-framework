@@ -18,8 +18,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
   /**
    * Returns true if, by default, anno should not be printed.
    *
-   * @see org.checkerframework.framework.qual.InvisibleQualifier
+   * @anno an annotation to check for printability/invisibility
    * @return true if anno's declaration was qualified by InvisibleQualifier
+   * @see org.checkerframework.framework.qual.InvisibleQualifier
    */
   public static boolean isInvisibleQualified(AnnotationMirror anno) {
     TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
