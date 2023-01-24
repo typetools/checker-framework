@@ -4594,8 +4594,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       case TYPE_CAST:
         TypeCastTree cast = (TypeCastTree) parentTree;
-        assert isFunctionalInterface(
-            trees.getTypeMirror(getPath(cast.getType())), parentTree, tree);
+        assertIsFunctionalInterface(trees.getTypeMirror(getPath(cast.getType())), parentTree, tree);
         AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
         if (castATM.getKind() == TypeKind.INTERSECTION) {
           AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
@@ -4619,14 +4618,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
         AnnotatedTypeMirror constructorParam =
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
-        assert isFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
         return constructorParam;
 
       case NEW_ARRAY:
         NewArrayTree newArray = (NewArrayTree) parentTree;
         AnnotatedArrayType newArrayATM = getAnnotatedType(newArray);
         AnnotatedTypeMirror elementATM = newArrayATM.getComponentType();
-        assert isFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
         return elementATM;
 
       case METHOD_INVOCATION:
@@ -4641,17 +4640,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           param = AnnotatedTypeMirror.createType(typeMirror, this, false);
           addDefaultAnnotations(param);
         }
-        assert isFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
 
       case VARIABLE:
         VariableTree varTree = (VariableTree) parentTree;
-        assert isFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
+        assertIsFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
         return getAnnotatedType(varTree.getType());
 
       case ASSIGNMENT:
         AssignmentTree assignmentTree = (AssignmentTree) parentTree;
-        assert isFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
+        assertIsFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
         return getAnnotatedType(assignmentTree.getVariable());
 
       case RETURN:
@@ -4696,7 +4695,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
         AnnotatedTypeMirror conditionalType =
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
-        assert isFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
 
       default:
@@ -4709,30 +4708,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  private boolean isFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
+  /**
+   * Throws an exception if the type is not a funtional interface.
+   *
+   * @param typeMirror a type that must be a funtional interface
+   * @param contextTree the tree that has the given type; used only for diagnostic messages
+   * @param tree a labmba tree that encloses {@code contextTree}; used only for diagnostic messages
+   */
+  private void assertIsFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
       // Ignore wildcards, because they are uninferred type arguments.
-      return true;
+      return;
     }
     Type type = (Type) typeMirror;
+    if (TypesUtils.isFunctionalInterface(type, processingEnv)) {
+      return;
+    }
 
-    if (!TypesUtils.isFunctionalInterface(type, processingEnv)) {
-      if (type.getKind() == TypeKind.INTERSECTION) {
-        IntersectionType itype = (IntersectionType) type;
-        for (TypeMirror t : itype.getBounds()) {
-          if (TypesUtils.isFunctionalInterface(t, processingEnv)) {
-            // As long as any of the bounds is a functional interface
-            // we should be fine.
-            return true;
-          }
+    if (type.getKind() == TypeKind.INTERSECTION) {
+      IntersectionType itype = (IntersectionType) type;
+      for (TypeMirror t : itype.getBounds()) {
+        if (TypesUtils.isFunctionalInterface(t, processingEnv)) {
+          // As long as any of the bounds is a functional interface, we should be fine.
+          return;
         }
       }
-      throw new BugInCF(
-          "Expected the type of %s tree in assignment context to be a functional interface. "
-              + "Found type: %s for tree: %s in lambda tree: %s",
-          contextTree.getKind(), type, contextTree, tree);
     }
-    return true;
+
+    throw new BugInCF(
+        "Expected the type of %s tree in assignment context to be a functional interface. "
+            + "Found type: %s for tree: %s in lambda tree: %s",
+        contextTree.getKind(), type, contextTree, tree);
   }
 
   /**
