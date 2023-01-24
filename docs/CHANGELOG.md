@@ -10,6 +10,8 @@ This assumption is unsound in general, but it holds for most code.
 
 **Implementation details:**
 
+`getQualifierKind()` throws an exception rather than returning null.
+
 **Closed issues:**
 
 
