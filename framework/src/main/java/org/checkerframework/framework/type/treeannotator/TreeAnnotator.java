@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -22,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
   /** The type factory. */
-  protected final @Nullable AnnotatedTypeFactory atypeFactory;
+  protected final AnnotatedTypeFactory atypeFactory;
 
   /**
    * Create a new TreeAnnotator.

@@ -164,12 +164,16 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
   /**
    * Returns the qualifier kind for the given annotation.
    *
-   * @param anno annotation mirror
+   * @param anno an annotation mirror that is in this hierarchy
    * @return the qualifier kind for the given annotation
    */
   protected QualifierKind getQualifierKind(AnnotationMirror anno) {
     String name = AnnotationUtils.annotationName(anno);
-    return getQualifierKind(name);
+    QualifierKind result = getQualifierKind(name);
+    if (result == null) {
+      throw new BugInCF("No qualifier kind for " + anno);
+    }
+    return result;
   }
 
   /**

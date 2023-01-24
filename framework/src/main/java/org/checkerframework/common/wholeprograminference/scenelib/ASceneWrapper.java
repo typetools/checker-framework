@@ -152,7 +152,7 @@ public class ASceneWrapper {
             break;
           case JAIF:
             // For .jaif files, precompute contracts because the Annotation File
-            // Utilities knows othing about (and cannot depend on) the Checker
+            // Utilities knows nothing about (and cannot depend on) the Checker
             // Framework.
             for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
               AClass aClass = classEntry.getValue();
