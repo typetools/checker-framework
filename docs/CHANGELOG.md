@@ -1,9 +1,11 @@
-Version 3.29.1 (February 1, 2023)
+Version 3.30.0 (February 1, 2023)
 --------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+`getQualifierKind()` throws an exception rather than returning null.
 
 **Closed issues:**
 

@@ -80,14 +80,13 @@ public interface QualifierKindHierarchy {
   List<? extends QualifierKind> allQualifierKinds();
 
   /**
-   * Returns the {@link QualifierKind} for the given annotation class name, or null if one does not
-   * exist.
+   * Returns the {@link QualifierKind} for the given annotation class name. Throws an exception if
+   * one does not exist.
    *
    * @param name canonical name of an annotation class
-   * @return the {@link QualifierKind} for the given annotation class name, or null if one does not
-   *     exist
+   * @return the {@link QualifierKind} for the given annotation class name
    */
-  @Nullable QualifierKind getQualifierKind(@CanonicalName String name);
+  QualifierKind getQualifierKind(@CanonicalName String name);
 
   /**
    * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code clazz}
