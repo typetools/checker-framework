@@ -327,13 +327,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (type.getAnnotations().isEmpty()) {
-        if (!maybeIntegral(type)) {
-          AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
-          if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
-              && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
-            type.addAnnotation(SIGNED);
-          }
+      if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
+        if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
+            && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
+          type.addAnnotation(SIGNED);
         }
       }
       return null;
