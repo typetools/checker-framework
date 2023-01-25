@@ -1104,6 +1104,20 @@ the one in the test.
 \end{Verbatim}
 \end{enumerate}
 
+There are two other ways to suppress the warning:
+
+\begin{itemize}
+\item
+  Put the expression in a local variable before the invocation.  A method
+  call never affects the value of a local variable.
+\item
+  If the warning is about a formal parameter (including the receiver) to a
+  method \<foo()>, then instead of declaring \<foo()> as
+  \<@SideEffectFree>, you can supply the
+  <-AinvocationPreservesArgumentNullness> command-line argument; see
+  Section~\ref{nullness-invocationPreservesArgumentNullness}.
+\end{itemize}
+
 
 \subsubsectionAndLabel{Deterministic methods}{type-refinement-determinism}
 
