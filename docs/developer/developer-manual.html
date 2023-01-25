@@ -137,13 +137,13 @@ wrapper</a>.
 Frequently-used tasks:
 </p>
 <ul>
-  <li> <code>assemble</code>: builds all jars.
-  <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
+  <li> <code>assemble</code>: builds all artifacts, including jars and Javadoc jars.
   <li> <code>assembleForJavac</code>: builds only the jars required to use checker/bin/javac; faster than assemble.
+  <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
   <li> <code>allTests</code>: runs all tests.
   <li> <code>spotlessApply</code>: reformats Java files.
   <li> <code>spotlessCheck</code>: checks formatting of Java files.
-  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
+  <li> <code><em>NameOfJUnitTest</em></code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
   <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
 
