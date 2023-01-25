@@ -970,7 +970,7 @@ public final class TreeUtils {
    * </ol>
    *
    * @param tree the tree to check
-   * @return true if the tree is a constant-time expression.
+   * @return true if the tree is a constant-time expression
    */
   public static boolean isCompileTimeString(ExpressionTree tree) {
     tree = TreeUtils.withoutParens(tree);
