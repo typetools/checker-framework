@@ -5,8 +5,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationFormatter;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 
 /** A DefaultAnnotatedTypeFormatter that prints null literals without their annotations. */
 public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
