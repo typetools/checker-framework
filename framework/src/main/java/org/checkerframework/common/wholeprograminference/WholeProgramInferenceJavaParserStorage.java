@@ -3,6 +3,7 @@ package org.checkerframework.common.wholeprograminference;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -554,6 +555,12 @@ public class WholeProgramInferenceJavaParserStorage
           @Override
           public void processClass(ClassTree javacTree, RecordDeclaration javaParserNode) {
             addClass(javacTree, javaParserNode);
+          }
+
+          @Override
+          public void processClass(ClassTree javacTree, AnnotationDeclaration javaParserNode) {
+            // TODO: consider supporting inferring annotations on annotation declarations.
+            // addClass(javacTree, javaParserNode);
           }
 
           @Override

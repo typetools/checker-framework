@@ -2,19 +2,13 @@
 // as a class name. This is legal Java, and we encountered it in
 // Apache Hadoop.
 
-import org.checkerframework.common.value.qual.StringVal;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 
 public class UsesAnnotationAsClass {
-  public static String test(StringVal annotation) {
-    String[] value = annotation.value();
-    if (value.length == 1) {
-      return value[0];
-    } else {
-      return "an array";
-    }
-  }
-
-  public static void useTest(StringVal annotation) {
-    test(annotation);
+  public static String test(@AinferSibling2 AinferSibling1 annotation) {
+    String value = annotation.value();
+    // goal of this is to trigger inference for AinferSibling1's definition.
+    String anotherValue = annotation.anotherValue();
+    return value + anotherValue;
   }
 }
