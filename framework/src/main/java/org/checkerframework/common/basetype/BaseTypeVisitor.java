@@ -1483,10 +1483,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       throw new BugInCF("unexpected null tree argument!");
     }
 
-    AnnotatedTypeMirror defaultAtms = atypeFactory.getDefaultAnnotations(tree, type);
+    AnnotatedTypeMirror defaultAtm = atypeFactory.getDefaultAnnotations(tree, type);
     for (AnnotationMirror explicitAnno : explicitAnnos) {
-      AnnotationMirror defaultAtm = defaultAtms.getAnnotationInHierarchy(explicitAnno);
-      if (AnnotationUtils.areSame(defaultAtm, explicitAnno)) {
+      AnnotationMirror defaultAm = defaultAtm.getAnnotationInHierarchy(explicitAnno);
+      if (AnnotationUtils.areSame(defaultAm, explicitAnno)) {
         checker.reportWarning(tree, "redundant.anno", defaultAtm);
       }
     }

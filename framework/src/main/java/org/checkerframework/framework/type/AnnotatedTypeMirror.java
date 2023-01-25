@@ -263,10 +263,17 @@ public abstract class AnnotatedTypeMirror {
    * @param p the qualifier hierarchy to check for
    * @return an annotation from the same hierarchy as p if present
    */
-  public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+  public @Nullable AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+    if (annotations.isEmpty()) {
+      return null;
+    }
     AnnotationMirror aliased = p;
     if (!atypeFactory.isSupportedQualifier(aliased)) {
       aliased = atypeFactory.canonicalAnnotation(p);
+      if (aliased == null) {
+        // This can happen if p is unrelated to this AnnotatedTypeMirror.
+        return null;
+      }
     }
     if (atypeFactory.isSupportedQualifier(aliased)) {
       QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
