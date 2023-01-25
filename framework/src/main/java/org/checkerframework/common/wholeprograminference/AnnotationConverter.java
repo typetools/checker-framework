@@ -25,6 +25,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
 /**
