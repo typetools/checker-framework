@@ -1114,8 +1114,11 @@ There are two other ways to suppress the warning:
   If the warning is about a formal parameter (including the receiver) to a
   method \<foo()>, then instead of declaring \<foo()> as
   \<@SideEffectFree>, you can supply the
-  <-AinvocationPreservesArgumentNullness> command-line argument; see
-  Section~\ref{nullness-invocationPreservesArgumentNullness}.
+  \<-AinvocationPreservesArgumentNullness> command-line argument; see
+  % A better cross-reference is
+  % nullness-invocationPreservesArgumentNullness, but the LaTeX
+  % cross-reference number is an itemized list number, not a section number.
+  Section~\ref{nullness-lint}.
 \end{itemize}
 
 
