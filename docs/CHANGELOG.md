@@ -5,7 +5,7 @@ Version 3.30.0 (February 1, 2023)
 
 The new command-line argument `-AwarnRedundantAnnotations` warns about redundant annotations.
 With this flag, a warning is issued if an explicitly written annotation on a type is the same
-as the default annotation for this type and location.
+as the default annotation.
 
 **Implementation details:**
 
