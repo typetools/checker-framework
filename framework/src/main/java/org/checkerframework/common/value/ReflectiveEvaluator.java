@@ -52,7 +52,7 @@ public class ReflectiveEvaluator {
    * Create a new ReflectiveEvaluator.
    *
    * @param checker the BaseTypeChecker
-   * @param factory the annotated type factory.
+   * @param factory the annotated type factory
    * @param reportWarnings if true, report warnings about problems with evaluation
    */
   public ReflectiveEvaluator(
