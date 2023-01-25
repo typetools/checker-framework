@@ -267,17 +267,17 @@ public abstract class AnnotatedTypeMirror {
     if (annotations.isEmpty()) {
       return null;
     }
-    AnnotationMirror aliased = p;
-    if (!atypeFactory.isSupportedQualifier(aliased)) {
-      aliased = atypeFactory.canonicalAnnotation(p);
-      if (aliased == null) {
+    AnnotationMirror canonical = p;
+    if (!atypeFactory.isSupportedQualifier(canonical)) {
+      canonical = atypeFactory.canonicalAnnotation(p);
+      if (canonical == null) {
         // This can happen if p is unrelated to this AnnotatedTypeMirror.
         return null;
       }
     }
-    if (atypeFactory.isSupportedQualifier(aliased)) {
+    if (atypeFactory.isSupportedQualifier(canonical)) {
       QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-      AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, aliased);
+      AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
       }
@@ -295,14 +295,14 @@ public abstract class AnnotatedTypeMirror {
    * @return an annotation from the same hierarchy as p if present
    */
   public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
-    AnnotationMirror aliased = p;
-    if (!atypeFactory.isSupportedQualifier(aliased)) {
-      aliased = atypeFactory.canonicalAnnotation(p);
+    AnnotationMirror canonical = p;
+    if (!atypeFactory.isSupportedQualifier(canonical)) {
+      canonical = atypeFactory.canonicalAnnotation(p);
     }
-    if (atypeFactory.isSupportedQualifier(aliased)) {
+    if (atypeFactory.isSupportedQualifier(canonical)) {
       QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
-          qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), aliased);
+          qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
       if (anno != null) {
         return anno;
       }
@@ -592,9 +592,9 @@ public abstract class AnnotatedTypeMirror {
     if (atypeFactory.isSupportedQualifier(a)) {
       this.annotations.add(a);
     } else {
-      AnnotationMirror aliased = atypeFactory.canonicalAnnotation(a);
-      if (atypeFactory.isSupportedQualifier(aliased)) {
-        addAnnotation(aliased);
+      AnnotationMirror canonical = atypeFactory.canonicalAnnotation(a);
+      if (atypeFactory.isSupportedQualifier(canonical)) {
+        addAnnotation(canonical);
       }
     }
   }

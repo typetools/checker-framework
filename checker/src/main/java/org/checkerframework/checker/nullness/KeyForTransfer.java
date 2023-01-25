@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore, KeyForTransfer> {
 
   /** The KeyFor.value element/field. */
-  ExecutableElement keyForValueElement;
+  protected final ExecutableElement keyForValueElement;
 
   /**
    * Creates a new KeyForTransfer.

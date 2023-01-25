@@ -13,7 +13,8 @@ import java.lang.annotation.Target;
  *
  * <p>Other defaults can be specified for a checker via the {@link DefaultFor} meta-annotation,
  * which takes precedence over {@code DefaultQualifierInHierarchy}, or via {@code
- * GenericAnnotatedTypeFactory.addCheckedCodeDefaults()}.
+ * GenericAnnotatedTypeFactory.addCheckedCodeDefaults()}. Also, the CLIMB-to-top rule applies unless
+ * explicitly overruled.
  *
  * <p>The {@link DefaultQualifier} annotation, which targets Java code elements, takes precedence
  * over {@code DefaultQualifierInHierarchy}.
@@ -23,6 +24,7 @@ import java.lang.annotation.Target;
  *
  * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults and
  *     inference)
+ * @checker_framework.manual #defaults Default qualifiers for unannotated types
  * @see org.checkerframework.framework.qual.DefaultQualifier
  */
 @Documented
