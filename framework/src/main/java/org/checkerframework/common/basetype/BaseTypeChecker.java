@@ -194,6 +194,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    *
    * @return the subchecker classes on which this checker depends
    */
+  // This is never looked up in, but it is iterated over (and added to, which does a lookup).
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     if (shouldResolveReflection()) {
       // This must return a modifiable set because clients modify it.
