@@ -50,7 +50,7 @@ public class AnnotationConverter {
             String.format(
                 "annotationMirrorToAnnotation %s [%s] keyset=%s",
                 am, am.getClass(), am.getElementValues().keySet()));
-    Map<String, AnnotationFieldType> fieldTypes = new HashMap<>(am.getElementValues().size());
+    Map<String, AnnotationFieldType> fieldTypes = new ArrayMap<>(am.getElementValues().size());
     // Handling cases where there are fields in annotations.
     for (ExecutableElement ee : am.getElementValues().keySet()) {
       AnnotationFieldType aft = getAnnotationFieldType(ee);
