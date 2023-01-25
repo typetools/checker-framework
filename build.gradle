@@ -1200,9 +1200,6 @@ task releaseBuild(group: 'Build') {
   dependsOn(clean)
   doFirst {
     release = true
-    if (!isJava8) {
-      throw new RuntimeException('You must use Java 8 when making a release. You are using ' + JavaVersion.current() + '.')
-    }
   }
   // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
   finalizedBy(buildAll)

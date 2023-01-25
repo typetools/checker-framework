@@ -110,7 +110,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   private final UpperBoundAnnotatedTypeFactory atypeFactory;
 
   /** The int TypeMirror. */
-  final TypeMirror intTM;
+  private final TypeMirror intTM;
 
   /**
    * Creates a new UpperBoundTransfer.

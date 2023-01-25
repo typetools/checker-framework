@@ -151,11 +151,15 @@ public class InitializationTransfer<
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.
-    if (!lhs.containsUnknown()) {
-      if (lhs instanceof FieldAccess) {
-        FieldAccess fa = (FieldAccess) lhs;
-        result.getRegularStore().addInitializedField(fa);
-      }
+    if (!lhs.containsUnknown() && lhs instanceof FieldAccess) {
+      FieldAccess fa = (FieldAccess) lhs;
+      // Only a ternary expression may cause a conditional transfer result, e.g.
+      //      condExpr#num0 = (obj instanceof List)
+      // In such cases, the LHS is never a FieldAccess, so we can assert that result
+      // is a regular transfer result. This is important because otherwise the
+      // addInitializedField would be called on a temporary, merged store.
+      assert result instanceof RegularTransferResult;
+      result.getRegularStore().addInitializedField(fa);
     }
     return result;
   }

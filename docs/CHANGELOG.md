@@ -1,4 +1,4 @@
-Version 3.29.1 (February 1, 2023)
+Version 3.30.0 (February 1, 2023)
 --------------------------------
 
 **User-visible changes:**
@@ -165,14 +165,14 @@ Version 3.22.2 (June 14, 2022)
 
 **Implementation details:**
 
-Expose CFG APIs to allow inserting jumps and throws
+Expose CFG APIs to allow inserting jumps and throws.
 
 
 Version 3.22.1 (June 1, 2022)
 -----------------------------
 
 **Closed issues:**
-#58, #5136, #5138, #5142, #5143,
+#58, #5136, #5138, #5142, #5143.
 
 
 Version 3.22.0 (May 2, 2022)
@@ -228,6 +228,7 @@ Deprecated CFGLambda.getMethod{Name} in favor of getEnclosingMethod{Name}.
 
 **Closed issues:**
 #4615, #4993, #5006, #5007, #5008, #5013, #5016, #5021.
+
 
 Version 3.21.1 (January 7, 2022)
 --------------------------------
