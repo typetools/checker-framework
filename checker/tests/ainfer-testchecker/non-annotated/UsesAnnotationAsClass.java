@@ -1,6 +1,6 @@
-// Tests that WPI doesn't break when an annotation name is used
-// as a class name. This is legal Java, and we encountered it in
-// Apache Hadoop.
+// Tests that WPI doesn't break when an we attempt to infer something
+// about a member of an annotation declaration (in this case, the receivers
+// of value() and anotherValue() in AinferSibling1's definition).
 
 import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling2;
 

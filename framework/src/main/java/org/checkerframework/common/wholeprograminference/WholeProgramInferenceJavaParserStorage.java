@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -750,6 +751,17 @@ public class WholeProgramInferenceJavaParserStorage
 
     TypeElement toplevelClass = ElementUtils.toplevelEnclosingTypeElement(element);
     String path = ElementUtils.getSourceFilePath(toplevelClass);
+    if (toplevelClass.getKind() == ElementKind.ANNOTATION_TYPE) {
+      // Inferring annotations on elements of annotation declarations is not supported.
+      // One issue with supporting inference on annotation declaration elements is that
+      // AnnotatedTypeFactory#declarationFromElement returns null for annotation declarations
+      // quite commonly (because Trees#getTree, which it delegates to, does as well).
+      // In this case, we return path here without actually attempting to create the wrappers
+      // for the annotation declaration. The rest of WholeProgramInferenceJavaParserStorage
+      // already needs to handle classes without entries in the various tables (because of the
+      // possibility of classes outside the current compilation unit), so this is safe.
+      return path;
+    }
     if (classToAnnos.containsKey(ElementUtils.getBinaryName(toplevelClass))) {
       return path;
     }
