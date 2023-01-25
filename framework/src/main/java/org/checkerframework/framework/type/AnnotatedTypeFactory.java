@@ -112,20 +112,21 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
+import org.checkerframework.framework.util.TypeInformationPresenter;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -507,6 +508,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private AnnotatedDeclaredType iterableDeclType;
 
   /**
+   * If the option "lspTypeInfo" is defined, this presenter will report the type information of
+   * every type-checked class. This information can be visualized by an editor/IDE that supports
+   * LSP.
+   */
+  private final TypeInformationPresenter typeInformationPresenter;
+
+  /**
    * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
    * root. (These parameters are required so that the factory may conduct the appropriate
    * annotation-gathering analyses on certain tree types.)
@@ -566,6 +574,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     this.typeFormatter = createAnnotatedTypeFormatter();
     this.annotationFormatter = createAnnotationFormatter();
+
+    if (checker.hasOption("lspTypeInfo")) {
+      this.typeInformationPresenter = new TypeInformationPresenter(this);
+    } else {
+      this.typeInformationPresenter = null;
+    }
 
     if (checker.hasOption("infer")) {
       checkInvalidOptionsInferSignatures();
@@ -1342,6 +1356,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public void postProcessClassTree(ClassTree tree) {
     TypesIntoElements.store(processingEnv, this, tree);
     DeclarationsIntoElements.store(processingEnv, this, tree);
+
+    if (typeInformationPresenter != null) {
+      typeInformationPresenter.process(tree);
+    }
+
     if (wholeProgramInference != null) {
       // Write out the results of whole-program inference, just once for each class.  As soon
       // as any class is finished processing, all modified scenes are written to files, in
