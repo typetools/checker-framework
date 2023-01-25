@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /** A live variable transfer function. */
 public class LiveVarTransfer
@@ -21,6 +22,7 @@ public class LiveVarTransfer
     implements BackwardTransferFunction<LiveVarValue, LiveVarStore> {
 
   @Override
+  @SideEffectFree
   public LiveVarStore initialNormalExitStore(
       UnderlyingAST underlyingAST, List<ReturnNode> returnNodes) {
     return new LiveVarStore();
