@@ -855,6 +855,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     AnnotatedTypeMirror atmFromStorage =
         storage.atmFromStorageLocation(rhsATM.getUnderlyingType(), annotationsToUpdate);
     updateAtmWithLub(rhsATM, atmFromStorage);
+
+    // For type variables, infer primary annotations for field type use locations, but
+    // for other locations only infer primary annotations if they are a super type of the upper
+    // bound.
+    if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
+      Set<AnnotationMirror> upperAnnos =
+          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+      // If the inferred type is a subtype of the upper bounds of the
+      // current type in the source code, do nothing.
+      if (upperAnnos.size() == rhsATM.getAnnotations().size()
+          && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+        return;
+      }
+    }
     storage.updateStorageLocationFromAtm(
         rhsATM, lhsATM, annotationsToUpdate, defLoc, ignoreIfAnnotated);
     storage.setFileModified(file);
