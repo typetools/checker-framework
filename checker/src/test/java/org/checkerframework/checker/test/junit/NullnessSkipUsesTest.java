@@ -18,7 +18,6 @@ public class NullnessSkipUsesTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-Anomsgtext",
         "-AskipUses=SkipMe");
   }
 

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A node for the string conversion operation. See JLS 5.1.11 for the definition of string
@@ -68,6 +69,7 @@ public class StringConversionNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.singletonList(getOperand());
   }

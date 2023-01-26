@@ -433,7 +433,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    *
    * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
    *     modified by this method.
-   * @return the unmodifiable list of immediate subcheckers of this checker.
+   * @return the unmodifiable list of immediate subcheckers of this checker
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
       Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
@@ -578,7 +578,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
   }
 
   /** A cache for {@link #getUltimateParentChecker}. */
-  @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
+  private @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
 
   /**
    * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker

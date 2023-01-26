@@ -20,7 +20,7 @@ public class AinferNullnessJaifsTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public AinferNullnessJaifsTest(List<File> testFiles) {
-    super(testFiles, NullnessChecker.class, "nullness", "-Anomsgtext", "-Ainfer=jaifs", "-Awarns");
+    super(testFiles, NullnessChecker.class, "nullness", "-Ainfer=jaifs", "-Awarns");
   }
 
   @Parameters
