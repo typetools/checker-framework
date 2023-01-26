@@ -31,6 +31,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * but not permitted by the annotation.
  */
 public class SideEffectsOnlyAnnoChecker {
+
+  /** Creates a SideEffectsOnlyAnnoChecker. */
+  public SideEffectsOnlyAnnoChecker() {}
+
   /**
    * Returns the computed {@code SideEffectsOnlyResult}.
    *
@@ -60,6 +64,10 @@ public class SideEffectsOnlyAnnoChecker {
    * expressions.
    */
   public static class SideEffectsOnlyResult {
+
+    /** Creates a SideEffectsOnlyResult. */
+    public SideEffectsOnlyResult() {}
+
     /**
      * List of expressions a method side-effects that are not specified in the list of arguments to
      * {@link SideEffectsOnly}.
