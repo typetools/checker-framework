@@ -17,6 +17,8 @@ This assumption is unsound in general, but it holds for most code.
 
 `getQualifierKind()` throws an exception rather than returning null.
 
+Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
+
 **Closed issues:**
 
 
