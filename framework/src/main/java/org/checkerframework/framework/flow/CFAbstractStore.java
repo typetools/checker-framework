@@ -264,12 +264,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
       if (sideEffectsUnrefineAliases) {
+        // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
         if (!sideEffectsOnlyExpressions.isEmpty()) {
           for (JavaExpression e : sideEffectsOnlyExpressions) {
             if (!e.isUnmodifiableByOtherCode()) {
-              // update local variables
+              // Remove any computed information about the expression.
               localVariableValues.keySet().remove(e);
-              // update field values
               fieldValues.keySet().remove(e);
             }
           }
