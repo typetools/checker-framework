@@ -1004,6 +1004,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     //   return;
     // }
 
+    TreePath body = null;
+    boolean bodyAssigned = false;
+
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, node)) {
       // check "no" purity
       EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
@@ -1017,7 +1020,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
 
-      TreePath body = atypeFactory.getPath(node.getBody());
+      body = atypeFactory.getPath(node.getBody());
+      bodyAssigned = true;
       PurityResult r;
       if (body == null) {
         r = new PurityResult();
@@ -1073,6 +1077,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     if (checkSideEffectsOnly) {
+      if (bodyAssigned == false) {
+        body = atypeFactory.getPath(node.getBody());
+        bodyAssigned = true;
+      }
       if (body == null) {
         return;
       } else {
