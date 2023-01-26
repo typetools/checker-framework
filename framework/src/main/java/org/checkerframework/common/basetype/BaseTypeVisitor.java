@@ -237,7 +237,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private final boolean checkPurity;
   /** True if "-AcheckPurityAnnotations" was passed on the command line. */
-  private final boolean checkSideEffectsOnly;
+  private final boolean checkPurityAnnotations;
 
   /** The tree of the enclosing method that is currently being visited. */
   protected @Nullable MethodTree methodTree = null;
@@ -274,7 +274,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
     checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
-    checkSideEffectsOnly = checker.hasOption("checkPurityAnnotations");
+    checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
   }
 
   /** An array containing just {@code BaseTypeChecker.class}. */
@@ -999,7 +999,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     // if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, node) &&
-    // !checkSideEffectsOnly) {
+    // !checkPurityAnnotations) {
     //   // There is nothing to check.
     //   return;
     // }
@@ -1076,7 +1076,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (checkSideEffectsOnly) {
+    if (checkPurityAnnotations) {
       if (bodyAssigned == false) {
         body = atypeFactory.getPath(node.getBody());
         bodyAssigned = true;
