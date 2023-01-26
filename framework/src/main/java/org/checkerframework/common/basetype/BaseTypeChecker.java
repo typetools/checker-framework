@@ -434,7 +434,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    *
    * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
    *     modified by this method.
-   * @return the unmodifiable list of immediate subcheckers of this checker.
+   * @return the unmodifiable list of immediate subcheckers of this checker
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
       Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
