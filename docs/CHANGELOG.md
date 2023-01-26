@@ -12,6 +12,8 @@ redundant annotations, only some.
 
 `getQualifierKind()` throws an exception rather than returning null.
 
+Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
+
 **Closed issues:**
 
 
