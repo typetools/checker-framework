@@ -60,6 +60,7 @@ The process takes around 2 hours (including manual steps) when all goes accordin
     <ul>
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration tests</a></li>
+      <li><a href="#snapshot_release">Snapshot release</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
         <ul>
@@ -165,7 +166,7 @@ TreeAnnotator
         </p>
       </li>
       <li>
-        <b>Update the Annotation Tools version number</b>, again <em>in the <code>master</code> branch</em>.
+        <b>Update the Annotation Tools version number</b>, again <em>in the <code>master</code> branch</em>
         in <code>annotation-file-utilities/build.gradle</code>.
         (TODO: Are any other replacements necessary?)
       </li>
@@ -246,6 +247,38 @@ TreeAnnotator
   </li>
 </ol>
 
+  <h2 id="snapshot_release">Snapshot release</h2>
+  <p>This section explains how to release the Maven artifacts to the snapshot repository.</p>
+  <ol>
+    <li>
+      Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
+      and <code>SONATYPE_NEXUS_PASSWORD</code>.
+    </li>
+    <li>
+      Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
+    </li>
+    <li>
+      Run <code>./gradlew publish</code> in <code>checker-framework</code>.
+    </li>
+    <li>
+      In the <code>build.gradle</code> file of a project that you want
+      to use the snapshot version of the Checker Framework:
+      <pre>
+repositories {
+  ...
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+
+ext.checkerFrameworkVersion = '3.28.1-SNAPSHOT'
+dependencies {
+  compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+  testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+}
+      </pre>
+    </li>
+  </ol>
+
   <h2 id="pre_release_checklist">Pre-release Checklist</h2>
   <p>If you have not performed a release before you must follow these steps.</p>
   <table class="table">
@@ -299,7 +332,7 @@ SONATYPE_NEXUS_PASSWORD=your_password</pre>
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
         the issue trackers.
-        You should be listed as a member of typetools on a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
+        You should be listed as a member of typetools as a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
       </td>
     </tr>
     <tr>

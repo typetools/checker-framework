@@ -20,8 +20,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationFormatter;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -336,8 +336,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         // underlyingType has this form: "capture#826 of ? extends java.lang.Object".
         // We output only the "capture#826" part.
         // NOTE: The number is the hash code of the captured type variable, so it's
-        // nondeterministic, but it is still important to print it in order to tell the difference
-        // between two captured types.
+        // nondeterministic, but it is still important to print it in order to tell the
+        // difference between two captured types.
         sb.append(underlyingType, 0, underlyingType.indexOf(" of "));
       } else {
         sb.append(type.underlyingType);

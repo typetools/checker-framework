@@ -8,6 +8,7 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
 
 /**
@@ -23,7 +24,11 @@ import org.checkerframework.framework.source.SupportedOptions;
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES
 })
+@StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
+
+  /** Creates a ResourceLeakChecker. */
+  public ResourceLeakChecker() {}
 
   /**
    * Command-line option for counting how many must-call obligations were checked by the Resource
@@ -36,13 +41,13 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * The number of expressions with must-call obligations that were checked. Incremented only if the
    * {@link #COUNT_MUST_CALL} command-line option was supplied.
    */
-  int numMustCall = 0;
+  /*package-private*/ int numMustCall = 0;
 
   /**
    * The number of must-call-related errors issued. The count of verified must-call expressions is
    * the difference between this and {@link #numMustCall}.
    */
-  int numMustCallFailed = 0;
+  private int numMustCallFailed = 0;
 
   @Override
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

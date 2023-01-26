@@ -170,8 +170,8 @@ class SupertypeFinder {
       if (type.getTypeArguments().size() != typeElement.getTypeParameters().size()) {
         if (!type.isUnderlyingTypeRaw()) {
           throw new BugInCF(
-              "AnnotatedDeclaredType's element has a different number of type parameters than"
-                  + " type.%ntype=%s%nelement=%s",
+              "AnnotatedDeclaredType's element has a different number of type"
+                  + " parameters than type.%ntype=%s%nelement=%s",
               type, typeElement);
         }
       }
@@ -220,8 +220,8 @@ class SupertypeFinder {
     private Map<TypeVariable, AnnotatedTypeMirror> getTypeVarToTypeArg(AnnotatedDeclaredType type) {
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
       // addTypeVarsFromEnclosingTypes can't be called with `type` because it calls
-      // `directSupertypes(types)`, which then calls this method. Add the type variables from `type`
-      // and then call addTypeVarsFromEnclosingTypes on the enclosing type.
+      // `directSupertypes(types)`, which then calls this method. Add the type variables from
+      // `type` and then call addTypeVarsFromEnclosingTypes on the enclosing type.
       addTypeVariablesToMapping(type, mapping);
       addTypeVarsFromEnclosingTypes(type.getEnclosingType(), mapping);
       return mapping;

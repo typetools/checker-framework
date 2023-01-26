@@ -1,7 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.ParseResult;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import org.checkerframework.framework.util.JavaParserUtil;
 
 /**
  * Process Java source files in a directory to produce, in-place, minimal stub files.
@@ -68,7 +68,7 @@ public class JavaStubifier {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11);
+    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     projectRoot
@@ -126,7 +126,8 @@ public class JavaStubifier {
       Optional<CompilationUnit> opt = result.getResult();
       if (opt.isPresent()) {
         CompilationUnit cu = opt.get();
-        // Only remove the "contained" comments so that the copyright comment is not removed.
+        // Only remove the "contained" comments so that the copyright comment is not
+        // removed.
         cu.getAllContainedComments().forEach(Node::remove);
         mv.visit(cu, null);
         if (cu.findAll(ClassOrInterfaceDeclaration.class).isEmpty()
@@ -166,7 +167,8 @@ public class JavaStubifier {
     @Override
     public EnumDeclaration visit(EnumDeclaration ed, Void arg) {
       super.visit(ed, arg);
-      // Enums can't be extended, so it is ok to remove them if they are not externally visible.
+      // Enums can't be extended, so it is ok to remove them if they are not externally
+      // visible.
       removeIfPrivateOrPkgPrivate(ed);
       return ed;
     }

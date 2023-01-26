@@ -20,7 +20,6 @@ public class NullnessRecordsTest extends CheckerFrameworkPerDirectoryTest {
         NullnessChecker.class,
         "nullness-records",
         "-AcheckPurityAnnotations",
-        "-Anomsgtext",
         "-Xlint:deprecation");
   }
 

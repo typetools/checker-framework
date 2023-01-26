@@ -238,8 +238,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       filterTree = TreeUtils.getReceiverTree(filterTreeAsMethodInvocation.getMethodSelect());
     }
     // The loop has reached the beginning of a fluent sequence of method calls.  If the ultimate
-    // receiver at the beginning of that fluent sequence is a call to the Filter() constructor, then
-    // use the first argument to the Filter constructor, which is the name of the filter.
+    // receiver at the beginning of that fluent sequence is a call to the Filter() constructor,
+    // then use the first argument to the Filter constructor, which is the name of the filter.
     if (filterTree == null) {
       return null;
     }

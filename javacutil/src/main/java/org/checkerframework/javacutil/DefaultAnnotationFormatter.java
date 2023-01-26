@@ -1,7 +1,6 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,8 +10,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
@@ -20,12 +18,19 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
   /**
    * Returns true if, by default, anno should not be printed.
    *
-   * @see org.checkerframework.framework.qual.InvisibleQualifier
+   * @param anno an annotation to check for printability/invisibility
    * @return true if anno's declaration was qualified by InvisibleQualifier
+   * @see org.checkerframework.framework.qual.InvisibleQualifier
    */
   public static boolean isInvisibleQualified(AnnotationMirror anno) {
     TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
-    return annoElement.getAnnotation(InvisibleQualifier.class) != null;
+    for (AnnotationMirror metaAnno : annoElement.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(
+          metaAnno, "org.checkerframework.framework.qual.InvisibleQualifier")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -112,7 +117,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
-    Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+    // Most annotations have no elements.
+    Map<ExecutableElement, AnnotationValue> nonDefaults = new ArrayMap<>(0);
     elementValues.forEach(
         (element, value) -> {
           if (element.getDefaultValue() == null

@@ -29,7 +29,6 @@ public class CalledMethodsNoDelombokTest extends CheckerFrameworkPerDirectoryTes
         testFiles,
         org.checkerframework.checker.calledmethods.CalledMethodsChecker.class,
         "lombok",
-        "-Anomsgtext",
         "-nowarn");
   }
 

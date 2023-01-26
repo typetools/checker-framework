@@ -1,51 +1,51 @@
 plugins {
-    id 'java-library'
+  id 'java-library'
 }
 
 dependencies {
-    api project(':javacutil')
-    api project(':checker-qual')
+  api project(':javacutil')
+  api project(':checker-qual')
 
-    // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-    api "org.plumelib:plume-util:${plumeUtilVersion}"
+  // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
+  api "org.plumelib:plume-util:${plumeUtilVersion}"
 
-    // External dependencies:
-    // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
-    // artifact (see shadowJar block below) and also in checker.jar (see the comment in
-    // ../build.gradle in the shadowJar block).
+  // External dependencies:
+  // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
+  // artifact (see shadowJar block below) and also in checker.jar (see the comment in
+  // ../build.gradle in the shadowJar block).
 }
 
 // Shadowing Test Sources and Dependencies
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 /**
- * Creates a task with name datflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
- * "org.checkerframework.{@code shadedPkgName}" and the jar name is datflow-${shadedPkgName}.jar.
+ * Creates a task with name dataflow${shadedPkgName} that creates a shaded dataflow jar. The packages will be shaded to
+ * "org.checkerframework.{@code shadedPkgName}" and the jar name is dataflow-${shadedPkgName}.jar.
  * @param shadedPkgName
  * @return
  */
 def createDataflowShaded(shadedPkgName) {
-    tasks.create(name: "datflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
-        description "Builds datflow-${shadedPkgName}.jar."
-        includeEmptyDirs = false
-        archivesBaseName = "datflow-${shadedPkgName}"
-        // Without this line, the Maven artifact will have the classifier "all".
-        archiveClassifier.set('')
+  tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
+    description "Builds dataflow-${shadedPkgName}.jar."
+    includeEmptyDirs = false
+    archivesBaseName = "dataflow-${shadedPkgName}"
+    // Without this line, the Maven artifact will have the classifier "all".
+    archiveClassifier.set('')
 
-        from shadowJar.source
-        configurations = shadowJar.configurations
+    from shadowJar.source
+    configurations = shadowJar.configurations
 
-        destinationDirectory = file("${buildDir}/shadow/dataflow${shadedPkgName}")
+    destinationDirectory = file("${buildDir}/shadow/dataflow${shadedPkgName}")
 
 
-        relocate('org.checkerframework', "org.checkerframework.${shadedPkgName}") {
-            // Shade all Checker Framework packages, except for the dataflow qualifiers.
-            exclude 'org.checkerframework.dataflow.qual.*'
-        }
-
-        // Relocate external dependencies
-        relocate 'org.plume', "org.checkerframework.${shadedPkgName}.org.plume"
+    relocate('org.checkerframework', "org.checkerframework.${shadedPkgName}") {
+      // Shade all Checker Framework packages, except for the dataflow qualifiers.
+      exclude 'org.checkerframework.dataflow.qual.*'
     }
+
+    // Relocate external dependencies
+    relocate 'org.plume', "org.checkerframework.${shadedPkgName}.org.plume"
+  }
 }
 
 // Creates a new shaded dataflow artifact.  To add a new one, add a new method call below, and add
@@ -55,132 +55,161 @@ createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
 task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test the live variable analysis test for dataflow framework.'
-    inputs.file('tests/live-variable/Expected.txt')
-    inputs.file('tests/live-variable/Test.java')
+  description 'Test the live variable analysis test for dataflow framework.'
+  inputs.file('tests/live-variable/Expected.txt')
+  inputs.file('tests/live-variable/Test.java')
 
-    outputs.file('tests/live-variable/Out.txt')
-    outputs.file('tests/live-variable/Test.class')
+  outputs.file('tests/live-variable/Out.txt')
+  outputs.file('tests/live-variable/Test.class')
 
-    delete('tests/live-variable/Out.txt')
-    delete('tests/live-variable/Test.class')
-    doLast {
-        javaexec {
-            workingDir = 'tests/live-variable'
-            if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-            }
-            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-                jvmArgs += [
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-                ]
-            }
+  delete('tests/live-variable/Out.txt')
+  delete('tests/live-variable/Test.class')
+  doLast {
+    javaexec {
+      workingDir = 'tests/live-variable'
+      if (!JavaVersion.current().java9Compatible) {
+        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+      }
+      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+        jvmArgs += [
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+      }
 
-            classpath = sourceSets.test.runtimeClasspath
-            classpath += sourceSets.test.output
-            mainClass = 'livevar.LiveVariable'
-        }
-        exec {
-            workingDir = 'tests/live-variable'
-            executable 'diff'
-            args = ['-u', 'Expected.txt', 'Out.txt']
-        }
+      classpath = sourceSets.test.runtimeClasspath
+      classpath += sourceSets.test.output
+      mainClass = 'livevar.LiveVariable'
     }
+    exec {
+      workingDir = 'tests/live-variable'
+      executable 'diff'
+      args = [
+        '-u',
+        'Expected.txt',
+        'Out.txt'
+      ]
+    }
+  }
 }
 
 task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test issue 3447 test case for backward analysis.'
-    inputs.file('tests/issue3447/Test.java')
-    delete('tests/issue3447/Out.txt')
-    delete('tests/issue3447/Test.class')
-    doLast {
-        javaexec {
-            workingDir = 'tests/issue3447'
-            if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-            }
-            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-                jvmArgs += [
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-                    '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-                ]
-            }
-            classpath = sourceSets.test.runtimeClasspath
-            classpath += sourceSets.test.output
+  description 'Test issue 3447 test case for backward analysis.'
+  inputs.file('tests/issue3447/Test.java')
+  delete('tests/issue3447/Out.txt')
+  delete('tests/issue3447/Test.class')
+  doLast {
+    javaexec {
+      workingDir = 'tests/issue3447'
+      if (!JavaVersion.current().java9Compatible) {
+        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+      }
+      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+        jvmArgs += [
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+      }
+      classpath = sourceSets.test.runtimeClasspath
+      classpath += sourceSets.test.output
 
-            mainClass = 'livevar.LiveVariable'
-        }
+      mainClass = 'livevar.LiveVariable'
     }
+  }
 }
 
 task constantPropagationTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-    description 'Test the constant propagation analysis of the dataflow framework.'
-    inputs.file('tests/constant-propagation/Expected.txt')
-    inputs.file('tests/constant-propagation/Test.java')
+  description 'Test the constant propagation analysis of the dataflow framework.'
+  inputs.file('tests/constant-propagation/Expected.txt')
+  inputs.file('tests/constant-propagation/Test.java')
 
-    outputs.file('tests/constant-propagation/Out.txt')
-    outputs.file('tests/constant-propagation/Test.class')
+  outputs.file('tests/constant-propagation/Out.txt')
+  outputs.file('tests/constant-propagation/Test.class')
 
-    delete('tests/constant-propagation/Out.txt')
-    delete('tests/constant-propagation/Test.class')
-    doLast {
-        javaexec {
-            workingDir = 'tests/constant-propagation'
-            if (!JavaVersion.current().java9Compatible) {
-                jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-            }
-            else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-                jvmArgs += [
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-                        '--add-opens', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-                ]
-            }
-            classpath = sourceSets.test.runtimeClasspath
-            classpath += sourceSets.test.output
-            mainClass = 'constantpropagation.ConstantPropagation'
-        }
-        exec {
-            workingDir = 'tests/constant-propagation'
-            executable 'diff'
-            args = ['-u', 'Expected.txt', 'Out.txt']
-        }
+  delete('tests/constant-propagation/Out.txt')
+  delete('tests/constant-propagation/Test.class')
+  doLast {
+    javaexec {
+      workingDir = 'tests/constant-propagation'
+      if (!JavaVersion.current().java9Compatible) {
+        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+      }
+      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+        jvmArgs += [
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-opens',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+      }
+      classpath = sourceSets.test.runtimeClasspath
+      classpath += sourceSets.test.output
+      mainClass = 'constantpropagation.ConstantPropagation'
     }
+    exec {
+      workingDir = 'tests/constant-propagation'
+      executable 'diff'
+      args = [
+        '-u',
+        'Expected.txt',
+        'Out.txt'
+      ]
+    }
+  }
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
 
 /** Adds information to the publication for uploading the dataflow artifacts to Maven repositories. */
 final dataflowPom(publication) {
-    sharedPublicationConfiguration(publication)
-    publication.from components.java
-    // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
-    publication.pom {
-        name = 'Dataflow'
-        description = 'Dataflow is a dataflow framework based on the javac compiler.'
-        licenses {
-            license {
-                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-                url = 'http://www.gnu.org/software/classpath/license.html'
-                distribution = 'repo'
-            }
-        }
+  sharedPublicationConfiguration(publication)
+  publication.from components.java
+  // Information that is in all pom files is configured in checker-framework/gradle-mvn-push.gradle.
+  publication.pom {
+    name = 'Dataflow'
+    description = 'Dataflow is a dataflow framework based on the javac compiler.'
+    licenses {
+      license {
+        name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+        url = 'http://www.gnu.org/software/classpath/license.html'
+        distribution = 'repo'
+      }
     }
+  }
 }
 
 /**
@@ -188,61 +217,61 @@ final dataflowPom(publication) {
  * @param shadedPkgName the name of the shaded package to use; also used as part of the artifact name: "dataflow-${shadePkgName}"
  */
 final dataflowShadedPom(MavenPublication publication, String shadedPkgName) {
-    sharedPublicationConfiguration(publication)
+  sharedPublicationConfiguration(publication)
 
-    publication.artifactId = "dataflow-${shadedPkgName}"
-    publication.pom {
-        name = "Dataflow (${shadedPkgName})"
-        description = "dataflow-${shadedPkgName} is a dataflow framework based on the javac compiler.\n" +
-                '\n' +
-                'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
-                "First, the packages in this artifact have been renamed to org.checkerframework.${shadedPkgName}.*.\n" +
-                'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.'
-        licenses {
-            license {
-                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-                url = 'http://www.gnu.org/software/classpath/license.html'
-                distribution = 'repo'
-            }
-        }
+  publication.artifactId = "dataflow-${shadedPkgName}"
+  publication.pom {
+    name = "Dataflow (${shadedPkgName})"
+    description = "dataflow-${shadedPkgName} is a dataflow framework based on the javac compiler.\n" +
+        '\n' +
+        'It differs from the org.checkerframework:dataflow artifact in two ways.\n' +
+        "First, the packages in this artifact have been renamed to org.checkerframework.${shadedPkgName}.*.\n" +
+        'Second, unlike the dataflow artifact, this artifact contains the dependencies it requires.'
+    licenses {
+      license {
+        name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
+        url = 'http://www.gnu.org/software/classpath/license.html'
+        distribution = 'repo'
+      }
     }
+  }
 }
 
 
 publishing {
-    publications {
-        dataflow(MavenPublication) {
-            dataflowPom it
-        }
-
-        dataflowShaded(MavenPublication) {
-            dataflowShadedPom(it, 'shaded')
-
-            artifact getTasksByName('datflowshadedJar',false).iterator().next()
-            artifact sourcesJar
-            artifact javadocJar
-        }
-
-        datflowShadednullaway(MavenPublication) {
-            dataflowShadedPom(it, 'nullaway')
-
-            artifact getTasksByName('datflownullawayJar',false).iterator().next()
-            artifact sourcesJar
-            artifact javadocJar
-        }
-
-        datflowShadederrorprone(MavenPublication) {
-            dataflowShadedPom(it, 'errorprone')
-
-            artifact getTasksByName('datflowerrorproneJar',false).iterator().next()
-            artifact sourcesJar
-            artifact javadocJar
-        }
+  publications {
+    dataflow(MavenPublication) {
+      dataflowPom it
     }
+
+    dataflowShaded(MavenPublication) {
+      dataflowShadedPom(it, 'shaded')
+
+      artifact getTasksByName('dataflowshadedJar',false).iterator().next()
+      artifact sourcesJar
+      artifact javadocJar
+    }
+
+    dataflowShadednullaway(MavenPublication) {
+      dataflowShadedPom(it, 'nullaway')
+
+      artifact getTasksByName('dataflownullawayJar',false).iterator().next()
+      artifact sourcesJar
+      artifact javadocJar
+    }
+
+    dataflowShadederrorprone(MavenPublication) {
+      dataflowShadedPom(it, 'errorprone')
+
+      artifact getTasksByName('dataflowerrorproneJar',false).iterator().next()
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
 }
 signing {
-    sign publishing.publications.dataflow
-    sign publishing.publications.dataflowShaded
-    sign publishing.publications.datflowShadednullaway
-    sign publishing.publications.datflowShadederrorprone
+  sign publishing.publications.dataflow
+  sign publishing.publications.dataflowShaded
+  sign publishing.publications.dataflowShadednullaway
+  sign publishing.publications.dataflowShadederrorprone
 }

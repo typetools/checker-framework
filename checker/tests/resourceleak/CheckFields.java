@@ -18,7 +18,7 @@ class CheckFields {
   @InheritableMustCall("b")
   static class FooField {
     private final @Owning Foo finalOwningFoo;
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     private final @Owning Foo finalOwningFooWrong;
     private final Foo finalNotOwningFoo;
     private @Owning Foo owningFoo;
@@ -28,20 +28,20 @@ class CheckFields {
     public FooField() {
       this.finalOwningFoo = new Foo();
       this.finalOwningFooWrong = new Foo();
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       this.finalNotOwningFoo = new Foo();
     }
 
     @CreatesMustCallFor
     void assingToOwningFieldWrong() {
       Foo f = new Foo();
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       this.owningFoo = f;
     }
 
     @CreatesMustCallFor
     void assignToOwningFieldWrong2() {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       this.owningFoo = new Foo();
     }
 
@@ -55,7 +55,7 @@ class CheckFields {
     }
 
     void assingToFinalNotOwningField() {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Foo f = new Foo();
       this.notOwningFoo = f;
     }
@@ -81,7 +81,7 @@ class CheckFields {
 
   void testAccessField() {
     FooField fooField = new FooField();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     fooField.owningFoo = new Foo();
     fooField.b();
   }
@@ -95,24 +95,24 @@ class CheckFields {
   }
 
   void testAccessFieldWrong() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     FooField fooField = new FooField();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     fooField.owningFoo = new Foo();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     fooField.notOwningFoo = new Foo();
   }
 
   @CreatesMustCallFor("#1")
   void testAccessField_param(FooField fooField) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     fooField.owningFoo = new Foo();
     fooField.b();
   }
 
-  // :: error: missing.creates.mustcall.for
+  // :: error: (missing.creates.mustcall.for)
   void testAccessField_param_no_co(FooField fooField) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     fooField.owningFoo = new Foo();
     fooField.b();
   }
@@ -121,11 +121,11 @@ class CheckFields {
 
     // Non-final owning fields also require the surrounding class to have an appropriate MC
     // annotation.
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     @Owning Foo foo;
 
     @CreatesMustCallFor("this")
-    // :: error: creates.mustcall.for.invalid.target
+    // :: error: (creates.mustcall.for.invalid.target)
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();
@@ -137,7 +137,7 @@ class CheckFields {
   static class NestedWrong2 {
     // Non-final owning fields also require the surrounding class to have an appropriate MC
     // annotation.
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     @Owning Foo foo;
 
     @CreatesMustCallFor("this")

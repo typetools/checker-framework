@@ -392,7 +392,8 @@ public class AnnotationFileUtil {
       return resources;
     }
 
-    // The file doesn't exist.  Maybe it is relative to the current working directory, so try that.
+    // The file doesn't exist.  Maybe it is relative to the current working directory, so try
+    // that.
     file = new File(System.getProperty("user.dir"), location);
     if (file.exists()) {
       List<AnnotationFileResource> resources = new ArrayList<>();

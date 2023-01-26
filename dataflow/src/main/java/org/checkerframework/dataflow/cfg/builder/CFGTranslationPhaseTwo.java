@@ -15,7 +15,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.util.MostlySingleton;
+import org.plumelib.util.ArraySet;
 
 /** Class that performs phase two of the translation process. */
 @SuppressWarnings("nullness") // TODO
@@ -46,7 +46,7 @@ public class CFGTranslationPhaseTwo {
     SpecialBlockImpl exceptionalExitBlock = new SpecialBlockImpl(SpecialBlockType.EXCEPTIONAL_EXIT);
 
     // record missing edges that will be added later
-    Set<MissingEdge> missingEdges = new MostlySingleton<>();
+    Set<MissingEdge> missingEdges = new ArraySet<>(1);
 
     // missing exceptional edges
     Set<MissingEdge> missingExceptionalEdges = new LinkedHashSet<>();
@@ -80,8 +80,8 @@ public class CFGTranslationPhaseTwo {
         case CONDITIONAL_JUMP:
           {
             ConditionalJump cj = (ConditionalJump) node;
-            // Exception nodes may fall through to conditional jumps, so we set the block which is
-            // required for the insertion of missing edges.
+            // Exception nodes may fall through to conditional jumps, so we set the
+            // block which is required for the insertion of missing edges.
             node.setBlock(block);
             assert block != null;
             final ConditionalBlockImpl cb = new ConditionalBlockImpl();
@@ -158,8 +158,8 @@ public class CFGTranslationPhaseTwo {
           block = new RegularBlockImpl();
 
           // Ensure linking between e and next block (normal edge).
-          // Note: do not link to the next block for throw statements (these throw exceptions for
-          // sure).
+          // Note: do not link to the next block for throw statements (these throw
+          // exceptions for sure).
           if (!node.getTerminatesExecution()) {
             missingEdges.add(new MissingEdge(e, i + 1));
           }
@@ -213,9 +213,9 @@ public class CFGTranslationPhaseTwo {
         regularExitBlock,
         exceptionalExitBlock,
         in.underlyingAST,
-        in.treeLookupMap,
-        in.convertedTreeLookupMap,
-        in.postfixLookupMap,
+        in.treeToCfgNodes,
+        in.treeToConvertedCfgNodes,
+        in.postfixTreeToCfgNodes,
         in.returnNodes,
         in.declaredClasses,
         in.declaredLambdas);

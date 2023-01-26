@@ -41,21 +41,21 @@ class ACRegularExitPointTest {
 
   void makeFooFinalizeWrong() {
     Foo m;
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     m = new Foo();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = new Foo();
     f.b();
   }
 
   void testStoringInLocalWrong() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = makeFoo();
   }
 
   void testStoringInLocalWrong2() {
     Foo f;
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     f = makeFoo();
   }
 
@@ -64,7 +64,7 @@ class ACRegularExitPointTest {
   }
 
   void testStoringInLocalWrong3() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo foo = new Foo();
   }
 
@@ -85,7 +85,7 @@ class ACRegularExitPointTest {
     Runnable r =
         new Runnable() {
           public void run() {
-            // :: error: required.method.not.called
+            // :: error: (required.method.not.called)
             Foo g = new Foo();
           }
           ;
@@ -111,7 +111,7 @@ class ACRegularExitPointTest {
     f.a();
     Function<Foo, @CalledMethods("a") Foo> innerfunc =
         st -> {
-          // :: error: required.method.not.called
+          // :: error: (required.method.not.called)
           Foo fn1 = new Foo();
           Foo fn2 = makeFoo();
           fn2.a();
@@ -126,21 +126,21 @@ class ACRegularExitPointTest {
       Foo f1 = new Foo();
       f1.a();
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Foo f2 = new Foo();
     }
   }
 
   Foo ifElseWithReturnExit(boolean b, boolean c) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f1 = makeFoo();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f3 = new Foo();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f4 = new Foo();
 
     if (b) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Foo f2 = new Foo();
       if (c) {
         f4.a();
@@ -149,7 +149,7 @@ class ACRegularExitPointTest {
       }
       return f1;
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Foo f2 = new Foo();
       f2 = new Foo();
       f2.a();
@@ -164,28 +164,28 @@ class ACRegularExitPointTest {
       f1 = new Foo();
       f1.a();
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       f2 = new Foo();
     }
   }
 
   void ifElseWithInitialization(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f2 = new Foo();
     Foo f11 = null;
     if (b) {
       f11 = makeFoo();
       f11.a();
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       f2 = new Foo();
     }
   }
 
   void ifWithInitialization(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f1 = new Foo();
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f2 = new Foo();
     if (b) {
       f1.a();
@@ -206,7 +206,7 @@ class ACRegularExitPointTest {
       f1 = new Foo();
       f1.a();
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       f2 = new Foo();
     }
   }
@@ -218,16 +218,16 @@ class ACRegularExitPointTest {
   void testLoop() {
     Foo f = null;
     while (true) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       f = new Foo();
     }
   }
 
   void overWrittingVarInLoop() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = new Foo();
     while (true) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       f = new Foo();
     }
   }
@@ -236,12 +236,12 @@ class ACRegularExitPointTest {
     Foo frodo = null;
     while (true) {
       if (b) {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         frodo = new Foo();
       } else {
         // this is a known false positive, due to lack of path sensitivity in the
         // Called Methods Checker
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         frodo = new Foo();
         frodo.a();
       }
@@ -249,7 +249,7 @@ class ACRegularExitPointTest {
   }
 
   void replaceVarWithNull(boolean b, boolean c) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = new Foo();
     if (b) {
       f = null;
@@ -292,12 +292,12 @@ class ACRegularExitPointTest {
   }
 
   void testSubFoo() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f = new SubFoo();
   }
 
   void testSubFoo2() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     SubFoo f = new SubFoo();
   }
 }

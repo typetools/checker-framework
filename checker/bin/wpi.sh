@@ -252,8 +252,9 @@ function configure_and_exec_dljc {
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
+  echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
-    wpi_log_path="${DIR}"/dljc-out/wpi.log
+    wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
     echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
@@ -265,15 +266,15 @@ function configure_and_exec_dljc {
       return
   fi
 
-  if [ -f dljc-out/wpi.log ]; then
+  if [ -f dljc-out/wpi-stdout.log ]; then
       # Put, in file `typecheck.out`, everything from the last "Running ..." onwards.
-      sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi.log > dljc-out/typecheck.out
+      sed -n '/^Running/h;//!H;$!d;x;//p' dljc-out/wpi-stdout.log > dljc-out/typecheck.out
       WPI_RESULTS_AVAILABLE="yes"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
       echo "stdout is in $dljc_stdout"
   else
-      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi.log does not exist"
+      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi-stdout.log does not exist"
       echo "dljc failed: ${WPI_RESULTS_AVAILABLE}"
       echo "dljc output is in ${DIR}/dljc-out/"
       echo "stdout is in $dljc_stdout"
@@ -327,7 +328,7 @@ configure_and_exec_dljc "$@"
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java11}" = "yes" ]; then
   if [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA11_HOME}"
-    echo "couldn't build using Java 8; trying Java 11"
+    echo "wpi.sh couldn't build using Java 8; trying Java 11"
     configure_and_exec_dljc "$@"
   fi
 fi
@@ -339,7 +340,7 @@ fi
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java17}" = "yes" ]; then
   if [ "${has_java11}" = "yes" ] || [ "${has_java8}" = "yes" ]; then
     export JAVA_HOME="${JAVA17_HOME}"
-    echo "couldn't build using Java 11 or Java 8; trying Java 17"
+    echo "wpi.sh couldn't build using Java 11 or Java 8; trying Java 17"
     configure_and_exec_dljc "$@"
   fi
 fi
@@ -347,7 +348,7 @@ fi
 # support wpi-many.sh's ability to delete projects without usable results
 # automatically
 if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ]; then
-    echo "dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
+    echo "wpi.sh: dljc could not run the build successfully: ${WPI_RESULTS_AVAILABLE}"
     echo "Check the log files in ${DIR}/dljc-out/ for diagnostics."
     echo "${WPI_RESULTS_AVAILABLE}" > "${DIR}/.cannot-run-wpi"
 fi

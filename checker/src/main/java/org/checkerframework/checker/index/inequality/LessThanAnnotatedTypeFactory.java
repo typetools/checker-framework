@@ -36,8 +36,8 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
@@ -140,7 +140,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
-      SystemUtil.addWithoutDuplicates(a1List, a2List); // union
+      CollectionsPlume.adjoinAll(a1List, a2List); // union
       return createLessThanQualifier(a1List);
     }
   }
@@ -282,7 +282,6 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     if (expressions.contains(right)) {
       return true;
     }
-    // {@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
     for (String expression : expressions) {
       if (expression.endsWith(" + 1")
           && expression.substring(0, expression.length() - 4).equals(right)) {

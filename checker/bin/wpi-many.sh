@@ -230,7 +230,7 @@ do
 
     cd "${OUTDIR}/${REPO_NAME_HASH}" || exit 5
 
-    RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi.log"
+    RESULT_LOG="${OUTDIR}-results/${REPO_NAME_HASH}-wpi-stdout.log"
     touch "${RESULT_LOG}"
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
@@ -240,7 +240,9 @@ do
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
       # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
+      echo "wpi-many.sh about to call wpi.sh at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
+      echo "wpi-many.sh finished call to wpi.sh at $(date)"
     fi
 
     cd "${OUTDIR}" || exit 5
@@ -254,7 +256,7 @@ do
           rm -rf -- "./${REPO_NAME_HASH}"
         fi
     else
-        cat "${REPO_FULLPATH}/dljc-out/wpi.log" >> "${RESULT_LOG}"
+        cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
@@ -265,9 +267,9 @@ do
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
             echo "End of toplevel.log."
-            echo "Start of wpi.log:"
-            cat "${REPO_FULLPATH}"/dljc-out/wpi.log
-            echo "End of wpi.log."
+            echo "Start of wpi-stdout.log:"
+            cat "${REPO_FULLPATH}"/dljc-out/wpi-stdout.log
+            echo "End of wpi-stdout.log."
         fi
     fi
 
@@ -306,12 +308,19 @@ else
     grep -oh "^\S*\.java" $(cat "${OUTDIR}-results/results_available.txt") | sed "s/'//g" | grep -v '^\-J' | grep -v '^\-\-add\-opens' | sort | uniq > "${listpath}"
 
     if [ ! -s "${listpath}" ] ; then
-        echo "${listpath} has size zero"
+        echo "listpath ${listpath} has size zero"
         ls -l "${listpath}"
         echo "results_available = ${results_available}"
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
         echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
+        echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
+        ls -l "${OUTDIR}-results/"*.log
+        echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
+        ## This is too much output; Azure cuts it off.
+        # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
+        # cat "${OUTDIR}-results/"*.log
+        # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
         exit 1
     fi
 
@@ -326,6 +335,19 @@ else
       echo "Problem in wpi-many.sh while running scc."
       echo "  listpath = ${listpath}"
       echo "  generated from ${OUTDIR}-results/results_available.txt"
+      echo "---------------- start of listpath = ${listpath} ----------------"
+      cat "${listpath}"
+      echo "---------------- end of ${listpath} ----------------"
+      echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
+      cat "${OUTDIR}-results/results_available.txt"
+      echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
+      echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
+      ls -l "${OUTDIR}-results/"*.log
+      echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
+      ## This is too much output; Azure cuts it off.
+      # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
+      # cat "${OUTDIR}-results/"*.log
+      # echo "---------------- end of log files from which results_available.txt was constructed ----------------"
       exit 1
     fi
     rm -f "${listpath}"

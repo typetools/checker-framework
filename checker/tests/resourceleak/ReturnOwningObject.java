@@ -17,7 +17,7 @@ public class ReturnOwningObject {
   }
 
   public static void useGetFoo() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Object obj = getFoo();
   }
 }

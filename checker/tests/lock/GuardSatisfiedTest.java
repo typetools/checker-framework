@@ -90,13 +90,15 @@ public class GuardSatisfiedTest {
     // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
     methodToCall3(p);
     synchronized (lock1) {
-      // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q').
+      // Two @GS parameters with no index are incomparable (as is the case for 'this' and
+      // 'q').
       // :: error: (guardsatisfied.parameters.must.match)
       methodToCall3(q);
       // :: error: (guardsatisfied.parameters.must.match) :: error: (lock.not.held)
       methodToCall3(p);
       synchronized (lock2) {
-        // Two @GS parameters with no index are incomparable (as is the case for 'this' and 'q').
+        // Two @GS parameters with no index are incomparable (as is the case for 'this' and
+        // 'q').
         // :: error: (guardsatisfied.parameters.must.match)
         methodToCall3(q);
         // :: error: (guardsatisfied.parameters.must.match)

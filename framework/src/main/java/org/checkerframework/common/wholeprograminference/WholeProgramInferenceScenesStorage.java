@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -49,6 +50,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class stores annotations using scenelib objects.
@@ -155,6 +157,9 @@ public class WholeProgramInferenceScenesStorage
       case ENUM_CONSTANT:
         ClassSymbol enclosingClass = ((VarSymbol) elt).enclClass();
         className = enclosingClass.flatname.toString();
+        break;
+      case CLASS:
+        className = ElementUtils.getBinaryName((TypeElement) elt);
         break;
       default:
         throw new BugInCF("What element? %s %s", elt.getKind(), elt);
@@ -380,6 +385,41 @@ public class WholeProgramInferenceScenesStorage
     return isNewAnnotation;
   }
 
+  @Override
+  public boolean addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(methodElt)) {
+      return false;
+    }
+
+    VariableElement paramElt = methodElt.getParameters().get(index);
+    AnnotatedTypeMirror paramAType = atypeFactory.getAnnotatedType(paramElt);
+    ATypeElement paramAnnos =
+        getParameterAnnotations(methodElt, index, paramAType, paramElt, atypeFactory);
+    Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
+
+    boolean isNewAnnotation = paramAnnos.tlAnnotationsHere.add(sceneAnno);
+    return isNewAnnotation;
+  }
+
+  @Override
+  public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
+    if (!ElementUtils.isElementFromSourceCode(classElt)) {
+      return false;
+    }
+
+    AClass classAnnos =
+        getClassAnnos(
+            ElementUtils.getBinaryName(classElt),
+            getFileForElement(classElt),
+            (ClassSymbol) classElt);
+
+    Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
+
+    boolean isNewAnnotation = classAnnos.tlAnnotationsHere.add(sceneAnno);
+    return isNewAnnotation;
+  }
+
   /**
    * Write all modified scenes into files. (Scenes are modified by the method {@link
    * #updateAnnotationSetInScene}.)
@@ -563,7 +603,7 @@ public class WholeProgramInferenceScenesStorage
     Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
-      // amJaif only contains  annotations from the jaif, so it might be missing
+      // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
         amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
@@ -819,8 +859,9 @@ public class WholeProgramInferenceScenesStorage
     // The others stay intact.
     Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
     // This method may be called consecutive times for the same ATypeElement.  Each time it is
-    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
-    // it is not a problem to remove all annotations before inserting the new annotations.
+    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement.
+    // Therefore, it is not a problem to remove all annotations before inserting the new
+    // annotations.
     typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
 
     // Only update the ATypeElement if there are no explicit annotations.
@@ -874,7 +915,7 @@ public class WholeProgramInferenceScenesStorage
       Pair<String, TypeUseLocation> key = Pair.of(firstKey, defLoc);
       Set<String> annosIgnored = annosToIgnore.get(key);
       if (annosIgnored == null) {
-        annosIgnored = new HashSet<>();
+        annosIgnored = new HashSet<>(CollectionsPlume.mapCapacity(1));
         annosToIgnore.put(key, annosIgnored);
       }
       annosIgnored.add(anno.def().toString());

@@ -436,7 +436,8 @@ public final class SceneToStubWriter {
           basetypeToPrint.substring("<anonymous ".length(), basetypeToPrint.length() - 1);
     }
 
-    // fields don't need their generic types, and sometimes they are wrong. Just don't print them.
+    // fields don't need their generic types, and sometimes they are wrong. Just don't print
+    // them.
     while (basetypeToPrint.contains("<")) {
       int openCount = 1;
       int pos = basetypeToPrint.indexOf('<');
@@ -540,16 +541,22 @@ public final class SceneToStubWriter {
         printWriter.println("@AnnotatedFor(\"" + checker.getClass().getCanonicalName() + "\")");
       }
       printWriter.print(indents(i));
-      if (aClass.isEnum(nameToPrint)) {
-        printWriter.print("enum ");
-      } else {
-        printWriter.print("class ");
-      }
       if (i == classNames.length - 1) {
         // Only print class annotations on the innermost class, which corresponds to aClass.
         // If there should be class annotations on another class, it will have its own stub
         // file, which will eventually be merged with this one.
         printWriter.print(formatAnnotations(aClass.getAnnotations()));
+      }
+      if (aClass.isAnnotation(nameToPrint)) {
+        printWriter.print("@interface ");
+      } else if (aClass.isEnum(nameToPrint)) {
+        printWriter.print("enum ");
+      } else if (aClass.isInterface(nameToPrint)) {
+        printWriter.print("interface ");
+      } else if (aClass.isRecord(nameToPrint)) {
+        printWriter.print("record ");
+      } else {
+        printWriter.print("class ");
       }
       printWriter.print(nameToPrint);
       printTypeParameters(typeElements[i], printWriter);
@@ -726,7 +733,8 @@ public final class SceneToStubWriter {
 
     // The writer is not initialized until it is certain that at
     // least one class can be written, to avoid empty stub files.
-    // An alternate approach would be to delete the file after it is closed, if the file is empty.
+    // An alternate approach would be to delete the file after it is closed, if the file is
+    // empty.
     // It's not worth rewriting this code, since .stub files are obsolescent.
 
     FileWriter fileWriter = null;

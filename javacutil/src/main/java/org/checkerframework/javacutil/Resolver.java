@@ -157,10 +157,10 @@ public class Resolver {
       try {
         scope = (JavacScope) trees.getScope(iter);
       } catch (NullPointerException t) {
-        // Work around https://github.com/typetools/checker-framework/issues/1059 by skipping
-        // through the TreePath until something doesn't crash. This probably returns the class
-        // scope, so users might not get the variables they expect. But that is better than
-        // crashing.
+        // Work around crash reported in
+        // https://github.com/typetools/checker-framework/issues/1059 by skipping through the
+        // TreePath until something doesn't crash. This probably returns the class scope, so
+        // users might not get the variables they expect. But that is better than crashing.
         iter = iter.getParentPath();
       }
     }
@@ -185,8 +185,9 @@ public class Resolver {
       Element res =
           wrapInvocationOnResolveInstance(
               FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
-      // findIdent will return a PackageSymbol even for a symbol that is not a package, such as
-      // a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure that it exists.
+      // findIdent will return a PackageSymbol even for a symbol that is not a package, such
+      // as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure that it
+      // exists.
       if (res.getKind() == ElementKind.PACKAGE) {
         PackageSymbol ps = (PackageSymbol) res;
         return ps.exists() ? ps : null;
@@ -246,8 +247,8 @@ public class Resolver {
       Env<AttrContext> env = getEnvForPath(path);
       // Either a VariableElement or a SymbolNotFoundError.
       Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
-      // Every kind in the documentation of Element.getKind() is explicitly tested, possibly in the
-      // "default:" case.
+      // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
+      // in the "default:" case.
       switch (res.getKind()) {
         case EXCEPTION_PARAMETER:
         case LOCAL_VARIABLE:

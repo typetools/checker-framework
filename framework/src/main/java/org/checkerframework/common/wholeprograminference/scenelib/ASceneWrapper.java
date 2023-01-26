@@ -4,7 +4,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +32,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -93,7 +93,8 @@ public class ASceneWrapper {
     String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
     Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
     if (annosToRemoveForLocation != null) {
-      Set<Annotation> annosToRemoveHere = new HashSet<>();
+      Set<Annotation> annosToRemoveHere =
+          ArraySet.newArraySetOrHashSet(annosToRemoveForLocation.size());
       for (Annotation anno : typeElt.tlAnnotationsHere) {
         if (annosToRemoveForLocation.contains(anno.def().toString())) {
           annosToRemoveHere.add(anno);
@@ -144,13 +145,15 @@ public class ASceneWrapper {
       try {
         switch (outputFormat) {
           case STUB:
-            // For stub files, pass in the checker to compute contracts on the fly; precomputing
-            // yields incorrect annotations, most likely due to nested classes.
+            // For stub files, pass in the checker to compute contracts on the fly;
+            // precomputing yields incorrect annotations, most likely due to nested
+            // classes.
             SceneToStubWriter.write(this, filepath, checker);
             break;
           case JAIF:
-            // For .jaif files, precompute contracts because the Annotation File Utilities knows
-            // nothing about (and cannot depend on) the Checker Framework.
+            // For .jaif files, precompute contracts because the Annotation File
+            // Utilities knows nothing about (and cannot depend on) the Checker
+            // Framework.
             for (Map.Entry<String, AClass> classEntry : scene.classes.entrySet()) {
               AClass aClass = classEntry.getValue();
               for (Map.Entry<String, AMethod> methodEntry : aClass.getMethods().entrySet()) {
@@ -217,8 +220,14 @@ public class ASceneWrapper {
     ClassSymbol outerClass = classSymbol;
     ClassSymbol previous = classSymbol;
     do {
-      if (outerClass.isEnum()) {
+      if (outerClass.getKind() == ElementKind.ANNOTATION_TYPE) {
+        aClass.markAsAnnotation(outerClass.getSimpleName().toString());
+      } else if (outerClass.isEnum()) {
         aClass.markAsEnum(outerClass.getSimpleName().toString());
+      } else if (outerClass.isInterface()) {
+        aClass.markAsInterface(outerClass.getSimpleName().toString());
+        // } else if (outerClass.isRecord()) {
+        //   aClass.markAsRecord(outerClass.getSimpleName().toString());
       }
       Element element = classSymbol.getEnclosingElement();
       if (element == null || element.getKind() == ElementKind.PACKAGE) {

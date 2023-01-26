@@ -25,19 +25,19 @@ public class RequiresCalledMethodsTest {
 
     @CreatesMustCallFor("this")
     void overwriteFooWrong() {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       this.foo = new Foo();
     }
 
     @CreatesMustCallFor("this")
     void overwriteFooWithoutReleasing() {
-      // :: error: contracts.precondition
+      // :: error: (contracts.precondition)
       overwriteFooCorrect();
     }
 
     void releaseThenOverwriteFoo() {
       releaseFoo();
-      // :: error: reset.not.owning
+      // :: error: (reset.not.owning)
       overwriteFooCorrect();
     }
 

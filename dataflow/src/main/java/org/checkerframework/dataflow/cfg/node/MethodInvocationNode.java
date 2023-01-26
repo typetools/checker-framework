@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.StringsPlume;
 
@@ -44,6 +45,8 @@ public class MethodInvocationNode extends Node {
    * If this MethodInvocationNode is a node for an {@link Iterator#next()} desugared from an
    * enhanced for loop, then the {@code iterExpression} field is the expression in the for loop,
    * e.g., {@code iter} in {@code for(Object o: iter}.
+   *
+   * <p>Is set by {@link #setIterableExpression}.
    */
   protected @Nullable ExpressionTree iterableExpression;
 
@@ -140,6 +143,7 @@ public class MethodInvocationNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     List<Node> list = new ArrayList<>(1 + arguments.size());
     list.add(target);

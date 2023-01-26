@@ -129,8 +129,7 @@ public class ExpectedErrors {
     return 0;
   }
 
-  @AinferTop
-  int getAinferTop() {
+  @AinferTop int getAinferTop() {
     return 0;
   }
 
@@ -184,8 +183,8 @@ public class ExpectedErrors {
     // It is problematic to automatically test whole-program inference for method params when
     // suppressing warnings.
     // Since we must use @SuppressWarnings() for the method, we won't be able to catch any error
-    // inside the method body.  Verified manually that in the "annotated" folder param's type wasn't
-    // updated.
+    // inside the method body.  Verified manually that in the "annotated" folder param's type
+    // wasn't updated.
     @SuppressWarnings("all")
     public void suppressWarningsMethodParams(int param) {}
   }
@@ -237,7 +236,7 @@ public class ExpectedErrors {
 
   class AssignParam {
     public void f(@AinferBottom Object param) {
-      // :: warning: assignment
+      // :: warning: (assignment)
       param = ((@AinferTop Object) null);
     }
   }

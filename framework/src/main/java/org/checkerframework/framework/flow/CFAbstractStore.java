@@ -88,18 +88,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Information collected about array elements, using the internal representation {@link
    * ArrayAccess}.
    */
-  protected Map<ArrayAccess, V> arrayValues;
+  protected final Map<ArrayAccess, V> arrayValues;
 
   /**
    * Information collected about method calls, using the internal representation {@link MethodCall}.
    */
-  protected Map<MethodCall, V> methodValues;
+  protected final Map<MethodCall, V> methodValues;
 
   /**
    * Information collected about <i>classname</i>.class values, using the internal representation
    * {@link ClassName}.
    */
-  protected Map<ClassName, V> classValues;
+  protected final Map<ClassName, V> classValues;
 
   /**
    * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
@@ -207,10 +207,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    *
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
+   *
+   * @param methodInvocationNode method whose information is being updated
+   * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param val abstract value of the method call
    */
   public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
-    ExecutableElement method = n.getTarget().getMethod();
+      MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+    ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     // case 1: remove information if necessary
     if (!(analysis.checker.hasOption("assumeSideEffectFree")
@@ -292,7 +296,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // store information about method call if possible
-    JavaExpression methodCall = JavaExpression.fromNode(n);
+    JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
   }
 
@@ -484,7 +488,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     if (!(permitNondeterministic || expr.isDeterministic(analysis.getTypeFactory()))) {
       // Nondeterministic expressions may not be stored.
-      // (They are likely to be quickly evicted, as soon as a side-effecting method is called.)
+      // (They are likely to be quickly evicted, as soon as a side-effecting method is
+      // called.)
       return false;
     }
     return true;
@@ -1089,8 +1094,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
     for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as one of
-      // store implicitly contains 'top' for that variable.
+      // local variables that are only part of one store, but not the other are discarded, as
+      // one of store implicitly contains 'top' for that variable.
       LocalVariable localVar = e.getKey();
       V thisVal = localVariableValues.get(localVar);
       if (thisVal != null) {
@@ -1114,8 +1119,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      // information about fields that are only part of one store, but not the other are discarded,
-      // as one store implicitly contains 'top' for that field.
+      // information about fields that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that field.
       FieldAccess el = e.getKey();
       V thisVal = fieldValues.get(el);
       if (thisVal != null) {
@@ -1127,8 +1132,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
     for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      // information about arrays that are only part of one store, but not the other are discarded,
-      // as one store implicitly contains 'top' for that array access.
+      // information about arrays that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that array access.
       ArrayAccess el = e.getKey();
       V thisVal = arrayValues.get(el);
       if (thisVal != null) {
@@ -1140,8 +1145,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
     for (Map.Entry<MethodCall, V> e : other.methodValues.entrySet()) {
-      // information about methods that are only part of one store, but not the other are discarded,
-      // as one store implicitly contains 'top' for that field.
+      // information about methods that are only part of one store, but not the other are
+      // discarded, as one store implicitly contains 'top' for that field.
       MethodCall el = e.getKey();
       V thisVal = methodValues.get(el);
       if (thisVal != null) {
@@ -1263,8 +1268,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
     StringJoiner res = new StringJoiner(viz.getSeparator());
-    for (Map.Entry<LocalVariable, V> entry : localVariableValues.entrySet()) {
-      res.add(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
+    for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
+      res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));
     }
     if (thisValue != null) {
       res.add(viz.visualizeStoreThisVal(thisValue));

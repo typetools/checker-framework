@@ -733,8 +733,8 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     TypeParameter node2 = (TypeParameter) other;
     defaultAction(node1, node2);
     node1.getName().accept(this, node2.getName());
-    // Since ajava files and its corresponding Java file may differ in whether they contain a type
-    // bound, only visit type bounds if they're present in both nodes.
+    // Since ajava files and its corresponding Java file may differ in whether they contain a
+    // type bound, only visit type bounds if they're present in both nodes.
     if (node1.getTypeBound().isEmpty() == node2.getTypeBound().isEmpty()) {
       visitLists(node1.getTypeBound(), node2.getTypeBound());
     }

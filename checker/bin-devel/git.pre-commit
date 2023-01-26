@@ -28,7 +28,7 @@ fi
 # This is to handle non-.java files, since the above already handled .java files.
 # May need to remove files that are allowed to have trailing whitespace or are
 # not text files.
-CHANGED_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep -v '\.class$' | grep -v '\.gz$' | grep -v '\.jar$' | grep -v '\.pdf$' | grep -v '\.png$' | grep -v '\.xcf$') || true
+CHANGED_FILES=$(git diff --staged --name-only --diff-filter=ACM | grep -v '\.class$' | grep -v '\.gz$' | grep -v '\.jar$' | grep -v '\.pdf$' | grep -v '\.png$' | grep -v '\.xcf$' | grep -v '\.patch$') || true
 if [ -n "$CHANGED_FILES" ]; then
     ## For debugging:
     # echo "CHANGED_FILES: ${CHANGED_FILES}"

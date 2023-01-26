@@ -8,8 +8,10 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.StubUnit;
+import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.ArrayInitializerExpr;
@@ -128,9 +130,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the source code has parser errors
    */
   public static StubUnit parseStubUnit(InputStream inputStream) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
-    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
-    // has to be created each time.
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one
+    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
+    // JavaParser has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setLanguageLevel(DEFAULT_LANGUAGE_LEVEL);
     // Store the tokens so that errors have line and column numbers.
@@ -175,9 +177,9 @@ public class JavaParserUtil {
    * @throws ParseProblemException if the expression has parser errors
    */
   public static Expression parseExpression(String expression, LanguageLevel languageLevel) {
-    // The ParserConfiguration accumulates data each time parse is called, so create a new one each
-    // time.  There's no method to set the ParserConfiguration used by a JavaParser, so a JavaParser
-    // has to be created each time.
+    // The ParserConfiguration accumulates data each time parse is called, so create a new one
+    // each time.  There's no method to set the ParserConfiguration used by a JavaParser, so a
+    // JavaParser has to be created each time.
     ParserConfiguration configuration = new ParserConfiguration();
     configuration.setLanguageLevel(languageLevel);
     configuration.setStoreTokens(false);
@@ -221,12 +223,49 @@ public class JavaParserUtil {
       return enumDecl.get();
     }
 
+    Optional<AnnotationDeclaration> annoDecl = root.getAnnotationDeclarationByName(name);
+    if (annoDecl.isPresent()) {
+      return annoDecl.get();
+    }
+
+    Optional<RecordDeclaration> recordDecl = getRecordByName(root, name);
+    if (recordDecl.isPresent()) {
+      return recordDecl.get();
+    }
+
     Optional<CompilationUnit.Storage> storage = root.getStorage();
     if (storage.isPresent()) {
       throw new BugInCF("Type " + name + " not found in " + storage.get().getPath());
     } else {
       throw new BugInCF("Type " + name + " not found in " + root);
     }
+  }
+
+  /**
+   * JavaParser's {@link CompilationUnit} class has methods like this for every other kind of
+   * class-like structure (e.g., classes, enums, annotation declarations, etc.), but not for
+   * records. This implementation is based on the implementation of {@link
+   * CompilationUnit#getClassByName(String)}, and has the same interface as the other, similar
+   * JavaParser methods (except that it is static and takes the CompilationUnit as a parameter,
+   * rather than being an instance method on the CompilationUnit).
+   *
+   * @param cu the CompilationUnit to search
+   * @param recordName the name of the record
+   * @return the record declaration in the compilation unit with the given name, or an empty
+   *     Optional if no such record declaration exists
+   */
+  private static Optional<RecordDeclaration> getRecordByName(
+      CompilationUnit cu, String recordName) {
+    return cu.getTypes().stream()
+        .filter(
+            (type) -> {
+              return type.getNameAsString().equals(recordName) && type instanceof RecordDeclaration;
+            })
+        .findFirst()
+        .map(
+            (t) -> {
+              return (RecordDeclaration) t;
+            });
   }
 
   /**
@@ -296,15 +335,15 @@ public class JavaParserUtil {
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);
       if (node.getOperator() == BinaryExpr.Operator.PLUS && node.getRight().isStringLiteralExpr()) {
-        String right = node.getRight().asStringLiteralExpr().asString();
+        String right = node.getRight().asStringLiteralExpr().getValue();
         if (node.getLeft().isStringLiteralExpr()) {
-          String left = node.getLeft().asStringLiteralExpr().asString();
+          String left = node.getLeft().asStringLiteralExpr().getValue();
           node.replace(new StringLiteralExpr(left + right));
         } else if (node.getLeft().isBinaryExpr()) {
           BinaryExpr leftExpr = node.getLeft().asBinaryExpr();
           if (leftExpr.getOperator() == BinaryExpr.Operator.PLUS
               && leftExpr.getRight().isStringLiteralExpr()) {
-            String left = leftExpr.getRight().asStringLiteralExpr().asString();
+            String left = leftExpr.getRight().asStringLiteralExpr().getValue();
             node.replace(
                 new BinaryExpr(
                     leftExpr.getLeft(),
@@ -364,8 +403,8 @@ public class JavaParserUtil {
         case "RELEASE_17":
           currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_17;
           break;
-          // As of 2022-11-28, JavaParser's ParserConfiguration.LanguageLevel does not yet have a
-          // constant for JDK 18 or JDK 19.
+          // As of 2022-11-28, JavaParser's ParserConfiguration.LanguageLevel does not yet
+          // have a constant for JDK 18 or JDK 19.
           // case "RELEASE_18":
           //   currentSourceVersion = ParserConfiguration.LanguageLevel.JAVA_18;
           //   break;

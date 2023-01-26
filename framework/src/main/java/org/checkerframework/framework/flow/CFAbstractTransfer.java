@@ -61,6 +61,8 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -145,6 +147,7 @@ public abstract class CFAbstractTransfer<
    * @return true if the transfer function uses sequential semantics, false if it uses concurrent
    *     semantics
    */
+  @Pure
   public boolean usesSequentialSemantics() {
     return sequentialSemantics;
   }
@@ -160,6 +163,7 @@ public abstract class CFAbstractTransfer<
    * @param store the store
    * @return the possibly-modified value
    */
+  @SideEffectFree
   protected @Nullable V finishValue(@Nullable V value, S store) {
     return value;
   }
@@ -176,6 +180,7 @@ public abstract class CFAbstractTransfer<
    * @param elseStore the "else" store
    * @return the possibly-modified value
    */
+  @SideEffectFree
   protected @Nullable V finishValue(@Nullable V value, S thenStore, S elseStore) {
     return value;
   }
@@ -318,8 +323,8 @@ public abstract class CFAbstractTransfer<
         // Try to find an enclosing initializer block.
         // Would love to know if there was a better way.
         // Find any enclosing element of the lambda (using trees).
-        // Then go up the elements to find an initializer element (which can't be found with the
-        // tree).
+        // Then go up the elements to find an initializer element (which can't be found with
+        // the tree).
         TreePath loopTree = factory.getPath(lambda.getLambdaTree()).getParentPath();
         Element anEnclosingElement = null;
         while (loopTree.getLeaf() != enclosingTree) {
@@ -394,8 +399,8 @@ public abstract class CFAbstractTransfer<
 
       // Maybe insert the declared type:
       if (!isConstructor) {
-        // If it's not a constructor, use the declared type if the receiver of the method is fully
-        // initialized.
+        // If it's not a constructor, use the declared type if the receiver of the method is
+        // fully initialized.
         boolean isInitializedReceiver = !isNotFullyInitializedReceiver(methodTree);
         if (isInitializedReceiver && varEle.getEnclosingElement().equals(classEle)) {
           store.insertValue(fieldInitialValue.fieldDecl, fieldInitialValue.declared);
@@ -429,14 +434,15 @@ public abstract class CFAbstractTransfer<
       // final local values from b() would be visible in the store for c(),
       // even though they should only be visible in b() and in classes
       // defined inside the method body of b().
-      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call itself
-      // recursively to analyze inner classes, but instead pops classes off of a queue, and the
-      // information about known final local values is stored by GenericAnnotatedTypeFactory.analyze
-      // in GenericAnnotatedTypeFactory.flowResult, which is visible to all classes in the queue
-      // regardless of their level of recursion.
+      // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call
+      // itself recursively to analyze inner classes, but instead pops classes off of a queue,
+      // and the information about known final local values is stored by
+      // GenericAnnotatedTypeFactory.analyze in GenericAnnotatedTypeFactory.flowResult, which
+      // is visible to all classes in the queue regardless of their level of recursion.
 
-      // We work around this here by ensuring that we only add a final local value to a method's
-      // store if that method is enclosed by the method where the local variables were declared.
+      // We work around this here by ensuring that we only add a final local value to a
+      // method's store if that method is enclosed by the method where the local variables
+      // were declared.
 
       // Find the enclosing method of the element
       Element enclosingMethodOfVariableDeclaration = elem.getEnclosingElement();
@@ -498,8 +504,8 @@ public abstract class CFAbstractTransfer<
               analysis.atypeFactory, stringToJavaExpr, /*errorTree=*/ null);
       JavaExpression exprJe;
       try {
-        // TODO: currently, these expressions are parsed at the declaration (i.e. here) and for
-        // every use. this could be optimized to store the result the first time.
+        // TODO: currently, these expressions are parsed at the declaration (i.e. here) and
+        // for every use. this could be optimized to store the result the first time.
         // (same for other annotations)
         exprJe = StringToJavaExpression.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
       } catch (JavaExpressionParseException e) {
@@ -599,7 +605,8 @@ public abstract class CFAbstractTransfer<
     S store = p.getRegularStore();
     V storeValue = store.getValue(n);
     // look up value in factory, and take the more specific one
-    // TODO: handle cases, where this is not allowed (e.g. constructors in non-null type systems)
+    // TODO: handle cases, where this is not allowed (e.g. constructors in non-null type
+    // systems)
     V factoryValue = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(factoryValue, storeValue);
     return new RegularTransferResult<>(finishValue(value, store), store);
@@ -909,8 +916,8 @@ public abstract class CFAbstractTransfer<
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
       ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
       if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just don't infer
-        // annotations for those new class trees.
+        // TODO: WPI could be changed to handle the synthetic argument, but for now just
+        // don't infer annotations for those new class trees.
         analysis
             .atypeFactory
             .getWholeProgramInference()
@@ -933,7 +940,7 @@ public abstract class CFAbstractTransfer<
       analysis.atypeFactory.getWholeProgramInference().updateFromMethodInvocation(n, method, store);
     }
 
-    Tree invocationTree = n.getTree();
+    ExpressionTree invocationTree = n.getTree();
 
     // Determine the abstract value for the method call.
     // look up the call's value from factory
@@ -1034,18 +1041,18 @@ public abstract class CFAbstractTransfer<
   /**
    * Add information from the postconditions of a method to the store after an invocation.
    *
-   * @param invocationNode a method call
+   * @param invocationNode a method call or an object creation
    * @param store a store; is side-effected by this method
-   * @param methodElement the method being called
-   * @param invocationTree the tree for the method call
+   * @param executableElement the method or constructor being called
+   * @param invocationTree the tree for the method call or the object creation
    */
   protected void processPostconditions(
       MethodInvocationNode invocationNode,
       S store,
-      ExecutableElement methodElement,
-      Tree invocationTree) {
+      ExecutableElement executableElement,
+      ExpressionTree invocationTree) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-    Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
+    Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
         invocationNode, invocationTree, store, null, postconditions);
   }
@@ -1063,7 +1070,7 @@ public abstract class CFAbstractTransfer<
   protected void processConditionalPostconditions(
       MethodInvocationNode invocationNode,
       ExecutableElement methodElement,
-      Tree invocationTree,
+      ExpressionTree invocationTree,
       S thenStore,
       S elseStore) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
@@ -1077,8 +1084,8 @@ public abstract class CFAbstractTransfer<
    * Add information from the postconditions and conditional postconditions of a method to the
    * stores after an invocation.
    *
-   * @param invocationNode a method call
-   * @param invocationTree the tree for the method call
+   * @param invocationNode a method call node or an object creation node
+   * @param invocationTree the tree for the method call or for the object creation
    * @param thenStore the "then" store; is side-effected by this method
    * @param elseStore the "else" store; is side-effected by this method
    * @param postconditions the postconditions
@@ -1138,9 +1145,10 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
-    // represents the selector expression to the type of the case constant if it is more precise.
-    // If there are multiple case constants then a new store is created for each case constant and
-    // then they are lubbed. This method returns the lubbed result.
+    // represents the selector expression to the type of the case constant if it is more
+    // precise.
+    // If there are multiple case constants then a new store is created for each case constant
+    // and then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(

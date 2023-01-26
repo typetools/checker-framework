@@ -17,14 +17,14 @@ public class ValueUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest
         testFiles,
         ValueChecker.class,
         "value",
-        "-Anomsgtext",
         "-AuseConservativeDefaultsForUncheckedCode=btyecode",
         "-A" + ValueChecker.REPORT_EVAL_WARNS);
   }
 
   @Parameters
   public static String[] getTestDirs() {
-    // The defaults for unchecked code should be the same as checked code, so use the same tests.
+    // The defaults for unchecked code should be the same as checked code, so use the same
+    // tests.
     return new String[] {"value", "all-systems"};
   }
 }

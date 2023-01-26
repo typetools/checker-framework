@@ -42,6 +42,7 @@ import org.checkerframework.common.value.qual.MinLenFieldInvariant;
 import org.checkerframework.common.value.qual.PolyValue;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
@@ -52,6 +53,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.DefaultInferredTypesApplier;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
@@ -62,15 +64,18 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -249,6 +254,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, CFValue as) {
+    // Inference can widen an IntRange beyond the values possible for the Java type. Change the
+    // annotation here so it is no wider than is possible.
+    TypeMirror t = as.getUnderlyingType();
+    Set<AnnotationMirror> inferredAnnos = as.getAnnotations();
+    AnnotationMirror intRange = AnnotationUtils.getAnnotationByName(inferredAnnos, INTRANGE_NAME);
+    if (intRange != null && TypeKindUtils.primitiveOrBoxedToTypeKind(t) != null) {
+      Range range = getRange(intRange);
+      Range newRange = NumberUtils.castRange(t, range);
+      if (!newRange.equals(range)) {
+        inferredAnnos = AnnotationMirrorSet.singleElementSet(createIntRangeAnnotation(newRange));
+      }
+    }
+
+    DefaultInferredTypesApplier applier =
+        new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
+    applier.applyInferredType(type, inferredAnnos, as.getUnderlyingType());
+  }
+
+  @Override
   public AnnotationMirror canonicalAnnotation(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, MINLEN_NAME)) {
       int from = getMinLenValue(anno);
@@ -348,13 +373,29 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new FieldInvariants(superInvariants, fields, qualifiers);
   }
 
-  @Override
-  protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+  /**
+   * Computes the classes of field invariant annotations; a helper function for {@link
+   * #getFieldInvariantDeclarationAnnotations}.
+   *
+   * @return the classes of field invariant annotations
+   */
+  private Set<Class<? extends Annotation>> computeFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
+    Set<Class<? extends Annotation>> superResult = super.getFieldInvariantDeclarationAnnotations();
     Set<Class<? extends Annotation>> set =
-        new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        new HashSet<>(CollectionsPlume.mapCapacity(superResult.size() + 1));
+    set.addAll(superResult);
     set.add(MinLenFieldInvariant.class);
     return set;
+  }
+
+  /** The classes of field invariant annotations. */
+  private Set<Class<? extends Annotation>> fieldInvariantDeclarationAnnotations =
+      computeFieldInvariantDeclarationAnnotations();
+
+  @Override
+  protected Set<Class<? extends Annotation>> getFieldInvariantDeclarationAnnotations() {
+    return fieldInvariantDeclarationAnnotations;
   }
 
   /**
@@ -726,10 +767,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
-      long valMin = Collections.min(values);
-      long valMax = Collections.max(values);
+      long valMin = values.get(0);
+      long valMax = values.get(values.size() - 1);
       return createIntRangeAnnotation(valMin, valMax);
     } else {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
@@ -766,11 +807,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      Collections.sort(values);
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
       builder.setValue("value", values);
       return builder.build();
@@ -810,7 +850,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       // Too many strings are replaced by their lengths
       List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -839,7 +879,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.isEmpty() || Collections.min(values) < 0) {
       return BOTTOMVAL;
     } else if (values.size() > MAX_VALUES) {
@@ -866,7 +906,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -895,7 +935,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -919,7 +959,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1185,7 +1225,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
     List<Long> list = AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1204,7 +1244,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Double> list =
         AnnotationUtils.getElementValueArray(doubleAnno, doubleValValueElement, Double.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1223,7 +1263,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Integer> list =
         AnnotationUtils.getElementValueArray(arrayAnno, arrayLenValueElement, Integer.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1288,7 +1328,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return boolValues;
     }
     // Remove duplicates.
-    Set<Boolean> boolSet = new TreeSet<>(boolValues);
+    Set<Boolean> boolSet = new ArraySet<>(2);
+    boolSet.addAll(boolValues);
     if (boolSet.size() > 1) {
       // boolSet={true,false};
       return null;
@@ -1311,7 +1352,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<String> list =
         AnnotationUtils.getElementValueArray(stringAnno, stringValValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1331,7 +1372,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             matchesRegexAnno, matchesRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1351,7 +1392,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             doesNotMatchRegexAnno, doesNotMatchRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
