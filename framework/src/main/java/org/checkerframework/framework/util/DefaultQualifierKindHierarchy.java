@@ -111,8 +111,12 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   @Override
-  public @Nullable QualifierKind getQualifierKind(@CanonicalName String name) {
-    return nameToQualifierKind.get(name);
+  public QualifierKind getQualifierKind(@CanonicalName String name) {
+    QualifierKind result = nameToQualifierKind.get(name);
+    if (result == null) {
+      throw new BugInCF("getQualifierKind(%s) => null", name);
+    }
+    return result;
   }
 
   /**

@@ -17,7 +17,6 @@ public class ValueUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest
         testFiles,
         ValueChecker.class,
         "value",
-        "-Anomsgtext",
         "-AuseConservativeDefaultsForUncheckedCode=btyecode",
         "-A" + ValueChecker.REPORT_EVAL_WARNS);
   }

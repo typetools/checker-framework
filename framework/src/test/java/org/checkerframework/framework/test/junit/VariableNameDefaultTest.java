@@ -13,7 +13,7 @@ public class VariableNameDefaultTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public VariableNameDefaultTest(List<File> testFiles) {
-    super(testFiles, VariableNameDefaultChecker.class, "variablenamedefault", "-Anomsgtext");
+    super(testFiles, VariableNameDefaultChecker.class, "variablenamedefault");
   }
 
   @Parameters

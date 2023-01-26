@@ -79,7 +79,7 @@ public class Standardize {
 
   void list(List<@FlowExp("field") Object> list) {
     Object field = new Object();
-    // "field" is  local variable, but list.get(1) type is @FlowExp("this.field")
+    // "field" is local variable, but list.get(1) type is @FlowExp("this.field")
     @FlowExp("field")
     // :: error: (assignment)
     Object o1 = list.get(1);
