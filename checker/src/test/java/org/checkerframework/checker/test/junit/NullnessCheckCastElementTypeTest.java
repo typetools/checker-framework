@@ -18,8 +18,7 @@ public class NullnessCheckCastElementTypeTest extends CheckerFrameworkPerDirecto
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-AcheckCastElementType",
-        "-Anomsgtext");
+        "-AcheckCastElementType");
   }
 
   @Parameters

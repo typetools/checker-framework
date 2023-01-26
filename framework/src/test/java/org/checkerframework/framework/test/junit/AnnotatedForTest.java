@@ -16,7 +16,6 @@ public class AnnotatedForTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.common.subtyping.SubtypingChecker.class,
         "subtyping",
-        "-Anomsgtext",
         "-Aquals=org.checkerframework.framework.testchecker.util.SubQual,org.checkerframework.framework.testchecker.util.SuperQual",
         "-AuseConservativeDefaultsForUncheckedCode=source,bytecode");
   }

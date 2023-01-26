@@ -3,10 +3,10 @@ package org.checkerframework.checker.lock;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -29,8 +29,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
     // @GuardedBy({}) since for such operators, both operands are of type @GuardedBy({}) boolean
     // to begin with.
 
-    if (isBinaryComparisonOrInstanceOfOperator(node.getKind())
-        || TypesUtils.isString(type.getUnderlyingType())) {
+    if (TreeUtils.isBinaryComparison(node) || TypesUtils.isString(type.getUnderlyingType())) {
       // A boolean or String is always @GuardedBy({}). LockVisitor determines whether
       // the LHS and RHS of this operation can be legally dereferenced.
       type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
@@ -39,31 +38,6 @@ public class LockTreeAnnotator extends TreeAnnotator {
     }
 
     return super.visitBinary(node, type);
-  }
-
-  /**
-   * Indicates that the result of the operation is a boolean value.
-   *
-   * @param opKind the operation to check
-   * @return whether the result is boolean
-   */
-  private static boolean isBinaryComparisonOrInstanceOfOperator(Tree.Kind opKind) {
-    switch (opKind) {
-      case EQUAL_TO:
-      case NOT_EQUAL_TO:
-        // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently
-        // boxed primitives cannot be annotated with @GuardedBy(...), but they are left here
-        // in case that rule changes.
-      case LESS_THAN:
-      case LESS_THAN_EQUAL:
-      case GREATER_THAN:
-      case GREATER_THAN_EQUAL:
-      case INSTANCE_OF:
-        return true;
-      default:
-    }
-
-    return false;
   }
 
   @Override

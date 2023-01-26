@@ -17,7 +17,6 @@ public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-Anomsgtext",
         // Cannot use -AstubWarnIfNotFound because file junit-assertions.astub is always
         // read, but JUnit 5 might not be on the classpath.  This is unfortunate.
         // "-AstubWarnIfNotFound",

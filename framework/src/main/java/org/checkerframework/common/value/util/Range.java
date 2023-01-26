@@ -767,7 +767,7 @@ public class Range {
     }
 
     // Shifting operations in Java are depending on the type of the left-hand operand:
-    // If the left-hand operand is int  type, only the 5 lowest-order bits of the right-hand
+    // If the left-hand operand is int type, only the 5 lowest-order bits of the right-hand
     // operand are used.
     // If the left-hand operand is long type, only the 6 lowest-order bits of the right-hand
     // operand are used.

@@ -286,8 +286,8 @@ import org.plumelib.util.UtilPlume;
 
   // Whether to print [] around a set of type parameters in order to clearly see where they end
   // e.g.  <E extends F, F extends Object>
-  // without this option E is printed: E extends F extends Object
-  // with this option:                 E [ extends F [ extends Object super Void ] super Void ]
+  // without this option the E is printed: E extends F extends Object
+  // with this option:                     E [ extends F [ extends Object super Void ] super Void ]
   // when multiple type variables are used this becomes useful very quickly
   "printVerboseGenerics",
 
@@ -385,6 +385,13 @@ import org.plumelib.util.UtilPlume;
 
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
+
+  /// Language Server Protocol(LSP) Support
+
+  // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
+  // Output detailed type information for nodes in AST
+  // org.checkerframework.framework.type.AnnotatedTypeFactory
+  "lspTypeInfo",
 
   /// Miscellaneous debugging options
 
@@ -1072,7 +1079,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+  // Not a format method.  However, messageKey should be either a format string for `args`, or a
   // property key that maps to a format string for `args`.
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key

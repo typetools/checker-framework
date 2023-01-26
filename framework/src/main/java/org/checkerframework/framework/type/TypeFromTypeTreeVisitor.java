@@ -270,7 +270,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
       // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
       // none of which are declarations.  But `cls.getTypeParameters()` returns a list
-      // of type parameter declarations (`TypeParameterTree`), so this  call
+      // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
       return visitTypeParameter(cls.getTypeParameters().get(idx), f).asUse();
     } else if (elt instanceof ExecutableElement) {
