@@ -1108,8 +1108,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return;
         }
 
-        SideEffectsOnlyAnnoChecker.SideEffectsOnlyResult sefOnlyResult =
-            SideEffectsOnlyAnnoChecker.checkSideEffectsOnly(
+        SideEffectsOnlyChecker.SideEffectsOnlyResult sefOnlyResult =
+            SideEffectsOnlyChecker.checkSideEffectsOnly(
                 body,
                 atypeFactory,
                 sideEffectsOnlyExpressions,

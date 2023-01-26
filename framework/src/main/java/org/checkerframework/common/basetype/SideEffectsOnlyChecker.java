@@ -30,10 +30,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * For methods annotated with {@link SideEffectsOnly}, computes expressions that are side-effected
  * but not permitted by the annotation.
  */
-public class SideEffectsOnlyAnnoChecker {
+public class SideEffectsOnlyChecker {
 
   /** Creates a SideEffectsOnlyAnnoChecker. */
-  public SideEffectsOnlyAnnoChecker() {}
+  public SideEffectsOnlyChecker() {}
 
   /**
    * Returns the computed {@code SideEffectsOnlyResult}.
@@ -44,7 +44,7 @@ public class SideEffectsOnlyAnnoChecker {
    *     values to {@link SideEffectsOnly}
    * @param processingEnv The processing environment
    * @param checker The checker to use
-   * @return SideEffectsOnlyResult returns the result of {@link SideEffectsOnlyAnnoChecker}
+   * @return SideEffectsOnlyResult returns the result of {@link SideEffectsOnlyChecker}
    */
   public static SideEffectsOnlyResult checkSideEffectsOnly(
       TreePath statement,
@@ -60,7 +60,7 @@ public class SideEffectsOnlyAnnoChecker {
   }
 
   /**
-   * Result of the {@link SideEffectsOnlyAnnoChecker}. Can be queried to get the list of mutated
+   * Result of the {@link SideEffectsOnlyChecker}. Can be queried to get the list of mutated
    * expressions.
    */
   public static class SideEffectsOnlyResult {
