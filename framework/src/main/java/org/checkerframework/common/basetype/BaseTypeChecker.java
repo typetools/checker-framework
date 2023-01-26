@@ -200,7 +200,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     LinkedHashSet<Class<? extends BaseTypeChecker>> result =
         new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
     if (shouldResolveReflection()) {
-      return new result.add(MethodValChecker.class);
+      result.add(MethodValChecker.class);
     }
     return result;
   }
