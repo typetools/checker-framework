@@ -7,6 +7,8 @@ Version 3.30.0 (February 1, 2023)
 
 `getQualifierKind()` throws an exception rather than returning null.
 
+Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
+
 **Closed issues:**
 
 
