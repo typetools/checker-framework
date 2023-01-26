@@ -14,7 +14,7 @@ class MustCallAliasExamples {
     Socket socket = null;
     try {
       socket = new Socket(address, 8000);
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       DataInputStream d = new DataInputStream(socket.getInputStream());
     } catch (IOException e) {
 
@@ -23,29 +23,29 @@ class MustCallAliasExamples {
     }
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_close_wrapper(@Owning InputStream b) throws IOException {
     DataInputStream d = new DataInputStream(b);
     d.close();
   }
 
   void test_close_nonwrapper(@Owning InputStream b) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     DataInputStream d = new DataInputStream(b);
     b.close();
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_no_close(@Owning InputStream b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     DataInputStream d = new DataInputStream(b);
   }
 
-  // :: error: required.method.not.called
+  // :: error: (required.method.not.called)
   void test_no_assign(@Owning InputStream b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     new DataInputStream(
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         new BufferedInputStream(b));
   }
 

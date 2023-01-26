@@ -63,7 +63,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -169,8 +168,10 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
+import org.plumelib.util.ArrayMap;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IdentityMostlySingletonSet;
+import org.plumelib.util.IdentityArraySet;
 
 /**
  * Class that performs phase one of the translation process. It generates the following information:
@@ -419,10 +420,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     noClassDefFoundErrorType = maybeGetTypeMirror(NoClassDefFoundError.class);
     stringType = getTypeMirror(String.class);
     throwableType = getTypeMirror(Throwable.class);
-    uncheckedExceptionTypes = new LinkedHashSet<>(2);
+    uncheckedExceptionTypes = new ArraySet<>(2);
     uncheckedExceptionTypes.add(getTypeMirror(RuntimeException.class));
     uncheckedExceptionTypes.add(getTypeMirror(Error.class));
-    newArrayExceptionTypes = new LinkedHashSet<>(2);
+    newArrayExceptionTypes = new ArraySet<>(2);
     newArrayExceptionTypes.add(negativeArraySizeExceptionType);
     if (outOfMemoryErrorType != null) {
       newArrayExceptionTypes.add(outOfMemoryErrorType);
@@ -458,10 +459,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       // Add marker to indicate that the next block will be the exit block.
-      // Note: if there is a return statement earlier in the method (which is always the case for
-      // non-void methods), then this is not strictly necessary. However, it is also not a problem,
-      // as it will just generate a degenerate control graph case that will be removed in a later
-      // phase.
+      // Note: if there is a return statement earlier in the method (which is always the case
+      // for non-void methods), then this is not strictly necessary. However, it is also not a
+      // problem, as it will just generate a degenerate control graph case that will be
+      // removed in a later phase.
       nodeList.add(new UnconditionalJump(regularExitLabel));
 
       return new PhaseOneResult(
@@ -612,7 +613,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      treeToCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
+      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      newSet.add(node);
+      treeToCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -621,7 +624,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     while (enclosingParens != null) {
       Set<Node> exp = treeToCfgNodes.get(enclosingParens);
       if (exp == null) {
-        treeToCfgNodes.put(enclosingParens, new IdentityMostlySingletonSet<>(node));
+        Set<Node> newSet = new IdentityArraySet<>(1);
+        newSet.add(node);
+        treeToCfgNodes.put(enclosingParens, newSet);
       } else if (!existing.contains(node)) {
         exp.add(node);
       }
@@ -654,7 +659,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert treeToCfgNodes.containsKey(tree);
     Set<Node> existing = treeToConvertedCfgNodes.get(tree);
     if (existing == null) {
-      treeToConvertedCfgNodes.put(tree, new IdentityMostlySingletonSet<>(node));
+      Set<Node> newSet = new IdentityArraySet<>(1);
+      newSet.add(node);
+      treeToConvertedCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -694,7 +701,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
       Node node, Set<TypeMirror> causes) {
     addToLookupMap(node);
-    Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
+    Map<TypeMirror, Set<Label>> exceptions = new ArrayMap<>(causes.size());
     for (TypeMirror cause : causes) {
       exceptions.put(cause, tryStack.possibleLabels(cause));
     }
@@ -713,7 +720,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithClassNameNode(ClassNameNode node) {
-    Set<TypeMirror> thrownSet = new LinkedHashSet<>(4);
+    Set<TypeMirror> thrownSet = new ArraySet<>(4);
     if (classCircularityErrorType != null) {
       thrownSet.add(classCircularityErrorType);
     }
@@ -756,7 +763,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
       Node node, Set<TypeMirror> causes, Node pred) {
     addToLookupMap(node);
-    Map<TypeMirror, Set<Label>> exceptions = new LinkedHashMap<>(causes.size());
+    Map<TypeMirror, Set<Label>> exceptions = new ArrayMap<>(causes.size());
     for (TypeMirror cause : causes) {
       exceptions.put(cause, tryStack.possibleLabels(cause));
     }
@@ -1129,8 +1136,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return whether this conversion requires narrowing to succeed
    */
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
-    // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte, Char,
-    // Short and the right hand side is a constant.
+    // Narrowing is restricted to cases where the left hand side is byte, char, short or Byte,
+    // Char, Short and the right hand side is a constant.
     TypeMirror unboxedVarType =
         TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
     TypeKind unboxedVarKind = unboxedVarType.getKind();
@@ -1246,10 +1253,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected List<Node> convertCallArguments(
       ExecutableElement method, List<? extends ExpressionTree> actualExprs) {
-    // NOTE: It is important to convert one method argument before generating CFG nodes for the next
-    // argument, since label binding expects nodes to be generated in execution order.  Therefore,
-    // this method first determines which conversions need to be applied and then iterates over the
-    // actual arguments.
+    // NOTE: It is important to convert one method argument before generating CFG nodes for the
+    // next argument, since label binding expects nodes to be generated in execution order.
+    // Therefore, this method first determines which conversions need to be applied and then
+    // iterates over the actual arguments.
     List<? extends VariableElement> formals = method.getParameters();
     int numFormals = formals.size();
 
@@ -1257,8 +1264,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     int numActuals = actualExprs.size();
     if (method.isVarArgs()) {
-      // Create a new array argument if the actuals outnumber the formals, or if the last actual is
-      // not assignable to the last formal.
+      // Create a new array argument if the actuals outnumber the formals, or if the last
+      // actual is not assignable to the last formal.
       int lastArgIndex = numFormals - 1;
       TypeMirror lastParamType = formals.get(lastArgIndex).asType();
       if (numActuals == numFormals
@@ -1276,8 +1283,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       } else {
         assert lastParamType instanceof ArrayType : "variable argument formal must be an array";
-        // Apply method invocation conversion to lastArgIndex arguments and use the remaining ones
-        // to initialize an array.
+        // Apply method invocation conversion to lastArgIndex arguments and use the
+        // remaining ones to initialize an array.
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
@@ -1412,8 +1419,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // see JLS 15.12.4
 
     // First, compute the receiver, if any (15.12.4.1).
-    // Second, evaluate the actual arguments, left to right and possibly some arguments are stored
-    // into an array for variable arguments calls (15.12.4.2).
+    // Second, evaluate the actual arguments, left to right and possibly some arguments are
+    // stored into an array for variable arguments calls (15.12.4.2).
     // Third, test the receiver, if any, for nullness (15.12.4.4).
     // Fourth, convert the arguments to the type of the formal parameters (15.12.4.5).
     // Fifth, if the method is synchronized, lock the receiving object or class (15.12.4.5).
@@ -1444,10 +1451,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
-      // Don't convert arguments for enum super calls.  The AST contains no actual arguments, while
-      // the method element expects two arguments, leading to an exception in convertCallArguments.
-      // Since no actual arguments are present in the AST that is being checked, it shouldn't cause
-      // any harm to omit the conversions.
+      // Don't convert arguments for enum super calls.  The AST contains no actual arguments,
+      // while the method element expects two arguments, leading to an exception in
+      // convertCallArguments.
+      // Since no actual arguments are present in the AST that is being checked, it shouldn't
+      // cause any harm to omit the conversions.
       // See also BaseTypeVisitor.visitMethodInvocation and QualifierPolymorphism.annotate.
       arguments = Collections.emptyList();
     } else {
@@ -1553,25 +1561,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
         return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
       } else {
-        // The current path is in a lambda tree.  In this case the owner is either a method or
-        // an initializer block.
+        // The current path is in a lambda tree.  In this case the owner is either a method
+        // or an initializer block.
         LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
         if (!lambdaTree.getParameters().isEmpty()) {
           // If there is a lambda parameter, use the same owner.
           return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
               .getEnclosingElement();
         }
-        // If there are no lambda parameters then if the lambda is enclosed in a method, that's the
-        // owner.
+        // If there are no lambda parameters then if the lambda is enclosed in a method,
+        // that's the owner.
         MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
         if (enclosingMethod != null) {
           return TreeUtils.elementFromDeclaration(enclosingMethod);
         }
 
-        // If the lambda is not enclosed in a method, then the owner should be a constructor. javac
-        // seems to use the last constructor in the list. (If the lambda is in an initializer of a
-        // static field then the owner should be a static initializer block, but there doesn't seem
-        // to be a way to get a reference to the static initializer element.)
+        // If the lambda is not enclosed in a method, then the owner should be a
+        // constructor. javac seems to use the last constructor in the list. (If the
+        // lambda is in an initializer of a static field then the owner should be a
+        // static initializer block, but there doesn't seem to be a way to get a
+        // reference to the static initializer element.)
         ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
         TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
         ExecutableElement constructor = null;
@@ -1957,9 +1966,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitBinary(BinaryTree tree, Void p) {
-    // Note that for binary operations it is important to perform any required promotion on the left
-    // operand before generating any Nodes for the right operand, because labels must be inserted
-    // AFTER ALL preceding Nodes and BEFORE ALL following Nodes.
+    // Note that for binary operations it is important to perform any required promotion on the
+    // left operand before generating any Nodes for the right operand, because labels must be
+    // inserted AFTER ALL preceding Nodes and BEFORE ALL following Nodes.
     Node r = null;
     Tree leftTree = tree.getLeftOperand();
     Tree rightTree = tree.getRightOperand();
@@ -2357,8 +2366,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       if (defaultIndex != -1) {
-        // The checks of all cases must happen before the default case, therefore we build the
-        // default case last.
+        // The checks of all cases must happen before the default case, therefore we build
+        // the default case last.
         // Fallthrough is still handled correctly with the caseBodyLabels.
         buildCase(caseTrees.get(defaultIndex), defaultIndex, false);
       }
@@ -2494,8 +2503,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
         }
       } else {
-        // This is either the default case or a switch labeled rule (which appears in a switch
-        // expression).
+        // This is either the default case or a switch labeled rule (which appears in a
+        // switch expression).
         // A "switch labeled rule" is a "case L ->" label along with its code.
         Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
         if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
@@ -2722,8 +2731,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label loopEntry = new Label();
     Label loopExit = new Label();
 
-    // If the loop is a labeled statement, then its continue target is identical for continues with
-    // no label and continues with the loop's label.
+    // If the loop is a labeled statement, then its continue target is identical for continues
+    // with no label and continues with the loop's label.
     Label conditionStart;
     if (parentLabel != null) {
       conditionStart = continueLabels.get(parentLabel);
@@ -2777,8 +2786,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label loopEntry = new Label();
     Label loopExit = new Label();
 
-    // If the loop is a labeled statement, then its continue target is identical for continues with
-    // no label and continues with the loop's label.
+    // If the loop is a labeled statement, then its continue target is identical for continues
+    // with no label and continues with the loop's label.
     Label updateStart;
     if (parentLabel != null) {
       updateStart = continueLabels.get(parentLabel);
@@ -2889,8 +2898,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodInvocationNode nextCallNode =
           new MethodInvocationNode(
               nextCall, nextAccessNode, Collections.emptyList(), getCurrentPath());
-      // If the type of iteratorVariable is a capture, its type tree may be missing annotations, so
-      // save the expression in the node so that the full type can be found later.
+      // If the type of iteratorVariable is a capture, its type tree may be missing
+      // annotations, so save the expression in the node so that the full type can be
+      // found later.
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setInSource(false);
       extendWithNode(nextCallNode);
@@ -3079,8 +3089,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label loopEntry = new Label();
     Label loopExit = new Label();
 
-    // If the loop is a labeled statement, then its continue target is identical for continues with
-    // no label and continues with the loop's label.
+    // If the loop is a labeled statement, then its continue target is identical for continues
+    // with no label and continues with the loop's label.
     Label updateStart;
     if (parentLabel != null) {
       updateStart = continueLabels.get(parentLabel);
@@ -3160,8 +3170,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             node = new ClassNameNode(tree);
             break;
           } else if (ElementUtils.isBindingVariable(element)) {
-            // Note: BINDING_VARIABLE should be added as a direct case above when instanceof pattern
-            // matching and Java15 are supported.
+            // Note: BINDING_VARIABLE should be added as a direct case above when
+            // instanceof pattern matching and Java15 are supported.
             node = new LocalVariableNode(tree);
             break;
           }
@@ -3226,9 +3236,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
-    // This method can set the break target after generating all Nodes in the contained statement,
-    // but it can't set the continue target, which may be in the middle of a sequence of
-    // nodes. Labeled loops must look up and use the continue Labels.
+    // This method can set the break target after generating all Nodes in the contained
+    // statement, but it can't set the continue target, which may be in the middle of a
+    // sequence of nodes. Labeled loops must look up and use the continue Labels.
     Name labelName = tree.getLabel();
 
     Label breakLabel = new Label(labelName + "_break");
@@ -3349,7 +3359,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
     Set<TypeMirror> thrownSet =
-        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+        ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
     thrownSet.addAll(thrownTypes);
     // Add types to account for unchecked exceptions
@@ -3510,8 +3520,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
     // blocks.
-    // TODO: Should we handle try-with-resources blocks by also generating code for automatically
-    // closing the resources?
+    // TODO: Should we handle try-with-resources blocks by also generating code for
+    // automatically closing the resources?
     List<? extends Tree> resources = tree.getResources();
     for (Tree resource : resources) {
       scan(resource, p);
@@ -3575,10 +3585,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       if (hasExceptionalPath(exceptionalFinallyLabel)) {
-        // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel', and
-        // scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there is no
-        // successful path, it will be removed in later phase.
-        // TODO: Don't we need a separate finally block for each kind of exception?
+        // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+        // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there is
+        // no successful path, it will be removed in later phase.  TODO: Don't we need a
+        // separate finally block for each kind of exception?
         addLabelForNextNode(exceptionalFinallyLabel);
         extendWithNode(
             new MarkerNode(
@@ -4009,8 +4019,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label loopEntry = new Label();
     Label loopExit = new Label();
 
-    // If the loop is a labeled statement, then its continue target is identical for continues with
-    // no label and continues with the loop's label.
+    // If the loop is a labeled statement, then its continue target is identical for continues
+    // with no label and continues with the loop's label.
     Label conditionStart;
     if (parentLabel != null) {
       conditionStart = continueLabels.get(parentLabel);
@@ -4046,7 +4056,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     scan(tree.getStatement(), p);
 
     if (isCondConstTrue) {
-      // The condition has the constant value true, so we can directly jump back to the loop entry.
+      // The condition has the constant value true, so we can directly jump back to the loop
+      // entry.
       extendWithExtendedNode(new UnconditionalJump(loopEntry));
     } else {
       // Otherwise, jump back to evaluate the condition.

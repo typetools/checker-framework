@@ -32,7 +32,7 @@ public class SimpleInferenceMerge {
       s.b();
       s.c();
     }
-    // :: error: finalizer.invocation
+    // :: error: (finalizer.invocation)
     s.build();
   }
 }

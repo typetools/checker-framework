@@ -26,7 +26,7 @@ class ACExceptionalExitPointTest {
   }
 
   void exceptionalExitWrong() throws Exception {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo fw = makeFoo();
     throw new Exception();
   }

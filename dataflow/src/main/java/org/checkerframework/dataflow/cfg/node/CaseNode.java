@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -101,10 +102,12 @@ public class CaseNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
-    ArrayList<Node> operands = new ArrayList<>();
+    List<Node> caseOperands = getCaseOperands();
+    ArrayList<Node> operands = new ArrayList<>(caseOperands.size() + 1);
     operands.add(getSwitchOperand());
-    operands.addAll(getCaseOperands());
+    operands.addAll(caseOperands);
     return operands;
   }
 }

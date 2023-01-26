@@ -111,11 +111,12 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // Annotate method returns, not constructors.
         scan(type.getReturnType(), p);
       }
-      if (type.getReceiverType() != null
+      AnnotatedTypeMirror receiverType = type.getReceiverType();
+      if (receiverType != null
           // Intern method may be called on UnknownInterned object, so its receiver should
           // not be annotated as @Interned.
           && typeFactory.getDeclAnnotation(methodElt, InternMethod.class) == null) {
-        scanAndReduce(type.getReceiverType(), p, null);
+        scanAndReduce(receiverType, p, null);
       }
       scanAndReduce(type.getParameterTypes(), p, null);
       scanAndReduce(type.getThrownTypes(), p, null);

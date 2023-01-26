@@ -8,8 +8,8 @@ public class TypeVariablesTest<T1 extends @AinferParent Object, T2 extends @Ainf
   // Even though there is only one call to foo with argument of type @AinferBottom,
   // the method has in its signature that the parameter is a subtype of @AinferParent,
   // therefore no annotation should be added.
-  public static <A extends @AinferParent Object, B extends @AinferParent Object> TypeVariablesTest<A, B> foo(
-      A a, B b) {
+  public static <A extends @AinferParent Object, B extends @AinferParent Object>
+      TypeVariablesTest<A, B> foo(A a, B b) {
     return null;
   }
 

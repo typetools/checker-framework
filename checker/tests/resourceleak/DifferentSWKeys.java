@@ -7,7 +7,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 @SuppressWarnings("required.method.not.called")
 class DifferentSWKeys {
   void test(@Owning @MustCall("foo") Object obj) {
-    // :: warning: unneeded.suppression
+    // :: warning: (unneeded.suppression)
     @SuppressWarnings("mustcall")
     @MustCall("foo") Object bar = obj;
   }
@@ -21,7 +21,7 @@ class DifferentSWKeys {
   void test3(@Owning @MustCall("foo") Object obj) {
     // test that the option-specific suppression key doesn't work
     @SuppressWarnings("mustcallnocreatesmustcallfor")
-    // :: error: assignment
+    // :: error: (assignment)
     @MustCall({}) Object bar = obj;
   }
 }

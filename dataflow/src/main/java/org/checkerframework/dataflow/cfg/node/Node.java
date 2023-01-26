@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.builder.CFGBuilder;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -30,7 +31,7 @@ import org.plumelib.util.UniqueId;
  *
  * Note that two {@code Node}s can be {@code .equals} but represent different CFG nodes. Take care
  * to use reference equality, maps that handle identity {@code IdentityHashMap}, and sets like
- * {@code IdentityMostlySingletonSet}.
+ * {@code IdentityArraySet}.
  */
 public abstract class Node implements UniqueId {
 
@@ -156,6 +157,7 @@ public abstract class Node implements UniqueId {
    *
    * @return a collection containing all of the operand {@link Node}s of this {@link Node}
    */
+  @SideEffectFree
   public abstract Collection<Node> getOperands();
 
   /**

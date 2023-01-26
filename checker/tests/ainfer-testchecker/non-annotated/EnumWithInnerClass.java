@@ -14,7 +14,7 @@ enum EnumWithInnerClass {
     void requireAinferSibling1(@AinferSibling1 int x) {}
 
     void test() {
-      // :: warning: argument
+      // :: warning: (argument)
       requireAinferSibling1(getAinferSibling1());
     }
   }

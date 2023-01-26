@@ -97,8 +97,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       CFValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
-        // Dataflow has already recorded information about the target.  Integrate it into the list
-        // of values in the new annotation.
+        // Dataflow has already recorded information about the target.  Integrate it into
+        // the list of values in the new annotation.
         Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;
         for (AnnotationMirror anno : flowAnnos) {
@@ -167,8 +167,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<? extends VariableElement> parameters = elt.getParameters();
     int varArgsPos = parameters.size() - 1;
     Node varArgActual = node.getArguments().get(varArgsPos);
-    // In the CFG, explicit passing of multiple arguments in the varargs position is represented via
-    // an ArrayCreationNode.  This is the only case we handle for now.
+    // In the CFG, explicit passing of multiple arguments in the varargs position is represented
+    // via an ArrayCreationNode.  This is the only case we handle for now.
     if (varArgActual instanceof ArrayCreationNode) {
       ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
       // add in the called method to all the vararg arguments

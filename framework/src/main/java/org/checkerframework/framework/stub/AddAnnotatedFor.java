@@ -33,6 +33,7 @@ import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.afu.scenelib.io.ParseException;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.plumelib.util.ArraySet;
 
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as
@@ -98,7 +99,7 @@ public class AddAnnotatedFor {
    */
   public static void addAnnotatedFor(AScene scene) {
     for (AClass clazz : new HashSet<>(scene.classes.values())) {
-      Set<String> annotatedFor = new HashSet<>(2); // usually few @AnnotatedFor are applicable
+      Set<String> annotatedFor = new ArraySet<>(2); // usually few @AnnotatedFor are applicable
       clazz.accept(annotatedForVisitor, annotatedFor);
       if (!annotatedFor.isEmpty()) {
         // Set eliminates duplicates, but it must be converted to List; for whatever reason,

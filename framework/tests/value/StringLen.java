@@ -41,7 +41,7 @@ public class StringLen {
   void stringValLubToArrayLenRange(
       boolean flag,
       @StringVal({"a", "bb", "ccc", "dddd", "eeeee"}) String ae,
-          @StringVal({"ffffff", "ggggggg", "hhhhhhhh", "iiiiiiiii", "jjjjjjjjjj", "kkkkkkkkkkk"}) String fk) {
+      @StringVal({"ffffff", "ggggggg", "hhhhhhhh", "iiiiiiiii", "jjjjjjjjjj", "kkkkkkkkkkk"}) String fk) {
 
     @ArrayLenRange(from = 1, to = 11) String ak = flag ? ae : fk;
   }

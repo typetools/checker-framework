@@ -46,7 +46,8 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
 
     String[] checkerNames = getCheckerNames();
 
-    defaultValueAtypeFactories = new ArrayList<>();
+    // There are usually few subcheckers.
+    defaultValueAtypeFactories = new ArrayList<>(2);
     for (String checkerName : checkerNames) {
       if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
         continue;
