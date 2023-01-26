@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.JavaExpression;
 
 /**
- * A method annotated with the declaration annotation {@code @SideEffectsOnly(A, B)} performs
+ * A method annotated with the declaration annotation {@code @SideEffectsOnly("A", "B")} performs
  * side-effects on at most the expressions A and B. All other expressions have the same value before
  * and after a call.
  *
@@ -21,7 +21,7 @@ public @interface SideEffectsOnly {
   /**
    * An upper bound on the expressions that this method side effects.
    *
-   * @return Java expressions that the annotated method might side-effect
+   * @return the Java expressions that the annotated method might side-effect
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   @JavaExpression

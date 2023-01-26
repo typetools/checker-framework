@@ -1056,7 +1056,7 @@ Consider the following declarations and uses:
   }
 \end{Verbatim}
 
-There are three ways to express that \<computeValue> does not set
+There are four ways to express that \<computeValue> does not set
 \<myField> to \<null>, and thus to prevent the Nullness Checker from
 issuing a warning about the call \<myField.toString()>.
 
@@ -1067,6 +1067,15 @@ issuing a warning about the call \<myField.toString()>.
 
 \begin{Verbatim}
   @SideEffectFree
+  int computeValue() { ... }
+\end{Verbatim}
+
+\item
+  If \<computeValue> has side effects, but they do not affect \<myField>,
+  declare the method as \refqualclass{dataflow/qual}{SideEffectsOnly}:
+
+\begin{Verbatim}
+  @SideEffectsOnly({"someOtherVariable1", "someOtherVariable1"})
   int computeValue() { ... }
 \end{Verbatim}
 
