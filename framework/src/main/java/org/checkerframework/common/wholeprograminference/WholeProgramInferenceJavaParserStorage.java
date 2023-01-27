@@ -978,7 +978,6 @@ public class WholeProgramInferenceJavaParserStorage
     if (annotatedType == null) {
       return;
     }
-
     target.accept(new AnnotationTransferVisitor(), annotatedType);
   }
 
@@ -1559,6 +1558,21 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
+      // Don't transfer type annotations to variable declarators with sibling
+      // variable declarators, because they're printed incorrectly (as "???").
+      // (A variable declarator can have siblings if it's part of a declaration
+      // like "int x, y, z;", which is bad style but legal Java.)
+      // In any event, WPI doesn't consider the LUB of the types of the siblings,
+      // so any inferred type is likely to be wrong.
+      // TODO: avoid inferring these types at all, or take the LUB of all assignments
+      // to the siblings.
+      if (this.declaration.getParentNode().get().getChildNodes().stream()
+              .filter(node -> node instanceof VariableDeclarator)
+              .collect(Collectors.toList())
+              .size()
+          > 1) {
+        return;
+      }
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
