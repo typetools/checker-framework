@@ -765,9 +765,9 @@ subprojects {
 
   shadowJar {
     // If you add an external dependency, then do the following:
-    // 1. Before adding the dependency, run ./gradlew copyJarsToDist.
+    // 1. Before adding the dependency, run ./gradlew assembleForJavac.
     // 2. Copy checker/dist/checker.jar elsewhere.
-    // 3. Add the dependency, then run ./gradlew clean copyJarsToDist.
+    // 3. Add the dependency, then run ./gradlew clean assembleForJavac.
     // 4. Unzip both jars and compare the contents.
     // 5. Add relocate lines below for the packages.
     // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
@@ -964,7 +964,7 @@ subprojects {
       maxParallelForks = Integer.MAX_VALUE
 
       if (project.name.is('checker')) {
-        dependsOn('copyJarsToDist')
+        dependsOn('assembleForJavac')
       }
 
       if (project.hasProperty('emit.test.debug')) {
@@ -1065,7 +1065,7 @@ subprojects {
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
 
-assemble.dependsOn(':checker:copyJarsToDist')
+assemble.dependsOn(':checker:assembleForJavac')
 
 task checkBasicStyle(group: 'Format') {
   description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
@@ -1200,14 +1200,10 @@ task releaseBuild(group: 'Build') {
   dependsOn(clean)
   doFirst {
     release = true
-    if (!isJava8) {
-//      throw new RuntimeException('You must use Java 8 when making a release. You are using ' + JavaVersion.current() + '.')
-
-    }
   }
   // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
   finalizedBy(buildAll)
-  finalizedBy('checker:copyJarsToDist')
+  finalizedBy('checker:assembleForJavac')
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
