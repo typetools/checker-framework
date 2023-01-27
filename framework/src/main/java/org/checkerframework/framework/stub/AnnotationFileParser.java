@@ -122,16 +122,17 @@ import org.plumelib.util.CollectionsPlume;
  * to the {@link AnnotationFileAnnotations} passed as an argument.
  *
  * <p>The first main entry point is {@link #parseStubFile(String, InputStream, AnnotatedTypeFactory,
- * ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileUtil.AnnotationFileType)}, which
- * side-effects its last argument. It operates in two steps. First, it calls the Annotation File
- * Parser to parse an annotation file. Then, it walks the AST to create/collect types and
- * declaration annotations.
+ * ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileUtil.AnnotationFileType,
+ * AnnotationFileElementTypes)}, which side-effects its last argument. It operates in two steps.
+ * First, it calls the Annotation File Parser to parse an annotation file. Then, it walks the AST to
+ * create/collect types and declaration annotations.
  *
  * <p>The second main entry point is {@link #parseAjavaFile(String, InputStream,
- * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations)}.
- * This behaves the same as {@link AnnotationFileParser#parseStubFile(String, InputStream,
- * AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations,
- * AnnotationFileUtil.AnnotationFileType)}, but takes an ajava file instead.
+ * CompilationUnitTree, AnnotatedTypeFactory, ProcessingEnvironment, AnnotationFileAnnotations,
+ * AnnotationFileElementTypes)}. This behaves the same as {@link
+ * AnnotationFileParser#parseStubFile(String, InputStream, AnnotatedTypeFactory,
+ * ProcessingEnvironment, AnnotationFileAnnotations, AnnotationFileUtil.AnnotationFileType,
+ * AnnotationFileElementTypes)}, but takes an ajava file instead.
  *
  * <p>The other entry point is {@link #parseJdkFileAsStub}.
  */
@@ -198,9 +199,17 @@ public class AnnotationFileParser {
   // Not final in order to accommodate a default value.
   private StubUnit stubUnit;
 
+  /** The processing environment. */
   private final ProcessingEnvironment processingEnv;
+
+  /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
+
+  /** The javac element utilities. */
   private final Elements elements;
+
+  /** The manager that controls the stub file parsing process. */
+  private final AnnotationFileElementTypes fileElementTypes;
 
   /**
    * The set of annotations found in the file. Keys are both fully-qualified and simple names. There
@@ -235,7 +244,7 @@ public class AnnotationFileParser {
    * The annotations on the declared package of the complation unit being processed. Contains null
    * if not processing a compilation unit or if the file has no declared package.
    */
-  @Nullable List<AnnotationExpr> packageAnnos;
+  private @Nullable List<AnnotationExpr> packageAnnos;
 
   // The following variables are stored in the AnnotationFileParser because otherwise they would
   // need to be passed through everywhere, which would be verbose.
@@ -252,7 +261,7 @@ public class AnnotationFileParser {
    * Contains the annotations of the file currently being processed, or null if not currently
    * processing a file. The {@code process*} methods side-effect this data structure.
    */
-  @Nullable AnnotationFileAnnotations annotationFileAnnos;
+  private @Nullable AnnotationFileAnnotations annotationFileAnnos;
 
   /** The line separator. */
   private static final String LINE_SEPARATOR = System.lineSeparator().intern();
@@ -403,18 +412,21 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param fileType the type of file being parsed (stub file or ajava file) and its source
+   * @param fileElementTypes the manager that controls the stub file parsing process
    */
   private AnnotationFileParser(
       String filename,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
-      AnnotationFileType fileType) {
+      AnnotationFileType fileType,
+      AnnotationFileElementTypes fileElementTypes) {
     this.filename = filename;
     this.atypeFactory = atypeFactory;
     this.processingEnv = processingEnv;
     this.elements = processingEnv.getElementUtils();
     this.fileType = fileType;
     this.root = null;
+    this.fileElementTypes = fileElementTypes;
 
     // TODO: This should use SourceChecker.getOptions() to allow
     // setting these flags per checker.
@@ -642,6 +654,7 @@ public class AnnotationFileParser {
    * @param processingEnv ProcessingEnvironment to use
    * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
    * @param fileType the annotation file type and source
+   * @param fileElementTypes the manager that controls the stub file parsing process
    */
   public static void parseStubFile(
       String filename,
@@ -649,9 +662,10 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations annotationFileAnnos,
-      AnnotationFileType fileType) {
+      AnnotationFileType fileType,
+      AnnotationFileElementTypes fileElementTypes) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, fileType);
+        new AnnotationFileParser(filename, atypeFactory, processingEnv, fileType, fileElementTypes);
     try {
       afp.parseStubUnit(inputStream);
       afp.process(annotationFileAnnos);
@@ -672,6 +686,7 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param ajavaAnnos annotations from the ajava file; side-effected by this method
+   * @param fileElementTypes the manager that controls the stub file parsing process
    */
   public static void parseAjavaFile(
       String filename,
@@ -679,9 +694,11 @@ public class AnnotationFileParser {
       CompilationUnitTree root,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
-      AnnotationFileAnnotations ajavaAnnos) {
+      AnnotationFileAnnotations ajavaAnnos,
+      AnnotationFileElementTypes fileElementTypes) {
     AnnotationFileParser afp =
-        new AnnotationFileParser(filename, atypeFactory, processingEnv, AnnotationFileType.AJAVA);
+        new AnnotationFileParser(
+            filename, atypeFactory, processingEnv, AnnotationFileType.AJAVA, fileElementTypes);
     try {
       afp.parseStubUnit(inputStream);
       JavaParserUtil.concatenateAddedStringLiterals(afp.stubUnit);
@@ -703,15 +720,23 @@ public class AnnotationFileParser {
    * @param atypeFactory AnnotatedTypeFactory to use
    * @param processingEnv ProcessingEnvironment to use
    * @param stubAnnos annotations from the stub file; side-effected by this method
+   * @param fileElementTypes the manager that controls the stub file parsing process
    */
   public static void parseJdkFileAsStub(
       String filename,
       InputStream inputStream,
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
-      AnnotationFileAnnotations stubAnnos) {
+      AnnotationFileAnnotations stubAnnos,
+      AnnotationFileElementTypes fileElementTypes) {
     parseStubFile(
-        filename, inputStream, atypeFactory, processingEnv, stubAnnos, AnnotationFileType.JDK_STUB);
+        filename,
+        inputStream,
+        atypeFactory,
+        processingEnv,
+        stubAnnos,
+        AnnotationFileType.JDK_STUB,
+        fileElementTypes);
   }
 
   /**
@@ -776,13 +801,13 @@ public class AnnotationFileParser {
    */
   private void processCompilationUnit(CompilationUnit cu) {
 
-    if (!cu.getPackageDeclaration().isPresent()) {
-      packageAnnos = null;
-      typeBeingParsed = new FqName(null, null);
-    } else {
+    if (cu.getPackageDeclaration().isPresent()) {
       PackageDeclaration pDecl = cu.getPackageDeclaration().get();
       packageAnnos = pDecl.getAnnotations();
       processPackage(pDecl);
+    } else {
+      packageAnnos = null;
+      typeBeingParsed = new FqName(null, null);
     }
 
     if (fileType.isStub()) {
@@ -3064,15 +3089,34 @@ public class AnnotationFileParser {
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
-      if (javaParserNode instanceof TypeDeclaration<?>
-          && !(javaParserNode instanceof AnnotationDeclaration)) {
-        typeDeclTypeParameters =
-            processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
+      boolean shouldProcessTypeDecl =
+          javaParserNode instanceof TypeDeclaration<?>
+              && !(javaParserNode instanceof AnnotationDeclaration);
+      Optional<String> typeDeclName = Optional.empty();
+      boolean callListener = false;
+
+      if (shouldProcessTypeDecl) {
+        TypeDeclaration<?> typeDecl = (TypeDeclaration<?>) javaParserNode;
+        typeDeclName = typeDecl.getFullyQualifiedName();
+        callListener = typeDeclName.isPresent() && typeDecl.isTopLevelType();
       }
 
-      super.visitClass(javacTree, javaParserNode);
-      if (typeDeclTypeParameters != null) {
-        typeParameters.removeAll(typeDeclTypeParameters);
+      if (callListener) {
+        fileElementTypes.preProcessTopLevelType(typeDeclName.get());
+      }
+      try {
+        if (shouldProcessTypeDecl) {
+          typeDeclTypeParameters =
+              processTypeDecl((TypeDeclaration<?>) javaParserNode, null, javacTree);
+        }
+        super.visitClass(javacTree, javaParserNode);
+      } finally {
+        if (typeDeclTypeParameters != null) {
+          typeParameters.removeAll(typeDeclTypeParameters);
+        }
+        if (callListener) {
+          fileElementTypes.postProcessTopLevelType(typeDeclName.get());
+        }
       }
 
       return null;

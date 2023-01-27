@@ -206,7 +206,8 @@ public class AnnotationFileElementTypes {
             factory,
             processingEnv,
             annotationFileAnnos,
-            AnnotationFileType.BUILTIN_STUB);
+            AnnotationFileType.BUILTIN_STUB,
+            this);
       }
     } catch (IOException e) {
       checker.message(
@@ -251,7 +252,7 @@ public class AnnotationFileElementTypes {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     try (InputStream in = new FileInputStream(ajavaPath)) {
       AnnotationFileParser.parseAjavaFile(
-          ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
+          ajavaPath, in, root, factory, processingEnv, annotationFileAnnos, this);
     } catch (IOException e) {
       checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
     } finally {
@@ -291,7 +292,8 @@ public class AnnotationFileElementTypes {
                 factory,
                 processingEnv,
                 annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
+                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType,
+                this);
           } catch (IOException e) {
             checker.message(
                 Kind.NOTE, "Could not read annotation resource: " + resource.getDescription());
@@ -308,7 +310,7 @@ public class AnnotationFileElementTypes {
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
           if (in != null) {
             AnnotationFileParser.parseStubFile(
-                path, in, factory, processingEnv, annotationFileAnnos, fileType);
+                path, in, factory, processingEnv, annotationFileAnnos, fileType, this);
           } else {
             // Didn't find the file.  Issue a warning.
 
@@ -689,7 +691,8 @@ public class AnnotationFileElementTypes {
           jdkStub,
           factory,
           factory.getProcessingEnv(),
-          annotationFileAnnos);
+          annotationFileAnnos,
+          this);
     } catch (IOException e) {
       throw new BugInCF("cannot open the jdk stub file " + path, e);
     } finally {
@@ -708,7 +711,7 @@ public class AnnotationFileElementTypes {
     try (JarFile jarFile = connection.getJarFile()) {
       try (InputStream jdkStub = jarFile.getInputStream(jarFile.getJarEntry(jarEntryName))) {
         AnnotationFileParser.parseJdkFileAsStub(
-            jarEntryName, jdkStub, factory, factory.getProcessingEnv(), annotationFileAnnos);
+            jarEntryName, jdkStub, factory, factory.getProcessingEnv(), annotationFileAnnos, this);
       } catch (IOException e) {
         throw new BugInCF("cannot open the jdk stub file " + jarEntryName, e);
       }
