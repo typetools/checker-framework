@@ -43,7 +43,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
@@ -704,9 +703,11 @@ public class AnnotationUtils {
     } else {
       valmap = anno.getElementValues();
     }
-    for (ExecutableElement elem : valmap.keySet()) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        valmap.entrySet()) {
+      ExecutableElement elem = entry.getKey();
       if (elem.getSimpleName().contentEquals(elementName)) {
-        AnnotationValue val = valmap.get(elem);
+        AnnotationValue val = entry.getValue();
         try {
           return expectedType.cast(val.getValue());
         } catch (ClassCastException e) {

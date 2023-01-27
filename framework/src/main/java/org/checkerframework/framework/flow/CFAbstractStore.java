@@ -1268,8 +1268,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected String internalVisualize(CFGVisualizer<V, S, ?> viz) {
     StringJoiner res = new StringJoiner(viz.getSeparator());
-    for (Map.Entry<LocalVariable, V> entry : localVariableValues.entrySet()) {
-      res.add(viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue()));
+    for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
+      res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));
     }
     if (thisValue != null) {
       res.add(viz.visualizeStoreThisVal(thisValue));

@@ -13,7 +13,6 @@ public class ResourceLeakPermitInitializationLeak extends CheckerFrameworkPerDir
         testFiles,
         ResourceLeakChecker.class,
         "resourceleak-permitinitializationleak",
-        "-Anomsgtext",
         "-ApermitInitializationLeak",
         "-AwarnUnneededSuppressions",
         "-encoding",

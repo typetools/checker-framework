@@ -234,8 +234,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       List<Set<? extends AnnotationMirror>> nonMatches = new ArrayList<>();
 
       String string = (String) tree.getValue();
-      for (Pattern pattern : stringPatterns.keySet()) {
-        Set<AnnotationMirror> sam = stringPatterns.get(pattern);
+      for (Map.Entry<Pattern, Set<AnnotationMirror>> entry : stringPatterns.entrySet()) {
+        Pattern pattern = entry.getKey();
+        Set<AnnotationMirror> sam = entry.getValue();
         if (pattern.matcher(string).matches()) {
           matches.add(sam);
         } else {

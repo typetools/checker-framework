@@ -14,7 +14,7 @@ public class Bug103 extends HR {
   // Crazy: replace IG.C with IG.C+"" and it compiles
   // Crazy: remove final and it compiles
   // Crazy: replace with new String[22] and it compiles
-  // Crazy: reduce to less than 5 distinct values and it compiles  (replace IG.D with IG.C)
+  // Crazy: reduce to less than 5 distinct values and it compiles (replace IG.D with IG.C)
   final String[] ids = {
     IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C, IG.C,
     IG.C, IG.C, IG.D, IG.E, IG.F, IG.G

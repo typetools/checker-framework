@@ -110,7 +110,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   private final UpperBoundAnnotatedTypeFactory atypeFactory;
 
   /** The int TypeMirror. */
-  final TypeMirror intTM;
+  private final TypeMirror intTM;
 
   /**
    * Creates a new UpperBoundTransfer.
@@ -508,7 +508,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitNumericalAddition(
       NumericalAdditionNode n, TransferInput<CFValue, CFStore> in) {
-    // type of leftNode + rightNode  is  glb(t, s) where
+    // type of  leftNode + rightNode  is  glb(t, s) where
     // t = minusOffset(type(leftNode), rightNode) and
     // s = minusOffset(type(rightNode), leftNode)
 
