@@ -788,8 +788,15 @@ public class AnnotationFileParser {
     if (fileType.isStub()) {
       if (cu.getTypes() != null) {
         for (TypeDeclaration<?> typeDeclaration : cu.getTypes()) {
-          // Not processing an ajava file, so ignore the return value.
-          processTypeDecl(typeDeclaration, null, null);
+          Optional<String> typeDeclName = typeDeclaration.getFullyQualifiedName();
+
+          typeDeclName.ifPresent(fileElementTypes::preProcessTopLevelType);
+          try {
+            // Not processing an ajava file, so ignore the return value.
+            processTypeDecl(typeDeclaration, null, null);
+          } finally {
+            typeDeclName.ifPresent(fileElementTypes::postProcessTopLevelType);
+          }
         }
       }
     } else {
@@ -1105,8 +1112,9 @@ public class AnnotationFileParser {
       if (numParams != numArgs) {
         stubDebug(
             String.format(
-                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s"
-                    + " (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
+                "parseType:  mismatched sizes for typeParameters=%s (size %d)"
+                    + " and typeArguments=%s (size %d);"
+                    + " decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
                 typeParameters,
                 numParams,
                 typeArguments,
@@ -1295,8 +1303,8 @@ public class AnnotationFileParser {
         if (decl.isConstructorDeclaration()) {
           warn(
               receiverParameter,
-              "parseParameter: constructor %s of a top-level class cannot have receiver"
-                  + " annotations %s",
+              "parseParameter: constructor %s of a top-level class"
+                  + " cannot have receiver annotations %s",
               methodType,
               decl.getReceiverParameter().get().getAnnotations());
         } else {
@@ -1561,6 +1569,7 @@ public class AnnotationFileParser {
           annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null, astNode);
           annotate(wildcardType.getExtendsBound(), primaryAnnotations, astNode);
         } else {
+          // Annotated unbounded wildcard "@A ?": use annotations.
           annotate(atype, primaryAnnotations, astNode);
         }
         break;
@@ -1766,8 +1775,10 @@ public class AnnotationFileParser {
     if (typeParameters.size() != typeArguments.size()) {
       String msg =
           String.format(
-              "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s; "
-                  + " typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
+              "annotateTypeParameters: mismatched sizes:"
+                  + "  typeParameters (size %d)=%s;"
+                  + "  typeArguments (size %d)=%s;"
+                  + "  decl=%s;  elt=%s (%s).",
               typeParameters.size(),
               typeParameters,
               typeArguments.size(),
@@ -2259,8 +2270,9 @@ public class AnnotationFileParser {
                 + " not found in type "
                 + typeElt
                 + System.lineSeparator()
-                + "If the method is not package-private, add an access specifier in the stub file"
-                + " and use pass -AstubDebug to receive a more useful error message.");
+                + "If the method is not package-private,"
+                + " add an access specifier in the stub file"
+                + " and use -AstubDebug to receive a more useful error message.");
       } else {
         stubWarnNotFound(
             methodDecl, "Method " + wantedMethodString + " not found in type " + typeElt);
@@ -3044,6 +3056,9 @@ public class AnnotationFileParser {
    * annotations from the ajava file in {@link #annotationFileAnnos} by calling the process method
    * corresponding to that construct, such as {@link #processCallableDeclaration} or {@link
    * #processField}.
+   *
+   * <p>Ajava files are for use by tools (humans should use stub files), so the {@code .ajava} file
+   * must be structurally identical (other than annotations) to the {@code .java} file.
    */
   private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
     @Override

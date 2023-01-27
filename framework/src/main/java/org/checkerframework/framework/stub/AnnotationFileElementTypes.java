@@ -854,4 +854,30 @@ public class AnnotationFileElementTypes {
       throw new BugInCF("Cannot open the jar file " + resourceURL.getFile(), e);
     }
   }
+
+  /**
+   * This method is invoked each time before {@link AnnotationFileParser} processes a top-level
+   * type.
+   *
+   * @param typeName the fully qualified name of the top-level type
+   */
+  void preProcessTopLevelType(String typeName) {
+    boolean added = processingClasses.add(typeName);
+    if (!added) {
+      throw new BugInCF(
+          "Trying to process type " + typeName + " which is already being processed.");
+    }
+  }
+
+  /**
+   * This method is invoked each time after {@link AnnotationFileParser} processes a top-level type.
+   *
+   * @param typeName the fully qualified name of the top-level type
+   */
+  void postProcessTopLevelType(String typeName) {
+    boolean removed = processingClasses.remove(typeName);
+    if (!removed) {
+      throw new BugInCF("Cannot find the processing record for type " + typeName);
+    }
+  }
 }
