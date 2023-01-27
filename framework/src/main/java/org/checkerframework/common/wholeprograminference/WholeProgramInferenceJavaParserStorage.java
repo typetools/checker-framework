@@ -978,6 +978,7 @@ public class WholeProgramInferenceJavaParserStorage
     if (annotatedType == null) {
       return;
     }
+
     target.accept(new AnnotationTransferVisitor(), annotatedType);
   }
 
