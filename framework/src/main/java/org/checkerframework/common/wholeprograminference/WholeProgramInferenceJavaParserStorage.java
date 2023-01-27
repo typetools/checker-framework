@@ -1565,7 +1565,10 @@ public class WholeProgramInferenceJavaParserStorage
       // In any event, WPI doesn't consider the LUB of the types of the siblings,
       // so any inferred type is likely to be wrong.
       // TODO: avoid inferring these types at all, or take the LUB of all assignments
-      // to the siblings.
+      // to the siblings. Unfortunately, VariableElements don't track whether they have
+      // siblings, and there's no other information about the declaration for
+      // WholeProgramInferenceImplementation to use: to determine that there are siblings,
+      // a parse tree is needed.
       if (this.declaration.getParentNode().get().getChildNodes().stream()
               .filter(node -> node instanceof VariableDeclarator)
               .collect(Collectors.toList())
