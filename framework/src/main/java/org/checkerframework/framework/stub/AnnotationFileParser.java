@@ -3086,6 +3086,10 @@ public class AnnotationFileParser {
    * must be structurally identical (other than annotations) to the {@code .java} file.
    */
   private class AjavaAnnotationCollectorVisitor extends DefaultJointVisitor {
+
+    /** Create an AjavaAnnotationCollectorVisitor. */
+    AjavaAnnotationCollectorVisitor() {}
+
     @Override
     public Void visitClass(ClassTree javacTree, Node javaParserNode) {
       List<AnnotatedTypeVariable> typeDeclTypeParameters = null;
