@@ -9,11 +9,11 @@ class Enclosing {
   }
 
   static class Nested {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     @Owning Foo foo;
 
     @CreatesMustCallFor("this")
-    // :: error: creates.mustcall.for.invalid.target
+    // :: error: (creates.mustcall.for.invalid.target)
     void initFoo() {
       if (this.foo == null) {
         this.foo = new Foo();

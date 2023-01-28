@@ -111,8 +111,12 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   @Override
-  public @Nullable QualifierKind getQualifierKind(@CanonicalName String name) {
-    return nameToQualifierKind.get(name);
+  public QualifierKind getQualifierKind(@CanonicalName String name) {
+    QualifierKind result = nameToQualifierKind.get(name);
+    if (result == null) {
+      throw new BugInCF("getQualifierKind(%s) => null", name);
+    }
+    return result;
   }
 
   /**
@@ -205,8 +209,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         if (qualifierKind.top == null) {
           throw new TypeSystemError(
               "PolymorphicQualifier, %s, has to specify a type hierarchy in its"
-                  + " @PolymorphicQualifier meta-annotation, if more than one exists; top types:"
-                  + " [%s].",
+                  + " @PolymorphicQualifier meta-annotation, if more than one exists;"
+                  + " top types: [%s].",
               qualifierKind, StringsPlume.join(", ", tops));
         } else if (!tops.contains(qualifierKind.top)) {
           throw new TypeSystemError(

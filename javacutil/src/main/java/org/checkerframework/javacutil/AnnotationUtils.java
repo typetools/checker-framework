@@ -43,7 +43,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
@@ -455,7 +454,8 @@ public class AnnotationUtils {
     } else if ((val1 instanceof AnnotationMirror) && (val2 instanceof AnnotationMirror)) {
       return compareAnnotationMirrors((AnnotationMirror) val1, (AnnotationMirror) val2);
     } else if ((val1 instanceof AnnotationValue) && (val2 instanceof AnnotationValue)) {
-      // This case occurs because of the recursive call when comparing arrays of annotation values.
+      // This case occurs because of the recursive call when comparing arrays of annotation
+      // values.
       return compareAnnotationValue((AnnotationValue) val1, (AnnotationValue) val2);
     }
 
@@ -596,7 +596,8 @@ public class AnnotationUtils {
       case TYPE_USE:
         return EnumSet.noneOf(ElementKind.class);
       default:
-        // TODO: Use MODULE enum constants directly instead of looking them up by name.  (Java 11)
+        // TODO: Use MODULE enum constants directly instead of looking them up by name.
+        // (Java 11)
         if (elementType.name().equals("MODULE")) {
           return EnumSet.of(ElementKind.valueOf("MODULE"));
         }
@@ -702,9 +703,11 @@ public class AnnotationUtils {
     } else {
       valmap = anno.getElementValues();
     }
-    for (ExecutableElement elem : valmap.keySet()) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        valmap.entrySet()) {
+      ExecutableElement elem = entry.getKey();
       if (elem.getSimpleName().contentEquals(elementName)) {
-        AnnotationValue val = valmap.get(elem);
+        AnnotationValue val = entry.getValue();
         try {
           return expectedType.cast(val.getValue());
         } catch (ClassCastException e) {

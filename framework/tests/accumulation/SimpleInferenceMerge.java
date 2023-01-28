@@ -31,7 +31,7 @@ public class SimpleInferenceMerge {
       s.b();
       s.c();
     }
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     s.build();
   }
 }

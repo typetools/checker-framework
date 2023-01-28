@@ -61,7 +61,7 @@ public class MisuseProperties {
     //    treatment as a supertype) for such properties.
 
     Set<@KeyFor("p") Object> keys = p.keySet();
-    // now remove  "line.separator" from the set
+    // now remove "line.separator" from the set
     keys.remove("line.separator");
     keys.removeAll(keys);
     keys.clear();

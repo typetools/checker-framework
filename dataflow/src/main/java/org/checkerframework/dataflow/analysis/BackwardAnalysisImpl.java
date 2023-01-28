@@ -297,17 +297,19 @@ public class BackwardAnalysisImpl<
    *     {@code node}, if it exists; {@code null} otherwise
    */
   private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
-    if (pred instanceof ExceptionBlock && node != null) {
-      Block block = node.getBlock();
-      if (block != null) {
-        Map<TypeMirror, Set<Block>> exceptionalSuccessors =
-            ((ExceptionBlock) pred).getExceptionalSuccessors();
-        for (TypeMirror excType : exceptionalSuccessors.keySet()) {
-          for (Block excSuccBlock : exceptionalSuccessors.get(excType)) {
-            if (excSuccBlock.getUid() == block.getUid()) {
-              return excType;
-            }
-          }
+    if (!(pred instanceof ExceptionBlock) || node == null) {
+      return null;
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+        ((ExceptionBlock) pred).getExceptionalSuccessors();
+    for (Map.Entry<TypeMirror, Set<Block>> excTypeEntry : exceptionalSuccessors.entrySet()) {
+      for (Block excSuccBlock : excTypeEntry.getValue()) {
+        if (excSuccBlock.getUid() == block.getUid()) {
+          return excTypeEntry.getKey();
         }
       }
     }
@@ -344,7 +346,8 @@ public class BackwardAnalysisImpl<
         case REGULAR_BLOCK:
           {
             RegularBlock rBlock = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are looking for.
+            // Apply transfer function to contents until we found the node we are
+            // looking for.
             TransferInput<V, S> store = blockTransferInput;
             List<Node> nodeList = rBlock.getNodes();
             ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
@@ -378,7 +381,8 @@ public class BackwardAnalysisImpl<
               return blockTransferInput.getRegularStore();
             }
             setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
+            // Copy the store to avoid changing other blocks' transfer inputs in {@link
+            // #inputs}
             TransferResult<V, S> transferResult =
                 callTransferFunction(node, blockTransferInput.copy());
             // Merge transfer result with the exception store of this exceptional block

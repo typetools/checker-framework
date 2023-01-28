@@ -220,8 +220,8 @@ public class InsertAjavaAnnotations {
       // `src`'s annotations are type annotations.
       Position position;
       if (dest instanceof ClassOrInterfaceType) {
-        // In a multi-part name like my.package.MyClass, type annotations go directly in front of
-        // MyClass instead of the full name.
+        // In a multi-part name like my.package.MyClass, type annotations go directly in
+        // front of MyClass instead of the full name.
         position = ((ClassOrInterfaceType) dest).getName().getBegin().get();
       } else {
         position = dest.getBegin().get();
@@ -259,8 +259,8 @@ public class InsertAjavaAnnotations {
       // Gather annotations used in the ajava file.
       allAnnotations = getImportedAnnotations(src);
 
-      // Move any annotations that JavaParser puts in the declaration position but belong only in
-      // the type position.
+      // Move any annotations that JavaParser puts in the declaration position but belong only
+      // in the type position.
       src.accept(new TypeAnnotationMover(allAnnotations, elements), null);
 
       // Transfer import statements from the ajava file to the Java file.

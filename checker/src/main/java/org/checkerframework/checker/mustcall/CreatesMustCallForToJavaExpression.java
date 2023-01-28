@@ -157,14 +157,14 @@ public class CreatesMustCallForToJavaExpression {
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       CreatesMustCallForElementSupplier supplier,
       StringToJavaExpression converter) {
-    // Unfortunately, there is no way to avoid passing the default string "this" here. The default
-    // must be hard-coded into the client, such as here. That is the price for the efficiency of not
-    // having to query the annotation definition (such queries are expensive).
+    // Unfortunately, there is no way to avoid passing the default string "this" here. The
+    // default must be hard-coded into the client, such as here. That is the price for the
+    // efficiency of not having to query the annotation definition (such queries are expensive).
     String targetStrWithoutAdaptation =
         AnnotationUtils.getElementValue(
             createsMustCallFor, supplier.getCreatesMustCallForValueElement(), String.class, "this");
-    // TODO: find a way to also check if the target is a known tempvar, and if so return that. That
-    // should improve the quality of the error messages we give.
+    // TODO: find a way to also check if the target is a known tempvar, and if so return that.
+    // That should improve the quality of the error messages we give.
     JavaExpression targetExpr;
     try {
       targetExpr = converter.toJavaExpression(targetStrWithoutAdaptation);

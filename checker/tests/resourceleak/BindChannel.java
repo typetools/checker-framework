@@ -20,7 +20,7 @@ class BindChannel {
       // the method below, which extracts the socket into a local variable, which can be
       // parsed as an CO target.
       ServerSocketChannel httpChannel = ServerSocketChannel.open();
-      // :: error: reset.not.owning
+      // :: error: (reset.not.owning)
       httpChannel.socket().bind(addr);
     } catch (IOException io) {
 
@@ -30,7 +30,7 @@ class BindChannel {
   static void test_lv(InetSocketAddress addr, boolean b) {
     try {
       ServerSocketChannel httpChannel = ServerSocketChannel.open();
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       ServerSocket httpSock = httpChannel.socket();
       httpSock.bind(addr);
     } catch (IOException io) {

@@ -11,7 +11,7 @@ class HBaseReport1 {
   public static void test(String fileName) {
     FileWriter fstream;
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       fstream = new FileWriter(fileName);
     } catch (IOException e) {
       return;

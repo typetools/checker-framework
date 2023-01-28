@@ -5,11 +5,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 @Builder
 public class Foo {
-    private @Nullable Integer x;
-    private Integer y;
+  private @Nullable Integer x;
+  private Integer y;
 
-    void demo() {
-        x = null; // ok
-        y = null; // error
-    }
+  void demo() {
+    x = null; // ok
+    y = null; // error
+  }
 }

@@ -1,13 +1,12 @@
 // A test that a class with two owned sockets cannot be @MustCallAliased with both of them.
 
-import org.checkerframework.checker.mustcall.qual.*;
-import org.checkerframework.checker.calledmethods.qual.*;
 import java.net.Socket;
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.checker.mustcall.qual.*;
 
 @InheritableMustCall({"close1", "close2"})
 public class TwoSocketContainer {
-  @Owning
-  private final Socket s1, s2;
+  @Owning private final Socket s1, s2;
 
   // :: error: mustcallalias.out.of.scope
   public @MustCallAlias TwoSocketContainer(@MustCallAlias Socket s1, @MustCallAlias Socket s2) {
@@ -15,12 +14,16 @@ public class TwoSocketContainer {
     this.s2 = s2;
   }
 
-  @EnsuresCalledMethods(value="this.s1", methods={"close"})
+  @EnsuresCalledMethods(
+      value = "this.s1",
+      methods = {"close"})
   public void close1() throws java.io.IOException {
     s1.close();
   }
 
-  @EnsuresCalledMethods(value="this.s2", methods={"close"})
+  @EnsuresCalledMethods(
+      value = "this.s2",
+      methods = {"close"})
   public void close2() throws java.io.IOException {
     s2.close();
   }

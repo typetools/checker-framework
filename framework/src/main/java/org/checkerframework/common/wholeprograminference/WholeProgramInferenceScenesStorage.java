@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -216,8 +217,12 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
-    // The scenes implementation can always add annotations to a method.
-    return true;
+    // The only location that the scenes implementation cannot store an annotation is on
+    // a member of an annotation type, which it cannot distinguish from a normal interface's
+    // method. Without this, the scenes implementation will attempt to annotate annotation
+    // elements, which is an error.
+    Element enclosingType = ElementUtils.enclosingTypeElement(methodElt);
+    return enclosingType == null || enclosingType.getKind() != ElementKind.ANNOTATION_TYPE;
   }
 
   @Override
@@ -603,7 +608,7 @@ public class WholeProgramInferenceScenesStorage
     Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
-      // amJaif only contains  annotations from the jaif, so it might be missing
+      // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
         amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
@@ -859,8 +864,9 @@ public class WholeProgramInferenceScenesStorage
     // The others stay intact.
     Set<Annotation> annosToRemove = getSupportedAnnosInSet(typeToUpdate.tlAnnotationsHere);
     // This method may be called consecutive times for the same ATypeElement.  Each time it is
-    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore,
-    // it is not a problem to remove all annotations before inserting the new annotations.
+    // called, the AnnotatedTypeMirror has a better type estimate for the ATypeElement.
+    // Therefore, it is not a problem to remove all annotations before inserting the new
+    // annotations.
     typeToUpdate.tlAnnotationsHere.removeAll(annosToRemove);
 
     // Only update the ATypeElement if there are no explicit annotations.

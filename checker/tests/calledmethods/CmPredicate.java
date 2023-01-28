@@ -5,7 +5,7 @@ public class CmPredicate {
   void testOr1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.c();
   }
 
@@ -26,7 +26,7 @@ public class CmPredicate {
   void testAnd1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.d();
   }
 
@@ -34,7 +34,7 @@ public class CmPredicate {
     MyClass m1 = new MyClass();
 
     m1.a();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.d();
   }
 
@@ -42,7 +42,7 @@ public class CmPredicate {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.d();
   }
 
@@ -51,7 +51,7 @@ public class CmPredicate {
 
     m1.a();
     m1.c();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.d();
   }
 
@@ -75,7 +75,7 @@ public class CmPredicate {
   void testAndOr1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.e();
   }
 
@@ -90,7 +90,7 @@ public class CmPredicate {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.e();
   }
 
@@ -115,7 +115,7 @@ public class CmPredicate {
   void testPrecedence1() {
     MyClass m1 = new MyClass();
 
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.f();
   }
 
@@ -123,7 +123,7 @@ public class CmPredicate {
     MyClass m1 = new MyClass();
 
     m1.a();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.f();
   }
 
@@ -131,7 +131,7 @@ public class CmPredicate {
     MyClass m1 = new MyClass();
 
     m1.b();
-    // :: error: method.invocation
+    // :: error: (method.invocation)
     m1.f();
   }
 
@@ -201,23 +201,23 @@ public class CmPredicate {
 
     static void testAssignability1(@CalledMethodsPredicate("a || b") MyClass cAble) {
       cAble.c();
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       cAble.d();
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       cAble.e();
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       cAble.f();
     }
 
     static void testAssignability2(@CalledMethodsPredicate("a && b") MyClass dAble) {
       // These calls would work if subtyping between predicates was by implication. They issue
       // errors, because it is not.
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       dAble.c();
       dAble.d();
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       dAble.e();
-      // :: error: method.invocation
+      // :: error: (method.invocation)
       dAble.f();
     }
 
@@ -239,86 +239,86 @@ public class CmPredicate {
 
       cmALocal = cmA;
       cmALocal = cmpA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = aOrB;
       cmALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = aAndB;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = bAndCOrA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = bAndCOrAParens;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = aAndBOrC;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = aAndBOrCParens;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = bOrCAndA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = bAndC;
-      // :: error: assignment
+      // :: error: (assignment)
       cmALocal = bAndCParens;
 
       cmpALocal = cmA;
       cmpALocal = cmpA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = aOrB;
       cmpALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = aAndB;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = bAndCOrA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = bAndCOrAParens;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = aAndBOrC;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = aAndBOrCParens;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = bOrCAndA;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = bAndC;
-      // :: error: assignment
+      // :: error: (assignment)
       cmpALocal = bAndCParens;
 
       aOrBLocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = cmpA;
       aOrBLocal = aOrB;
       aOrBLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = aAndB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = bAndCOrA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = bAndCOrAParens;
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = aAndBOrC;
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -373,47 +373,47 @@ public class CmPredicate {
 
       bAndCOrALocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = cmpA;
       // :: error: (assignment)
       bAndCOrALocal = aOrB;
       bAndCOrALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = aAndB;
       bAndCOrALocal = bAndCOrA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = bAndCOrAParens;
       // :: error: (assignment)
       bAndCOrALocal = aAndBOrC;
       // :: error: (assignment)
       bAndCOrALocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrALocal = bAndCParens;
 
       bAndCOrAParensLocal = cmA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = cmpA;
       // :: error: (assignment)
       bAndCOrAParensLocal = aOrB;
       bAndCOrAParensLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = aAndB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = bAndCOrA;
       bAndCOrAParensLocal = bAndCOrAParens;
       // :: error: (assignment)
@@ -421,16 +421,16 @@ public class CmPredicate {
       // :: error: (assignment)
       bAndCOrAParensLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCOrAParensLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -441,7 +441,7 @@ public class CmPredicate {
       aAndBOrCLocal = aOrB;
       aAndBOrCLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = aAndB;
       // :: error: (assignment)
       aAndBOrCLocal = bAndCOrA;
@@ -449,19 +449,19 @@ public class CmPredicate {
       aAndBOrCLocal = bAndCOrAParens;
       aAndBOrCLocal = aAndBOrC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -472,27 +472,27 @@ public class CmPredicate {
       aAndBOrCParensLocal = aOrB;
       aAndBOrCParensLocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = aAndB;
       // :: error: (assignment)
       aAndBOrCParensLocal = bAndCOrA;
       // :: error: (assignment)
       aAndBOrCParensLocal = bAndCOrAParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = aAndBOrC;
       aAndBOrCParensLocal = aAndBOrCParens;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = aOrBAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aAndBOrCParensLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -517,10 +517,10 @@ public class CmPredicate {
       // :: error: (assignment)
       aOrBAndCLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBAndCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       aOrBAndCLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -531,7 +531,7 @@ public class CmPredicate {
       bOrCAndALocal = aOrB;
       bOrCAndALocal = aB;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bOrCAndALocal = aAndB;
       // :: error: (assignment)
       bOrCAndALocal = bAndCOrA;
@@ -573,7 +573,7 @@ public class CmPredicate {
       bAndCLocal = bOrCAndA;
       bAndCLocal = bAndC;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCLocal = bAndCParens;
 
       // :: error: (assignment)
@@ -599,7 +599,7 @@ public class CmPredicate {
       // :: error: (assignment)
       bAndCParensLocal = bOrCAndA;
       // The next line would not fail if predicate subtyping was decided by implication.
-      // :: error: assignment
+      // :: error: (assignment)
       bAndCParensLocal = bAndC;
       bAndCParensLocal = bAndCParens;
     }

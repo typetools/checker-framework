@@ -138,8 +138,8 @@ import org.plumelib.util.UtilPlume;
   /// More sound (strict checking): enable errors that are disabled by default
   ///
 
-  // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced by
-  // their complements (except -AconcurrentSemantics) and moved into the above section.
+  // The next ones *increase* rather than *decrease* soundness.  They will eventually be replaced
+  // by their complements (except -AconcurrentSemantics) and moved into the above section.
 
   // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
   // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
@@ -295,7 +295,8 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.source.SourceChecker.logBugInCF
   "noPrintErrorStack",
 
-  // If true, issue a NOTE rather than a WARNING when performance is impeded by memory constraints.
+  // If true, issue a NOTE rather than a WARNING when performance is impeded by memory
+  // constraints.
   "noWarnMemoryConstraints",
 
   // Only output error code, useful for testing framework
@@ -384,6 +385,13 @@ import org.plumelib.util.UtilPlume;
 
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
+
+  /// Language Server Protocol(LSP) Support
+
+  // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
+  // Output detailed type information for nodes in AST
+  // org.checkerframework.framework.type.AnnotatedTypeFactory
+  "lspTypeInfo",
 
   /// Miscellaneous debugging options
 
@@ -981,9 +989,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (visitor == null) {
-      // typeProcessingStart invokes initChecker, which should have set the visitor. If the field is
-      // still null, an exception occurred during initialization, which was already logged
-      // there. Don't also cause a NPE here.
+      // typeProcessingStart invokes initChecker, which should have set the visitor. If the
+      // field is still null, an exception occurred during initialization, which was already
+      // logged there. Don't also cause a NPE here.
       return;
     }
     if (p.getCompilationUnit() != currentRoot) {
@@ -1071,7 +1079,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+  // Not a format method.  However, messageKey should be either a format string for `args`, or a
   // property key that maps to a format string for `args`.
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
@@ -1309,8 +1317,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // (1) error key
     sj.add(defaultFormat);
 
-    // (2) number of additional tokens, and those tokens; this depends on the error message, and an
-    // example is the found and expected types
+    // (2) number of additional tokens, and those tokens; this depends on the error message, and
+    // an example is the found and expected types
     if (args != null) {
       sj.add(Integer.toString(args.length));
       for (Object arg : args) {
@@ -2033,7 +2041,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
    * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
-   * suppresses the checker's warnings. Also, returns true if the {@code errKey} matches a string in
+   * suppresses the checker's warning. Also, returns true if the {@code errKey} matches a string in
    * {@code -AsuppressWarnings}.
    *
    * @param tree the tree that might be a source of a warning
@@ -2066,7 +2074,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Determines whether all the warnings pertaining to a given tree path should be suppressed.
    * Returns true if the path is within the scope of a @SuppressWarnings annotation, one of whose
-   * values suppresses all the checker's warnings.
+   * values suppresses the checker's warning.
    *
    * @param path the TreePath that might be a source of, or related to, a warning
    * @param errKey the error key the checker is emitting
@@ -2098,8 +2106,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-          // because they may not have an @AnnotatedFor.
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing
+          // elements, because they may not have an @AnnotatedFor.
           return false;
         }
       } else if (TreeUtils.classTreeKinds().contains(decl.getKind())) {
@@ -2110,8 +2118,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         }
 
         if (isAnnotatedForThisCheckerOrUpstreamChecker(elt)) {
-          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing elements,
-          // because they may not have an @AnnotatedFor.
+          // Return false immediately. Do NOT check for AnnotatedFor in the enclosing
+          // elements, because they may not have an @AnnotatedFor.
           return false;
         }
       } else {
@@ -2278,8 +2286,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
           return result;
         }
-        // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so it might
-        // be a message key.
+        // The currentSuppressWarningsInEffect is not a prefix or a prefix:message-key, so
+        // it might be a message key.
         messageKeyInSuppressWarningsString = currentSuppressWarningsInEffect;
       } else {
         // The SuppressWarnings string has a colon; that is, it has a prefix.

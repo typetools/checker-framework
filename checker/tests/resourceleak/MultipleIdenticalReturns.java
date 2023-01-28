@@ -2,8 +2,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * tests that the detector works properly in the presence of multiple identical return statements in
- * a method
+ * Tests that the detector works properly in the presence of multiple identical return statements in
+ * a method.
  */
 class MultipleIdenticalReturns {
   static class Repro {

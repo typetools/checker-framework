@@ -65,7 +65,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public final AnnotationMirror BOTTOM;
 
   /** The {@code @}{@link PolyMustCall} annotation. */
-  final AnnotationMirror POLY;
+  public final AnnotationMirror POLY;
 
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
@@ -92,11 +92,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */
-  final ExecutableElement mustCallValueElement =
+  private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
   /** The InheritableMustCall.value field/element. */
-  final ExecutableElement inheritableMustCallValueElement =
+  /*package-private*/ final ExecutableElement inheritableMustCallValueElement =
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
   /** The CreatesMustCallFor.List.value field/element. */
@@ -185,7 +185,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
+  /*package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -321,7 +321,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * Cache of the MustCall annotations that have actually been created. Most programs require few
    * distinct MustCall annotations (e.g. MustCall() and MustCall("close")).
    */
-  private Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
+  private final Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
   /**
    * Creates a {@link MustCall} annotation whose values are the given strings.
@@ -350,7 +350,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new SubtypeIsSubsetQualifierHierarchy(
         this.getSupportedTypeQualifiers(), this.getProcessingEnv());
   }

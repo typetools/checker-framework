@@ -6,7 +6,8 @@ import java.util.concurrent.Future;
 public class EnclosingClass<A> {
   private MyMap myMap = null;
 
-  // Avoids generic type capture inconsistency problems where |? extends V| is incompatible with V.
+  // Avoids generic type capture inconsistency problems where |? extends V| is incompatible with
+  // V.
   private <B extends Throwable, C extends A> EnclosingClass<A> catchingMoreGeneric(
       final MyFunction<? super B, C> fallback) {
     AFunction<B, C> applyFallback =

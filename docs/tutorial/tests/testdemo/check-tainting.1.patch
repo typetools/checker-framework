@@ -3,11 +3,11 @@ Index: src/net/eyde/personalblog/service/PersonalBlogService.java
 --- src/net/eyde/personalblog/service/PersonalBlogService.java	(revision 3589)
 +++ src/net/eyde/personalblog/service/PersonalBlogService.java	(working copy)
 @@ -165,7 +165,7 @@ public class PersonalBlogService {
-         return posts;
-     }
-
--    public List<?> getPostsByCategory(String category) throws ServiceException {
-+    public List<?> getPostsByCategory(@Untainted String category) throws ServiceException {
-         List<?> posts = null;
-
-         posts = executeQuery(
+     return posts;
+   }
+ 
+-  public List<?> getPostsByCategory(String category) throws ServiceException {
++  public List<?> getPostsByCategory(@Untainted String category) throws ServiceException {
+     List<?> posts = null;
+ 
+     posts = executeQuery(

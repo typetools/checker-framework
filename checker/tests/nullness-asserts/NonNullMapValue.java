@@ -25,13 +25,13 @@ public class NonNullMapValue {
   //   V get(Object key) { ... return null; }
   //
   // Here are potential solutions:
-  //  * Forbid declaring values as non-null.  This is the wrong approach.  (It would also be hard to
-  //    express syntactically.)
-  //  * The checker could recognize a special new annotation on the return value of get, indicating
-  //    that its return type isn't merely inferred from the generic type, but is always nullable.
-  //    (This special new annotations could even be "@Nullable".  A different annotation may be
-  //    better, becase in general we would like to issue an error message when someone applies an
-  //    annotation to a generic type parameter.)
+  //  * Forbid declaring values as non-null.  This is the wrong approach.  (It would also be hard
+  //    to express syntactically.)
+  //  * The checker could recognize a special new annotation on the return value of get,
+  //    indicating that its return type isn't merely inferred from the generic type, but is
+  //    always nullable.  (This special new annotations could even be "@Nullable".  A different
+  //    annotation may be better, becase in general we would like to issue an error message when
+  //    someone applies an annotation to a generic type parameter.)
   // Additionally, to reduce the number of false positive warnings caused by the fact that get's
   // return value is nullable:
   //  * Build a more specialized sophisticated flow analysis that checks that the passed key to
@@ -201,9 +201,9 @@ public class NonNullMapValue {
   interface MyMap2<K, V> {
     @org.checkerframework.dataflow.qual.Pure
     // This annotation is not legal on containsKey in general.  If the Map is declared as (say)
-    // Map<Object, @Nullable Object>, then get returns a nullable value.  We really want to say that
-    // if containsKey returns non-null, then get returns V rather than @Nullable V, but I don't know
-    // how to say that.
+    // Map<Object, @Nullable Object>, then get returns a nullable value.  We really want to say
+    // that if containsKey returns non-null, then get returns V rather than @Nullable V, but I
+    // don't know how to say that.
     @EnsuresNonNullIf(result = true, expression = "get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
 

@@ -353,9 +353,10 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
         if (lastNode == null) {
           // This block doesn't contain any node, return the store in the transfer input
           return transferInput.getRegularStore();
+        } else {
+          return analysis.runAnalysisFor(
+              lastNode, Analysis.BeforeOrAfter.AFTER, transferInput, nodeValues, analysisCaches);
         }
-        return analysis.runAnalysisFor(
-            lastNode, Analysis.BeforeOrAfter.AFTER, transferInput, nodeValues, analysisCaches);
       case BACKWARD:
         return transferInput.getRegularStore();
       default:
@@ -419,8 +420,9 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       return null;
     }
     // Calling Analysis.runAnalysisFor() may mutate the internal nodeValues map inside an
-    // AbstractAnalysis object, and by default the AnalysisResult constructor just wraps this map
-    // without copying it.  So here the AnalysisResult maps must be copied, to preserve them.
+    // AbstractAnalysis object, and by default the AnalysisResult constructor just wraps this
+    // map without copying it.  So here the AnalysisResult maps must be copied, to preserve
+    // them.
     copyMapsIfNeeded();
     return runAnalysisFor(node, preOrPost, transferInput, nodeValues, analysisCaches);
   }
