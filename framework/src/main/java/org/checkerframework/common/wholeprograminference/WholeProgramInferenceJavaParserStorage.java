@@ -1570,12 +1570,15 @@ public class WholeProgramInferenceJavaParserStorage
       // siblings, and there's no other information about the declaration for
       // WholeProgramInferenceImplementation to use: to determine that there are siblings,
       // a parse tree is needed.
-      if (this.declaration.getParentNode().get().getChildNodes().stream()
-              .filter(node -> node instanceof VariableDeclarator)
-              .collect(Collectors.toList())
-              .size()
-          > 1) {
-        return;
+      boolean foundVariableDeclarator = false;
+      for (Node child : this.declaration.getParentNode().get().getChildNodes()) {
+        if (child instanceof VariableDeclarator) {
+          if (foundVariableDeclarator) {
+            // This is the second VariableDeclarator that was found.
+            return;
+          }
+          foundVariableDeclarator = true;
+        }
       }
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
