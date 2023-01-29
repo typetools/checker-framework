@@ -1559,6 +1559,27 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
+      // Don't transfer type annotations to variable declarators with sibling
+      // variable declarators, because they're printed incorrectly (as "???").
+      // (A variable declarator can have siblings if it's part of a declaration
+      // like "int x, y, z;", which is bad style but legal Java.)
+      // In any event, WPI doesn't consider the LUB of the types of the siblings,
+      // so any inferred type is likely to be wrong.
+      // TODO: avoid inferring these types at all, or take the LUB of all assignments
+      // to the siblings. Unfortunately, VariableElements don't track whether they have
+      // siblings, and there's no other information about the declaration for
+      // WholeProgramInferenceImplementation to use: to determine that there are siblings,
+      // a parse tree is needed.
+      boolean foundVariableDeclarator = false;
+      for (Node child : this.declaration.getParentNode().get().getChildNodes()) {
+        if (child instanceof VariableDeclarator) {
+          if (foundVariableDeclarator) {
+            // This is the second VariableDeclarator that was found.
+            return;
+          }
+          foundVariableDeclarator = true;
+        }
+      }
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
