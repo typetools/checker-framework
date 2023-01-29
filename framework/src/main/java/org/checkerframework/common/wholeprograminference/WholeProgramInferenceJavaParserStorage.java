@@ -76,7 +76,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -408,25 +407,10 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror typeToUpdate,
       TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
-    // Clears only the annotations that are supported by atypeFactory.
-    // The others stay intact.
-    Set<AnnotationMirror> annosToRemove = AnnotationUtils.createAnnotationSet();
-    for (AnnotationMirror anno : typeToUpdate.getAnnotations()) {
-      if (atypeFactory.isSupportedQualifier(anno)) {
-        annosToRemove.add(anno);
-      }
-    }
-
-    // This method may be called consecutive times to modify the same AnnotatedTypeMirror.
-    // Each time it is called, the AnnotatedTypeMirror has a better type
-    // estimate for the modified AnnotatedTypeMirror. Therefore, it is not a problem to remove
-    // all annotations before inserting the new annotations.
-    typeToUpdate.removeAnnotations(annosToRemove);
-
     // Only update the AnnotatedTypeMirror if there are no explicit annotations
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getAnnotations()) {
-        typeToUpdate.addAnnotation(am);
+        typeToUpdate.replaceAnnotation(am);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -438,8 +422,7 @@ public class WholeProgramInferenceJavaParserStorage
           // in the same hierarchy.
           break;
         }
-
-        typeToUpdate.addAnnotation(am);
+        typeToUpdate.replaceAnnotation(am);
       }
     }
 
