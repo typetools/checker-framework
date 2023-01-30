@@ -858,13 +858,13 @@ Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
 
 \item
-To publish the Checker Framework artifacts to a local Maven repository, run
+If you wish to use Maven or Gradle, publish the Checker Framework artifacts to a local Maven repository, run
 \code{./gradlew publishToMavenLocal}
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
   ./gradlew publishToMavenLocal
 \end{Verbatim}
-Then use the Maven instructions, but modify the version number for the Checker Framework artifacts.
+Then use the Maven or Gradle instructions, but modify the version number for the Checker Framework artifacts.
 Use the version number that is output when you run \code{./gradlew version}.
 
 \item Test that everything works:
