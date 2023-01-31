@@ -189,8 +189,8 @@ public class TypeArgInferenceUtil {
       }
       ExecutableElement constructorElt = TreeUtils.elementFromUse(newClassTree);
       // TODO: This call should be removed once #979 is implemented.
-      // Change this to atypeFactory.getAnnotatedType(newClassTree) causes infinite recursion in the
-      // InitializationAnnotatedTypeFactory.CommitmentTreeAnnotator.visitNewClass.
+      // Change this to atypeFactory.getAnnotatedType(newClassTree) causes infinite recursion
+      // in the InitializationAnnotatedTypeFactory.CommitmentTreeAnnotator.visitNewClass.
       @SuppressWarnings("deprecation")
       AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
       res =

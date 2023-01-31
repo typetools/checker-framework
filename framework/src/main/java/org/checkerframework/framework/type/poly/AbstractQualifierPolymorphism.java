@@ -168,6 +168,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   protected boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
     return polyScanner.visit(type);
   }
+
   /**
    * Resolves polymorphism annotations for the given type.
    *
@@ -202,7 +203,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         collector.visit(arguments, parameters);
 
     // For super() and this() method calls, getReceiverType(tree) does not return the correct
-    // type. So, just skip those.  This is consistent with skipping receivers of constructors below.
+    // type. So, just skip those.  This is consistent with skipping receivers of constructors
+    // below.
     if (type.getReceiverType() != null
         && !TreeUtils.isSuperConstructorCall(tree)
         && !TreeUtils.isThisConstructorCall(tree)) {

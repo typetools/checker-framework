@@ -13,11 +13,7 @@ public class SignatureTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public SignatureTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.signature.SignatureChecker.class,
-        "signature",
-        "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.signature.SignatureChecker.class, "signature");
   }
 
   @Parameters

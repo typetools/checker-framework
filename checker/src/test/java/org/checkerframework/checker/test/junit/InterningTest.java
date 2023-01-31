@@ -14,11 +14,7 @@ public class InterningTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public InterningTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.interning.InterningChecker.class,
-        "interning",
-        "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.interning.InterningChecker.class, "interning");
   }
 
   @Parameters

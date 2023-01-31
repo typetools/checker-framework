@@ -299,7 +299,7 @@ public class AnnotatedTypes {
       }
       if (enclosingType == null) {
         // TODO: https://github.com/typetools/checker-framework/issues/724
-        // testcase javacheck -processor nullness  src/java/util/AbstractMap.java
+        // testcase javacheck -processor nullness src/java/util/AbstractMap.java
         //                SourceChecker checker =  atypeFactory.getChecker().getChecker();
         //                String msg = (String.format("OuterAsSuper did not find outer
         // class. type: %s superType: %s", type, superType));
@@ -1288,8 +1288,8 @@ public class AnnotatedTypes {
    * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
    */
   @SuppressWarnings(
-      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used because
-  // this method has 3 arguments.
+      "interning:not.interned" // This is an equals method but @EqualsMethod can't be used
+  // because this method has 3 arguments.
   )
   public static boolean haveSameDeclaration(
       Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {

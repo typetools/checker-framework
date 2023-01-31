@@ -10,12 +10,12 @@ import java.nio.ByteBuffer;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 
 @MustCall({})
-// :: error: inconsistent.mustcall.subtype
+// :: error: (inconsistent.mustcall.subtype)
 public class ZookeeperByteBufferInputStream extends InputStream {
 
   ByteBuffer bb;
 
-  // :: error: super.invocation
+  // :: error: (super.invocation)
   public ZookeeperByteBufferInputStream(ByteBuffer bb) {
     this.bb = bb;
   }

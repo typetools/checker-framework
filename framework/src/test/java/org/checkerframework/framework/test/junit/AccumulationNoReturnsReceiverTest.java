@@ -20,7 +20,6 @@ public class AccumulationNoReturnsReceiverTest extends CheckerFrameworkPerDirect
         testFiles,
         TestAccumulationNoReturnsReceiverChecker.class,
         "accumulation-norr",
-        "-Anomsgtext",
         "-encoding",
         "UTF-8");
   }

@@ -720,12 +720,14 @@ public abstract class InitializationAnnotatedTypeFactory<
         // anything can be assigned to this field.
         type.replaceAnnotation(UNKNOWN_INITIALIZATION);
       } else if (computingAnnotatedTypeMirrorOfLHS) {
-        // The receiver is not initialized for this frame, but the type of a lhs is being computed.
+        // The receiver is not initialized for this frame, but the type of a lhs is being
+        // computed.
         // Change the type of the field to @UnknownInitialization so that
         // anything can be assigned to this field.
         type.replaceAnnotation(UNKNOWN_INITIALIZATION);
       } else {
-        // The receiver is not initialized for this frame and the type being computed is not a LHS.
+        // The receiver is not initialized for this frame and the type being computed is not
+        // a LHS.
         // Replace all annotations with the top annotation for that hierarchy.
         type.clearPrimaryAnnotations();
         type.addAnnotations(qualHierarchy.getTopAnnotations());

@@ -85,6 +85,7 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.UnionType;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
+import com.github.javaparser.printer.YamlPrinter;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -751,7 +752,18 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         statement.getExpression().accept(this, initializer);
       } else {
         assert javacInitializers.hasNext();
-        javacInitializers.next().accept(this, initializer);
+        StatementTree javacInitializer = javacInitializers.next();
+        if (javacInitializer.getKind() == Kind.EXPRESSION_STATEMENT) {
+          // JavaParser doesn't wrap other kinds of expressions in an expression statement,
+          // but javac does. For example, suppose that the initializer is "index++", as in
+          // the test all-systems/LightWeightCache.java.
+          ((ExpressionStatementTree) javacInitializer).getExpression().accept(this, initializer);
+        } else {
+          // This is likely to lead to a crash, if it ever happens: javacInitializer
+          // is a StatementTree of some kind, but initializer is a raw expression (not wrapped in a
+          // statement).
+          javacInitializer.accept(this, initializer);
+        }
       }
     }
     assert !javacInitializers.hasNext();
@@ -1326,6 +1338,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitTypeCast(TypeCastTree javacTree, Node javaParserNode) {
+    if (javaParserNode instanceof MethodReferenceExpr) {
+      // Work around https://github.com/javaparser/javaparser/issues/3855
+      return null;
+    }
     CastExpr node = castNode(CastExpr.class, javaParserNode, javacTree);
     processTypeCast(javacTree, node);
     javacTree.getType().accept(this, node.getType());
@@ -1466,7 +1482,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public Void visitWildcard(WildcardTree javacTree, Node javaParserNode) {
     WildcardType node = castNode(WildcardType.class, javaParserNode, javacTree);
     processWildcard(javacTree, node);
-    // In javac, whether the bound is an extends or super clause depends on the kind of the tree.
+    // In javac, whether the bound is an extends or super clause depends on the kind of the
+    // tree.
     assert (javacTree.getKind() == Tree.Kind.EXTENDS_WILDCARD)
         == node.getExtendedType().isPresent();
     assert (javacTree.getKind() == Tree.Kind.SUPER_WILDCARD) == node.getSuperType().isPresent();
@@ -2307,8 +2324,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode) {
     throw new BugInCF(
-        "desynced trees: %s [%s], %s [%s]",
-        javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass());
+        "desynced trees: %s [%s], %s [%s] %s",
+        javacTree,
+        javacTree.getClass(),
+        javaParserNode,
+        javaParserNode.getClass(),
+        // There is also XmlPrinter.
+        new YamlPrinter(true).output(javaParserNode));
   }
 
   /**
@@ -2326,8 +2348,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode, Class<?> expectedType) {
     throw new BugInCF(
-        "desynced trees: %s [%s], %s [%s (expected %s)]",
-        javacTree, javacTree.getClass(), javaParserNode, javaParserNode.getClass(), expectedType);
+        "desynced trees: %s [%s], %s [%s (expected %s)] %s",
+        javacTree,
+        javacTree.getClass(),
+        javaParserNode,
+        javaParserNode.getClass(),
+        expectedType,
+        new YamlPrinter(true).output(javaParserNode));
   }
 
   /**

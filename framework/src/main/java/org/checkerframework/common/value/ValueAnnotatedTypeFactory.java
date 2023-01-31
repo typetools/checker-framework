@@ -70,10 +70,12 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
 
 /** AnnotatedTypeFactory for the Value type system. */
@@ -379,8 +381,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private Set<Class<? extends Annotation>> computeFieldInvariantDeclarationAnnotations() {
     // include FieldInvariant so that @MinLenBottom can be used.
+    Set<Class<? extends Annotation>> superResult = super.getFieldInvariantDeclarationAnnotations();
     Set<Class<? extends Annotation>> set =
-        new HashSet<>(super.getFieldInvariantDeclarationAnnotations());
+        new HashSet<>(CollectionsPlume.mapCapacity(superResult.size() + 1));
+    set.addAll(superResult);
     set.add(MinLenFieldInvariant.class);
     return set;
   }
@@ -767,10 +771,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
-      long valMin = Collections.min(values);
-      long valMax = Collections.max(values);
+      long valMin = values.get(0);
+      long valMax = values.get(values.size() - 1);
       return createIntRangeAnnotation(valMin, valMax);
     } else {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
@@ -807,11 +811,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
-      Collections.sort(values);
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
       builder.setValue("value", values);
       return builder.build();
@@ -851,7 +854,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       // Too many strings are replaced by their lengths
       List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -880,7 +883,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.isEmpty() || Collections.min(values) < 0) {
       return BOTTOMVAL;
     } else if (values.size() > MAX_VALUES) {
@@ -907,7 +910,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -936,7 +939,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -960,7 +963,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if (values.isEmpty()) {
       return BOTTOMVAL;
     }
-    values = CollectionsPlume.withoutDuplicates(values);
+    values = SystemUtil.withoutDuplicatesSorted(values);
     if (values.size() > MAX_VALUES) {
       return UNKNOWNVAL;
     } else {
@@ -1226,7 +1229,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
     List<Long> list = AnnotationUtils.getElementValueArray(intAnno, intValValueElement, Long.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1245,7 +1248,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Double> list =
         AnnotationUtils.getElementValueArray(doubleAnno, doubleValValueElement, Double.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1264,7 +1267,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Integer> list =
         AnnotationUtils.getElementValueArray(arrayAnno, arrayLenValueElement, Integer.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1329,7 +1332,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return boolValues;
     }
     // Remove duplicates.
-    Set<Boolean> boolSet = new TreeSet<>(boolValues);
+    Set<Boolean> boolSet = new ArraySet<>(2);
+    boolSet.addAll(boolValues);
     if (boolSet.size() > 1) {
       // boolSet={true,false};
       return null;
@@ -1352,7 +1356,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<String> list =
         AnnotationUtils.getElementValueArray(stringAnno, stringValValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1372,7 +1376,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             matchesRegexAnno, matchesRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 
@@ -1392,7 +1396,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     List<String> list =
         AnnotationUtils.getElementValueArray(
             doesNotMatchRegexAnno, doesNotMatchRegexValueElement, String.class);
-    list = CollectionsPlume.withoutDuplicates(list);
+    list = SystemUtil.withoutDuplicatesSorted(list);
     return list;
   }
 

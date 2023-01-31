@@ -62,14 +62,15 @@ public class PersistUtil {
 
     File result = new File(f.getParent(), testClass + ".class");
 
-    // This diagnostic code preserves temporary files and prints the paths where they are preserved.
+    // This diagnostic code preserves temporary files and prints the paths where they are
+    // preserved.
     if (false) {
       try {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
         File fCopy = File.createTempFile("FCopy", ".java", tempDir);
         File resultCopy = File.createTempFile("FCopy", ".class", tempDir);
-        // REPLACE_EXISTING is essential in the `Files.copy()` calls because createTempFile actually
-        // creates a file in addition to returning its name.
+        // REPLACE_EXISTING is essential in the `Files.copy()` calls because createTempFile
+        // actually creates a file in addition to returning its name.
         Files.copy(f.toPath(), fCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         Files.copy(result.toPath(), resultCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         System.out.printf("comileTestFile: copied to %s %s%n", fCopy, resultCopy);

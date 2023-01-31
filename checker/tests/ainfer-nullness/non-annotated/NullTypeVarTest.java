@@ -3,12 +3,12 @@
 // in
 // https://github.com/plume-lib/bcel-util/blob/master/src/main/java/org/plumelib/bcelutil/SimpleLog.java
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class NullTypeVarTest {
 
-  // :: warning: assignment
+  // :: warning: (assignment)
   private String indentString = null;
 
   private List<String> indentStrings;

@@ -16,7 +16,7 @@ public class ConstructorAddsMustCall {
     // no obligation for this one
     Foo f1 = new Foo();
     // obligation for this one
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Foo f2 = new Foo("hi");
   }
 }

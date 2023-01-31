@@ -29,7 +29,7 @@ public class BoundedWildcardTest {
   public void initLoc2(@Nullable List<@Nullable ? extends @Nullable Styleable> s) {
     // :: error: (iterating.over.nullable)
     for (Styleable c : s) {
-      // :: error: argument
+      // :: error: (argument)
       locChildren(c);
     }
   }
@@ -37,7 +37,7 @@ public class BoundedWildcardTest {
   public void initLoc3(@Nullable List<? extends @Nullable Styleable> s) {
     // :: error: (iterating.over.nullable)
     for (Styleable c : s) {
-      // :: error: argument
+      // :: error: (argument)
       locChildren(c);
     }
   }

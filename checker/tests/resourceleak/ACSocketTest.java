@@ -26,7 +26,7 @@ public class ACSocketTest {
 
   void basicTest(String address, int port) {
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Socket socket2 = new Socket(address, port);
       Socket specialSocket = new Socket(address, port);
       specialSocket.close();
@@ -47,7 +47,7 @@ public class ACSocketTest {
   }
 
   void callMakeSocket(String address, int port) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket socket = makeSocket(address, port);
   }
 
@@ -59,7 +59,7 @@ public class ACSocketTest {
         s1 = new Socket(address, port);
         s1.close();
       } else {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         s2 = new Socket(address, port + 1);
       }
     } catch (IOException i) {
@@ -80,11 +80,11 @@ public class ACSocketTest {
   }
 
   void overWrittingVarInLoop(String address, int port) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     Socket s = makeSocket(address, port);
     while (true) {
       try {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         s = new Socket(address, port);
       } catch (IOException e) {
 
@@ -96,10 +96,10 @@ public class ACSocketTest {
     Socket s = null;
     while (true) {
       if (b) {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         s = makeSocket(address, port);
       } else {
-        // :: error: required.method.not.called
+        // :: error: (required.method.not.called)
         s = makeSocket(address, port);
       }
     }
@@ -108,7 +108,7 @@ public class ACSocketTest {
   void replaceVarWithNull(String address, int port, boolean b, boolean c) {
     Socket s;
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       s = new Socket(address, port);
     } catch (IOException e) {
 
@@ -125,7 +125,7 @@ public class ACSocketTest {
   void ownershipTransfer(String address, int port) {
     Socket s1 = null;
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       s1 = new Socket(address, port);
     } catch (IOException e) {
 
@@ -139,7 +139,7 @@ public class ACSocketTest {
 
   void test(String address, int port) {
     try {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       Socket socket = new Socket(address, 80);
       PrintStream out = new PrintStream(socket.getOutputStream());
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -152,11 +152,11 @@ public class ACSocketTest {
   protected Socket sock;
 
   void connectToLeader(AtomicReference<Socket> socket) throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     if (socket.get() == null) {
       throw new IOException("Failed connect to ");
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       sock = socket.get();
     }
   }
@@ -164,10 +164,10 @@ public class ACSocketTest {
   Socket createSocket(boolean b, String address, int port) throws IOException {
     Socket sock;
     if (b) {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       sock = new Socket(address, port);
     } else {
-      // :: error: required.method.not.called
+      // :: error: (required.method.not.called)
       sock = new Socket(address, port);
     }
 
@@ -282,7 +282,7 @@ public class ACSocketTest {
   }
 
   void makePrependableSocket() throws IOException {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     final PrependableSocket prependableSocket = new PrependableSocket(null);
   }
 
@@ -343,8 +343,8 @@ public class ACSocketTest {
   //        }
   //        if (!shutdown) {
   //            LOG.error(
-  //                    "Leaving listener thread for address {} after {} errors. Use {} property to
-  // increase retry count.",
+  //                    "Leaving listener thread for address {} after {} errors. Use {} property
+  // to increase retry count.",
   //                    formatInetAddr(address),
   //                    numRetries,
   //                    ELECTION_PORT_BIND_RETRY);

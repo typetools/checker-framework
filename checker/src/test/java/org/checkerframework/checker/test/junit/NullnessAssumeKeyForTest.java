@@ -24,7 +24,6 @@ public class NullnessAssumeKeyForTest extends CheckerFrameworkPerDirectoryTest {
         "nullness",
         "-AcheckPurityAnnotations",
         "-AassumeKeyFor",
-        "-Anomsgtext",
         "-Xlint:deprecation",
         "-Alint=soundArrayCreationNullness," + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
   }

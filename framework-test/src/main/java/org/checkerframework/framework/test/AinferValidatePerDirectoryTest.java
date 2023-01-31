@@ -145,8 +145,8 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
         sourceFile.getName().substring(0, sourceFile.getName().length() - DOT_JAVA_LETTER_COUNT);
     StringBuilder sb = new StringBuilder();
     // Find all the annotation files associated with this class name. This approach is necessary
-    // because (1) some tests are in packages, which will be included in the annotation file names,
-    // and (2) separate astub files are generated for inner classes.
+    // because (1) some tests are in packages, which will be included in the annotation file
+    // names, and (2) separate astub files are generated for inner classes.
     try (DirectoryStream<Path> dirStream =
         Files.newDirectoryStream(
             Paths.get(inferenceBaseDir), "*" + fileBaseName + "{-,$}*" + extension)) {

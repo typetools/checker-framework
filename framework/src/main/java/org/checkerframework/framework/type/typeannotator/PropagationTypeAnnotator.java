@@ -131,8 +131,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       final Set<? extends AnnotationMirror> tops =
           typeFactory.getQualifierHierarchy().getTopAnnotations();
 
-      // Do not test `wildcard.isUnbound()` because as of Java 18, it returns true for "? extends
-      // Object".
+      // Do not test `wildcard.isUnbound()` because as of Java 18, it returns true for "?
+      // extends Object".
       switch (wildcard.kind) {
         case UNBOUND:
           propagateExtendsBound(wildcardAtm, typeParam, tops);

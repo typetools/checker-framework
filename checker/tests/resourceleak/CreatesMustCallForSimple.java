@@ -19,27 +19,27 @@ class CreatesMustCallForSimple {
   }
 
   static void test1() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForSimple cos = makeNoMC();
     @MustCall({}) CreatesMustCallForSimple a = cos;
     cos.reset();
-    // :: error: assignment
+    // :: error: (assignment)
     @CalledMethods({"reset"}) CreatesMustCallForSimple b = cos;
     @CalledMethods({}) CreatesMustCallForSimple c = cos;
   }
 
   static void test2() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForSimple cos = makeNoMC();
     @MustCall({}) CreatesMustCallForSimple a = cos;
     cos.resetThis();
-    // :: error: assignment
+    // :: error: (assignment)
     @CalledMethods({"resetThis"}) CreatesMustCallForSimple b = cos;
     @CalledMethods({}) CreatesMustCallForSimple c = cos;
   }
 
   static void test3() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForSimple cos = new CreatesMustCallForSimple();
     cos.a();
     cos.resetThis();
@@ -67,7 +67,7 @@ class CreatesMustCallForSimple {
   }
 
   static void test7(boolean b) {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForSimple cos = new CreatesMustCallForSimple();
     cos.a();
     if (b) {

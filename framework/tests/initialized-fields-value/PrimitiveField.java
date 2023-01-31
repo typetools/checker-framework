@@ -13,12 +13,19 @@ public class PrimitiveField {
   long l;
 
   @BoolVal(false) boolean b2;
+
   @IntVal(0) byte by2;
+
   @IntVal(0) char c2;
+
   @IntVal(0) int i2;
+
   @IntVal(0) short s2;
+
   @DoubleVal(0.0) float f2;
+
   @DoubleVal(0.0) double d2;
+
   @IntVal(0) long l2;
 
   // :: error: (contracts.postcondition)

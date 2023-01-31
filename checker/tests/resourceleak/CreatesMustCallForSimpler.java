@@ -19,11 +19,11 @@ class CreatesMustCallForSimpler {
   }
 
   static void test1() {
-    // :: error: required.method.not.called
+    // :: error: (required.method.not.called)
     CreatesMustCallForSimpler cos = makeNoMC();
     @MustCall({}) CreatesMustCallForSimpler a = cos;
     cos.reset();
-    // :: error: assignment
+    // :: error: (assignment)
     @CalledMethods({"reset"}) CreatesMustCallForSimpler b = cos;
     @CalledMethods({}) CreatesMustCallForSimpler c = cos;
   }

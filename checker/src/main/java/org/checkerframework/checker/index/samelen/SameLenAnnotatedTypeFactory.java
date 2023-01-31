@@ -182,7 +182,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param c2 another collection of Strings
      * @return if the two inputs are disjoint (i.e., have no elements in common) and both are
      *     non-empty, returns null. Otherwise, returns the union of the two collections (which, if
-     *     one collection is empty, is just the other collection).
+     *     one collection is empty, is just the other collection). The result is sorted.
      */
     private @Nullable Collection<String> unionIfNotDisjoint(
         Collection<String> c1, Collection<String> c2) {
@@ -222,7 +222,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createSameLen(exprs);
         }
       } else {
-        // the glb is either one of the annotations (if the other is top), or bottom.
+        // If one of the annotations is top, the glb is the other annotation; otherwise bottom.
         if (areSameByClass(a1, SameLenUnknown.class)) {
           return a2;
         } else if (areSameByClass(a2, SameLenUnknown.class)) {

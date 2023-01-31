@@ -1,5 +1,4 @@
 // Test case for https://github.com/typetools/checker-framework/issues/5402
-// @skip-test until the bug is fixed
 
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.RequiresCalledMethods;
@@ -41,7 +40,7 @@ class Issue5402_Ok2 {
 class Issue5402_Ok3 {
 
   @Deterministic
-  public @This Issue5402_Ok2 bar() {
+  public @This Issue5402_Ok3 bar() {
     return this;
   }
 

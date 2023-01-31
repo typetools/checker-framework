@@ -8,13 +8,11 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.UnionClassType;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
@@ -42,7 +40,9 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
+/** A type factory for the @ClassVal and @ClassBound annotations. */
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   protected final AnnotationMirror CLASSVAL_TOP =
@@ -150,15 +150,14 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-        Set<String> lubClassNames = new TreeSet<>();
-        lubClassNames.addAll(a1ClassNames);
-        lubClassNames.addAll(a2ClassNames);
+        // There are usually few arguments/elements of @ClassBound and @ClassVal.
+        List<String> lubClassNames = CollectionsPlume.listUnion(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassBound, the lub must also be a class bound.
         if (areSameByClass(a1, ClassBound.class) || areSameByClass(a2, ClassBound.class)) {
-          return createClassBound(new ArrayList<>(lubClassNames));
+          return createClassBound(lubClassNames);
         } else {
-          return createClassVal(new ArrayList<>(lubClassNames));
+          return createClassVal(lubClassNames);
         }
       }
     }
@@ -174,18 +173,16 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-        Set<String> glbClassNames = new TreeSet<>();
-        glbClassNames.addAll(a1ClassNames);
-        glbClassNames.retainAll(a2ClassNames);
+        List<String> glbClassNames = CollectionsPlume.listIntersection(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassVal, the glb must also be a ClassVal.
         // For example:
         // GLB( @ClassVal(a,b), @ClassBound(a,c)) is @ClassVal(a)
         // because @ClassBound(a) is not a subtype of @ClassVal(a,b)
         if (areSameByClass(a1, ClassVal.class) || areSameByClass(a2, ClassVal.class)) {
-          return createClassVal(new ArrayList<>(glbClassNames));
+          return createClassVal(glbClassNames);
         } else {
-          return createClassBound(new ArrayList<>(glbClassNames));
+          return createClassBound(glbClassNames);
         }
       }
     }
@@ -315,7 +312,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           annotation, valueATF.stringValValueElement, String.class);
     }
 
-    // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type qualifier.
+    // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
+    // qualifier.
     /**
      * Return String representation of class name. This will not return the correct name for
      * anonymous classes.

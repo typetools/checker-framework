@@ -141,6 +141,16 @@ public final class TreeUtils {
   /** The {@code YieldTree.getValue()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method yieldGetValue = null;
 
+  /** Tree kinds that represent a binary comparison. */
+  private static final Set<Tree.Kind> BINARY_COMPARISON_TREE_KINDS =
+      EnumSet.of(
+          Tree.Kind.EQUAL_TO,
+          Tree.Kind.NOT_EQUAL_TO,
+          Tree.Kind.LESS_THAN,
+          Tree.Kind.GREATER_THAN,
+          Tree.Kind.LESS_THAN_EQUAL,
+          Tree.Kind.GREATER_THAN_EQUAL);
+
   static {
     if (SystemUtil.jreVersion >= 12) {
       try {
@@ -717,8 +727,8 @@ public final class TreeUtils {
       return elementFromUse(newClassTree);
     }
     JCNewClass jcNewClass = (JCNewClass) newClassTree;
-    // Anonymous constructor bodies, which are always synthetic, contain exactly one statement in
-    // the form:
+    // Anonymous constructor bodies, which are always synthetic, contain exactly one statement
+    // in the form:
     //    super(arg1, ...)
     // or
     //    o.super(arg1, ...)
@@ -983,7 +993,7 @@ public final class TreeUtils {
    * </ol>
    *
    * @param tree the tree to check
-   * @return true if the tree is a constant-time expression.
+   * @return true if the tree is a constant-time expression
    */
   public static boolean isCompileTimeString(ExpressionTree tree) {
     tree = TreeUtils.withoutParens(tree);
@@ -1108,6 +1118,7 @@ public final class TreeUtils {
     return classTreeKinds().contains(tree.getKind());
   }
 
+  /** The kinds that represent types. */
   private static final Set<Tree.Kind> typeTreeKinds =
       EnumSet.of(
           Tree.Kind.PRIMITIVE_TYPE,
@@ -1333,6 +1344,8 @@ public final class TreeUtils {
         }
       }
     }
+
+    // Didn't find an answer.  Compose an error message.
     List<String> candidates = new ArrayList<>();
     for (ExecutableElement exec : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
       if (exec.getSimpleName().contentEquals(methodName)) {
@@ -1895,7 +1908,8 @@ public final class TreeUtils {
       case RIGHT_SHIFT_ASSIGNMENT:
       case UNSIGNED_RIGHT_SHIFT:
       case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-        // Strictly speaking, these operators do unary promotion on each argument separately.
+        // Strictly speaking, these operators do unary promotion on each argument
+        // separately.
         return true;
 
       case MULTIPLY:
@@ -1966,8 +1980,9 @@ public final class TreeUtils {
           typeTree = ((ParameterizedTypeTree) typeTree).getType();
           break;
         case UNION_TYPE:
-          List<AnnotationTree> result = new ArrayList<>();
-          for (Tree alternative : ((UnionTypeTree) typeTree).getTypeAlternatives()) {
+          List<? extends Tree> alternatives = ((UnionTypeTree) typeTree).getTypeAlternatives();
+          List<AnnotationTree> result = new ArrayList<>(alternatives.size());
+          for (Tree alternative : alternatives) {
             result.addAll(getExplicitAnnotationTrees(null, alternative));
           }
           return result;
@@ -1996,8 +2011,9 @@ public final class TreeUtils {
         // Short should be (short) 0, but this probably doesn't matter so just use int 0;
         return TreeUtils.createLiteral(TypeTag.INT, 0, typeMirror, processingEnv);
       case CHAR:
-        // Value of a char literal needs to be stored as an integer because LiteralTree#getValue
-        // converts it from an integer to a char before being returned.
+        // Value of a char literal needs to be stored as an integer because
+        // LiteralTree#getValue converts it from an integer to a char before being
+        // returned.
         return TreeUtils.createLiteral(TypeTag.CHAR, (int) '\u0000', typeMirror, processingEnv);
       case LONG:
         return TreeUtils.createLiteral(TypeTag.LONG, 0L, typeMirror, processingEnv);
@@ -2006,8 +2022,9 @@ public final class TreeUtils {
       case DOUBLE:
         return TreeUtils.createLiteral(TypeTag.DOUBLE, 0.0d, typeMirror, processingEnv);
       case BOOLEAN:
-        // Value of a boolean literal needs to be stored as an integer because LiteralTree#getValue
-        // converts it from an integer to a boolean before being returned.
+        // Value of a boolean literal needs to be stored as an integer because
+        // LiteralTree#getValue converts it from an integer to a boolean before being
+        // returned.
         return TreeUtils.createLiteral(TypeTag.BOOLEAN, 0, typeMirror, processingEnv);
       default:
         return TreeUtils.createLiteral(
@@ -2382,6 +2399,16 @@ public final class TreeUtils {
       kind = Tree.Kind.CLASS;
     }
     return kind;
+  }
+
+  /**
+   * Returns true if the {@code tree} is a binary tree that performs a comparison.
+   *
+   * @param tree the tree to check
+   * @return whether the tree represents a binary comparison
+   */
+  public static boolean isBinaryComparison(BinaryTree tree) {
+    return BINARY_COMPARISON_TREE_KINDS.contains(tree.getKind());
   }
 
   /**

@@ -83,7 +83,8 @@ public class AccumulationTransfer extends CFTransfer {
             List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
             if (!oldFlowValues.isEmpty()) {
               // valuesAsList cannot have its length changed -- it is backed by an
-              // array -- but if oldFlowValues is not empty, it is a new, modifiable list.
+              // array -- but if oldFlowValues is not empty, it is a new, modifiable
+              // list.
               oldFlowValues.addAll(valuesAsList);
               valuesAsList = oldFlowValues;
             }

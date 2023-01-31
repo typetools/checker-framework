@@ -5,7 +5,8 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.common.returnsreceiver.qual.This;
 
 @Builder(builderClassName = "BaseBuilder")
-@Value public class LombokBuilderSubclassExample {
+@Value
+public class LombokBuilderSubclassExample {
 
   @NonNull Integer attribute;
 
@@ -24,8 +25,8 @@ import org.checkerframework.common.returnsreceiver.qual.This;
     public LombokBuilderSubclassExample build(
         @CalledMethods("attribute") LombokBuilderSubclassExampleBuilder this) {
       final LombokBuilderSubclassExample result = super.build();
-      // here result.getAttribute() is guaranteed to be non null, so we do not have to check this
-      // ourselves
+      // here result.getAttribute() is guaranteed to be non null, so we do not have to check
+      // this ourselves
 
       if (result.getAttribute() < 0) {
         throw new IllegalArgumentException("attribute must be >= 0");
