@@ -2118,10 +2118,6 @@ public abstract class AnnotatedTypeMirror {
     public boolean isUninferredTypeArgument() {
       return uninferredTypeArgument;
     }
-
-    public AnnotatedTypeVariable capture(TypeVariable capturedWildcard) {
-      return CaptureUtil.capture(this, capturedWildcard);
-    }
   }
 
   /**
