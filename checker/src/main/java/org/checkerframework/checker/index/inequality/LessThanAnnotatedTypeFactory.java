@@ -243,8 +243,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
         AnnotationMirror arrayLen =
             valueAtypeFactory.getAnnotationFromJavaExpression(expressionJe, tree, ArrayLen.class);
         if (arrayLen != null) {
-          List<Integer> possibleValues2 = valueAtypeFactory.getArrayLength(arrayLen);
-          return Collections.min(possibleValues2);
+          List<Integer> possibleValues = valueAtypeFactory.getArrayLength(arrayLen);
+          return Collections.min(possibleValues);
         }
         // Even arrays that we know nothing about must have at least zero length.
         return 0;

@@ -19,7 +19,7 @@ public class EnsuresNonNullIfTest4 {
 class MyInvariant {
   @Pure
   public @Nullable Object get_ni_suppressions() {
-    return null;
+    return (null);
   }
 
   @SuppressWarnings("nullness")
