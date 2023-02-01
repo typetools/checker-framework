@@ -1036,7 +1036,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Annotations on the declaration of the class (note that despite the name, these can also be
      * type annotations).
      */
-    private @MonotonicNonNull Set<AnnotationMirror> classAnnotations = null;
+    private @MonotonicNonNull AnnotationMirrorSet classAnnotations = null;
 
     /**
      * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
