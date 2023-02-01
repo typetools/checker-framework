@@ -75,6 +75,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1061,7 +1062,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addAnnotationToClassDeclaration(AnnotationMirror annotation) {
       if (classAnnotations == null) {
-        classAnnotations = new HashSet<>();
+        classAnnotations = new AnnotationMirrorSet();
       }
 
       return classAnnotations.add(annotation);
@@ -1219,7 +1220,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>(1);
+        declarationAnnotations = new AnnotationMirrorSet();
       }
 
       return declarationAnnotations.add(annotation);
@@ -1503,7 +1504,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>(1);
+        declarationAnnotations = new AnnotationMirrorSet();
       }
 
       return declarationAnnotations.add(annotation);
