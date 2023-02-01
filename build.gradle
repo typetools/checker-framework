@@ -572,12 +572,11 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   doLast {
     exec {
       // Correct Javadoc links.
-      // TODO: This changes all links, but only the links to the Java 8 API need to be changed.
       workingDir "${rootDir}/docs/api"
       executable "${plumeScriptsHome}/preplace"
       args += [
-        '#([a-zA-Z0-9_]+)\\(([^)"]*)\\)"',
-        '#\\1-\\2-"'
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*)\\)"',
+        '\\1#\\2-\\3-"'
       ]
     }
     copy {
