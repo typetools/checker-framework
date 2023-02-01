@@ -598,6 +598,16 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
         '\\1'
       ]
     }
+    exec {
+      // Correct Javadoc links.
+      // TODO: This changes all links, but only the links to the Java 8 API need to be changed.
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '#([a-zA-Z0-9_]+)\\(([^)"]*)\\)"',
+        '#\\1-\\2-"'
+      ]
+    }
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
       rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
