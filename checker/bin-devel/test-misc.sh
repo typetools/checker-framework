@@ -19,7 +19,12 @@ PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 status=0
 
 ## Code style and formatting
-./gradlew checkBasicStyle spotlessCheck --console=plain --warning-mode=all
+JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+if [ "$JAVA_VER" = "8" ] ; then
+  ./gradlew checkBasicStyle spotlessCheck --console=plain --warning-mode=all
+else
+  ./gradlew checkBasicStyle --console=plain --warning-mode=all
+fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"
   exit 1
