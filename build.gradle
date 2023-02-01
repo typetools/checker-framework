@@ -307,11 +307,14 @@ allprojects {
         options.taglets 'org.checkerframework.taglet.ManualTaglet'
         options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
 
-        // We want to link to Java 9 documentation of the compiler classes since we use Java 9
-        // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
+        // Link to Java 8 documentation because the compilation target is Java 8.
+        // We use Java 9 compiler classes, so use Java 9 documentation for them.
+        // Because the compiler classes are not
         // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
+        // TODO: The following comment and code seems wrong.  Don't we want Java 8
+        // documentation regardless of what JVM is being used to run Javadoc?
         // TODO, this creates broken links to the com.sun.tools.javac package.
-        // Only add the links of building with Java 8.  This prevents the following error:
+        // Only add the links if building with Java 8.  This prevents the following error:
         // warning: URL https://docs.oracle.com/javase/8/docs/api/element-list was redirected
         // to https://docs.oracle.com/en/java/javase/19/ -- Update the command-line options
         // to suppress this warning.
