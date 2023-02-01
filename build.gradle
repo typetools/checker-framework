@@ -243,15 +243,6 @@ allprojects {
 
       googleJavaFormat() // the formatter to apply to Java files
       formatAnnotations()
-          // Remove addTypeAnnotation after a Spotless release is made (2022-01-15).
-          .addTypeAnnotation("AinferDefaultType")
-          .addTypeAnnotation("AinferParent")
-          .addTypeAnnotation("AinferSibling1")
-          .addTypeAnnotation("AinferSibling2")
-          .addTypeAnnotation("AinferTop")
-          .addTypeAnnotation("AinferImplicitAnno")
-          .addTypeAnnotation("AinferSiblingWithFields")
-          .addTypeAnnotation("DoesNotMatchRegex")
     }
 
     groovyGradle {
