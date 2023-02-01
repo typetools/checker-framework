@@ -134,7 +134,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.29.1'
+  version '3.29.1-SNAPSHOT'
 
   repositories {
     mavenCentral()
@@ -596,16 +596,6 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
       args += [
         '<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>',
         '\\1'
-      ]
-    }
-    exec {
-      // Correct Javadoc links.
-      // TODO: This changes all links, but only the links to the Java 8 API need to be changed.
-      workingDir "${rootDir}/docs/api"
-      executable "${plumeScriptsHome}/preplace"
-      args += [
-        '#([a-zA-Z0-9_]+)\\(([^)"]*)\\)"',
-        '#\\1-\\2-"'
       ]
     }
     copy {
