@@ -571,16 +571,6 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   }
   doLast {
     exec {
-      // Javadoc for to com.sun.tools.java.* is not publicly available, so these links are broken.
-      // This command removes those links.
-      workingDir "${rootDir}/docs/api"
-      executable "${plumeScriptsHome}/preplace"
-      args += [
-        '<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>',
-        '\\1'
-      ]
-    }
-    exec {
       // Correct Javadoc links.
       // TODO: This changes all links, but only the links to the Java 8 API need to be changed.
       workingDir "${rootDir}/docs/api"
