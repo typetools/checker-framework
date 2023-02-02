@@ -1,14 +1,14 @@
-Version 3.30.0 (February 1, 2023)
+Version 3.30.0 (February 2, 2023)
 --------------------------------
-
-**User-visible changes:**
 
 **Implementation details:**
 
 `getQualifierKind()` throws an exception rather than returning null.
 
-**Closed issues:**
+Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
 
+**Closed issues:**
+#5402, #5486, #5489, #5519, #5524, #5526.
 
 Version 3.29.0 (January 5, 2023)
 --------------------------------
