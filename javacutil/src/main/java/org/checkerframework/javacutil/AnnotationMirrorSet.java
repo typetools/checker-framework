@@ -7,6 +7,10 @@ import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
 
 /**
@@ -23,11 +27,12 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
  * method; therefore, the existing implementations of Set cannot be used.
  */
-public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
+// TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
+public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") AnnotationMirror> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
-  private NavigableSet<AnnotationMirror> shadowSet =
+  private NavigableSet<@KeyFor("this") AnnotationMirror> shadowSet =
       new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
 
   /** The canonical unmodifiable empty set. */
@@ -116,13 +121,15 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
   }
 
   @Override
-  public boolean contains(Object o) {
+  public boolean contains(
+      @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
+      @Nullable Object o) {
     return o instanceof AnnotationMirror
         && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
   }
 
   @Override
-  public Iterator<AnnotationMirror> iterator() {
+  public Iterator<@KeyFor("this") AnnotationMirror> iterator() {
     return shadowSet.iterator();
   }
 
@@ -131,13 +138,17 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
     return shadowSet.toArray();
   }
 
+  @SuppressWarnings("nullness:toarray.nullable.elements.not.newarray") // delegation
   @Override
-  public <T> T[] toArray(T[] a) {
+  public <T> @Nullable T[] toArray(@PolyNull T[] a) {
     return shadowSet.toArray(a);
   }
 
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
-  public boolean add(AnnotationMirror annotationMirror) {
+  public boolean add(
+      @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
+      AnnotationMirror annotationMirror) {
     if (contains(annotationMirror)) {
       return false;
     }
@@ -146,7 +157,7 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
   }
 
   @Override
-  public boolean remove(Object o) {
+  public boolean remove(@Nullable Object o) {
     if (o instanceof AnnotationMirror) {
       AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
       return found != null && shadowSet.remove(found);
@@ -165,7 +176,9 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
   }
 
   @Override
-  public boolean addAll(Collection<? extends AnnotationMirror> c) {
+  public boolean addAll(
+      @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
+      Collection<? extends AnnotationMirror> c) {
     boolean result = true;
     for (AnnotationMirror a : c) {
       if (!add(a)) {
@@ -180,6 +193,9 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     for (Object o : c) {
       if (contains(o)) {
+        assert o != null
+            : "@AssumeAssertion(nullness): after contains, the argument should have"
+                + " the element type of the set";
         newSet.add((AnnotationMirror) o);
       }
     }
@@ -212,7 +228,7 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     }
@@ -241,49 +257,58 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
 
   /// NavigableSet methods
 
-  @SuppressWarnings("interning:override.return") // looks like a bug (interning checker)
+  @SuppressWarnings({
+    "interning:override.return", // looks like a bug (in interning checker)
+    "signature:override.return", // "
+    "nullness:return", // wildcard types
+    "keyfor:return" // comparator wildcard
+  })
   @Override
   public Comparator<? super AnnotationMirror> comparator() {
     return shadowSet.comparator();
   }
 
   @Override
-  public AnnotationMirror first() {
+  public @KeyFor("this") AnnotationMirror first() {
     return shadowSet.first();
   }
 
   @Override
-  public AnnotationMirror last() {
+  public @KeyFor("this") AnnotationMirror last() {
     return shadowSet.last();
   }
 
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
-  public AnnotationMirror lower(AnnotationMirror e) {
+  public @Nullable @KeyFor("this") AnnotationMirror lower(AnnotationMirror e) {
     return shadowSet.lower(e);
   }
 
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
-  public AnnotationMirror floor(AnnotationMirror e) {
+  public @Nullable @KeyFor("this") AnnotationMirror floor(AnnotationMirror e) {
     return shadowSet.floor(e);
   }
 
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
-  public AnnotationMirror ceiling(AnnotationMirror e) {
+  public @Nullable @KeyFor("this") AnnotationMirror ceiling(AnnotationMirror e) {
     return shadowSet.ceiling(e);
   }
 
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
-  public AnnotationMirror higher(AnnotationMirror e) {
+  public @Nullable @KeyFor("this") AnnotationMirror higher(AnnotationMirror e) {
     return shadowSet.higher(e);
   }
 
   @Override
-  public AnnotationMirror pollFirst() {
+  public @Nullable @KeyFor("this") AnnotationMirror pollFirst() {
     return shadowSet.pollFirst();
   }
 
   @Override
-  public AnnotationMirror pollLast() {
+  public @Nullable @KeyFor("this") AnnotationMirror pollLast() {
     return shadowSet.pollLast();
   }
 
@@ -293,7 +318,7 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
   }
 
   @Override
-  public Iterator<AnnotationMirror> descendingIterator() {
+  public Iterator<@KeyFor("this") AnnotationMirror> descendingIterator() {
     throw new Error("Not yet implemented.");
   }
 
