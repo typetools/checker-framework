@@ -1,4 +1,4 @@
-Version 3.30.0 (February 1, 2023)
+Version 3.30.0 (February 2, 2023)
 --------------------------------
 
 **Implementation details:**
