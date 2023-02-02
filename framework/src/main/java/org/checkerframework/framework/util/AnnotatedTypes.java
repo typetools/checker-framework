@@ -1401,6 +1401,8 @@ public class AnnotatedTypes {
    * This method returns the effective annotation on the lower bound of a type, or on the type
    * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
+   * @param qualifierHierarchy the qualifier hierarchy
+   * @param toSearch the type whose lower bound to examine
    * @return the set of effective annotation mirrors in all hierarchies
    */
   public static AnnotationMirrorSet findEffectiveLowerBoundAnnotations(
@@ -1445,6 +1447,8 @@ public class AnnotatedTypes {
    * it finds a concrete type from which it can pull an annotation. This occurs for every hierarchy
    * in QualifierHierarchy.
    *
+   * @param qualifierHierarchy the qualifier hierarchy
+   * @param toSearch the type whose effective annotations to determine
    * @return the set of effective annotation mirrors in all hierarchies
    */
   public static AnnotationMirrorSet findEffectiveAnnotations(

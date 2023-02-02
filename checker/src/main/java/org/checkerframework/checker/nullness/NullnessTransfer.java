@@ -422,7 +422,11 @@ public class NullnessTransfer
     }
   }
 
-  /** Creates a dummy abstract value (whose type is not supposed to be looked at). */
+  /**
+   * Creates a dummy abstract value (whose type is not supposed to be looked at).
+   *
+   * @return a dummy abstract value
+   */
   private NullnessValue createDummyValue() {
     TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
     AnnotationMirrorSet annos = new AnnotationMirrorSet();

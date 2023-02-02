@@ -50,6 +50,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
   private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 
+  /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   /**

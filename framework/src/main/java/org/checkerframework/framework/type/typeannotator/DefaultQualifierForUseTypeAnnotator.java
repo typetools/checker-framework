@@ -61,7 +61,12 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     elementToDefaults.clear();
   }
 
-  /** Returns the set of qualifiers that should be applied to unannotated uses of this element. */
+  /**
+   * Returns the set of qualifiers that should be applied to unannotated uses of the given element
+   *
+   * @param element the element for which to determine default qualifiers
+   * @return the set of qualifiers that should be applied to unannotated uses of {@code element}
+   */
   protected AnnotationMirrorSet getDefaultAnnosForUses(Element element) {
     if (typeFactory.shouldCache && elementToDefaults.containsKey(element)) {
       return elementToDefaults.get(element);
@@ -96,7 +101,12 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     return annosToApply;
   }
 
-  /** Return the annotations explicitly written on the element. */
+  /**
+   * Return the annotations explicitly written on the element.
+   *
+   * @param element an element
+   * @return the annotations explicitly written on the element
+   */
   protected AnnotationMirrorSet getExplicitAnnos(Element element) {
     AnnotatedTypeMirror explicitAnnoOnDecl = typeFactory.fromElement(element);
     return explicitAnnoOnDecl.getAnnotations();
@@ -124,6 +134,9 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
   /**
    * Returns top annotations in hierarchies for which no default for use qualifier should be added.
+   *
+   * @param element an element
+   * @returns top annotations in hierarchies for which no default for use qualifier should be added
    */
   protected AnnotationMirrorSet getHierarchiesNoDefault(Element element) {
     AnnotationMirror noDefaultQualifier =

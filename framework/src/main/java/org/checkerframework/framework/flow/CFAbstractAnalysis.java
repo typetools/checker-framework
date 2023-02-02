@@ -202,6 +202,8 @@ public abstract class CFAbstractAnalysis<
    * Returns an abstract value containing the given {@code annotations} and {@code underlyingType}.
    * Returns null if the annotation set has missing annotations.
    *
+   * @param annotations the annotations for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
    * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
    */
   public abstract @Nullable V createAbstractValue(
@@ -230,6 +232,10 @@ public abstract class CFAbstractAnalysis<
   /**
    * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
    * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
+   *
+   * @param anno the annotation for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
+   * @return an abstract value with {@code anno} and {@code underlyingType}
    */
   public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
     QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();

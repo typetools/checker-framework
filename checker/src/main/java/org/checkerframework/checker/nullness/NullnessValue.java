@@ -26,6 +26,13 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
   protected boolean isPolyNullNull;
 
+  /**
+   * Creates a new NullnessValue.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations
+   * @param underlyingType the underlying type
+   */
   public NullnessValue(
       CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,

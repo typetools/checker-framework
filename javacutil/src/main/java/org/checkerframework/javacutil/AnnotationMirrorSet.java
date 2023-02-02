@@ -72,6 +72,7 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
    * Returns a new unmodifiable {@link AnnotationMirrorSet} that contains {@code value}.
    *
    * @param value the AnnotationMirror to put in the set
+   * @return a new unmodifiable {@link AnnotationMirrorSet} that contains only {@code value}
    */
   public static AnnotationMirrorSet singleton(AnnotationMirror value) {
     // The implementation could be more efficient if Collections.singleton returned a NavigableSet.
@@ -240,6 +241,7 @@ public class AnnotationMirrorSet implements NavigableSet<AnnotationMirror> {
 
   /// NavigableSet methods
 
+  @SuppressWarnings("interning:override.return") // looks like a bug (interning checker)
   @Override
   public Comparator<? super AnnotationMirror> comparator() {
     return shadowSet.comparator();

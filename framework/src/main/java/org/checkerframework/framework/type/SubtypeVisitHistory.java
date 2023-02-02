@@ -30,6 +30,7 @@ public class SubtypeVisitHistory {
    */
   private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet> visited;
 
+  /** Creates a new SubtypeVisitHistory. */
   public SubtypeVisitHistory() {
     this.visited = new HashMap<>();
   }

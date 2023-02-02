@@ -184,8 +184,11 @@ public class ElementAnnotationUtil {
    * </ul>
    */
   private static final class WildcardBoundAnnos {
+    /** The wildcard type. */
     public final AnnotatedWildcardType wildcard;
+    /** The upper bound annotations. */
     public final AnnotationMirrorSet upperBoundAnnos;
+    /** The lower bound annotations. */
     public final AnnotationMirrorSet lowerBoundAnnos;
 
     // indicates that this is an annotation in front of an unbounded wildcard
@@ -201,6 +204,12 @@ public class ElementAnnotationUtil {
     /** Whether or not wildcard has NO explicit bound whatsoever. */
     private final boolean isUnbounded;
 
+    /**
+     * Creates a new WildcardBoundAnnos from the given wildcard type, with no upper- or lower-bound
+     * annotations.
+     *
+     * @param wildcard the wildcard type
+     */
     WildcardBoundAnnos(AnnotatedWildcardType wildcard) {
       this.wildcard = wildcard;
       this.upperBoundAnnos = new AnnotationMirrorSet();
