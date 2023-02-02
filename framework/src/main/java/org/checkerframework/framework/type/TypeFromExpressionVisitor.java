@@ -379,7 +379,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // this case and match the annotated type to the Java type.
       returnT = ((AnnotatedTypeVariable) returnT).getUpperBound();
     }
-    return f.applyCaptureConversion(returnT);
+    return returnT;
   }
 
   @Override
