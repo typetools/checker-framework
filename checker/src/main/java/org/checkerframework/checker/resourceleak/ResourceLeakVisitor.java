@@ -23,6 +23,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -165,7 +166,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       AnnotationMirror inferredAnno = null;
       if (value != null) {
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> annos = value.getAnnotations();
+        AnnotationMirrorSet annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
       }
       if (!checkContract(expression, annotation, inferredAnno, exitStore)) {

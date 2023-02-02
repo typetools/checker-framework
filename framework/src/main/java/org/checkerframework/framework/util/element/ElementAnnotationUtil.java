@@ -15,7 +15,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
@@ -30,6 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
@@ -185,15 +185,15 @@ public class ElementAnnotationUtil {
    */
   private static final class WildcardBoundAnnos {
     public final AnnotatedWildcardType wildcard;
-    public final Set<AnnotationMirror> upperBoundAnnos;
-    public final Set<AnnotationMirror> lowerBoundAnnos;
+    public final AnnotationMirrorSet upperBoundAnnos;
+    public final AnnotationMirrorSet lowerBoundAnnos;
 
     // indicates that this is an annotation in front of an unbounded wildcard
     // e.g.  < @A ? >
     // For each annotation in this set, if there is no annotation in upperBoundAnnos
     // that is in the same hierarchy then the annotation will be applied to both bounds
     // otherwise the annotation applies to the lower bound only
-    public final Set<AnnotationMirror> possiblyBoth;
+    public final AnnotationMirrorSet possiblyBoth;
 
     /** Whether or not wildcard has an explicit super bound. */
     private final boolean isSuperBounded;
@@ -203,9 +203,9 @@ public class ElementAnnotationUtil {
 
     WildcardBoundAnnos(AnnotatedWildcardType wildcard) {
       this.wildcard = wildcard;
-      this.upperBoundAnnos = AnnotationUtils.createAnnotationSet();
-      this.lowerBoundAnnos = AnnotationUtils.createAnnotationSet();
-      this.possiblyBoth = AnnotationUtils.createAnnotationSet();
+      this.upperBoundAnnos = new AnnotationMirrorSet();
+      this.lowerBoundAnnos = new AnnotationMirrorSet();
+      this.possiblyBoth = new AnnotationMirrorSet();
 
       this.isSuperBounded = AnnotatedTypes.hasExplicitSuperBound(wildcard);
       this.isUnbounded = AnnotatedTypes.hasNoExplicitBound(wildcard);

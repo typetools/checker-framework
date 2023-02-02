@@ -1,6 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -11,6 +10,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -28,7 +28,7 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
   public NullnessValue(
       CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
-      Set<AnnotationMirror> annotations,
+      AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
   }

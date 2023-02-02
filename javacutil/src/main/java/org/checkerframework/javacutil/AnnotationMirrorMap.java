@@ -1,11 +1,11 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Map interface defines some of its methods with respect to the equals method. This
@@ -24,12 +24,11 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
 
   /** The actual map to which all work is delegated. */
-  private final Map<AnnotationMirror, V> shadowMap;
+  private final NavigableMap<AnnotationMirror, V> shadowMap =
+      new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
 
   /** Default constructor. */
-  public AnnotationMirrorMap() {
-    this.shadowMap = new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
-  }
+  public AnnotationMirrorMap() {}
 
   /**
    * Creates an annotation mirror map and adds all the mappings in {@code copy}.
@@ -110,7 +109,7 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
   }
 
   @Override
-  public Set<AnnotationMirror> keySet() {
+  public AnnotationMirrorSet keySet() {
     return new AnnotationMirrorSet(shadowMap.keySet());
   }
 
@@ -127,5 +126,40 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
   @Override
   public String toString() {
     return shadowMap.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof AnnotationMirrorMap)) return false;
+    AnnotationMirrorMap<?> m = (AnnotationMirrorMap) o;
+    if (m.size() != size()) {
+      return false;
+    }
+
+    try {
+      for (Entry<AnnotationMirror, V> e : entrySet()) {
+        AnnotationMirror key = e.getKey();
+        V value = e.getValue();
+        if (value == null) {
+          if (!(m.get(key) == null && m.containsKey(key))) return false;
+        } else {
+          if (!value.equals(m.get(key))) return false;
+        }
+      }
+    } catch (ClassCastException | NullPointerException unused) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 0;
+    for (Entry<AnnotationMirror, V> entry : entrySet()) result += entry.hashCode();
+    return result;
   }
 }

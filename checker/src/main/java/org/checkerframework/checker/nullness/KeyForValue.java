@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -48,7 +49,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   /** Create an instance. */
   public KeyForValue(
       CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
-      Set<AnnotationMirror> annotations,
+      AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
     KeyForAnnotatedTypeFactory atypeFactory =

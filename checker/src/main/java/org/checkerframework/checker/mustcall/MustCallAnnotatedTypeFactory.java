@@ -46,6 +46,7 @@ import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseT
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -268,8 +269,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getExplicitAnnos(Element element) {
-      Set<AnnotationMirror> explict = super.getExplicitAnnos(element);
+    protected AnnotationMirrorSet getExplicitAnnos(Element element) {
+      AnnotationMirrorSet explict = super.getExplicitAnnos(element);
       if (explict.isEmpty() && ElementUtils.isTypeElement(element)) {
         AnnotationMirror inheritableMustCall =
             getDeclAnnotation(element, InheritableMustCall.class);
@@ -277,7 +278,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           List<String> mustCallVal =
               AnnotationUtils.getElementValueArray(
                   inheritableMustCall, inheritableMustCallValueElement, String.class);
-          return Collections.singleton(createMustCall(mustCallVal));
+          return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
         }
       }
       return explict;
@@ -301,8 +302,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
-      Set<AnnotationMirror> explict = super.getAnnotationFromElement(element);
+    protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
+      AnnotationMirrorSet explict = super.getAnnotationFromElement(element);
       if (!explict.isEmpty()) {
         return explict;
       }
@@ -311,9 +312,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         List<String> mustCallVal =
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
-        return Collections.singleton(createMustCall(mustCallVal));
+        return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
       }
-      return Collections.emptySet();
+      return AnnotationMirrorSet.emptySet();
     }
   }
 

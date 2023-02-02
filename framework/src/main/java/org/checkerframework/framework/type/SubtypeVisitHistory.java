@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -29,7 +28,7 @@ public class SubtypeVisitHistory {
    * The keys are pairs of types; the value is the set of qualifier hierarchy roots for which the
    * key is in a subtype relationship.
    */
-  private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, Set<AnnotationMirror>> visited;
+  private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet> visited;
 
   public SubtypeVisitHistory() {
     this.visited = new HashMap<>();
@@ -56,12 +55,12 @@ public class SubtypeVisitHistory {
       return;
     }
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
-    Set<AnnotationMirror> hit = visited.get(key);
+    AnnotationMirrorSet hit = visited.get(key);
 
     if (hit != null) {
       hit.add(currentTop);
     } else {
-      hit = new HashSet<>();
+      hit = new AnnotationMirrorSet();
       hit.add(currentTop);
       this.visited.put(key, hit);
     }
@@ -73,7 +72,7 @@ public class SubtypeVisitHistory {
       final AnnotatedTypeMirror type2,
       AnnotationMirror currentTop) {
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
-    Set<AnnotationMirror> hit = visited.get(key);
+    AnnotationMirrorSet hit = visited.get(key);
     if (hit != null) {
       hit.remove(currentTop);
       if (hit.isEmpty()) {
@@ -93,7 +92,7 @@ public class SubtypeVisitHistory {
       final AnnotatedTypeMirror type2,
       AnnotationMirror currentTop) {
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
-    Set<AnnotationMirror> hit = visited.get(key);
+    AnnotationMirrorSet hit = visited.get(key);
     return hit != null && hit.contains(currentTop);
   }
 

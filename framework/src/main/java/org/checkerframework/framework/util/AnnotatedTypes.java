@@ -50,6 +50,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -840,9 +841,9 @@ public class AnnotatedTypes {
           glbJava.getKind(), glbJava, type1, type2);
     }
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> set1 =
+    AnnotationMirrorSet set1 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
-    Set<AnnotationMirror> set2 =
+    AnnotationMirrorSet set2 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
     Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(set1, set2);
 
@@ -914,7 +915,7 @@ public class AnnotatedTypes {
         if (subtype.getKind() != TypeKind.TYPEVAR) {
           throw new BugInCF("Missing primary annotations: subtype: %s", subtype);
         }
-        Set<AnnotationMirror> lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
+        AnnotationMirrorSet lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
         AnnotationMirror lbAnno = qualifierHierarchy.findAnnotationInHierarchy(lb, top);
         if (lbAnno != null && !qualifierHierarchy.isSubtype(lbAnno, superAnno)) {
           // The superAnno is lower than the lower bound annotation, so add it.
@@ -1402,7 +1403,7 @@ public class AnnotatedTypes {
    *
    * @return the set of effective annotation mirrors in all hierarchies
    */
-  public static Set<AnnotationMirror> findEffectiveLowerBoundAnnotations(
+  public static AnnotationMirrorSet findEffectiveLowerBoundAnnotations(
       final QualifierHierarchy qualifierHierarchy, final AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
@@ -1419,7 +1420,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          final Set<AnnotationMirror> glb =
+          final AnnotationMirrorSet glb =
               glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
           return glb;
 
@@ -1446,7 +1447,7 @@ public class AnnotatedTypes {
    *
    * @return the set of effective annotation mirrors in all hierarchies
    */
-  public static Set<AnnotationMirror> findEffectiveAnnotations(
+  public static AnnotationMirrorSet findEffectiveAnnotations(
       final QualifierHierarchy qualifierHierarchy, final AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
@@ -1463,7 +1464,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          final Set<AnnotationMirror> glb =
+          final AnnotationMirrorSet glb =
               glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
           return glb;
 
@@ -1504,9 +1505,9 @@ public class AnnotatedTypes {
    * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb
    * @return a set of annotations representing the glb of the intersection's bounds
    */
-  public static Set<AnnotationMirror> glbOfBounds(
+  public static AnnotationMirrorSet glbOfBounds(
       final AnnotatedIntersectionType isect, final QualifierHierarchy qualifierHierarchy) {
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
       final AnnotationMirror glbAnno = glbOfBoundsInHierarchy(isect, top, qualifierHierarchy);
       if (glbAnno != null) {
@@ -1579,7 +1580,7 @@ public class AnnotatedTypes {
     // TODO: There will be a nicer way to access this in 308 soon.
     List<Attribute.TypeCompound> decall =
         ((Symbol) constructor.getElement()).getRawTypeAttributes();
-    Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet decret = new AnnotationMirrorSet();
     for (Attribute.TypeCompound da : decall) {
       if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
         decret.add(da);
@@ -1587,7 +1588,7 @@ public class AnnotatedTypes {
     }
 
     // Collect all polymorphic qualifiers; we should substitute them.
-    Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet polys = new AnnotationMirrorSet();
     for (AnnotationMirror anno : returnType.getAnnotations()) {
       if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
         polys.add(anno);

@@ -2,7 +2,6 @@ package org.checkerframework.checker.index.inequality;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
@@ -19,6 +18,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.plumelib.util.CollectionsPlume;
 
 /**
@@ -140,7 +140,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
    * @return the expressions that {@code node} is less than
    */
   private List<String> getLessThanExpressions(Node node) {
-    Set<AnnotationMirror> s = analysis.getValue(node).getAnnotations();
+    AnnotationMirrorSet s = analysis.getValue(node).getAnnotations();
     if (s != null && !s.isEmpty()) {
       LessThanAnnotatedTypeFactory factory =
           (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();

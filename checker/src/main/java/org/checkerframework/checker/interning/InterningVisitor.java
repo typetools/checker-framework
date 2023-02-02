@@ -19,7 +19,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -45,6 +44,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -347,7 +347,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
       NewClassTree newClassTree = (NewClassTree) tree;
       TypeMirror typeMirror = TreeUtils.typeOf(newClassTree);
-      Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
+      AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(typeMirror);
       // Don't issue an invalid type warning for creations of objects of interned classes;
       // instead, issue an interned.object.creation if required.
       if (atypeFactory.containsSameByClass(bounds, Interned.class)) {
@@ -881,7 +881,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
           tm.getClass());
     }
     if (classElt != null) {
-      Set<AnnotationMirror> bound = atypeFactory.getTypeDeclarationBounds(tm);
+      AnnotationMirrorSet bound = atypeFactory.getTypeDeclarationBounds(tm);
       return atypeFactory.containsSameByClass(bound, Interned.class);
     }
     return false;

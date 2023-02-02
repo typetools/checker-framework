@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
@@ -34,8 +35,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
       AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(node.getLeftOperand());
       AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(node.getRightOperand());
 
-      Set<AnnotationMirror> lhs = lhsAtm.getEffectiveAnnotations();
-      Set<AnnotationMirror> rhs = rhsAtm.getEffectiveAnnotations();
+      AnnotationMirrorSet lhs = lhsAtm.getEffectiveAnnotations();
+      AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
         checker.reportError(node, "binary", lhsAtm, rhsAtm);
