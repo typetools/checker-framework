@@ -1105,8 +1105,9 @@ public class AnnotationFileParser {
       if (numParams != numArgs) {
         stubDebug(
             String.format(
-                "parseType:  mismatched sizes for typeParameters=%s (size %d) and typeArguments=%s"
-                    + " (size %d); decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
+                "parseType:  mismatched sizes for typeParameters=%s (size %d)"
+                    + " and typeArguments=%s (size %d);"
+                    + " decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
                 typeParameters,
                 numParams,
                 typeArguments,
@@ -1295,8 +1296,8 @@ public class AnnotationFileParser {
         if (decl.isConstructorDeclaration()) {
           warn(
               receiverParameter,
-              "parseParameter: constructor %s of a top-level class cannot have receiver"
-                  + " annotations %s",
+              "parseParameter: constructor %s of a top-level class"
+                  + " cannot have receiver annotations %s",
               methodType,
               decl.getReceiverParameter().get().getAnnotations());
         } else {
@@ -1766,8 +1767,10 @@ public class AnnotationFileParser {
     if (typeParameters.size() != typeArguments.size()) {
       String msg =
           String.format(
-              "annotateTypeParameters: mismatched sizes:  typeParameters (size %d)=%s; "
-                  + " typeArguments (size %d)=%s;  decl=%s;  elt=%s (%s).",
+              "annotateTypeParameters: mismatched sizes:"
+                  + "  typeParameters (size %d)=%s;"
+                  + "  typeArguments (size %d)=%s;"
+                  + "  decl=%s;  elt=%s (%s).",
               typeParameters.size(),
               typeParameters,
               typeArguments.size(),
@@ -2259,8 +2262,9 @@ public class AnnotationFileParser {
                 + " not found in type "
                 + typeElt
                 + System.lineSeparator()
-                + "If the method is not package-private, add an access specifier in the stub file"
-                + " and use pass -AstubDebug to receive a more useful error message.");
+                + "If the method is not package-private,"
+                + " add an access specifier in the stub file"
+                + " and use -AstubDebug to receive a more useful error message.");
       } else {
         stubWarnNotFound(
             methodDecl, "Method " + wantedMethodString + " not found in type " + typeElt);

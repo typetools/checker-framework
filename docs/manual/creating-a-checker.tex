@@ -663,8 +663,8 @@ types are annotated with the polymorphic qualifier (e.g.,
 The declarative syntax suffices for most cases.  More complex type
 hierarchies can be expressed by overriding, in your subclass of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}, either
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--}
-or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--}
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{()}
+or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{()}
 (typically only one of these needs to be overridden).
 
 For more details, see the Javadoc of those methods and of the classes
@@ -709,7 +709,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by overriding the
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{-org.checkerframework.framework.util.defaults.QualifierDefaults-}
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{(org.checkerframework.framework.util.defaults.QualifierDefaults)}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy.
 \end{sloppypar}
@@ -877,7 +877,7 @@ To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpr
 to any annotation element that should be interpreted as a Java expression.  The type of the
 element must be an array of Strings.  If your checker requires special handling of Java expressions,
 your checker implementation should override
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{--}
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{()}
 to return a subclass of \<DependentTypesHelper>.
 
 Given a specific expression in the program (of type Tree or Node), a
@@ -887,9 +887,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(
 ExpressionTree)} or
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -943,9 +943,9 @@ optional, and many checker classes do not have one.)
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled.  The checker uses
-\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethod{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String-java.lang.Object...)}
 and
-\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethod{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String-java.lang.Object...)}
 to issue errors.
 
 Also, the checker class follows the factory method pattern to
@@ -962,9 +962,9 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String-java.lang.Object...)}
 and
-\refmethodterse{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 (like \code{"type.incompatible"}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
 The \<messages.properties> file only need to mention the new messages that
@@ -992,7 +992,7 @@ or
 To indicate support for annotations that are located outside of the \<qual>
 subdirectory, annotations that have other \<ElementType> values,
 checker writers can override the
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{()}
 method (see its Javadoc for details).
 It is required to define \<createSupportedTypeQualifiers> if you are mixing
 qualifiers from multiple directories (including when extending an existing
@@ -1059,7 +1059,7 @@ that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
 Override
-\<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{--}>
+\<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{()}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers
 may itself be a compound checker, and multiple checkers may declare a
@@ -1070,7 +1070,7 @@ A checker obtains information from its subcheckers (those that ran before
 it) by querying their \refclass{framework/type}{AnnotatedTypeFactory} to
 determine the types of variables.  Obtain the \<AnnotatedTypeFactory> by
 calling
-\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubchecker}{-java.lang.Class-}.
+\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubchecker}{(java.lang.Class)}.
 
 \end{enumerate}
 
@@ -1151,9 +1151,9 @@ Java syntax trees as provided by Oracle's
 \href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
-\refmethodterse{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object-java.lang.String,java.lang.Object...)}
 or
-\refmethodterse{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-})
+\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object-java.lang.String,java.lang.Object...)})
 whenever the type system is violated.
 
 Most type-checkers
@@ -1318,12 +1318,12 @@ which is the Checker Framework's representation of an annotated type.
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
   override two \<addComputedTypeAnnotations> methods:
-  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{(com.sun.source.tree.Tree,org.checkerframework.framework.type.AnnotatedTypeMirror)}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
   (or
-  \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
+  \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{(com.sun.source.tree.Tree,org.checkerframework.framework.type.AnnotatedTypeMirror,boolean)}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
   if extending \code{GenericAnnotatedTypeFactory})
   and
-  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{(javax.lang.model.element.Element,org.checkerframework.framework.type.AnnotatedTypeMirror)}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
   The methods can make arbitrary changes to the annotations on a type.
 
   Recall that \<AnnotatedTypeFactory>, when given a program
@@ -1368,7 +1368,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{(java.lang.String)}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of

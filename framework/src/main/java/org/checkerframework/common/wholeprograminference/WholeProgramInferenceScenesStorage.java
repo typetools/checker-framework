@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -216,8 +217,12 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
-    // The scenes implementation can always add annotations to a method.
-    return true;
+    // The only location that the scenes implementation cannot store an annotation is on
+    // a member of an annotation type, which it cannot distinguish from a normal interface's
+    // method. Without this, the scenes implementation will attempt to annotate annotation
+    // elements, which is an error.
+    Element enclosingType = ElementUtils.enclosingTypeElement(methodElt);
+    return enclosingType == null || enclosingType.getKind() != ElementKind.ANNOTATION_TYPE;
   }
 
   @Override

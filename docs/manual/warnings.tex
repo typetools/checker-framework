@@ -468,7 +468,7 @@ warnings:  write specifications or suppress
 warnings; see below for an explanation of each approach.
 
 The method
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is not an
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} is not an
 assertion method.  It is a warning suppression method.
 
 Note that some libraries have an imprecise/incorrect specification of their assertion
@@ -520,7 +520,7 @@ guarantee that your code is correct and will not fail at run time.
 \begin{itemize}
 \item
   If the method is defined in your source code, annotate its definition just as
-  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} is
   annotated; see its Javadoc or the source code for the Checker Framework.
   Also, be sure to document the intention in the method's Javadoc, so that
   programmers do not
