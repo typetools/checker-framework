@@ -560,8 +560,42 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
     classpath += configurations.javacJar
   }
   doLast {
+    // The next 5 `exec` blocks correct Javadoc links.
+    // This is gross and inefficient, but it does work for methods with up to 11 formal parameters.
+    // (An alternative would be to use a single regex with Perl's `s///e` operator.)
     exec {
-      // Correct Javadoc links.
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5-\\6-\\7)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5-\\6)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4)"'
+      ]
+    }
+    exec {
       workingDir "${rootDir}/docs/api"
       executable "${plumeScriptsHome}/preplace"
       args += [
@@ -569,6 +603,7 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
         '\\1#\\2-\\3-"'
       ]
     }
+
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
       rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
