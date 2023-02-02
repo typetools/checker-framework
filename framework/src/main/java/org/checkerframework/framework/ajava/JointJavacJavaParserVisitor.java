@@ -1338,6 +1338,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitTypeCast(TypeCastTree javacTree, Node javaParserNode) {
+    if (javaParserNode instanceof MethodReferenceExpr) {
+      // Work around https://github.com/javaparser/javaparser/issues/3855
+      return null;
+    }
     CastExpr node = castNode(CastExpr.class, javaParserNode, javacTree);
     processTypeCast(javacTree, node);
     javacTree.getType().accept(this, node.getType());
@@ -2325,7 +2329,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         javacTree.getClass(),
         javaParserNode,
         javaParserNode.getClass(),
-        new YamlPrinter(true).output(javaParserNode)); // There is also XmlPrinter
+        // There is also XmlPrinter.
+        new YamlPrinter(true).output(javaParserNode));
   }
 
   /**

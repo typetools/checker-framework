@@ -826,11 +826,11 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \begin{enumerate}
 
 \item
-Run \code{./gradlew assemble} to build the Checker Framework:
+Run \code{./gradlew assembleForJavac} to build the Checker Framework for \<javac>:
 
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
-  ./gradlew assemble
+  ./gradlew assembleForJavac
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -857,6 +857,16 @@ identical to the javac Java compiler.
 
 Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
+
+\item
+If you wish to use Maven or Gradle, publish the Checker Framework artifacts to a local Maven repository, run
+\code{./gradlew publishToMavenLocal}
+\begin{Verbatim}
+  cd $CHECKERFRAMEWORK
+  ./gradlew publishToMavenLocal
+\end{Verbatim}
+Then use the Maven or Gradle instructions, but modify the version number for the Checker Framework artifacts.
+Use the version number that is output when you run \code{./gradlew version}.
 
 \item Test that everything works:
 
