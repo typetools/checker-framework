@@ -308,7 +308,7 @@ jobs:
 - job: guava_jdk8
   dependsOn:
    - canary_jobs
-   # - guava_jdk17
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -320,7 +320,7 @@ jobs:
 - job: guava_jdk11
   dependsOn:
    - canary_jobs
-   # - guava_jdk17
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest

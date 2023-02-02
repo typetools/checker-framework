@@ -131,14 +131,14 @@ example of the intended use of the \code{RegexUtil} methods.
 
 \begin{description}
 
-\item[\refmethod{checker/regex/util}{RegexUtil}{isRegex}{-java.lang.String-}]
+\item[\refmethod{checker/regex/util}{RegexUtil}{isRegex}{(java.lang.String)}]
   returns \<true> if its argument is a valid regular expression.
 
-\item[\refmethod{checker/regex/util}{RegexUtil}{regexError}{-java.lang.String-}]
+\item[\refmethod{checker/regex/util}{RegexUtil}{regexError}{(java.lang.String)}]
   returns a \<String> error message if its argument is not a valid regular
   expression, or \<null> if its argument is a valid regular expression.
 
-\item[\refmethod{checker/regex/util}{RegexUtil}{regexException}{-java.lang.String-}]
+\item[\refmethod{checker/regex/util}{RegexUtil}{regexException}{(java.lang.String)}]
   returns the
   \sunjavadoc{java.base/java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
   that \sunjavadoc{java.base/java/util/regex/Pattern.html\#compile(java.lang.String)}{Pattern.compile(String)}
@@ -149,10 +149,10 @@ example of the intended use of the \code{RegexUtil} methods.
 
 An additional version of each of these methods is also provided that takes
 an additional group count parameter. The
-\refmethod{checker/regex/util}{RegexUtil}{isRegex}{-java.lang.String-int-} method
+\refmethod{checker/regex/util}{RegexUtil}{isRegex}{(java.lang.String,int)} method
 verifies that the argument has at least the given number of groups. The
-\refmethod{checker/regex/util}{RegexUtil}{regexError}{-java.lang.String-int-} and
-\refmethod{checker/regex/util}{RegexUtil}{regexException}{-java.lang.String-int-}
+\refmethod{checker/regex/util}{RegexUtil}{regexError}{(java.lang.String,int)} and
+\refmethod{checker/regex/util}{RegexUtil}{regexException}{(java.lang.String,int)}
 methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
 respectively, detailing why the given String is not a syntactically valid
 regular expression with at least the given number of capturing groups.
@@ -196,7 +196,7 @@ If you are positive that a particular string that is being used as a
 regular expression is syntactically valid, but the Regex Checker cannot
 conclude this and issues a warning about possible use of an invalid regular
 expression, then you can use the
-\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-} method to suppress the
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{(java.lang.String)} method to suppress the
 warning.
 
 You can think of this method
@@ -205,7 +205,7 @@ as a cast:  it returns its argument unchanged, but with the type
 error if its argument is not a valid regular expression, but you should
 only use it when you are sure it will not throw an error.
 
-There is an additional \refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-int-}
+There is an additional \refmethod{checker/regex/util}{RegexUtil}{asRegex}{(java.lang.String,int)}
 method that takes a capturing group parameter. This method works the same as
 described above, but returns a \code{@Regex String} with the parameter on the
 annotation set to the value of the capturing group parameter passed to the method.
