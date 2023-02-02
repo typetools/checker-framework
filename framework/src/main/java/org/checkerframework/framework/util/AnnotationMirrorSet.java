@@ -136,6 +136,24 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     shadowSet.clear();
   }
 
+  @Override
+  public String toString() {
+    return shadowSet.toString();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof AnnotationMirrorSet)) {
+      return false;
+    }
+    AnnotationMirrorSet s = (AnnotationMirrorSet) o;
+    if (this.size() != s.size()) {
+      return false;
+    }
+    return containsAll(s);
+  }
+
+  // New methods
   /**
    * Returns a new {@link AnnotationMirrorSet} that contains {@code value}.
    *
@@ -146,10 +164,5 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     newSet.add(value);
     return newSet;
-  }
-
-  @Override
-  public String toString() {
-    return shadowSet.toString();
   }
 }
