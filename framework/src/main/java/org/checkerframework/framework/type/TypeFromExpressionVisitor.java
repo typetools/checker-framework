@@ -26,7 +26,6 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.WildcardTree;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
@@ -37,7 +36,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
@@ -367,7 +366,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType.getReturnType();
     // Clear the annotations on the return type, so that the explicit annotations can be added
     // first, then the annotations from the return type are added as needed.
-    Set<AnnotationMirror> fromReturn = new AnnotationMirrorSet(returnType.getAnnotations());
+    AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getAnnotations());
     returnType.clearPrimaryAnnotations();
     returnType.addAnnotations(f.getExplicitNewClassAnnos(tree));
     returnType.addMissingAnnotations(fromReturn);

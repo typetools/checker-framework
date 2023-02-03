@@ -11,6 +11,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
@@ -82,7 +83,7 @@ public class IndexRefinementInfo {
     this(result, analysis, node.getRightOperand(), node.getLeftOperand());
   }
 
-  private static AnnotationMirror getAnno(Set<AnnotationMirror> set, QualifierHierarchy hierarchy) {
+  private static AnnotationMirror getAnno(AnnotationMirrorSet set, QualifierHierarchy hierarchy) {
     Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
     if (tops.size() != 1) {
       throw new TypeSystemError(

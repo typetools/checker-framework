@@ -5,10 +5,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -46,6 +44,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -860,7 +859,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // for other locations only infer primary annotations if they are a super type of the upper
     // bound.
     if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
-      Set<AnnotationMirror> upperAnnos =
+      AnnotationMirrorSet upperAnnos =
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
@@ -968,7 +967,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     // LUB primary annotations
-    Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
+    AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amAjava = ajavaATM.getAnnotationInHierarchy(amSource);
       // amAjava only contains annotations from the ajava file, so it might be missing

@@ -75,6 +75,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -536,7 +537,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private boolean definitelyIsNotTheEmptyString(
         AnnotatedTypeMirror atm, ValueAnnotatedTypeFactory vatf) {
-      Set<AnnotationMirror> annos = atm.getAnnotations();
+      AnnotationMirrorSet annos = atm.getAnnotations();
       for (AnnotationMirror anno : annos) {
         switch (AnnotationUtils.annotationName(anno)) {
           case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
