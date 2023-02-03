@@ -8,6 +8,7 @@ public class LiteralCast {
     testCompile(2);
     // manifest literals are treated as @SignednessGlb
     testCompile(-2);
+    // :: error: (argument)
     testCompile((@Signed int) 2);
   }
 
