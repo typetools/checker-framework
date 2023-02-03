@@ -66,16 +66,16 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
    * The private method {@code isUniqueCheck} handles cases 2 and 3.
    */
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     // The check only needs to be done for constructors with result type
     // @Unique. We also want to avoid visiting the <init> method.
     if (isInUniqueConstructor()) {
-      if (TreeUtils.isSuperConstructorCall(node)) {
+      if (TreeUtils.isSuperConstructorCall(tree)) {
         // Check if a call to super() might create an alias: that
         // happens when the parent's respective constructor is not @Unique.
-        AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror superResult = atypeFactory.getAnnotatedType(tree);
         if (!superResult.hasAnnotation(Unique.class)) {
-          checker.reportError(node, "unique.leaked");
+          checker.reportError(tree, "unique.leaked");
         }
       } else {
         // TODO: Currently the type of "this" doesn't always return the type of the
@@ -84,13 +84,13 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         // in a @Unique constructor will be @Unique.
         Tree parent = getCurrentPath().getParentPath().getLeaf();
         boolean parentIsStatement = parent.getKind() == Tree.Kind.EXPRESSION_STATEMENT;
-        ExecutableElement methodElement = TreeUtils.elementFromUse(node);
+        ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
         List<? extends VariableElement> params = methodElement.getParameters();
-        List<? extends ExpressionTree> args = node.getArguments();
+        List<? extends ExpressionTree> args = tree.getArguments();
         assert (args.size() == params.size())
             : "Number of arguments in"
                 + " the method call "
-                + node
+                + tree
                 + " is different from the "
                 + "number of parameters for the method declaration: "
                 + methodElement.getSimpleName();
@@ -105,7 +105,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
                 atypeFactory.getAnnotatedType(param).hasAnnotation(NonLeaked.class);
             boolean hasLeakedToResult =
                 atypeFactory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class);
-            isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
+            isUniqueCheck(tree, parentIsStatement, hasNonLeaked, hasLeakedToResult);
           } else {
             // Not possible to leak reference here (case 1. from the javadoc).
           }
@@ -117,15 +117,23 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         if (receiverType != null) {
           boolean hasNonLeaked = receiverType.hasAnnotation(NonLeaked.class);
           boolean hasLeakedToResult = receiverType.hasAnnotation(LeakedToResult.class);
-          isUniqueCheck(node, parentIsStatement, hasNonLeaked, hasLeakedToResult);
+          isUniqueCheck(tree, parentIsStatement, hasNonLeaked, hasLeakedToResult);
         }
       }
     }
-    return super.visitMethodInvocation(node, p);
+    return super.visitMethodInvocation(tree, p);
   }
 
+  /**
+   * Possibly issue a "unique.leaked" error.
+   *
+   * @param tree a method invocation
+   * @param parentIsStatement is the parent of {@code tree} a statement?
+   * @param hasNonLeaked does the receiver have a {@code @NonLeaked} annotation?
+   * @param hasLeakedToResult does the receiver have a {@code @LeakedToResult} annotation?
+   */
   private void isUniqueCheck(
-      MethodInvocationTree node,
+      MethodInvocationTree tree,
       boolean parentIsStatement,
       boolean hasNonLeaked,
       boolean hasLeakedToResult) {
@@ -134,7 +142,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
       // visitMethodInvocation.
     } else {
       // May be leaked, raise warning.
-      checker.reportError(node, "unique.leaked");
+      checker.reportError(tree, "unique.leaked");
     }
   }
 
@@ -194,42 +202,42 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   @Override
-  public Void visitThrow(ThrowTree node, Void p) {
+  public Void visitThrow(ThrowTree tree, Void p) {
     // throw is also an escape mechanism. If an expression of type
     // @Unique is thrown, it is not @Unique anymore.
-    ExpressionTree exp = node.getExpression();
+    ExpressionTree exp = tree.getExpression();
     if (canBeLeaked(exp)) {
       checker.reportError(exp, "unique.leaked");
     }
-    return super.visitThrow(node, p);
+    return super.visitThrow(tree, p);
   }
 
   @Override
-  public Void visitVariable(VariableTree node, Void p) {
+  public Void visitVariable(VariableTree tree, Void p) {
     // Component types are not allowed to have the @Unique annotation.
-    AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(node);
-    VariableElement elt = TreeUtils.elementFromDeclaration(node);
+    AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(tree);
+    VariableElement elt = TreeUtils.elementFromDeclaration(tree);
     if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
-      checker.reportError(node, "unique.location.forbidden");
-    } else if (node.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
+      checker.reportError(tree, "unique.location.forbidden");
+    } else if (tree.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
       AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
       if (arrayType.getComponentType().hasAnnotation(Unique.class)) {
-        checker.reportError(node, "unique.location.forbidden");
+        checker.reportError(tree, "unique.location.forbidden");
       }
-    } else if (node.getType().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+    } else if (tree.getType().getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
       AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) varType;
       for (AnnotatedTypeMirror atm : declaredType.getTypeArguments()) {
         if (atm.hasAnnotation(Unique.class)) {
-          checker.reportError(node, "unique.location.forbidden");
+          checker.reportError(tree, "unique.location.forbidden");
         }
       }
     }
-    return super.visitVariable(node, p);
+    return super.visitVariable(tree, p);
   }
 
   @Override
-  public Void visitNewArray(NewArrayTree node, Void p) {
-    List<? extends ExpressionTree> initializers = node.getInitializers();
+  public Void visitNewArray(NewArrayTree tree, Void p) {
+    List<? extends ExpressionTree> initializers = tree.getInitializers();
     if (initializers != null && !initializers.isEmpty()) {
       for (ExpressionTree exp : initializers) {
         if (canBeLeaked(exp)) {
@@ -237,7 +245,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
         }
       }
     }
-    return super.visitNewArray(node, p);
+    return super.visitNewArray(tree, p);
   }
 
   @Override
