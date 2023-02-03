@@ -473,19 +473,6 @@ public class AnnotationUtils {
   }
 
   /**
-   * Create a map suitable for storing {@link AnnotationMirror} as keys.
-   *
-   * <p>It can store one instance of {@link AnnotationMirror} of a given declared type, regardless
-   * of the annotation element values.
-   *
-   * @param <V> the value of the map
-   * @return a new map with {@link AnnotationMirror} as key
-   */
-  public static <V> AnnotationMirrorMap<V> createAnnotationMap() {
-    return new AnnotationMirrorMap<V>();
-  }
-
-  /**
    * Returns true if the given annotation has a @Inherited meta-annotation.
    *
    * @param anno the annotation to check for an @Inherited meta-annotation

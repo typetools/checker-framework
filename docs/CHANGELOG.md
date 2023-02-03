@@ -5,7 +5,11 @@ Version 3.30.1 (March 1, 2023)
 
 **Implementation details:**
 
+Moved `AnnotationMirrorSet` and `AnnotationMirrorMap` from
+`org.checkerframework.framework.util` to `org.checkerframework.javacutil.AnnotationMirrorSet`.
 Changed uses of `Set<AnnotationMirror>` to `AnnotationMirrorSet` including in APIs.
+Removed methods from AnnotationUtils that are no longer useful:
+`createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
 
 **Closed issues:**
 
