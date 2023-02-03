@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -103,6 +104,7 @@ public class ArrayCreationNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     ArrayList<Node> list = new ArrayList<>(dimensions.size() + initializers.size());
     list.addAll(dimensions);

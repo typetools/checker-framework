@@ -18,7 +18,7 @@ public class FormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest
    * @param testFiles the files containing test code, which will be type-checked
    */
   public FormatterLubGlbCheckerTest(List<File> testFiles) {
-    super(testFiles, FormatterLubGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+    super(testFiles, FormatterLubGlbChecker.class, "", "-AcheckPurityAnnotations");
   }
 
   @Parameters

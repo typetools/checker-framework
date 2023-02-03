@@ -26,7 +26,6 @@ public class AinferTestCheckerAjavaTest extends AinferGeneratePerDirectoryTest {
         testFiles,
         AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
-        "-Anomsgtext",
         "-Ainfer=ajava",
         "-Aajava=tests/ainfer-testchecker/input-annotation-files/ExistingPurityAnnotations-org.checkerframework.checker.testchecker.ainfer.AinferTestChecker.ajava",
         "-Awarns");

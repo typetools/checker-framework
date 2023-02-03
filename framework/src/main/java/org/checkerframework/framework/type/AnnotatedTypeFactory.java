@@ -112,20 +112,21 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeCombiner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
+import org.checkerframework.framework.util.TypeInformationPresenter;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -507,6 +508,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private AnnotatedDeclaredType iterableDeclType;
 
   /**
+   * If the option "lspTypeInfo" is defined, this presenter will report the type information of
+   * every type-checked class. This information can be visualized by an editor/IDE that supports
+   * LSP.
+   */
+  private final TypeInformationPresenter typeInformationPresenter;
+
+  /**
    * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
    * root. (These parameters are required so that the factory may conduct the appropriate
    * annotation-gathering analyses on certain tree types.)
@@ -566,6 +574,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     this.typeFormatter = createAnnotatedTypeFormatter();
     this.annotationFormatter = createAnnotationFormatter();
+
+    if (checker.hasOption("lspTypeInfo")) {
+      this.typeInformationPresenter = new TypeInformationPresenter(this);
+    } else {
+      this.typeInformationPresenter = null;
+    }
 
     if (checker.hasOption("infer")) {
       checkInvalidOptionsInferSignatures();
@@ -1136,7 +1150,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     the returned set, for example, it is used frequently to add Bottom qualifiers
    * @return a set of annotation class instances
    */
-  @SuppressWarnings({"varargs", "unchecked"}) // @SafeVarargs is only applicable to static methods
+  @SafeVarargs
+  @SuppressWarnings("varargs")
   private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(
       Class<? extends Annotation>... explicitlyListedAnnotations) {
     if (loader != null) {
@@ -1341,6 +1356,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public void postProcessClassTree(ClassTree tree) {
     TypesIntoElements.store(processingEnv, this, tree);
     DeclarationsIntoElements.store(processingEnv, this, tree);
+
+    if (typeInformationPresenter != null) {
+      typeInformationPresenter.process(tree);
+    }
+
     if (wholeProgramInference != null) {
       // Write out the results of whole-program inference, just once for each class.  As soon
       // as any class is finished processing, all modified scenes are written to files, in
@@ -3535,7 +3555,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param elt an element
    * @return the tree declaration of the element if found
    */
-  public final Tree declarationFromElement(Element elt) {
+  public final @Nullable Tree declarationFromElement(Element elt) {
     // if root is null, we cannot find any declaration
     if (root == null) {
       return null;
@@ -3583,7 +3603,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the class tree enclosing {@code tree}
    * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
    */
-  @Deprecated
+  @Deprecated // 2021-11-01
   protected final ClassTree getCurrentClassTree(Tree tree) {
     return TreePathUtil.enclosingClass(getPath(tree));
   }
@@ -3597,7 +3617,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return receiver type of the most enclosing method being visited
    * @deprecated Use {@link #getSelfType(Tree)} instead
    */
-  @Deprecated
+  @Deprecated // 2021-11-01
   protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
     TreePath path = getPath(tree);
     if (path == null) {
@@ -3915,7 +3935,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>This is the private implementation of the same-named, public method.
    *
-   * <p>An option is provided to not to check for aliases of annotations. For example, an annotated
+   * <p>An option is provided to not check for aliases of annotations. For example, an annotated
    * type factory may use aliasing for a pair of annotations for convenience while needing in some
    * cases to determine a strict ordering between them, such as when determining whether the
    * annotations on an overrider method are more specific than the annotations of an overridden
@@ -4600,8 +4620,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       case TYPE_CAST:
         TypeCastTree cast = (TypeCastTree) parentTree;
-        assert isFunctionalInterface(
-            trees.getTypeMirror(getPath(cast.getType())), parentTree, tree);
+        assertIsFunctionalInterface(trees.getTypeMirror(getPath(cast.getType())), parentTree, tree);
         AnnotatedTypeMirror castATM = getAnnotatedType(cast.getType());
         if (castATM.getKind() == TypeKind.INTERSECTION) {
           AnnotatedIntersectionType itype = (AnnotatedIntersectionType) castATM;
@@ -4625,14 +4644,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
         AnnotatedTypeMirror constructorParam =
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
-        assert isFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
         return constructorParam;
 
       case NEW_ARRAY:
         NewArrayTree newArray = (NewArrayTree) parentTree;
         AnnotatedArrayType newArrayATM = getAnnotatedType(newArray);
         AnnotatedTypeMirror elementATM = newArrayATM.getComponentType();
-        assert isFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(elementATM.getUnderlyingType(), parentTree, tree);
         return elementATM;
 
       case METHOD_INVOCATION:
@@ -4647,17 +4666,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           param = AnnotatedTypeMirror.createType(typeMirror, this, false);
           addDefaultAnnotations(param);
         }
-        assert isFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
 
       case VARIABLE:
         VariableTree varTree = (VariableTree) parentTree;
-        assert isFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
+        assertIsFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
         return getAnnotatedType(varTree.getType());
 
       case ASSIGNMENT:
         AssignmentTree assignmentTree = (AssignmentTree) parentTree;
-        assert isFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
+        assertIsFunctionalInterface(TreeUtils.typeOf(assignmentTree), parentTree, tree);
         return getAnnotatedType(assignmentTree.getVariable());
 
       case RETURN:
@@ -4702,7 +4721,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
         AnnotatedTypeMirror conditionalType =
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
-        assert isFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
+        assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
 
       default:
@@ -4715,30 +4734,37 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
   }
 
-  private boolean isFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
+  /**
+   * Throws an exception if the type is not a funtional interface.
+   *
+   * @param typeMirror a type that must be a funtional interface
+   * @param contextTree the tree that has the given type; used only for diagnostic messages
+   * @param tree a labmba tree that encloses {@code contextTree}; used only for diagnostic messages
+   */
+  private void assertIsFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
       // Ignore wildcards, because they are uninferred type arguments.
-      return true;
+      return;
     }
     Type type = (Type) typeMirror;
+    if (TypesUtils.isFunctionalInterface(type, processingEnv)) {
+      return;
+    }
 
-    if (!TypesUtils.isFunctionalInterface(type, processingEnv)) {
-      if (type.getKind() == TypeKind.INTERSECTION) {
-        IntersectionType itype = (IntersectionType) type;
-        for (TypeMirror t : itype.getBounds()) {
-          if (TypesUtils.isFunctionalInterface(t, processingEnv)) {
-            // As long as any of the bounds is a functional interface
-            // we should be fine.
-            return true;
-          }
+    if (type.getKind() == TypeKind.INTERSECTION) {
+      IntersectionType itype = (IntersectionType) type;
+      for (TypeMirror t : itype.getBounds()) {
+        if (TypesUtils.isFunctionalInterface(t, processingEnv)) {
+          // As long as any of the bounds is a functional interface, we should be fine.
+          return;
         }
       }
-      throw new BugInCF(
-          "Expected the type of %s tree in assignment context to be a functional interface. "
-              + "Found type: %s for tree: %s in lambda tree: %s",
-          contextTree.getKind(), type, contextTree, tree);
     }
-    return true;
+
+    throw new BugInCF(
+        "Expected the type of %s tree in assignment context to be a functional interface. "
+            + "Found type: %s for tree: %s in lambda tree: %s",
+        contextTree.getKind(), type, contextTree, tree);
   }
 
   /**
@@ -4927,7 +4953,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
 
     // If the type contains uninferred type arguments, don't capture, but mark all wildcards
-    // that shuuld have been captured as "uninferred" before it is returned.
+    // that should have been captured as "uninferred" before it is returned.
     if (type.containsUninferredTypeArguments()
         && typeMirror.getKind() == TypeKind.DECLARED
         && type.getKind() == TypeKind.DECLARED) {
@@ -5208,7 +5234,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // framework/tests/all-systems/Issue4890Interfaces.java,
       // framework/tests/all-systems/Issue4890.java and
       // framework/tests/all-systems/Issue4877.java.
-      // (I think this is  https://bugs.openjdk.org/browse/JDK-8039222.)
+      // (I think this is https://bugs.openjdk.org/browse/JDK-8039222.)
       for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) upperBound).getBounds()) {
         if (types.isSameType(
             bound.underlyingType, capturedTypeVar.getUpperBound().getUnderlyingType())) {

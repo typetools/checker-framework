@@ -153,7 +153,8 @@ os.environ["PERLLIB"] = getAndAppend("PERLLIB", ":") + perl_libs
 os.environ["PERL5LIB"] = getAndAppend("PERL5LIB", ":") + perl_libs
 # Still needed for santiy checks
 os.environ["JAVA_8_HOME"] = "/usr/lib/jvm/java-1.8.0-openjdk/"
-os.environ["JAVA_HOME"] = os.environ["JAVA_8_HOME"]
+os.environ["JAVA_17_HOME"] = "/usr/lib/jvm/java-17-openjdk/"
+os.environ["JAVA_HOME"] = os.environ["JAVA_17_HOME"]
 
 EDITOR = os.getenv("EDITOR")
 if EDITOR is None:
@@ -168,4 +169,4 @@ PATH = PATH + ":."
 os.environ["PATH"] = PATH
 
 # Tools that must be on your PATH (besides common Unix ones like grep)
-TOOLS = ["hevea", "perl", "java", "latex", "mvn", "hg", "git", "html5validator", EDITOR]
+TOOLS = ["hevea", "perl", "java", "latex", "mvn", "hg", "git", "html5validator", "dot", EDITOR]

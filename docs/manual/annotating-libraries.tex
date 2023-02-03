@@ -439,7 +439,7 @@ There are two types of annotation files, which are files containing annotations 
 can be read by the Checker Framework.
 This section describes stub files, which are used by programmers and
 type system designers.
-Section~\ref{ajava-files} dscribes ajava files, which are used mainly by
+Section~\ref{ajava-files} dscribes ajava files, which are used by
 tools, such as type inference.
 
 
@@ -901,7 +901,7 @@ can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
 This section dscribes ajava files.
-Ajava files are typically read and written by tools, such as whole-program
+Ajava files are read and written by tools, such as whole-program type
 inference (see Section~\ref{whole-program-inference}).  This section about
 ajava files is primarily of interest to the maintainers of such tools.
 
@@ -938,7 +938,8 @@ the \code{-AmergeStubsWithSource} option.
 
 If the Checker Framework reads both a source file and an ajava file that
 corresponds to it, then the source file and the ajava file must have a
-specific relationship to one another.
+specific relationship to one another, to prevent errors that could occur
+due to mismatches.
 
 
 \subsubsectionAndLabel{Names of ajava files}{ajava-file-name}

@@ -22,7 +22,6 @@ public class CalledMethodsDisableframeworksTest extends CheckerFrameworkPerDirec
             CalledMethodsChecker.class.getName()),
         "calledmethods-disableframeworks",
         Collections.emptyList(),
-        "-Anomsgtext",
         "-AdisableBuilderFrameworkSupports=autovalue,lombok",
         // The next option is so that we can run the usevaluechecker tests under this
         // configuration.

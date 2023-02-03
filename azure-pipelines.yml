@@ -18,8 +18,9 @@ jobs:
   dependsOn:
    - junit_tests_jdk17
    - nonjunit_tests_jdk17
-   - misc_jdk17
+   - inference_tests_jdk17
    - typecheck_jdk17
+   - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -144,10 +145,6 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 - job: inference_tests_jdk17
-  dependsOn:
-## Improve parallelism by depending only on typecheck, not canary, jobs
-#   - canary_jobs
-   - typecheck_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -311,7 +308,7 @@ jobs:
 - job: guava_jdk8
   dependsOn:
    - canary_jobs
-   # - guava_jdk17
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk8:latest
@@ -323,7 +320,7 @@ jobs:
 - job: guava_jdk11
   dependsOn:
    - canary_jobs
-   # - guava_jdk17
+   - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest

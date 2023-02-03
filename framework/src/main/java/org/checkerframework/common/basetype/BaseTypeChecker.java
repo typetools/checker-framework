@@ -192,16 +192,17 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
    * modify the list.
    *
-   * @return the subchecker classes on which this checker depends
+   * @return the subchecker classes on which this checker depends; will be modified by callees
    */
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    if (shouldResolveReflection()) {
-      // This must return a modifiable set because clients modify it.
-      return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
-    }
-    // The returned set will be modified by callees.
+    // This must return a modifiable set because clients modify it.
     // Most checkers have 1 or fewer subcheckers.
-    return new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+    LinkedHashSet<Class<? extends BaseTypeChecker>> result =
+        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+    if (shouldResolveReflection()) {
+      result.add(MethodValChecker.class);
+    }
+    return result;
   }
 
   /**
@@ -433,7 +434,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    *
    * @param alreadyInitializedSubcheckerMap subcheckers that have already been instantiated. Is
    *     modified by this method.
-   * @return the unmodifiable list of immediate subcheckers of this checker.
+   * @return the unmodifiable list of immediate subcheckers of this checker
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
       Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
@@ -578,7 +579,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
   }
 
   /** A cache for {@link #getUltimateParentChecker}. */
-  @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
+  private @MonotonicNonNull BaseTypeChecker ultimateParentChecker;
 
   /**
    * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
