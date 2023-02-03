@@ -291,6 +291,9 @@ public class NullnessVisitor
   /**
    * Determine whether all dimensions given in a new array expression have zero as length. For
    * example "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
+   *
+   * @param tree the constructor invocation to check
+   * @return true if every array dimention has a size of zero
    */
   private static boolean isNewArrayAllZeroDims(NewArrayTree tree) {
     boolean isAllZeros = true;
@@ -421,6 +424,8 @@ public class NullnessVisitor
 
   /**
    * Reports an error if a comparison of a @NonNull expression with the null literal is performed.
+   *
+   * @param tree a tree that might be a comparison of a @NonNull expression with the null literal
    */
   protected void checkForRedundantTests(BinaryTree tree) {
 

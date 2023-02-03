@@ -124,6 +124,14 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     return super.visitMethodInvocation(tree, p);
   }
 
+  /**
+   * Possibly issue a "unique.leaked" error.
+   *
+   * @param tree a method invocation
+   * @param parentIsStatement is the parent of {@code tree} a statement?
+   * @param hasNonLeaked does the receiver have a {@code @NonLeaked} annotation?
+   * @param hasLeakedToResult does the receiver have a {@code @LeakedToResult} annotation?
+   */
   private void isUniqueCheck(
       MethodInvocationTree tree,
       boolean parentIsStatement,

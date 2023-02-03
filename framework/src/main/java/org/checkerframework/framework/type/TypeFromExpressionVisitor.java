@@ -309,6 +309,13 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     return result;
   }
 
+  /**
+   * Add annotations to an array type.
+   *
+   * @param result an array type; is side-effected by this method
+   * @param tree an array construction expression from which to obtain annotations
+   * @param f the type factory
+   */
   private void annotateArrayAsArray(
       AnnotatedArrayType result, NewArrayTree tree, AnnotatedTypeFactory f) {
     // Copy annotations from the type.

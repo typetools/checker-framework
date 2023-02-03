@@ -621,6 +621,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    *
    * Returns true iff the given tree fits this pattern.
    *
+   * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits a pattern such as (a == b || a.equals(b))
    */
   private boolean suppressEarlyEquals(final BinaryTree topBinaryTree) {
@@ -743,6 +744,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * Pattern matches to prevent false positives of the form {@code (a == b || a.compareTo(b) == 0)}.
    * Returns true iff the given tree fits this pattern.
    *
+   * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits the pattern (a == b || a.compareTo(b) == 0)
    */
   private boolean suppressEarlyCompareTo(final BinaryTree topBinaryTree) {

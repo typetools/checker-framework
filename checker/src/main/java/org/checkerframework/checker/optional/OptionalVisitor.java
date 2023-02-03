@@ -175,6 +175,8 @@ public class OptionalVisitor
    * <p>Pattern match for: {@code VAR.isPresent() ? VAR.get().METHOD() : VALUE}
    *
    * <p>Prefer: {@code VAR.map(METHOD).orElse(VALUE);}
+   *
+   * @param tree a conditional expression that can perhaps be simplified
    */
   // TODO: Should handle this via a transfer function, instead of pattern-matching.
   public void handleTernaryIsPresentGet(ConditionalExpressionTree tree) {
@@ -248,6 +250,8 @@ public class OptionalVisitor
    * <p>Pattern match for: {@code if (VAR.isPresent()) { METHOD(VAR.get()); }}
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
+   *
+   * @param an if statement that can perhaps be simplified
    */
   public void handleConditionalStatementIsPresentGet(IfTree tree) {
 
@@ -316,6 +320,8 @@ public class OptionalVisitor
    * <p>Pattern match for: {@code CREATION().ELIMINATION()}
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
+   *
+   * @param tree a method invocation that can perhaps be simplified
    */
   public void handleCreationElimination(MethodInvocationTree tree) {
     if (!isOptionalElimation(tree)) {

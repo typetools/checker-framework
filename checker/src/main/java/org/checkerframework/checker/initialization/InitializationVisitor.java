@@ -335,7 +335,12 @@ public class InitializationVisitor<
     return super.visitMethod(tree, p);
   }
 
-  /** Returns the full list of annotations on the receiver. */
+  /**
+   * Returns the full list of annotations on the receiver.
+   *
+   * @param tree a method declaration
+   * @return all the annotations on the method's receiver
+   */
   private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree tree) {
     // TODO: get access to a Types instance and use it to get receiver type
     // Or, extend ExecutableElement with such a method.

@@ -861,6 +861,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
+  /**
+   * Check the defaultc constructor.
+   *
+   * @param tree a class declaration
+   */
   protected void checkDefaultConstructor(ClassTree tree) {}
 
   /**
@@ -4347,6 +4352,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return super.visitIdentifier(tree, p);
   }
 
+  /**
+   * Issues an error if access not allowed, based on an @Unused annotation.
+   *
+   * @param identifierTree the identifier being accessed; the method does nothing if it is not a
+   *     field
+   * @param p ignored
+   */
   protected void checkAccess(IdentifierTree identifierTree, Void p) {
     MemberSelectTree memberSel = enclosingMemberSelect();
     ExpressionTree tree;
