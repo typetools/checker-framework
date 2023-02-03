@@ -62,16 +62,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   @Override
-  public Void visitMethod(MethodTree node, Void p) {
-    ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
+  public Void visitMethod(MethodTree tree, Void p) {
+    ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!cmcfValues.isEmpty()) {
-      checkCreatesMustCallForOverrides(node, elt, mcAtf, cmcfValues);
-      checkCreatesMustCallForTargetsHaveNonEmptyMustCall(node, mcAtf);
+      checkCreatesMustCallForOverrides(tree, elt, mcAtf, cmcfValues);
+      checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
     }
-    return super.visitMethod(node, p);
+    return super.visitMethod(tree, p);
   }
 
   /**
@@ -105,13 +105,13 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   /**
    * Check that an overriding method does not reduce the number of created must-call obligations
    *
-   * @param node overriding method
+   * @param tree overriding method
    * @param elt element for overriding method
    * @param mcAtf the type factory
    * @param cmcfValues must call values created by overriding method
    */
   private void checkCreatesMustCallForOverrides(
-      MethodTree node,
+      MethodTree tree,
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       List<String> cmcfValues) {
@@ -127,7 +127,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         String actualClassname = ElementUtils.getEnclosingClassName(elt);
         String overriddenClassname = ElementUtils.getEnclosingClassName(overridden);
         checker.reportError(
-            node,
+            tree,
             "creates.mustcall.for.override.invalid",
             actualClassname + "#" + elt,
             overriddenClassname + "#" + overridden,
@@ -264,8 +264,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   @Override
-  public Void visitVariable(VariableTree node, Void p) {
-    Element varElement = TreeUtils.elementFromDeclaration(node);
+  public Void visitVariable(VariableTree tree, Void p) {
+    Element varElement = TreeUtils.elementFromDeclaration(tree);
 
     if (varElement.getKind().isField()
         && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
@@ -273,7 +273,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checkOwningField(varElement);
     }
 
-    return super.visitVariable(node, p);
+    return super.visitVariable(tree, p);
   }
 
   /**

@@ -28,30 +28,30 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
   }
 
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-    ExecutableElement methodElt = TreeUtils.elementFromUse(node);
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+    ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
     if (methodElt != null && atypeFactory.getDeclAnnotation(methodElt, DisbarUse.class) != null) {
-      checker.reportError(node, "disbar.use");
+      checker.reportError(tree, "disbar.use");
     }
-    return super.visitMethodInvocation(node, p);
+    return super.visitMethodInvocation(tree, p);
   }
 
   @Override
-  public Void visitNewClass(NewClassTree node, Void p) {
-    ExecutableElement consElt = TreeUtils.elementFromUse(node);
+  public Void visitNewClass(NewClassTree tree, Void p) {
+    ExecutableElement consElt = TreeUtils.elementFromUse(tree);
     if (consElt != null && atypeFactory.getDeclAnnotation(consElt, DisbarUse.class) != null) {
-      checker.reportError(node, "disbar.use");
+      checker.reportError(tree, "disbar.use");
     }
-    return super.visitNewClass(node, p);
+    return super.visitNewClass(tree, p);
   }
 
   @Override
-  public Void visitIdentifier(IdentifierTree node, Void p) {
+  public Void visitIdentifier(IdentifierTree tree, Void p) {
     MemberSelectTree enclosingMemberSel = enclosingMemberSelect();
     ExpressionTree[] expressionTrees =
         enclosingMemberSel == null
-            ? new ExpressionTree[] {node}
-            : new ExpressionTree[] {enclosingMemberSel, node};
+            ? new ExpressionTree[] {tree}
+            : new ExpressionTree[] {enclosingMemberSel, tree};
 
     for (ExpressionTree memberSel : expressionTrees) {
       final Element elem = TreeUtils.elementFromUse(memberSel);
@@ -64,6 +64,6 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
       }
     }
 
-    return super.visitIdentifier(node, p);
+    return super.visitIdentifier(tree, p);
   }
 }

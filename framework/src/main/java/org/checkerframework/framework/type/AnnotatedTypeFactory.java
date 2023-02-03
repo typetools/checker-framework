@@ -3055,25 +3055,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the types of the two arguments to the BinaryTree, accounting for widening and unboxing
    * if applicable.
    *
-   * @param node a binary tree
+   * @param tree a binary tree
    * @return the types of the two arguments
    */
-  public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree node) {
+  public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> binaryTreeArgTypes(BinaryTree tree) {
     return binaryTreeArgTypes(
-        getAnnotatedType(node.getLeftOperand()), getAnnotatedType(node.getRightOperand()));
+        getAnnotatedType(tree.getLeftOperand()), getAnnotatedType(tree.getRightOperand()));
   }
 
   /**
    * Returns the types of the two arguments to the CompoundAssignmentTree, accounting for widening
    * and unboxing if applicable.
    *
-   * @param node a compound assignment tree
+   * @param tree a compound assignment tree
    * @return the types of the two arguments
    */
   public Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> compoundAssignmentTreeArgTypes(
-      CompoundAssignmentTree node) {
+      CompoundAssignmentTree tree) {
     return binaryTreeArgTypes(
-        getAnnotatedType(node.getVariable()), getAnnotatedType(node.getExpression()));
+        getAnnotatedType(tree.getVariable()), getAnnotatedType(tree.getExpression()));
   }
 
   /**
@@ -3516,25 +3516,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Most users will want to use {@link #getAnnotatedType(Tree)} instead; this method is mostly
    * for internal use.
    *
-   * @param node the tree to analyze
-   * @return the type of {@code node}, without any annotations
+   * @param tree the tree to analyze
+   * @return the type of {@code tree}, without any annotations
    */
-  protected final AnnotatedTypeMirror type(Tree node) {
-    boolean isDeclaration = TreeUtils.isTypeDeclaration(node);
+  protected final AnnotatedTypeMirror type(Tree tree) {
+    boolean isDeclaration = TreeUtils.isTypeDeclaration(tree);
 
     // Attempt to obtain the type via JCTree.
-    if (TreeUtils.typeOf(node) != null) {
-      AnnotatedTypeMirror result = toAnnotatedType(TreeUtils.typeOf(node), isDeclaration);
+    if (TreeUtils.typeOf(tree) != null) {
+      AnnotatedTypeMirror result = toAnnotatedType(TreeUtils.typeOf(tree), isDeclaration);
       return result;
     }
 
     // Attempt to obtain the type via TreePath (slower).
-    TreePath path = this.getPath(node);
+    TreePath path = this.getPath(tree);
     assert path != null
-        : "No path or type in tree: " + node + " [" + node.getClass().getSimpleName() + "]";
+        : "No path or type in tree: " + tree + " [" + tree.getClass().getSimpleName() + "]";
 
     TypeMirror t = trees.getTypeMirror(path);
-    assert validType(t) : "Invalid type " + t + " for node " + t;
+    assert validType(t) : "Invalid type " + t + " for tree " + t;
 
     AnnotatedTypeMirror result = toAnnotatedType(t, isDeclaration);
     return result;
@@ -3679,72 +3679,72 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Gets the path for the given {@link Tree} under the current root by checking from the visitor's
    * current path, and using {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
-   * only if {@code node} is not found on the current path.
+   * only if {@code tree} is not found on the current path.
    *
    * <p>Note that the given Tree has to be within the current compilation unit, otherwise null will
    * be returned.
    *
-   * @param node the {@link Tree} to get the path for
-   * @return the path for {@code node} under the current root. Returns null if {@code node} is not
+   * @param tree the {@link Tree} to get the path for
+   * @return the path for {@code tree} under the current root. Returns null if {@code tree} is not
    *     within the current compilation unit.
    */
-  public final @Nullable TreePath getPath(@FindDistinct Tree node) {
+  public final @Nullable TreePath getPath(@FindDistinct Tree tree) {
     assert root != null
         : "AnnotatedTypeFactory.getPath("
-            + node.getKind()
+            + tree.getKind()
             + "): root needs to be set when used on trees; factory: "
             + this.getClass().getSimpleName();
 
-    if (node == null) {
+    if (tree == null) {
       return null;
     }
 
-    if (artificialTreeToEnclosingElementMap.containsKey(node)) {
+    if (artificialTreeToEnclosingElementMap.containsKey(tree)) {
       return null;
     }
 
-    if (treePathCache.isCached(node)) {
-      return treePathCache.getPath(root, node);
+    if (treePathCache.isCached(tree)) {
+      return treePathCache.getPath(root, tree);
     }
 
     TreePath currentPath = visitorTreePath;
     if (currentPath == null) {
-      TreePath path = TreePath.getPath(root, node);
-      treePathCache.addPath(node, path);
+      TreePath path = TreePath.getPath(root, tree);
+      treePathCache.addPath(tree, path);
       return path;
     }
 
     // This method uses multiple heuristics to avoid calling
     // TreePath.getPath()
 
-    // If the current path you are visiting is for this node we are done
-    if (currentPath.getLeaf() == node) {
-      treePathCache.addPath(node, currentPath);
+    // If the current path you are visiting is for this tree we are done
+    if (currentPath.getLeaf() == tree) {
+      treePathCache.addPath(tree, currentPath);
       return currentPath;
     }
 
     // When running on Daikon, we noticed that a lot of calls happened
-    // within a small subtree containing the node we are currently visiting
+    // within a small subtree containing the tree we are currently visiting
 
     // When testing on Daikon, two steps resulted in the best performance
     if (currentPath.getParentPath() != null) {
       currentPath = currentPath.getParentPath();
       treePathCache.addPath(currentPath.getLeaf(), currentPath);
-      if (currentPath.getLeaf() == node) {
+      if (currentPath.getLeaf() == tree) {
         return currentPath;
       }
       if (currentPath.getParentPath() != null) {
         currentPath = currentPath.getParentPath();
         treePathCache.addPath(currentPath.getLeaf(), currentPath);
-        if (currentPath.getLeaf() == node) {
+        if (currentPath.getLeaf() == tree) {
           return currentPath;
         }
       }
     }
 
-    final TreePath pathWithinSubtree = TreePath.getPath(currentPath, node);
+    final TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
     if (pathWithinSubtree != null) {
-      treePathCache.addPath(node, pathWithinSubtree);
+      treePathCache.addPath(tree, pathWithinSubtree);
       return pathWithinSubtree;
     }
 
@@ -3753,28 +3753,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TreePath current = currentPath;
     while (current != null) {
       treePathCache.addPath(current.getLeaf(), current);
-      if (current.getLeaf() == node) {
+      if (current.getLeaf() == tree) {
         return current;
       }
       current = current.getParentPath();
     }
 
     // OK, we give up. Use the cache to look up.
-    return treePathCache.getPath(root, node);
+    return treePathCache.getPath(root, tree);
   }
 
   /**
-   * Gets the {@link Element} representing the declaration of the method enclosing a tree node. This
-   * feature is used to record the enclosing methods of {@link Tree}s that are created internally by
-   * the checker.
+   * Gets the {@link Element} representing the declaration of the method enclosing a tree AST node.
+   * This feature is used to record the enclosing methods of {@link Tree}s that are created
+   * internally by the checker.
    *
    * <p>TODO: Find a better way to store information about enclosing Trees.
    *
-   * @param node the {@link Tree} to get the enclosing method for
+   * @param tree the {@link Tree} to get the enclosing method for
    * @return the method {@link Element} enclosing the argument, or null if none has been recorded
    */
-  public final Element getEnclosingElementForArtificialTree(Tree node) {
-    return artificialTreeToEnclosingElementMap.get(node);
+  public final Element getEnclosingElementForArtificialTree(Tree tree) {
+    return artificialTreeToEnclosingElementMap.get(tree);
   }
 
   /**

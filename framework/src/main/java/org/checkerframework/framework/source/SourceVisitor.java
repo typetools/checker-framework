@@ -105,9 +105,9 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
   }
 
   @Override
-  public R visitMethod(MethodTree node, P p) {
-    storeSuppressWarningsAnno(node);
-    return super.visitMethod(node, p);
+  public R visitMethod(MethodTree tree, P p) {
+    storeSuppressWarningsAnno(tree);
+    return super.visitMethod(tree, p);
   }
 
   /**

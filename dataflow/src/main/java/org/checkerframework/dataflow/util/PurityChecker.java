@@ -213,9 +213,9 @@ public class PurityChecker {
     }
 
     @Override
-    public Void visitCatch(CatchTree node, Void ignore) {
-      purityResult.addNotDetReason(node, "catch");
-      return super.visitCatch(node, ignore);
+    public Void visitCatch(CatchTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "catch");
+      return super.visitCatch(tree, ignore);
     }
 
     /** Represents a method that is both deterministic and side-effect free. */
@@ -223,10 +223,10 @@ public class PurityChecker {
         EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
 
     @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
-      ExecutableElement elt = TreeUtils.elementFromUse(node);
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
+      ExecutableElement elt = TreeUtils.elementFromUse(tree);
       if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-        purityResult.addNotBothReason(node, "call");
+        purityResult.addNotBothReason(tree, "call");
       } else {
         EnumSet<Pure.Kind> purityKinds =
             (assumeDeterministic && assumeSideEffectFree)
@@ -236,18 +236,18 @@ public class PurityChecker {
         boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
         boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {
-          purityResult.addNotBothReason(node, "call");
+          purityResult.addNotBothReason(tree, "call");
         } else if (!det) {
-          purityResult.addNotDetReason(node, "call");
+          purityResult.addNotDetReason(tree, "call");
         } else if (!seFree) {
-          purityResult.addNotSEFreeReason(node, "call");
+          purityResult.addNotSEFreeReason(tree, "call");
         }
       }
-      return super.visitMethodInvocation(node, ignore);
+      return super.visitMethodInvocation(tree, ignore);
     }
 
     @Override
-    public Void visitNewClass(NewClassTree node, Void ignore) {
+    public Void visitNewClass(NewClassTree tree, Void ignore) {
       // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however, when it is the
       // expression in "throw EXPR;".  (In the future, more expressions could be permitted.)
       //
@@ -282,7 +282,7 @@ public class PurityChecker {
       Tree parent = getCurrentPath().getParentPath().getLeaf();
       boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
-      ExecutableElement ctorElement = TreeUtils.elementFromUse(node);
+      ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
       boolean deterministic = assumeDeterministic || okThrowDeterministic;
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
@@ -290,40 +290,40 @@ public class PurityChecker {
       // because the constructor is called at all, and the other is because the constuctor is
       // not side-effect-free.
       if (!deterministic) {
-        purityResult.addNotDetReason(node, "object.creation");
+        purityResult.addNotDetReason(tree, "object.creation");
       }
       if (!sideEffectFree) {
-        purityResult.addNotSEFreeReason(node, "call");
+        purityResult.addNotSEFreeReason(tree, "call");
       }
 
       // TODO: if okThrowDeterministic, permit arguments to the newClass to be
       // non-deterministic (don't add those to purityResult), but still don't permit them to
       // have side effects.  This should probably wait until a rewrite of the Purity Checker.
-      return super.visitNewClass(node, ignore);
+      return super.visitNewClass(tree, ignore);
     }
 
     @Override
-    public Void visitAssignment(AssignmentTree node, Void ignore) {
-      ExpressionTree variable = node.getVariable();
+    public Void visitAssignment(AssignmentTree tree, Void ignore) {
+      ExpressionTree variable = tree.getVariable();
       assignmentCheck(variable);
-      return super.visitAssignment(node, ignore);
+      return super.visitAssignment(tree, ignore);
     }
 
     @Override
-    public Void visitUnary(UnaryTree node, Void ignore) {
-      switch (node.getKind()) {
+    public Void visitUnary(UnaryTree tree, Void ignore) {
+      switch (tree.getKind()) {
         case POSTFIX_DECREMENT:
         case POSTFIX_INCREMENT:
         case PREFIX_DECREMENT:
         case PREFIX_INCREMENT:
-          ExpressionTree expression = node.getExpression();
+          ExpressionTree expression = tree.getExpression();
           assignmentCheck(expression);
           break;
         default:
           // Nothing to do
           break;
       }
-      return super.visitUnary(node, ignore);
+      return super.visitUnary(tree, ignore);
     }
 
     /**
@@ -356,10 +356,10 @@ public class PurityChecker {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void ignore) {
-      ExpressionTree variable = node.getVariable();
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void ignore) {
+      ExpressionTree variable = tree.getVariable();
       assignmentCheck(variable);
-      return super.visitCompoundAssignment(node, ignore);
+      return super.visitCompoundAssignment(tree, ignore);
     }
   }
 }

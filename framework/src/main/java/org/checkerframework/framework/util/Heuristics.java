@@ -68,13 +68,13 @@ public class Heuristics {
   public static class Matcher extends SimpleTreeVisitor<Boolean, Void> {
 
     @Override
-    protected Boolean defaultAction(Tree node, Void p) {
+    protected Boolean defaultAction(Tree tree, Void p) {
       return false;
     }
 
     @Override
-    public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
-      return visit(node.getExpression(), p);
+    public Boolean visitParenthesized(ParenthesizedTree tree, Void p) {
+      return visit(tree.getExpression(), p);
     }
 
     /**
