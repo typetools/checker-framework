@@ -5,7 +5,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -44,6 +43,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -804,7 +804,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     if (value == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
     }
-    Set<AnnotationMirror> set = value.getAnnotations();
+    AnnotationMirrorSet set = value.getAnnotations();
     AnnotationMirror anno = hierarchy.findAnnotationInHierarchy(set, atypeFactory.UNKNOWN);
     if (anno == null) {
       return UpperBoundUnknownQualifier.UNKNOWN;
@@ -852,7 +852,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       default:
         return result;
     }
-    CFValue c = new CFValue(analysis, Collections.singleton(newAnno), intTM);
+    CFValue c = new CFValue(analysis, AnnotationMirrorSet.singleton(newAnno), intTM);
     return new RegularTransferResult<>(c, result.getRegularStore());
   }
 }

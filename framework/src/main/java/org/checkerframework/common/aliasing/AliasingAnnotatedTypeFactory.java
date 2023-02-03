@@ -70,9 +70,9 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+    public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
       type.replaceAnnotation(UNIQUE);
-      return super.visitNewArray(node, type);
+      return super.visitNewArray(tree, type);
     }
   }
 

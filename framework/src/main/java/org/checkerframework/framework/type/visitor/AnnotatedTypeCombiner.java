@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type.visitor;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Changes each parameter type to be the GLB of the parameter type and visited type. */
@@ -59,7 +58,7 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
    */
   protected void combineAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
 
-    Set<AnnotationMirror> combinedAnnotations = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet combinedAnnotations = new AnnotationMirrorSet();
 
     for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
       AnnotationMirror aFrom = from.getAnnotationInHierarchy(top);

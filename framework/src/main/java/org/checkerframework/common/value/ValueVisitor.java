@@ -173,15 +173,15 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * Therefore, some validation is still done in #validateType below.
    */
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    List<? extends ExpressionTree> args = node.getArguments();
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    List<? extends ExpressionTree> args = tree.getArguments();
 
     if (args.isEmpty()) {
       // Nothing to do if there are no annotation arguments.
-      return super.visitAnnotation(node, p);
+      return super.visitAnnotation(tree, p);
     }
 
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     switch (AnnotationUtils.annotationName(anno)) {
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         // If there are 2 arguments, issue an error if from.greater.than.to.
@@ -192,7 +192,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           long from = getTypeFactory().getIntRangeFromValue(anno);
           long to = getTypeFactory().getIntRangeToValue(anno);
           if (from > to) {
-            checker.reportError(node, "from.greater.than.to");
+            checker.reportError(tree, "from.greater.than.to");
             return null;
           }
         }
@@ -207,11 +207,11 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 
         if (values.isEmpty()) {
-          checker.reportWarning(node, "no.values.given");
+          checker.reportWarning(tree, "no.values.given");
           return null;
         } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
           checker.reportWarning(
-              node,
+              tree,
               (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTVAL_NAME)
                   ? "too.many.values.given.int"
                   : "too.many.values.given"),
@@ -220,7 +220,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
           List<Integer> arrayLens = getTypeFactory().getArrayLength(anno);
           if (Collections.min(arrayLens) < 0) {
-            checker.reportWarning(node, "negative.arraylen", Collections.min(arrayLens));
+            checker.reportWarning(tree, "negative.arraylen", Collections.min(arrayLens));
             return null;
           }
         }
@@ -229,10 +229,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         long from = getTypeFactory().getArrayLenRangeFromValue(anno);
         long to = getTypeFactory().getArrayLenRangeToValue(anno);
         if (from > to) {
-          checker.reportError(node, "from.greater.than.to");
+          checker.reportError(tree, "from.greater.than.to");
           return null;
         } else if (from < 0) {
-          checker.reportWarning(node, "negative.arraylen", from);
+          checker.reportWarning(tree, "negative.arraylen", from);
           return null;
         }
         break;
@@ -244,7 +244,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           try {
             Pattern.compile(regex);
           } catch (PatternSyntaxException pse) {
-            checker.reportWarning(node, "invalid.matches.regex", pse.getMessage());
+            checker.reportWarning(tree, "invalid.matches.regex", pse.getMessage());
           }
         }
         break;
@@ -256,7 +256,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           try {
             Pattern.compile(regex);
           } catch (PatternSyntaxException pse) {
-            checker.reportWarning(node, "invalid.doesnotmatch.regex", pse.getMessage());
+            checker.reportWarning(tree, "invalid.doesnotmatch.regex", pse.getMessage());
           }
         }
         break;
@@ -264,20 +264,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         // Do nothing.
     }
 
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 
   @Override
-  public Void visitTypeCast(TypeCastTree node, Void p) {
-    if (node.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+  public Void visitTypeCast(TypeCastTree tree, Void p) {
+    if (tree.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
       return null;
     }
 
-    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(tree);
     AnnotationMirror castAnno = castType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
     AnnotationMirror exprAnno =
         atypeFactory
-            .getAnnotatedType(node.getExpression())
+            .getAnnotatedType(tree.getExpression())
             .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
 
     // It is always legal to cast to an IntRange type that includes all values
@@ -321,7 +321,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
       }
     }
-    return super.visitTypeCast(node, p);
+    return super.visitTypeCast(tree, p);
   }
 
   /**
@@ -388,25 +388,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   @Override
-  public Void visitMethod(MethodTree node, Void p) {
-    super.visitMethod(node, p);
+  public Void visitMethod(MethodTree tree, Void p) {
+    super.visitMethod(tree, p);
 
-    ExecutableElement method = TreeUtils.elementFromDeclaration(node);
+    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(method, StaticallyExecutable.class) != null) {
       // The method is annotated as @StaticallyExecutable.
       if (atypeFactory.getDeclAnnotation(method, Pure.class) == null) {
-        checker.reportWarning(node, "statically.executable.not.pure");
+        checker.reportWarning(tree, "statically.executable.not.pure");
       }
       TypeMirror returnType = method.getReturnType();
       if (returnType.getKind() != TypeKind.VOID && !canBeConstant(returnType)) {
-        checker.reportError(node, "statically.executable.nonconstant.return.type", returnType);
+        checker.reportError(tree, "statically.executable.nonconstant.return.type", returnType);
       }
 
       // Ways to determine the receiver type.
       // 1. This definition of receiverType is null when receiver is implicit and method has
       //    class com.sun.tools.javac.code.Symbol$MethodSymbol.  WHY?
       //        TypeMirror receiverType = method.getReceiverType();
-      //    The same is true of TreeUtils.elementFromDeclaration(node).getReceiverType()
+      //    The same is true of TreeUtils.elementFromDeclaration(tree).getReceiverType()
       //    which seems to conflict with ExecutableType's documentation.
       // 2. Can't use the tree, because the receiver might not be explicit.
       // 3. Check whether method is static and use the declaring class.  Doesn't handle all
@@ -421,7 +421,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           && receiverType.getKind() != TypeKind.NONE
           && !canBeConstant(receiverType)) {
         checker.reportError(
-            node,
+            tree,
             "statically.executable.nonconstant.parameter.type",
             "this (the receiver)",
             returnType);
@@ -431,7 +431,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         TypeMirror paramType = param.asType();
         if (paramType.getKind() != TypeKind.NONE && !canBeConstant(paramType)) {
           checker.reportError(
-              node,
+              tree,
               "statically.executable.nonconstant.parameter.type",
               param.getSimpleName().toString(),
               returnType);

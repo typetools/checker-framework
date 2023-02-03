@@ -1,7 +1,6 @@
 package org.checkerframework.checker.lock;
 
 import java.util.ArrayList;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -18,6 +17,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -118,17 +118,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    */
   private CFValue changeLockAnnoToTop(JavaExpression je, CFValue currentValue) {
     if (currentValue == null) {
-      Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(atypeFactory.GUARDEDBYUNKNOWN);
       set.add(atypeFactory.LOCKPOSSIBLYHELD);
       return analysis.createAbstractValue(set, je.getType());
     }
 
     QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> currentSet = currentValue.getAnnotations();
+    AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
         hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
-    Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
     if (gb != null) {
       newSet.add(gb);

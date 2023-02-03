@@ -85,18 +85,18 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
    * Check for uses of the {@link ReportUse} annotation. This method has to be called for every
    * explicit or implicit use of a type, most cases are simply covered by the type validator.
    *
-   * @param node the tree for error reporting only
+   * @param tree the tree for error reporting only
    * @param member the element from which to start looking
    */
-  private void checkReportUse(Tree node, Element member) {
+  private void checkReportUse(Tree tree, Element member) {
     Element loop = member;
     while (loop != null) {
       boolean report = this.atypeFactory.getDeclAnnotation(loop, ReportUse.class) != null;
       if (report) {
         checker.reportError(
-            node,
+            tree,
             "usage",
-            node,
+            tree,
             ElementUtils.getQualifiedName(loop),
             loop.getKind(),
             ElementUtils.getQualifiedName(member),
@@ -116,14 +116,14 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
   /* Would we want this? Seems redundant, as all uses of the imported
    * package should already be reported.
    * Also, how do we get an element for the import?
-  public Void visitImport(ImportTree node, Void p) {
-      checkReportUse(node, elem);
+  public Void visitImport(ImportTree tree, Void p) {
+      checkReportUse(tree, elem);
   }
   */
 
   @Override
-  public void processClassTree(ClassTree node) {
-    TypeElement member = TreeUtils.elementFromDeclaration(node);
+  public void processClassTree(ClassTree tree) {
+    TypeElement member = TreeUtils.elementFromDeclaration(tree);
     boolean report = false;
     // No need to check on the declaring class itself
     // this.atypeFactory.getDeclAnnotation(member, ReportInherit.class) != null;
@@ -133,15 +133,15 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     for (TypeElement sup : suptypes) {
       report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
       if (report) {
-        checker.reportError(node, "inherit", node, ElementUtils.getQualifiedName(sup));
+        checker.reportError(tree, "inherit", tree, ElementUtils.getQualifiedName(sup));
       }
     }
-    super.processClassTree(node);
+    super.processClassTree(tree);
   }
 
   @Override
-  public Void visitMethod(MethodTree node, Void p) {
-    ExecutableElement method = TreeUtils.elementFromDeclaration(node);
+  public Void visitMethod(MethodTree tree, Void p) {
+    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
     boolean report = false;
 
     // Check all overridden methods.
@@ -159,15 +159,15 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     if (report) {
-      checker.reportError(node, "override", node, ElementUtils.getQualifiedName(method));
+      checker.reportError(tree, "override", tree, ElementUtils.getQualifiedName(method));
     }
-    return super.visitMethod(node, p);
+    return super.visitMethod(tree, p);
   }
 
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-    ExecutableElement method = TreeUtils.elementFromUse(node);
-    checkReportUse(node, method);
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    checkReportUse(tree, method);
     boolean report = this.atypeFactory.getDeclAnnotation(method, ReportCall.class) != null;
 
     if (!report) {
@@ -189,54 +189,54 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     if (report) {
-      checker.reportError(node, "methodcall", node, ElementUtils.getQualifiedName(method));
+      checker.reportError(tree, "methodcall", tree, ElementUtils.getQualifiedName(method));
     }
-    return super.visitMethodInvocation(node, p);
+    return super.visitMethodInvocation(tree, p);
   }
 
   @Override
-  public Void visitMemberSelect(MemberSelectTree node, Void p) {
-    Element member = TreeUtils.elementFromUse(node);
-    checkReportUse(node, member);
+  public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+    Element member = TreeUtils.elementFromUse(tree);
+    checkReportUse(tree, member);
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
     if (report) {
-      checker.reportError(node, "fieldreadwrite", node, ElementUtils.getQualifiedName(member));
+      checker.reportError(tree, "fieldreadwrite", tree, ElementUtils.getQualifiedName(member));
     }
-    return super.visitMemberSelect(node, p);
+    return super.visitMemberSelect(tree, p);
   }
 
   @Override
-  public Void visitIdentifier(IdentifierTree node, Void p) {
-    Element member = TreeUtils.elementFromUse(node);
+  public Void visitIdentifier(IdentifierTree tree, Void p) {
+    Element member = TreeUtils.elementFromUse(tree);
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
     if (report) {
-      checker.reportError(node, "fieldreadwrite", node, ElementUtils.getQualifiedName(member));
+      checker.reportError(tree, "fieldreadwrite", tree, ElementUtils.getQualifiedName(member));
     }
-    return super.visitIdentifier(node, p);
+    return super.visitIdentifier(tree, p);
   }
 
   @Override
-  public Void visitAssignment(AssignmentTree node, Void p) {
-    VariableElement member = (VariableElement) TreeUtils.elementFromUse(node.getVariable());
+  public Void visitAssignment(AssignmentTree tree, Void p) {
+    VariableElement member = (VariableElement) TreeUtils.elementFromUse(tree.getVariable());
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
     if (report) {
-      checker.reportError(node, "fieldwrite", node, ElementUtils.getQualifiedName(member));
+      checker.reportError(tree, "fieldwrite", tree, ElementUtils.getQualifiedName(member));
     }
-    return super.visitAssignment(node, p);
+    return super.visitAssignment(tree, p);
   }
 
   @Override
-  public Void visitArrayAccess(ArrayAccessTree node, Void p) {
+  public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
     // TODO: should we introduce an annotation for this?
-    return super.visitArrayAccess(node, p);
+    return super.visitArrayAccess(tree, p);
   }
 
   @Override
-  public Void visitNewClass(NewClassTree node, Void p) {
-    Element member = TreeUtils.elementFromUse(node);
+  public Void visitNewClass(NewClassTree tree, Void p) {
+    Element member = TreeUtils.elementFromUse(tree);
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportCreation.class) != null;
     if (!report) {
       // If the constructor is not annotated, check whether the class is.
@@ -257,40 +257,40 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     if (report) {
-      checker.reportError(node, "creation", node, ElementUtils.getQualifiedName(member));
+      checker.reportError(tree, "creation", tree, ElementUtils.getQualifiedName(member));
     }
-    return super.visitNewClass(node, p);
+    return super.visitNewClass(tree, p);
   }
 
   @Override
-  public Void visitNewArray(NewArrayTree node, Void p) {
+  public Void visitNewArray(NewArrayTree tree, Void p) {
     // TODO Should we report this if the array type is @ReportCreation?
-    return super.visitNewArray(node, p);
+    return super.visitNewArray(tree, p);
   }
 
   @Override
-  public Void visitTypeCast(TypeCastTree node, Void p) {
+  public Void visitTypeCast(TypeCastTree tree, Void p) {
     // TODO Is it worth adding a separate annotation for this?
-    return super.visitTypeCast(node, p);
+    return super.visitTypeCast(tree, p);
   }
 
   @Override
-  public Void visitInstanceOf(InstanceOfTree node, Void p) {
+  public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // TODO Is it worth adding a separate annotation for this?
-    return super.visitInstanceOf(node, p);
+    return super.visitInstanceOf(tree, p);
   }
 
   @SuppressWarnings("compilermessages") // These warnings are not translated.
   @Override
-  public Void visitModifiers(ModifiersTree node, Void p) {
-    if (node != null && modifiers != null) {
-      for (Modifier mod : node.getFlags()) {
+  public Void visitModifiers(ModifiersTree tree, Void p) {
+    if (tree != null && modifiers != null) {
+      for (Modifier mod : tree.getFlags()) {
         if (modifiers.contains(mod)) {
-          checker.reportError(node, "Modifier." + mod);
+          checker.reportError(tree, "Modifier." + mod);
         }
       }
     }
-    return super.visitModifiers(node, p);
+    return super.visitModifiers(tree, p);
   }
 
   @Override

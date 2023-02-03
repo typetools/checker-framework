@@ -22,13 +22,13 @@ abstract class TypeFromTreeVisitor
   TypeFromTreeVisitor() {}
 
   @Override
-  public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
-    if (node == null) {
+  public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
+    if (tree == null) {
       throw new BugInCF("TypeFromTree.defaultAction: null tree");
     }
     throw new BugInCF(
         this.getClass().getCanonicalName()
             + ": conversion undefined for tree type "
-            + node.getKind());
+            + tree.getKind());
   }
 }
