@@ -78,6 +78,7 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -1261,7 +1262,7 @@ public abstract class CFAbstractTransfer<
     if (annotatedValue == null) {
       return null;
     }
-    Set<AnnotationMirror> narrowedAnnos =
+    AnnotationMirrorSet narrowedAnnos =
         analysis.atypeFactory.getNarrowedAnnotations(
             annotatedValue.getAnnotations(),
             annotatedValue.getUnderlyingType().getKind(),
@@ -1283,7 +1284,7 @@ public abstract class CFAbstractTransfer<
     if (annotatedValue == null) {
       return null;
     }
-    Set<AnnotationMirror> widenedAnnos =
+    AnnotationMirrorSet widenedAnnos =
         analysis.atypeFactory.getWidenedAnnotations(
             annotatedValue.getAnnotations(),
             annotatedValue.getUnderlyingType().getKind(),

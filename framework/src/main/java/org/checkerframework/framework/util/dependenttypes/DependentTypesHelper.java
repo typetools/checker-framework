@@ -53,6 +53,7 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -940,7 +941,7 @@ public class DependentTypesHelper {
       // to the upper and lower bounds.  These annotations cannot be viewpoint-adapted again,
       // so remove them, viewpoint-adapt any other annotations in the bound, and then add them
       // back.
-      Set<AnnotationMirror> primarys = type.getAnnotations();
+      AnnotationMirrorSet primarys = type.getAnnotations();
       type.getLowerBound().removeAnnotations(primarys);
       Void r = scan(type.getLowerBound(), func);
       type.getLowerBound().addAnnotations(primarys);
@@ -956,7 +957,7 @@ public class DependentTypesHelper {
     @Override
     protected Void scan(
         AnnotatedTypeMirror type, Function<AnnotationMirror, AnnotationMirror> func) {
-      for (AnnotationMirror anno : AnnotationUtils.createAnnotationSet(type.getAnnotations())) {
+      for (AnnotationMirror anno : new AnnotationMirrorSet(type.getAnnotations())) {
         AnnotationMirror newAnno = func.apply(anno);
         if (newAnno != null) {
           // This code must remove and then add, rather than call `replace`, because a
@@ -1219,7 +1220,7 @@ public class DependentTypesHelper {
       if (from == null || to == null) {
         return null;
       }
-      Set<AnnotationMirror> replacements = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet replacements = new AnnotationMirrorSet();
       for (String vpa : annoToElements.keySet()) {
         AnnotationMirror anno = from.getAnnotation(vpa);
         if (anno != null) {

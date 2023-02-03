@@ -7,10 +7,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Subtypes;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Supertypes;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which we
