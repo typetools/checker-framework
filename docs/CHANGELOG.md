@@ -1,15 +1,17 @@
 Version 3.30.1 (March 1, 2023)
---------------------------------
+------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
 
+Changed uses of `Set<AnnotationMirror>` to `AnnotationMirrorSet` including in APIs.
+
 **Closed issues:**
 
 
 Version 3.30.0 (February 2, 2023)
---------------------------------
+---------------------------------
 
 **Implementation details:**
 
