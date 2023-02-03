@@ -1004,6 +1004,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     //   return;
     // }
 
+    // `body` is lazily assigned.
     TreePath body = null;
     boolean bodyAssigned = false;
 
@@ -1083,45 +1084,52 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       if (body == null) {
         return;
-      } else {
-        @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(node);
-        AnnotationMirror sefOnlyAnnotation =
-            atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
-        if (sefOnlyAnnotation == null) {
+      }
+      @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(node);
+      AnnotationMirror sefOnlyAnnotation =
+          atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
+      if (sefOnlyAnnotation == null) {
+        return;
+      }
+      List<String> sideEffectsOnlyExpressionStrings =
+          AnnotationUtils.getElementValueArray(
+              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+      List<JavaExpression> sideEffectsOnlyExpressions =
+          new ArrayList<>(sideEffectsOnlyExpressionStrings.size());
+      for (String st : sideEffectsOnlyExpressionStrings) {
+        try {
+          JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, node, checker);
+          sideEffectsOnlyExpressions.add(exprJe);
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+          checker.report(st, ex.getDiagMessage());
           return;
         }
-        List<String> sideEffectsOnlyExpressionStrings =
-            AnnotationUtils.getElementValueArray(
-                sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
-        List<JavaExpression> sideEffectsOnlyExpressions = new ArrayList<>();
-        for (String st : sideEffectsOnlyExpressionStrings) {
-          try {
-            JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, node, checker);
-            sideEffectsOnlyExpressions.add(exprJe);
-          } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-            checker.report(st, ex.getDiagMessage());
-            return;
-          }
-        }
+      }
 
-        if (sideEffectsOnlyExpressions.isEmpty()) {
-          return;
-        }
+      if (sideEffectsOnlyExpressions.isEmpty()) {
+        return;
+      }
 
-        SideEffectsOnlyChecker.SideEffectsOnlyResult sefOnlyResult =
-            SideEffectsOnlyChecker.checkSideEffectsOnly(
-                body,
-                atypeFactory,
-                sideEffectsOnlyExpressions,
-                atypeFactory.getProcessingEnv(),
-                checker);
+      System.out.printf("sideEffectsOnlyExpressions = %s%n", sideEffectsOnlyExpressions);
 
-        List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
-        if (!seOnlyIncorrectExprs.isEmpty()) {
-          for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
-            if (!sideEffectsOnlyExpressions.contains(s.second)) {
-              checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
-            }
+      SideEffectsOnlyChecker.ExtraSideEffects sefOnlyResult =
+          SideEffectsOnlyChecker.checkSideEffectsOnly(
+              body,
+              atypeFactory,
+              sideEffectsOnlyExpressions,
+              atypeFactory.getProcessingEnv(),
+              checker);
+
+      System.out.printf("sefOnlyResult = %s%n", sefOnlyResult);
+
+      List<Pair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getSeOnlyResult();
+      System.out.printf("seOnlyIncorrectExprs = %s%n", seOnlyIncorrectExprs);
+
+      if (!seOnlyIncorrectExprs.isEmpty()) {
+        for (Pair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+          if (!sideEffectsOnlyExpressions.contains(s.second)) {
+            System.out.printf("Error 2%n");
+            checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
           }
         }
       }
