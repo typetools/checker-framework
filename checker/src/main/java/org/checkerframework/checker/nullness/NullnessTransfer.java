@@ -5,7 +5,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -39,6 +38,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -216,10 +216,8 @@ public class NullnessTransfer
         }
       }
 
-      Set<AnnotationMirror> secondAnnos =
-          secondValue != null
-              ? secondValue.getAnnotations()
-              : AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet secondAnnos =
+          secondValue != null ? secondValue.getAnnotations() : new AnnotationMirrorSet();
       if (nullnessTypeFactory.containsSameByClass(secondAnnos, PolyNull.class)) {
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
@@ -460,10 +458,14 @@ public class NullnessTransfer
     }
   }
 
-  /** Creates a dummy abstract value (whose type is not supposed to be looked at). */
+  /**
+   * Creates a dummy abstract value (whose type is not supposed to be looked at).
+   *
+   * @return a dummy abstract value
+   */
   private NullnessValue createDummyValue() {
     TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
-    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annos = new AnnotationMirrorSet();
     annos.addAll(nullnessTypeFactory.getQualifierHierarchy().getBottomAnnotations());
     return new NullnessValue(analysis, annos, dummy);
   }

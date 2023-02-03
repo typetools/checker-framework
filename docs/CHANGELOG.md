@@ -1,3 +1,6 @@
+Version 3.30.1 (March 1, 2023)
+------------------------------
+
 **User-visible changes:**
 
 Fixed a bug in the Nullness Checker where a call to a side-effecting method did
@@ -10,8 +13,19 @@ option, the Nullness Checker unsoundly assumes that arguments passed to
 non-null parameters in an invocation remain non-null after the invocation.
 This assumption is unsound in general, but it holds for most code.
 
+**Implementation details:**
+
+Moved `AnnotationMirrorSet` and `AnnotationMirrorMap` from
+`org.checkerframework.framework.util` to `org.checkerframework.javacutil.AnnotationMirrorSet`.
+Changed uses of `Set<AnnotationMirror>` to `AnnotationMirrorSet` including in APIs.
+Removed methods from AnnotationUtils that are no longer useful:
+`createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
+
+**Closed issues:**
+
+
 Version 3.30.0 (February 2, 2023)
---------------------------------
+---------------------------------
 
 **User-visible changes:**
 

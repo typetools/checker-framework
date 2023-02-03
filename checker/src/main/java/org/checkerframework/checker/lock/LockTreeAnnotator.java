@@ -20,7 +20,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
   }
 
   @Override
-  public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+  public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
     // For any binary operation whose LHS or RHS can be a non-boolean type, and whose resulting
     // type is necessarily boolean, the resulting annotation on the boolean type must be
     // @GuardedBy({}).
@@ -29,7 +29,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
     // @GuardedBy({}) since for such operators, both operands are of type @GuardedBy({}) boolean
     // to begin with.
 
-    if (TreeUtils.isBinaryComparison(node) || TypesUtils.isString(type.getUnderlyingType())) {
+    if (TreeUtils.isBinaryComparison(tree) || TypesUtils.isString(type.getUnderlyingType())) {
       // A boolean or String is always @GuardedBy({}). LockVisitor determines whether
       // the LHS and RHS of this operation can be legally dereferenced.
       type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
@@ -37,23 +37,23 @@ public class LockTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    return super.visitBinary(node, type);
+    return super.visitBinary(tree, type);
   }
 
   @Override
-  public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+  public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
     if (TypesUtils.isString(type.getUnderlyingType())) {
       type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
     }
 
-    return super.visitCompoundAssignment(node, type);
+    return super.visitCompoundAssignment(tree, type);
   }
 
   @Override
-  public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+  public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
     if (!type.isAnnotatedInHierarchy(((LockAnnotatedTypeFactory) atypeFactory).NEWOBJECT)) {
       type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).NEWOBJECT);
     }
-    return super.visitNewArray(node, type);
+    return super.visitNewArray(tree, type);
   }
 }
