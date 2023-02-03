@@ -108,7 +108,6 @@ public class UtilsJava8 {
 
     resLong = Integer.toUnsignedLong(sint);
 
-    // :: error: (argument)
     ulong = Integer.toUnsignedLong(uint);
 
     // :: error: (argument)

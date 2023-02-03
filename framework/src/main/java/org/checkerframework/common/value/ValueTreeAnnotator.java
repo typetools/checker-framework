@@ -591,7 +591,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   @Override
   public Void visitConditionalExpression(
-      ConditionalExpressionTree node, AnnotatedTypeMirror annotatedTypeMirror) {
+      ConditionalExpressionTree tree, AnnotatedTypeMirror annotatedTypeMirror) {
     // Work around for https://github.com/typetools/checker-framework/issues/602.
     annotatedTypeMirror.replaceAnnotation(atypeFactory.UNKNOWNVAL);
     return null;

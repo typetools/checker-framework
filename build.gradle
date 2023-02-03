@@ -14,7 +14,8 @@ plugins {
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
-  id 'com.diffplug.spotless' version '6.12.0'
+  // Only works on JDK 11+.
+  id 'com.diffplug.spotless' version '6.14.0' apply false
 
 }
 apply plugin: 'de.undercouch.download'
@@ -48,7 +49,7 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.24.10.jar"
+  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.25.0.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -90,31 +91,35 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
   into localRepo + '/hooks'
 }
 
-spotless {
-  // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
-  // project repositories.  That way the spotless plugin does not use the locally built version of
-  // checker-qual as a dependency. Without this, errors like the follow are issued when running
-  // a spotless task without a locally-built version of checker-qual.jar:
-  // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
-  //  > Could not create task ':checker-qual:spotlessJavaCheck'.
-  //     > Could not create task ':checker-qual:spotlessJava'.
-  //        > File signature can only be created for existing regular files, given:
-  //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
-  predeclareDepsFromBuildscript()
-}
-
-spotlessPredeclare {
-  // Put all the formatters that have dependencies here.  Without this, errors like the following
-  // will happen:
-  // Could not determine the dependencies of task ':spotlessCheck'.
-  //  > Could not create task ':spotlessJavaCheck'.
-  //     > Could not create task ':spotlessJava'.
-  //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
-  java {
-    googleJavaFormat()
+ext.isJava11orHigher = JavaVersion.current() >= JavaVersion.VERSION_11
+if (isJava11orHigher) {
+  apply plugin: 'com.diffplug.spotless'
+  spotless {
+    // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
+    // project repositories.  That way the spotless plugin does not use the locally built version of
+    // checker-qual as a dependency. Without this, errors like the follow are issued when running
+    // a spotless task without a locally-built version of checker-qual.jar:
+    // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
+    //  > Could not create task ':checker-qual:spotlessJavaCheck'.
+    //     > Could not create task ':checker-qual:spotlessJava'.
+    //        > File signature can only be created for existing regular files, given:
+    //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+    predeclareDepsFromBuildscript()
   }
-  groovyGradle {
-    greclipse()
+
+  spotlessPredeclare {
+    // Put all the formatters that have dependencies here.  Without this, errors like the following
+    // will happen:
+    // Could not determine the dependencies of task ':spotlessCheck'.
+    //  > Could not create task ':spotlessJavaCheck'.
+    //     > Could not create task ':spotlessJava'.
+    //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
+    java {
+      googleJavaFormat()
+    }
+    groovyGradle {
+      greclipse()
+    }
   }
 }
 
@@ -127,14 +132,13 @@ allprojects {
   apply plugin: 'com.github.johnrengelman.shadow'
   apply plugin: 'de.undercouch.download'
   apply plugin: 'net.ltgt.errorprone'
-  apply plugin: 'com.diffplug.spotless'
 
   group 'org.checkerframework'
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.29.1-SNAPSHOT'
+  version '3.30.1-SNAPSHOT'
 
   repositories {
     mavenCentral()
@@ -192,85 +196,71 @@ allprojects {
     plumeUtilVersion = '1.6.5'
   }
 
-  spotless {
-    // If you add any formatters to this block that require dependencies, then you must also
-    // add them to spotlessPredeclare block.
+  ext.isJava11orHigher = JavaVersion.current() >= JavaVersion.VERSION_11
+  if (isJava11orHigher) {
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+      // If you add any formatters to this block that require dependencies, then you must also
+      // add them to spotlessPredeclare block.
 
-    format 'misc', {
-      // define the files to apply `misc` to
-      target '**/*.gradle', '*.md', '.gitignore'
+      format 'misc', {
+        // define the files to apply `misc` to
+        target '**/*.gradle', '*.md', '.gitignore'
 
-      // define the steps to apply to those files
-      indentWithSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
-    }
-
-    java {
-      def targets = [
-        // add target folders here
-        'checker',
-        'checker-qual',
-        'checker-util',
-        'dataflow',
-        'docs/examples',
-        'docs/tutorial',
-        'framework',
-        'framework-test',
-        'javacutil',
-      ]
-      targets = targets.collectMany {
-        [
-          // must call toString() to convert GString to String
-          "${it}/**/*.java".toString(),
-          // Not .ajava files because formatting would remove import statements.
-        ]}
-      target targets
-
-      def doNotFormat = [
-        'dataflow/manual/examples/',
-        '**/nullness-javac-errors/*',
-        '**/calledmethods-delomboked/*',
-        '**/returnsreceiverdelomboked/*',
-        '**/build/**',
-        '*/dist/**',
-      ]
-      if (isJava17orHigher) {
-        targetExclude doNotFormat
-      } else {
-        targetExclude doNotFormat, '**/java17/', '**/*record*/'
+        // define the steps to apply to those files
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
       }
 
-      googleJavaFormat() // the formatter to apply to Java files
-      formatAnnotations()
-          // Remove addTypeAnnotation after a Spotless release is made (2022-01-15).
-          .addTypeAnnotation("AinferDefaultType")
-          .addTypeAnnotation("AinferParent")
-          .addTypeAnnotation("AinferSibling1")
-          .addTypeAnnotation("AinferSibling2")
-          .addTypeAnnotation("AinferTop")
-          .addTypeAnnotation("AinferImplicitAnno")
-          .addTypeAnnotation("AinferSiblingWithFields")
-          .addTypeAnnotation("DoesNotMatchRegex")
-    }
+      java {
+        def targets = [
+          // add target folders here
+          'checker',
+          'checker-qual',
+          'checker-util',
+          'dataflow',
+          'docs/examples',
+          'docs/tutorial',
+          'framework',
+          'framework-test',
+          'javacutil',
+        ]
+        targets = targets.collectMany {
+          [
+            // must call toString() to convert GString to String
+            "${it}/**/*.java".toString(),
+            // Not .ajava files because formatting would remove import statements.
+          ]}
+        target targets
 
-    groovyGradle {
-      target '**/*.gradle'
-      greclipse()  // which formatter Spotless should use to format .gradle files.
-      indentWithSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
-    }
+        def doNotFormat = [
+          'dataflow/manual/examples/',
+          '**/nullness-javac-errors/*',
+          '**/calledmethods-delomboked/*',
+          '**/returnsreceiverdelomboked/*',
+          '**/build/**',
+          '*/dist/**',
+        ]
+        if (isJava17orHigher) {
+          targetExclude doNotFormat
+        } else {
+          targetExclude doNotFormat, '**/java17/', '**/*record*/'
+        }
 
-  }
-  // The Spotless plugin uses the latest version of google-java-format
-  // that is compatible with the currently running JVM. Under Java 8,
-  // that is an older version that produces different formatting.
-  if (isJava8) {
-    spotlessApply.enabled = false
-    spotlessCheck.enabled = false
-    spotlessJavaApply.enabled = false
-    spotlessJavaCheck.enabled = false
+        googleJavaFormat() // the formatter to apply to Java files
+        formatAnnotations()
+      }
+
+      groovyGradle {
+        target '**/*.gradle'
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
+      }
+
+    }
   }
 
 
@@ -307,20 +297,6 @@ allprojects {
         options.taglets 'org.checkerframework.taglet.ManualTaglet'
         options.tagletPath(project(':framework-test').sourceSets."${tagletVersion}".output.classesDirs.getFiles() as File[])
 
-        // We want to link to Java 9 documentation of the compiler classes since we use Java 9
-        // versions of those classes and Java 8 for everything else.  Because the compiler classes are not
-        // a part of the main documentation of Java 8, javadoc links to the Java 9 versions.
-        // TODO, this creates broken links to the com.sun.tools.javac package.
-        // Only add the links of building with Java 8.  This prevents the following error:
-        // warning: URL https://docs.oracle.com/javase/8/docs/api/element-list was redirected
-        // to https://docs.oracle.com/en/java/javase/19/ -- Update the command-line options
-        // to suppress this warning.
-        if (isJava8) {
-          options.links = [
-            'https://docs.oracle.com/javase/8/docs/api/',
-            'https://docs.oracle.com/javase/9/docs/api/'
-          ]
-        }
         // This file is looked for by Javadoc.
         file("${destinationDir}/resources/fonts/").mkdirs()
         ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
@@ -584,16 +560,50 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
     classpath += configurations.javacJar
   }
   doLast {
+    // The next 5 `exec` blocks correct Javadoc links.
+    // This is gross and inefficient, but it does work for methods with up to 11 formal parameters.
+    // (An alternative would be to use a single regex with Perl's `s///e` operator.)
     exec {
-      // Javadoc for to com.sun.tools.java.* is not publicly available, so these links are broken.
-      // This command removes those links.
       workingDir "${rootDir}/docs/api"
       executable "${plumeScriptsHome}/preplace"
       args += [
-        '<a href="https://docs.oracle.com/javase/9/docs/api/com/sun/tools/javac/.*?>(.*?)</a>',
-        '\\1'
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5-\\6-\\7)"'
       ]
     }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5-\\6)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4-\\5)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*),([^)"]*)\\)"',
+        '\\1#\\2(\\3-\\4)"'
+      ]
+    }
+    exec {
+      workingDir "${rootDir}/docs/api"
+      executable "${plumeScriptsHome}/preplace"
+      args += [
+        '(/8/[^ "]*)#([a-zA-Z0-9_]+)\\(([^)"]*)\\)"',
+        '\\1#\\2-\\3-"'
+      ]
+    }
+
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
       rename('CFCheckmark_favicon.png', 'favicon-checkerframework.png')
