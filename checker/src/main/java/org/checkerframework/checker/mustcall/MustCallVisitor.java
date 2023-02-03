@@ -50,7 +50,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   @Override
-  public Void visitReturn(ReturnTree node, Void p) {
+  public Void visitReturn(ReturnTree tree, Void p) {
     // Only check return types if ownership is being transferred.
     if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
@@ -66,7 +66,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         }
       }
     }
-    return super.visitReturn(node, p);
+    return super.visitReturn(tree, p);
   }
 
   @Override
@@ -190,7 +190,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   @Override
   protected boolean skipReceiverSubtypeCheck(
-      MethodInvocationTree node,
+      MethodInvocationTree tree,
       AnnotatedTypeMirror methodDefinitionReceiver,
       AnnotatedTypeMirror methodCallReceiver) {
     // It does not make sense for receivers to have must-call obligations. If the receiver of a
@@ -321,7 +321,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * explanation of why this is necessary to avoid false positives.
    */
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
     return null;
   }
 

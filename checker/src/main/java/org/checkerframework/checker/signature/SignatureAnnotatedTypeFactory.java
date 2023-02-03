@@ -210,13 +210,13 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-      if (TreeUtils.isStringCompoundConcatenation(node)) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isStringCompoundConcatenation(tree)) {
         type.removeAnnotationInHierarchy(SIGNATURE_UNKNOWN);
         // This could be made more precise.
         type.addAnnotation(SignatureUnknown.class);
       }
-      return null; // super.visitCompoundAssignment(node, type);
+      return null; // super.visitCompoundAssignment(tree, type);
     }
 
     /**

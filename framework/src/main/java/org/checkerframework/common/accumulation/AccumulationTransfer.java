@@ -4,7 +4,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -15,6 +14,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -76,7 +76,7 @@ public class AccumulationTransfer extends CFTransfer {
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       CFValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
-        Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;
         for (AnnotationMirror anno : flowAnnos) {
           if (atypeFactory.isAccumulatorAnnotation(anno)) {

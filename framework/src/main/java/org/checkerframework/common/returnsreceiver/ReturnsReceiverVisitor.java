@@ -27,8 +27,8 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
   }
 
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(node);
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(tree);
     // Warn if a @This annotation is in an illegal location.
     if (AnnotationUtils.areSame(annot, getTypeFactory().THIS_ANNOTATION)) {
       TreePath parentPath = getCurrentPath().getParentPath();
@@ -47,13 +47,13 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
           grandparent instanceof TypeCastTree
               && parent.equals(((TypeCastTree) grandparent).getType());
       if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
-        checker.reportError(node, "this.location");
+        checker.reportError(tree, "this.location");
       }
       if (isReturnAnnot
           && ElementUtils.isStatic(TreeUtils.elementFromDeclaration((MethodTree) grandparent))) {
-        checker.reportError(node, "this.location");
+        checker.reportError(tree, "this.location");
       }
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 }
