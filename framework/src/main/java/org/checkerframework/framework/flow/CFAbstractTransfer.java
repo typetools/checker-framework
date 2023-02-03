@@ -78,6 +78,7 @@ import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -924,6 +925,10 @@ public abstract class CFAbstractTransfer<
             .updateFromObjectCreation(n, constructorElt, p.getRegularStore());
       }
     }
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
+    S store = p.getRegularStore();
+    // add new information based on postcondition
+    processPostconditions(n, store, constructorElt, newClassTree);
     return super.visitObjectCreation(n, p);
   }
 
@@ -1047,7 +1052,7 @@ public abstract class CFAbstractTransfer<
    * @param invocationTree the tree for the method call or the object creation
    */
   protected void processPostconditions(
-      MethodInvocationNode invocationNode,
+      Node invocationNode,
       S store,
       ExecutableElement executableElement,
       ExpressionTree invocationTree) {
@@ -1091,15 +1096,29 @@ public abstract class CFAbstractTransfer<
    * @param postconditions the postconditions
    */
   private void processPostconditionsAndConditionalPostconditions(
-      MethodInvocationNode invocationNode,
-      Tree invocationTree,
+      Node invocationNode,
+      ExpressionTree invocationTree,
       S thenStore,
       S elseStore,
       Set<? extends Contract> postconditions) {
 
-    StringToJavaExpression stringToJavaExpr =
-        stringExpr ->
-            StringToJavaExpression.atMethodInvocation(stringExpr, invocationNode, analysis.checker);
+    StringToJavaExpression stringToJavaExpr = null;
+    if (invocationNode instanceof MethodInvocationNode) {
+      stringToJavaExpr =
+          stringExpr ->
+              StringToJavaExpression.atMethodInvocation(
+                  stringExpr, (MethodInvocationNode) invocationNode, analysis.checker);
+    } else if (invocationNode instanceof ObjectCreationNode) {
+      stringToJavaExpr =
+          stringExpr ->
+              StringToJavaExpression.atConstructorInvocation(
+                  stringExpr, (NewClassTree) invocationTree, analysis.checker);
+    } else {
+      throw new BugInCF(
+          "CFAbstractTransfer.processPostconditionsAndConditionalPostconditions received "
+              + invocationNode.getClass().getSimpleName());
+    }
+
     for (Contract p : postconditions) {
       // Viewpoint-adapt to the method use (the call site).
       AnnotationMirror anno =
@@ -1128,7 +1147,8 @@ public abstract class CFAbstractTransfer<
         if (e.isFlowParseError()) {
           Object[] args = new Object[e.args.length + 1];
           args[0] =
-              ElementUtils.getSimpleSignature(TreeUtils.elementFromUse(invocationNode.getTree()));
+              ElementUtils.getSimpleSignature(
+                  (ExecutableElement) TreeUtils.elementFromUse(invocationTree));
           System.arraycopy(e.args, 0, args, 1, e.args.length);
           analysis.checker.reportError(invocationTree, "flowexpr.parse.error.postcondition", args);
         } else {
