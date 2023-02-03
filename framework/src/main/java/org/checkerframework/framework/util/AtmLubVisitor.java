@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -93,7 +94,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // if @L <: @U <: @N then LUB(@N null, T) = @N T
     // if @L <: @N <:@U && @N != @L  then LUB(@N null, T) = @U T
     // if @N <: @L <: @U             then LUB(@N null, T) =    T
-    Set<AnnotationMirror> lowerBounds =
+    AnnotationMirrorSet lowerBounds =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, otherAsLub);
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getAnnotationInHierarchy(lowerBound);
@@ -301,9 +302,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // For each hierarchy, if type1 is not a subtype of type2 and type2 is not a
     // subtype of type1, then the primary annotation on lub must be the effective upper
     // bound of type1 or type2, whichever is higher.
-    Set<AnnotationMirror> type1LowerBoundAnnos =
+    AnnotationMirrorSet type1LowerBoundAnnos =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
-    Set<AnnotationMirror> type2LowerBoundAnnos =
+    AnnotationMirrorSet type2LowerBoundAnnos =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
 
     for (AnnotationMirror lower1 : type1LowerBoundAnnos) {

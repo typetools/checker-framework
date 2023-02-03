@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -35,6 +34,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -142,12 +142,12 @@ public abstract class AnnotatedTypeMirror {
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
   // the class name of Annotation instead.
   // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
-  protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+  protected final AnnotationMirrorSet annotations = new AnnotationMirrorSet();
 
   /** The explicitly written annotations on this type. */
   // TODO: use this to cache the result once computed? For generic types?
-  // protected final Set<AnnotationMirror> explicitannotations =
-  // AnnotationUtils.createAnnotationSet();
+  // protected final AnnotationMirrorSet explicitannotations =
+  // new AnnotationMirrorSet();
 
   /**
    * Constructor for AnnotatedTypeMirror.
@@ -319,8 +319,8 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return a unmodifiable set of the annotations on this
    */
-  public final Set<AnnotationMirror> getAnnotations() {
-    return Collections.unmodifiableSet(annotations);
+  public final AnnotationMirrorSet getAnnotations() {
+    return AnnotationMirrorSet.unmodifiableSet(annotations);
   }
 
   /**
@@ -333,7 +333,7 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return the set of the annotations on this; mutations affect this object
    */
-  protected final Set<AnnotationMirror> getAnnotationsField() {
+  protected final AnnotationMirrorSet getAnnotationsField() {
     return annotations;
   }
 
@@ -366,8 +366,8 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return a set of the annotations on this
    */
-  public Set<AnnotationMirror> getEffectiveAnnotations() {
-    Set<AnnotationMirror> effectiveAnnotations = getErased().getAnnotations();
+  public AnnotationMirrorSet getEffectiveAnnotations() {
+    AnnotationMirrorSet effectiveAnnotations = getErased().getAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
     //                .size() : "Invalid number of effective annotations ("
     //                + effectiveAnnotations + "). Should be "
@@ -426,9 +426,9 @@ public abstract class AnnotatedTypeMirror {
    * @return the set of explicitly written annotations on this type that are supported by this
    *     checker
    */
-  public Set<AnnotationMirror> getExplicitAnnotations() {
+  public AnnotationMirrorSet getExplicitAnnotations() {
     // TODO JSR 308: The explicit type annotations should be always present
-    Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet explicitAnnotations = new AnnotationMirrorSet();
     List<? extends AnnotationMirror> typeAnnotations =
         this.getUnderlyingType().getAnnotationMirrors();
 
@@ -973,18 +973,15 @@ public abstract class AnnotatedTypeMirror {
         typeArgs = Collections.emptyList();
       } else {
         if (isDeclaration()) {
-          if (isDeclaration()) {
-            for (AnnotatedTypeMirror typeArg : ts) {
-              if (typeArg.getKind() != TypeKind.TYPEVAR) {
-                throw new BugInCF(
-                    "Type declaration must have type variables as type arguments. Found %s",
-                    typeArg);
-              }
-              if (!typeArg.isDeclaration()) {
-                throw new BugInCF(
-                    "Type declarations must have type variables that are declarations. Found %s",
-                    typeArg);
-              }
+          for (AnnotatedTypeMirror typeArg : ts) {
+            if (typeArg.getKind() != TypeKind.TYPEVAR) {
+              throw new BugInCF(
+                  "Type declaration must have type variables as type arguments. Found %s", typeArg);
+            }
+            if (!typeArg.isDeclaration()) {
+              throw new BugInCF(
+                  "Type declarations must have type variables that are declarations. Found %s",
+                  typeArg);
             }
           }
           typeArgs = Collections.unmodifiableList(ts);
@@ -1096,7 +1093,7 @@ public abstract class AnnotatedTypeMirror {
       AnnotatedDeclaredType erased =
           (AnnotatedDeclaredType)
               AnnotatedTypeMirror.createType(
-                  atypeFactory.types.erasure(underlyingType), atypeFactory, declaration);
+                  atypeFactory.types.erasure(underlyingType), atypeFactory, false);
       erased.addAnnotations(this.getAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
@@ -1664,7 +1661,7 @@ public abstract class AnnotatedTypeMirror {
     // because otherwise the annotations are inconsistent.
     private void fixupBoundAnnotations() {
       if (!this.getAnnotationsField().isEmpty()) {
-        Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
+        AnnotationMirrorSet newAnnos = this.getAnnotationsField();
         if (upperBound != null) {
           upperBound.replaceAnnotations(newAnnos);
         }
@@ -2174,7 +2171,7 @@ public abstract class AnnotatedTypeMirror {
      */
     private void fixupBoundAnnotations() {
       if (!this.getAnnotationsField().isEmpty()) {
-        Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
+        AnnotationMirrorSet newAnnos = this.getAnnotationsField();
         if (bounds != null) {
           for (AnnotatedTypeMirror bound : bounds) {
             if (bound.getKind() != TypeKind.TYPEVAR) {
@@ -2271,7 +2268,7 @@ public abstract class AnnotatedTypeMirror {
      * {@code @Nullable} and {@code @Initialized} are copied to the primary annotation location.
      */
     public void copyIntersectionBoundAnnotations() {
-      Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet annos = new AnnotationMirrorSet();
       for (AnnotatedTypeMirror bound : getBounds()) {
         for (AnnotationMirror a : bound.getAnnotations()) {
           if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)

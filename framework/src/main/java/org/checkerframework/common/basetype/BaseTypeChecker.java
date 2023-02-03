@@ -192,17 +192,18 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * <p>The BaseTypeChecker will not modify the list returned by this method, but other clients do
    * modify the list.
    *
-   * @return the subchecker classes on which this checker depends
+   * @return the subchecker classes on which this checker depends; will be modified by callees
    */
   // This is never looked up in, but it is iterated over (and added to, which does a lookup).
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    if (shouldResolveReflection()) {
-      // This must return a modifiable set because clients modify it.
-      return new LinkedHashSet<>(Collections.singleton(MethodValChecker.class));
-    }
-    // The returned set will be modified by callees.
+    // This must return a modifiable set because clients modify it.
     // Most checkers have 1 or fewer subcheckers.
-    return new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+    LinkedHashSet<Class<? extends BaseTypeChecker>> result =
+        new LinkedHashSet<>(CollectionsPlume.mapCapacity(2));
+    if (shouldResolveReflection()) {
+      result.add(MethodValChecker.class);
+    }
+    return result;
   }
 
   /**

@@ -40,7 +40,6 @@ import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -2357,7 +2356,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @return non-empty modifiable set of lower-case prefixes for SuppressWarnings strings
    */
-  public SortedSet<String> getSuppressWarningsPrefixes() {
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
     return getStandardSuppressWarningsPrefixes();
   }
 
@@ -2466,13 +2465,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Tests whether the class definition should not be checked because it matches the {@code
    * checker.skipDefs} property.
    *
-   * @param node class to potentially skip
-   * @return true if checker should not test node
+   * @param tree class to potentially skip
+   * @return true if checker should not test {@code tree}
    */
-  public final boolean shouldSkipDefs(ClassTree node) {
-    String qualifiedName = TreeUtils.typeOf(node).toString();
+  public final boolean shouldSkipDefs(ClassTree tree) {
+    String qualifiedName = TreeUtils.typeOf(tree).toString();
     // System.out.printf("shouldSkipDefs(%s) %s%nskipDefs %s%nonlyDefs %s%nresult %s%n%n",
-    //                   node,
+    //                   tree,
     //                   qualifiedName,
     //                   skipDefsPattern.matcher(qualifiedName).find(),
     //                   onlyDefsPattern.matcher(qualifiedName).find(),
@@ -2497,7 +2496,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param cls class to potentially skip
    * @param meth method to potentially skip
-   * @return true if checker should not test node
+   * @return true if checker should not test {@code meth}
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
     return shouldSkipDefs(cls);

@@ -113,6 +113,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -705,8 +706,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public Set<AnnotationMirror> getExplicitNewClassAnnos(NewClassTree newClassTree) {
-    Set<AnnotationMirror> superResult = super.getExplicitNewClassAnnos(newClassTree);
+  public AnnotationMirrorSet getExplicitNewClassAnnos(NewClassTree newClassTree) {
+    AnnotationMirrorSet superResult = super.getExplicitNewClassAnnos(newClassTree);
     AnnotatedTypeMirror dummy = getAnnotatedNullType(superResult);
     dependentTypesHelper.atExpression(dummy, newClassTree);
     return dummy.getAnnotations();
@@ -938,7 +939,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tree current tree
    * @return the annotation on expression or null if one does not exist
    */
-  public Set<AnnotationMirror> getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
+  public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
 
     // Look in the store
     if (CFAbstractStore.canInsertJavaExpression(expr)) {
@@ -967,7 +968,7 @@ public abstract class GenericAnnotatedTypeFactory<
       Element ele = ((FieldAccess) expr).getField();
       return getAnnotatedType(ele).getAnnotations();
     } else {
-      return Collections.emptySet();
+      return AnnotationMirrorSet.emptySet();
     }
   }
 
@@ -1958,7 +1959,7 @@ public abstract class GenericAnnotatedTypeFactory<
     applyLocalVariableQualifierParameterDefaults(elt, type);
 
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
-    Set<AnnotationMirror> tops;
+    AnnotationMirrorSet tops;
     if (enclosingClass != null) {
       tops = getQualifierParameterHierarchies(enclosingClass);
     } else {
@@ -1967,7 +1968,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tops.isEmpty()) {
       return;
     }
-    Set<AnnotationMirror> polyWithQualParam = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet polyWithQualParam = new AnnotationMirrorSet();
     for (AnnotationMirror top : tops) {
       AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
       if (poly != null) {
@@ -2027,7 +2028,7 @@ public abstract class GenericAnnotatedTypeFactory<
       }
     }
 
-    Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet qualParamTypes = new AnnotationMirrorSet();
     for (AnnotationMirror initializerAnnotation : initializerType.getAnnotations()) {
       if (hasQualifierParameterInHierarchy(
           type, qualHierarchy.getTopAnnotation(initializerAnnotation))) {

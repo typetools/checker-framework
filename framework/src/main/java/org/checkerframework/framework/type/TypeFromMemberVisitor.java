@@ -101,8 +101,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
   }
 
   @Override
-  public AnnotatedTypeMirror visitMethod(MethodTree node, AnnotatedTypeFactory f) {
-    ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
+  public AnnotatedTypeMirror visitMethod(MethodTree tree, AnnotatedTypeFactory f) {
+    ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
 
     AnnotatedExecutableType result =
         (AnnotatedExecutableType) f.toAnnotatedType(elt.asType(), false);

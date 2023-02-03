@@ -23,12 +23,12 @@ public class AinferTestVisitor extends BaseTypeVisitor<AinferTestAnnotatedTypeFa
   }
 
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    Element anno = TreeInfo.symbol((JCTree) node.getAnnotationType());
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    Element anno = TreeInfo.symbol((JCTree) tree.getAnnotationType());
     if (anno.toString().equals(AinferDefaultType.class.getName())) {
-      checker.reportError(node, "annotation.not.allowed.in.src", anno.toString());
+      checker.reportError(tree, "annotation.not.allowed.in.src", anno.toString());
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 
   @Override

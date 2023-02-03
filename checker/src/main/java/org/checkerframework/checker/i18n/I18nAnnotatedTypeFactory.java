@@ -53,7 +53,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       type.removeAnnotation(LOCALIZED);
       return null;
     }

@@ -34,17 +34,17 @@ public class DebugListTreeAnnotator extends ListTreeAnnotator {
   }
 
   @Override
-  public Void defaultAction(Tree node, AnnotatedTypeMirror type) {
-    if (kinds.contains(node.getKind())) {
-      System.out.println("DebugListTreeAnnotator input tree: " + node);
+  public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
+    if (kinds.contains(tree.getKind())) {
+      System.out.println("DebugListTreeAnnotator input tree: " + tree);
       System.out.println("    Initial type: " + type);
       for (TreeAnnotator annotator : annotators) {
         System.out.println("    Running annotator: " + annotator.getClass());
-        annotator.visit(node, type);
+        annotator.visit(tree, type);
         System.out.println("    Current type: " + type);
       }
     } else {
-      super.defaultAction(node, type);
+      super.defaultAction(tree, type);
     }
 
     return null;
