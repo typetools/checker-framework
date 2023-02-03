@@ -21,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -85,7 +85,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       for (ExpressionTree init : tree.getInitializers()) {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
-        Set<AnnotationMirror> annos = initType.getEffectiveAnnotations();
+        AnnotationMirrorSet annos = initType.getEffectiveAnnotations();
 
         prev = (prev == null) ? annos : qualHierarchy.leastUpperBounds(prev, annos);
       }
@@ -236,7 +236,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       if (!type.isAnnotated()) {
           AnnotatedTypeMirror a = typeFactory.getAnnotatedType(tree.getTrueExpression());
           AnnotatedTypeMirror b = typeFactory.getAnnotatedType(tree.getFalseExpression());
-          Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+          AnnotationMirrorSet lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
           type.replaceAnnotations(lubs);
       }
       return super.visitConditionalExpression(tree, type);
@@ -259,7 +259,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       // else do nothing.
     } else {
       // Use effective annotations from the expression, to get upper bound of type variables.
-      Set<AnnotationMirror> expressionAnnos = exprType.getEffectiveAnnotations();
+      AnnotationMirrorSet expressionAnnos = exprType.getEffectiveAnnotations();
 
       TypeKind castKind = type.getPrimitiveKind();
       if (castKind != null) {
@@ -308,9 +308,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * @param annos annotations to add to type
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
-    Set<AnnotationMirror> boundAnnos =
+    AnnotationMirrorSet boundAnnos =
         atypeFactory.getQualifierUpperBounds().getBoundQualifiers(type.getUnderlyingType());
-    Set<AnnotationMirror> annosToAdd = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
     for (AnnotationMirror boundAnno : boundAnnos) {
       AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
       if (anno != null && !qualHierarchy.isSubtype(anno, boundAnno)) {

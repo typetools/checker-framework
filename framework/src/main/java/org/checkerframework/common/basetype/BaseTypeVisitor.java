@@ -131,6 +131,7 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -620,9 +621,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkQualifierParameter(ClassTree classTree) {
     // Set of polymorphic qualifiers for hierarchies that do not have a qualifier parameter and
     // therefor cannot appear on a field.
-    Set<AnnotationMirror> illegalOnFieldsPolyQual = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet illegalOnFieldsPolyQual = new AnnotationMirrorSet();
     // Set of polymorphic annotations for all hierarchies
-    Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet polys = new AnnotationMirrorSet();
     TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
     for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
       AnnotationMirror poly = atypeFactory.getQualifierHierarchy().getPolymorphicAnnotation(top);
@@ -689,7 +690,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * of one of the polymorphic qualifiers.
    */
   static class PolyTypeScanner
-      extends SimpleAnnotatedTypeScanner<List<DiagMessage>, Set<AnnotationMirror>> {
+      extends SimpleAnnotatedTypeScanner<List<DiagMessage>, AnnotationMirrorSet> {
 
     /** Create PolyTypeScanner. */
     private PolyTypeScanner() {
@@ -697,8 +698,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     @Override
-    protected List<DiagMessage> defaultAction(
-        AnnotatedTypeMirror type, Set<AnnotationMirror> polys) {
+    protected List<DiagMessage> defaultAction(AnnotatedTypeMirror type, AnnotationMirrorSet polys) {
       if (type == null) {
         return Collections.emptyList();
       }
@@ -725,7 +725,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Don't check extends clause on anonymous classes.
       return;
     }
-    Set<AnnotationMirror> classBounds =
+    AnnotationMirrorSet classBounds =
         atypeFactory.getTypeDeclarationBounds(TreeUtils.typeOf(classTree));
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
@@ -733,7 +733,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // as in "class X {}". This is equivalent to writing "class X extends @Top Object {}", so
     // there is no need to do any subtype checking.
     if (classTree.getExtendsClause() != null) {
-      Set<AnnotationMirror> extendsAnnos =
+      AnnotationMirrorSet extendsAnnos =
           atypeFactory.getTypeOfExtendsImplements(classTree.getExtendsClause()).getAnnotations();
       for (AnnotationMirror classAnno : classBounds) {
         AnnotationMirror extendsAnno =
@@ -749,7 +749,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     // Do the same check as above for implements clauses.
     for (Tree implementsClause : classTree.getImplementsClause()) {
-      Set<AnnotationMirror> implementsClauseAnnos =
+      AnnotationMirrorSet implementsClauseAnnos =
           atypeFactory.getTypeOfExtendsImplements(implementsClause).getAnnotations();
 
       for (AnnotationMirror classAnno : classBounds) {
@@ -1072,7 +1072,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> constructorAnnotations = constructorType.getReturnType().getAnnotations();
+    AnnotationMirrorSet constructorAnnotations = constructorType.getReturnType().getAnnotations();
     Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
@@ -1290,7 +1290,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror inferredAnno = null;
       if (value != null) {
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> annos = value.getAnnotations();
+        AnnotationMirrorSet annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
       }
       if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
@@ -1372,7 +1372,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror inferredAnno = null;
       if (value != null) {
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> annos = value.getAnnotations();
+        AnnotationMirrorSet annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
       }
 
@@ -1839,7 +1839,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror inferredAnno = null;
       if (value != null) {
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> annos = value.getAnnotations();
+        AnnotationMirrorSet annos = value.getAnnotations();
         inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
       } else {
         // If the expression is "this", then get the type of the method receiver.
@@ -1848,7 +1848,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           AnnotatedTypeMirror atype = atypeFactory.getReceiverType(tree);
           if (atype != null) {
             QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-            Set<AnnotationMirror> annos = atype.getEffectiveAnnotations();
+            AnnotationMirrorSet annos = atype.getEffectiveAnnotations();
             inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
           }
         }
@@ -2324,7 +2324,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Don't issue an error if the annotations are equivalent to the qualifier upper bound
       // of the type.
       AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType) castType;
-      Set<AnnotationMirror> bounds =
+      AnnotationMirrorSet bounds =
           atypeFactory.getTypeDeclarationBounds(castDeclared.getUnderlyingType());
 
       if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
@@ -2334,7 +2334,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
-    Set<AnnotationMirror> castAnnos;
+    AnnotationMirrorSet castAnnos;
     if (!checker.hasOption("checkCastElementType")) {
       // checkCastElementType option wasn't specified, so only check effective annotations.
       castAnnos = castType.getEffectiveAnnotations();
@@ -2373,9 +2373,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
         // If both the cast type and the casted expression are type variables, then check
         // the bounds.
-        Set<AnnotationMirror> lowerBoundAnnotationsCast =
+        AnnotationMirrorSet lowerBoundAnnotationsCast =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, castType);
-        Set<AnnotationMirror> lowerBoundAnnotationsExpr =
+        AnnotationMirrorSet lowerBoundAnnotationsExpr =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, exprType);
         return qualifierHierarchy.isSubtype(lowerBoundAnnotationsExpr, lowerBoundAnnotationsCast)
             && qualifierHierarchy.isSubtype(
@@ -2702,7 +2702,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     switch (throwType.getKind()) {
       case NULL:
       case DECLARED:
-        Set<AnnotationMirror> found = throwType.getAnnotations();
+        AnnotationMirrorSet found = throwType.getAnnotations();
         if (!atypeFactory.getQualifierHierarchy().isSubtype(found, required)) {
           checker.reportError(tree.getExpression(), "throw", found, required);
         }
@@ -2710,14 +2710,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       case TYPEVAR:
       case WILDCARD:
         // TODO: this code might change after the type var changes.
-        Set<AnnotationMirror> foundEffective = throwType.getEffectiveAnnotations();
+        AnnotationMirrorSet foundEffective = throwType.getEffectiveAnnotations();
         if (!atypeFactory.getQualifierHierarchy().isSubtype(foundEffective, required)) {
           checker.reportError(tree.getExpression(), "throw", foundEffective, required);
         }
         break;
       case UNION:
         AnnotatedUnionType unionType = (AnnotatedUnionType) throwType;
-        Set<AnnotationMirror> foundPrimary = unionType.getAnnotations();
+        AnnotationMirrorSet foundPrimary = unionType.getAnnotations();
         if (!atypeFactory.getQualifierHierarchy().isSubtype(foundPrimary, required)) {
           checker.reportError(tree.getExpression(), "throw", foundPrimary, required);
         }
@@ -3262,11 +3262,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedExecutableType constructor,
       NewClassTree newClassTree) {
     // Only check the primary annotations, the type arguments are checked elsewhere.
-    Set<AnnotationMirror> explicitAnnos = atypeFactory.getExplicitNewClassAnnos(newClassTree);
+    AnnotationMirrorSet explicitAnnos = atypeFactory.getExplicitNewClassAnnos(newClassTree);
     if (explicitAnnos.isEmpty()) {
       return;
     }
-    Set<AnnotationMirror> resultAnnos = constructor.getReturnType().getAnnotations();
+    AnnotationMirrorSet resultAnnos = constructor.getReturnType().getAnnotations();
     for (AnnotationMirror explicit : explicitAnnos) {
       AnnotationMirror resultAnno =
           atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(resultAnnos, explicit);
@@ -3931,10 +3931,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // overrider receiver is not a subtype of the overridden receiver.  So, just check
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
-      Set<AnnotationMirror> overriderAnnos = overriderReceiver.getAnnotations();
-      Set<AnnotationMirror> overriddenAnnos = overriddenReceiver.getAnnotations();
+      AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
+      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
       if (!qualifierHierarchy.isSubtype(overriddenAnnos, overriderAnnos)) {
-        Set<AnnotationMirror> declaredAnnos =
+        AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
         if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
             && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
@@ -4449,7 +4449,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
     Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
-    Set<AnnotationMirror> upperBounds =
+    AnnotationMirrorSet upperBounds =
         atypeFactory
             .getQualifierUpperBounds()
             .getBoundQualifiers(declarationType.getUnderlyingType());
@@ -4472,7 +4472,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is a valid use of the primitive type
    */
   public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-    Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
+    AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
     return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
   }
 
@@ -4486,7 +4486,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is a valid array type
    */
   public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
-    Set<AnnotationMirror> bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
+    AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
     return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
   }
 

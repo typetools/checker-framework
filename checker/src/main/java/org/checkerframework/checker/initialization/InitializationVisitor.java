@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -38,6 +37,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
@@ -112,7 +112,7 @@ public class InitializationVisitor<
       AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
       // the special FBC rules do not apply if there is an explicit
       // UnknownInitialization annotation
-      Set<AnnotationMirror> fieldAnnotations = atypeFactory.getAnnotatedType(el).getAnnotations();
+      AnnotationMirrorSet fieldAnnotations = atypeFactory.getAnnotatedType(el).getAnnotations();
       if (!AnnotationUtils.containsSameByName(
           fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
         if (!ElementUtils.isStatic(el)
@@ -137,7 +137,7 @@ public class InitializationVisitor<
   public Void visitVariable(VariableTree tree, Void p) {
     // is this a field (and not a local variable)?
     if (TreeUtils.elementFromDeclaration(tree).getKind().isField()) {
-      Set<AnnotationMirror> annotationMirrors =
+      AnnotationMirrorSet annotationMirrors =
           atypeFactory.getAnnotatedType(tree).getExplicitAnnotations();
       // Fields cannot have commitment annotations.
       for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
@@ -187,7 +187,7 @@ public class InitializationVisitor<
       @SuppressWarnings("unchecked")
       Value value = (Value) store.getValue(fa.getReceiver());
 
-      Set<AnnotationMirror> receiverAnnoSet;
+      AnnotationMirrorSet receiverAnnoSet;
       if (value != null) {
         receiverAnnoSet = value.getAnnotations();
       } else if (fa.getReceiver() instanceof LocalVariable) {

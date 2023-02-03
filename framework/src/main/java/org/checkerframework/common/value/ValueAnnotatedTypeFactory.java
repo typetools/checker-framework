@@ -64,10 +64,10 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
@@ -258,13 +258,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // Inference can widen an IntRange beyond the values possible for the Java type. Change the
     // annotation here so it is no wider than is possible.
     TypeMirror t = as.getUnderlyingType();
-    Set<AnnotationMirror> inferredAnnos = as.getAnnotations();
+    AnnotationMirrorSet inferredAnnos = as.getAnnotations();
     AnnotationMirror intRange = AnnotationUtils.getAnnotationByName(inferredAnnos, INTRANGE_NAME);
     if (intRange != null && TypeKindUtils.primitiveOrBoxedToTypeKind(t) != null) {
       Range range = getRange(intRange);
       Range newRange = NumberUtils.castRange(t, range);
       if (!newRange.equals(range)) {
-        inferredAnnos = AnnotationMirrorSet.singleElementSet(createIntRangeAnnotation(newRange));
+        inferredAnnos = AnnotationMirrorSet.singleton(createIntRangeAnnotation(newRange));
       }
     }
 
@@ -1403,7 +1403,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param anmSet a set of annotations
    * @return true if any annotation is {@link IntRange} or related
    */
-  public boolean isIntRange(Set<AnnotationMirror> anmSet) {
+  public boolean isIntRange(AnnotationMirrorSet anmSet) {
     for (AnnotationMirror anm : anmSet) {
       if (isIntRange(anm)) {
         return true;
@@ -1503,7 +1503,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param annotations the annotations on the array expression
    * @return the minimum length of an array
    */
-  public int getMinLenValue(Set<AnnotationMirror> annotations) {
+  public int getMinLenValue(AnnotationMirrorSet annotations) {
     int result = 0;
     for (AnnotationMirror annotation : annotations) {
       Integer minLen = getSpecifiedMinLenValue(annotation);

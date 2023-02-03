@@ -5,7 +5,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 
 /**
  * Default implementation of {@link AbstractQualifierPolymorphism}. The polymorphic qualifiers for a

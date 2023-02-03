@@ -105,6 +105,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -282,7 +283,7 @@ public class AnnotationFileParser {
      * than in the real files. So, map keys are the verbose element name, as returned by
      * ElementUtils.getQualifiedName.
      */
-    public final Map<String, Set<AnnotationMirror>> declAnnos = new HashMap<>(1);
+    public final Map<String, AnnotationMirrorSet> declAnnos = new HashMap<>(1);
 
     /**
      * Map from a method element to all the fake overrides of it. Given a key {@code ee}, the fake
@@ -350,7 +351,7 @@ public class AnnotationFileParser {
      * will be copied to the corresponding field, accessor method, and compact canonical constructor
      * parameter.
      */
-    private final Set<AnnotationMirror> allAnnotations;
+    private final AnnotationMirrorSet allAnnotations;
 
     /** Whether this component has an accessor of exactly the same name in the stubs file. */
     private boolean hasAccessorInStubs = false;
@@ -361,7 +362,7 @@ public class AnnotationFileParser {
      * @param type the type of the record component
      * @param allAnnotations the declaration annotations on the component
      */
-    public RecordComponentStub(AnnotatedTypeMirror type, Set<AnnotationMirror> allAnnotations) {
+    public RecordComponentStub(AnnotatedTypeMirror type, AnnotationMirrorSet allAnnotations) {
       this.type = type;
       this.allAnnotations = allAnnotations;
     }
@@ -372,8 +373,8 @@ public class AnnotationFileParser {
      * @param elementKind the element kind to apply to (e.g., FIELD, METHOD)
      * @return the set of annotations from the component that apply
      */
-    public Set<AnnotationMirror> getAnnotationsForTarget(ElementKind elementKind) {
-      Set<AnnotationMirror> filtered = AnnotationUtils.createAnnotationSet();
+    public AnnotationMirrorSet getAnnotationsForTarget(ElementKind elementKind) {
+      AnnotationMirrorSet filtered = new AnnotationMirrorSet();
       for (AnnotationMirror annoMirror : allAnnotations) {
         Target target = annoMirror.getAnnotationType().asElement().getAnnotation(Target.class);
         // Only add the declaration annotation if the annotation applies to the element.
@@ -1630,7 +1631,7 @@ public class AnnotationFileParser {
 
     annotate(fieldType, decl.getType(), decl.getAnnotations(), decl);
     putMerge(annotationFileAnnos.atypes, elt, fieldType);
-    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annos = new AnnotationMirrorSet();
     for (AnnotationExpr annotation : decl.getAnnotations()) {
       AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations);
       annos.add(annoMirror);
@@ -1720,7 +1721,7 @@ public class AnnotationFileParser {
     if (annotations == null || annotations.isEmpty()) {
       return;
     }
-    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annos = new AnnotationMirrorSet();
     for (AnnotationExpr annotation : annotations) {
       AnnotationMirror annoMirror = getAnnotation(annotation, allAnnotations);
       if (annoMirror != null) {
@@ -1752,7 +1753,7 @@ public class AnnotationFileParser {
       return;
     }
     putOrAddToDeclAnnos(
-        ElementUtils.getQualifiedName(elt), Collections.singleton(fromStubFileAnno));
+        ElementUtils.getQualifiedName(elt), AnnotationMirrorSet.singleton(fromStubFileAnno));
   }
 
   private void annotateTypeParameters(
@@ -2886,12 +2887,13 @@ public class AnnotationFileParser {
    * the map value. Otherwise put the key and the annos in the map.
    *
    * @param key a name (actually declaration element string)
-   * @param annos the set of declaration annotations on it, as written in the annotation file
+   * @param annos the set of declaration annotations on it, as written in the annotation file; is
+   *     not modified
    */
-  private void putOrAddToDeclAnnos(String key, Set<AnnotationMirror> annos) {
-    Set<AnnotationMirror> stored = annotationFileAnnos.declAnnos.get(key);
+  private void putOrAddToDeclAnnos(String key, AnnotationMirrorSet annos) {
+    AnnotationMirrorSet stored = annotationFileAnnos.declAnnos.get(key);
     if (stored == null) {
-      annotationFileAnnos.declAnnos.put(key, new HashSet<>(annos));
+      annotationFileAnnos.declAnnos.put(key, new AnnotationMirrorSet(annos));
     } else {
       if (fileType != AnnotationFileType.JDK_STUB) {
         stored.addAll(annos);
