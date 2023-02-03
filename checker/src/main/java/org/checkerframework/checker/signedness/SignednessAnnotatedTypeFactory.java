@@ -142,12 +142,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignednessGlb if its value is within the signed positive
-   * range (i.e. its MSB is zero).
+   * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
    */
   private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
+    if (tree.getKind() == Tree.Kind.TYPE_CAST) {
+      return;
+    }
     TypeMirror javaType = type.getUnderlyingType();
     TypeKind javaTypeKind = javaType.getKind();
     if (tree.getKind() != Tree.Kind.VARIABLE) {
