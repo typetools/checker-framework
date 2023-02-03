@@ -251,7 +251,7 @@ public class OptionalVisitor
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
    *
-   * @param an if statement that can perhaps be simplified
+   * @param tree an if statement that can perhaps be simplified
    */
   public void handleConditionalStatementIsPresentGet(IfTree tree) {
 
