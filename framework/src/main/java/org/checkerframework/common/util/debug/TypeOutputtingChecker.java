@@ -6,7 +6,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.Collection;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -22,7 +21,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -64,31 +63,31 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     // Print types of classes, methods, and fields
     @Override
-    public void processClassTree(ClassTree node) {
-      TypeElement element = TreeUtils.elementFromDeclaration(node);
+    public void processClassTree(ClassTree tree) {
+      TypeElement element = TreeUtils.elementFromDeclaration(tree);
       currentClass = element.getSimpleName().toString();
 
-      AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
-      System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
+      AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(tree);
+      System.out.println(tree.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
 
-      super.processClassTree(node);
+      super.processClassTree(tree);
     }
 
     @Override
-    public Void visitMethod(MethodTree node, Void p) {
-      ExecutableElement elem = TreeUtils.elementFromDeclaration(node);
+    public Void visitMethod(MethodTree tree, Void p) {
+      ExecutableElement elem = TreeUtils.elementFromDeclaration(tree);
 
-      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
+      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
       System.out.println(currentClass + "." + elem + "\t\t" + type);
       // Don't dig deeper
       return null;
     }
 
     @Override
-    public Void visitVariable(VariableTree node, Void p) {
-      VariableElement elem = TreeUtils.elementFromDeclaration(node);
+    public Void visitVariable(VariableTree tree, Void p) {
+      VariableElement elem = TreeUtils.elementFromDeclaration(tree);
       if (elem.getKind().isField()) {
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         System.out.println(currentClass + "." + elem + "\t\t" + type);
       }
 
@@ -213,7 +212,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
       // Not needed - raises error.
       @Override
-      public Set<AnnotationMirror> getTopAnnotations() {
+      public AnnotationMirrorSet getTopAnnotations() {
         throw new BugInCF("GeneralQualifierHierarchy:getTopAnnotations() shouldn't be called");
       }
 
@@ -221,10 +220,10 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
       // annotations.
       // Return a dummy value that does no harm.
       @Override
-      public Set<AnnotationMirror> getBottomAnnotations() {
+      public AnnotationMirrorSet getBottomAnnotations() {
         // throw new BugInCF("GeneralQualifierHierarchy.getBottomAnnotations()
         // shouldn't be called");
-        return AnnotationUtils.createAnnotationSet();
+        return new AnnotationMirrorSet();
       }
 
       // Not needed - raises error.

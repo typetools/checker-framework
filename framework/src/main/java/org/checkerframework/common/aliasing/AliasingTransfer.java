@@ -1,5 +1,7 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
@@ -86,23 +88,27 @@ public class AliasingTransfer extends CFTransfer {
    */
   @Override
   protected void processPostconditions(
-      MethodInvocationNode n, CFStore store, ExecutableElement methodElement, Tree tree) {
-    super.processPostconditions(n, store, methodElement, tree);
-    if (TreeUtils.isEnumSuperCall(n.getTree())) {
+      Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
+    // TODO: Process ObjectCreationNode here after finish the pull request:
+    // https://github.com/eisop/checker-framework/pull/314
+    if (!(n instanceof MethodInvocationNode)) {
+      return;
+    }
+    if (TreeUtils.isEnumSuperCall((MethodInvocationTree) n.getTree())) {
       // Skipping the init() method for enums.
       return;
     }
-    List<Node> args = n.getArguments();
-    List<? extends VariableElement> params = methodElement.getParameters();
+    List<Node> args = ((MethodInvocationNode) n).getArguments();
+    List<? extends VariableElement> params = executableElement.getParameters();
     assert (args.size() == params.size())
         : "Number of arguments in "
             + "the method call "
             + n
             + " is different from the"
             + " number of parameters for the method declaration: "
-            + methodElement.getSimpleName();
+            + executableElement.getSimpleName();
 
-    AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
+    AnnotatedExecutableType annotatedType = factory.getAnnotatedType(executableElement);
     List<AnnotatedTypeMirror> paramTypes = annotatedType.getParameterTypes();
     for (int i = 0; i < args.size(); i++) {
       Node arg = args.get(i);
@@ -114,7 +120,7 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     // Now, doing the same as above for the receiver parameter
-    Node receiver = n.getTarget().getReceiver();
+    Node receiver = ((MethodInvocationNode) n).getTarget().getReceiver();
     AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
     if (receiverType != null
         && !receiverType.hasAnnotation(LeakedToResult.class)

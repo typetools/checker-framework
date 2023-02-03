@@ -309,7 +309,7 @@ all --- just that the Checker Framework attempted to typecheck the project and
 some output was produced.)
 
 \item (Optional) Add annotations that WPI does not infer, to eliminate
-  false positive warnings. There are three ways you can add annotations to a target
+  false positive warnings. There are two ways you can add annotations to a target
   program:
   \begin{itemize}
   \item
@@ -318,15 +318,9 @@ some output was produced.)
     \<org.checkerframework:checker-qual> to the project's build
     system. This approach is the most difficult, but has the advantage that
     the checker will attempt to verify any annotations you add.
-  \item
-    Add the annotations in an \<.ajava> file. Create the \<.ajava> file
-    as a copy of the \<.java> file, following the instructions in
-    Section~\ref{ajava-files} about directory structure, etc.
   \item Add the annotations in a stub file, creating the \<.astub> file as
     a copy of the \<.java> file.  When you run the checker, supply the
-    \<-AmergeStubsWithSource> and \<-Astubs=...> command-line arguments.  This
-    option is similar to option 2, but requires extra command-line options
-    to the checker rather than a specific directory structure.
+    \<-AmergeStubsWithSource> and \<-Astubs=...> command-line arguments.
   \end{itemize}
 
 \end{enumerate}

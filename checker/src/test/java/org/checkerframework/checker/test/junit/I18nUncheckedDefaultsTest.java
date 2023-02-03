@@ -17,7 +17,6 @@ public class I18nUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest 
         testFiles,
         org.checkerframework.checker.i18n.I18nChecker.class,
         "i18n",
-        "-Anomsgtext",
         "-AuseConservativeDefaultsForUncheckedCode=-source,bytecode");
   }
 

@@ -801,7 +801,7 @@ public class QualifierDefaults {
       return useConservativeDefaultsBytecode && !isElementAnnotatedForThisChecker(annotationScope);
     } else if (isFromStubFile) {
       // TODO: Types in stub files not annotated for a particular checker should be
-      // treated as unchecked bytecode.   For now, all types in stub files are treated as
+      // treated as unchecked bytecode.  For now, all types in stub files are treated as
       // checked code. Eventually, @AnnotateFor(checker) will be programmatically added
       // to methods in stub files supplied via the @Stubfile annotation.  Stub files will
       // be treated like unchecked code except for methods in the scope for an @AnnotatedFor.

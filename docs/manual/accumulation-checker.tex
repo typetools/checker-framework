@@ -89,10 +89,10 @@ you defined a predicate annotation).
 Define a class that extends \refclass{common/accumulation}{AccumulationTransfer}.
 To update the estimate of what has been accumulated, override some method in
 \refclass{framework/flow}{CFAbstractTransfer} to call
-\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}.
+\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{(org.checkerframework.dataflow.cfg.node.Node,org.checkerframework.dataflow.analysis.TransferResult,java.lang.String...)}.
 
 For example, to accumulate the names of methods called, a checker would override
-\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-} to:
+\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{(org.checkerframework.dataflow.cfg.node.MethodInvocationNode,org.checkerframework.dataflow.analysis.TransferInput)} to:
 call \<super> to get a \<TransferResult>, compute the method name from the \<MethodInvocationNode>,
 and then call \<accumulate>.
 

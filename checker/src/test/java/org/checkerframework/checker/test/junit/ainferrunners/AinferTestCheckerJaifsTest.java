@@ -24,7 +24,6 @@ public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
         testFiles,
         AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
-        "-Anomsgtext",
         "-Ainfer=jaifs",
         // The AFU's JAIF reading/writing libraries don't support records.
         "-AskipDefs=SimpleRecord",

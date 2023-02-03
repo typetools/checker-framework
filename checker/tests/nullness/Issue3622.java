@@ -103,7 +103,7 @@ public class Issue3622 {
 
     @Override
     @SuppressWarnings("contracts.conditional.postcondition" // TODO: Need special treatment
-    // for true and false boolean  literals (cut off dead parts of graph).
+    // for true and false boolean literals (cut off dead parts of graph).
     )
     public boolean equals(@Nullable Object obj6) {
       return true ? obj6 instanceof ImmutableIntList6 : false;

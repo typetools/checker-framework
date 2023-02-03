@@ -752,7 +752,18 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         statement.getExpression().accept(this, initializer);
       } else {
         assert javacInitializers.hasNext();
-        javacInitializers.next().accept(this, initializer);
+        StatementTree javacInitializer = javacInitializers.next();
+        if (javacInitializer.getKind() == Kind.EXPRESSION_STATEMENT) {
+          // JavaParser doesn't wrap other kinds of expressions in an expression statement,
+          // but javac does. For example, suppose that the initializer is "index++", as in
+          // the test all-systems/LightWeightCache.java.
+          ((ExpressionStatementTree) javacInitializer).getExpression().accept(this, initializer);
+        } else {
+          // This is likely to lead to a crash, if it ever happens: javacInitializer
+          // is a StatementTree of some kind, but initializer is a raw expression (not wrapped in a
+          // statement).
+          javacInitializer.accept(this, initializer);
+        }
       }
     }
     assert !javacInitializers.hasNext();
@@ -1327,6 +1338,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
 
   @Override
   public Void visitTypeCast(TypeCastTree javacTree, Node javaParserNode) {
+    if (javaParserNode instanceof MethodReferenceExpr) {
+      // Work around https://github.com/javaparser/javaparser/issues/3855
+      return null;
+    }
     CastExpr node = castNode(CastExpr.class, javaParserNode, javacTree);
     processTypeCast(javacTree, node);
     javacTree.getType().accept(this, node.getType());
@@ -2314,7 +2329,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         javacTree.getClass(),
         javaParserNode,
         javaParserNode.getClass(),
-        new YamlPrinter(true).output(javaParserNode)); // There is also XmlPrinter
+        // There is also XmlPrinter.
+        new YamlPrinter(true).output(javaParserNode));
   }
 
   /**

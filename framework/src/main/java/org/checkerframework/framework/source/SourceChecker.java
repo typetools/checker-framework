@@ -40,7 +40,6 @@ import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -286,8 +285,8 @@ import org.plumelib.util.UtilPlume;
 
   // Whether to print [] around a set of type parameters in order to clearly see where they end
   // e.g.  <E extends F, F extends Object>
-  // without this option E is printed: E extends F extends Object
-  // with this option:                 E [ extends F [ extends Object super Void ] super Void ]
+  // without this option the E is printed: E extends F extends Object
+  // with this option:                     E [ extends F [ extends Object super Void ] super Void ]
   // when multiple type variables are used this becomes useful very quickly
   "printVerboseGenerics",
 
@@ -385,6 +384,13 @@ import org.plumelib.util.UtilPlume;
 
   // Sets AnnotatedTypeFactory shouldCache to false
   "atfDoNotCache",
+
+  /// Language Server Protocol(LSP) Support
+
+  // TODO: document `-AlspTypeInfo` in manual, as a debugging option.
+  // Output detailed type information for nodes in AST
+  // org.checkerframework.framework.type.AnnotatedTypeFactory
+  "lspTypeInfo",
 
   /// Miscellaneous debugging options
 
@@ -1072,7 +1078,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  // Not a format method.  However, messageKey should be either a format string for `args`, or  a
+  // Not a format method.  However, messageKey should be either a format string for `args`, or a
   // property key that maps to a format string for `args`.
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
@@ -2346,7 +2352,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @return non-empty modifiable set of lower-case prefixes for SuppressWarnings strings
    */
-  public SortedSet<String> getSuppressWarningsPrefixes() {
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
     return getStandardSuppressWarningsPrefixes();
   }
 
@@ -2455,13 +2461,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Tests whether the class definition should not be checked because it matches the {@code
    * checker.skipDefs} property.
    *
-   * @param node class to potentially skip
-   * @return true if checker should not test node
+   * @param tree class to potentially skip
+   * @return true if checker should not test {@code tree}
    */
-  public final boolean shouldSkipDefs(ClassTree node) {
-    String qualifiedName = TreeUtils.typeOf(node).toString();
+  public final boolean shouldSkipDefs(ClassTree tree) {
+    String qualifiedName = TreeUtils.typeOf(tree).toString();
     // System.out.printf("shouldSkipDefs(%s) %s%nskipDefs %s%nonlyDefs %s%nresult %s%n%n",
-    //                   node,
+    //                   tree,
     //                   qualifiedName,
     //                   skipDefsPattern.matcher(qualifiedName).find(),
     //                   onlyDefsPattern.matcher(qualifiedName).find(),
@@ -2486,7 +2492,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *
    * @param cls class to potentially skip
    * @param meth method to potentially skip
-   * @return true if checker should not test node
+   * @return true if checker should not test {@code meth}
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
     return shouldSkipDefs(cls);

@@ -82,16 +82,16 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // Result of binary op might not be a property key.
     @Override
-    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       type.removeAnnotation(theAnnot);
-      return null; // super.visitBinary(node, type);
+      return null; // super.visitBinary(tree, type);
     }
 
     // Result of unary op might not be a property key.
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       type.removeAnnotation(theAnnot);
-      return null; // super.visitCompoundAssignment(node, type);
+      return null; // super.visitCompoundAssignment(tree, type);
     }
   }
 

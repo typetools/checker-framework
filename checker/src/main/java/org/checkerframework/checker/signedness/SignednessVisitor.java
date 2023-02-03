@@ -71,16 +71,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
    * </ul>
    */
   @Override
-  public Void visitBinary(BinaryTree node, Void p) {
+  public Void visitBinary(BinaryTree tree, Void p) {
     // Used in diagnostic messages.
-    ExpressionTree leftOp = node.getLeftOperand();
-    ExpressionTree rightOp = node.getRightOperand();
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
 
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(node);
+    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
     AnnotatedTypeMirror leftOpType = argTypes.first;
     AnnotatedTypeMirror rightOpType = argTypes.second;
 
-    Tree.Kind kind = node.getKind();
+    Tree.Kind kind = tree.getKind();
 
     switch (kind) {
       case DIVIDE:
@@ -94,16 +94,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case RIGHT_SHIFT:
         if (hasUnsignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(node, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(node, getCurrentPath())) {
+            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.signed", kind, leftOpType, rightOpType);
         }
         break;
 
       case UNSIGNED_RIGHT_SHIFT:
         if (hasSignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(node, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(node, getCurrentPath())) {
+            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.unsigned", kind, leftOpType, rightOpType);
         }
         break;
@@ -128,15 +128,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           break;
         }
         if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
-          checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
+          checker.reportError(tree, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
         } else if (leftOpType.hasAnnotation(Signed.class)
             && rightOpType.hasAnnotation(Unsigned.class)) {
-          checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+          checker.reportError(tree, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
         }
         break;
 
       case PLUS:
-        if (TreeUtils.isStringConcatenation(node)) {
+        if (TreeUtils.isStringConcatenation(tree)) {
           AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotations().iterator().next();
           AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotations().iterator().next();
 
@@ -156,51 +156,51 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         // fall through
       default:
         if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
-          checker.reportError(node, "operation.mixed.unsignedlhs", kind, leftOpType, rightOpType);
+          checker.reportError(tree, "operation.mixed.unsignedlhs", kind, leftOpType, rightOpType);
         } else if (leftOpType.hasAnnotation(Signed.class)
             && rightOpType.hasAnnotation(Unsigned.class)) {
-          checker.reportError(node, "operation.mixed.unsignedrhs", kind, leftOpType, rightOpType);
+          checker.reportError(tree, "operation.mixed.unsignedrhs", kind, leftOpType, rightOpType);
         }
         break;
     }
-    return super.visitBinary(node, p);
+    return super.visitBinary(tree, p);
   }
 
   // Ensure that method annotations are not written on methods they don't apply to.
   // Copied from InterningVisitor
   @Override
-  public Void visitMethod(MethodTree node, Void p) {
-    ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
+  public Void visitMethod(MethodTree tree, Void p) {
+    ExecutableElement methElt = TreeUtils.elementFromDeclaration(tree);
     boolean hasEqualsMethodAnno =
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
     int params = methElt.getParameters().size();
     if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
       checker.reportError(
-          node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+          tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
     }
 
-    return super.visitMethod(node, p);
+    return super.visitMethod(tree, p);
   }
 
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-    ExecutableElement methElt = TreeUtils.elementFromUse(node);
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+    ExecutableElement methElt = TreeUtils.elementFromUse(tree);
     boolean hasEqualsMethodAnno =
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
-    if (hasEqualsMethodAnno || InterningVisitor.isInvocationOfEquals(node)) {
+    if (hasEqualsMethodAnno || InterningVisitor.isInvocationOfEquals(tree)) {
       int params = methElt.getParameters().size();
       if (!(params == 1 || params == 2)) {
         checker.reportError(
-            node, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
+            tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
       } else {
         AnnotatedTypeMirror leftOpType;
         AnnotatedTypeMirror rightOpType;
         if (params == 1) {
-          leftOpType = atypeFactory.getReceiverType(node);
-          rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+          leftOpType = atypeFactory.getReceiverType(tree);
+          rightOpType = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
         } else if (params == 2) {
-          leftOpType = atypeFactory.getAnnotatedType(node.getArguments().get(0));
-          rightOpType = atypeFactory.getAnnotatedType(node.getArguments().get(1));
+          leftOpType = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
+          rightOpType = atypeFactory.getAnnotatedType(tree.getArguments().get(1));
         } else {
           throw new BugInCF("Checked that params is 1 or 2");
         }
@@ -208,17 +208,17 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           // nothing to do
         } else if (leftOpType.hasAnnotation(Unsigned.class)
             && rightOpType.hasAnnotation(Signed.class)) {
-          checker.reportError(node, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
+          checker.reportError(tree, "comparison.mixed.unsignedlhs", leftOpType, rightOpType);
         } else if (leftOpType.hasAnnotation(Signed.class)
             && rightOpType.hasAnnotation(Unsigned.class)) {
-          checker.reportError(node, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
+          checker.reportError(tree, "comparison.mixed.unsignedrhs", leftOpType, rightOpType);
         }
       }
       // Don't check against the annotated method declaration (which super would do).
       return null;
     }
 
-    return super.visitMethodInvocation(node, p);
+    return super.visitMethodInvocation(tree, p);
   }
 
   /**
@@ -250,17 +250,17 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
    * </ul>
    */
   @Override
-  public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+  public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
 
-    ExpressionTree var = node.getVariable();
-    ExpressionTree expr = node.getExpression();
+    ExpressionTree var = tree.getVariable();
+    ExpressionTree expr = tree.getExpression();
 
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.compoundAssignmentTreeArgTypes(node);
+        atypeFactory.compoundAssignmentTreeArgTypes(tree);
     AnnotatedTypeMirror varType = argTypes.first;
     AnnotatedTypeMirror exprType = argTypes.second;
 
-    Tree.Kind kind = node.getKind();
+    Tree.Kind kind = tree.getKind();
 
     switch (kind) {
       case DIVIDE_ASSIGNMENT:
@@ -308,13 +308,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         break;
 
       case PLUS_ASSIGNMENT:
-        if (TreeUtils.isStringCompoundConcatenation(node)) {
+        if (TreeUtils.isStringCompoundConcatenation(tree)) {
           if (exprType.getKind() != TypeKind.CHAR
               && !TypesUtils.isDeclaredOfName(
                   exprType.getUnderlyingType(), "java.lang.Character")) {
             AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
             if (!atypeFactory.getQualifierHierarchy().isSubtype(anno, atypeFactory.SIGNED)) {
-              checker.reportError(node.getExpression(), "unsigned.concat");
+              checker.reportError(tree.getExpression(), "unsigned.concat");
             }
           }
           break;
@@ -339,7 +339,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         }
         break;
     }
-    return super.visitCompoundAssignment(node, p);
+    return super.visitCompoundAssignment(tree, p);
   }
 
   @Override

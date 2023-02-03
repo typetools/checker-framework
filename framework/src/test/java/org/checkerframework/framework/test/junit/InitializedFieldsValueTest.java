@@ -22,7 +22,6 @@ public class InitializedFieldsValueTest extends CheckerFrameworkPerDirectoryTest
             "org.checkerframework.common.value.ValueChecker"),
         "initialized-fields-value",
         Collections.emptyList(), // classpathextra
-        "-Anomsgtext",
         "-AsuppressWarnings=type.checking.not.run");
   }
 

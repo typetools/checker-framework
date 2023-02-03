@@ -46,6 +46,7 @@ import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseT
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -65,7 +66,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public final AnnotationMirror BOTTOM;
 
   /** The {@code @}{@link PolyMustCall} annotation. */
-  final AnnotationMirror POLY;
+  public final AnnotationMirror POLY;
 
   /**
    * Map from trees representing expressions to the temporary variables that represent them in the
@@ -92,11 +93,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */
-  final ExecutableElement mustCallValueElement =
+  private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
   /** The InheritableMustCall.value field/element. */
-  final ExecutableElement inheritableMustCallValueElement =
+  /*package-private*/ final ExecutableElement inheritableMustCallValueElement =
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
 
   /** The CreatesMustCallFor.List.value field/element. */
@@ -185,7 +186,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param elt an element; may be null, in which case this method always returns false
    * @return true iff the given element represents a resource variable
    */
-  /* package-private*/ boolean isResourceVariable(@Nullable Element elt) {
+  /*package-private*/ boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 
@@ -268,8 +269,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getExplicitAnnos(Element element) {
-      Set<AnnotationMirror> explict = super.getExplicitAnnos(element);
+    protected AnnotationMirrorSet getExplicitAnnos(Element element) {
+      AnnotationMirrorSet explict = super.getExplicitAnnos(element);
       if (explict.isEmpty() && ElementUtils.isTypeElement(element)) {
         AnnotationMirror inheritableMustCall =
             getDeclAnnotation(element, InheritableMustCall.class);
@@ -277,7 +278,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           List<String> mustCallVal =
               AnnotationUtils.getElementValueArray(
                   inheritableMustCall, inheritableMustCallValueElement, String.class);
-          return Collections.singleton(createMustCall(mustCallVal));
+          return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
         }
       }
       return explict;
@@ -301,8 +302,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
-      Set<AnnotationMirror> explict = super.getAnnotationFromElement(element);
+    protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
+      AnnotationMirrorSet explict = super.getAnnotationFromElement(element);
       if (!explict.isEmpty()) {
         return explict;
       }
@@ -311,9 +312,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         List<String> mustCallVal =
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
-        return Collections.singleton(createMustCall(mustCallVal));
+        return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
       }
-      return Collections.emptySet();
+      return AnnotationMirrorSet.emptySet();
     }
   }
 
@@ -321,7 +322,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * Cache of the MustCall annotations that have actually been created. Most programs require few
    * distinct MustCall annotations (e.g. MustCall() and MustCall("close")).
    */
-  private Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
+  private final Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
   /**
    * Creates a {@link MustCall} annotation whose values are the given strings.
@@ -350,7 +351,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new SubtypeIsSubsetQualifierHierarchy(
         this.getSupportedTypeQualifiers(), this.getProcessingEnv());
   }
@@ -415,8 +416,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromUse(node);
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+      Element elt = TreeUtils.elementFromUse(tree);
       if (elt.getKind() == ElementKind.PARAMETER
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
@@ -425,7 +426,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
-      return super.visitIdentifier(node, type);
+      return super.visitIdentifier(tree, type);
     }
   }
 

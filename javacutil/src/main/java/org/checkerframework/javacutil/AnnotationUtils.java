@@ -13,17 +13,14 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -43,7 +40,6 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
@@ -207,9 +203,9 @@ public class AnnotationUtils {
       return areSame(c1.iterator().next(), c2.iterator().next());
     }
 
-    // while loop depends on SortedSet implementation.
-    NavigableSet<AnnotationMirror> s1 = createAnnotationSet();
-    NavigableSet<AnnotationMirror> s2 = createAnnotationSet();
+    // while loop depends on NavigableSet implementation.
+    AnnotationMirrorSet s1 = new AnnotationMirrorSet();
+    AnnotationMirrorSet s2 = new AnnotationMirrorSet();
     s1.addAll(c1);
     s2.addAll(c2);
     Iterator<AnnotationMirror> iter1 = s1.iterator();
@@ -477,65 +473,6 @@ public class AnnotationUtils {
   }
 
   /**
-   * Create a map suitable for storing {@link AnnotationMirror} as keys.
-   *
-   * <p>It can store one instance of {@link AnnotationMirror} of a given declared type, regardless
-   * of the annotation element values.
-   *
-   * @param <V> the value of the map
-   * @return a new map with {@link AnnotationMirror} as key
-   */
-  public static <V> Map<AnnotationMirror, V> createAnnotationMap() {
-    return new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
-  }
-
-  /**
-   * Constructs a {@link Set} for storing {@link AnnotationMirror}s.
-   *
-   * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
-   * the annotation element values.
-   *
-   * @return a sorted new set to store {@link AnnotationMirror} as element
-   */
-  public static NavigableSet<AnnotationMirror> createAnnotationSet() {
-    return new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-  }
-
-  /**
-   * Constructs a {@link Set} for storing {@link AnnotationMirror}s to contain all the annotations
-   * in {@code annos}.
-   *
-   * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
-   * the annotation element values.
-   *
-   * @param annos a Collection of AnnotationMirrors to put in the created set
-   * @return a sorted new set to store {@link AnnotationMirror} as element
-   */
-  public static NavigableSet<AnnotationMirror> createAnnotationSet(
-      Collection<AnnotationMirror> annos) {
-    TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-    set.addAll(annos);
-    return set;
-  }
-
-  /**
-   * Constructs an unmodifiable {@link Set} for storing {@link AnnotationMirror}s containing all the
-   * annotations in {@code annos}.
-   *
-   * <p>It stores at most once instance of {@link AnnotationMirror} of a given type, regardless of
-   * the annotation element values.
-   *
-   * @param annos a Collection of AnnotationMirrors to put in the created set
-   * @return a sorted, unmodifiable, new set to store {@link AnnotationMirror} as element
-   */
-  public static NavigableSet<AnnotationMirror> createUnmodifiableAnnotationSet(
-      Collection<AnnotationMirror> annos) {
-    TreeSet<AnnotationMirror> set = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-    set.addAll(annos);
-    return Collections.unmodifiableNavigableSet(set);
-  }
-
-  /**
    * Returns true if the given annotation has a @Inherited meta-annotation.
    *
    * @param anno the annotation to check for an @Inherited meta-annotation
@@ -704,9 +641,11 @@ public class AnnotationUtils {
     } else {
       valmap = anno.getElementValues();
     }
-    for (ExecutableElement elem : valmap.keySet()) {
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        valmap.entrySet()) {
+      ExecutableElement elem = entry.getKey();
       if (elem.getSimpleName().contentEquals(elementName)) {
-        AnnotationValue val = valmap.get(elem);
+        AnnotationValue val = entry.getValue();
         try {
           return expectedType.cast(val.getValue());
         } catch (ClassCastException e) {
@@ -1473,9 +1412,9 @@ public class AnnotationUtils {
    * @param <T> the key type
    */
   public static <T extends @NonNull Object> void updateMappingToImmutableSet(
-      Map<T, Set<AnnotationMirror>> map, T key, Set<AnnotationMirror> newQual) {
+      Map<T, AnnotationMirrorSet> map, T key, AnnotationMirrorSet newQual) {
 
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     // TODO: if T is also an AnnotationMirror, should we use areSame?
     if (!map.containsKey(key)) {
       result.addAll(newQual);
@@ -1483,7 +1422,8 @@ public class AnnotationUtils {
       result.addAll(map.get(key));
       result.addAll(newQual);
     }
-    map.put(key, Collections.unmodifiableSet(result));
+    result.makeUnmodifiable();
+    map.put(key, result);
   }
 
   /**
@@ -1493,9 +1433,9 @@ public class AnnotationUtils {
    * @param constructorDeclaration declaration tree of constructor
    * @return set of annotations explicit on the resulting type of the constructor
    */
-  public static Set<AnnotationMirror> getExplicitAnnotationsOnConstructorResult(
+  public static AnnotationMirrorSet getExplicitAnnotationsOnConstructorResult(
       MethodTree constructorDeclaration) {
-    Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annotationSet = new AnnotationMirrorSet();
     ModifiersTree modifiersTree = constructorDeclaration.getModifiers();
     if (modifiersTree != null) {
       List<? extends AnnotationTree> annotationTrees = modifiersTree.getAnnotations();
@@ -1567,7 +1507,7 @@ public class AnnotationUtils {
    * @return the string representation, using simple (not fully-qualified) names
    */
   @SideEffectFree
-  public static String toStringSimple(Set<AnnotationMirror> annos) {
+  public static String toStringSimple(AnnotationMirrorSet annos) {
     DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
     StringJoiner result = new StringJoiner(" ");
     for (AnnotationMirror am : annos) {

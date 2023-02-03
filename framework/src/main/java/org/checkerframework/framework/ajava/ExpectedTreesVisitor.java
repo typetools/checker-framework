@@ -126,13 +126,13 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
       //      private final String myField;
       //   }
       // So the constructor and the field declarations have no matching trees in the
-      // JavaParser node, and we must remove those trees (and their subtrees) from the
+      // JavaParser AST node, and we must remove those trees (and their subtrees) from the
       // `trees` field.
       TreeScannerWithDefaults removeAllVisitor =
           new TreeScannerWithDefaults() {
             @Override
-            public void defaultAction(Tree node) {
-              trees.remove(node);
+            public void defaultAction(Tree tree) {
+              trees.remove(tree);
             }
           };
       for (Tree member : tree.getMembers()) {
@@ -262,7 +262,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     Void result = super.visitMethod(tree, p);
     // A varargs parameter like String... is converted to String[], where the array type doesn't
-    // have a corresponding JavaParser node. Conservatively skip the array type (but not the
+    // have a corresponding JavaParser AST node. Conservatively skip the array type (but not the
     // component type) if it's the last argument.
     if (!tree.getParameters().isEmpty()) {
       VariableTree last = tree.getParameters().get(tree.getParameters().size() - 1);

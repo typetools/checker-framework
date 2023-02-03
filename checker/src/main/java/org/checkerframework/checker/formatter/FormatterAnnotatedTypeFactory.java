@@ -27,6 +27,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
@@ -69,7 +70,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new FormatterQualifierHierarchy();
   }
 
@@ -136,7 +137,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private boolean hasFormatMethodAnno(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
-    Set<AnnotationMirror> declarationAnnos = methodAnnos.getDeclarationAnnotations();
+    AnnotationMirrorSet declarationAnnos = methodAnnos.getDeclarationAnnotations();
     return AnnotationUtils.containsSameByClass(
             declarationAnnos, org.checkerframework.checker.formatter.qual.FormatMethod.class)
         || AnnotationUtils.containsSameByName(

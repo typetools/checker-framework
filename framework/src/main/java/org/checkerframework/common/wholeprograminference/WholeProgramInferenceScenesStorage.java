@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -46,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -216,8 +218,12 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public boolean hasStorageLocationForMethod(ExecutableElement methodElt) {
-    // The scenes implementation can always add annotations to a method.
-    return true;
+    // The only location that the scenes implementation cannot store an annotation is on
+    // a member of an annotation type, which it cannot distinguish from a normal interface's
+    // method. Without this, the scenes implementation will attempt to annotate annotation
+    // elements, which is an error.
+    Element enclosingType = ElementUtils.enclosingTypeElement(methodElt);
+    return enclosingType == null || enclosingType.getKind() != ElementKind.ANNOTATION_TYPE;
   }
 
   @Override
@@ -543,7 +549,7 @@ public class WholeProgramInferenceScenesStorage
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsATM.getUnderlyingType(), type);
     updateAtmWithLub(rhsATM, atmFromScene);
     if (lhsATM instanceof AnnotatedTypeVariable) {
-      Set<AnnotationMirror> upperAnnos =
+      AnnotationMirrorSet upperAnnos =
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
@@ -600,10 +606,10 @@ public class WholeProgramInferenceScenesStorage
     }
 
     // LUB primary annotations
-    Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
+    AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
-      // amJaif only contains  annotations from the jaif, so it might be missing
+      // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
         amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
