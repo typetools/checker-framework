@@ -408,11 +408,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns true iff the given tree node is a mask operation (&amp; or |).
    *
-   * @param node a tree to test
+   * @param tree a tree to test
    * @return true iff node is a mask operation (&amp; or |)
    */
-  private boolean isMask(Tree node) {
-    Tree.Kind kind = node.getKind();
+  private boolean isMask(Tree tree) {
+    Tree.Kind kind = tree.getKind();
 
     return kind == Tree.Kind.AND || kind == Tree.Kind.OR;
   }
@@ -421,15 +421,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
    *
-   * @param node a tree that might be a cast to a primitive
+   * @param tree a tree that might be a cast to a primitive
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
-  private PrimitiveTypeTree primitiveTypeCast(Tree node) {
-    if (node.getKind() != Tree.Kind.TYPE_CAST) {
+  private PrimitiveTypeTree primitiveTypeCast(Tree tree) {
+    if (tree.getKind() != Tree.Kind.TYPE_CAST) {
       return null;
     }
 
-    TypeCastTree cast = (TypeCastTree) node;
+    TypeCastTree cast = (TypeCastTree) tree;
     Tree castType = cast.getType();
 
     Tree underlyingType;
