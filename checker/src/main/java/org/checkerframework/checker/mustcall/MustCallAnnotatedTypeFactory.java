@@ -416,8 +416,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromUse(node);
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+      Element elt = TreeUtils.elementFromUse(tree);
       if (elt.getKind() == ElementKind.PARAMETER
           && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
               || getDeclAnnotation(elt, Owning.class) == null)) {
@@ -426,7 +426,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
-      return super.visitIdentifier(node, type);
+      return super.visitIdentifier(tree, type);
     }
   }
 

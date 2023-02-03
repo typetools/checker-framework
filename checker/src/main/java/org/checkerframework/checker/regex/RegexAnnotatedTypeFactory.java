@@ -313,7 +313,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       // Don't call super method which will try to create a LUB
       // Even when it is not yet valid: i.e. between a @PolyRegex and a @Regex
       return null;
@@ -402,10 +402,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Case 2: Also handle compound String concatenation. */
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-      if (TreeUtils.isStringCompoundConcatenation(node)) {
-        AnnotatedTypeMirror rhs = getAnnotatedType(node.getExpression());
-        AnnotatedTypeMirror lhs = getAnnotatedType(node.getVariable());
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      if (TreeUtils.isStringCompoundConcatenation(tree)) {
+        AnnotatedTypeMirror rhs = getAnnotatedType(tree.getExpression());
+        AnnotatedTypeMirror lhs = getAnnotatedType(tree.getVariable());
 
         final Integer lhsRegexCount = getMinimumRegexCount(lhs);
         final Integer rhsRegexCount = getMinimumRegexCount(rhs);
@@ -417,7 +417,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.addAnnotation(createRegexAnnotation(lCount + rCount));
         }
       }
-      return null; // super.visitCompoundAssignment(node, type);
+      return null; // super.visitCompoundAssignment(tree, type);
     }
 
     /**

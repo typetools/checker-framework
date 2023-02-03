@@ -1127,22 +1127,22 @@ public class DependentTypesHelper {
    * Reports an expression.unparsable error for each Java expression in the given type variables
    * that is an expression error string.
    *
-   * @param node a method declaration
+   * @param tree a method declaration
    * @param methodType annotated type of the method
    */
   private void checkTypeVariablesForErrorExpressions(
-      MethodTree node, AnnotatedExecutableType methodType) {
+      MethodTree tree, AnnotatedExecutableType methodType) {
     for (int i = 0; i < methodType.getTypeVariables().size(); i++) {
       AnnotatedTypeMirror atm = methodType.getTypeVariables().get(i);
       StringToJavaExpression stringToJavaExpr =
-          stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, node, factory.getChecker());
+          stringExpr -> StringToJavaExpression.atMethodBody(stringExpr, tree, factory.getChecker());
       if (debugStringToJavaExpression) {
         System.out.printf(
             "checkTypeVariablesForErrorExpressions(%s, %s) created %s%n",
-            node, methodType, stringToJavaExpr);
+            tree, methodType, stringToJavaExpr);
       }
       convertAnnotatedTypeMirror(stringToJavaExpr, atm);
-      checkTypeForErrorExpressions(atm, node.getTypeParameters().get(i));
+      checkTypeForErrorExpressions(atm, tree.getTypeParameters().get(i));
     }
   }
 

@@ -47,9 +47,9 @@ public class ListTreeAnnotator extends TreeAnnotator {
   }
 
   @Override
-  public Void defaultAction(Tree node, AnnotatedTypeMirror type) {
+  public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
     for (TreeAnnotator annotator : annotators) {
-      annotator.visit(node, type);
+      annotator.visit(tree, type);
     }
 
     return null;

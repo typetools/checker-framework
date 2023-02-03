@@ -567,8 +567,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               new PropagationTreeAnnotator(atypeFactory);
 
           @Override
-          public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror mirror) {
-            return propagationTreeAnnotator.visitNewArray(node, mirror);
+          public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror mirror) {
+            return propagationTreeAnnotator.visitNewArray(tree, mirror);
           }
         };
     return new ListTreeAnnotator(

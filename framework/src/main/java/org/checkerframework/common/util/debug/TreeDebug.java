@@ -53,7 +53,7 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     @Override
-    public Void scan(Tree node, Void p) {
+    public Void scan(Tree tree, Void p) {
 
       // Indent according to subtrees.
       if (getCurrentPath() != null) {
@@ -62,16 +62,16 @@ public class TreeDebug extends AbstractProcessor {
         }
       }
 
-      // Add node kind to the buffer.
-      if (node == null) {
+      // Add tree kind to the buffer.
+      if (tree == null) {
         buf.append("null");
       } else {
-        buf.append(node.getKind());
+        buf.append(tree.getKind());
       }
       buf.append(LINE_SEPARATOR);
 
       // Visit subtrees.
-      super.scan(node, p);
+      super.scan(tree, p);
 
       // Display and clear the buffer.
       System.out.print(buf.toString());
@@ -81,9 +81,9 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     /**
-     * Splices additional information for a node into the buffer.
+     * Splices additional information for an AST node into the buffer.
      *
-     * @param text additional information for the node
+     * @param text additional information for the AST node
      */
     private final void insert(Object text) {
       buf.insert(buf.length() - 1, " ");
@@ -91,29 +91,29 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, Void p) {
-      insert(node);
-      return super.visitIdentifier(node, p);
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      insert(tree);
+      return super.visitIdentifier(tree, p);
     }
 
     @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-      insert(node.getExpression() + "." + node.getIdentifier());
-      return super.visitMemberSelect(node, p);
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      insert(tree.getExpression() + "." + tree.getIdentifier());
+      return super.visitMemberSelect(tree, p);
     }
 
     @Override
-    public Void visitNewArray(NewArrayTree node, Void p) {
-      insert(((JCNewArray) node).annotations);
+    public Void visitNewArray(NewArrayTree tree, Void p) {
+      insert(((JCNewArray) tree).annotations);
       insert("|");
-      insert(((JCNewArray) node).dimAnnotations);
-      return super.visitNewArray(node, p);
+      insert(((JCNewArray) tree).dimAnnotations);
+      return super.visitNewArray(tree, p);
     }
 
     @Override
-    public Void visitLiteral(LiteralTree node, Void p) {
-      insert(node.getValue());
-      return super.visitLiteral(node, p);
+    public Void visitLiteral(LiteralTree tree, Void p) {
+      insert(tree.getValue());
+      return super.visitLiteral(tree, p);
     }
   }
 

@@ -256,23 +256,23 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * Get the effect of a method call at its callsite, acknowledging polymorphic instantiation using
    * type use annotations.
    *
-   * @param node the method invocation as an AST node
+   * @param tree the method invocation as an AST node
    * @param callerReceiver the type of the receiver object if available. Used to resolve direct
    *     calls like "super()"
    * @param methodElt the element of the callee method
    * @return the computed effect (SafeEffect or UIEffect) for the method call
    */
   public Effect getComputedEffectAtCallsite(
-      MethodInvocationTree node,
+      MethodInvocationTree tree,
       AnnotatedTypeMirror.AnnotatedDeclaredType callerReceiver,
       ExecutableElement methodElt) {
     Effect targetEffect = getDeclaredEffect(methodElt);
     if (targetEffect.isPoly()) {
       AnnotatedTypeMirror srcType = null;
-      if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-        ExpressionTree src = ((MemberSelectTree) node.getMethodSelect()).getExpression();
+      if (tree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
+        ExpressionTree src = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
         srcType = getAnnotatedType(src);
-      } else if (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
+      } else if (tree.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
         // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
         if (callerReceiver == null) {
           // Not enought information provided to instantiate this type-polymorphic effects
@@ -280,7 +280,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         }
         srcType = callerReceiver;
       } else {
-        throw new TypeSystemError("Unexpected getMethodSelect() kind at callsite " + node);
+        throw new TypeSystemError("Unexpected getMethodSelect() kind at callsite " + tree);
       }
 
       // Instantiate type-polymorphic effects
@@ -392,14 +392,14 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * @param declaringType the type declaring the override
    * @param overridingMethod the method override itself
    * @param issueConflictWarning whether or not to issue warnings
-   * @param errorNode the method declaration node; used for reporting errors
+   * @param errorTree the method declaration AST node; used for reporting errors
    * @return the min and max inherited effects
    */
   public Effect.EffectRange findInheritedEffectRange(
       TypeElement declaringType,
       ExecutableElement overridingMethod,
       boolean issueConflictWarning,
-      Tree errorNode) {
+      Tree errorTree) {
     assert (declaringType != null);
     ExecutableElement uiOverridden = null;
     ExecutableElement safeOverridden = null;
@@ -440,7 +440,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         safeOverridden = overriddenMethodElt;
         if (isUI) {
           checker.reportError(
-              errorNode,
+              errorTree,
               "override.effect",
               declaringType,
               overridingMethod,
@@ -448,7 +448,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
               safeOverridden);
         } else if (isPolyUI) {
           checker.reportError(
-              errorNode,
+              errorTree,
               "override.effect.polymorphic",
               declaringType,
               overridingMethod,
@@ -470,7 +470,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                       || uiAnonClasses.contains(declaringType));
           if (!isAnonInstantiation && !overriddenType.hasAnnotation(UI.class)) {
             checker.reportError(
-                errorNode,
+                errorTree,
                 "override.effect.nonui",
                 declaringType,
                 overridingMethod,
@@ -486,7 +486,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
       // There may be more than two parent methods, but for now it's
       // enough to know there are at least 2 in conflict.
       checker.reportWarning(
-          errorNode,
+          errorTree,
           "override.effect.warning.inheritance",
           declaringType,
           overridingMethod,
@@ -593,7 +593,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     */
 
     @Override
-    public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {
+    public Void visitMethod(MethodTree tree, AnnotatedTypeMirror type) {
       AnnotatedTypeMirror.AnnotatedExecutableType methType =
           (AnnotatedTypeMirror.AnnotatedExecutableType) type;
       // Effect e = getDeclaredEffect(methType.getElement());
@@ -617,7 +617,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 ? PolyUI.class
                 : fromElement(cls).hasAnnotation(UI.class) ? UI.class : AlwaysSafe.class);
       }
-      return super.visitMethod(node, type);
+      return super.visitMethod(tree, type);
     }
   }
 }
