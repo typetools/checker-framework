@@ -6,7 +6,6 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -32,8 +31,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -72,6 +71,9 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@link InternedDistinct} annotation. */
   final AnnotationMirror INTERNED_DISTINCT =
       AnnotationBuilder.fromClass(elements, InternedDistinct.class);
+
+  /** A set containing just {@link #INTERNED}. */
+  final AnnotationMirrorSet INTERNED_SET = AnnotationMirrorSet.singleton(INTERNED);
 
   /**
    * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
@@ -126,10 +128,10 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror typeMirror) {
+  public AnnotationMirrorSet getTypeDeclarationBounds(TypeMirror typeMirror) {
     if (typeMirror.getKind() == TypeKind.DECLARED
         && ((DeclaredType) typeMirror).asElement().getKind() == ElementKind.ENUM) {
-      return AnnotationMirrorSet.singleElementSet(INTERNED);
+      return INTERNED_SET;
     }
     return super.getTypeDeclarationBounds(typeMirror);
   }

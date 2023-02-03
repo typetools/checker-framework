@@ -58,6 +58,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -642,7 +643,7 @@ public class NullnessVisitor
         method.getReceiverType() != null) {
       // TODO: should all or some constructors be excluded?
       // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      Set<AnnotationMirror> receiverAnnos = atypeFactory.getReceiverType(tree).getAnnotations();
+      AnnotationMirrorSet receiverAnnos = atypeFactory.getReceiverType(tree).getAnnotations();
       AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
       AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
       AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
