@@ -23,14 +23,14 @@ public class AccumulationVisitor extends BaseTypeVisitor<AccumulationAnnotatedTy
 
   /** Checks each predicate annotation to make sure the predicate is well-formed. */
   @Override
-  public Void visitAnnotation(final AnnotationTree node, final Void p) {
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+  public Void visitAnnotation(final AnnotationTree tree, final Void p) {
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     if (atypeFactory.isPredicate(anno)) {
       String errorMessage = atypeFactory.isValidPredicate(anno);
       if (errorMessage != null) {
-        checker.reportError(node, "predicate", errorMessage);
+        checker.reportError(tree, "predicate", errorMessage);
       }
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 }

@@ -1,7 +1,21 @@
-Version 3.30.0 (February 1, 2023)
---------------------------------
+Version 3.30.1 (March 1, 2023)
+------------------------------
 
 **User-visible changes:**
+
+**Implementation details:**
+
+Moved `AnnotationMirrorSet` and `AnnotationMirrorMap` from
+`org.checkerframework.framework.util` to `org.checkerframework.javacutil.AnnotationMirrorSet`.
+Changed uses of `Set<AnnotationMirror>` to `AnnotationMirrorSet` including in APIs.
+Removed methods from AnnotationUtils that are no longer useful:
+`createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
+
+**Closed issues:**
+
+
+Version 3.30.0 (February 2, 2023)
+---------------------------------
 
 **Implementation details:**
 
@@ -10,6 +24,7 @@ Version 3.30.0 (February 1, 2023)
 Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
 
 **Closed issues:**
+#5402, #5486, #5489, #5519, #5524, #5526.
 
 
 Version 3.29.0 (January 5, 2023)

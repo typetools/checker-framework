@@ -439,16 +439,16 @@ public class I18nFormatterTreeUtil {
                     return first.accept(
                         new SimpleTreeVisitor<InvocationType, Class<Void>>() {
                           @Override
-                          protected InvocationType defaultAction(Tree node, Class<Void> p) {
+                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
                             // just a normal array
                             return InvocationType.ARRAY;
                           }
 
                           @Override
-                          public InvocationType visitTypeCast(TypeCastTree node, Class<Void> p) {
+                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
                             // it's a (Object[])null
                             return atypeFactory
-                                        .getAnnotatedType(node.getExpression())
+                                        .getAnnotatedType(tree.getExpression())
                                         .getUnderlyingType()
                                         .getKind()
                                     == TypeKind.NULL

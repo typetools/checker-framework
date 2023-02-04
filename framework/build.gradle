@@ -103,7 +103,7 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
 
   doLast {
     FileTree tree = fileTree(dir: inputDir)
-    SortedSet<String> annotatedForFiles = new TreeSet<>();
+    NavigableSet<String> annotatedForFiles = new TreeSet<>();
     tree.visit { FileVisitDetails fvd ->
       if (!fvd.file.isDirectory() && fvd.file.name.matches('.*\\.java')
           && !fvd.file.path.contains('org/checkerframework')) {

@@ -76,7 +76,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -408,25 +408,10 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeMirror typeToUpdate,
       TypeUseLocation defLoc,
       boolean ignoreIfAnnotated) {
-    // Clears only the annotations that are supported by atypeFactory.
-    // The others stay intact.
-    Set<AnnotationMirror> annosToRemove = AnnotationUtils.createAnnotationSet();
-    for (AnnotationMirror anno : typeToUpdate.getAnnotations()) {
-      if (atypeFactory.isSupportedQualifier(anno)) {
-        annosToRemove.add(anno);
-      }
-    }
-
-    // This method may be called consecutive times to modify the same AnnotatedTypeMirror.
-    // Each time it is called, the AnnotatedTypeMirror has a better type
-    // estimate for the modified AnnotatedTypeMirror. Therefore, it is not a problem to remove
-    // all annotations before inserting the new annotations.
-    typeToUpdate.removeAnnotations(annosToRemove);
-
     // Only update the AnnotatedTypeMirror if there are no explicit annotations
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
       for (AnnotationMirror am : newATM.getAnnotations()) {
-        typeToUpdate.addAnnotation(am);
+        typeToUpdate.replaceAnnotation(am);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
@@ -438,8 +423,7 @@ public class WholeProgramInferenceJavaParserStorage
           // in the same hierarchy.
           break;
         }
-
-        typeToUpdate.addAnnotation(am);
+        typeToUpdate.replaceAnnotation(am);
       }
     }
 
@@ -1052,7 +1036,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Annotations on the declaration of the class (note that despite the name, these can also be
      * type annotations).
      */
-    private @MonotonicNonNull Set<AnnotationMirror> classAnnotations = null;
+    private @MonotonicNonNull AnnotationMirrorSet classAnnotations = null;
 
     /**
      * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
@@ -1078,7 +1062,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addAnnotationToClassDeclaration(AnnotationMirror annotation) {
       if (classAnnotations == null) {
-        classAnnotations = new HashSet<>();
+        classAnnotations = new AnnotationMirrorSet();
       }
 
       return classAnnotations.add(annotation);
@@ -1139,7 +1123,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
     /** Annotations on the callable declaration. */
-    private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
+    private @MonotonicNonNull AnnotationMirrorSet declarationAnnotations = null;
 
     /** Declaration annotations on the parameters. */
     private @MonotonicNonNull Set<Pair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
@@ -1219,12 +1203,12 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @return the declaration annotations for this callable declaration
      */
-    public Set<AnnotationMirror> getDeclarationAnnotations() {
+    public AnnotationMirrorSet getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
-        return Collections.emptySet();
+        return AnnotationMirrorSet.emptySet();
       }
 
-      return Collections.unmodifiableSet(declarationAnnotations);
+      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
     }
 
     /**
@@ -1236,7 +1220,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>(1);
+        declarationAnnotations = new AnnotationMirrorSet();
       }
 
       return declarationAnnotations.add(annotation);
@@ -1482,7 +1466,7 @@ public class WholeProgramInferenceJavaParserStorage
     /** Inferred type for field, initialized the first time it's accessed. */
     private @MonotonicNonNull AnnotatedTypeMirror type = null;
     /** Annotations on the field declaration. */
-    private @MonotonicNonNull Set<AnnotationMirror> declarationAnnotations = null;
+    private @MonotonicNonNull AnnotationMirrorSet declarationAnnotations = null;
 
     /**
      * Creates a wrapper for the given field declaration.
@@ -1520,7 +1504,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new HashSet<>(1);
+        declarationAnnotations = new AnnotationMirrorSet();
       }
 
       return declarationAnnotations.add(annotation);
@@ -1533,12 +1517,12 @@ public class WholeProgramInferenceJavaParserStorage
      * @return the declaration annotations for this field declaration
      */
     @SuppressWarnings("UnusedMethod")
-    public Set<AnnotationMirror> getDeclarationAnnotations() {
+    public AnnotationMirrorSet getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
-        return Collections.emptySet();
+        return AnnotationMirrorSet.emptySet();
       }
 
-      return Collections.unmodifiableSet(declarationAnnotations);
+      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
     }
 
     /**
@@ -1559,6 +1543,27 @@ public class WholeProgramInferenceJavaParserStorage
         }
       }
 
+      // Don't transfer type annotations to variable declarators with sibling
+      // variable declarators, because they're printed incorrectly (as "???").
+      // (A variable declarator can have siblings if it's part of a declaration
+      // like "int x, y, z;", which is bad style but legal Java.)
+      // In any event, WPI doesn't consider the LUB of the types of the siblings,
+      // so any inferred type is likely to be wrong.
+      // TODO: avoid inferring these types at all, or take the LUB of all assignments
+      // to the siblings. Unfortunately, VariableElements don't track whether they have
+      // siblings, and there's no other information about the declaration for
+      // WholeProgramInferenceImplementation to use: to determine that there are siblings,
+      // a parse tree is needed.
+      boolean foundVariableDeclarator = false;
+      for (Node child : this.declaration.getParentNode().get().getChildNodes()) {
+        if (child instanceof VariableDeclarator) {
+          if (foundVariableDeclarator) {
+            // This is the second VariableDeclarator that was found.
+            return;
+          }
+          foundVariableDeclarator = true;
+        }
+      }
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
