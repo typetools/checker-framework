@@ -2,6 +2,7 @@
 
 import java.util.EnumMap;
 
+@SuppressWarnings("all") // only check for crashes
 public class EnumMapCrash {
   private class Holder<T> {
     public T held;

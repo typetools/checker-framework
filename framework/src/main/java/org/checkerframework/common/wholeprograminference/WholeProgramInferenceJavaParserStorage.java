@@ -398,7 +398,18 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public AnnotatedTypeMirror atmFromStorageLocation(
       TypeMirror typeMirror, AnnotatedTypeMirror storageLocation) {
-    return storageLocation;
+    if (typeMirror.getKind() == TypeKind.TYPEVAR) {
+      // Only copy the primary annotation, because we don't currently have
+      // support for inferring type bounds. This avoids accidentally substituting the
+      // use of the type variable for its declaration when inferring annotations on
+      // fields with a type variable as their type.
+      AnnotatedTypeMirror asExpectedType =
+          AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
+      asExpectedType.replaceAnnotations(storageLocation.getAnnotations());
+      return asExpectedType;
+    } else {
+      return storageLocation;
+    }
   }
 
   @Override
