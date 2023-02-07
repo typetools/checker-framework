@@ -366,6 +366,10 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
+    if (fieldAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = fieldAnnos != null && fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(field));
@@ -377,6 +381,10 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addDeclarationAnnotationToFormalParameter(
       ExecutableElement methodElt, int index, AnnotationMirror anno) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotationToFormalParameter(anno, index);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
@@ -388,6 +396,10 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
     String className = ElementUtils.getBinaryName(classElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = classAnnos.addAnnotationToClassDeclaration(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(classElt));
