@@ -347,7 +347,9 @@ public class RemoveAnnotationsForInference {
         || name.equals("NonLeaked")
         || name.equals("org.checkerframework.common.aliasing.qual.NonLeaked")
         || name.equals("LeakedToResult")
-        || name.equals("org.checkerframework.common.aliasing.qual.LeakedToResult");
+        || name.equals("org.checkerframework.common.aliasing.qual.LeakedToResult")
+        || name.equals("GenerateBuilder")
+        || name.equals("com.github.misberner.buildergen.annotations.GenerateBuilder");
   }
 
   // This approach searches upward to find all the active warning suppressions.
