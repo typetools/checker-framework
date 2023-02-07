@@ -2,6 +2,7 @@ package org.checkerframework.checker.testchecker.ainfer;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,6 +122,16 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         wpi.addClassDeclarationAnnotation(classElt, SIBLING1);
       }
       return super.visitClass(classTree, type);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree variableTree, AnnotatedTypeMirror type) {
+      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      VariableElement varElt = TreeUtils.elementFromDeclaration(variableTree);
+      if (wpi != null && varElt.getSimpleName().contentEquals("iShouldBeTreatedAsSibling1")) {
+        wpi.addFieldDeclarationAnnotation(varElt, TREAT_AS_SIBLING1);
+      }
+      return super.visitVariable(variableTree, type);
     }
 
     @Override
