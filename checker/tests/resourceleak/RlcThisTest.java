@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -22,13 +20,13 @@ class RlcThisTest {
 
   void test1() {
     Foo f = new Foo();
-    f.b1(); // RLC reports a FP at this line
+    f.b1();
     f.a();
   }
 
   void test2() {
     Foo f = new Foo();
-    f.b2(); // RLC reports a FP at this line
+    f.b2();
     f.a();
   }
 
