@@ -3,6 +3,14 @@ Version 3.30.1 (March 1, 2023)
 
 **User-visible changes:**
 
+Signedness Checker changes:
+ * Cast expressions are not subject to type refinement.  When a programmer
+   writes a cast such as `(@Signed int) 2`, it is not refined to
+   `@SignednessGlb` and cannot be used in an unsigned context.
+ * When incompatible arguments are passed to `@PolySigned` formal parameters,
+   the error is expressed in terms of `@SignednessBottom` rather than the
+   greatest lower bound of the argument types.
+
 **Implementation details:**
 
 Moved `AnnotationMirrorSet` and `AnnotationMirrorMap` from
@@ -21,7 +29,7 @@ Version 3.30.0 (February 2, 2023)
 
 `getQualifierKind()` throws an exception rather than returning null.
 
-Renamed gradle task `copyJarsToDist` to `assembleForJavac`.
+Renamed Gradle task `copyJarsToDist` to `assembleForJavac`.
 
 **Closed issues:**
 #5402, #5486, #5489, #5519, #5524, #5526.
