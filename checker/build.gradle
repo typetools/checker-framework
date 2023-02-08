@@ -817,7 +817,6 @@ task ainferNullnessGenerateJaifs(type: Test) {
 
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
-    delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
 
     // Inserting annotations from .jaif files in-place.
     String jaifsDir = 'tests/ainfer-nullness/inference-output';
