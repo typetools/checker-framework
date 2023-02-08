@@ -860,7 +860,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // bound.
     if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
       AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getExplicitAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
       if (upperAnnos.size() == rhsATM.getAnnotations().size()
