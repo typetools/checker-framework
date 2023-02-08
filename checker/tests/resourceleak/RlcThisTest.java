@@ -33,13 +33,13 @@ class RlcThisTest {
   }
 
   void test3() {
-    f = new Foo();
+    Foo f = new Foo();
     Foo ff = f.b1();
     ff.a();
   }
 
   void test4() {
-    f = new Foo();
+    Foo f = new Foo();
     Foo ff = f.b2();
     ff.a();
   }
