@@ -793,6 +793,7 @@ task ainferResourceLeakAjavaTest(dependsOn: 'shadowJar', group: 'Verification') 
   dependsOn(ainferResourceLeakValidateAjava)
   outputs.upToDateWhen { false }
 }
+
 task ainferNullnessGenerateJaifs(type: Test) {
   description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
 
@@ -814,13 +815,9 @@ task ainferNullnessGenerateJaifs(type: Test) {
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-nullness')
 
-    // JAIF-based WPI fails these tests, which was added for stub-based WPI.
-    // See issue here: https://github.com/typetools/checker-framework/issues/3009
-    delete('tests/ainfer-nullness/annotated/ConflictingAnnotationsTest.java')
-    delete('tests/ainfer-nullness/annotated/MultiDimensionalArrays.java')
-
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
+    delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
 
     // Inserting annotations from .jaif files in-place.
     String jaifsDir = 'tests/ainfer-nullness/inference-output';
