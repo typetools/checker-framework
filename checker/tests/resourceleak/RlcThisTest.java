@@ -20,21 +20,27 @@ class RlcThisTest {
     }
   }
 
-  void test() {
-    Foo f1 = new Foo();
-    f1.b1(); // RLC reports a FP at this line
-    f1.a();
+  void test1() {
+    Foo f = new Foo();
+    f.b1(); // RLC reports a FP at this line
+    f.a();
+  }
 
-    Foo f2 = new Foo();
-    f2.b2(); // RLC reports a FP at this line
-    f2.a();
+  void test2() {
+    Foo f = new Foo();
+    f.b2(); // RLC reports a FP at this line
+    f.a();
+  }
 
-    f1 = new Foo();
-    Foo ff1 = f1.b1();
-    ff1.a();
+  void test3() {
+    f = new Foo();
+    Foo ff = f.b1();
+    ff.a();
+  }
 
-    f2 = new Foo();
-    Foo ff2 = f2.b2();
-    ff2.a();
+  void test4() {
+    f = new Foo();
+    Foo ff = f.b2();
+    ff.a();
   }
 }
