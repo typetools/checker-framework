@@ -301,7 +301,7 @@ allprojects {
         file("${destinationDir}/resources/fonts/").mkdirs()
         ant.touch(file: "${destinationDir}/resources/fonts/dejavu.css")
 
-        if(!isJava8) {
+        if (!isJava8) {
           options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED', true)
           options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED', true)
           options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED', true)
