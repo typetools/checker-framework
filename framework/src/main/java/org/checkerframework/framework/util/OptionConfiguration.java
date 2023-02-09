@@ -31,7 +31,7 @@ public interface OptionConfiguration {
    * this happens e.g. for {@code -Amyopt}
    *
    * @param name the name of the option to check
-   * @see #getOption(String,boolean)
+   * @see #getOption(String,String)
    */
   String getOption(String name);
 
