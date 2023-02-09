@@ -163,6 +163,9 @@ public class WholeProgramInferenceScenesStorage
       case CLASS:
         className = ElementUtils.getBinaryName((TypeElement) elt);
         break;
+      case PARAMETER:
+        className = ElementUtils.getEnclosingClassName((VariableElement) elt);
+        break;
       default:
         throw new BugInCF("What element? %s %s", elt.getKind(), elt);
     }
