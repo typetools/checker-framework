@@ -71,9 +71,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /** True if -AnoResourceAliases was passed on the command line. */
   private final boolean noResourceAliases;
 
-  /** True if the -AnoCreatesMustCallFor command-line argument was supplied. */
-  private final boolean noCreatesMustCallFor;
-
   /**
    * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
@@ -98,7 +95,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public ResourceLeakAnnotatedTypeFactory(final BaseTypeChecker checker) {
     super(checker);
     this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
-    this.noCreatesMustCallFor = !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
     this.postInit();
   }
 
@@ -329,7 +325,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *     checker
    */
   public boolean canCreateObligations() {
-    return !noCreatesMustCallFor;
+    // Precomputing this call to `hasOption` causes a NullPointerException, so leave it as is.
+    return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
   }
 
   @Override
