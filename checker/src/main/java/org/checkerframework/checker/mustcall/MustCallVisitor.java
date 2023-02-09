@@ -40,6 +40,7 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactory> {
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
   /**

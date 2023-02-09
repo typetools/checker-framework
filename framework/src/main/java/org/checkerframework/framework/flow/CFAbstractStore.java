@@ -143,7 +143,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
   }
-  /** Copy constructor. */
+  /**
+   * Copy constructor.
+   *
+   * @param other a CFAbstractStore to copy into this
+   */
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     localVariableValues = new HashMap<>(other.localVariableValues);
