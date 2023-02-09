@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
@@ -1558,11 +1559,17 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (declarationAnnotations != null) {
-        ClassOrInterfaceType type = declaration.getType().asClassOrInterfaceType();
-        for (AnnotationMirror annotation : declarationAnnotations) {
-          type.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  annotation));
+        // Don't add directly to the type of the variable declarator,
+        // because declaration annotations need to be attached to the FieldDeclaration
+        // node instead.
+        Node declParent = declaration.getParentNode().orElse(null);
+        if (declParent instanceof FieldDeclaration) {
+          FieldDeclaration decl = (FieldDeclaration) declParent;
+          for (AnnotationMirror annotation : declarationAnnotations) {
+            decl.addAnnotation(
+                AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                    annotation));
+          }
         }
       }
 

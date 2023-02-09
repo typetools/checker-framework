@@ -2,6 +2,7 @@ package org.checkerframework.checker.testchecker.ainfer;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -70,8 +72,8 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   public AinferTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    // Support a declaration annotation that can be written on parameters, to test that the
-    // WPI feature allowing inference of declaration annotations on parameters works as intended.
+    // Support a declaration annotation that has the same meaning as @Sibling1, to test that the
+    // WPI feature allowing inference of declaration annotations works as intended.
     addAliasedTypeAnnotation(AinferTreatAsSibling1.class, SIBLING1);
     postInit();
   }
@@ -102,6 +104,19 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         new AinferTestTreeAnnotator(this));
   }
 
+  @Override
+  public AnnotatedTypeMirror getAnnotatedType(Element elt) {
+    // By default, the CF does not look for declaration annotations
+    // that are aliases of type annotations in annotation files.
+    // For the test that the WPI places declaration annotations properly,
+    // adjust those rules for fields here. TODO: is that a bug in the CF or expected behavior?
+    AnnotatedTypeMirror result = super.getAnnotatedType(elt);
+    if (getDeclAnnotation(elt, AinferTreatAsSibling1.class) != null) {
+      result.replaceAnnotation(SIBLING1);
+    }
+    return result;
+  }
+
   protected class AinferTestTreeAnnotator extends TreeAnnotator {
 
     /**
@@ -121,6 +136,16 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         wpi.addClassDeclarationAnnotation(classElt, SIBLING1);
       }
       return super.visitClass(classTree, type);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree variableTree, AnnotatedTypeMirror type) {
+      WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      VariableElement varElt = TreeUtils.elementFromDeclaration(variableTree);
+      if (wpi != null && varElt.getSimpleName().contentEquals("iShouldBeTreatedAsSibling1")) {
+        wpi.addFieldDeclarationAnnotation(varElt, TREAT_AS_SIBLING1);
+      }
+      return super.visitVariable(variableTree, type);
     }
 
     @Override

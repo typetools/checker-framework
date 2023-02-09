@@ -1699,24 +1699,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     activeOptions = Collections.unmodifiableMap(activeOpts);
   }
 
-  /**
-   * Check whether the given option is provided.
-   *
-   * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption} returns
-   * true: this happens e.g. for {@code -Amyopt}
-   *
-   * @param name the name of the option to check
-   * @return true if the option name was provided, false otherwise
-   */
   @Override
   public final boolean hasOption(String name) {
     return getOptions().containsKey(name);
   }
 
   /**
-   * Determines the value of the option with the given name.
+   * {@inheritDoc}
    *
-   * @param name the name of the option to check
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
@@ -1725,10 +1715,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines the boolean value of the option with the given name. Returns false if the option is
-   * not set.
+   * {@inheritDoc}
    *
-   * @param name the name of the option to check
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
@@ -1737,11 +1725,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines the boolean value of the option with the given name. Returns the given default value
-   * if the option is not set.
+   * {@inheritDoc}
    *
-   * @param name the name of the option to check
-   * @param defaultValue the default value to use if the option is not set
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
@@ -1760,11 +1745,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         String.format("Value of %s option should be a boolean, but is \"%s\".", name, value));
   }
 
-  /**
-   * Return all active options for this checker.
-   *
-   * @return all active options for this checker
-   */
   @Override
   public Map<String, String> getOptions() {
     if (activeOptions == null) {
@@ -1774,13 +1754,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines the value of the lint option with the given name and returns the default value if
-   * nothing is specified.
+   * {@inheritDoc}
    *
-   * @param name the name of the option to check
-   * @param defaultValue the default value to use if the option is not set
-   * @see SourceChecker#getOption(String)
-   * @see SourceChecker#getLintOption(String)
+   * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
   public final String getOption(String name, String defaultValue) {
