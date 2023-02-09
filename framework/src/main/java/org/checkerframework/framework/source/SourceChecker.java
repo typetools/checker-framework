@@ -1000,8 +1000,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // they are nondeterministic across runs.
 
         // Add timestamp to indicate how long operations are taking.
-        // Duplicate messages are suppressed, so this might not appear in front of every "
-        // is type-checking " message (when a file takes less than a second to type-check).
+        // Duplicate messages are suppressed, so this might not appear in front of every
+        // " is type-checking " message (when a file takes less than a second to type-check).
         message(Kind.NOTE, Instant.now().toString());
         message(
             Kind.NOTE,

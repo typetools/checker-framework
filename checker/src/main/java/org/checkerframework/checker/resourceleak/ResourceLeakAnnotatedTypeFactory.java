@@ -68,6 +68,12 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final ExecutableElement createsMustCallForValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
+  /** True if -AnoResourceAliases was passed on the command line. */
+  private final boolean noResourceAliases;
+
+  /** true if the -AnoCreatesMustCallFor command-line argument supplied. */
+  private final boolean canCreateObligations;
+
   /**
    * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
@@ -91,6 +97,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    */
   public ResourceLeakAnnotatedTypeFactory(final BaseTypeChecker checker) {
     super(checker);
+    this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
+    this.canCreateObligations = !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
     this.postInit();
   }
 
@@ -291,7 +299,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true if the given element has an {@link MustCallAlias} annotation
    */
   /* package-private */ boolean hasMustCallAlias(Element elt) {
-    if (checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
+    if (noResourceAliases) {
       return false;
     }
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
@@ -321,7 +329,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *     checker
    */
   public boolean canCreateObligations() {
-    return !checker.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+    return canCreateObligations;
   }
 
   @Override
