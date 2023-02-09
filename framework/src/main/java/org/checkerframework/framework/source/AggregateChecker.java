@@ -7,6 +7,7 @@ import com.sun.tools.javac.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 
 /**
  * An aggregate checker that packages multiple checkers together. The resulting checker invokes the
