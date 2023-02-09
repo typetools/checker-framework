@@ -554,6 +554,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
 
+  // Also see initChecker().
   @Override
   public final synchronized void init(ProcessingEnvironment env) {
     ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
@@ -595,9 +596,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     printFilenames = hasOption("filenames");
     warns = hasOption("warns");
-    showSuppressWarningsStrings = hasOption("showSuppressWarningsStrings");
-    requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
-    warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -915,6 +913,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (this.activeLints == null) {
       this.activeLints = createActiveLints(getOptions());
     }
+
+    showSuppressWarningsStrings = hasOption("showSuppressWarningsStrings");
+    requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
+    warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
   /** Output the warning about source level at most once. */
