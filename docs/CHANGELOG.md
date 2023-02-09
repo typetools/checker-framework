@@ -3,6 +3,9 @@ Version 3.30.1 (March 1, 2023)
 
 **User-visible changes:**
 
+Command-line argument `-AshowPrefixInWarningMessages` puts the checker name
+on the first line of each warning and error message.
+
 Signedness Checker changes:
  * Cast expressions are not subject to type refinement.  When a programmer
    writes a cast such as `(@Signed int) 2`, it is not refined to
