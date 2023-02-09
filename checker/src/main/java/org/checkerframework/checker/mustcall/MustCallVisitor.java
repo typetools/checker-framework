@@ -40,6 +40,9 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactory> {
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
+  private final boolean noLightweightOwnership;
+
   /**
    * Creates a new MustCallVisitor.
    *
@@ -47,12 +50,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    */
   public MustCallVisitor(BaseTypeChecker checker) {
     super(checker);
+    noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
   }
 
   @Override
   public Void visitReturn(ReturnTree tree, Void p) {
     // Only check return types if ownership is being transferred.
-    if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+    if (!noLightweightOwnership) {
       MethodTree enclosingMethod = TreePathUtil.enclosingMethod(this.getCurrentPath());
       // enclosingMethod is null if this return site is inside a lambda. TODO: handle lambdas
       // more precisely?
