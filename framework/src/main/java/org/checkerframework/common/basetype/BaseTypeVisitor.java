@@ -1028,12 +1028,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (body == null) {
       r = new PurityResult();
     } else {
-      r =
-          PurityChecker.checkPurity(
-              body,
-              atypeFactory,
-              checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure"),
-              checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure"));
+      r = PurityChecker.checkPurity(body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
     }
     if (!r.isPure(kinds)) {
       reportPurityErrors(r, tree, kinds);
