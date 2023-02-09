@@ -594,8 +594,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (hasOption("printGitProperties")) {
       printGitProperties();
     }
-    printFilenames = hasOption("filenames");
-    warns = hasOption("warns");
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -914,6 +912,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       this.activeLints = createActiveLints(getOptions());
     }
 
+    printFilenames = hasOption("filenames");
+    warns = hasOption("warns");
     showSuppressWarningsStrings = hasOption("showSuppressWarningsStrings");
     requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
     warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
