@@ -31,6 +31,7 @@ public interface OptionConfiguration {
    * this happens e.g. for {@code -Amyopt}
    *
    * @param name the name of the option to check
+   * @return the value of the option with the given name
    * @see #getOption(String,String)
    */
   String getOption(String name);
@@ -41,6 +42,7 @@ public interface OptionConfiguration {
    *
    * @param name the name of the option to check
    * @param defaultValue the default value to return if the option is not set
+   * @return the value of the option with the given name, or {@code defaultValue}
    * @see #getOption(String)
    */
   String getOption(String name, String defaultValue);
