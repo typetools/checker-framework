@@ -1,12 +1,32 @@
 package org.checkerframework.javacutil;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 
 /** A utility class that helps with {@link TypeKind}s. */
 public final class TypeKindUtils {
+
+  /** Map of a boxed primitive type's fully-qualified name to its primitive {@link TypeKind}. */
+  private static final Map<@FullyQualifiedName String, TypeKind> boxedToPrimitiveType;
+
+  static {
+    Map<@FullyQualifiedName String, TypeKind> map = new LinkedHashMap<>();
+    map.put("java.lang.Byte", TypeKind.BYTE);
+    map.put("java.lang.Boolean", TypeKind.BOOLEAN);
+    map.put("java.lang.Character", TypeKind.CHAR);
+    map.put("java.lang.Double", TypeKind.DOUBLE);
+    map.put("java.lang.Float", TypeKind.FLOAT);
+    map.put("java.lang.Integer", TypeKind.INT);
+    map.put("java.lang.Long", TypeKind.LONG);
+    map.put("java.lang.Short", TypeKind.SHORT);
+    boxedToPrimitiveType = Collections.unmodifiableMap(map);
+  }
 
   /** This class cannot be instantiated. */
   private TypeKindUtils() {
@@ -84,32 +104,23 @@ public final class TypeKindUtils {
       return typeKind;
     }
 
-    if (!(type instanceof DeclaredType)) {
+    return boxedToTypeKind(type);
+  }
+
+  /**
+   * Given a boxed primitive type, return the corresponding primitive type kind. Otherwise, return
+   * null.
+   *
+   * @param type a boxed primitive type
+   * @return a primitive type kind, or null
+   */
+  public static @Nullable TypeKind boxedToTypeKind(TypeMirror type) {
+    if (type.getKind() != TypeKind.DECLARED) {
       return null;
     }
 
-    final String typeString = TypesUtils.getQualifiedName((DeclaredType) type).toString();
-
-    switch (typeString) {
-      case "java.lang.Byte":
-        return TypeKind.BYTE;
-      case "java.lang.Boolean":
-        return TypeKind.BOOLEAN;
-      case "java.lang.Character":
-        return TypeKind.CHAR;
-      case "java.lang.Double":
-        return TypeKind.DOUBLE;
-      case "java.lang.Float":
-        return TypeKind.FLOAT;
-      case "java.lang.Integer":
-        return TypeKind.INT;
-      case "java.lang.Long":
-        return TypeKind.LONG;
-      case "java.lang.Short":
-        return TypeKind.SHORT;
-      default:
-        return null;
-    }
+    final String typeString = TypesUtils.getQualifiedName((DeclaredType) type);
+    return boxedToPrimitiveType.get(typeString);
   }
 
   // No overload that takes AnnotatedTypeMirror becasue javacutil cannot depend on framework.

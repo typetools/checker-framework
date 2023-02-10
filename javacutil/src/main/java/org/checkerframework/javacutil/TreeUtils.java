@@ -73,6 +73,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -1055,6 +1056,25 @@ public final class TreeUtils {
   }
 
   /**
+   * Return the set of kinds that represent classes.
+   *
+   * @return the set of kinds that represent classes
+   */
+  public static Set<Tree.Kind> classTreeKinds() {
+    return classTreeKinds;
+  }
+
+  /**
+   * Is the given tree kind a class, i.e. a class, enum, interface, or annotation type.
+   *
+   * @param tree the tree to test
+   * @return true, iff the given kind is a class kind
+   */
+  public static boolean isClassTree(Tree tree) {
+    return classTreeKinds().contains(tree.getKind());
+  }
+
+  /**
    * The kinds that represent declarations that might have {@code @SuppressWarnings} written on
    * them: classes, methods, and variables.
    */
@@ -1068,15 +1088,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the set of kinds that represent classes.
-   *
-   * @return the set of kinds that represent classes
-   */
-  public static Set<Tree.Kind> classTreeKinds() {
-    return classTreeKinds;
-  }
-
-  /**
    * Return the set of kinds that represent declarations: classes, methods, and variables.
    *
    * @return the set of kinds that represent declarations
@@ -1086,13 +1097,13 @@ public final class TreeUtils {
   }
 
   /**
-   * Is the given tree kind a class, i.e. a class, enum, interface, or annotation type.
+   * Returns true if the given tree is a declaration.
    *
    * @param tree the tree to test
-   * @return true, iff the given kind is a class kind
+   * @return true if the given tree is a declaration
    */
-  public static boolean isClassTree(Tree tree) {
-    return classTreeKinds().contains(tree.getKind());
+  public static boolean isDeclarationTree(Tree tree) {
+    return declarationTreeKinds.contains(tree.getKind());
   }
 
   /** The kinds that represent types. */
@@ -1107,18 +1118,13 @@ public final class TreeUtils {
           Tree.Kind.SUPER_WILDCARD,
           Tree.Kind.ANNOTATED_TYPE);
 
+  /**
+   * Return the set of kinds that represent types.
+   *
+   * @return the set of kinds that represent types
+   */
   public static Set<Tree.Kind> typeTreeKinds() {
     return typeTreeKinds;
-  }
-
-  /**
-   * Returns true if the given tree is a declaration.
-   *
-   * @param tree the tree to test
-   * @return true if the given tree is a declaration
-   */
-  public static boolean isDeclarationTree(Tree tree) {
-    return declarationTreeKinds.contains(tree.getKind());
   }
 
   /**
@@ -1754,6 +1760,51 @@ public final class TreeUtils {
    */
   public static TypeMirror typeOf(Tree tree) {
     return ((JCTree) tree).type;
+  }
+
+  /**
+   * Determines the type for a method invocation at its call site, which has all type variables
+   * substituted with the type arguments at the call site.
+   *
+   * @param tree the method invocation
+   * @return the {@link ExecutableType} corresponding to the method invocation at its call site
+   */
+  @Pure
+  public static ExecutableType typeFromUse(MethodInvocationTree tree) {
+    TypeMirror type = TreeUtils.typeOf(tree.getMethodSelect());
+    if (!(type instanceof ExecutableType)) {
+      throw new BugInCF(
+          "TreeUtils.typeFromUse(MethodInvocationTree): type of method select in method"
+              + " invocation should be ExecutableType. Found: %s",
+          type);
+    }
+    return (ExecutableType) type;
+  }
+
+  /**
+   * Determines the type for a constructor at its call site given an invocation via {@code new},
+   * which has all type variables substituted with the type arguments at the call site.
+   *
+   * @param tree the constructor invocation
+   * @return the {@link ExecutableType} corresponding to the constructor call (i.e., the given
+   *     {@code tree}) at its call site
+   */
+  @Pure
+  public static ExecutableType typeFromUse(NewClassTree tree) {
+    if (!(tree instanceof JCTree.JCNewClass)) {
+      throw new BugInCF("TreeUtils.typeFromUse(NewClassTree): not a javac internal tree");
+    }
+
+    JCNewClass newClassTree = (JCNewClass) tree;
+    TypeMirror type = newClassTree.constructorType;
+
+    if (!(type instanceof ExecutableType)) {
+      throw new BugInCF(
+          "TreeUtils.typeFromUse(NewClassTree): type of constructor in new class tree"
+              + " should be ExecutableType. Found: %s",
+          type);
+    }
+    return (ExecutableType) type;
   }
 
   /**
