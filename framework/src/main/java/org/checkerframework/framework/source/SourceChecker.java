@@ -543,6 +543,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** List of upstream checker names. Includes the current checker. */
   protected @MonotonicNonNull List<@FullyQualifiedName String> upstreamCheckerNames;
 
+  /** True if the -Afilenames command-line argument was passed. */
+  private boolean printFilenames;
+  /** True if the -Awarns command-line argument was passed. */
+  private boolean warns;
+  /** True if the -AshowSuppressWarningsStrings command-line argument was passed. */
+  private boolean showSuppressWarningsStrings;
+  /** True if the -ArequirePrefixInWarningSuppressions command-line argument was passed. */
+  private boolean requirePrefixInWarningSuppressions;
+  /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
+  private boolean warnUnneededSuppressions;
+
+  // Also see initChecker().
   @Override
   public final synchronized void init(ProcessingEnvironment env) {
     ProcessingEnvironment unwrappedEnv = unwrapProcessingEnvironment(env);
@@ -899,6 +911,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (this.activeLints == null) {
       this.activeLints = createActiveLints(getOptions());
     }
+
+    printFilenames = hasOption("filenames");
+    warns = hasOption("warns");
+    showSuppressWarningsStrings = hasOption("showSuppressWarningsStrings");
+    requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
+    warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
   /** Output the warning about source level at most once. */
@@ -995,13 +1013,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     if (p.getCompilationUnit() != currentRoot) {
       setRoot(p.getCompilationUnit());
-      if (hasOption("filenames")) {
+      if (printFilenames) {
         // TODO: Have a command-line option to turn the timestamps on/off too, because
         // they are nondeterministic across runs.
 
         // Add timestamp to indicate how long operations are taking.
-        // Duplicate messages are suppressed, so this might not appear in front of every "
-        // is type-checking " message (when a file takes less than a second to type-check).
+        // Duplicate messages are suppressed, so this might not appear in front of every
+        // " is type-checking " message (when a file takes less than a second to type-check).
         message(Kind.NOTE, Instant.now().toString());
         message(
             Kind.NOTE,
@@ -1131,7 +1149,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
     }
 
-    if (kind == Kind.ERROR && hasOption("warns")) {
+    if (kind == Kind.ERROR && warns) {
       kind = Kind.MANDATORY_WARNING;
     }
 
@@ -1346,14 +1364,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String suppressWarningsString(String messageKey) {
     Collection<String> prefixes = this.getSuppressWarningsPrefixes();
     prefixes.remove(SUPPRESS_ALL_PREFIX);
-    if (hasOption("showSuppressWarningsStrings")) {
+    if (showSuppressWarningsStrings) {
       List<String> list = new ArrayList<>(prefixes);
       // Make sure "allcheckers" is at the end of the list.
       if (useAllcheckersPrefix) {
         list.add(SUPPRESS_ALL_PREFIX);
       }
       return list + ":" + messageKey;
-    } else if (hasOption("requirePrefixInWarningSuppressions")) {
+    } else if (requirePrefixInWarningSuppressions) {
       // If the warning key must be prefixed with a prefix (a checker name), then add that to
       // the SuppressWarnings string that is printed.
       String defaultPrefix = getDefaultSuppressWarningsPrefix();
@@ -1895,7 +1913,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * with this checker name or "allcheckers".
    */
   protected void warnUnneededSuppressions() {
-    if (!hasOption("warnUnneededSuppressions")) {
+    if (!warnUnneededSuppressions) {
       return;
     }
 
@@ -2171,7 +2189,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (suppressWarningsAnno != null) {
         String[] suppressWarningsStrings = suppressWarningsAnno.value();
         if (shouldSuppress(suppressWarningsStrings, errKey)) {
-          if (hasOption("warnUnneededSuppressions")) {
+          if (warnUnneededSuppressions) {
             elementsWithSuppressedWarnings.add(currElt);
           }
           return true;
@@ -2237,8 +2255,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (suppressWarningsInEffect == null) {
       return false;
     }
-    // Is the name of the checker required to suppress a warning?
-    boolean requirePrefix = hasOption("requirePrefixInWarningSuppressions");
 
     for (String currentSuppressWarningsInEffect : suppressWarningsInEffect) {
       int colonPos = currentSuppressWarningsInEffect.indexOf(":");
@@ -2251,7 +2267,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           // Suppress the warning unless its message key is "unneeded.suppression".
           boolean result = !currentSuppressWarningsInEffect.equals(UNNEEDED_SUPPRESSION_KEY);
           return result;
-        } else if (requirePrefix) {
+        } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix; check the next SuppressWarnings string.
           continue;
