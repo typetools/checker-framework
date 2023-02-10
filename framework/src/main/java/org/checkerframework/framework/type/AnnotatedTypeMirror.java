@@ -2022,6 +2022,8 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
+     *
+     * @param typeParameterElement the type variable to which this wildcard is an argument
      */
     /*package-private*/ void setTypeVariable(TypeParameterElement typeParameterElement) {
       this.typeVariable = (TypeVariable) typeParameterElement.asType();
@@ -2030,6 +2032,8 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
+     *
+     * @param typeVariable the type variable to which this wildcard is an argument
      */
     /*package-private*/ void setTypeVariable(TypeVariable typeVariable) {
       this.typeVariable = typeVariable;

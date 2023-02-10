@@ -32,12 +32,19 @@ import org.plumelib.util.StringsPlume;
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
-  // The PropagationTypeAnnotator is called recursively via
-  // TypeAnnotatorUtil.eraseBoundsThenAnnotate.
-  // This flag prevents infinite recursion.
+  /**
+   * The PropagationTypeAnnotator is called recursively via
+   * TypeAnnotatorUtil.eraseBoundsThenAnnotate. This flag prevents infinite recursion.
+   */
   private boolean pause = false;
+  /** The parents. */
   private final ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
 
+  /**
+   * Creates a new PropagationTypeAnnotator.
+   *
+   * @param typeFactory the type factory
+   */
   public PropagationTypeAnnotator(AnnotatedTypeFactory typeFactory) {
     super(typeFactory);
   }

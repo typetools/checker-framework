@@ -1102,6 +1102,7 @@ public class JavaExpressionParseUtil {
    * DiagMessage} that can be used for error reporting.
    */
   public static class JavaExpressionParseException extends Exception {
+    /** The serial version identifier. */
     private static final long serialVersionUID = 2L;
     /** The error message key. */
     private final @CompilerMessageKey String errorKey;
