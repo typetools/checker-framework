@@ -1,11 +1,13 @@
 package org.checkerframework.dataflow.cfg.playground;
 
+/*
 import org.checkerframework.dataflow.analysis.BackwardAnalysis;
 import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 import org.checkerframework.dataflow.livevariable.LiveVarValue;
+*/
 
 /** The playground of live variable analysis. */
 public class LiveVariablePlayground {
@@ -18,6 +20,7 @@ public class LiveVariablePlayground {
   public static void main(String[] args) {
 
     /* Configuration: change as appropriate */
+    /* TODO
     String inputFile = "Test.java"; // input file name and path
     String outputDir = "cfg"; // output directory
     String method = "test"; // name of the method to analyze
@@ -30,5 +33,6 @@ public class LiveVariablePlayground {
     CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
     cfgVisualizeLauncher.generateDOTofCFG(
         inputFile, outputDir, method, clazz, true, true, backwardAnalysis);
+    */
   }
 }

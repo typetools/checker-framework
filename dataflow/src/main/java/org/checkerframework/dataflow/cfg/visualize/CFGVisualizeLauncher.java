@@ -6,6 +6,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -35,22 +36,26 @@ import org.plumelib.util.ArrayMap;
  */
 public class CFGVisualizeLauncher {
 
+  /** Class cannot be instantiated. */
+  private CFGVisualizeLauncher() {
+    throw new AssertionError("Class CFGVisualizeLauncher cannot be instantiated.");
+  }
+
   /**
    * The main entry point of CFGVisualizeLauncher.
    *
    * @param args the passed arguments, see {@link #printUsage()} for the usage
    */
   public static void main(String[] args) {
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
     if (args.length == 0) {
-      cfgVisualizeLauncher.printUsage();
+      printUsage();
       System.exit(1);
     }
     String input = args[0];
     File file = new File(input);
     if (!file.canRead()) {
-      cfgVisualizeLauncher.printError("Cannot read input file: " + file.getAbsolutePath());
-      cfgVisualizeLauncher.printUsage();
+      printError("Cannot read input file: " + file.getAbsolutePath());
+      printUsage();
       System.exit(1);
     }
 
@@ -66,7 +71,7 @@ public class CFGVisualizeLauncher {
       switch (args[i]) {
         case "--outputdir":
           if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <outputdir> after --outputdir.");
+            printError("Did not find <outputdir> after --outputdir.");
             continue;
           }
           i++;
@@ -77,7 +82,7 @@ public class CFGVisualizeLauncher {
           break;
         case "--method":
           if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <name> after --method.");
+            printError("Did not find <name> after --method.");
             continue;
           }
           i++;
@@ -85,7 +90,7 @@ public class CFGVisualizeLauncher {
           break;
         case "--class":
           if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <name> after --class.");
+            printError("Did not find <name> after --class.");
             continue;
           }
           i++;
@@ -98,7 +103,7 @@ public class CFGVisualizeLauncher {
           string = true;
           break;
         default:
-          cfgVisualizeLauncher.printError("Unknown command line argument: " + args[i]);
+          printError("Unknown command line argument: " + args[i]);
           error = true;
           break;
       }
@@ -109,11 +114,9 @@ public class CFGVisualizeLauncher {
     }
 
     if (!string) {
-      cfgVisualizeLauncher.generateDOTofCFGWithoutAnalysis(
-          input, output, method, clas, pdf, verbose);
+      generateDOTofCFGWithoutAnalysis(input, output, method, clas, pdf, verbose);
     } else {
-      String stringGraph =
-          cfgVisualizeLauncher.generateStringOfCFGWithoutAnalysis(input, method, clas, verbose);
+      String stringGraph = generateStringOfCFGWithoutAnalysis(input, method, clas, verbose);
       System.out.println(stringGraph);
     }
   }
@@ -128,7 +131,7 @@ public class CFGVisualizeLauncher {
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
    */
-  protected void generateDOTofCFGWithoutAnalysis(
+  private static void generateDOTofCFGWithoutAnalysis(
       String inputFile,
       String outputDir,
       String method,
@@ -147,13 +150,14 @@ public class CFGVisualizeLauncher {
    * @param verbose show verbose information in CFG
    * @return the String representation of the CFG
    */
-  protected String generateStringOfCFGWithoutAnalysis(
+  private static String generateStringOfCFGWithoutAnalysis(
       String inputFile, String method, String clas, boolean verbose) {
     @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
     if (res != null) {
       String stringGraph = (String) res.get("stringGraph");
       if (stringGraph == null) {
-        return "Unexpected output from generating string control flow graph, shouldn't be null.";
+        return "Unexpected output from generating string control flow graph, shouldn't be"
+            + " null.";
       }
       return stringGraph;
     } else {
@@ -176,7 +180,7 @@ public class CFGVisualizeLauncher {
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    */
-  public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+  public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       void generateDOTofCFG(
           String inputFile,
           String outputDir,
@@ -196,7 +200,7 @@ public class CFGVisualizeLauncher {
 
     CFGVisualizer<V, S, T> viz = new DOTCFGVisualizer<>();
     viz.init(args);
-    Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
+    Map<String, Object> res = viz.visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     viz.shutdown();
 
     if (pdf && res != null) {
@@ -213,7 +217,7 @@ public class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @return control flow graph of the specified method
    */
-  protected ControlFlowGraph generateMethodCFG(String file, String clas, final String method) {
+  private static ControlFlowGraph generateMethodCFG(String file, String clas, final String method) {
 
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
@@ -266,11 +270,34 @@ public class CFGVisualizeLauncher {
   }
 
   /**
+   * Write generated String representation of the CFG for a method to a file.
+   *
+   * @param inputFile a Java source file, used as input
+   * @param method name of the method to generate the CFG for
+   * @param clas name of the class which includes the method to generate the CFG for
+   * @param outputFile source output file
+   * @param analysis instance of forward or backward analysis from specific dataflow test case
+   */
+  @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
+  public static void writeStringOfCFG(
+      String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
+    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
+    try (FileWriter out = new FileWriter(outputFile)) {
+      if (res != null && res.get("stringGraph") != null) {
+        out.write(res.get("stringGraph").toString());
+      }
+      out.write("\n");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Invoke "dot" command to generate a PDF.
    *
    * @param file name of the dot file
    */
-  protected void producePDF(String file) {
+  private static void producePDF(String file) {
     try {
       String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
       Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
@@ -296,7 +323,7 @@ public class CFGVisualizeLauncher {
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
    *     value
    */
-  public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+  public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       @Nullable Map<String, Object> generateStringOfCFG(
       String inputFile,
       String method,
@@ -318,7 +345,7 @@ public class CFGVisualizeLauncher {
   }
 
   /** Print usage information. */
-  protected void printUsage() {
+  private static void printUsage() {
     System.out.println(
         "Generate the control flow graph of a Java method, represented as a DOT or String graph.");
     System.out.println(
@@ -341,7 +368,7 @@ public class CFGVisualizeLauncher {
    *
    * @param string error message
    */
-  protected void printError(@Nullable String string) {
+  private static void printError(@Nullable String string) {
     System.err.println("ERROR: " + string);
   }
 }
