@@ -3286,7 +3286,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         r = new StringLiteralNode(tree);
         break;
       default:
-        throw new BugInCF("unexpected literal tree");
+        throw new BugInCF("unexpected literal tree: " + tree);
     }
     assert r != null : "unexpected literal tree";
     extendWithNode(r);
@@ -3834,7 +3834,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               result = new NumericalPlusNode(tree, expr);
               break;
             default:
-              throw new BugInCF("Unexpected kind: " + kind);
+              throw new BugInCF("Unexpected unary tree kind: " + kind);
           }
           extendWithNode(result);
           break;
