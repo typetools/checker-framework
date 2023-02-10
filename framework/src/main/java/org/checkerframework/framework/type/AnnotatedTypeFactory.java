@@ -344,6 +344,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final boolean assumeSideEffectFree;
 
+  /** True if -AmergeStubsWithSource was provided on the command line. */
+  private final boolean mergeStubsWithSource;
+
   /**
    * Initializes all fields of {@code type}.
    *
@@ -676,6 +679,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.class).asType();
     ensuresQualifierIfListTM =
         ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.List.class).asType();
+
+    mergeStubsWithSource = checker.hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -1488,7 +1493,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       type = mergeAnnotationFileAnnosIntoType(type, elt, currentFileAjavaTypes);
     }
 
-    if (checker.hasOption("mergeStubsWithSource")) {
+    if (mergeStubsWithSource) {
       if (debugStubParser) {
         System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
       }
@@ -1548,7 +1553,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       result = mergeAnnotationFileAnnosIntoType(result, tree, currentFileAjavaTypes);
     }
 
-    if (checker.hasOption("mergeStubsWithSource")) {
+    if (mergeStubsWithSource) {
       if (debugStubParser) {
         System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
       }

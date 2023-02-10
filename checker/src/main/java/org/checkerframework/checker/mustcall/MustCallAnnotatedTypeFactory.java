@@ -108,6 +108,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private final ExecutableElement createsMustCallForValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
+  private final boolean noLightweightOwnership;
+
   /**
    * Creates a MustCallAnnotatedTypeFactory.
    *
@@ -123,6 +126,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       // In NO_RESOURCE_ALIASES mode, all @MustCallAlias annotations are ignored.
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
+    noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     this.postInit();
   }
 
@@ -227,8 +231,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
     for (int i = 0; i < parameterTypes.size(); i++) {
       Element paramDecl = declaration.getParameters().get(i);
-      if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          || getDeclAnnotation(paramDecl, Owning.class) == null) {
+      if (noLightweightOwnership || getDeclAnnotation(paramDecl, Owning.class) == null) {
         AnnotatedTypeMirror paramType = parameterTypes.get(i);
         if (!paramType.hasAnnotation(POLY)) {
           paramType.replaceAnnotation(TOP);
@@ -419,8 +422,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromUse(tree);
       if (elt.getKind() == ElementKind.PARAMETER
-          && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-              || getDeclAnnotation(elt, Owning.class) == null)) {
+          && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
       if (isResourceVariable(elt)) {
