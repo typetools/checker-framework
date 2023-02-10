@@ -35,11 +35,6 @@ import org.plumelib.util.ArrayMap;
  */
 public class CFGVisualizeLauncher {
 
-  /** Class cannot be instantiated. */
-  private CFGVisualizeLauncher() {
-    throw new AssertionError("Class CFGVisualizeLauncher cannot be instantiated.");
-  }
-
   /**
    * The main entry point of CFGVisualizeLauncher.
    *
