@@ -314,16 +314,6 @@ public class QualifierDefaults {
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
    */
-  /*
-   * TODO(cpovirk): This method looks dangerous for a type system to call early: If it "adds" a
-   * default for an Element before defaultsAt runs for that Element, that looks like it would
-   * prevent any @DefaultQualifier or similar annotation from having any effect (because
-   * defaultsAt would short-circuit after discovering that an entry already exists for the
-   * Element). Maybe this method should run defaultsAt before inserting its own entry? Or maybe
-   * it's too early to run defaultsAt? Or maybe we'd see new problems in existing code because
-   * we'd start running checkDuplicates to look for overlap between the @DefaultQualifier defaults
-   * and addElementDefault defaults?
-   */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
     DefaultSet prevset = elementDefaults.get(elem);
