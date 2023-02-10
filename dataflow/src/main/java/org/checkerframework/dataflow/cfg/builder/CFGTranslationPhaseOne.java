@@ -1291,6 +1291,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
+
         List<ExpressionTree> inits = new ArrayList<>(numActuals - lastArgIndex);
         List<Node> initializers = new ArrayList<>(numActuals - lastArgIndex);
         for (int i = lastArgIndex; i < numActuals; i++) {
