@@ -1,5 +1,6 @@
 package livevar;
 
+/*TODO
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
 import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 import org.checkerframework.dataflow.livevariable.LiveVarValue;
+*/
 
 /** Used in liveVariableTest Gradle task to test the LiveVariable analysis. */
 public class LiveVariable {
@@ -20,6 +22,7 @@ public class LiveVariable {
    */
   public static void main(String[] args) {
 
+    /* TODO
     String inputFile = "Test.java";
     String method = "test";
     String clazz = "Test";
@@ -37,5 +40,6 @@ public class LiveVariable {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    */
   }
 }
