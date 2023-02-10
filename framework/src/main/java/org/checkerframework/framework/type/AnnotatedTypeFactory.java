@@ -3950,20 +3950,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return am;
       }
     }
+    if (!checkAliases) {
+      return null;
+    }
     // Look through aliases.
-    if (checkAliases) {
-      Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
-      if (aliases != null) {
-        for (Class<? extends Annotation> alias : aliases.second) {
-          for (AnnotationMirror am : declAnnos) {
-            if (areSameByClass(am, alias)) {
-              // TODO: need to copy over elements/fields
-              return aliases.first;
-            }
-          }
+    Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
+    if (aliases == null) {
+      return null;
+    }
+    for (Class<? extends Annotation> alias : aliases.second) {
+      for (AnnotationMirror am : declAnnos) {
+        if (areSameByClass(am, alias)) {
+          // TODO: need to copy over elements/fields
+          return aliases.first;
         }
       }
     }
+
     // Not found.
     return null;
   }
