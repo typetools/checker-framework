@@ -1351,7 +1351,7 @@ public abstract class UBQualifier {
      *
      * @return the integer value
      */
-    int getValue() {
+    public int getValue() {
       return value;
     }
 
@@ -1435,8 +1435,10 @@ public abstract class UBQualifier {
     }
   }
 
+  /** The bottom qualifier. */
   private static class UpperBoundBottomQualifier extends UBQualifier {
-    static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+    /** The canonical representative. */
+    public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
     @Override
     public boolean isBottom() {

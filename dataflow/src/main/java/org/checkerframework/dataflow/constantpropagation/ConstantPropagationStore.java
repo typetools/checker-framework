@@ -16,7 +16,7 @@ import org.plumelib.util.CollectionsPlume;
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
   /** Information about variables gathered so far. */
-  Map<Node, Constant> contents;
+  private final Map<Node, Constant> contents;
 
   /** Creates a new ConstantPropagationStore. */
   public ConstantPropagationStore() {

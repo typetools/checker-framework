@@ -1463,7 +1463,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Sorts a list of trees with the variables first. */
-  Comparator<Tree> sortVariablesFirst =
+  private final Comparator<Tree> sortVariablesFirst =
       new Comparator<Tree>() {
         @Override
         public int compare(Tree t1, Tree t2) {
@@ -2285,7 +2285,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Cache of types found that are relevantTypes or subclass of supported types. Used so that
    * isSubtype doesn't need to be called repeatedly on the same types.
    */
-  private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+  private final Map<TypeMirror, Boolean> allFoundRelevantTypes =
+      CollectionUtils.createLRUCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.

@@ -1103,7 +1103,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param enclosingType the new enclosing type
      */
-    /*default-visibility*/ void setEnclosingType(@Nullable AnnotatedDeclaredType enclosingType) {
+    public void setEnclosingType(@Nullable AnnotatedDeclaredType enclosingType) {
       this.enclosingType = enclosingType;
     }
 
@@ -1181,7 +1181,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param params the parameter types, excluding the receiver
      */
-    void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
+    /*package-private*/ void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
       paramTypes =
           params.isEmpty()
               ? Collections.emptyList()
@@ -1214,7 +1214,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param returnType the return type
      */
-    void setReturnType(AnnotatedTypeMirror returnType) {
+    /*package-private*/ void setReturnType(AnnotatedTypeMirror returnType) {
       this.returnType = returnType;
       returnTypeComputed = true;
     }
@@ -1265,7 +1265,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param receiverType the receiver type
      */
-    void setReceiverType(AnnotatedDeclaredType receiverType) {
+    /*package-private*/ void setReceiverType(AnnotatedDeclaredType receiverType) {
       this.receiverType = receiverType;
       receiverTypeComputed = true;
     }
@@ -1302,7 +1302,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param thrownTypes the thrown types
      */
-    void setThrownTypes(List<? extends AnnotatedTypeMirror> thrownTypes) {
+    /*package-private*/ void setThrownTypes(List<? extends AnnotatedTypeMirror> thrownTypes) {
       this.thrownTypes =
           thrownTypes.isEmpty()
               ? Collections.emptyList()
@@ -1335,7 +1335,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param types the type variables of this executable type
      */
-    void setTypeVariables(List<AnnotatedTypeVariable> types) {
+    /*package-private*/ void setTypeVariables(List<AnnotatedTypeVariable> types) {
       typeVarTypes =
           types.isEmpty()
               ? Collections.emptyList()
@@ -1610,7 +1610,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the lower bound type
      */
-    void setLowerBound(AnnotatedTypeMirror type) {
+    /*package-private*/ void setLowerBound(AnnotatedTypeMirror type) {
       checkBound("Lower", type, this);
       this.lowerBound = type;
       fixupBoundAnnotations();
@@ -1676,7 +1676,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the upper bound type
      */
-    void setUpperBound(AnnotatedTypeMirror type) {
+    /*package-private*/ void setUpperBound(AnnotatedTypeMirror type) {
       checkBound("Upper", type, this);
       this.upperBound = type;
       fixupBoundAnnotations();
@@ -1954,7 +1954,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the type of the lower bound
      */
-    void setSuperBound(AnnotatedTypeMirror type) {
+    /*package-private*/ void setSuperBound(AnnotatedTypeMirror type) {
       checkBound("Super", type, this);
       this.superBound = type;
       fixupBoundAnnotations();
@@ -1983,7 +1983,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type the type of the upper bound
      */
-    void setExtendsBound(AnnotatedTypeMirror type) {
+    /*package-private*/ void setExtendsBound(AnnotatedTypeMirror type) {
       checkBound("Extends", type, this);
       this.extendsBound = type;
       fixupBoundAnnotations();
@@ -2023,7 +2023,7 @@ public abstract class AnnotatedTypeMirror {
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
      */
-    void setTypeVariable(TypeParameterElement typeParameterElement) {
+    /*package-private*/ void setTypeVariable(TypeParameterElement typeParameterElement) {
       this.typeVariable = (TypeVariable) typeParameterElement.asType();
     }
 
@@ -2031,7 +2031,7 @@ public abstract class AnnotatedTypeMirror {
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
      */
-    void setTypeVariable(TypeVariable typeVariable) {
+    /*package-private*/ void setTypeVariable(TypeVariable typeVariable) {
       this.typeVariable = typeVariable;
     }
 

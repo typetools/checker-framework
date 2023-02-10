@@ -50,7 +50,7 @@ public abstract class AbstractAnalysis<
   /** The transfer function for regular nodes. */
   // TODO: make final. Currently, the transferFunction has a reference to the analysis, so it
   //  can't be created until the Analysis is initialized.
-  protected @Nullable T transferFunction;
+  protected @MonotonicNonNull T transferFunction;
 
   /** The current control flow graph to perform the analysis on. */
   protected @MonotonicNonNull ControlFlowGraph cfg;

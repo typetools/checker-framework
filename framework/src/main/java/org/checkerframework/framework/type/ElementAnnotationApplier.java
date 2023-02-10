@@ -42,7 +42,7 @@ import org.checkerframework.javacutil.Pair;
  * interaction between TypeFromElement and TypesIntoElements allows us to write the defaulted
  * annotations into the Element and have them read later by other parts.
  */
-public class ElementAnnotationApplier {
+public final class ElementAnnotationApplier {
 
   /**
    * Add all of the relevant annotations stored in Element to type. This includes both top-level

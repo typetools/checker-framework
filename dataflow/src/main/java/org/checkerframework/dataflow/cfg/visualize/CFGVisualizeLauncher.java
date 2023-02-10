@@ -33,7 +33,7 @@ import org.plumelib.util.ArrayMap;
  * org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground} for another way to
  * use it.
  */
-public class CFGVisualizeLauncher {
+public final class CFGVisualizeLauncher {
 
   /**
    * The main entry point of CFGVisualizeLauncher.
