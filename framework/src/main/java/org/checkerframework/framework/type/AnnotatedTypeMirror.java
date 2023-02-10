@@ -1392,10 +1392,20 @@ public abstract class AnnotatedTypeMirror {
       return shallowCopy(true);
     }
 
+    /**
+     * Returns the element of this AnnotatedExecutableType.
+     *
+     * @return the element of this AnnotatedExecutableType
+     */
     public ExecutableElement getElement() {
       return element;
     }
 
+    /**
+     * Sets the element of this AnnotatedExecutableType.
+     *
+     * @param the new element for this AnnotatedExecutableType
+     */
     public void setElement(ExecutableElement elem) {
       this.element = elem;
     }
