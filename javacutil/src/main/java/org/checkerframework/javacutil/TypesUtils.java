@@ -295,7 +295,7 @@ public final class TypesUtils {
   /**
    * Checks if the type represents a java.lang.Object declared type.
    *
-   * @param type the type
+   * @param type the type to test
    * @return true iff type represents java.lang.Object
    */
   public static boolean isObject(TypeMirror type) {
@@ -305,7 +305,7 @@ public final class TypesUtils {
   /**
    * Checks if the type represents the java.lang.Class declared type.
    *
-   * @param type the type
+   * @param type the type to test
    * @return true iff type represents java.lang.Class
    */
   public static boolean isClass(TypeMirror type) {
@@ -315,7 +315,7 @@ public final class TypesUtils {
   /**
    * Checks if the type represents a java.lang.String declared type.
    *
-   * @param type the type
+   * @param type the type to test
    * @return true iff type represents java.lang.String
    */
   public static boolean isString(TypeMirror type) {
@@ -347,7 +347,7 @@ public final class TypesUtils {
   /**
    * Check if the type represents a declared type of the given qualified name.
    *
-   * @param type the type
+   * @param type the type to test
    * @return type iff type represents a declared type of the qualified name
    */
   public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
@@ -355,15 +355,24 @@ public final class TypesUtils {
         && getQualifiedName((DeclaredType) type).contentEquals(qualifiedName);
   }
 
+  /**
+   * Returns true if the given type is a boxed primitive.
+   *
+   * @param type a type to test
+   * @return true if the given type is a boxed primitive
+   */
   public static boolean isBoxedPrimitive(TypeMirror type) {
     return TypeKindUtils.boxedToTypeKind(type) != null;
   }
 
   /**
-   * Return true if this is an immutable type in the JDK.
+   * Returns true if the given type is an immutable type in the JDK.
    *
    * <p>This does not use immutability annotations and always returns false for user-defined
    * classes.
+   *
+   * @param type a type to test
+   * @return true if the given type is an immutable type in the JDK
    */
   public static boolean isImmutableTypeInJdk(TypeMirror type) {
     return isPrimitive(type)
@@ -374,6 +383,7 @@ public final class TypesUtils {
   /**
    * Returns true if type represents a Throwable type (e.g. Exception, Error).
    *
+   * @param type a type to test
    * @return true if type represents a Throwable type (e.g. Exception, Error)
    */
   public static boolean isThrowable(TypeMirror type) {
@@ -392,6 +402,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is an anonymous type.
    *
+   * @param type a type to test
    * @return whether the argument is an anonymous type
    */
   public static boolean isAnonymous(TypeMirror type) {
@@ -403,6 +414,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is a primitive type.
    *
+   * @param type a type to test
    * @return whether the argument is a primitive type
    */
   public static boolean isPrimitive(TypeMirror type) {
@@ -412,7 +424,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is a primitive type or a boxed primitive type.
    *
-   * @param type a type
+   * @param type a type to test
    * @return true if the argument is a primitive type or a boxed primitive type
    */
   public static boolean isPrimitiveOrBoxed(TypeMirror type) {
@@ -422,7 +434,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is a primitive numeric type.
    *
-   * @param type a type
+   * @param type a type to test
    * @return true if the argument is a primitive numeric type
    */
   public static boolean isNumeric(TypeMirror type) {
@@ -432,7 +444,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is a boxed numeric type.
    *
-   * @param type a type
+   * @param type a type to test
    * @return true if the argument is a boxed numeric type
    */
   public static boolean isNumericBoxed(TypeMirror type) {
@@ -443,7 +455,7 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is an integral primitive type.
    *
-   * @param type a type
+   * @param type a type to test
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
@@ -519,7 +531,7 @@ public final class TypesUtils {
   /**
    * Returns true if {@code type} has an enclosing type.
    *
-   * @param type type to checker
+   * @param type type to check
    * @return true if {@code type} has an enclosing type
    */
   public static boolean hasEnclosingType(TypeMirror type) {
