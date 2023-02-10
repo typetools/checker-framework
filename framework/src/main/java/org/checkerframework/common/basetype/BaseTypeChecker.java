@@ -112,6 +112,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
     }
 
     super.initChecker();
+
+    warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
   /**
@@ -155,6 +157,10 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * #getSuppressWarningsPrefixesOfSubcheckers}.
    */
   private @MonotonicNonNull Collection<String> suppressWarningsPrefixesOfSubcheckers = null;
+
+  /** True if -AwarnUnneededSuppressions was supplied on the command line. */
+  // Not final because it is set in `init()`.
+  private boolean warnUnneededSuppressions;
 
   @Override
   protected void setRoot(CompilationUnitTree newRoot) {
@@ -611,7 +617,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       return;
     }
 
-    if (!hasOption("warnUnneededSuppressions")) {
+    if (!warnUnneededSuppressions) {
       return;
     }
     Set<Element> elementsWithSuppressedWarnings =
