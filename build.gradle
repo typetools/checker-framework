@@ -16,7 +16,6 @@ plugins {
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+.
   id 'com.diffplug.spotless' version '6.14.0' apply false
-
 }
 apply plugin: 'de.undercouch.download'
 
@@ -60,6 +59,7 @@ ext {
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = '.git'
 }
+
 // Keep in sync with check in
 // framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
 switch (JavaVersion.current()) {
@@ -411,8 +411,8 @@ allprojects {
         options.errorprone.enabled = false
       }
     }
-  }
-}
+  } // end afterEvaluate
+} // end allProjects
 
 task cloneAndBuildDependencies(type: Exec, group: 'Build') {
   description 'Clones (or updates) and builds all dependencies'
@@ -793,6 +793,7 @@ subprojects {
     // relocate 'sun', 'org.checkerframework.sun'
     relocate 'com.google', 'org.checkerframework.com.google'
     relocate 'plume', 'org.checkerframework.plume'
+
     exclude '**/module-info.class'
 
     doFirst {
@@ -1123,6 +1124,7 @@ task checkBasicStyle(group: 'Format') {
     'checker/nullness/junit-assertions.astub',
     'framework/src/main/resources/git.properties'
   ]
+
   doLast {
     FileTree tree = fileTree(dir: projectDir)
     for (String dir : ignoreDirectories) {

@@ -1081,13 +1081,13 @@ class MustCallConsistencyAnalyzer {
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-        // Assigning to an owning field is sufficient to clear a must-call alias obligation in
-        // a constructor, if the enclosing class has at most one @Owning field. If the class
-        // had multiple owning fields, then a soundness bug would occur: the must call alias
-        // relationship would allow the whole class' obligation to be fulfilled by closing
-        // only one of the parameters passed to the constructor (but the other owning fields
-        // might not actually have had their obligations fulfilled). See test case
-        // checker/tests/resourceleak/TwoOwningMCATest.java for an example.
+        // Assigning to an owning field is sufficient to clear a must-call alias obligation
+        // in a constructor, if the enclosing class has at most one @Owning field. If the
+        // class had multiple owning fields, then a soundness bug would occur: the must call
+        // alias relationship would allow the whole class' obligation to be fulfilled by
+        // closing only one of the parameters passed to the constructor (but the other
+        // owning fields might not actually have had their obligations fulfilled). See test
+        // case checker/tests/resourceleak/TwoOwningMCATest.java for an example.
         Element enclosingCtr = lhsElement.getEnclosingElement();
         if (enclosingCtr != null
             && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR

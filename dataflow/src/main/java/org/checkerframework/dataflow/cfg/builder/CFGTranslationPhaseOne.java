@@ -2349,9 +2349,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
-          // Per the Java Language Specification, the checks of all cases must happen before the
-          // default case, no matter where `default:` is written.  Therefore, build the default
-          // case last.
+          // Per the Java Language Specification, the checks of all cases must happen
+          // before the default case, no matter where `default:` is written.  Therefore,
+          // build the default case last.
           defaultIndex = i;
         } else {
           boolean isLastExceptDefault =
@@ -2467,9 +2467,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
       boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs within the
-      // body of the CaseNode.  In the future, that can be performed, but it requires addition of
-      // InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs
+      // within the body of the CaseNode.  In the future, that can be performed, but it
+      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
 
       final Label thisBodyLabel = caseBodyLabels[index];
@@ -3586,9 +3586,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       if (hasExceptionalPath(exceptionalFinallyLabel)) {
         // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-        // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there is
-        // no successful path, it will be removed in later phase.  TODO: Don't we need a
-        // separate finally block for each kind of exception?
+        // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+        // is no successful path, it will be removed in later phase.
+        // TODO: Don't we need a separate finally block for each kind of exception?
         addLabelForNextNode(exceptionalFinallyLabel);
         extendWithNode(
             new MarkerNode(

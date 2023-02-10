@@ -22,8 +22,8 @@ public class ImplicitThisNode extends ThisNode {
   }
 
   // In an inner class context, an implicit this may need to be represented as "Outer.this" rather
-  // than just as "this".  This is context-dependent, and toString doesn't know if it is being used
-  // in an inner class context.
+  // than just as "this".  This is context-dependent, and toString doesn't know if it is being
+  // used in an inner class context.
   @Override
   public String toString() {
     return "(" + getName() + ")";

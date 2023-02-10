@@ -851,8 +851,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       MethodValChecker methodValChecker = checker.getSubchecker(MethodValChecker.class);
       assert methodValChecker != null
-          : "AnnotatedTypeFactory: reflection resolution was requested, but MethodValChecker isn't"
-              + " a subchecker.";
+          : "AnnotatedTypeFactory: reflection resolution was requested,"
+              + " but MethodValChecker isn't a subchecker.";
       MethodValAnnotatedTypeFactory methodValATF =
           (MethodValAnnotatedTypeFactory) methodValChecker.getAnnotationProvider();
 
@@ -1457,8 +1457,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     // Because of a bug in Java 8, annotations on type parameters are not stored in elements, so
     // get explicit annotations from the tree. (This bug has been fixed in Java 9.)  Also, since
-    // annotations computed by the AnnotatedTypeFactory are stored in the element, the annotations
-    // have to be retrieved from the tree so that only explicit annotations are returned.
+    // annotations computed by the AnnotatedTypeFactory are stored in the element, the
+    // annotations have to be retrieved from the tree so that only explicit annotations are
+    // returned.
     Tree decl = declarationFromElement(elt);
 
     if (decl == null) {
@@ -2310,8 +2311,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
-              "AnnotatedTypeFactory.methodFromUse:mismatch between declared method type variables"
-                  + " and the inferred method type arguments. Method type variables: "
+              "AnnotatedTypeFactory.methodFromUse:mismatch between"
+                  + " declared method type variables and the inferred method type arguments."
+                  + " Method type variables: "
                   + methodType.getTypeVariables()
                   + "; "
                   + "Inferred method type arguments: "
@@ -2486,8 +2488,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Usually, the only locations that will add annotations to the return type are getClass in
     // stub files defaults and propagation tree annotator.  Since getClass is final they cannot
     // come from source code.  Also, since the newBound is an erased type we have no type
-    // arguments.  So, we just copy the annotations from the bound of the declared type to the new
-    // bound.
+    // arguments.  So, we just copy the annotations from the bound of the declared type to the
+    // new bound.
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
     AnnotationMirrorSet typeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
@@ -2631,8 +2633,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     if (tree.getClassBody() != null) {
       // Because the anonymous constructor can't have explicit annotations on its parameters,
-      // they are copied from the super constructor invoked in the anonymous constructor. To do
-      // this:
+      // they are copied from the super constructor invoked in the anonymous constructor. To
+      // do this:
       // 1. get unsubstituted type of the super constructor.
       // 2. adapt it to this call site.
       // 3. copy the parameters to the anonymous constructor, `con`.
@@ -4626,8 +4628,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // We should never reach here: isFunctionalInterface performs the same check
           // and would have raised an error already.
           throw new BugInCF(
-              "Expected the type of a cast tree in an assignment context to contain a functional"
-                  + " interface bound. Found type: %s for tree: %s in lambda tree: %s",
+              "Expected the type of a cast tree in an assignment context to contain"
+                  + " a functional interface bound."
+                  + " Found type: %s for tree: %s in lambda tree: %s",
               castATM, cast, tree);
         }
         return castATM;
@@ -4853,7 +4856,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     groundFunctionalType.addAnnotations(functionalType.getAnnotations());
 
     // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without annotations.
+    // only the main annotations are copied.  Add default annotations in places without
+    // annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
   }
@@ -5020,8 +5024,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         typeVarToAnnotatedTypeArg.put(typeVarTypeMirror, uncapturedTypeArg);
         if (uncapturedTypeArg.getKind() == TypeKind.TYPEVAR) {
           // If the type arg is a type variable also add it to the
-          // typeVarToAnnotatedTypeArg map, so
-          // that references to the type variable are substituted.
+          // typeVarToAnnotatedTypeArg map, so that references to the type variable are
+          // substituted.
           AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) uncapturedTypeArg;
           typeVarToAnnotatedTypeArg.put(typeVar.getUnderlyingType(), typeVar);
         }
