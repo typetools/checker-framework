@@ -1404,7 +1404,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets the element of this AnnotatedExecutableType.
      *
-     * @param the new element for this AnnotatedExecutableType
+     * @param elem the new element for this AnnotatedExecutableType
      */
     public void setElement(ExecutableElement elem) {
       this.element = elem;
