@@ -1401,6 +1401,34 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Compare the given {@code annos} with the declaration bounds of {@code type} and return the
+   * appropriate qualifiers. For each qualifier in {@code annos}, if it is a subtype of the
+   * declaration bound in the same hierarchy, it will be added to the result; otherwise, the
+   * declaration bound will be added to the result instead.
+   *
+   * @param type java type that specifies the qualifier upper bound
+   * @param annos a set of qualifiers to be compared with the declaration bounds of {@code type}
+   * @return the modified {@code annos} after applying the rules described above
+   */
+  public Set<AnnotationMirror> getAnnotationOrTypeDeclarationBound(
+      TypeMirror type, Set<? extends AnnotationMirror> annos) {
+    Set<AnnotationMirror> boundAnnos = getTypeDeclarationBounds(type);
+    AnnotationMirrorSet results = new AnnotationMirrorSet();
+
+    for (AnnotationMirror anno : annos) {
+      AnnotationMirror boundAnno = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
+      assert boundAnno != null;
+
+      if (!qualHierarchy.isSubtype(anno, boundAnno)) {
+        results.add(boundAnno);
+      } else {
+        results.add(anno);
+      }
+    }
+    return results;
+  }
+
+  /**
    * Returns the set of qualifiers that are the upper bound for a type use if no other bound is
    * specified for the type.
    *
