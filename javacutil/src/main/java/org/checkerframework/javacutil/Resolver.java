@@ -56,7 +56,7 @@ public class Resolver {
 
   private static final Class<?> ACCESSERROR;
   // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
-  /** Method Resolve$AccessError.access. */
+  /** Method Resolve$AccessError.access(). */
   private static final Method ACCESSERROR_ACCESS;
 
   /** Whether we are running on at least Java 13. */
