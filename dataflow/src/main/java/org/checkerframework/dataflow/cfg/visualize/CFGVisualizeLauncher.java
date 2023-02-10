@@ -128,7 +128,7 @@ public final class CFGVisualizeLauncher {
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
    */
-  protected void generateDOTofCFGWithoutAnalysis(
+  void generateDOTofCFGWithoutAnalysis(
       String inputFile,
       String outputDir,
       String method,
@@ -147,7 +147,7 @@ public final class CFGVisualizeLauncher {
    * @param verbose show verbose information in CFG
    * @return the String representation of the CFG
    */
-  protected String generateStringOfCFGWithoutAnalysis(
+  String generateStringOfCFGWithoutAnalysis(
       String inputFile, String method, String clas, boolean verbose) {
     @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
     if (res != null) {
@@ -213,7 +213,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @return control flow graph of the specified method
    */
-  protected ControlFlowGraph generateMethodCFG(String file, String clas, final String method) {
+  ControlFlowGraph generateMethodCFG(String file, String clas, final String method) {
 
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
@@ -270,7 +270,7 @@ public final class CFGVisualizeLauncher {
    *
    * @param file name of the dot file
    */
-  protected void producePDF(String file) {
+  void producePDF(String file) {
     try {
       String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
       Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
@@ -318,7 +318,7 @@ public final class CFGVisualizeLauncher {
   }
 
   /** Print usage information. */
-  protected void printUsage() {
+  void printUsage() {
     System.out.println(
         "Generate the control flow graph of a Java method, represented as a DOT or String graph.");
     System.out.println(
@@ -341,7 +341,7 @@ public final class CFGVisualizeLauncher {
    *
    * @param string error message
    */
-  protected void printError(@Nullable String string) {
+  void printError(@Nullable String string) {
     System.err.println("ERROR: " + string);
   }
 }
