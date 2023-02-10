@@ -27,7 +27,6 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -1393,11 +1392,11 @@ public abstract class AnnotatedTypeMirror {
       return shallowCopy(true);
     }
 
-    public @NonNull ExecutableElement getElement() {
+    public ExecutableElement getElement() {
       return element;
     }
 
-    public void setElement(@NonNull ExecutableElement elem) {
+    public void setElement(ExecutableElement elem) {
       this.element = elem;
     }
 
