@@ -25,10 +25,20 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AssignmentNode extends Node {
 
+  /** The underlying assignment tree. */
   protected final Tree tree;
+  /** The node for the LHS of the assignment tree. */
   protected final Node lhs;
+  /** The node for the RHS of the assignment tree. */
   protected final Node rhs;
 
+  /**
+   * Create a (non-synthetic) AssignmentNode.
+   *
+   * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
+   * @param target the lhs of {@code tree}
+   * @param expression the rhs of {@code tree}
+   */
   public AssignmentNode(Tree tree, Node target, Node expression) {
     super(TreeUtils.typeOf(tree));
     assert tree instanceof AssignmentTree
@@ -52,6 +62,12 @@ public class AssignmentNode extends Node {
     return lhs;
   }
 
+  /**
+   * Returns the right-hand-side of the assignment.
+   *
+   * @return the right-hand-side of the assignment
+   */
+  @Pure
   public Node getExpression() {
     return rhs;
   }
