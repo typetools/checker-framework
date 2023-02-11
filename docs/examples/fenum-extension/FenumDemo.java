@@ -1,7 +1,7 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 import qual.MyFenum;
 
-@SuppressWarnings("fenum:assignment") // initialization of fake enums
+@SuppressWarnings("fenum:assignmenTestStatic") // intentionally mangled warning suppression key
 class TestStatic {
   public static final @Fenum("A") int ACONST1 = 1;
   public static final @Fenum("A") int ACONST2 = 2;
