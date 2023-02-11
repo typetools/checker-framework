@@ -935,8 +935,8 @@ public abstract class AnnotatedTypeMirror {
       // converted to a use, then both type variables are uses and should be the same object.
       // The code below does this.
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
-      for (AnnotatedTypeMirror typeArgs : result.getTypeArguments()) {
-        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArgs;
+      for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
         mapping.put(typeVar.getUnderlyingType(), typeVar);
       }
       for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
