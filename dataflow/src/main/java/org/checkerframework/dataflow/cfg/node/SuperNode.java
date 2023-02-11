@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -18,16 +17,16 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class SuperNode extends Node {
 
-  protected final Tree tree;
+  protected final IdentifierTree tree;
 
-  public SuperNode(Tree t) {
+  public SuperNode(IdentifierTree t) {
     super(TreeUtils.typeOf(t));
-    assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("super");
+    assert t.getName().contentEquals("super");
     tree = t;
   }
 
   @Override
-  public Tree getTree() {
+  public IdentifierTree getTree() {
     return tree;
   }
 

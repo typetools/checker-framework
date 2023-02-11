@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,7 +44,6 @@ public class CaseNode extends Node {
   public CaseNode(
       CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
     super(types.getNoType(TypeKind.NONE));
-    assert tree.getKind() == Tree.Kind.CASE;
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
