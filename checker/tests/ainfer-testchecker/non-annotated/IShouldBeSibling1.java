@@ -8,7 +8,7 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 @SuppressWarnings("super.invocation") // Intentional.
 public class IShouldBeSibling1 {
   public static void test(IShouldBeSibling1 s1) {
-    // :: warning: assignment
+    // :: warning: (assignment)
     @AinferSibling1 IShouldBeSibling1 s = s1;
   }
 }

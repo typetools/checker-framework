@@ -36,13 +36,9 @@ public class SuperNode extends Node {
     return visitor.visitSuper(this, p);
   }
 
-  public String getName() {
-    return "super";
-  }
-
   @Override
   public String toString() {
-    return getName();
+    return "super";
   }
 
   @Override
@@ -52,7 +48,7 @@ public class SuperNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName());
+    return Objects.hash("super");
   }
 
   @Override

@@ -26,6 +26,6 @@ public class ImplicitThisNode extends ThisNode {
   // used in an inner class context.
   @Override
   public String toString() {
-    return "(" + getName() + ")";
+    return "(this)";
   }
 }

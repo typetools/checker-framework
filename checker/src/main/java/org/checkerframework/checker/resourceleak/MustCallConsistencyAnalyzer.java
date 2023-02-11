@@ -176,6 +176,12 @@ class MustCallConsistencyAnalyzer {
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
   private final CFAnalysis analysis;
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
+  private final boolean noLightweightOwnership;
+
+  /** True if -AcountMustCall was passed on the command line. */
+  private final boolean countMustCall;
+
   /**
    * An Obligation is a dataflow fact: a set of resource aliases. Abstractly, each Obligation
    * represents a resource that the analyzed program which might have a must-call obligation. Each
@@ -472,6 +478,8 @@ class MustCallConsistencyAnalyzer {
     this.analysis = analysis;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
+    this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    this.countMustCall = checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL);
   }
 
   /**
@@ -648,15 +656,13 @@ class MustCallConsistencyAnalyzer {
       Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
     if (expression instanceof FieldAccess) {
       Element elt = ((FieldAccess) expression).getField();
-      if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.hasOwning(elt)) {
+      if (!noLightweightOwnership && typeFactory.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
     } else if (expression instanceof LocalVariable) {
       Element elt = ((LocalVariable) expression).getElement();
-      if (!checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          && typeFactory.hasOwning(elt)) {
+      if (!noLightweightOwnership && typeFactory.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
         // the @Owning annotation can only be written on methods, parameters, and fields;
@@ -941,7 +947,7 @@ class MustCallConsistencyAnalyzer {
   private void removeObligationsAtOwnershipTransferToParameters(
       Set<Obligation> obligations, Node node) {
 
-    if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+    if (noLightweightOwnership) {
       // Never transfer ownership to parameters, matching the default in the analysis built
       // into Eclipse.
       return;
@@ -1028,7 +1034,7 @@ class MustCallConsistencyAnalyzer {
    *     to a CFG
    */
   private boolean isTransferOwnershipAtReturn(ControlFlowGraph cfg) {
-    if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+    if (noLightweightOwnership) {
       // If not using LO, default to always transfer at return, just like Eclipse does.
       return true;
     }
@@ -1066,9 +1072,7 @@ class MustCallConsistencyAnalyzer {
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      boolean isOwningField =
-          !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-              && typeFactory.hasOwning(lhsElement);
+      boolean isOwningField = !noLightweightOwnership && typeFactory.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField
@@ -1620,7 +1624,7 @@ class MustCallConsistencyAnalyzer {
    *     declaration does not have a {@code @NotOwning} annotation
    */
   private boolean shouldTrackReturnType(MethodInvocationNode node) {
-    if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)) {
+    if (noLightweightOwnership) {
       // Default to always transferring at return if not using LO, just like Eclipse does.
       return true;
     }
@@ -1927,7 +1931,7 @@ class MustCallConsistencyAnalyzer {
         boolean hasMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
         if (hasMustCallAlias
             || (typeFactory.declaredTypeHasMustCall(param)
-                && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
+                && !noLightweightOwnership
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(
               new Obligation(
@@ -2055,7 +2059,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the node being counted, to extract the type
    */
   private void incrementNumMustCall(Node node) {
-    if (checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+    if (countMustCall) {
       TypeMirror type = node.getType();
       incrementMustCallImpl(type);
     }
@@ -2067,7 +2071,7 @@ class MustCallConsistencyAnalyzer {
    * @param elt the elt being counted, to extract the type
    */
   private void incrementNumMustCall(Element elt) {
-    if (checker.hasOption(ResourceLeakChecker.COUNT_MUST_CALL)) {
+    if (countMustCall) {
       TypeMirror type = elt.asType();
       incrementMustCallImpl(type);
     }
