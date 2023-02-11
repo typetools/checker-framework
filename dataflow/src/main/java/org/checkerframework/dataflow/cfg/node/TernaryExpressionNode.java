@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -54,7 +53,6 @@ public class TernaryExpressionNode extends Node {
       Node elseOperand,
       LocalVariableNode ternaryExpressionVar) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Tree.Kind.CONDITIONAL_EXPRESSION;
     this.tree = tree;
     this.condition = condition;
     this.thenOperand = thenOperand;

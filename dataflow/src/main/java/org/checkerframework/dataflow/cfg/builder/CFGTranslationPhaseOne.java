@@ -1183,17 +1183,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     if (isRightNumeric && isLeftNumeric && isSubtype) {
       node = widen(node, varType);
-      nodeType = node.getType();
     } else if (isRightReference && isLeftReference && isSubtype) {
       // widening reference conversion is a no-op, but if it
       // applies, then later conversions do not.
     } else if (isRightPrimitive && isLeftReference) {
       if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
         node = narrowAndBox(node, varType);
-        nodeType = node.getType();
       } else {
         node = box(node);
-        nodeType = node.getType();
       }
     } else if (isRightBoxed && isLeftPrimitive) {
       node = unbox(node);
@@ -1201,14 +1198,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       if (types.isSubtype(nodeType, varType) && !types.isSameType(nodeType, varType)) {
         node = widen(node, varType);
-        nodeType = node.getType();
       }
     } else if (isRightPrimitive && isLeftPrimitive) {
       if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
         node = narrow(node, varType);
-        nodeType = node.getType();
       }
     }
+    // node might have been re-assigned; if nodeType is needed, set it again
+    // nodeType = node.getType();
 
     // TODO: if checkers need to know about null references of
     // a particular type, add logic for them here.
@@ -1441,8 +1438,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
 
-    ExecutableElement element = method;
-    if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
+    if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(target);
     } else {
@@ -1466,7 +1462,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
+    List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
     // Add exceptions explicitly mentioned in the throws clause.
@@ -1477,9 +1473,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
     /* Check for the TerminatesExecution annotation. */
-    ExecutableElement methodElement = TreeUtils.elementFromUse(tree);
     boolean terminatesExecution =
-        annotationProvider.getDeclAnnotation(methodElement, TerminatesExecution.class) != null;
+        annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
     if (terminatesExecution) {
       extendedNode.setTerminatesExecution(true);
     }
@@ -3286,7 +3281,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         r = new StringLiteralNode(tree);
         break;
       default:
-        throw new BugInCF("unexpected literal tree");
+        throw new BugInCF("unexpected literal tree: " + tree);
     }
     assert r != null : "unexpected literal tree";
     extendWithNode(r);
@@ -3834,7 +3829,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               result = new NumericalPlusNode(tree, expr);
               break;
             default:
-              throw new BugInCF("Unexpected kind: " + kind);
+              throw new BugInCF("Unexpected unary tree kind: " + kind);
           }
           extendWithNode(result);
           break;

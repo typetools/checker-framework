@@ -46,6 +46,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private final ResourceLeakAnnotatedTypeFactory rlTypeFactory;
 
+  /** True if -AnoLightweightOwnership was supplied on the command line. */
+  private final boolean noLightweightOwnership;
+
   /**
    * Create the visitor.
    *
@@ -55,6 +58,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");
+    noLightweightOwnership = checker.hasOption("noLightweightOwnership");
   }
 
   @Override
@@ -269,7 +273,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     Element varElement = TreeUtils.elementFromDeclaration(tree);
 
     if (varElement.getKind().isField()
-        && !checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
+        && !noLightweightOwnership
         && rlTypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
       checkOwningField(varElement);
     }

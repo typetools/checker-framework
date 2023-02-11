@@ -46,10 +46,10 @@
         <loadproperties srcFile="${afu.properties}"/>
 
         <replaceregexp file="${checkerWebPage}" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checkerWebPage}" byline="true"
-                       match="annotation-tools-${release.version.regexp}{0,1}.zip" replace="annotation-tools-${afu.version}.zip"/>
+                       match="annotation-tools-${release.version.regexp}.zip" replace="annotation-tools-${afu.version}.zip"/>
 
         <update file="${checkerWebPage}"
                 start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
@@ -80,44 +80,44 @@
                 with="${afu.release.date}"/>
 
         <replaceregexp file="${checkerQuickStartPage}" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}" replace="checker-framework-${release.ver}"/>
 
         <update file="${checkerQuickStartPage}"
                 start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
                 with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}" replace="checker-framework-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-${release.version.regexp}{0,1}" replace="checker-${release.ver}"/>
+                       match="checker-${release.version.regexp}" replace="checker-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-qual-${release.version.regexp}{0,1}" replace="checker-qual-${release.ver}"/>
+                       match="checker-qual-${release.version.regexp}" replace="checker-qual-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-util-${release.version.regexp}{0,1}" replace="checker-util-${release.ver}"/>
+                       match="checker-util-${release.version.regexp}" replace="checker-util-${release.ver}"/>
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker/${release.version.regexp}{0,1}" replace="checker/${release.ver}"/>
+                       match="checker/${release.version.regexp}" replace="checker/${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-qual/${release.version.regexp}{0,1}" replace="checker-qual/${release.ver}"/>
+                       match="checker-qual/${release.version.regexp}" replace="checker-qual/${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="checker-util/${release.version.regexp}{0,1}" replace="checker-util/${release.ver}"/>
+                       match="checker-util/${release.version.regexp}" replace="checker-util/${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="/${release.version.regexp}{0,1}/jar" replace="/${release.ver}/jar"/>
+                       match="/${release.version.regexp}/jar" replace="/${release.ver}/jar"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
+                       match="ext.checkerFrameworkVersion = '${release.version.regexp}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
-                       match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
+                       match="build.version = ${release.version.regexp}" replace="build.version = ${release.ver}"/>
 
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>

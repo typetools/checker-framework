@@ -344,6 +344,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final boolean assumeSideEffectFree;
 
+  /** True if -AmergeStubsWithSource was provided on the command line. */
+  private final boolean mergeStubsWithSource;
+
   /**
    * Initializes all fields of {@code type}.
    *
@@ -676,6 +679,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.class).asType();
     ensuresQualifierIfListTM =
         ElementUtils.getTypeElement(processingEnv, EnsuresQualifierIf.List.class).asType();
+
+    mergeStubsWithSource = checker.hasOption("mergeStubsWithSource");
   }
 
   /**
@@ -1516,7 +1521,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       type = mergeAnnotationFileAnnosIntoType(type, elt, currentFileAjavaTypes);
     }
 
-    if (checker.hasOption("mergeStubsWithSource")) {
+    if (mergeStubsWithSource) {
       if (debugStubParser) {
         System.out.printf("fromElement: mergeStubsIntoType(%s, %s)", type, elt);
       }
@@ -1576,7 +1581,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       result = mergeAnnotationFileAnnosIntoType(result, tree, currentFileAjavaTypes);
     }
 
-    if (checker.hasOption("mergeStubsWithSource")) {
+    if (mergeStubsWithSource) {
       if (debugStubParser) {
         System.out.printf("fromClass: mergeStubsIntoType(%s, %s)", result, tree);
       }
@@ -2667,6 +2672,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // 4. copy annotations on the return type to `con`.
       AnnotatedExecutableType superCon = getAnnotatedType(TreeUtils.getSuperConstructor(tree));
       constructorFromUsePreSubstitution(tree, superCon);
+      // no viewpoint adaptation needed for super invocation
       superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
       if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
         con.setParameterTypes(superCon.getParameterTypes());
@@ -2739,7 +2745,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     #getExplicitNewClassClassTypeArgs(NewClassTree)}, or {@link #getAnnotatedType(ClassTree)}
    *     instead.
    */
-  @Deprecated // This should be removed when the #979 is fixed and the remain use is removed.
+  @Deprecated // This should be removed when the #979 is fixed and the remaining use is removed.
   public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
     AnnotatedDeclaredType type =
         (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
@@ -2773,6 +2779,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Type may already have explicit dependent type annotations that have not yet been vpa.
     type.clearPrimaryAnnotations();
     type.addAnnotations(explicitAnnos);
+    // Use the receiver type as enclosing type, if present.
+    AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+    if (enclosingType != null) {
+      type.setEnclosingType(enclosingType);
+    }
     return type;
   }
 
@@ -3978,20 +3989,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return am;
       }
     }
+    if (!checkAliases) {
+      return null;
+    }
     // Look through aliases.
-    if (checkAliases) {
-      Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
-      if (aliases != null) {
-        for (Class<? extends Annotation> alias : aliases.second) {
-          for (AnnotationMirror am : declAnnos) {
-            if (areSameByClass(am, alias)) {
-              // TODO: need to copy over elements/fields
-              return aliases.first;
-            }
-          }
+    Pair<AnnotationMirror, Set<Class<? extends Annotation>>> aliases = declAliases.get(annoClass);
+    if (aliases == null) {
+      return null;
+    }
+    for (Class<? extends Annotation> alias : aliases.second) {
+      for (AnnotationMirror am : declAnnos) {
+        if (areSameByClass(am, alias)) {
+          // TODO: need to copy over elements/fields
+          return aliases.first;
         }
       }
     }
+
     // Not found.
     return null;
   }
