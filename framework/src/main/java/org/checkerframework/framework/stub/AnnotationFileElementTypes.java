@@ -79,12 +79,17 @@ public class AnnotationFileElementTypes {
 
   /** Which version number of the annotated JDK should be used? */
   private final String annotatedJdkVersion;
-
   /** Should the JDK be parsed? */
   private final boolean shouldParseJdk;
 
   /** Parse all JDK files at startup rather than as needed. */
   private final boolean parseAllJdkFiles;
+
+  /** True if -ApermitMissingJdk was passed on the command line. */
+  private final boolean permitMissingJdk;
+
+  /** True if -Aignorejdkastub was passed on the command line. */
+  private final boolean ignorejdkastub;
 
   /**
    * Creates an empty annotation source.
@@ -100,6 +105,8 @@ public class AnnotationFileElementTypes {
 
     this.shouldParseJdk = !factory.getChecker().hasOption("ignorejdkastub");
     this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
+    this.permitMissingJdk = factory.getChecker().hasOption("permitMissingJdk");
+    this.ignorejdkastub = factory.getChecker().hasOption("ignorejdkastub");
   }
 
   /**
@@ -137,7 +144,7 @@ public class AnnotationFileElementTypes {
     assert parsingCount == 0;
     ++parsingCount;
     BaseTypeChecker checker = factory.getChecker();
-    if (!checker.hasOption("ignorejdkastub")) {
+    if (!ignorejdkastub) {
       // 1. Annotated JDK
       // This preps but does not parse the JDK files (except package-info.java files).
       // The JDK source code files will be parsed later, on demand.
@@ -736,7 +743,7 @@ public class AnnotationFileElementTypes {
     }
     URL resourceURL = factory.getClass().getResource("/annotated-jdk");
     if (resourceURL == null) {
-      if (factory.getChecker().hasOption("permitMissingJdk")
+      if (permitMissingJdk
           // temporary, for backward compatibility
           || factory.getChecker().hasOption("nocheckjdk")) {
         return;
@@ -747,7 +754,7 @@ public class AnnotationFileElementTypes {
     } else if (resourceURL.getProtocol().contentEquals("file")) {
       prepJdkFromFile(resourceURL);
     } else {
-      if (factory.getChecker().hasOption("permitMissingJdk")
+      if (permitMissingJdk
           // temporary, for backward compatibility
           || factory.getChecker().hasOption("nocheckjdk")) {
         return;

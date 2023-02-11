@@ -145,9 +145,6 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-  /** Should flow be used by default? */
-  protected static boolean flowByDefault = true;
-
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
@@ -191,9 +188,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
    * is non-null.
    */
-  boolean arraysAreRelevant = false;
+  protected final boolean arraysAreRelevant;
 
   // Flow related fields
+
+  /** Should flow be used by default? */
+  protected static boolean flowByDefault = true;
 
   /**
    * Should use flow-sensitive type refinement analysis? This value can be changed when an
@@ -328,10 +328,10 @@ public abstract class GenericAnnotatedTypeFactory<
     this.useFlow = useFlow;
 
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores = new IdentityHashMap<>();
+    this.exceptionalExitStores = new IdentityHashMap<>();
+    this.methodInvocationStores = new IdentityHashMap<>();
+    this.returnStatementStores = new IdentityHashMap<>();
 
     this.initializationStore = null;
     this.initializationStaticStore = null;
@@ -430,10 +430,10 @@ public abstract class GenericAnnotatedTypeFactory<
     super.setRoot(root);
     this.scannedClasses.clear();
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores.clear();
+    this.exceptionalExitStores.clear();
+    this.methodInvocationStores.clear();
+    this.returnStatementStores.clear();
     this.initializationStore = null;
     this.initializationStaticStore = null;
 
@@ -1058,13 +1058,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * A mapping from methods (or other code blocks) to their regular exit store (used to check
    * postconditions).
    */
-  protected IdentityHashMap<Tree, Store> regularExitStores;
+  protected final IdentityHashMap<Tree, Store> regularExitStores;
 
   /** A mapping from methods (or other code blocks) to their exceptional exit store. */
-  protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+  protected final IdentityHashMap<Tree, Store> exceptionalExitStores;
 
   /** A mapping from methods to a list with all return statements and the corresponding store. */
-  protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
+  protected final IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
       returnStatementStores;
 
   /**
@@ -1287,10 +1287,10 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void performFlowAnalysis(ClassTree classTree) {
     if (flowResult == null) {
-      regularExitStores = new IdentityHashMap<>();
-      exceptionalExitStores = new IdentityHashMap<>();
-      returnStatementStores = new IdentityHashMap<>();
-      flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
+      this.regularExitStores.clear();
+      this.exceptionalExitStores.clear();
+      this.returnStatementStores.clear();
+      this.flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
     }
 
     // no need to scan annotations

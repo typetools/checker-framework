@@ -24,6 +24,11 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  */
 public final class DeclarationsIntoElements {
 
+  /** Do not instantiate. */
+  private DeclarationsIntoElements() {
+    throw new AssertionError("Class DeclarationsIntoElements cannot be instantiated.");
+  }
+
   /**
    * The entry point.
    *

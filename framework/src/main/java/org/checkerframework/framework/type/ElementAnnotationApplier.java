@@ -44,6 +44,11 @@ import org.checkerframework.javacutil.Pair;
  */
 public final class ElementAnnotationApplier {
 
+  /** Do not instantiate. */
+  private ElementAnnotationApplier() {
+    throw new AssertionError("Class ElementAnnotationApplier cannot be instantiated.");
+  }
+
   /**
    * Add all of the relevant annotations stored in Element to type. This includes both top-level
    * primary annotations and nested annotations. For the most part the TypeAnnotationPosition of the
