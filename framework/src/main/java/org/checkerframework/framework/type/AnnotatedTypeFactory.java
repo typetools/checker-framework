@@ -850,6 +850,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return wholeProgramInference;
   }
 
+  /** Initialize reflection resolution. */
   protected void initializeReflectionResolution() {
     if (checker.shouldResolveReflection()) {
       boolean debug = "debug".equals(checker.getOption("resolveReflection"));
