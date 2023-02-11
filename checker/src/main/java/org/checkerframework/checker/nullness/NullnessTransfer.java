@@ -82,6 +82,9 @@ public class NullnessTransfer
    */
   protected final @Nullable KeyForAnnotatedTypeFactory keyForTypeFactory;
 
+  /** True if -AassumeKeyFor was provided on the command line. */
+  private final boolean assumeKeyFor;
+
   /**
    * Create a new NullnessTransfer for the given analysis.
    *
@@ -92,7 +95,8 @@ public class NullnessTransfer
     this.nullnessTypeFactory = (NullnessAnnotatedTypeFactory) analysis.getTypeFactory();
     Elements elements = nullnessTypeFactory.getElementUtils();
     BaseTypeChecker checker = nullnessTypeFactory.getChecker();
-    if (checker.hasOption("assumeKeyFor")) {
+    assumeKeyFor = checker.hasOption("assumeKeyFor");
+    if (assumeKeyFor) {
       this.keyForTypeFactory = null;
     } else {
       // It is error-prone to put a type factory in a field.  It is OK here because
@@ -377,7 +381,7 @@ public class NullnessTransfer
         String mapName = JavaExpression.fromNode(receiver).toString();
         isKeyFor = keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0));
       } else {
-        isKeyFor = analysis.getTypeFactory().getChecker().hasOption("assumeKeyFor");
+        isKeyFor = assumeKeyFor;
       }
       if (isKeyFor) {
         AnnotatedTypeMirror receiverType = nullnessTypeFactory.getReceiverType(n.getTree());

@@ -1,4 +1,4 @@
-Version 3.30.1 (March 1, 2023)
+Version 3.31.0 (March 1, 2023)
 ------------------------------
 
 **User-visible changes:**
@@ -14,7 +14,7 @@ Signedness Checker changes:
 **Implementation details:**
 
 Moved `AnnotationMirrorSet` and `AnnotationMirrorMap` from
-`org.checkerframework.framework.util` to `org.checkerframework.javacutil.AnnotationMirrorSet`.
+`org.checkerframework.framework.util` to `org.checkerframework.javacutil`.
 Changed uses of `Set<AnnotationMirror>` to `AnnotationMirrorSet` including in APIs.
 Removed methods from AnnotationUtils that are no longer useful:
 `createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
