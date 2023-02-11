@@ -1,4 +1,4 @@
-ShowPrefixTest.java:14:12: compiler.err.proc.messager: [nullness:return] incompatible types in return.
+ShowPrefixTest.java:12:12: compiler.err.proc.messager: [nullness:return] incompatible types in return.
 type of expression: @Initialized @Nullable Object
 method return type: @Initialized @NonNull Object
 1 error
