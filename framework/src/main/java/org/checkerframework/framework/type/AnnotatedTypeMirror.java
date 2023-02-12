@@ -929,10 +929,10 @@ public abstract class AnnotatedTypeMirror {
       result.setTypeArguments(typeArgs);
 
       // If "this" is a type declaration with a type variable that references itself, e.g.
-      // MyClass<T extends List<T>>, then the type variable is a declaration, i.e. the first T,
-      // but the reference to the type variable is a use, i.e. the second T.  When "this" is
-      // converted to a use, then both type variables are uses and should be the same object.
-      // The code below does this.
+      // MyClass<T extends List<T>>, then the type variable is a declaration, i.e. the first
+      // T, but the reference to the type variable is a use, i.e. the second T.  When "this"
+      // is converted to a use, then both type variables are uses and should be the same
+      // object.  The code below does this.
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
       for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
         AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
@@ -963,24 +963,22 @@ public abstract class AnnotatedTypeMirror {
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
-      } else {
-        if (isDeclaration()) {
-          for (AnnotatedTypeMirror typeArg : ts) {
-            if (typeArg.getKind() != TypeKind.TYPEVAR) {
-              throw new BugInCF(
-                  "Type declaration must have type variables as type arguments. Found %s", typeArg);
-            }
-            if (!typeArg.isDeclaration()) {
-              throw new BugInCF(
-                  "Type declarations must have type variables that are declarations. Found %s",
-                  typeArg);
-            }
+      } else if (isDeclaration()) {
+        for (AnnotatedTypeMirror typeArg : ts) {
+          if (typeArg.getKind() != TypeKind.TYPEVAR) {
+            throw new BugInCF(
+                "Type declaration must have type variables as type arguments. Found %s", typeArg);
           }
-          typeArgs = Collections.unmodifiableList(ts);
-        } else {
-          List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
-          typeArgs = Collections.unmodifiableList(uses);
+          if (!typeArg.isDeclaration()) {
+            throw new BugInCF(
+                "Type declarations must have type variables that are declarations. Found %s",
+                typeArg);
+          }
         }
+        typeArgs = Collections.unmodifiableList(ts);
+      } else {
+        List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+        typeArgs = Collections.unmodifiableList(uses);
       }
     }
 

@@ -495,18 +495,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
       }
       if (imf.isIndexOfString(tree)) {
-        // String#indexOf(String) and its variants that also take a String technically return
-        // (and are annotated as) @LTEqLengthOf the receiver. However, the result is always
-        // @LTLengthOf the receiver unless both the receiver and the target string are
-        // the empty string: "".indexOf("") returns 0, which isn't an index into "". So, this
-        // special case modifies the return type of these methods if either the parameter or
-        // the receiver is known (by the Value Checker) to not be the empty string. There are
-        // three ways the Value Checker might have that information: either string could have a
-        // @StringVal annotation whose value doesn't include "", either could have an @ArrayLen
-        // annotation
-        // whose value doesn't contain zero, or either could have an @ArrayLenRange annotation whose
-        // from
-        // value is any positive integer.
+        // String#indexOf(String) and its variants that also take a String technically
+        // return (and are annotated as) @LTEqLengthOf the receiver. However, the result is
+        // always @LTLengthOf the receiver unless both the receiver and the target string
+        // are the empty string: "".indexOf("") returns 0, which isn't an index into "". So,
+        // this special case modifies the return type of these methods if either the
+        // parameter or the receiver is known (by the Value Checker) to not be the empty
+        // string. There are three ways the Value Checker might have that information:
+        // either string could have a @StringVal annotation whose value doesn't include "",
+        // either could have an @ArrayLen annotation whose value doesn't contain zero, or
+        // either could have an @ArrayLenRange annotation whose from value is any positive
+        // integer.
         ValueAnnotatedTypeFactory vatf =
             ((UpperBoundAnnotatedTypeFactory) this.atypeFactory).getValueAnnotatedTypeFactory();
         AnnotatedTypeMirror argType = vatf.getAnnotatedType(tree.getArguments().get(0));

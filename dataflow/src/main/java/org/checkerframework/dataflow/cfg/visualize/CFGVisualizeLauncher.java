@@ -332,8 +332,8 @@ public final class CFGVisualizeLauncher {
     System.out.println("    --pdf:       Also generate the PDF by invoking 'dot'.");
     System.out.println("    --verbose:   Show the verbose output (defaults to 'false').");
     System.out.println(
-        "    --string:    Print the string representation of the control flow graph (defaults to"
-            + " 'false').");
+        "    --string:    Print the string representation of the control flow graph"
+            + " (defaults to 'false').");
   }
 
   /**

@@ -16,10 +16,6 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-/* --------------------------------------------------------- */
-/* Phase One */
-/* --------------------------------------------------------- */
-
 /** A wrapper object to pass around the result of phase one. */
 public class PhaseOneResult {
 
