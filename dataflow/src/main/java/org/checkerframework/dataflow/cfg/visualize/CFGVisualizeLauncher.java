@@ -35,6 +35,9 @@ import org.plumelib.util.ArrayMap;
  */
 public final class CFGVisualizeLauncher {
 
+  /** Create a CFGVisualizeLauncher. */
+  private CFGVisualizeLauncher() {}
+
   /**
    * The main entry point of CFGVisualizeLauncher.
    *
