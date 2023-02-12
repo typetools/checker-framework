@@ -107,7 +107,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     if (tree != null && foundPaths.get(tree) == null) {
       TreePath current = new TreePath(path, tree);
       foundPaths.put(tree, current);
-      path = current;
+      this.path = current;
     } else {
       this.path = foundPaths.get(tree);
     }
