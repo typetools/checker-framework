@@ -38,9 +38,29 @@ public class ValueCheckerUtils {
    * @param castTo the type that is casted to
    * @param atypeFactory the type factory
    * @return a list of values after the casting
+   * @deprecated use #getValuesCastedToType(AnnotationMirror, TypeMirror, boolean,
+   *     ValueAnnotatedTypeFactory)
    */
+  @Deprecated // 2023-02-11
   public static List<?> getValuesCastedToType(
       AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypeFactory) {
+    return getValuesCastedToType(anno, castTo, false, atypeFactory);
+  }
+
+  /**
+   * Get a list of values of annotation, and then cast them to a given type.
+   *
+   * @param anno the annotation that contains values
+   * @param castTo the unannotated type that is casted to
+   * @param isUnsigned true if the type being casted to is unsigned
+   * @param atypeFactory the type factory
+   * @return a list of values after the casting
+   */
+  public static List<?> getValuesCastedToType(
+      AnnotationMirror anno,
+      TypeMirror castTo,
+      boolean isUnsigned,
+      ValueAnnotatedTypeFactory atypeFactory) {
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {
@@ -49,12 +69,12 @@ public class ValueCheckerUtils {
         break;
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
         List<Long> longs = atypeFactory.getIntValues(anno);
-        values = convertIntVal(longs, castType, castTo);
+        values = convertIntVal(longs, castType, castTo, isUnsigned);
         break;
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         Range range = atypeFactory.getRange(anno);
         List<Long> rangeValues = getValuesFromRange(range, Long.class);
-        values = convertIntVal(rangeValues, castType, castTo);
+        values = convertIntVal(rangeValues, castType, castTo, isUnsigned);
         break;
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
         values = convertStringVal(anno, castType, atypeFactory);
@@ -198,7 +218,8 @@ public class ValueCheckerUtils {
     return strings;
   }
 
-  private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
+  private static List<?> convertIntVal(
+      List<Long> longs, Class<?> newClass, TypeMirror newType, boolean isUnsigned) {
     if (longs == null) {
       return null;
     }
@@ -208,9 +229,9 @@ public class ValueCheckerUtils {
       return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
-          "ValueAnnotatedTypeFactory: can't convert int to boolean");
+          "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
     }
-    return NumberUtils.castNumbers(newType, longs);
+    return NumberUtils.castNumbers(newType, isUnsigned, longs);
   }
 
   /**
@@ -239,7 +260,7 @@ public class ValueCheckerUtils {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
     }
-    return NumberUtils.castNumbers(newType, doubles);
+    return NumberUtils.castNumbers(newType, false, doubles);
   }
 
   /**

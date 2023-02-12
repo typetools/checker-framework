@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -121,7 +122,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
    *
    * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of the
    *     size of that dimension
-   * @param type the AnnotatedTypeMirror of the array
+   * @param type the AnnotatedTypeMirror of the array, which is side-effected by this method
    */
   private void handleDimensions(
       List<? extends ExpressionTree> dimensions, AnnotatedTypeMirror.AnnotatedArrayType type) {
@@ -246,6 +247,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
+  // Side-effects the `atm` formal parameter.
   @Override
   public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror atm) {
     if (handledByValueChecker(atm)) {
@@ -256,6 +258,21 @@ class ValueTreeAnnotator extends TreeAnnotator {
       if (oldAnno == null) {
         return null;
       }
+
+      boolean isUnsigned = false;
+      // I would like to call ((AnnotatedTypeTree) castTree).hasAnnotation(Unsigned.class), but
+      // `Unsigned` is in the checker package and this code is in the common package.
+      List<? extends AnnotationTree> annoTrees =
+          TreeUtils.getExplicitAnnotationTrees(null, tree.getType());
+      List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+      for (AnnotationMirror am : annos) {
+        String annoName = AnnotationUtils.annotationName(am);
+        if (annoName.equals("org.checkerframework.checker.signedness.qual.Unsigned")) {
+          isUnsigned = true;
+          break;
+        }
+      }
+
       TypeMirror newType = atm.getUnderlyingType();
       AnnotationMirror newAnno;
       Range range;
@@ -273,10 +290,13 @@ class ValueTreeAnnotator extends TreeAnnotator {
           throw new UnsupportedOperationException(
               "ValueAnnotatedTypeFactory: can't convert int to boolean");
         } else {
-          newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+          newAnno =
+              atypeFactory.createIntRangeAnnotation(
+                  NumberUtils.castRange(newType, isUnsigned, range));
         }
       } else {
-        List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, atypeFactory);
+        List<?> values =
+            ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, isUnsigned, atypeFactory);
         newAnno = atypeFactory.createResultingAnnotation(atm.getUnderlyingType(), values);
       }
       atm.addMissingAnnotations(Collections.singleton(newAnno));
@@ -292,7 +312,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
    * Get the "value" field of the given annotation, casted to the given type. Empty list means no
    * value is possible (dead code). Null means no information is known -- any value is possible.
    */
-  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
+  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
     AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
     if (anno == null) {
       // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
@@ -301,7 +321,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       // unknown.  AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
       return null;
     }
-    return ValueCheckerUtils.getValuesCastedToType(anno, castTo, atypeFactory);
+    return ValueCheckerUtils.getValuesCastedToType(anno, castTo, isUnsigned, atypeFactory);
   }
 
   @Override
@@ -441,7 +461,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = new ArrayList<>(arguments.size());
       for (ExpressionTree argument : arguments) {
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType());
+        List<?> values = getValues(argType, argType.getUnderlyingType(), false);
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;
@@ -455,7 +475,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     List<?> receiverValues;
 
     if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-      receiverValues = getValues(receiver, receiver.getUnderlyingType());
+      receiverValues = getValues(receiver, receiver.getUnderlyingType(), false);
       if (receiverValues == null || receiverValues.isEmpty()) {
         // Values aren't known, so don't try to evaluate the method.
         return null;
@@ -493,7 +513,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = new ArrayList<>(arguments.size());
       for (ExpressionTree argument : arguments) {
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType());
+        List<?> values = getValues(argType, argType.getUnderlyingType(), false);
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;

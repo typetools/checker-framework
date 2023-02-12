@@ -2300,7 +2300,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-    boolean calledOnce = false;
+    boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
       if (!isInvariantTypeCastSafe(castType, exprType, top)) {
         checker.reportError(
@@ -2309,11 +2309,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             exprType.toString(true),
             castType.toString(true));
       }
-      calledOnce = true; // don't issue cast unsafe warning.
+      reported = true; // don't issue cast unsafe warning.
     }
     // We cannot do a simple test of casting, as isSubtypeOf requires
     // the input types to be subtypes according to Java.
-    if (!calledOnce && !isTypeCastSafe(castType, exprType)) {
+    if (!reported && !isTypeCastSafe(castType, exprType)) {
       checker.reportWarning(
           typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
     }
@@ -2453,7 +2453,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           intersection, ((IntersectionTypeTree) tree.getType()).getBounds());
     }
     return super.visitTypeCast(tree, p);
-    // return scan(tree.getExpression(), p);
   }
 
   @Override

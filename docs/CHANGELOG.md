@@ -10,6 +10,7 @@ Signedness Checker changes:
  * When incompatible arguments are passed to `@PolySigned` formal parameters,
    the error is expressed in terms of `@SignednessBottom` rather than the
    greatest lower bound of the argument types.
+ * The Value Checker is cognizant of signedness annotations.
 
 **Implementation details:**
 
