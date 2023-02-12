@@ -200,6 +200,15 @@ public class ValueCheckerUtils {
     return strings;
   }
 
+  /**
+   * Convert a list of longs to a given type
+   *
+   * @param longs the integral values to convert
+   * @param newClass determines the type of the result
+   * @param newType the type to which to cast, if newClass is numeric
+   * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
+   *     {@code List<char[]>}
+   */
   private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
     if (longs == null) {
       return null;
