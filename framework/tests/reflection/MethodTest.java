@@ -220,8 +220,9 @@ public class MethodTest {
         m = c.getMethod("getB", new Class[0]);
       }
       @TestReflectBottom
-      // :: error: (assignment)
-      Object o = m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
+      Object o =
+          // :: error: (assignment)
+          m.invoke(new SuperClass(), new @TestReflectBottom Object @TestReflectBottom [0]);
     } catch (Exception ignore) {
     }
   }

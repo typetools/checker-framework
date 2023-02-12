@@ -286,7 +286,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /** An array containing just {@code BaseTypeChecker.class}. */
-  private static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+  private static final Class<?>[] baseTypeCheckerClassArray =
+      new Class<?>[] {BaseTypeChecker.class};
 
   /**
    * Constructs an instance of the appropriate type factory for the implemented type system.
