@@ -13,6 +13,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  */
 public class SyntheticArrays {
 
+  /** Do not instantiate. */
+  private SyntheticArrays() {
+    throw new AssertionError("Class SyntheticArrays cannot be instantiated.");
+  }
+
   /**
    * Returns true if this combination of type/elem represents an array.clone.
    *

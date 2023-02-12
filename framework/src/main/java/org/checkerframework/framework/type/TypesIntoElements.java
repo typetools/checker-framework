@@ -44,6 +44,11 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  */
 public class TypesIntoElements {
 
+  /** Do not instantiate. */
+  private TypesIntoElements() {
+    throw new AssertionError("Class TypesIntoElements cannot be instantiated.");
+  }
+
   /**
    * The entry point.
    *

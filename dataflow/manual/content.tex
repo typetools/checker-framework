@@ -914,25 +914,24 @@ edges shown in \autoref{tab:nodesWithException}.
         \hline
         \textbf{Node type} & \textbf{Exception type} \\  \hline
 
-        \code{ArrayAccess} & \code{NullPointerException}, \code{ArrayIndexOutOfBoundsException} \\
-        \code{FieldAccess} & \code{NullPointerException} \\
-        \code{MethodAccess} & \code{NullPointerException} \\
-        \code{MethodInvocation} & \code{Throwable}, types in throws clause of the signature \\
-        \code{IntegerDivision} & \code{ArithmeticException} \\
-        \code{IntegerRemainder} & \code{ArithmeticException} \\
-        \code{ObjectCreation} & \code{Throwable}, types in throws clause of the signature \\
-        \code{ArrayCreation} & \code{NegativeArraySizeException}, \code{OutOfMemoryError} \\
-        \code{TypeCast} & \code{ClassCastException} \\
-        \code{Throw} & Type of \code{e} when \code{throw e} \\
-        \code{AssertionError} & \code{AssertionError} \\
-        \code{ClassName} & \code{ClassCircularityError}, \code{ClassFormatError}, \\
+        \code{ArrayAccessNode} & \code{NullPointerException}, \code{ArrayIndexOutOfBoundsException} \\
+        \code{FieldAccessNode} & \code{NullPointerException} \\
+        \code{MethodAccessNode} & \code{NullPointerException} \\
+        \code{MethodInvocationNode} & \code{Throwable}, types in throws clause of the signature \\
+        \code{IntegerDivisionNode} & \code{ArithmeticException} \\
+        \code{IntegerRemainderNode} & \code{ArithmeticException} \\
+        \code{ObjectCreationNode} & \code{Throwable}, types in throws clause of the signature \\
+        \code{ArrayCreationNode} & \code{NegativeArraySizeException}, \code{OutOfMemoryError} \\
+        \code{TypeCastNode} & \code{ClassCastException} \\
+        \code{ThrowNode} & Type of \code{e} when \code{throw e} \\
+        \code{AssertionErrorNode} & \code{AssertionError} \\
+        \code{ClassNameNode} & \code{ClassCircularityError}, \code{ClassFormatError}, \\
         & \code{NoClassDefFoundError}, \code{OutOfMemoryError} \\
         \hline
     \end{tabular}
 
         \caption{All node types that could throw Exception, and the types
           to be thrown.
-          Java class name of nodes are simplified as with \autoref{tab:nodes}.
           All exception types are in package \code{java.lang}.}
         \label{tab:nodesWithException}
 \end{table}

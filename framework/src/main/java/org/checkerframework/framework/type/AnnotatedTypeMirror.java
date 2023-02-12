@@ -935,8 +935,8 @@ public abstract class AnnotatedTypeMirror {
       // converted to a use, then both type variables are uses and should be the same object.
       // The code below does this.
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
-      for (AnnotatedTypeMirror typeArgs : result.getTypeArguments()) {
-        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArgs;
+      for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
         mapping.put(typeVar.getUnderlyingType(), typeVar);
       }
       for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
@@ -964,24 +964,22 @@ public abstract class AnnotatedTypeMirror {
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
-      } else {
-        if (isDeclaration()) {
-          for (AnnotatedTypeMirror typeArg : ts) {
-            if (typeArg.getKind() != TypeKind.TYPEVAR) {
-              throw new BugInCF(
-                  "Type declaration must have type variables as type arguments. Found %s", typeArg);
-            }
-            if (!typeArg.isDeclaration()) {
-              throw new BugInCF(
-                  "Type declarations must have type variables that are declarations. Found %s",
-                  typeArg);
-            }
+      } else if (isDeclaration()) {
+        for (AnnotatedTypeMirror typeArg : ts) {
+          if (typeArg.getKind() != TypeKind.TYPEVAR) {
+            throw new BugInCF(
+                "Type declaration must have type variables as type arguments. Found %s", typeArg);
           }
-          typeArgs = Collections.unmodifiableList(ts);
-        } else {
-          List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
-          typeArgs = Collections.unmodifiableList(uses);
+          if (!typeArg.isDeclaration()) {
+            throw new BugInCF(
+                "Type declarations must have type variables that are declarations. Found %s",
+                typeArg);
+          }
         }
+        typeArgs = Collections.unmodifiableList(ts);
+      } else {
+        List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+        typeArgs = Collections.unmodifiableList(uses);
       }
     }
 
