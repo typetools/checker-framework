@@ -38,10 +38,7 @@ public class ValueCheckerUtils {
    * @param castTo the type that is casted to
    * @param atypeFactory the type factory
    * @return a list of values after the casting
-   * @deprecated use #getValuesCastedToType(AnnotationMirror, TypeMirror, boolean,
-   *     ValueAnnotatedTypeFactory)
    */
-  @Deprecated // 2023-02-11
   public static List<?> getValuesCastedToType(
       AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypeFactory) {
     return getValuesCastedToType(anno, castTo, false, atypeFactory);
@@ -260,7 +257,7 @@ public class ValueCheckerUtils {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
     }
-    return NumberUtils.castNumbers(newType, false, doubles);
+    return NumberUtils.castNumbers(newType, doubles);
   }
 
   /**

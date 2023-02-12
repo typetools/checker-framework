@@ -330,17 +330,19 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
       }
     }
-
     return super.visitTypeCast(tree, p);
   }
 
-  // Problem:  At this point, types are like: (@IntVal(-1) byte, @IntVal(255) int) and knowledge of
-  // signedness is gone.  But, I can use castType's underlying type to infer correctness.
+  // At this point, types are like: (@IntVal(-1) byte, @IntVal(255) int) and knowledge of
+  // signedness is gone.  So, use castType's underlying type to infer correctness of the cast.
   @Override
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
     TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
     TypeKind exprTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
-    if (TypeKindUtils.isIntegral(castTypeKind) && TypeKindUtils.isIntegral(exprTypeKind)) {
+    if (castTypeKind != null
+        && exprTypeKind != null
+        && TypeKindUtils.isIntegral(castTypeKind)
+        && TypeKindUtils.isIntegral(exprTypeKind)) {
       AnnotationMirrorSet castAnnos = castType.getAnnotations();
       AnnotationMirrorSet exprAnnos = exprType.getAnnotations();
       if (castAnnos.equals(exprAnnos)) {
@@ -426,8 +428,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
       return false;
     }
     for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor1.hasNext(); ) {
-      boolean same = Objects.equals(itor1.next(), itor2.next());
-      if (!same) {
+      if (!Objects.equals(itor1.next(), itor2.next())) {
         return false;
       }
     }

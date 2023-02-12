@@ -309,8 +309,27 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Get the "value" field of the given annotation, casted to the given type. Empty list means no
-   * value is possible (dead code). Null means no information is known -- any value is possible.
+   * Get the "value" field of the annotation on {@code type}, casted to the given type. Empty list
+   * means no value is possible (dead code). Null means no information is known -- any value is
+   * possible.
+   *
+   * @param type the type with a Value Checker annotation
+   * @param castTo the type to cast to
+   * @return the Value Checker annotation's value, casted to the given type
+   */
+  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
+    return getValues(type, castTo, false);
+  }
+
+  /**
+   * Get the "value" field of the annotation on {@code type}, casted to the given type. Empty list
+   * means no value is possible (dead code). Null means no information is known -- any value is
+   * possible.
+   *
+   * @param type the type with a Value Checker annotation
+   * @param castTo the type to cast to
+   * @param isUnsigned if true, treat {@code castTo} as unsigned
+   * @return the Value Checker annotation's value, casted to the given type
    */
   private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
     AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
@@ -461,7 +480,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = new ArrayList<>(arguments.size());
       for (ExpressionTree argument : arguments) {
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType(), false);
+        List<?> values = getValues(argType, argType.getUnderlyingType());
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;
@@ -475,7 +494,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     List<?> receiverValues;
 
     if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-      receiverValues = getValues(receiver, receiver.getUnderlyingType(), false);
+      receiverValues = getValues(receiver, receiver.getUnderlyingType());
       if (receiverValues == null || receiverValues.isEmpty()) {
         // Values aren't known, so don't try to evaluate the method.
         return null;
@@ -513,7 +532,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = new ArrayList<>(arguments.size());
       for (ExpressionTree argument : arguments) {
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType(), false);
+        List<?> values = getValues(argType, argType.getUnderlyingType());
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;

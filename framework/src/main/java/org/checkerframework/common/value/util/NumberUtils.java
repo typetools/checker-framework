@@ -10,15 +10,23 @@ import org.plumelib.util.CollectionsPlume;
 public class NumberUtils {
 
   /**
-   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. This method
-   * is ignorant of signedness.
+   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
+   *
+   * @param type the type to cast to
+   * @param numbers the numbers to cast to the given type
    */
   public static List<? extends Number> castNumbers(
       TypeMirror type, List<? extends Number> numbers) {
     return castNumbers(type, false, numbers);
   }
 
-  /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
+  /**
+   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
+   *
+   * @param type the type to cast to
+   * @param isUnsigned if true, treat {@code type} as unsigned
+   * @param numbers the numbers to cast to the given type
+   */
   @SuppressWarnings("unchecked")
   public static List<? extends Number> castNumbers(
       TypeMirror type, boolean isUnsigned, List<? extends Number> numbers) {
@@ -54,7 +62,13 @@ public class NumberUtils {
     }
   }
 
-  static Short byteValueUnsigned(Number n) {
+  /**
+   * Returns the given number, casted to unsigned byte.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned byte
+   */
+  private static Short byteValueUnsigned(Number n) {
     short result = n.byteValue();
     if (result > 127) {
       result = (short) (result - 256);
@@ -79,6 +93,7 @@ public class NumberUtils {
    * resulting from casting a value with the given range.
    *
    * @param type the type for the cast; the result will be within it
+   * @param isUnsigned if true, {@code type} should be treated as unsigned
    * @param range the original range; the result will be within it
    * @return the intersection of the given range and the possible values of the given type
    */
