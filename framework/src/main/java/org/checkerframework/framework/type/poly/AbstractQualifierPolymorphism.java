@@ -519,7 +519,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected String defaultErrorMessage(
         AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
       return String.format(
-          "AbstractQualifierPolymorphism: Unexpected combination: type1: %s (%s) type2: %s (%s).",
+          "AbstractQualifierPolymorphism:"
+              + " Unexpected combination: type1: %s (%s) type2: %s (%s).",
           type1, type1.getKind(), type2, type2.getKind());
     }
 

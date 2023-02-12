@@ -23,10 +23,12 @@ public class CaseNode extends Node {
 
   /** The tree for this node. */
   protected final CaseTree tree;
+
   /**
    * The Node for the assignment of the switch selector expression to a synthetic local variable.
    */
   protected final AssignmentNode selectorExprAssignment;
+
   /**
    * The case expressions to match the switch expression against: the operands of (possibly
    * multiple) case labels.
