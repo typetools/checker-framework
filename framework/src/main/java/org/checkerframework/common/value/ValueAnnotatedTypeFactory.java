@@ -254,11 +254,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  protected void applyInferredAnnotations(AnnotatedTypeMirror type, CFValue as) {
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, CFValue inferred) {
     // Inference can widen an IntRange beyond the values possible for the Java type. Change the
     // annotation here so it is no wider than is possible.
-    TypeMirror t = as.getUnderlyingType();
-    AnnotationMirrorSet inferredAnnos = as.getAnnotations();
+    TypeMirror t = inferred.getUnderlyingType();
+    AnnotationMirrorSet inferredAnnos = inferred.getAnnotations();
     AnnotationMirror intRange = AnnotationUtils.getAnnotationByName(inferredAnnos, INTRANGE_NAME);
     if (intRange != null && TypeKindUtils.primitiveOrBoxedToTypeKind(t) != null) {
       Range range = getRange(intRange);
@@ -270,7 +270,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     DefaultInferredTypesApplier applier =
         new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
-    applier.applyInferredType(type, inferredAnnos, as.getUnderlyingType());
+    applier.applyInferredType(type, inferredAnnos, inferred.getUnderlyingType());
   }
 
   @Override
@@ -987,8 +987,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       List<Long> intValues = CollectionsPlume.mapList(Number::longValue, values);
       return createIntValAnnotation(intValues);
     } else if (first instanceof Double || first instanceof Float) {
-      List<Double> intValues = CollectionsPlume.mapList(Number::doubleValue, values);
-      return createDoubleValAnnotation(intValues);
+      List<Double> doubleValues = CollectionsPlume.mapList(Number::doubleValue, values);
+      return createDoubleValAnnotation(doubleValues);
     }
     throw new UnsupportedOperationException(
         "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
