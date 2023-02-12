@@ -296,7 +296,6 @@ class ValueTreeAnnotator extends TreeAnnotator {
    *
    * @param type the type with a Value Checker annotation
    * @param castTo the type to cast to
-   * @param isUnsigned if true, treat {@code castTo} as unsigned
    * @return the Value Checker annotation's value, casted to the given type
    */
   private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
