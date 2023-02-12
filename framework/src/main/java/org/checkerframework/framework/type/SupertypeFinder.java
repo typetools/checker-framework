@@ -38,7 +38,7 @@ import org.plumelib.util.CollectionsPlume;
  *
  * @see Types#directSupertypes(TypeMirror)
  */
-class SupertypeFinder {
+final class SupertypeFinder {
 
   /** Do not instantiate. */
   private SupertypeFinder() {

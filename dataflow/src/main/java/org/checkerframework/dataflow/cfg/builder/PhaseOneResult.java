@@ -20,7 +20,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 public class PhaseOneResult {
 
   /** AST for which the CFG is to be built. */
-  final UnderlyingAST underlyingAST;
+  /*package-private*/ final UnderlyingAST underlyingAST;
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
@@ -29,50 +29,66 @@ public class PhaseOneResult {
    * treeToCfgNodes, while the Node for the post-conversion value is stored in the
    * treeToConvertedCfgNodes.
    */
-  final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
+  /* package-private */ final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  /* package-private */ final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
+  /* package-private */ final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
 
   /** The list of extended nodes. */
-  final ArrayList<ExtendedNode> nodeList;
+  /*package-private*/ final ArrayList<ExtendedNode> nodeList;
 
   /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
-  final Map<Label, Integer> bindings;
+  /*package-private*/ final Map<Label, Integer> bindings;
 
   /** The set of leaders (represented as indices into {@code nodeList}). */
-  final Set<Integer> leaders;
+  /*package-private*/ final Set<Integer> leaders;
 
   /**
    * All return nodes (if any) encountered. Only includes return statements that actually return
    * something.
    */
-  final List<ReturnNode> returnNodes;
+  /*package-private*/ final List<ReturnNode> returnNodes;
 
   /** Special label to identify the regular exit. */
-  final Label regularExitLabel;
+  /*package-private*/ final Label regularExitLabel;
 
   /** Special label to identify the exceptional exit. */
-  final Label exceptionalExitLabel;
+  /*package-private*/ final Label exceptionalExitLabel;
 
   /**
    * Class declarations that have been encountered when building the control-flow graph for a
    * method.
    */
-  final List<ClassTree> declaredClasses;
+  /*package-private*/ final List<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
    * initializer.
    */
-  final List<LambdaExpressionTree> declaredLambdas;
+  /*package-private*/ final List<LambdaExpressionTree> declaredLambdas;
 
+  /**
+   * Create a PhaseOneResult with the given data.
+   *
+   * @param underlyingAST the underlying AST
+   * @param treeToCfgNodes the tree to nodes mapping
+   * @param treeToConvertedCfgNodes the tree to converted nodes mapping
+   * @param postfixTreeToCfgNodes the postfix tree to nodes mapping
+   * @param nodeList the list of nodes
+   * @param bindings the label bindings
+   * @param leaders the leaders
+   * @param returnNodes the return nodes
+   * @param regularExitLabel the regular exit labels
+   * @param exceptionalExitLabel the exceptional exit labels
+   * @param declaredClasses the declared classes
+   * @param declaredLambdas the declared lambdas
+   */
   public PhaseOneResult(
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeToCfgNodes,

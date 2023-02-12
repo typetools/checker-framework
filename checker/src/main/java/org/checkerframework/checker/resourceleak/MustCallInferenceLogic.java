@@ -51,7 +51,8 @@ public class MustCallInferenceLogic {
    * @param typeFactory the type factory
    * @param cfg the ControlFlowGraph
    */
-  MustCallInferenceLogic(ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
+  /*package-private*/ MustCallInferenceLogic(
+      ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
     this.typeFactory = typeFactory;
     this.cfg = cfg;
     OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
@@ -65,7 +66,7 @@ public class MustCallInferenceLogic {
    * {@link #cfg}, and updates the {@link #owningFields} set if it discovers an owning field whose
    * must-call obligations were satisfied along one of the checked paths.
    */
-  void runInference() {
+  /*package-private*/ void runInference() {
     Set<Block> visited = new HashSet<>();
     Deque<Block> worklist = new ArrayDeque<>();
     Block entry = this.cfg.getEntryBlock();

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -48,6 +49,7 @@ public class AssignmentNode extends Node {
    *
    * @return the left-hand-side of the assignment
    */
+  @Pure
   public Node getTarget() {
     return lhs;
   }
@@ -57,6 +59,7 @@ public class AssignmentNode extends Node {
   }
 
   @Override
+  @Pure
   public Tree getTree() {
     return tree;
   }
@@ -67,11 +70,13 @@ public class AssignmentNode extends Node {
   }
 
   @Override
+  @Pure
   public String toString() {
     return getTarget() + " = " + getExpression();
   }
 
   @Override
+  @Pure
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof AssignmentNode)) {
       return false;
@@ -81,6 +86,7 @@ public class AssignmentNode extends Node {
   }
 
   @Override
+  @Pure
   public int hashCode() {
     return Objects.hash(getTarget(), getExpression());
   }

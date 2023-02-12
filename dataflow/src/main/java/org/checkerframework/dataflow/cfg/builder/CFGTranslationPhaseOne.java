@@ -202,64 +202,63 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private TreePath path;
 
   /** Annotation processing environment and its associated type and tree utilities. */
-  final ProcessingEnvironment env;
+  protected final ProcessingEnvironment env;
 
   /** The javac element utilities. */
   protected final Elements elements;
   /** The javac type utilities. */
-  final Types types;
+  protected final Types types;
   /** The javac tree utilities. */
-  final Trees trees;
+  protected final Trees trees;
   /** The tree builder. */
-  public final TreeBuilder treeBuilder;
+  protected final TreeBuilder treeBuilder;
   /** The annotation provider, e.g., a type factory. */
-  final AnnotationProvider annotationProvider;
-
+  protected final AnnotationProvider annotationProvider;
   /** Can assertions be assumed to be disabled? */
-  final boolean assumeAssertionsDisabled;
+  protected final boolean assumeAssertionsDisabled;
 
   /** Can assertions be assumed to be enabled? */
-  final boolean assumeAssertionsEnabled;
+  protected final boolean assumeAssertionsEnabled;
 
   /* --------------------------------------------------------- */
   /* Extended Node Types and Labels */
   /* --------------------------------------------------------- */
 
   /** Special label to identify the regular exit. */
-  final Label regularExitLabel;
+  private final Label regularExitLabel;
 
   /** Special label to identify the exceptional exit. */
-  final Label exceptionalExitLabel;
+  private final Label exceptionalExitLabel;
 
   /**
    * Current {@link LabelCell} to which a return statement should jump, or null if there is no valid
    * destination.
    */
-  @Nullable LabelCell returnTargetLC;
+  private @Nullable LabelCell returnTargetLC;
 
   /**
    * Current {@link LabelCell} to which a break statement with no label should jump, or null if
    * there is no valid destination.
    */
-  @Nullable LabelCell breakTargetLC;
+  private @Nullable LabelCell breakTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates two
    * CFG {@link Label}s, one for break and one for continue.
    */
-  Map<Name, Label> breakLabels;
+  private Map<Name, Label> breakLabels;
 
   /**
    * Current {@link LabelCell} to which a continue statement with no label should jump, or null if
    * there is no valid destination.
    */
-  @Nullable LabelCell continueTargetLC;
+  private @Nullable LabelCell continueTargetLC;
 
   /**
    * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement creates
    * two CFG {@link Label}s, one for break and one for continue.
    */
-  Map<Name, Label> continueLabels;
+  private Map<Name, Label> continueLabels;
 
   /** Nested scopes of try-catch blocks in force at the current program point. */
   private final TryStack tryStack;
@@ -274,25 +273,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * treeToCfgNodes, while the Node for the post-conversion value is stored in the
    * treeToConvertedCfgNodes.
    */
-  final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
+  private final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  private final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
+  private final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
 
   /** The list of extended nodes. */
-  final ArrayList<ExtendedNode> nodeList;
+  private final ArrayList<ExtendedNode> nodeList;
 
   /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
-  final Map<Label, Integer> bindings;
+  private final Map<Label, Integer> bindings;
 
   /** The set of leaders (represented as indices into {@code nodeList}). */
-  final Set<Integer> leaders;
+  private final Set<Integer> leaders;
 
   /**
    * All return nodes (if any) encountered. Only includes return statements that actually return
@@ -304,65 +303,65 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Class declarations that have been encountered when building the control-flow graph for a
    * method.
    */
-  final List<ClassTree> declaredClasses;
+  private final List<ClassTree> declaredClasses;
 
   /**
    * Lambdas encountered when building the control-flow graph for a method, variable initializer, or
    * initializer.
    */
-  final List<LambdaExpressionTree> declaredLambdas;
+  private final List<LambdaExpressionTree> declaredLambdas;
 
   /** The ArithmeticException type. */
-  final TypeMirror arithmeticExceptionType;
+  protected final TypeMirror arithmeticExceptionType;
 
   /** The ArrayIndexOutOfBoundsException type. */
-  final TypeMirror arrayIndexOutOfBoundsExceptionType;
+  protected final TypeMirror arrayIndexOutOfBoundsExceptionType;
 
   /** The AssertionError type. */
-  final TypeMirror assertionErrorType;
+  protected final TypeMirror assertionErrorType;
 
   /** The ClassCastException type . */
-  final TypeMirror classCastExceptionType;
+  protected final TypeMirror classCastExceptionType;
 
   /** The Iterable type (erased). */
-  final TypeMirror iterableType;
+  protected final TypeMirror iterableType;
 
   /** The NegativeArraySizeException type. */
-  final TypeMirror negativeArraySizeExceptionType;
+  protected final TypeMirror negativeArraySizeExceptionType;
 
   /** The NullPointerException type . */
-  final TypeMirror nullPointerExceptionType;
+  protected final TypeMirror nullPointerExceptionType;
 
   /** The OutOfMemoryError type. */
-  final @Nullable TypeMirror outOfMemoryErrorType;
+  protected final @Nullable TypeMirror outOfMemoryErrorType;
 
   /** The ClassCircularityError type. */
-  final @Nullable TypeMirror classCircularityErrorType;
+  protected final @Nullable TypeMirror classCircularityErrorType;
 
   /** The ClassFormatErrorType type. */
-  final @Nullable TypeMirror classFormatErrorType;
+  protected final @Nullable TypeMirror classFormatErrorType;
 
   /** The NoClassDefFoundError type. */
-  final @Nullable TypeMirror noClassDefFoundErrorType;
+  protected final @Nullable TypeMirror noClassDefFoundErrorType;
 
   /** The String type. */
-  final TypeMirror stringType;
+  protected final TypeMirror stringType;
 
   /** The Throwable type. */
-  final TypeMirror throwableType;
+  protected final TypeMirror throwableType;
 
   /**
    * Supertypes of all unchecked exceptions. The size is 2 and the contents are {@code
    * RuntimeException} and {@code Error}.
    */
-  final Set<TypeMirror> uncheckedExceptionTypes;
+  protected final Set<TypeMirror> uncheckedExceptionTypes;
 
   /**
    * Exceptions that can be thrown by array creation "new SomeType[]". The size is 2 and the
    * contents are {@code NegativeArraySizeException} and {@code OutOfMemoryError}. This list comes
    * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
    */
-  final Set<TypeMirror> newArrayExceptionTypes;
+  protected final Set<TypeMirror> newArrayExceptionTypes;
 
   /**
    * @param treeBuilder builder for new AST nodes
@@ -2533,7 +2532,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param resultExpression the result of a switch expression; either from a yield or an
      *     expression in a case rule
      */
-    void buildSwitchExpressionResult(ExpressionTree resultExpression) {
+    /* package-private */ void buildSwitchExpressionResult(ExpressionTree resultExpression) {
       IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
       handleArtificialTree(switchExprVarUseTree);
 
@@ -2561,7 +2560,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @return true if the cases are exhaustive
      */
-    boolean casesAreExhaustive() {
+    private boolean casesAreExhaustive() {
       TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
 
       switch (selectorTypeMirror.getKind()) {

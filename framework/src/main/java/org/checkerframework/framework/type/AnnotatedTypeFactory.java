@@ -204,23 +204,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
-  private final ExecutableElement annotatedForValueElement;
+  protected final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
-  final ExecutableElement ensuresQualifierExpressionElement;
+  protected final ExecutableElement ensuresQualifierExpressionElement;
   /** The EnsuresQualifier.List.value field/element. */
-  final ExecutableElement ensuresQualifierListValueElement;
+  protected final ExecutableElement ensuresQualifierListValueElement;
   /** The EnsuresQualifierIf.expression field/element. */
-  final ExecutableElement ensuresQualifierIfExpressionElement;
+  protected final ExecutableElement ensuresQualifierIfExpressionElement;
   /** The EnsuresQualifierIf.result argument/element. */
-  final ExecutableElement ensuresQualifierIfResultElement;
+  protected final ExecutableElement ensuresQualifierIfResultElement;
   /** The EnsuresQualifierIf.List.value field/element. */
-  final ExecutableElement ensuresQualifierIfListValueElement;
+  protected final ExecutableElement ensuresQualifierIfListValueElement;
   /** The FieldInvariant.field argument/element. */
-  private final ExecutableElement fieldInvariantFieldElement;
+  protected final ExecutableElement fieldInvariantFieldElement;
   /** The FieldInvariant.qualifier argument/element. */
-  private final ExecutableElement fieldInvariantQualifierElement;
+  protected final ExecutableElement fieldInvariantQualifierElement;
   /** The HasQualifierParameter.value field/element. */
-  private final ExecutableElement hasQualifierParameterValueElement;
+  protected final ExecutableElement hasQualifierParameterValueElement;
   /** The MethodVal.className argument/element. */
   public final ExecutableElement methodValClassNameElement;
   /** The MethodVal.methodName argument/element. */
@@ -228,24 +228,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The MethodVal.params argument/element. */
   public final ExecutableElement methodValParamsElement;
   /** The NoQualifierParameter.value field/element. */
-  private final ExecutableElement noQualifierParameterValueElement;
+  protected final ExecutableElement noQualifierParameterValueElement;
   /** The RequiresQualifier.expression field/element. */
-  final ExecutableElement requiresQualifierExpressionElement;
+  protected final ExecutableElement requiresQualifierExpressionElement;
   /** The RequiresQualifier.List.value field/element. */
-  final ExecutableElement requiresQualifierListValueElement;
+  protected final ExecutableElement requiresQualifierListValueElement;
 
   /** The RequiresQualifier type. */
-  final TypeMirror requiresQualifierTM;
+  protected final TypeMirror requiresQualifierTM;
   /** The RequiresQualifier.List type. */
-  final TypeMirror requiresQualifierListTM;
+  protected final TypeMirror requiresQualifierListTM;
   /** The EnsuresQualifier type. */
-  final TypeMirror ensuresQualifierTM;
+  protected final TypeMirror ensuresQualifierTM;
   /** The EnsuresQualifier.List type. */
-  final TypeMirror ensuresQualifierListTM;
+  protected final TypeMirror ensuresQualifierListTM;
   /** The EnsuresQualifierIf type. */
-  final TypeMirror ensuresQualifierIfTM;
+  protected final TypeMirror ensuresQualifierIfTM;
   /** The EnsuresQualifierIf.List type. */
-  final TypeMirror ensuresQualifierIfListTM;
+  protected final TypeMirror ensuresQualifierIfListTM;
 
   /**
    * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -313,7 +313,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * exists. Unlike {@link #ajavaTypes}, which only stores annotations on public elements, this
    * stores annotations on all element locations such as in anonymous class bodies.
    */
-  public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
+  protected @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
   /**
    * A cache used to store elements whose declaration annotations have already been stored by
@@ -352,7 +352,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param type annotated type mirror
    */
-  public void initializeAtm(AnnotatedTypeMirror type) {
+  /*package-private*/ void initializeAtm(AnnotatedTypeMirror type) {
     atmInitializer.visit(type);
   }
 
@@ -364,13 +364,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private static class Alias {
     /** The canonical annotation (or null if copyElements == true). */
-    AnnotationMirror canonical;
+    final AnnotationMirror canonical;
     /** Whether elements should be copied over when translating to the canonical annotation. */
-    boolean copyElements;
+    final boolean copyElements;
     /** The canonical annotation name (or null if copyElements == false). */
-    @CanonicalName String canonicalName;
+    final @CanonicalName String canonicalName;
     /** Which elements should not be copied over (or null if copyElements == false). */
-    String[] ignorableElements;
+    final String[] ignorableElements;
 
     /**
      * Create an Alias with the given components.
@@ -5380,18 +5380,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return this.trees;
   }
 
-  /** Accessor for the processing environment. */
+  /**
+   * Accessor for the processing environment.
+   *
+   * @return the processing environment
+   */
   public ProcessingEnvironment getProcessingEnv() {
     return this.processingEnv;
   }
 
   /** Matches addition of a constant. */
-  static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+  private static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
   /** Matches subtraction of a constant. */
-  static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
+  private static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
   /** Matches a string whose only parens are at the beginning and end of the string. */
-  private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+  private static final Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
 
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:
