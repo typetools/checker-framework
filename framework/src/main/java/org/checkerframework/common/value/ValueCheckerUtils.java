@@ -113,14 +113,16 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get all possible values from the given type and cast them into a boxed primitive type.
+   * Get all possible values from the given type and cast them into a boxed primitive type. Returns
+   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
    *
    * @param range the given range
    * @param expectedType the expected type
-   * @return a list of all the values in the range
+   * @return a list of all the values in the range, or null if there would be more than {@link
+   *     ValueAnnotatedTypeFactory#MAX_VALUES}
    */
   public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
     if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
