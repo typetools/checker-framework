@@ -208,7 +208,7 @@ public class ValueCheckerUtils {
       return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
-          "ValueAnnotatedTypeFactory: can't convert int to boolean");
+          "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
     }
     return NumberUtils.castNumbers(newType, longs);
   }

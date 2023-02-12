@@ -9,7 +9,12 @@ import org.plumelib.util.CollectionsPlume;
 /** Utility routines for manipulating numbers. */
 public class NumberUtils {
 
-  /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
+  /**
+   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
+   *
+   * @param type the type to cast to
+   * @param numbers the numbers to cast to the given type
+   */
   public static List<? extends Number> castNumbers(
       TypeMirror type, List<? extends Number> numbers) {
     if (numbers == null) {

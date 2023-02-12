@@ -733,6 +733,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           }
         }
         if (numberVals.isEmpty()) {
+          // Every value in the list is a Character.
           return createCharAnnotation(characterVals);
         }
         return createNumberAnnotationMirror(new ArrayList<>(numberVals));
@@ -970,7 +971,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns an annotation that represents the given set of values.
    *
-   * @param values a homogeneous list: every element of it has the same class
+   * @param values a homogeneous list: every element of it has the same class. This method does not
+   *     modify or store it.
    * @return an annotation that represents the given set of values
    */
   public AnnotationMirror createNumberAnnotationMirror(List<Number> values) {

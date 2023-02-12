@@ -2454,7 +2454,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           intersection, ((IntersectionTypeTree) tree.getType()).getBounds());
     }
     return super.visitTypeCast(tree, p);
-    // return scan(tree.getExpression(), p);
   }
 
   @Override

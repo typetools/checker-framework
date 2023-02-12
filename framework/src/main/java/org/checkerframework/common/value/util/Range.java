@@ -389,7 +389,7 @@ public class Range {
   private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
   /**
-   * Converts this range to a 8-bit byte range.
+   * Converts this range to an 8-bit byte range.
    *
    * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
    * that bound is set to the bound of the Byte range.
@@ -400,6 +400,8 @@ public class Range {
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
    * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
    * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
+   *
+   * @return this range, converted to an 8-bit byte range
    */
   public Range byteRange() {
     if (this.isNothing()) {
