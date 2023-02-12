@@ -14,6 +14,7 @@ public class NumberUtils {
    *
    * @param type the type to cast to
    * @param numbers the numbers to cast to the given type
+   * @return a list of numbers of the given type
    */
   public static List<? extends Number> castNumbers(
       TypeMirror type, List<? extends Number> numbers) {
@@ -26,6 +27,7 @@ public class NumberUtils {
    * @param type the type to cast to
    * @param isUnsigned if true, treat {@code type} as unsigned
    * @param numbers the numbers to cast to the given type
+   * @return a list of numbers of the given type
    */
   @SuppressWarnings("unchecked")
   public static List<? extends Number> castNumbers(
