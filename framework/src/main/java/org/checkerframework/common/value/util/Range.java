@@ -47,17 +47,37 @@ public class Range {
   /** A range containing all possible 64-bit values. */
   public static final Range LONG_EVERYTHING = create(Long.MIN_VALUE, Long.MAX_VALUE);
 
+  /** Long.MIN_VALUE, as a BigInteger. */
+  private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
+  /** Long.MAX_VALUE, as a BigInteger. */
+  private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
+  /** The number of Long values, as a BigInteger. */
+  private static final BigInteger BIG_LONG_WIDTH =
+      BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
+
   /** A range containing all possible 32-bit values. */
   public static final Range INT_EVERYTHING = create(Integer.MIN_VALUE, Integer.MAX_VALUE);
+
+  /** The number of values representable in 32 bits: 2^32 or {@code 1<<32}. */
+  private static final long INT_WIDTH = INT_EVERYTHING.width();
 
   /** A range containing all possible 16-bit values. */
   public static final Range SHORT_EVERYTHING = create(Short.MIN_VALUE, Short.MAX_VALUE);
 
+  /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
+  private static final long SHORT_WIDTH = SHORT_EVERYTHING.width();
+
   /** A range containing all possible char values. */
   public static final Range CHAR_EVERYTHING = create(Character.MIN_VALUE, Character.MAX_VALUE);
 
+  /** The number of values representable in char: */
+  private static final long CHAR_WIDTH = CHAR_EVERYTHING.width();
+
   /** A range containing all possible 8-bit values. */
   public static final Range BYTE_EVERYTHING = create(Byte.MIN_VALUE, Byte.MAX_VALUE);
+
+  /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
+  private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
   /** The empty range. This is the only Range object that contains nothing */
   @SuppressWarnings("interning:assignment") // no other constructor call makes this
@@ -141,14 +161,6 @@ public class Range {
                 + typeKind);
     }
   }
-
-  /** Long.MIN_VALUE, as a BigInteger. */
-  private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
-  /** Long.MAX_VALUE, as a BigInteger. */
-  private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
-  /** The number of Long values, as a BigInteger. */
-  private static final BigInteger BIG_LONG_WIDTH =
-      BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
 
   /**
    * Creates a range using BigInteger type bounds.
@@ -284,9 +296,6 @@ public class Range {
     return this == NOTHING;
   }
 
-  /** The number of values representable in 32 bits: 2^32 or {@code 1<<32}. */
-  private static final long INT_WIDTH = INT_EVERYTHING.width();
-
   /**
    * Converts this range to a 32-bit integral range.
    *
@@ -304,6 +313,26 @@ public class Range {
    */
   @SuppressWarnings("UnnecessaryLongToIntConversion")
   public Range intRange() {
+    return intRange(false);
+  }
+
+  /**
+   * Converts this range to a 32-bit integral range.
+   *
+   * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Integer range, then
+   * that bound is set to the bound of the Integer range.
+   *
+   * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
+   * range of the Integer class, return INT_EVERYTHING.
+   *
+   * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
+   * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
+   * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
+   *
+   * @return this range, converted to a 32-bit integral range
+   */
+  @SuppressWarnings("UnnecessaryLongToIntConversion")
+  public Range intRange(boolean isUnsigned) {
     if (this.isNothing()) {
       return this;
     }
@@ -319,8 +348,24 @@ public class Range {
     return createOrElse((int) this.from, (int) this.to, INT_EVERYTHING);
   }
 
-  /** The number of values representable in 16 bits: 2^16 or 1&lt;&lt;16. */
-  private static final long SHORT_WIDTH = SHORT_EVERYTHING.width();
+  /**
+   * Converts a this range to a 16-bit short range.
+   *
+   * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Short range, then
+   * that bound is set to the bound of the Short range.
+   *
+   * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
+   * range of the Short class, return SHORT_EVERYTHING.
+   *
+   * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
+   * 16-bit integers, convert the bounds to Short type in accordance with Java twos-complement
+   * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
+   *
+   * @return this range, converted to a 16-bit short range
+   */
+  public Range shortRange() {
+    return shortRange(false);
+  }
 
   /**
    * Converts a this range to a 16-bit short range.
@@ -334,8 +379,11 @@ public class Range {
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
    * 16-bit integers, convert the bounds to Short type in accordance with Java twos-complement
    * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
+   *
+   * @param isUnsigned if true, return a range of unsigned shorts
+   * @return this range, converted to a 16-bit short range
    */
-  public Range shortRange() {
+  public Range shortRange(boolean isUnsigned) {
     if (this.isNothing()) {
       return this;
     }
@@ -351,9 +399,6 @@ public class Range {
     }
     return createOrElse((short) this.from, (short) this.to, SHORT_EVERYTHING);
   }
-
-  /** The number of values representable in char: */
-  private static final long CHAR_WIDTH = CHAR_EVERYTHING.width();
 
   /**
    * Converts this range to a char range.
@@ -384,9 +429,6 @@ public class Range {
     }
     return createOrElse((char) this.from, (char) this.to, CHAR_EVERYTHING);
   }
-
-  /** The number of values representable in 8 bits: 2^8 or 1&lt;&lt;8. */
-  private static final long BYTE_WIDTH = BYTE_EVERYTHING.width();
 
   /**
    * Converts this range to an 8-bit byte range.

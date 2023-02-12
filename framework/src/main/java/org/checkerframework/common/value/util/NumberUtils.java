@@ -52,11 +52,21 @@ public class NumberUtils {
       case FLOAT:
         return CollectionsPlume.mapList(Number::floatValue, numbers);
       case INT:
-        return CollectionsPlume.mapList(Number::intValue, numbers);
+        if (isUnsigned) {
+          return CollectionsPlume.<Number, Long>mapList(
+              NumberUtils::intValueUnsigned, (Iterable<Number>) numbers);
+        } else {
+          return CollectionsPlume.mapList(Number::intValue, numbers);
+        }
       case LONG:
         return CollectionsPlume.mapList(Number::longValue, numbers);
       case SHORT:
-        return CollectionsPlume.mapList(Number::shortValue, numbers);
+        if (isUnsigned) {
+          return CollectionsPlume.<Number, Integer>mapList(
+              NumberUtils::shortValueUnsigned, (Iterable<Number>) numbers);
+        } else {
+          return CollectionsPlume.mapList(Number::shortValue, numbers);
+        }
       default:
         throw new UnsupportedOperationException(typeKind + ": " + type);
     }
@@ -70,8 +80,36 @@ public class NumberUtils {
    */
   private static Short byteValueUnsigned(Number n) {
     short result = n.byteValue();
-    if (result > 127) {
+    if (result > Byte.MAX_VALUE) {
       result = (short) (result - 256);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given number, casted to unsigned short.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned short
+   */
+  private static Integer shortValueUnsigned(Number n) {
+    int result = n.shortValue();
+    if (result > Short.MAX_VALUE) {
+      result = (short) (result - 65536);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given number, casted to unsigned int.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned int
+   */
+  private static Long intValueUnsigned(Number n) {
+    long result = n.intValue();
+    if (result > Integer.MAX_VALUE) {
+      result = (short) (result - 4294967296L);
     }
     return result;
   }
@@ -108,9 +146,9 @@ public class NumberUtils {
       case CHAR:
         return range.charRange();
       case SHORT:
-        return range.shortRange();
+        return range.shortRange(isUnsigned);
       case INT:
-        return range.intRange();
+        return range.intRange(isUnsigned);
       case LONG:
       case FLOAT:
       case DOUBLE:
