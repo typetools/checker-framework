@@ -119,6 +119,7 @@ public class ValueCheckerUtils {
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
    *
+   * @param <T> the type of the values to obtain
    * @param range the given range
    * @param expectedType the expected type
    * @return a list of all the values in the range, or null if there would be more than {@link
