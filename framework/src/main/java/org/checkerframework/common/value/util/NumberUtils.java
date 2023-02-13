@@ -9,6 +9,11 @@ import org.plumelib.util.CollectionsPlume;
 /** Utility routines for manipulating numbers. */
 public class NumberUtils {
 
+  /** Do not instantiate. */
+  private NumberUtils() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
    *
