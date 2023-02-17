@@ -427,6 +427,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
+    if (this.defaultQualifierForUseTypeAnnotator == null) {
+      throw new TypeSystemError(
+          "Does the constructor for %s call postInit()?", this.getClass().getSimpleName());
+    }
+
     super.setRoot(root);
     this.scannedClasses.clear();
     this.flowResult = null;

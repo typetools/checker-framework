@@ -2631,6 +2631,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Method that gets called exactly once at shutdown time of the JVM. Checkers can override this
    * method to customize the behavior.
+   *
+   * <p>If you override this, you must also override {@link #shouldAddShutdownHook} to return true.
    */
   protected void shutdownHook() {
     if (hasOption("resourceStats")) {
