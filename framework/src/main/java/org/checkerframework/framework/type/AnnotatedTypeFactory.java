@@ -3483,6 +3483,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * made with the same {@code annotation}, then the {@code annotationToUse} must be the same.
    *
    * <p>The point of {@code annotationToUse} is that it may include elements/fields.
+   *
+   * @param alias the class of the alias annotation
+   * @param annotation the class of the canonical annotation
+   * @param annotationToUse the annotation mirror to use
    */
   protected void addAliasedDeclAnnotation(
       Class<? extends Annotation> alias,
