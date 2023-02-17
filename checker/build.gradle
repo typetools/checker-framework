@@ -171,7 +171,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     attributes('Main-Class': 'org.checkerframework.framework.util.CheckerMain')
   }
   exclude 'org/checkerframework/**/qual/*'
-  exclude 'org/checkerframework/checker/*/util/*'
+  exclude 'org/checkerframework/checker/**/util/*'
   relocators = shadowJar.getRelocators()
 }
 
