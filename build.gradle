@@ -16,7 +16,6 @@ plugins {
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+.
   id 'com.diffplug.spotless' version '6.14.0' apply false
-
 }
 apply plugin: 'de.undercouch.download'
 
@@ -61,6 +60,7 @@ ext {
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = '.git'
 }
+
 // Keep in sync with check in
 // framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
 switch (JavaVersion.current()) {
@@ -138,7 +138,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.30.1-SNAPSHOT'
+  version '3.31.1-SNAPSHOT'
 
   repositories {
     mavenCentral()
@@ -423,8 +423,8 @@ allprojects {
         options.errorprone.enabled = false
       }
     }
-  }
-}
+  } // end afterEvaluate
+} // end allProjects
 
 task cloneAndBuildDependencies(type: Exec, group: 'Build') {
   description 'Clones (or updates) and builds all dependencies'
@@ -761,6 +761,7 @@ subprojects {
     // relocate 'sun', 'org.checkerframework.sun'
     relocate 'com.google', 'org.checkerframework.com.google'
     relocate 'plume', 'org.checkerframework.plume'
+
     exclude '**/module-info.class'
 
     doFirst {
@@ -957,6 +958,9 @@ subprojects {
         // Show the found unexpected diagnostics and expected diagnostics not found.
         exceptionFormat 'full'
         events 'failed'
+
+        // Don't show the uninteresting stack traces from the exceptions.
+        showStackTraces = false
       }
 
       // After each test, print a summary.
@@ -1091,6 +1095,7 @@ task checkBasicStyle(group: 'Format') {
     'checker/nullness/junit-assertions.astub',
     'framework/src/main/resources/git.properties'
   ]
+
   doLast {
     FileTree tree = fileTree(dir: projectDir)
     for (String dir : ignoreDirectories) {

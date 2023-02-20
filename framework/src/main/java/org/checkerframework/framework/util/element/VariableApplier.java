@@ -58,7 +58,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
   }
 
   /** The annotated targets. */
-  private static TargetType[] annotatedTargets =
+  private static final TargetType[] annotatedTargets =
       new TargetType[] {
         TargetType.LOCAL_VARIABLE,
         TargetType.RESOURCE_VARIABLE,
@@ -72,7 +72,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
   }
 
   /** The valid targets. */
-  private static TargetType[] validTargets =
+  private static final TargetType[] validTargets =
       new TargetType[] {
         TargetType.NEW,
         TargetType.CAST,
@@ -82,7 +82,9 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         TargetType.METHOD_REFERENCE,
         TargetType.CONSTRUCTOR_REFERENCE,
         TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
-        TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
+        TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+        TargetType.METHOD_FORMAL_PARAMETER,
+        TargetType.CLASS_EXTENDS
       };
 
   @Override

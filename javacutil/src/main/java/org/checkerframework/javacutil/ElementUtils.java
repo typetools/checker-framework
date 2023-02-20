@@ -979,7 +979,7 @@ public class ElementUtils {
   public static TypeElement getTypeElement(ProcessingEnvironment processingEnv, Class<?> clazz) {
     @CanonicalName String className = clazz.getCanonicalName();
     if (className == null) {
-      throw new Error("Anonymous class " + clazz + " has no canonical name");
+      throw new BugInCF("Anonymous class " + clazz + " has no canonical name");
     }
     return processingEnv.getElementUtils().getTypeElement(className);
   }
