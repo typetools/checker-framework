@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ContractsFromMethod {
 
   /** The QualifierArgument.value field/element. */
-  final ExecutableElement qualifierArgumentValueElement;
+  protected final ExecutableElement qualifierArgumentValueElement;
 
   /** The factory that this ContractsFromMethod is associated with. */
   protected final GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;

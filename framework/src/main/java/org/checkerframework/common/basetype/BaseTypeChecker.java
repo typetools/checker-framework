@@ -342,7 +342,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
           // Don't add more information about the constructor invocation.
           throw (RuntimeException) err;
         }
+      } else if (t instanceof NoSuchMethodException) {
+        // Note: it's possible that NoSuchMethodException was caused by `ctor.newInstance(args)`, if
+        // the constructor itself uses reflection.  But this case is unlikely.
+        throw new TypeSystemError(
+            "Could not find constructor %s(%s)", name, StringsPlume.join(", ", paramTypes));
       }
+
       Throwable cause;
       String causeMessage;
       if (t instanceof InvocationTargetException) {

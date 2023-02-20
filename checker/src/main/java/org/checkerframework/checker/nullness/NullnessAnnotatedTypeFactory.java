@@ -170,6 +170,7 @@ public class NullnessAnnotatedTypeFactory
           "net.bytebuddy.agent.utility.nullability.NeverNull",
           // https://github.com/raphw/byte-buddy/blob/master/byte-buddy-dep/src/main/java/net/bytebuddy/utility/nullability/NeverNull.java
           "net.bytebuddy.utility.nullability.NeverNull",
+          // Removed in ANTLR 4.6.
           // https://github.com/antlr/antlr4/blob/master/runtime/Java/src/org/antlr/v4/runtime/misc/NotNull.java
           "org.antlr.v4.runtime.misc.NotNull",
           // https://search.maven.org/artifact/org.checkerframework/checker-compat-qual/2.5.5/jar

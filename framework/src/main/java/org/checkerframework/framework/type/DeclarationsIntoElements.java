@@ -22,7 +22,12 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */
-public class DeclarationsIntoElements {
+public final class DeclarationsIntoElements {
+
+  /** Do not instantiate. */
+  private DeclarationsIntoElements() {
+    throw new AssertionError("Class DeclarationsIntoElements cannot be instantiated.");
+  }
 
   /**
    * The entry point.
