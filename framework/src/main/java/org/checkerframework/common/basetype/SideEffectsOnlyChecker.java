@@ -3,6 +3,7 @@ package org.checkerframework.common.basetype;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -11,6 +12,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -183,10 +185,10 @@ public class SideEffectsOnlyChecker {
       // TODO: This needs to collect all subexpressions of the given expression.  For now it just
       // considers the actual arguments, which is incomplete.
       List<? extends ExpressionTree> args = node.getArguments();
-      ExpressionTree receiver = getReceiverTree(node);
+      ExpressionTree receiver = TreeUtils.getReceiverTree(node);
       List<ExpressionTree> subexpressions;
       if (receiver == null) {
-        subexpressions = nonReceiverArgs;
+        subexpressions = new ArrayList<>(args);
       } else {
         subexpressions = new ArrayList<>(args.size() + 1);
         subexpressions.add(receiver);
@@ -201,11 +203,10 @@ public class SideEffectsOnlyChecker {
         // The invoked method is annotated with @SideEffectsOnly.
         // Add annotation values to seOnlyIncorrectExprs
         // that are not present in sideEffectsOnlyExpressions.
+        /* TODO
         ExecutableElement sideEffectsOnlyValueElement =
             TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
-        List<String> sideEffectsOnlyExpressionStrings =
-            AnnotationUtils.getElementValueArray(
-                sideEffectsOnlyAnno, sideEffectsOnlyValueElement, String.class);
+        */
         List<JavaExpression> sideEffectsOnlyExprInv = new ArrayList<>();
         for (String st : sideEffectsOnlyExpressionStrings) {
           try {

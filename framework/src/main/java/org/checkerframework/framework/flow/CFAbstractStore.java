@@ -116,6 +116,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected final boolean sequentialSemantics;
 
+  /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
+  private final boolean assumeSideEffectFree;
+
   /** The unique ID for the next-created object. */
   static final AtomicLong nextUid = new AtomicLong(0);
   /** The unique ID of this object. */
@@ -147,9 +150,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.sequentialSemantics = sequentialSemantics;
     sideEffectsOnlyValueElement =
         TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, analysis.env);
+    assumeSideEffectFree =
+        analysis.checker.hasOption("assumeSideEffectFree")
+            || analysis.checker.hasOption("assumePure");
   }
-
-  /** Copy constructor. */
+  /**
+   * Copy constructor.
+   *
+   * @param other a CFAbstractStore to copy into this
+   */
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     localVariableValues = new HashMap<>(other.localVariableValues);
@@ -160,6 +169,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
     sideEffectsOnlyValueElement = other.sideEffectsOnlyValueElement;
+    assumeSideEffectFree = other.assumeSideEffectFree;
   }
 
   /**
@@ -254,9 +264,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // case 1: remove information if necessary
-    if (!(analysis.checker.hasOption("assumeSideEffectFree")
-        || analysis.checker.hasOption("assumePure")
-        || atypeFactory.isSideEffectFree(method))) {
+    if (!(assumeSideEffectFree || atypeFactory.isSideEffectFree(method))) {
 
       boolean sideEffectsUnrefineAliases =
           ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;

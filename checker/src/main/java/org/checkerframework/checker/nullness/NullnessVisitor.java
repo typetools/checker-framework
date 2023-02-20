@@ -100,6 +100,12 @@ public class NullnessVisitor
   /** True if checked code may clear system properties. */
   private final boolean permitClearProperty;
 
+  /** True if -AassumeAssertionsAreEnabled was passed on the command line. */
+  private final boolean assumeAssertionsAreEnabled;
+
+  /** True if -AassumeAssertionsAreDisabled was passed on the command line. */
+  private final boolean assumeAssertionsAreDisabled;
+
   /**
    * Create a new NullnessVisitor.
    *
@@ -123,6 +129,8 @@ public class NullnessVisitor
         checker.getLintOption(
             NullnessChecker.LINT_PERMITCLEARPROPERTY,
             NullnessChecker.LINT_DEFAULT_PERMITCLEARPROPERTY);
+    assumeAssertionsAreEnabled = checker.hasOption("assumeAssertionsAreEnabled");
+    assumeAssertionsAreDisabled = checker.hasOption("assumeAssertionsAreDisabled");
   }
 
   @Override
@@ -382,10 +390,10 @@ public class NullnessVisitor
     // enabled.
 
     boolean doVisitAssert;
-    if (checker.hasOption("assumeAssertionsAreEnabled")
+    if (assumeAssertionsAreEnabled
         || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, tree)) {
       doVisitAssert = true;
-    } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
+    } else if (assumeAssertionsAreDisabled) {
       doVisitAssert = false;
     } else {
       doVisitAssert = true;

@@ -67,6 +67,7 @@ def print_usage():
     print("Usage:    python3 release_build.py [options]")
     print("\n  --debug  turns on debugging mode which produces verbose output")
 
+
 def clone_or_update_repos():
     """Clone the relevant repos from scratch or update them if they exist and
     if directed to do so by the user."""
@@ -220,9 +221,12 @@ def build_annotation_tools_release(version, afu_interm_dir):
     execute(ant_cmd)
 
     # Deploy to intermediate site
-    gradle_cmd = "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s" % (
-        version,
-        afu_interm_dir,
+    gradle_cmd = (
+        "./gradlew releaseBuildWithoutTest -Pafu.version=%s -Pdeploy-dir=%s"
+        % (
+            version,
+            afu_interm_dir,
+        )
     )
     execute(gradle_cmd, True, False, ANNO_FILE_UTILITIES)
 
