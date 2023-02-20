@@ -4,7 +4,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Storage cell for a single Label, with tracking whether it was accessed. */
-class LabelCell {
+/*package-private*/ class LabelCell {
   /** The label. If it is null, then it will be lazily set if {@link #accessLabel} is called. */
   private @MonotonicNonNull Label label;
 

@@ -245,6 +245,7 @@ public class TestUtilities {
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
     }
+
     return true;
   }
 
