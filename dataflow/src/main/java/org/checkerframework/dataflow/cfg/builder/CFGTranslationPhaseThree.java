@@ -15,10 +15,6 @@ import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.javacutil.BugInCF;
 
-/* --------------------------------------------------------- */
-/* Phase Three */
-/* --------------------------------------------------------- */
-
 /**
  * Class that performs phase three of the translation process. In particular, the following
  * degenerate cases of basic blocks are removed:

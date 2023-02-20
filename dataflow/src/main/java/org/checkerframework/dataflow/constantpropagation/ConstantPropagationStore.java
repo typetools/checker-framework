@@ -16,7 +16,7 @@ import org.plumelib.util.CollectionsPlume;
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
 
   /** Information about variables gathered so far. */
-  Map<Node, Constant> contents;
+  private final Map<Node, Constant> contents;
 
   /** Creates a new ConstantPropagationStore. */
   public ConstantPropagationStore() {
@@ -147,14 +147,14 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
   public String toString() {
     // Only output local variable information.
     // This output is very terse, so a CFG containing it fits well in the manual.
-    Map<Node, Constant> contentsWithoutLocalVars =
+    Map<Node, Constant> contentsLocalVars =
         new LinkedHashMap<>(CollectionsPlume.mapCapacity(contents));
     for (Map.Entry<Node, Constant> e : contents.entrySet()) {
       if (e.getKey() instanceof LocalVariableNode) {
-        contentsWithoutLocalVars.put(e.getKey(), e.getValue());
+        contentsLocalVars.put(e.getKey(), e.getValue());
       }
     }
-    return contentsWithoutLocalVars.toString();
+    return contentsLocalVars.toString();
   }
 
   @Override

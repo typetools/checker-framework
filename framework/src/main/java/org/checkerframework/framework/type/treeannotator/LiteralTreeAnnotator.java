@@ -259,8 +259,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
             }
             throw new BugInCF(
                 StringsPlume.joinLines(
-                    "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy"
-                        + " definition:",
+                    "Bug in @QualifierForLiterals(stringpatterns=...) in type"
+                        + " hierarchy definition:",
                     " the glb of `matches` for \"" + string + "\" is " + res,
                     " which is a subtype of " + sam,
                     " whose pattern does not match \"" + string + "\".",

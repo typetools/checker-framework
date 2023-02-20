@@ -32,6 +32,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.reflection.ReflectionPlume;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.StringsPlume;
 
@@ -175,10 +176,13 @@ public class AnnotationBuilder {
     assert name != null : "@AssumeAssertion(nullness): assumption";
     AnnotationMirror res = fromName(elements, name, elementNamesValues);
     if (res == null) {
-      throw new UserError(
-          "AnnotationBuilder: error: fromClass can't load Class %s%n"
-              + "ensure the class is on the compilation classpath",
-          name);
+      String extra =
+          name.startsWith("org.checkerframework.")
+              ? "Is the class in checker-qual.jar?"
+              : "Is the class on the compilation classpath, which is:"
+                  + System.lineSeparator()
+                  + ReflectionPlume.classpathToString();
+      throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
   }

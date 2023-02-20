@@ -101,7 +101,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * #visitSwitchResultExpression(ExpressionTree, Object)} on the expression in the yield trees. It
    * does not descend into switch expressions.
    */
-  protected YieldVisitor yieldVisitor = new YieldVisitor();
+  protected final YieldVisitor yieldVisitor = new YieldVisitor();
 
   /**
    * A scanner that visits all the yield trees in a given tree and calls {@link

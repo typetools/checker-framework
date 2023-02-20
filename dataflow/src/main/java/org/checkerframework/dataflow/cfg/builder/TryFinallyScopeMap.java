@@ -12,7 +12,7 @@ import org.plumelib.util.ArrayMap;
  * control flows outside of the try block.
  */
 @SuppressWarnings("serial")
-class TryFinallyScopeMap extends HashMap<Name, Label> {
+/*package-private*/ class TryFinallyScopeMap extends HashMap<Name, Label> {
   /** New labels within a try block that were added by this implementation. */
   private final Map<Name, Label> accessedNames;
 

@@ -65,15 +65,18 @@ public abstract class Node implements UniqueId {
   protected final TypeMirror type;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
+
   /** The unique ID of this object. */
-  final long uid = nextUid.getAndIncrement();
+  private final long uid = nextUid.getAndIncrement();
+
   /**
    * Returns the unique ID of this object.
    *
    * @return the unique ID of this object
    */
   @Override
+  @Pure
   public long getUid(@UnknownInitialization Node this) {
     return uid;
   }
@@ -95,6 +98,7 @@ public abstract class Node implements UniqueId {
    * @return the basic block this node belongs to (or {@code null} if it represents the parameter of
    *     a method)
    */
+  @Pure
   public @Nullable Block getBlock() {
     return block;
   }
@@ -119,6 +123,7 @@ public abstract class Node implements UniqueId {
    *
    * @return a {@link TypeMirror} representing the type of this {@link Node}
    */
+  @Pure
   public TypeMirror getType() {
     return type;
   }
@@ -144,6 +149,13 @@ public abstract class Node implements UniqueId {
     lvalue = true;
   }
 
+  /**
+   * Return whether this node represents a tree that appears in the source code (true) or one that
+   * the CFG or builder added while desugaring (false).
+   *
+   * @return whether this node represents a tree that appears in the source code
+   */
+  @Pure
   public boolean getInSource() {
     return inSource;
   }
@@ -167,6 +179,7 @@ public abstract class Node implements UniqueId {
    * @return a collection containing all of the operand {@link Node}s of this {@link Node}, as well
    *     as (transitively) the operands of its operands
    */
+  @Pure
   public Collection<Node> getTransitiveOperands() {
     ArrayDeque<Node> operands = new ArrayDeque<>(getOperands());
     ArrayDeque<Node> transitiveOperands = new ArrayDeque<>(operands.size());
@@ -183,6 +196,7 @@ public abstract class Node implements UniqueId {
    *
    * @return a printed representation of this
    */
+  @Pure
   public String toStringDebug() {
     return String.format("%s [%s]", this, this.getClassAndUid());
   }
@@ -193,6 +207,7 @@ public abstract class Node implements UniqueId {
    * @param nodes a collection of nodes to format
    * @return a printed representation of the given collection
    */
+  @Pure
   public static String nodeCollectionToString(Collection<? extends Node> nodes) {
     StringJoiner result = new StringJoiner(", ", "[", "]");
     for (Node n : nodes) {
