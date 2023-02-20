@@ -32,15 +32,20 @@ import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArraysPlume;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
@@ -50,6 +55,12 @@ import org.plumelib.util.StringsPlume;
  * <p>Removes annotations from all files in the given directories. Modifies the files in place.
  *
  * <p>Does not remove trusted annotations: those that the checker trusts rather than verifies.
+ *
+ * <p>Also does not remove "excluded" annotations. Provide excluded annotations with the {@code
+ * -exclusionFile} command line argument, which must be the first argument to this program if it is
+ * present. The exclusion file should be a list of newline-separated annotation names (without
+ * {@literal @} symbols). Both the simple and fully-qualified name of each annotation must be
+ * included in the exclusion file. TODO: remove this restriction?
  *
  * <p>Does not remove annotations at locations where inference does no work:
  *
@@ -66,6 +77,13 @@ import org.plumelib.util.StringsPlume;
 public class RemoveAnnotationsForInference {
 
   /**
+   * A list of annotations not to remove. Used to exclude project-specific annotations that must
+   * remain for the project to build. (It would be burdensome to add all project-specific
+   * annotations to the global list in {@link #isTrustedAnnotation(String)}).
+   */
+  private static @MonotonicNonNull List<String> excludedAnnotations = null;
+
+  /**
    * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
    * documentation} for details.
    *
@@ -75,6 +93,26 @@ public class RemoveAnnotationsForInference {
     if (args.length < 1) {
       System.err.println("Usage: provide one or more directory names to process");
       System.exit(1);
+    }
+    // TODO: using plume-lib's options here would be better, but would add a dependency
+    // to the whole Checker Framework, which is undesirable. Move this program elsewhere
+    // (e.g., to a plume-lib project)?
+    if (args[0].contentEquals("-exclusionFile")) {
+      if (args.length < 3) {
+        System.err.println(
+            "Usage: -exclusionFile requires at least two more arguments: the path to "
+                + "the exclusion file and one or more directory names to process");
+        System.exit(2);
+      }
+      String exclusionFilePath = args[1];
+      try (Stream<String> lines = Files.lines(Paths.get(exclusionFilePath))) {
+        excludedAnnotations = lines.collect(Collectors.toList());
+      } catch (IOException e) {
+        System.err.println(
+            "Error: Exclusion file " + exclusionFilePath + " not found. Check that it exists?");
+        System.exit(3);
+      }
+      args = ArraysPlume.subarray(args, 2, args.length - 2);
     }
     for (String arg : args) {
       process(arg);
@@ -265,6 +303,10 @@ public class RemoveAnnotationsForInference {
       if (isTrustedAnnotation(name)) {
         return superResult;
       }
+      // Retain explictly-excluded annotations.
+      if (isExcluded(name)) {
+        return superResult;
+      }
       // Retain annotations for which warnings are suppressed.
       if (isSuppressed(n)) {
         return superResult;
@@ -348,6 +390,17 @@ public class RemoveAnnotationsForInference {
         || name.equals("org.checkerframework.common.aliasing.qual.NonLeaked")
         || name.equals("LeakedToResult")
         || name.equals("org.checkerframework.common.aliasing.qual.LeakedToResult");
+  }
+
+  /**
+   * Returns true iff the annotation is present in the user-supplied exclusion file (via the
+   * -exclusionFile command-line option).
+   *
+   * @param name the annotation's name (simple or fully-qualified)
+   * @return true if the annotation was excluded by the user
+   */
+  static boolean isExcluded(String name) {
+    return (excludedAnnotations != null && excludedAnnotations.contains(name));
   }
 
   // This approach searches upward to find all the active warning suppressions.
