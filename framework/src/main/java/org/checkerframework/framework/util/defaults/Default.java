@@ -15,9 +15,17 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class Default implements Comparable<Default> {
   // please remember to add any fields to the hashcode calculation
+  /** The default annotation mirror. */
   public final AnnotationMirror anno;
+  /** The type use location. */
   public final TypeUseLocation location;
 
+  /**
+   * Construct a Default object.
+   *
+   * @param anno the default annotation mirror
+   * @param location the type use location
+   */
   public Default(final AnnotationMirror anno, final TypeUseLocation location) {
     this.anno = anno;
     this.location = location;
