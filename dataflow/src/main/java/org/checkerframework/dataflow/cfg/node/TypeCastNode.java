@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -16,13 +16,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class TypeCastNode extends Node {
 
-  protected final Tree tree;
+  protected final TypeCastTree tree;
   protected final Node operand;
 
   /** For Types.isSameType. */
   protected final Types types;
 
-  public TypeCastNode(Tree tree, Node operand, TypeMirror type, Types types) {
+  public TypeCastNode(TypeCastTree tree, Node operand, TypeMirror type, Types types) {
     super(type);
     this.tree = tree;
     this.operand = operand;
@@ -34,7 +34,7 @@ public class TypeCastNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public TypeCastTree getTree() {
     return tree;
   }
 

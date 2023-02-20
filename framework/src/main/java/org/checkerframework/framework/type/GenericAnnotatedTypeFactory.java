@@ -145,9 +145,6 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-  /** Should flow be used by default? */
-  protected static boolean flowByDefault = true;
-
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
@@ -191,9 +188,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
    * is non-null.
    */
-  boolean arraysAreRelevant = false;
+  protected final boolean arraysAreRelevant;
 
   // Flow related fields
+
+  /** Should flow be used by default? */
+  protected static boolean flowByDefault = true;
 
   /**
    * Should use flow-sensitive type refinement analysis? This value can be changed when an
@@ -328,10 +328,10 @@ public abstract class GenericAnnotatedTypeFactory<
     this.useFlow = useFlow;
 
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores = new IdentityHashMap<>();
+    this.exceptionalExitStores = new IdentityHashMap<>();
+    this.methodInvocationStores = new IdentityHashMap<>();
+    this.returnStatementStores = new IdentityHashMap<>();
 
     this.initializationStore = null;
     this.initializationStaticStore = null;
@@ -427,13 +427,18 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
+    if (this.defaultQualifierForUseTypeAnnotator == null) {
+      throw new TypeSystemError(
+          "Does the constructor for %s call postInit()?", this.getClass().getSimpleName());
+    }
+
     super.setRoot(root);
     this.scannedClasses.clear();
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores.clear();
+    this.exceptionalExitStores.clear();
+    this.methodInvocationStores.clear();
+    this.returnStatementStores.clear();
     this.initializationStore = null;
     this.initializationStaticStore = null;
 
@@ -827,9 +832,9 @@ public abstract class GenericAnnotatedTypeFactory<
   protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
     if (!defs.hasDefaultsForCheckedCode()) {
       throw new BugInCF(
-          "GenericAnnotatedTypeFactory.createQualifierDefaults: "
-              + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-              + "Every checker must specify a default qualifier. "
+          "GenericAnnotatedTypeFactory.createQualifierDefaults:"
+              + " @DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE)"
+              + " not found. Every checker must specify a default qualifier. "
               + getSortedQualifierNames());
     }
 
@@ -1058,13 +1063,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * A mapping from methods (or other code blocks) to their regular exit store (used to check
    * postconditions).
    */
-  protected IdentityHashMap<Tree, Store> regularExitStores;
+  protected final IdentityHashMap<Tree, Store> regularExitStores;
 
   /** A mapping from methods (or other code blocks) to their exceptional exit store. */
-  protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+  protected final IdentityHashMap<Tree, Store> exceptionalExitStores;
 
   /** A mapping from methods to a list with all return statements and the corresponding store. */
-  protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
+  protected final IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
       returnStatementStores;
 
   /**
@@ -1287,10 +1292,10 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void performFlowAnalysis(ClassTree classTree) {
     if (flowResult == null) {
-      regularExitStores = new IdentityHashMap<>();
-      exceptionalExitStores = new IdentityHashMap<>();
-      returnStatementStores = new IdentityHashMap<>();
-      flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
+      this.regularExitStores.clear();
+      this.exceptionalExitStores.clear();
+      this.returnStatementStores.clear();
+      this.flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
     }
 
     // no need to scan annotations
@@ -1463,7 +1468,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Sorts a list of trees with the variables first. */
-  Comparator<Tree> sortVariablesFirst =
+  private final Comparator<Tree> sortVariablesFirst =
       new Comparator<Tree>() {
         @Override
         public int compare(Tree t1, Tree t2) {
@@ -1668,8 +1673,8 @@ public abstract class GenericAnnotatedTypeFactory<
           res = getAnnotatedType(lhsTree);
         } else {
           throw new BugInCF(
-              "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
-                  + "lhsTree: "
+              "GenericAnnotatedTypeFactory: Unexpected tree passed to"
+                  + " getAnnotatedTypeLhs. lhsTree: "
                   + lhsTree
                   + " Tree.Kind: "
                   + lhsTree.getKind());
@@ -1833,12 +1838,12 @@ public abstract class GenericAnnotatedTypeFactory<
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
     if (iUseFlow) {
-      Value as = getInferredValueFor(tree);
-      if (as != null) {
-        applyInferredAnnotations(type, as);
+      Value inferred = getInferredValueFor(tree);
+      if (inferred != null) {
+        applyInferredAnnotations(type, inferred);
         log(
-            "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
-            thisClass, treeString, type, as);
+            "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
+            thisClass, treeString, type, inferred);
       }
     }
     log(
@@ -1905,12 +1910,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code type}.
    *
    * @param type the type to modify
-   * @param as the inferred annotations to apply
+   * @param inferred the inferred annotations to apply
    */
-  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value inferred) {
     DefaultInferredTypesApplier applier =
         new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
-    applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
+    applier.applyInferredType(type, inferred.getAnnotations(), inferred.getUnderlyingType());
   }
 
   /**
@@ -2300,7 +2305,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Cache of types found that are relevantTypes or subclass of supported types. Used so that
    * isSubtype doesn't need to be called repeatedly on the same types.
    */
-  private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+  private final Map<TypeMirror, Boolean> allFoundRelevantTypes =
+      CollectionUtils.createLRUCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.

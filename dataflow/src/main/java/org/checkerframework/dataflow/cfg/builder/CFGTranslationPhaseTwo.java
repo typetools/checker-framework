@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraySet;
 
 /** Class that performs phase two of the translation process. */
@@ -111,7 +112,7 @@ public class CFGTranslationPhaseTwo {
                     target));
             target = bindings.get(elseLabel);
             if (target == null) {
-              throw new Error(
+              throw new BugInCF(
                   String.format(
                       "in conditional jump %s, no binding for elseLabel %s: %s",
                       cj, elseLabel, bindings));

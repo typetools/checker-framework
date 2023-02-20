@@ -222,7 +222,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected final ExecutableElement unusedWhenElement;
 
   /** True if "-Ashowchecks" was passed on the command line. */
-  private final boolean showchecks;
+  protected final boolean showchecks;
   /** True if "-Ainfer" was passed on the command line. */
   private final boolean infer;
   /** True if "-AsuggestPureMethods" or "-Ainfer" was passed on the command line. */
@@ -232,6 +232,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * command line.
    */
   private final boolean checkPurity;
+  /** True if "-AajavaChecks" was passed on the command line. */
+  private final boolean ajavaChecks;
+  /** True if "-AassumeSideEffectFree" or "-aassumePure" was passed on the command line. */
+  private final boolean assumeSideEffectFree;
+  /** True if "-AassumeDeterministic" or "-aassumePure" was passed on the command line. */
+  private final boolean assumeDeterministic;
+  /** True if "-AcheckCastElementType" was passed on the command line. */
+  private final boolean checkCastElementType;
+  /** True if "-AconservativeUninferredTypeArguments" was passed on the command line. */
+  private final boolean conservativeUninferredTypeArguments;
 
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
   private final boolean warnRedundantAnnotations;
@@ -269,11 +279,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
     checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    ajavaChecks = checker.hasOption("ajavaChecks");
+    assumeSideEffectFree =
+        checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+    assumeDeterministic =
+        checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure");
+    checkCastElementType = checker.hasOption("checkCastElementType");
+    conservativeUninferredTypeArguments = checker.hasOption("conservativeUninferredTypeArguments");
     warnRedundantAnnotations = checker.hasOption("warnRedundantAnnotations");
   }
 
   /** An array containing just {@code BaseTypeChecker.class}. */
-  private static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
+  private static final Class<?>[] baseTypeCheckerClassArray =
+      new Class<?>[] {BaseTypeChecker.class};
 
   /**
    * Constructs an instance of the appropriate type factory for the implemented type system.
@@ -366,7 +384,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test if even the option is provided.
    */
   protected void testJointJavacJavaParserVisitor() {
-    if (root == null || !checker.hasOption("ajavaChecks")) {
+    if (root == null || !ajavaChecks) {
       return;
     }
 
@@ -412,7 +430,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test even if the option is provided.
    */
   protected void testAnnotationInsertion() {
-    if (root == null || !checker.hasOption("ajavaChecks")) {
+    if (root == null || !ajavaChecks) {
       return;
     }
 
@@ -1016,12 +1034,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (body == null) {
       r = new PurityResult();
     } else {
-      r =
-          PurityChecker.checkPurity(
-              body,
-              atypeFactory,
-              checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure"),
-              checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure"));
+      r = PurityChecker.checkPurity(body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
     }
     if (!r.isPure(kinds)) {
       reportPurityErrors(r, tree, kinds);
@@ -2323,7 +2336,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-    boolean calledOnce = false;
+    boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
       if (!isInvariantTypeCastSafe(castType, exprType, top)) {
         checker.reportError(
@@ -2332,11 +2345,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             exprType.toString(true),
             castType.toString(true));
       }
-      calledOnce = true; // don't issue cast unsafe warning.
+      reported = true; // don't issue cast unsafe warning.
     }
     // We cannot do a simple test of casting, as isSubtypeOf requires
     // the input types to be subtypes according to Java.
-    if (!calledOnce && !isTypeCastSafe(castType, exprType)) {
+    if (!reported && !isTypeCastSafe(castType, exprType)) {
       checker.reportWarning(
           typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
     }
@@ -2370,7 +2383,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
     AnnotationMirrorSet castAnnos;
-    if (!checker.hasOption("checkCastElementType")) {
+    if (!checkCastElementType) {
       // checkCastElementType option wasn't specified, so only check effective annotations.
       castAnnos = castType.getEffectiveAnnotations();
     } else {
@@ -2476,7 +2489,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           intersection, ((IntersectionTypeTree) tree.getType()).getBounds());
     }
     return super.visitTypeCast(tree, p);
-    // return scan(tree.getExpression(), p);
   }
 
   @Override
@@ -3674,7 +3686,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     if (requiresInference) {
-      if (checker.hasOption("conservativeUninferredTypeArguments")) {
+      if (conservativeUninferredTypeArguments) {
         checker.reportWarning(memberReferenceTree, "methodref.inference.unimplemented");
       }
       return true;
