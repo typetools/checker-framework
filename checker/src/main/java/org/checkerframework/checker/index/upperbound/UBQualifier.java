@@ -1351,7 +1351,7 @@ public abstract class UBQualifier {
      *
      * @return the integer value
      */
-    int getValue() {
+    public int getValue() {
       return value;
     }
 

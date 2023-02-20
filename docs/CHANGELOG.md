@@ -1,7 +1,20 @@
-Version 3.31.0 (March 1, 2023)
+Version 3.31.1 (March 1, 2023)
 ------------------------------
 
 **User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.31.0 (February 17, 2023)
+------------------------------
+
+**User-visible changes:**
+
+Command-line argument `-AshowPrefixInWarningMessages` puts the checker name
+on the first line of each warning and error message.
 
 Signedness Checker changes:
  * Cast expressions are not subject to type refinement.  When a programmer
@@ -20,6 +33,7 @@ Removed methods from AnnotationUtils that are no longer useful:
 `createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
 
 **Closed issues:**
+#5597.
 
 
 Version 3.30.0 (February 2, 2023)

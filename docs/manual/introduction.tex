@@ -205,7 +205,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.30.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.31.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -704,6 +704,11 @@ Type-checking modes:  enable/disable functionality
   suppress any warnings.  For example, if this command-line option is
   supplied, then \<@SuppressWarnings("assignment")> has no effect, but
   \<@SuppressWarnings("nullness:assignment")> does.
+\item \<-AshowPrefixInWarningMessages>
+  When issuing an error or warning, prefix the warning suppression key by
+  the checker name.  For instance, output ``error: [nullness:assignment]
+  ...'' instead of ``error: [assignment]''.  This makes it easy to tell,
+  from the suppression key only, which checker issued the error or warning.
 \end{itemize}
 
 Partially-annotated libraries

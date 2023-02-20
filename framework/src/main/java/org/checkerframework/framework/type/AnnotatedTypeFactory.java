@@ -204,23 +204,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
-  private final ExecutableElement annotatedForValueElement;
+  protected final ExecutableElement annotatedForValueElement;
   /** The EnsuresQualifier.expression field/element. */
-  final ExecutableElement ensuresQualifierExpressionElement;
+  protected final ExecutableElement ensuresQualifierExpressionElement;
   /** The EnsuresQualifier.List.value field/element. */
-  final ExecutableElement ensuresQualifierListValueElement;
+  protected final ExecutableElement ensuresQualifierListValueElement;
   /** The EnsuresQualifierIf.expression field/element. */
-  final ExecutableElement ensuresQualifierIfExpressionElement;
+  protected final ExecutableElement ensuresQualifierIfExpressionElement;
   /** The EnsuresQualifierIf.result argument/element. */
-  final ExecutableElement ensuresQualifierIfResultElement;
+  protected final ExecutableElement ensuresQualifierIfResultElement;
   /** The EnsuresQualifierIf.List.value field/element. */
-  final ExecutableElement ensuresQualifierIfListValueElement;
+  protected final ExecutableElement ensuresQualifierIfListValueElement;
   /** The FieldInvariant.field argument/element. */
-  private final ExecutableElement fieldInvariantFieldElement;
+  protected final ExecutableElement fieldInvariantFieldElement;
   /** The FieldInvariant.qualifier argument/element. */
-  private final ExecutableElement fieldInvariantQualifierElement;
+  protected final ExecutableElement fieldInvariantQualifierElement;
   /** The HasQualifierParameter.value field/element. */
-  private final ExecutableElement hasQualifierParameterValueElement;
+  protected final ExecutableElement hasQualifierParameterValueElement;
   /** The MethodVal.className argument/element. */
   public final ExecutableElement methodValClassNameElement;
   /** The MethodVal.methodName argument/element. */
@@ -228,24 +228,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** The MethodVal.params argument/element. */
   public final ExecutableElement methodValParamsElement;
   /** The NoQualifierParameter.value field/element. */
-  private final ExecutableElement noQualifierParameterValueElement;
+  protected final ExecutableElement noQualifierParameterValueElement;
   /** The RequiresQualifier.expression field/element. */
-  final ExecutableElement requiresQualifierExpressionElement;
+  protected final ExecutableElement requiresQualifierExpressionElement;
   /** The RequiresQualifier.List.value field/element. */
-  final ExecutableElement requiresQualifierListValueElement;
+  protected final ExecutableElement requiresQualifierListValueElement;
 
   /** The RequiresQualifier type. */
-  final TypeMirror requiresQualifierTM;
+  protected final TypeMirror requiresQualifierTM;
   /** The RequiresQualifier.List type. */
-  final TypeMirror requiresQualifierListTM;
+  protected final TypeMirror requiresQualifierListTM;
   /** The EnsuresQualifier type. */
-  final TypeMirror ensuresQualifierTM;
+  protected final TypeMirror ensuresQualifierTM;
   /** The EnsuresQualifier.List type. */
-  final TypeMirror ensuresQualifierListTM;
+  protected final TypeMirror ensuresQualifierListTM;
   /** The EnsuresQualifierIf type. */
-  final TypeMirror ensuresQualifierIfTM;
+  protected final TypeMirror ensuresQualifierIfTM;
   /** The EnsuresQualifierIf.List type. */
-  final TypeMirror ensuresQualifierIfListTM;
+  protected final TypeMirror ensuresQualifierIfListTM;
 
   /**
    * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
@@ -313,7 +313,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * exists. Unlike {@link #ajavaTypes}, which only stores annotations on public elements, this
    * stores annotations on all element locations such as in anonymous class bodies.
    */
-  public @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
+  protected @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
 
   /**
    * A cache used to store elements whose declaration annotations have already been stored by
@@ -352,7 +352,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param type annotated type mirror
    */
-  public void initializeAtm(AnnotatedTypeMirror type) {
+  /*package-private*/ void initializeAtm(AnnotatedTypeMirror type) {
     atmInitializer.visit(type);
   }
 
@@ -364,13 +364,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private static class Alias {
     /** The canonical annotation (or null if copyElements == true). */
-    AnnotationMirror canonical;
+    final AnnotationMirror canonical;
     /** Whether elements should be copied over when translating to the canonical annotation. */
-    boolean copyElements;
+    final boolean copyElements;
     /** The canonical annotation name (or null if copyElements == false). */
-    @CanonicalName String canonicalName;
+    final @CanonicalName String canonicalName;
     /** Which elements should not be copied over (or null if copyElements == false). */
-    String[] ignorableElements;
+    final String[] ignorableElements;
 
     /**
      * Create an Alias with the given components.
@@ -850,14 +850,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return wholeProgramInference;
   }
 
+  /** Initialize reflection resolution. */
   protected void initializeReflectionResolution() {
     if (checker.shouldResolveReflection()) {
       boolean debug = "debug".equals(checker.getOption("resolveReflection"));
 
       MethodValChecker methodValChecker = checker.getSubchecker(MethodValChecker.class);
       assert methodValChecker != null
-          : "AnnotatedTypeFactory: reflection resolution was requested, but MethodValChecker isn't"
-              + " a subchecker.";
+          : "AnnotatedTypeFactory: reflection resolution was requested,"
+              + " but MethodValChecker isn't a subchecker.";
       MethodValAnnotatedTypeFactory methodValATF =
           (MethodValAnnotatedTypeFactory) methodValChecker.getAnnotationProvider();
 
@@ -1490,8 +1491,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     // Because of a bug in Java 8, annotations on type parameters are not stored in elements, so
     // get explicit annotations from the tree. (This bug has been fixed in Java 9.)  Also, since
-    // annotations computed by the AnnotatedTypeFactory are stored in the element, the annotations
-    // have to be retrieved from the tree so that only explicit annotations are returned.
+    // annotations computed by the AnnotatedTypeFactory are stored in the element, the
+    // annotations have to be retrieved from the tree so that only explicit annotations are
+    // returned.
     Tree decl = declarationFromElement(elt);
 
     if (decl == null) {
@@ -2343,8 +2345,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
-              "AnnotatedTypeFactory.methodFromUse:mismatch between declared method type variables"
-                  + " and the inferred method type arguments. Method type variables: "
+              "AnnotatedTypeFactory.methodFromUse:mismatch between"
+                  + " declared method type variables and the inferred method type arguments."
+                  + " Method type variables: "
                   + methodType.getTypeVariables()
                   + "; "
                   + "Inferred method type arguments: "
@@ -2519,8 +2522,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Usually, the only locations that will add annotations to the return type are getClass in
     // stub files defaults and propagation tree annotator.  Since getClass is final they cannot
     // come from source code.  Also, since the newBound is an erased type we have no type
-    // arguments.  So, we just copy the annotations from the bound of the declared type to the new
-    // bound.
+    // arguments.  So, we just copy the annotations from the bound of the declared type to the
+    // new bound.
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
     AnnotationMirrorSet typeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
@@ -2664,8 +2667,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     if (tree.getClassBody() != null) {
       // Because the anonymous constructor can't have explicit annotations on its parameters,
-      // they are copied from the super constructor invoked in the anonymous constructor. To do
-      // this:
+      // they are copied from the super constructor invoked in the anonymous constructor. To
+      // do this:
       // 1. get unsubstituted type of the super constructor.
       // 2. adapt it to this call site.
       // 3. copy the parameters to the anonymous constructor, `con`.
@@ -3508,6 +3511,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * made with the same {@code annotation}, then the {@code annotationToUse} must be the same.
    *
    * <p>The point of {@code annotationToUse} is that it may include elements/fields.
+   *
+   * @param alias the class of the alias annotation
+   * @param annotation the class of the canonical annotation
+   * @param annotationToUse the annotation mirror to use
    */
   protected void addAliasedDeclAnnotation(
       Class<? extends Annotation> alias,
@@ -4668,8 +4675,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // We should never reach here: isFunctionalInterface performs the same check
           // and would have raised an error already.
           throw new BugInCF(
-              "Expected the type of a cast tree in an assignment context to contain a functional"
-                  + " interface bound. Found type: %s for tree: %s in lambda tree: %s",
+              "Expected the type of a cast tree in an assignment context to contain"
+                  + " a functional interface bound."
+                  + " Found type: %s for tree: %s in lambda tree: %s",
               castATM, cast, tree);
         }
         return castATM;
@@ -4895,7 +4903,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     groundFunctionalType.addAnnotations(functionalType.getAnnotations());
 
     // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without annotations.
+    // only the main annotations are copied.  Add default annotations in places without
+    // annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
   }
@@ -5062,8 +5071,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         typeVarToAnnotatedTypeArg.put(typeVarTypeMirror, uncapturedTypeArg);
         if (uncapturedTypeArg.getKind() == TypeKind.TYPEVAR) {
           // If the type arg is a type variable also add it to the
-          // typeVarToAnnotatedTypeArg map, so
-          // that references to the type variable are substituted.
+          // typeVarToAnnotatedTypeArg map, so that references to the type variable are
+          // substituted.
           AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) uncapturedTypeArg;
           typeVarToAnnotatedTypeArg.put(typeVar.getUnderlyingType(), typeVar);
         }
@@ -5403,18 +5412,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return this.trees;
   }
 
-  /** Accessor for the processing environment. */
+  /**
+   * Accessor for the processing environment.
+   *
+   * @return the processing environment
+   */
   public ProcessingEnvironment getProcessingEnv() {
     return this.processingEnv;
   }
 
   /** Matches addition of a constant. */
-  static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+  private static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
   /** Matches subtraction of a constant. */
-  static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
+  private static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 
   /** Matches a string whose only parens are at the beginning and end of the string. */
-  private static Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
+  private static final Pattern surroundingParensPattern = Pattern.compile("^\\([^()]\\)");
 
   /**
    * Given an expression, split it into a subexpression and a constant offset. For example:

@@ -427,6 +427,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
+    if (this.defaultQualifierForUseTypeAnnotator == null) {
+      throw new TypeSystemError(
+          "Does the constructor for %s call postInit()?", this.getClass().getSimpleName());
+    }
+
     super.setRoot(root);
     this.scannedClasses.clear();
     this.flowResult = null;
@@ -827,9 +832,9 @@ public abstract class GenericAnnotatedTypeFactory<
   protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
     if (!defs.hasDefaultsForCheckedCode()) {
       throw new BugInCF(
-          "GenericAnnotatedTypeFactory.createQualifierDefaults: "
-              + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-              + "Every checker must specify a default qualifier. "
+          "GenericAnnotatedTypeFactory.createQualifierDefaults:"
+              + " @DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE)"
+              + " not found. Every checker must specify a default qualifier. "
               + getSortedQualifierNames());
     }
 
@@ -1463,7 +1468,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Sorts a list of trees with the variables first. */
-  Comparator<Tree> sortVariablesFirst =
+  private final Comparator<Tree> sortVariablesFirst =
       new Comparator<Tree>() {
         @Override
         public int compare(Tree t1, Tree t2) {
@@ -1668,8 +1673,8 @@ public abstract class GenericAnnotatedTypeFactory<
           res = getAnnotatedType(lhsTree);
         } else {
           throw new BugInCF(
-              "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
-                  + "lhsTree: "
+              "GenericAnnotatedTypeFactory: Unexpected tree passed to"
+                  + " getAnnotatedTypeLhs. lhsTree: "
                   + lhsTree
                   + " Tree.Kind: "
                   + lhsTree.getKind());
@@ -1818,12 +1823,12 @@ public abstract class GenericAnnotatedTypeFactory<
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
     if (iUseFlow) {
-      Value as = getInferredValueFor(tree);
-      if (as != null) {
-        applyInferredAnnotations(type, as);
+      Value inferred = getInferredValueFor(tree);
+      if (inferred != null) {
+        applyInferredAnnotations(type, inferred);
         log(
-            "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
-            thisClass, treeString, type, as);
+            "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
+            thisClass, treeString, type, inferred);
       }
     }
     log(
@@ -1890,12 +1895,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code type}.
    *
    * @param type the type to modify
-   * @param as the inferred annotations to apply
+   * @param inferred the inferred annotations to apply
    */
-  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value inferred) {
     DefaultInferredTypesApplier applier =
         new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
-    applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
+    applier.applyInferredType(type, inferred.getAnnotations(), inferred.getUnderlyingType());
   }
 
   /**
@@ -2285,7 +2290,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Cache of types found that are relevantTypes or subclass of supported types. Used so that
    * isSubtype doesn't need to be called repeatedly on the same types.
    */
-  private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+  private final Map<TypeMirror, Boolean> allFoundRelevantTypes =
+      CollectionUtils.createLRUCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
