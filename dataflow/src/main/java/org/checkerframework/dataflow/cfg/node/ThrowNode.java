@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -33,7 +32,7 @@ public class ThrowNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public ThrowTree getTree() {
     return tree;
   }
 

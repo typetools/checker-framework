@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -29,7 +28,7 @@ public class PrimitiveTypeNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public PrimitiveTypeTree getTree() {
     return tree;
   }
 

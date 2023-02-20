@@ -1085,13 +1085,13 @@ class MustCallConsistencyAnalyzer {
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
-        // Assigning to an owning field is sufficient to clear a must-call alias obligation in
-        // a constructor, if the enclosing class has at most one @Owning field. If the class
-        // had multiple owning fields, then a soundness bug would occur: the must call alias
-        // relationship would allow the whole class' obligation to be fulfilled by closing
-        // only one of the parameters passed to the constructor (but the other owning fields
-        // might not actually have had their obligations fulfilled). See test case
-        // checker/tests/resourceleak/TwoOwningMCATest.java for an example.
+        // Assigning to an owning field is sufficient to clear a must-call alias obligation
+        // in a constructor, if the enclosing class has at most one @Owning field. If the
+        // class had multiple owning fields, then a soundness bug would occur: the must call
+        // alias relationship would allow the whole class' obligation to be fulfilled by
+        // closing only one of the parameters passed to the constructor (but the other
+        // owning fields might not actually have had their obligations fulfilled). See test
+        // case checker/tests/resourceleak/TwoOwningMCATest.java for an example.
         Element enclosingCtr = lhsElement.getEnclosingElement();
         if (enclosingCtr != null
             && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR
@@ -1800,10 +1800,16 @@ class MustCallConsistencyAnalyzer {
           // immediately issued, because such a parameter should not go out of scope
           // without its obligation being resolved some other way.
           if (obligation.derivedFromMustCallAlias()) {
-            checker.reportError(
-                obligation.resourceAliases.asList().get(0).tree,
-                "mustcallalias.out.of.scope",
-                exitReasonForErrorMessage);
+            // MustCallAlias annotations only have meaning if the method returns normally,
+            // so issue an error if and only if this exit is happening on a normal exit path.
+            if (exceptionType == null) {
+              checker.reportError(
+                  obligation.resourceAliases.asList().get(0).tree,
+                  "mustcallalias.out.of.scope",
+                  exitReasonForErrorMessage);
+            }
+            // Whether or not an error is issued, the check is now complete - there is no further
+            // checking to do on a must-call-alias-derived obligation along an exceptional path.
             continue;
           }
 

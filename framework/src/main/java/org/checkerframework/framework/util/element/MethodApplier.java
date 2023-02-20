@@ -51,7 +51,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /** The annotated targets. */
-  private static TargetType[] annotatedTargets =
+  private static final TargetType[] annotatedTargets =
       new TargetType[] {TargetType.METHOD_RECEIVER, TargetType.METHOD_RETURN, TargetType.THROWS};
 
   /**
@@ -65,7 +65,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /** The valid targets. */
-  private static TargetType[] validTargets =
+  private static final TargetType[] validTargets =
       new TargetType[] {
         TargetType.LOCAL_VARIABLE,
         TargetType.RESOURCE_VARIABLE,

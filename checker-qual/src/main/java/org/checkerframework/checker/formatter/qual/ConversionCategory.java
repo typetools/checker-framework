@@ -187,7 +187,7 @@ public enum ConversionCategory {
    * The conversion categories that have a corresponding conversion character. This lacks UNUSED,
    * TIME_AND_INT, etc.
    */
-  private static ConversionCategory[] conversionCategoriesWithChar =
+  private static final ConversionCategory[] conversionCategoriesWithChar =
       new ConversionCategory[] {GENERAL, CHAR, INT, FLOAT, TIME};
 
   /**
@@ -219,7 +219,7 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #intersect}. */
-  private static ConversionCategory[] conversionCategoriesForIntersect =
+  private static final ConversionCategory[] conversionCategoriesForIntersect =
       new ConversionCategory[] {CHAR, INT, FLOAT, TIME, CHAR_AND_INT, INT_AND_TIME, NULL};
 
   /**
@@ -270,7 +270,7 @@ public enum ConversionCategory {
   }
 
   /** Conversion categories that need to be considered by {@link #union}. */
-  private static ConversionCategory[] conversionCategoriesForUnion =
+  private static final ConversionCategory[] conversionCategoriesForUnion =
       new ConversionCategory[] {NULL, CHAR_AND_INT, INT_AND_TIME, CHAR, INT, FLOAT, TIME};
 
   /**

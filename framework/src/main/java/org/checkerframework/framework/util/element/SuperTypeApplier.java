@@ -92,7 +92,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
   }
 
   /** The annotated targets. */
-  private static TargetType[] annotatedTargets = new TargetType[] {TargetType.CLASS_EXTENDS};
+  private static final TargetType[] annotatedTargets = new TargetType[] {TargetType.CLASS_EXTENDS};
 
   /**
    * Returns TargetType.CLASS_EXTENDS.
@@ -105,7 +105,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
   }
 
   /** The valid targets. */
-  private static TargetType[] validTargets =
+  private static final TargetType[] validTargets =
       new TargetType[] {TargetType.CLASS_TYPE_PARAMETER, TargetType.CLASS_TYPE_PARAMETER_BOUND};
 
   /**

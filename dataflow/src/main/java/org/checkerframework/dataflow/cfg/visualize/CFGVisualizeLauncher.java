@@ -34,7 +34,10 @@ import org.plumelib.util.ArrayMap;
  * org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground} for another way to
  * use it.
  */
-public class CFGVisualizeLauncher {
+public final class CFGVisualizeLauncher {
+
+  /** Create a CFGVisualizeLauncher. */
+  public CFGVisualizeLauncher() {}
 
   /** Class cannot be instantiated. */
   private CFGVisualizeLauncher() {
@@ -359,8 +362,8 @@ public class CFGVisualizeLauncher {
     System.out.println("    --pdf:       Also generate the PDF by invoking 'dot'.");
     System.out.println("    --verbose:   Show the verbose output (defaults to 'false').");
     System.out.println(
-        "    --string:    Print the string representation of the control flow graph (defaults to"
-            + " 'false').");
+        "    --string:    Print the string representation of the control flow graph"
+            + " (defaults to 'false').");
   }
 
   /**
