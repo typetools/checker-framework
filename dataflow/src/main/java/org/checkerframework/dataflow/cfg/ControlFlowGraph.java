@@ -58,9 +58,10 @@ public class ControlFlowGraph implements UniqueId {
   public final UnderlyingAST underlyingAST;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
+
   /** The unique ID of this object. */
-  final transient long uid = nextUid.getAndIncrement();
+  private final transient long uid = nextUid.getAndIncrement();
 
   @Override
   public long getUid(@UnknownInitialization ControlFlowGraph this) {
@@ -293,14 +294,15 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in the
-   * CFG or null otherwise.
+   * CFG, or null otherwise.
+   *
+   * @param t a tree that might be within a class
+   * @return the class that contains the given tree, or null
    */
   public @Nullable ClassTree getContainingClass(Tree t) {
-    if (treeLookup.containsKey(t)) {
-      if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-        UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
-        return cfgMethod.getClassTree();
-      }
+    if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+      UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+      return cfgMethod.getClassTree();
     }
     return null;
   }

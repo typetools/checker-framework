@@ -23,9 +23,10 @@ public class CalledMethodsAnalysis extends CFAnalysis {
           ImmutableSet.of(
               // Use the Nullness Checker instead.
               NullPointerException.class.getCanonicalName(),
-              // Ignore run-time errors, which cannot be predicted statically. Doing so is unsound
-              // in the sense that they could still occur - e.g., the program could run out of
-              // memory - but if they did, the checker's results would be useless anyway.
+              // Ignore run-time errors, which cannot be predicted statically. Doing
+              // so is unsound in the sense that they could still occur - e.g., the
+              // program could run out of memory - but if they did, the checker's
+              // results would be useless anyway.
               Error.class.getCanonicalName(),
               RuntimeException.class.getCanonicalName()));
 

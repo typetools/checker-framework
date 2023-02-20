@@ -74,7 +74,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   protected final AnnotationMirrorSet topQuals;
 
   /** Determines the instantiations for each polymorphic qualifier. */
-  private PolyCollector collector = new PolyCollector();
+  private final PolyCollector collector = new PolyCollector();
 
   /** Resolves each polymorphic qualifier by replacing it with its instantiation. */
   private final SimpleAnnotatedTypeScanner<Void, AnnotationMirrorMap<AnnotationMirror>> replacer;
@@ -519,7 +519,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     protected String defaultErrorMessage(
         AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
       return String.format(
-          "AbstractQualifierPolymorphism: Unexpected combination: type1: %s (%s) type2: %s (%s).",
+          "AbstractQualifierPolymorphism:"
+              + " Unexpected combination: type1: %s (%s) type2: %s (%s).",
           type1, type1.getKind(), type2, type2.getKind());
     }
 

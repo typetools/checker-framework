@@ -229,6 +229,10 @@ import org.plumelib.util.UtilPlume;
   // java.lang.String)
   "requirePrefixInWarningSuppressions",
 
+  // Print a checker key as a prefix to each typechecking diagnostic.
+  // org.checkerframework.framework.source.SourceChecker.suppressWarningsString(java.lang.String)
+  "showPrefixInWarningMessages",
+
   // Ignore annotations in bytecode that have invalid annotation locations.
   // See https://github.com/typetools/checker-framework/issues/2173
   // org.checkerframework.framework.type.ElementAnnotationApplier.apply
@@ -551,6 +555,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private boolean showSuppressWarningsStrings;
   /** True if the -ArequirePrefixInWarningSuppressions command-line argument was passed. */
   private boolean requirePrefixInWarningSuppressions;
+  /** True if the -AshowPrefixInWarningMessages command-line argument was passed. */
+  private boolean showPrefixInWarningMessages;
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
 
@@ -916,6 +922,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     warns = hasOption("warns");
     showSuppressWarningsStrings = hasOption("showSuppressWarningsStrings");
     requirePrefixInWarningSuppressions = hasOption("requirePrefixInWarningSuppressions");
+    showPrefixInWarningMessages = hasOption("showPrefixInWarningMessages");
     warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
@@ -1355,8 +1362,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Returns the most specific warning suppression string for the warning/error being printed. This
-   * is {@code msg} prefixed by a checker name (or "allcheckers") and a colon.
+   * Returns the most specific warning suppression string for the warning/error being printed.
+   *
+   * <ul>
+   *   <li>If {@code -AshowSuppressWarningsStrings} was supplied on the command line, this is {@code
+   *       [checkername1, checkername2]:msg}, where each {@code checkername} is a checker name or
+   *       "allcheckers".
+   *   <li>If {@code -ArequirePrefixInWarningSuppressions} or {@code -AshowPrefixInWarningMessages}
+   *       was supplied on the command line, this is {@code checkername:msg} (where {@code
+   *       checkername} may be "allcheckers").
+   *   <li>Otherwise, it is just {@code msg}.
+   * </ul>
    *
    * @param messageKey the simple, checker-specific error message key
    * @return the most specific SuppressWarnings string for the warning/error being printed
@@ -1371,7 +1387,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         list.add(SUPPRESS_ALL_PREFIX);
       }
       return list + ":" + messageKey;
-    } else if (requirePrefixInWarningSuppressions) {
+    } else if (requirePrefixInWarningSuppressions || showPrefixInWarningMessages) {
       // If the warning key must be prefixed with a prefix (a checker name), then add that to
       // the SuppressWarnings string that is printed.
       String defaultPrefix = getDefaultSuppressWarningsPrefix();
@@ -2615,6 +2631,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Method that gets called exactly once at shutdown time of the JVM. Checkers can override this
    * method to customize the behavior.
+   *
+   * <p>If you override this, you must also override {@link #shouldAddShutdownHook} to return true.
    */
   protected void shutdownHook() {
     if (hasOption("resourceStats")) {
