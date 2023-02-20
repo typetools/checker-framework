@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
@@ -366,6 +367,10 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
+    if (fieldAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = fieldAnnos != null && fieldAnnos.addDeclarationAnnotation(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(field));
@@ -377,6 +382,10 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addDeclarationAnnotationToFormalParameter(
       ExecutableElement methodElt, int index, AnnotationMirror anno) {
     CallableDeclarationAnnos methodAnnos = getMethodAnnos(methodElt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = methodAnnos.addDeclarationAnnotationToFormalParameter(anno, index);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(methodElt));
@@ -388,6 +397,10 @@ public class WholeProgramInferenceJavaParserStorage
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno) {
     String className = ElementUtils.getBinaryName(classElt);
     ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
     boolean isNewAnnotation = classAnnos.addAnnotationToClassDeclaration(anno);
     if (isNewAnnotation) {
       modifiedFiles.add(getFileForElement(classElt));
@@ -398,7 +411,18 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public AnnotatedTypeMirror atmFromStorageLocation(
       TypeMirror typeMirror, AnnotatedTypeMirror storageLocation) {
-    return storageLocation;
+    if (typeMirror.getKind() == TypeKind.TYPEVAR) {
+      // Only copy the primary annotation, because we don't currently have
+      // support for inferring type bounds. This avoids accidentally substituting the
+      // use of the type variable for its declaration when inferring annotations on
+      // fields with a type variable as their type.
+      AnnotatedTypeMirror asExpectedType =
+          AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
+      asExpectedType.replaceAnnotations(storageLocation.getAnnotations());
+      return asExpectedType;
+    } else {
+      return storageLocation;
+    }
   }
 
   @Override
@@ -1535,11 +1559,17 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (declarationAnnotations != null) {
-        ClassOrInterfaceType type = declaration.getType().asClassOrInterfaceType();
-        for (AnnotationMirror annotation : declarationAnnotations) {
-          type.addAnnotation(
-              AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
-                  annotation));
+        // Don't add directly to the type of the variable declarator,
+        // because declaration annotations need to be attached to the FieldDeclaration
+        // node instead.
+        Node declParent = declaration.getParentNode().orElse(null);
+        if (declParent instanceof FieldDeclaration) {
+          FieldDeclaration decl = (FieldDeclaration) declParent;
+          for (AnnotationMirror annotation : declarationAnnotations) {
+            decl.addAnnotation(
+                AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
+                    annotation));
+          }
         }
       }
 

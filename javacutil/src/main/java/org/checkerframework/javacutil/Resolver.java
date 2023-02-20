@@ -443,7 +443,7 @@ public class Resolver {
    * @return the result of invoking the method on {@code resolve} (as the receiver) and the
    *     arguments
    */
-  private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
+  private Symbol wrapInvocationOnResolveInstance(Method method, @Nullable Object... args) {
     return wrapInvocation(resolve, method, args);
   }
 

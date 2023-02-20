@@ -261,7 +261,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * method to create the direct super map some other way.
    *
    * <p>Note that this method is called from the constructor when {@link #nameToQualifierKind} and
-   * {@link #qualifierKinds} are the only fields that have nonnull values. This method is not
+   * {@link #qualifierKinds} are the only fields that have non-null values. This method is not
    * static, so it can be overridden by subclasses.
    *
    * @return a mapping from each {@link QualifierKind} to a set of its direct super qualifiers
@@ -503,7 +503,10 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
       Set<DefaultQualifierKind> superSuperQuals = directSuperMap.get(superQualKind);
       if (superSuperQuals == null) {
-        throw new TypeSystemError(superQualKind + " is not a key in the directSuperMap");
+        throw new TypeSystemError(
+            superQualKind
+                + " is not a key in the directSuperMap."
+                + "  Does it have a @SubtypeOf annotation?");
       }
       toVisit.addAll(superSuperQuals);
       allSupers.addAll(superSuperQuals);

@@ -6,7 +6,6 @@ import org.checkerframework.dataflow.qual.Pure;
 
 /** A regular basic block that contains a sequence of {@link Node}s. */
 public interface RegularBlock extends SingleSuccessorBlock {
-
   /**
    * Returns the regular successor block.
    *

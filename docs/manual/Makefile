@@ -111,8 +111,9 @@ endif
 clean:
 	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
 
+very-clean: very_clean
 very_clean: clean
-	@\rm -f manual.html CFLogo.png
+	@\rm -f manual.html CFLogo.png manual001.png favicon-checkerframework.png *.svg
 
 .PHONY: checklink
 checklink:

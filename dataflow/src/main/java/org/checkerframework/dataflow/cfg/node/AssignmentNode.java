@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -25,10 +26,20 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class AssignmentNode extends Node {
 
+  /** The underlying assignment tree. */
   protected final Tree tree;
+  /** The node for the LHS of the assignment tree. */
   protected final Node lhs;
+  /** The node for the RHS of the assignment tree. */
   protected final Node rhs;
 
+  /**
+   * Create a (non-synthetic) AssignmentNode.
+   *
+   * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
+   * @param target the lhs of {@code tree}
+   * @param expression the rhs of {@code tree}
+   */
   public AssignmentNode(Tree tree, Node target, Node expression) {
     super(TreeUtils.typeOf(tree));
     assert tree instanceof AssignmentTree
@@ -48,15 +59,23 @@ public class AssignmentNode extends Node {
    *
    * @return the left-hand-side of the assignment
    */
+  @Pure
   public Node getTarget() {
     return lhs;
   }
 
+  /**
+   * Returns the right-hand-side of the assignment.
+   *
+   * @return the right-hand-side of the assignment
+   */
+  @Pure
   public Node getExpression() {
     return rhs;
   }
 
   @Override
+  @Pure
   public Tree getTree() {
     return tree;
   }
@@ -67,11 +86,13 @@ public class AssignmentNode extends Node {
   }
 
   @Override
+  @Pure
   public String toString() {
     return getTarget() + " = " + getExpression();
   }
 
   @Override
+  @Pure
   public boolean equals(@Nullable Object obj) {
     if (!(obj instanceof AssignmentNode)) {
       return false;
@@ -81,6 +102,7 @@ public class AssignmentNode extends Node {
   }
 
   @Override
+  @Pure
   public int hashCode() {
     return Objects.hash(getTarget(), getExpression());
   }

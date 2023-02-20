@@ -278,7 +278,12 @@ public class QualifierDefaults {
     checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
   }
 
-  /** Sets the default annotation for unchecked elements. */
+  /**
+   * Add a default annotation for unchecked elements.
+   *
+   * @param uncheckedDefaultAnno the default annotation mirror
+   * @param location the type use location
+   */
   public void addUncheckedCodeDefault(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
     checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
@@ -302,7 +307,13 @@ public class QualifierDefaults {
     }
   }
 
-  /** Sets the default annotations for a certain Element. */
+  /**
+   * Sets the default annotations for a certain Element.
+   *
+   * @param elem the scope to set the default within
+   * @param elementDefaultAnno the default to set
+   * @param location the location to apply the default to
+   */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
     DefaultSet prevset = elementDefaults.get(elem);
@@ -611,6 +622,13 @@ public class QualifierDefaults {
     return elementAnnotatedForThisChecker;
   }
 
+  /**
+   * Returns the defaults that apply to the given Element, considering defaults from enclosing
+   * Elements.
+   *
+   * @param elt the element
+   * @return the defaults
+   */
   private DefaultSet defaultsAt(final Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;

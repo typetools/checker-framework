@@ -34,7 +34,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * The type factories that determine whether the default value is consistent with the annotated
    * type. If empty, warn about all uninitialized fields.
    */
-  List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
+  private final List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
 
   /**
    * Creates a new InitializedFieldsAnnotatedTypeFactory.
@@ -73,7 +73,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * @param processorName the fully-qualified class name of an annotation processor
    * @return the type factory for the given annotation processor, or null if it's not a checker
    */
-  GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+  private GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
       @BinaryName String processorName) {
     try {
       Class<?> checkerClass = Class.forName(processorName);
@@ -106,7 +106,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   }
 
   /** An array consisting only of the string "this". */
-  private static String[] thisStringArray = new String[] {"this"};
+  private static final String[] thisStringArray = new String[] {"this"};
 
   /**
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,

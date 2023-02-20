@@ -476,10 +476,11 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % \refqualclass{framework/qual}{SubtypeOf} and
 % \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
-The annotations should be placed within a directory called \<qual>, and
-\<qual> should be placed in the same directory as your checker's source
-file (unless you are creating multiple distribution artifacts, one for your
-checker and one for its qualifiers).
+The qualifiers should be in a \<qual> subpackage of the type checker package ---
+by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
+As mentioned in {creating-parts-of-a-checker}, the files for that \<qual> package can be
+either in a subdirectory or in a separate gradle module, depending on whether
+they should be distributable separately.
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
@@ -757,31 +758,31 @@ qualifier on every type --- a defaulted or inferred type qualifier if the
 programmer didn't write a type qualifier explicitly.
 
 
-\subsectionAndLabel{Completeness of the type hierarchy}{creating-bottom-and-top-qualifier}
+\subsectionAndLabel{Completeness of the qualifier hierarchy}{creating-bottom-and-top-qualifier}
 
-When you define a type system, its type hierarchy must be a
-lattice:  every set of types has a unique least upper bound and a unique
-greatest lower bound.  This implies that there must be a top type that is a
-supertype of all other types, and there must be a bottom type that is a
-subtype of all other types.
-Furthermore, the top type and bottom type should be defined
+When you define a type system, its qualifier hierarchy must be a
+lattice:  every set of qualifiers has a unique least upper bound and a unique
+greatest lower bound.  This implies that there must be a top qualifier that is a
+supertype of all other qualifiers, and there must be a bottom qualifier that is a
+subtype of all other qualifiers.
+Furthermore, the top qualifier and bottom qualifier should be defined
 specifically for the type system.  Don't reuse an existing qualifier from the
 Checker Framework such as \<@Unqualified>.
 
-It is possible that a single type-checker checks multiple type hierarchies.
-An example is the Nullness Checker, which has three separate type
+It is possible that a single type-checker checks multiple qualifier hierarchies.
+An example is the Nullness Checker, which has three separate qualifier
 hierarchies, one each for
-nullness, initialization, and map keys.  In this case, each type hierarchy
+nullness, initialization, and map keys.  In this case, each qualifier hierarchy
 would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
 
 
 \paragraphAndLabel{Bottom qualifier}{creating-bottom-qualifier}
-Your type hierarchy must have a bottom qualifier
+Your qualifier hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-\<null> is the bottom type. Because the only value with type \<Void> is
+\<null> has the bottom type. Because the only value with type \<Void> is
 \<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
@@ -825,7 +826,7 @@ a bottom qualifier, but the actual implementation does contain a (non-user-visib
 
 
 \paragraphAndLabel{Top qualifier}{creating-top-qualifier}
-Your type hierarchy must have a top qualifier
+Your qualifier hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
 Here is one reason.
@@ -943,9 +944,9 @@ optional, and many checker classes do not have one.)
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled.  The checker uses
-\refmethod{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String-java.lang.Object...)}
+\refmethod{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
-\refmethod{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String-java.lang.Object...)}
+\refmethod{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 to issue errors.
 
 Also, the checker class follows the factory method pattern to
@@ -962,7 +963,7 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String-java.lang.Object...)}
+The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
 \refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 (like \code{"type.incompatible"}) and the values are the strings to be
@@ -1151,9 +1152,9 @@ Java syntax trees as provided by Oracle's
 \href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
-\refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object-java.lang.String,java.lang.Object...)}
+\refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 or
-\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object-java.lang.String,java.lang.Object...)})
+\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)})
 whenever the type system is violated.
 
 Most type-checkers
@@ -1989,7 +1990,7 @@ This does not work if you are using Maven, because it does not print
 the full output of the Java compiler (see \url{https://github.com/codehaus-plexus/plexus-compiler/issues/149}).
 % Also, with forked compilation,
 % the maven-compiler-plugin queues up all the output and then prints it at the end.
-(Also, maven-compiler-plugin versions before 3.10.1 are buggy: it sometimes
+(Also, maven-compiler-plugin is buggy: it sometimes
 doesn't print any output if it cannot parse it.)
 % Example of not producing output:
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
@@ -2383,7 +2384,7 @@ them.  Then, the checker performs any needed checks on the types/elements instea
 To obtain the position (line number and column number) of a Tree,
 cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
 its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
-\<com.sun.source.tree.CompilationUnitTree> has a LineMap lets you convert
+\<com.sun.source.tree.CompilationUnitTree> has a LineMap that lets you convert
 positions to line numbers.
 
 
@@ -2481,7 +2482,7 @@ build powerful and useful checkers.
 Beyond this document,
 other useful resources include the Java Infrastructure
 Developer's guide at
-\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
+\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.html} and the compiler
 mailing list archives at
 \url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at
