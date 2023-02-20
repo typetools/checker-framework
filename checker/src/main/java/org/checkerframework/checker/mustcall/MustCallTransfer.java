@@ -54,6 +54,9 @@ public class MustCallTransfer extends CFTransfer {
    */
   private @MonotonicNonNull AnnotationMirror defaultStringType;
 
+  /** True if -AnoCreatesMustCallFor was passed on the command line. */
+  private final boolean noCreatesMustCallFor;
+
   /**
    * Create a MustCallTransfer.
    *
@@ -62,6 +65,8 @@ public class MustCallTransfer extends CFTransfer {
   public MustCallTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
+    noCreatesMustCallFor =
+        atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
     ProcessingEnvironment env = atypeFactory.getChecker().getProcessingEnvironment();
     treeBuilder = new TreeBuilder(env);
   }
@@ -126,7 +131,7 @@ public class MustCallTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
 
     updateStoreWithTempVar(result, n);
-    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
+    if (!noCreatesMustCallFor) {
       List<JavaExpression> targetExprs =
           CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
               n, atypeFactory, atypeFactory);

@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
  * treat the annotated element as if it were annotated as {@link AinferSibling1}.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface AinferTreatAsSibling1 {}

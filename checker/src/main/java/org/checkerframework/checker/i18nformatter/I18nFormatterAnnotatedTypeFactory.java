@@ -83,6 +83,8 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
    * Builds a map from a translation file key to its value in the file. Builds the map for all files
    * in the "-Apropfiles" command-line argument.
    *
+   * <p>Called only once, during initialization.
+   *
    * @return a map from a translation file key to its value in the file
    */
   private Map<String, String> buildLookup() {
@@ -105,7 +107,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
               cl = ClassLoader.getSystemClassLoader();
             }
             try (InputStream in = cl.getResourceAsStream(name)) {
-
               if (in != null) {
                 prop.load(in);
               } else {

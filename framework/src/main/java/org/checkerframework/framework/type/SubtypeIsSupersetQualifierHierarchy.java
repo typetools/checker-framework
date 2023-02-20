@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
   /** The processing environment; used for creating annotations. */
-  ProcessingEnvironment processingEnv;
+  private final ProcessingEnvironment processingEnv;
 
   /**
    * Creates a SubtypeIsSupersetQualifierHierarchy from the given classes.

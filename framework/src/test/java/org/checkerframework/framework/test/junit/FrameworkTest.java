@@ -6,6 +6,7 @@ import org.checkerframework.framework.testchecker.util.EvenOddChecker;
 import org.junit.runners.Parameterized.Parameters;
 
 /** JUnit tests for the Checker Framework, using the {@link EvenOddChecker}. */
+// See framework/tests/framework/README for why this is a CFPerFileTest.
 public class FrameworkTest extends CheckerFrameworkPerFileTest {
 
   public FrameworkTest(File testFile) {

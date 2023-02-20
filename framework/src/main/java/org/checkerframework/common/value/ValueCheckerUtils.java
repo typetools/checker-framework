@@ -113,14 +113,17 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get all possible values from the given type and cast them into a boxed primitive type.
+   * Get all possible values from the given type and cast them into a boxed primitive type. Returns
+   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
    *
+   * @param <T> the type of the values to obtain
    * @param range the given range
    * @param expectedType the expected type
-   * @return a list of all the values in the range
+   * @return a list of all the values in the range, or null if there would be more than {@link
+   *     ValueAnnotatedTypeFactory#MAX_VALUES}
    */
   public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
     if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
@@ -198,6 +201,15 @@ public class ValueCheckerUtils {
     return strings;
   }
 
+  /**
+   * Convert a list of longs to a given type
+   *
+   * @param longs the integral values to convert
+   * @param newClass determines the type of the result
+   * @param newType the type to which to cast, if newClass is numeric
+   * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
+   *     {@code List<char[]>}
+   */
   private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
     if (longs == null) {
       return null;
@@ -208,7 +220,7 @@ public class ValueCheckerUtils {
       return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
-          "ValueAnnotatedTypeFactory: can't convert int to boolean");
+          "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
     }
     return NumberUtils.castNumbers(newType, longs);
   }

@@ -1,4 +1,6 @@
 plugins {
+  id 'java-library'
+
   // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
   id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
@@ -169,7 +171,7 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     attributes('Main-Class': 'org.checkerframework.framework.util.CheckerMain')
   }
   exclude 'org/checkerframework/**/qual/*'
-  exclude 'org/checkerframework/checker/*/util/*'
+  exclude 'org/checkerframework/checker/**/util/*'
   relocators = shadowJar.getRelocators()
 }
 
@@ -599,6 +601,10 @@ task ainferTestCheckerGenerateJaifs(type: Test) {
     // TODO: fix this bug in the AFU, then reinstate this test.
     delete('tests/ainfer-testchecker/annotated/OverriddenMethodsTest.java')
 
+    // JAIF-based WPI fails this test, too, because the insertion of a declaration annotation
+    // onto a field with a multi-part type (e.g. Outer.Inner) doesn't appear to be supported by the AFU.
+    delete('tests/ainfer-testchecker/annotated/InnerClassFieldDeclAnno.java')
+
     // Inserting annotations from .jaif files in-place.
     String jaifsDir = 'tests/ainfer-testchecker/inference-output';
     List<File> jaifs = fileTree(jaifsDir).matching {
@@ -793,6 +799,7 @@ task ainferResourceLeakAjavaTest(dependsOn: 'shadowJar', group: 'Verification') 
   dependsOn(ainferResourceLeakValidateAjava)
   outputs.upToDateWhen { false }
 }
+
 task ainferNullnessGenerateJaifs(type: Test) {
   description 'Internal task.  Users should run ainferNullnessJaifTest instead.  This type-checks the ainfer-nullness files with -Ainfer=jaifs to generate .jaif files'
 
@@ -813,11 +820,6 @@ task ainferNullnessGenerateJaifs(type: Test) {
 
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-nullness')
-
-    // JAIF-based WPI fails these tests, which was added for stub-based WPI.
-    // See issue here: https://github.com/typetools/checker-framework/issues/3009
-    delete('tests/ainfer-nullness/annotated/ConflictingAnnotationsTest.java')
-    delete('tests/ainfer-nullness/annotated/MultiDimensionalArrays.java')
 
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')

@@ -87,7 +87,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
   }
 
   /** The valid targets. */
-  private static TargetType[] validTargets = new TargetType[] {TargetType.CLASS_EXTENDS};
+  private static final TargetType[] validTargets = new TargetType[] {TargetType.CLASS_EXTENDS};
 
   @Override
   protected TargetType[] validTargets() {
