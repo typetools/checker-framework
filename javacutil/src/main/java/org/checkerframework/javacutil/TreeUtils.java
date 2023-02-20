@@ -651,8 +651,7 @@ public final class TreeUtils {
    * an element.
    *
    * @param tree the {@link Tree} node to get the symbol for
-   * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
-   *     (JCTree)
+   * @throws BugInCF if {@code tree} is null or is not a valid javac-internal tree (JCTree)
    * @return the {@link Symbol} for the given tree, or null if one could not be found
    */
   @Pure
@@ -1183,7 +1182,7 @@ public final class TreeUtils {
       Class<?> type, String methodName, int params, ProcessingEnvironment env) {
     String typeName = type.getCanonicalName();
     if (typeName == null) {
-      throw new BugInCF("class %s has no canonical name", type);
+      throw new BugInCF("TreeUtils.getMethod: class %s has no canonical name", type);
     }
     return getMethod(typeName, methodName, params, env);
   }
@@ -1835,7 +1834,7 @@ public final class TreeUtils {
    */
   public static String toStringTruncated(Tree tree, int length) {
     if (length < 6) {
-      throw new IllegalArgumentException("bad length " + length);
+      throw new BugInCF("TreeUtils.toStringTruncated: bad length " + length);
     }
     String result = toStringOneLine(tree);
     if (result.length() > length) {
@@ -1965,7 +1964,8 @@ public final class TreeUtils {
           return result;
         default:
           throw new BugInCF(
-              "what typeTree? %s %s %s", typeTree.getKind(), typeTree.getClass(), typeTree);
+              "TreeUtils.getExplicitAnnotationTrees: what typeTree? %s %s %s",
+              typeTree.getKind(), typeTree.getClass(), typeTree);
       }
     }
   }
@@ -2101,7 +2101,8 @@ public final class TreeUtils {
       boolean result = caseKind == caseKindRule;
       return result;
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new BugInCF("cannot find and/or call method CaseTree.getKind()", e);
+      throw new BugInCF(
+          "TreeUtils.isCaseRule: cannot find and/or call method CaseTree.getKind()", e);
     }
   }
 
@@ -2308,7 +2309,7 @@ public final class TreeUtils {
       case NEW_CLASS:
         return isVarArgs((NewClassTree) tree);
       default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
+        throw new BugInCF("TreeUtils.isVarArgs: unexpected kind of tree: " + tree);
     }
   }
 

@@ -263,7 +263,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
           valueType,
           valueTree);
       super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
-    } else if (checker.hasOption("showchecks")) {
+    } else if (showchecks) {
       commonAssignmentCheckEndDiagnostic(
           true, "relaxedCommonAssignment", varType, valueType, valueTree);
     }
