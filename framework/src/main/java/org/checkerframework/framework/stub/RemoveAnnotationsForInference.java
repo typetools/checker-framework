@@ -59,8 +59,10 @@ import org.plumelib.util.StringsPlume;
  * <p>Also does not remove "excluded" annotations. Provide excluded annotations with the {@code
  * -exclusionFile} command line argument, which must be the first argument to this program if it is
  * present. The exclusion file should be a list of newline-separated annotation names (without
- * {@literal @} symbols). Both the simple and fully-qualified name of each annotation must be
- * included in the exclusion file. TODO: remove this restriction?
+ * {@literal @} symbols). Both the simple and fully-qualified name of each annotation usually should
+ * be included in the exclusion file (simple string-matching between the excluded annotations and
+ * the annotation names used in the source code whose annotations are being removed is used for
+ * annotation comparison). TODO: remove this restriction?
  *
  * <p>Does not remove annotations at locations where inference does no work:
  *
@@ -86,7 +88,7 @@ public class RemoveAnnotationsForInference {
   /**
    * A list of annotations not to remove. Used to exclude project-specific annotations that must
    * remain for the project to build. (It would be burdensome to add all project-specific
-   * annotations to the global list in {@link #isTrustedAnnotation(String)}).
+   * annotations to the global list in {@link #isTrustedAnnotation(String)}.)
    */
   private static @MonotonicNonNull List<String> excludedAnnotations = null;
 
@@ -107,8 +109,10 @@ public class RemoveAnnotationsForInference {
     if (args[0].contentEquals("-exclusionFile")) {
       if (args.length < 3) {
         System.err.println(
-            "Usage: -exclusionFile requires at least two more arguments: the path to "
-                + "the exclusion file and one or more directory names to process");
+            "Usage: when providing -exclusionFile, RemoveAnnotationsForInference requires at least two more arguments: the path to "
+                + "the exclusion file and one or more directory names to process. Only found "
+                + (args.length - 1)
+                + " arguments after -exclusionFile.");
         System.exit(2);
       }
       String exclusionFilePath = args[1];
@@ -400,8 +404,8 @@ public class RemoveAnnotationsForInference {
   }
 
   /**
-   * Returns true iff the annotation is present in the user-supplied exclusion file (via the
-   * -exclusionFile command-line option).
+   * Returns true iff the annotation is present in the user-supplied exclusion file (via the {@code
+   * -exclusionFile} command-line option).
    *
    * @param name the annotation's name (simple or fully-qualified)
    * @return true if the annotation was excluded by the user
