@@ -77,6 +77,13 @@ import org.plumelib.util.StringsPlume;
 public class RemoveAnnotationsForInference {
 
   /**
+   * Do not instantiate. This is a standalone program whose entry point is {@link #main(String[])}.
+   */
+  private RemoveAnnotationsForInference() {
+    throw new Error("Do not instantiate RemoveAnnotationsForInference.");
+  }
+
+  /**
    * A list of annotations not to remove. Used to exclude project-specific annotations that must
    * remain for the project to build. (It would be burdensome to add all project-specific
    * annotations to the global list in {@link #isTrustedAnnotation(String)}).
