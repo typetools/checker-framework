@@ -621,14 +621,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Tree enclosingParens = parenMapping.get(tree);
     while (enclosingParens != null) {
-      Set<Node> exp = treeToCfgNodes.get(enclosingParens);
-      if (exp == null) {
-        Set<Node> newSet = new IdentityArraySet<>(1);
-        newSet.add(node);
-        treeToCfgNodes.put(enclosingParens, newSet);
-      } else if (!existing.contains(node)) {
-        exp.add(node);
-      }
+      Set<Node> exp =
+          treeToCfgNodes.computeIfAbsent(enclosingParens, k -> new IdentityArraySet<>(1));
+      exp.add(node);
       enclosingParens = parenMapping.get(enclosingParens);
     }
   }
