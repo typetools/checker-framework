@@ -56,13 +56,14 @@ import org.plumelib.util.StringsPlume;
  *
  * <p>Does not remove trusted annotations: those that the checker trusts rather than verifies.
  *
- * <p>Also does not remove "excluded" annotations. Provide excluded annotations with the {@code
- * -exclusionFile} command line argument, which must be the first argument to this program if it is
- * present. The exclusion file should be a list of newline-separated annotation names (without
- * {@literal @} symbols). Both the simple and fully-qualified name of each annotation usually should
- * be included in the exclusion file (simple string-matching between the excluded annotations and
- * the annotation names used in the source code whose annotations are being removed is used for
- * annotation comparison). TODO: remove this restriction?
+ * <p>Also does not remove annotations that the user requests to keep in the source code. Provide a
+ * list of annotations to keep via the {@code -keepFile} command line argument, which must be the
+ * first argument to this program if it is present. The second argument to the program should be the
+ * path to the keep file. The keep file itself should be a list of newline-separated annotation
+ * names (without {@literal @} symbols). Both the simple and fully-qualified name of each annotation
+ * usually should be included in the keep file (simple string-matching between the annotations in
+ * the keep file and the annotation names used in the source code whose annotations are being
+ * removed is used for annotation comparison). TODO: remove this restriction?
  *
  * <p>Does not remove annotations at locations where inference does no work:
  *
@@ -86,11 +87,12 @@ public class RemoveAnnotationsForInference {
   }
 
   /**
-   * A list of annotations not to remove. Used to exclude project-specific annotations that must
-   * remain for the project to build. (It would be burdensome to add all project-specific
-   * annotations to the global list in {@link #isTrustedAnnotation(String)}.)
+   * A list of annotations not to remove (i.e., to keep in the source code). Used to prevent
+   * project-specific annotations that must remain for the project to build from being removed by
+   * this program. (It would be burdensome to add all project-specific annotations to the global
+   * list in {@link #isTrustedAnnotation(String)}.)
    */
-  private static @MonotonicNonNull List<String> excludedAnnotations = null;
+  private static @MonotonicNonNull List<String> annotationsToKeep = null;
 
   /**
    * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
@@ -99,31 +101,28 @@ public class RemoveAnnotationsForInference {
    * @param args command-line arguments: directories to process
    */
   public static void main(String[] args) {
-    if (args.length < 1) {
-      System.err.println("Usage: provide one or more directory names to process");
-      System.exit(1);
-    }
     // TODO: using plume-lib's options here would be better, but would add a dependency
     // to the whole Checker Framework, which is undesirable. Move this program elsewhere
     // (e.g., to a plume-lib project)?
-    if (args[0].contentEquals("-exclusionFile")) {
-      if (args.length < 3) {
+    if (args[0].contentEquals("-keepFile")) {
+      if (args.length < 2) {
         System.err.println(
-            "Usage: when providing -exclusionFile, RemoveAnnotationsForInference requires at least two more arguments: the path to "
-                + "the exclusion file and one or more directory names to process. Only found "
-                + (args.length - 1)
-                + " arguments after -exclusionFile.");
+            "Usage: -keepFile requires the argument immediately after it to be the path to the keep file.");
         System.exit(2);
       }
-      String exclusionFilePath = args[1];
-      try (Stream<String> lines = Files.lines(Paths.get(exclusionFilePath))) {
-        excludedAnnotations = lines.collect(Collectors.toList());
+      String keepFilePath = args[1];
+      try (Stream<String> lines = Files.lines(Paths.get(keepFilePath))) {
+        annotationsToKeep = lines.collect(Collectors.toList());
       } catch (IOException e) {
         System.err.println(
-            "Error: Exclusion file " + exclusionFilePath + " not found. Check that it exists?");
+            "Error: Keep file " + keepFilePath + " not found. Check that it exists?");
         System.exit(3);
       }
       args = ArraysPlume.subarray(args, 2, args.length - 2);
+    }
+    if (args.length < 1) {
+      System.err.println("Usage: provide one or more directory names to process");
+      System.exit(1);
     }
     for (String arg : args) {
       process(arg);
@@ -314,8 +313,8 @@ public class RemoveAnnotationsForInference {
       if (isTrustedAnnotation(name)) {
         return superResult;
       }
-      // Retain explictly-excluded annotations.
-      if (isExcluded(name)) {
+      // Retain annotations that the user requested specifically should be kept.
+      if (shouldBeKept(name)) {
         return superResult;
       }
       // Retain annotations for which warnings are suppressed.
@@ -404,14 +403,14 @@ public class RemoveAnnotationsForInference {
   }
 
   /**
-   * Returns true iff the annotation is present in the user-supplied exclusion file (via the {@code
-   * -exclusionFile} command-line option).
+   * Returns true iff the annotation is present in the user-supplied file of annotations to keep
+   * (via the {@code -keepFile} command-line option).
    *
    * @param name the annotation's name (simple or fully-qualified)
-   * @return true if the annotation was excluded by the user
+   * @return true if the user requested that this annotation be kept in the source code
    */
-  static boolean isExcluded(String name) {
-    return (excludedAnnotations != null && excludedAnnotations.contains(name));
+  static boolean shouldBeKept(String name) {
+    return (annotationsToKeep != null && annotationsToKeep.contains(name));
   }
 
   // This approach searches upward to find all the active warning suppressions.
