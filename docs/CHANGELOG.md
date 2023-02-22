@@ -49,8 +49,6 @@ Removed methods from AnnotationUtils that are no longer useful:
 Version 3.30.0 (February 2, 2023)
 ---------------------------------
 
-**User-visible changes:**
-
 **Implementation details:**
 
 `getQualifierKind()` throws an exception rather than returning null.
