@@ -276,7 +276,7 @@ public final class TypesUtils {
     if (t1.tsym.name != t2.tsym.name) {
       return false;
     }
-    return t1.toString().equals(t1.toString());
+    return t1.toString().equals(t2.toString());
   }
 
   /**

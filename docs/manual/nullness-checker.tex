@@ -689,14 +689,21 @@ Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on
 statements, expressions, static initializers, etc.
-In such cases, you can use the \<@AssumeAssertion> string in
-an \<assert> message (see Section~\ref{assumeassertion}).
+Here are three ways to suppress a warning in such cases:
+\begin{itemize}
+\item
+  Create a local variable to hold a subexpression, and
+  suppress a warning on the local variable declaration.
+\item
+  Use the \<@AssumeAssertion> string in
+  an \<assert> message (see Section~\ref{assumeassertion}).
+\item
+  Write a call to the
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} method.
+\end{itemize}
 
-If you need to suppress a warning within an expression, then
-sometimes writing an assertion is not convenient.  In such a case,
-you can suppress warnings by writing a call to the
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} method.
 The rest of this section discusses the \<castNonNull> method.
+It is useful if you wish to suppress a warning within an expression.
 
 The Nullness Checker considers both the return value, and also the
 argument, to be non-null after the \<castNonNull> method call.
