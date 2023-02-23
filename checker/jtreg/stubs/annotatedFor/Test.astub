@@ -8,4 +8,6 @@ public class Test<T> {
     public void method1(@Nullable T t){}
     @AnnotatedFor("nullness")
     public void method2(T t){}
+    @AnnotatedFor("nullness")
+    public Object method3() {}
 }
