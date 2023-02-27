@@ -1229,26 +1229,18 @@ public class QualifierDefaults {
   public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
 
     final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
-    Boolean yes = atypeFactory.stubTypes.isBound(wildcard);
+    Boolean isBoundInStub = atypeFactory.stubTypes.isBound(wildcard);
 
-    final BoundType boundType;
-    if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
-      if (yes != null && yes) {
-        boundType = BoundType.UPPER;
+    if (isBoundInStub != null ? isBoundInStub : wildcard.kind == BoundKind.UNBOUND) {
+      if (wildcard.bound != null) {
+        return getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
       } else {
-        boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
-      }
-
-    } else {
-      if (yes != null && !yes) {
-        boundType = BoundType.UNBOUNDED;
-      } else {
-        // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
-        // already handled
-        boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
+        return BoundType.UNBOUNDED;
       }
     }
 
-    return boundType;
+    // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
+    // already handled
+    return wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
   }
 }

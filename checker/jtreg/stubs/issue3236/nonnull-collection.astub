@@ -1,0 +1,10 @@
+package java.util;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
+
+@AnnotatedFor("nullness")
+public interface Collection<E> extends Iterable<E> {
+    boolean containsAll(Collection<? extends Object> c);
+}
+
