@@ -118,6 +118,18 @@ public class RemoveAnnotationsForInference {
             "Error: Keep file " + keepFilePath + " not found. Check that it exists?");
         System.exit(3);
       }
+
+      // Check for common mistake of adding "@" before the annotation name.
+      for (String annotationToKeep : annotationsToKeep) {
+        if (annotationToKeep.startsWith("@")) {
+          System.err.println(
+              "Error: Keep file includes an @ symbol before this annotation: "
+                  + annotationToKeep
+                  + ". Annotations should be listed in the keep file without the @ symbol.");
+          System.exit(4);
+        }
+      }
+
       args = ArraysPlume.subarray(args, 2, args.length - 2);
     }
     if (args.length < 1) {
