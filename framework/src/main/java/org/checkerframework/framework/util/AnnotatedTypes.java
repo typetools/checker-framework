@@ -1513,9 +1513,11 @@ public class AnnotatedTypes {
   }
 
   /**
-   * This method identifies wildcard types that have an explicit super bound. NOTE:
-   * Type.WildcardType.isSuperBound will return true for BOTH unbound and super bound wildcards
-   * which necessitates this method
+   * Returns true if wildcard type has an explicit super bound.
+   *
+   * @param wildcard the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
    */
   public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
     return ((Type.WildcardType) wildcard.getUnderlyingType()).isSuperBound()
@@ -1535,9 +1537,10 @@ public class AnnotatedTypes {
   }
 
   /**
-   * This method identifies wildcard types that have an explicit extends bound. NOTE:
-   * Type.WildcardType.isExtendsBound will return true for BOTH unbound and extends bound wildcards
-   * which necessitates this method
+   * Returns true if wildcard type has an explicit extends bound.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
    */
   public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
