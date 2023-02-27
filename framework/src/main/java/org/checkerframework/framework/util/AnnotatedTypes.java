@@ -1517,7 +1517,6 @@ public class AnnotatedTypes {
    *
    * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
-   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
    */
   public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
     return ((Type.WildcardType) wildcard.getUnderlyingType()).isSuperBound()
