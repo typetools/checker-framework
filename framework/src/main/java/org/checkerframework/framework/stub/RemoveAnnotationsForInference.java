@@ -107,16 +107,19 @@ public class RemoveAnnotationsForInference {
     if (args[0].contentEquals("-keepFile")) {
       if (args.length < 2) {
         System.err.println(
-            "Usage: -keepFile requires the argument immediately after it to be the path to the keep file.");
+            "Usage: -keepFile requires an argument immediately after it: the path to the keep"
+                + " file.");
         System.exit(2);
       }
       String keepFilePath = args[1];
       try (Stream<String> lines = Files.lines(Paths.get(keepFilePath))) {
         annotationsToKeep = lines.collect(Collectors.toList());
-      } catch (IOException e) {
-        System.err.println(
-            "Error: Keep file " + keepFilePath + " not found. Check that it exists?");
+      } catch (FileNotFoundException e) {
+        System.err.println("Error: Keep file " + keepFilePath + " not found.");
         System.exit(3);
+      } catch (IOException e) {
+        System.err.println("Problem reading keep file " + keepFilePath + ": " + e.getMessage());
+        System.exit(4);
       }
 
       // Check for common mistake of adding "@" before the annotation name.
@@ -126,7 +129,7 @@ public class RemoveAnnotationsForInference {
               "Error: Keep file includes an @ symbol before this annotation: "
                   + annotationToKeep
                   + ". Annotations should be listed in the keep file without the @ symbol.");
-          System.exit(4);
+          System.exit(5);
         }
       }
 
