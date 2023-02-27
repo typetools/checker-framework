@@ -683,6 +683,16 @@ public final class TypesUtils {
    *
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
+  public static @Nullable TypeParameterElement wildcardToTypeParam(final WildcardType wildcard) {
+    return wildcardToTypeParam((Type.WildcardType) wildcard);
+  }
+
+  /**
+   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * sometimes null, in that case this method will return null.
+   *
+   * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
+   */
   public static @Nullable TypeParameterElement wildcardToTypeParam(
       final Type.WildcardType wildcard) {
 
