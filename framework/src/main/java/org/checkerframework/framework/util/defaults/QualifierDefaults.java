@@ -692,7 +692,11 @@ public class QualifierDefaults {
     }
 
     if (qualifiers != null && !qualifiers.isEmpty()) {
-      elementDefaults.put(elt, qualifiers);
+      if (atypeFactory.shouldCache
+          && !atypeFactory.stubTypes.isParsing()
+          && !atypeFactory.ajavaTypes.isParsing()) {
+        elementDefaults.put(elt, qualifiers);
+      }
       return qualifiers;
     } else {
       return DefaultSet.EMPTY;
@@ -1176,7 +1180,12 @@ public class QualifierDefaults {
           && TypesUtils.isObject(typeParamElem.getBounds().get(0))) {
         // If the bound was Object, then it may or may not have been explicitly written.
         // Assume that it was not.
-        boundType = BoundType.UNBOUNDED;
+        Boolean isBound = atypeFactory.stubTypes.isBound(typeParamElem.asType());
+        if (isBound != null && isBound) {
+          boundType = BoundType.UPPER;
+        } else {
+          boundType = BoundType.UNBOUNDED;
+        }
       } else {
         // The bound is not Object, so it must have been explicitly written and thus the
         // type variable has an upper bound.
@@ -1201,8 +1210,11 @@ public class QualifierDefaults {
                 typeParamDecl));
       }
     }
-
-    elementToBoundType.put(typeParamElem, boundType);
+    if (atypeFactory.shouldCache
+        && !atypeFactory.stubTypes.isParsing()
+        && !atypeFactory.ajavaTypes.isParsing()) {
+      elementToBoundType.put(typeParamElem, boundType);
+    }
     return boundType;
   }
 
@@ -1217,15 +1229,24 @@ public class QualifierDefaults {
   public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
 
     final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
+    Boolean yes = atypeFactory.stubTypes.isBound(wildcard);
 
     final BoundType boundType;
     if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
-      boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
+      if (yes != null && yes) {
+        boundType = BoundType.UPPER;
+      } else {
+        boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
+      }
 
     } else {
-      // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
-      // already handled
-      boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
+      if (yes != null && !yes) {
+        boundType = BoundType.UNBOUNDED;
+      } else {
+        // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
+        // already handled
+        boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
+      }
     }
 
     return boundType;

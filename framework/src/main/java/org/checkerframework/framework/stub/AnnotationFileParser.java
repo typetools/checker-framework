@@ -111,6 +111,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
@@ -295,6 +296,8 @@ public class AnnotationFileParser {
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
+
+    public final HashMap<TypeMirror, Boolean> explicitObjUpperBounds = new HashMap<>();
   }
 
   /** Information about a record from a stub file. */
@@ -1536,7 +1539,6 @@ public class AnnotationFileParser {
         }
         break;
       case WILDCARD:
-        AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
         // Ensure that the file also has a wildcard type, report an error otherwise
         if (!typeDef.isWildcardType()) {
           // We throw an error here, as otherwise we are just getting a generic cast error
@@ -1554,16 +1556,23 @@ public class AnnotationFileParser {
                   + typeBeingParsed);
           return;
         }
+        AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atype;
         WildcardType wildcardDef = (WildcardType) typeDef;
         if (wildcardDef.getExtendedType().isPresent()) {
           annotate(
               wildcardType.getExtendsBound(), wildcardDef.getExtendedType().get(), null, astNode);
           annotate(wildcardType.getSuperBound(), primaryAnnotations, astNode);
+          if (TypesUtils.isObject(wildcardType.getExtendsBound().getUnderlyingType())) {
+            markExplicitObjUpperBound(wildcardType.getUnderlyingType());
+          }
         } else if (wildcardDef.getSuperType().isPresent()) {
           annotate(wildcardType.getSuperBound(), wildcardDef.getSuperType().get(), null, astNode);
           annotate(wildcardType.getExtendsBound(), primaryAnnotations, astNode);
         } else {
-          annotate(atype, primaryAnnotations, astNode);
+          wildcardType.getExtendsBound().clearPrimaryAnnotations();
+          wildcardType.getSuperBound().clearPrimaryAnnotations();
+          annotate(wildcardType, primaryAnnotations, astNode);
+          markNoExplicitObjUpperBound(wildcardType.getUnderlyingType());
         }
         break;
       case TYPEVAR:
@@ -1793,12 +1802,16 @@ public class AnnotationFileParser {
       if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
         // No type bound, so annotations are both lower and upper bounds.
         annotate(paramType, param.getAnnotations(), param);
+        markNoExplicitObjUpperBound(paramType.getUnderlyingType());
       } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
         annotate(paramType.getLowerBound(), param.getAnnotations(), param);
         if (param.getTypeBound().size() == 1) {
           // The additional declAnnos (third argument) is always null in this call to `annotate`,
           // but the type bound (second argument) might have annotations.
           annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null, param);
+          if (TypesUtils.isObject(paramType.getUpperBound().getUnderlyingType())) {
+            markExplicitObjUpperBound(paramType.getUnderlyingType());
+          }
         } else {
           // param.getTypeBound().size() > 1
           ArrayList<ClassOrInterfaceType> typeBoundsWithAnotations =
@@ -1840,6 +1853,14 @@ public class AnnotationFileParser {
 
       putMerge(annotationFileAnnos.atypes, paramType.getUnderlyingType().asElement(), paramType);
     }
+  }
+
+  private void markExplicitObjUpperBound(TypeMirror elt) {
+    annotationFileAnnos.explicitObjUpperBounds.put(elt, true);
+  }
+
+  private void markNoExplicitObjUpperBound(TypeMirror elt) {
+    annotationFileAnnos.explicitObjUpperBounds.put(elt, false);
   }
 
   /**

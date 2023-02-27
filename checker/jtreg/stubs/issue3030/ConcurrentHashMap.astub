@@ -1,0 +1,6 @@
+package java.util.concurrent;
+
+import org.checkerframework.framework.qual.AnnotatedFor;
+
+@AnnotatedFor("nullness")
+class ConcurrentHashMap<K extends Object, V extends Object> {}

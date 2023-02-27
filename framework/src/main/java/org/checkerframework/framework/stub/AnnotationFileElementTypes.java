@@ -844,4 +844,11 @@ public class AnnotationFileElementTypes {
       throw new BugInCF("Cannot open the jar file " + resourceURL.getFile(), e);
     }
   }
+
+  public Boolean isBound(TypeMirror e) {
+    if (isParsing()) {
+      return null;
+    }
+    return annotationFileAnnos.explicitObjUpperBounds.get(e);
+  }
 }
