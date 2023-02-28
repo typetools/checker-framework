@@ -7,4 +7,3 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 public interface Collection<E> extends Iterable<E> {
     boolean containsAll(Collection<? extends Object> c);
 }
-
