@@ -18,7 +18,7 @@ Preliminaries:
 Create the Docker image:
 
 # Alias to create the Docker image, in an empty directory, and upload to Docker Hub.
-# Takes about 12 minutes for jdk8 or jdk11, about 1 hour for jdk8-plus or jdk11-plus.
+# Takes about 12 minutes for jdk8, jdk11, etc, about 1 hour for jdk*-plus.
 alias create_upload_docker_image=' \
   rm -rf dockerdir && \
   mkdir -p dockerdir && \

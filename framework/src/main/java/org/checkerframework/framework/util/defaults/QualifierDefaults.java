@@ -10,7 +10,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +42,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1222,25 +1222,25 @@ public class QualifierDefaults {
    * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    * its an argument.
    *
-   * @param annotatedWildcard the annotated wildcard type
+   * @param wildcardType the annotated wildcard type
    * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    *     its an argument
    */
-  public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
+  public BoundType getWildcardBoundType(final AnnotatedWildcardType wildcardType) {
+    if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
+      final WildcardType wildcard = (WildcardType) wildcardType.getUnderlyingType();
+      Boolean isBoundInStub = atypeFactory.stubTypes.isBound(wildcard);
 
-    final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
-    Boolean isBoundInStub = atypeFactory.stubTypes.isBound(wildcard);
-
-    if (isBoundInStub != null ? isBoundInStub : wildcard.kind == BoundKind.UNBOUND) {
-      if (wildcard.bound != null) {
-        return getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
+      TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
+      if (e != null) {
+        return getTypeVarBoundType(e);
       } else {
         return BoundType.UNBOUNDED;
       }
+    } else if (AnnotatedTypes.hasExplicitSuperBound(wildcardType)) {
+      return BoundType.LOWER;
+    } else {
+      return BoundType.UPPER;
     }
-
-    // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
-    // already handled
-    return wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
   }
 }
