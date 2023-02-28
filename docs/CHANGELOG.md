@@ -5,6 +5,8 @@ Version 3.31.1 (March 1, 2023)
 
 **Implementation details:**
 
+Rename `TreeUtils.instanceOfGetPattern()` to `TreeUtils.instanceOfTreeGetPattern()`.
+
 **Closed issues:**
 
 
