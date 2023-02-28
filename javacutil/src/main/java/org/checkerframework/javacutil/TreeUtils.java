@@ -123,7 +123,7 @@ public final class TreeUtils {
   /** The {@code BindingPatternTree.getVariable()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method bindingPatternGetVariable = null;
   /** The {@code InstanceOfTree.getPattern()} method. Null on JDK 11 and lower. */
-  private static @MonotonicNonNull Method instanceOfGetPattern = null;
+  private static @MonotonicNonNull Method instanceOfTreeGetPattern = null;
   /** The {@code SwitchExpressionTree.getExpression()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method switchExpressionGetExpression = null;
   /** The {@code SwitchExpressionTree.getCases()} method. Null on JDK 11 and lower. */
@@ -165,7 +165,7 @@ public final class TreeUtils {
         caseGetBody = CaseTree.class.getDeclaredMethod("getBody");
         Class<?> bindingPatternClass = Class.forName("com.sun.source.tree.BindingPatternTree");
         bindingPatternGetVariable = bindingPatternClass.getMethod("getVariable");
-        instanceOfGetPattern = InstanceOfTree.class.getMethod("getPattern");
+        instanceOfTreeGetPattern = InstanceOfTree.class.getMethod("getPattern");
         Class<?> switchExpressionClass = Class.forName("com.sun.source.tree.SwitchExpressionTree");
         switchExpressionGetExpression = switchExpressionClass.getMethod("getExpression");
         switchExpressionGetCases = switchExpressionClass.getMethod("getCases");
@@ -2171,15 +2171,15 @@ public final class TreeUtils {
    * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
    * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
    */
-  public static @Nullable Tree instanceOfGetPattern(InstanceOfTree instanceOfTree) {
-    if (instanceOfGetPattern == null) {
+  public static @Nullable Tree instanceOfTreeGetPattern(InstanceOfTree instanceOfTree) {
+    if (instanceOfTreeGetPattern == null) {
       return null;
     }
     try {
-      return (Tree) instanceOfGetPattern.invoke(instanceOfTree);
+      return (Tree) instanceOfTreeGetPattern.invoke(instanceOfTree);
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new BugInCF(
-          "TreeUtils.instanceOfGetPattern: reflection failed for tree: %s", instanceOfTree, e);
+          "TreeUtils.instanceOfTreeGetPattern: reflection failed for tree: %s", instanceOfTree, e);
     }
   }
 
