@@ -49,7 +49,7 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.25.0.jar"
+  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.25.1.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -1233,7 +1233,7 @@ final sharedPublicationConfiguration(publication) {
 
     scm {
       url = 'https://github.com/typetools/checker-framework.git'
-      connection = 'scm:git:git://github.com/typetools/checker-framework.git'
+      connection = 'scm:git:https://github.com/typetools/checker-framework.git'
       developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
     }
   }
