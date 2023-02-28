@@ -497,7 +497,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
     classpath = files(project("${projectName}").compileJava.classpath,project(':checker-qual').sourceSets.main.output)
     destinationDirectory = file("${buildDir}")
 
-    options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
+    options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archiveFile)
     options.compilerArgs += [
       '-processor',
       "${checker}",
