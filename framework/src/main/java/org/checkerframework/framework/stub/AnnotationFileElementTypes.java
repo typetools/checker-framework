@@ -845,10 +845,19 @@ public class AnnotationFileElementTypes {
     }
   }
 
-  public Boolean isBound(TypeMirror e) {
+  /**
+   * Returns {@code null} if {@code typeMirror} does not appear in an annotation file; otherwise,
+   * returns whether {@code typeMirror} has an explicit Object upper bound in an annotation file.
+   *
+   * @param typeMirror a {@link javax.lang.model.type.TypeVariable} or {@link
+   *     javax.lang.model.type.WildcardType}
+   * @return {@code null} if {@code typeMirror} does not appear in an annotation file; otherwise,
+   *     returns whether {@code typeMirror} has an explicit Object upper bound in an annotation file
+   */
+  public Boolean hasExplicitObjectUpperBound(TypeMirror typeMirror) {
     if (isParsing()) {
       return null;
     }
-    return annotationFileAnnos.explicitObjUpperBounds.get(e);
+    return annotationFileAnnos.explicitObjUpperBounds.get(typeMirror);
   }
 }

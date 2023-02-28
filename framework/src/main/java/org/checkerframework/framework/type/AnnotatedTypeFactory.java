@@ -3874,7 +3874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return true if {@code wildcard} has no explicit upper or lower bound
    */
   public boolean hasNoExplicitBound(AnnotatedTypeMirror wildcard) {
-    Boolean isBoundInStub = stubTypes.isBound(wildcard.getUnderlyingType());
+    Boolean isBoundInStub = stubTypes.hasExplicitObjectUpperBound(wildcard.getUnderlyingType());
     if (isBoundInStub != null) {
       return !isBoundInStub;
     } else {
@@ -3903,7 +3903,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return true if wildcard type is explicitly extends bounded
    */
   public boolean hasExplicitExtendsBound(AnnotatedTypeMirror wildcard) {
-    Boolean isBoundInStub = stubTypes.isBound(wildcard.getUnderlyingType());
+    Boolean isBoundInStub = stubTypes.hasExplicitObjectUpperBound(wildcard.getUnderlyingType());
     if (isBoundInStub != null) {
       return isBoundInStub;
     } else {

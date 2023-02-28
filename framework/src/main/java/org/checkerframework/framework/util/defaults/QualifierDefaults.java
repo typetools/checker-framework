@@ -41,7 +41,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1179,7 +1178,8 @@ public class QualifierDefaults {
           && TypesUtils.isObject(typeParamElem.getBounds().get(0))) {
         // If the bound was Object, then it may or may not have been explicitly written.
         // Assume that it was not.
-        Boolean isBound = atypeFactory.stubTypes.isBound(typeParamElem.asType());
+        Boolean isBound =
+            atypeFactory.stubTypes.hasExplicitObjectUpperBound(typeParamElem.asType());
         if (isBound != null && isBound) {
           boundType = BoundType.UPPER;
         } else {

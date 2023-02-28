@@ -297,6 +297,11 @@ public class AnnotationFileParser {
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
 
+    /**
+     * Stores whether a type variable or wildcard have an explicit upper bound of Object in an
+     * annotation file. The key must be a {@link javax.lang.model.type.TypeVariable} or {@link
+     * javax.lang.model.type.WildcardType}
+     */
     public final HashMap<TypeMirror, Boolean> explicitObjUpperBounds = new HashMap<>();
   }
 
@@ -1855,21 +1860,40 @@ public class AnnotationFileParser {
     }
   }
 
-  private void markYesOrNoExplicitUpperBound(TypeMirror typeMirror, boolean mark) {
+  /**
+   * Stores whether the upper bound of {@code typeMirror} is explicit or not.
+   *
+   * @param typeMirror a {@link javax.lang.model.type.TypeVariable} or {@link
+   *     javax.lang.model.type.WildcardType}
+   * @param isExplicit whether the upper bound is explicit
+   */
+  private void markYesOrNoExplicitUpperBound(TypeMirror typeMirror, boolean isExplicit) {
     if (fileType != AnnotationFileType.JDK_STUB) {
-      annotationFileAnnos.explicitObjUpperBounds.put(typeMirror, mark);
+      annotationFileAnnos.explicitObjUpperBounds.put(typeMirror, isExplicit);
     } else {
       // JDK annotations should not override other annotation files.
-      annotationFileAnnos.explicitObjUpperBounds.putIfAbsent(typeMirror, mark);
+      annotationFileAnnos.explicitObjUpperBounds.putIfAbsent(typeMirror, isExplicit);
     }
   }
 
-  private void markNoExplicitObjUpperBound(TypeMirror elt) {
-    markYesOrNoExplicitUpperBound(elt, false);
+  /**
+   * Stores whether the upper bound of {@code typeMirror} is not explicit.
+   *
+   * @param typeMirror a {@link javax.lang.model.type.TypeVariable} or {@link
+   *     javax.lang.model.type.WildcardType}
+   */
+  private void markNoExplicitObjUpperBound(TypeMirror typeMirror) {
+    markYesOrNoExplicitUpperBound(typeMirror, false);
   }
 
-  private void markExplicitObjUpperBound(TypeMirror elt) {
-    markYesOrNoExplicitUpperBound(elt, true);
+  /**
+   * Stores whether the upper bound of {@code typeMirror} is explicit.
+   *
+   * @param typeMirror a {@link javax.lang.model.type.TypeVariable} or {@link
+   *     javax.lang.model.type.WildcardType}
+   */
+  private void markExplicitObjUpperBound(TypeMirror typeMirror) {
+    markYesOrNoExplicitUpperBound(typeMirror, true);
   }
 
   /**
