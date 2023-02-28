@@ -3,6 +3,16 @@ Version 3.31.1 (March 1, 2023)
 
 **User-visible changes:**
 
+Fixed a bug in the Nullness Checker where a call to a side-effecting method did
+not make some formal parameters possibly-null.  The Nullness Checker is likely
+to issue more warnings for your code.  For ways to eliminate the new warnings,
+see https://checkerframework.org/manual/#type-refinement-side-effects .
+
+If you supply the `-AinvocationPreservesArgumentNullness` command-line
+option, the Nullness Checker unsoundly assumes that arguments passed to
+non-null parameters in an invocation remain non-null after the invocation.
+This assumption is unsound in general, but it holds for most code.
+
 **Implementation details:**
 
 Rename `TreeUtils.instanceOfGetPattern()` to `TreeUtils.instanceOfTreeGetPattern()`.
