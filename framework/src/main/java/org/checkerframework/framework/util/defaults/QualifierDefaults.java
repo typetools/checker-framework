@@ -1227,12 +1227,7 @@ public class QualifierDefaults {
    */
   public BoundType getWildcardBoundType(final AnnotatedWildcardType wildcardType) {
     if (atypeFactory.hasNoExplicitBound(wildcardType)) {
-      TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
-      if (e != null) {
-        return getTypeVarBoundType(e);
-      } else {
-        return BoundType.UNBOUNDED;
-      }
+      return BoundType.UNBOUNDED;
     } else if (atypeFactory.hasExplicitSuperBound(wildcardType)) {
       return BoundType.LOWER;
     } else {

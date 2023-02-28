@@ -3883,9 +3883,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns true if wildcard type has an explicit super bound. If the wildcard appears in an
-   * annotation file, then this method returns whether the wildcard has an explicit super bound in
-   * the annotation file.
+   * Returns true if wildcard type has an explicit super bound.
+   *
+   * <p>This is a wrapper around {@link AnnotatedTypes#hasExplicitSuperBound(AnnotatedTypeMirror)}.
    *
    * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
