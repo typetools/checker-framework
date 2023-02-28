@@ -817,7 +817,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /** Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation. */
+  /**
+   * Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation.
+   *
+   * @param intValAnno an {@code @IntVal} annotation
+   * @return a corresponding {@code @DoubleVal} annotation
+   */
   /*package-private*/ AnnotationMirror convertIntValToDoubleVal(AnnotationMirror intValAnno) {
     List<Long> intValues = getIntValues(intValAnno);
     return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
@@ -998,6 +1003,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
    * BOTTOMVAL or UNKNOWNVAL.
+   *
+   * @param from the lower bound
+   * @param to the upper bound
+   * @return an {@code @IntRange} annotation
    */
   /*package-private*/ AnnotationMirror createIntRangeAnnotation(long from, long to) {
     assert from <= to;
@@ -1135,9 +1144,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
+   * Converts a {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
    * {@code @StringVal} annotation contains string values of more than MAX_VALUES distinct lengths,
    * {@code @ArrayLenRange} annotation is returned instead.
+   *
+   * @param stringValAnno a {@code @StringVal} annotation
+   * @return a corresponding {@code @ArrayLen} annotation
    */
   /*package-private*/ AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
