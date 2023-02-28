@@ -996,7 +996,8 @@ about node-tree mapping, see \autoref{sec:conversions}.
 \label{sec:cond-stores}
 
 The Dataflow Framework extracts information from control-flow splits
-that occur in \code{if}, \code{for}, \code{while}, and \code{switch} statements.  In order to have
+that occur in \code{if}, \code{for}, \code{while}, and \code{switch}
+statements and in conditional operator expressions.  In order to have
 the information available at the split, we eagerly produce two stores
 contained in a \code{ConditionalTransferResult} after certain
 boolean-valued expressions.  The stores are called the \emph{then} and
