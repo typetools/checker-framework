@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -93,7 +94,7 @@ public class RemoveAnnotationsForInference {
    * this program. (It would be burdensome to add all project-specific annotations to the global
    * list in {@link #isTrustedAnnotation(String)}.)
    */
-  private static @MonotonicNonNull List<String> annotationsToKeep = null;
+  private static @MonotonicNonNull Set<String> annotationsToKeep = null;
 
   /**
    * Processes each provided command-line argument; see {@link RemoveAnnotationsForInference class
@@ -114,7 +115,7 @@ public class RemoveAnnotationsForInference {
       }
       String keepFilePath = args[1];
       try (Stream<String> lines = Files.lines(Paths.get(keepFilePath))) {
-        annotationsToKeep = lines.collect(Collectors.toList());
+        annotationsToKeep = lines.collect(Collectors.toSet());
       } catch (FileNotFoundException e) {
         System.err.println("Error: Keep file " + keepFilePath + " not found.");
         System.exit(3);
