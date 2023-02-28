@@ -1855,12 +1855,21 @@ public class AnnotationFileParser {
     }
   }
 
-  private void markExplicitObjUpperBound(TypeMirror elt) {
-    annotationFileAnnos.explicitObjUpperBounds.put(elt, true);
+  private void markYesOrNoExplicitUpperBound(TypeMirror typeMirror, boolean mark) {
+    if (fileType != AnnotationFileType.JDK_STUB) {
+      annotationFileAnnos.explicitObjUpperBounds.put(typeMirror, mark);
+    } else {
+      // JDK annotations should not override other annotation files.
+      annotationFileAnnos.explicitObjUpperBounds.putIfAbsent(typeMirror, mark);
+    }
   }
 
   private void markNoExplicitObjUpperBound(TypeMirror elt) {
-    annotationFileAnnos.explicitObjUpperBounds.put(elt, false);
+    markYesOrNoExplicitUpperBound(elt, false);
+  }
+
+  private void markExplicitObjUpperBound(TypeMirror elt) {
+    markYesOrNoExplicitUpperBound(elt, true);
   }
 
   /**

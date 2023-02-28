@@ -13,7 +13,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
@@ -137,12 +136,12 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       final Set<? extends AnnotationMirror> tops =
           typeFactory.getQualifierHierarchy().getTopAnnotations();
 
-      if (AnnotatedTypes.hasNoExplicitBound(wildcard)) {
+      if (typeFactory.hasNoExplicitBound(wildcard)) {
         propagateExtendsBound(wildcard, typeParam, tops);
         propagateSuperBound(wildcard, typeParam, tops);
-      } else if (AnnotatedTypes.hasExplicitExtendsBound(wildcard)) {
+      } else if (typeFactory.hasExplicitExtendsBound(wildcard)) {
         propagateSuperBound(wildcard, typeParam, tops);
-      } else if (AnnotatedTypes.hasExplicitSuperBound(wildcard)) {
+      } else if (typeFactory.hasExplicitSuperBound(wildcard)) {
         propagateExtendsBound(wildcard, typeParam, tops);
       } else {
         // If this is thrown, then it means that there's a bug in one of the

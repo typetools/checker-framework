@@ -3866,6 +3866,52 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * This method identifies wildcard types that have no explict upper or lower bound. If the
+   * wildcard appears in an annotation file, then this method returns whether the wildcard has an
+   * explicit bound in the annotation file.
+   *
+   * @param wildcard the type to check
+   * @return true if {@code wildcard} has no explicit upper or lower bound
+   */
+  public boolean hasNoExplicitBound(AnnotatedTypeMirror wildcard) {
+    Boolean isBoundInStub = stubTypes.isBound(wildcard.getUnderlyingType());
+    if (isBoundInStub != null) {
+      return !isBoundInStub;
+    } else {
+      return AnnotatedTypes.hasNoExplicitBound(wildcard);
+    }
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit super bound. If the wildcard appears in an
+   * annotation file, then this method returns whether the wildcard has an explicit super bound in
+   * the annotation file.
+   *
+   * @param wildcard the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
+  public boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
+    return AnnotatedTypes.hasExplicitSuperBound(wildcard);
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit extends bound. If the wildcard appears in an
+   * annotation file, then this method returns whether the wildcard has an explicit extends bound in
+   * the annotation file.
+   *
+   * @param wildcard the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
+  public boolean hasExplicitExtendsBound(AnnotatedTypeMirror wildcard) {
+    Boolean isBoundInStub = stubTypes.isBound(wildcard.getUnderlyingType());
+    if (isBoundInStub != null) {
+      return isBoundInStub;
+    } else {
+      return AnnotatedTypes.hasExplicitExtendsBound(wildcard);
+    }
+  }
+
+  /**
    * Returns all of the declaration annotations whose name equals the passed annotation class (or is
    * an alias for it) including annotations:
    *

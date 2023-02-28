@@ -10,7 +10,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -42,7 +41,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -1227,17 +1225,14 @@ public class QualifierDefaults {
    *     its an argument
    */
   public BoundType getWildcardBoundType(final AnnotatedWildcardType wildcardType) {
-    if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
-      final WildcardType wildcard = (WildcardType) wildcardType.getUnderlyingType();
-      Boolean isBoundInStub = atypeFactory.stubTypes.isBound(wildcard);
-
+    if (atypeFactory.hasNoExplicitBound(wildcardType)) {
       TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
       if (e != null) {
         return getTypeVarBoundType(e);
       } else {
         return BoundType.UNBOUNDED;
       }
-    } else if (AnnotatedTypes.hasExplicitSuperBound(wildcardType)) {
+    } else if (atypeFactory.hasExplicitSuperBound(wildcardType)) {
       return BoundType.LOWER;
     } else {
       return BoundType.UPPER;
