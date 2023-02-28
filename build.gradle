@@ -32,13 +32,14 @@ ext {
   // On a Java 8 JVM, use error-prone javac and source/target 8.
   // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
   isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
-  // As of 2022-11-30, delombok crashes under JDK 19.
-  // As of mid-January 2023, a lombok release for Java 19 is coming "in a week".
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
-
+  isJava11orHigher = JavaVersion.current() >= JavaVersion.VERSION_11
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+
+  // As of 2022-11-30, delombok crashes under JDK 19.
+  // As of mid-January 2023, a lombok release for Java 19 is coming "in a week".
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
 
   errorproneJavacVersion = '9+181-r4173-1'
 
@@ -91,7 +92,6 @@ task installGitHooks(type: Copy, dependsOn: 'setLocalRepo') {
   into localRepo + '/hooks'
 }
 
-ext.isJava11orHigher = JavaVersion.current() >= JavaVersion.VERSION_11
 if (isJava11orHigher) {
   apply plugin: 'com.diffplug.spotless'
   spotless {
@@ -497,7 +497,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
     classpath = files(project("${projectName}").compileJava.classpath,project(':checker-qual').sourceSets.main.output)
     destinationDirectory = file("${buildDir}")
 
-    options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archivePath)
+    options.annotationProcessorPath = files(project(':checker').tasks.shadowJar.archiveFile)
     options.compilerArgs += [
       '-processor',
       "${checker}",
