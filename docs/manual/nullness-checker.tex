@@ -129,6 +129,15 @@ command-line option.)
   checker will unsoundly assume that the argument to \<Map.get> is a key
   for the receiver map.  It will not do any checking of
   \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
+
+\item
+  \label{nullness-invocationPreservesArgumentNullness}%
+  If you supply the \code{-AinvocationPreservesArgumentNullness} command-line
+  option, the Nullness Checker unsoundly assumes that arguments passed to
+  non-null parameters in an invocation remain non-null after the invocation.
+  This assumption is unsound in general, but holds for most code.
+  For other ways to suppress warnings related to method side effects, see
+  Section~\ref{type-refinement-side-effects}.
 \end{itemize}
 
 \item
