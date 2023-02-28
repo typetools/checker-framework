@@ -1229,7 +1229,7 @@ final sharedPublicationConfiguration(publication) {
 
     scm {
       url = 'https://github.com/typetools/checker-framework.git'
-      connection = 'scm:git:git://github.com/typetools/checker-framework.git'
+      connection = 'scm:git:https://github.com/typetools/checker-framework.git'
       developerConnection = 'scm:git:ssh://git@github.com/typetools/checker-framework.git'
     }
   }
