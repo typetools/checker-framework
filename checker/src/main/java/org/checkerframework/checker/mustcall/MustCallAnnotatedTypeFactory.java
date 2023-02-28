@@ -89,7 +89,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
-  /* package-private */ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+  /*package-private*/ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
       new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */

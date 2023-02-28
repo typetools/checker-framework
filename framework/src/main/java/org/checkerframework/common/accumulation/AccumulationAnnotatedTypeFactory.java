@@ -542,8 +542,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
    * @return null if there is nothing wrong with the annotation, or an error message indicating the
    *     problem if it has an invalid predicate
    */
-  /* package-private */
-  @Nullable String isValidPredicate(AnnotationMirror anm) {
+  /*package-private*/ @Nullable String isValidPredicate(AnnotationMirror anm) {
     String pred = convertToPredicate(anm);
     try {
       evaluatePredicate(Collections.emptyList(), pred);
