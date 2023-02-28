@@ -334,7 +334,7 @@ public final class TypesUtils {
    * @return true iff type represents a boolean type
    */
   public static boolean isBooleanType(TypeMirror type) {
-    return isDeclaredOfName(type, "java.lang.Boolean") || type.getKind() == TypeKind.BOOLEAN;
+    return type.getKind() == TypeKind.BOOLEAN || isDeclaredOfName(type, "java.lang.Boolean");
   }
 
   /**
