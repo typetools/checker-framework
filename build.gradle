@@ -1128,6 +1128,10 @@ task checkBasicStyle(group: 'Format') {
             println("Missing space: ${it.file.absolutePath}")
             failed = true
           }
+          if (line.matches('^.*/\\* package-private \\*/.*$')) {
+            println("Use /*package-private*/ to mark package-private elements: ${it.file.absolutePath}")
+            failed = true
+          }
           if (line.isEmpty()) {
             blankLineAtEnd = true;
           } else {
