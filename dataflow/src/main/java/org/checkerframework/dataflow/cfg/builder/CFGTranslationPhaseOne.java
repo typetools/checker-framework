@@ -2527,7 +2527,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param resultExpression the result of a switch expression; either from a yield or an
      *     expression in a case rule
      */
-    /* package-private */ void buildSwitchExpressionResult(ExpressionTree resultExpression) {
+    /*package-private*/ void buildSwitchExpressionResult(ExpressionTree resultExpression) {
       IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
       handleArtificialTree(switchExprVarUseTree);
 
