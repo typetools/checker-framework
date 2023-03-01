@@ -13,6 +13,10 @@ option, the Nullness Checker unsoundly assumes that arguments passed to
 non-null parameters in an invocation remain non-null after the invocation.
 This assumption is unsound in general, but it holds for most code.
 
+Added `@MustCallUnknown` annotations to JDK methods with `Object` formal
+parameters.  If you run the Resource Leak Checker, you may need to update the
+annotations on overrides of these JDK methods.
+
 **Implementation details:**
 
 Rename `TreeUtils.instanceOfGetPattern()` to `TreeUtils.instanceOfTreeGetPattern()`.
