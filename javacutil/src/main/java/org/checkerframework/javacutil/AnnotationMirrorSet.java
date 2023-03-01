@@ -8,6 +8,7 @@ import java.util.NavigableSet;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -123,7 +124,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   @Override
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
-      @Nullable Object o) {
+      @MustCallUnknown @Nullable Object o) {
     return o instanceof AnnotationMirror
         && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
   }
@@ -157,7 +158,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
-  public boolean remove(@Nullable Object o) {
+  public boolean remove(@MustCallUnknown @Nullable Object o) {
     if (o instanceof AnnotationMirror) {
       AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
       return found != null && shadowSet.remove(found);
@@ -228,7 +229,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public boolean equals(@MustCallUnknown @Nullable Object o) {
     if (o == this) {
       return true;
     }

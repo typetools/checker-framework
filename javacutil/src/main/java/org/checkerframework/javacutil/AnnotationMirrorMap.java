@@ -6,6 +6,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -56,7 +57,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
 
   @SuppressWarnings("keyfor:contracts.conditional.postcondition") // delegation
   @Override
-  public boolean containsKey(Object key) {
+  public boolean containsKey(@MustCallUnknown Object key) {
     if (key instanceof AnnotationMirror) {
       return AnnotationUtils.containsSame(shadowMap.keySet(), (AnnotationMirror) key);
     } else {
@@ -65,13 +66,13 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   @Override
-  public boolean containsValue(Object value) {
+  public boolean containsValue(@MustCallUnknown Object value) {
     return shadowMap.containsValue(value);
   }
 
   @Override
   @Pure
-  public @Nullable V get(Object key) {
+  public @Nullable V get(@MustCallUnknown Object key) {
     if (key instanceof AnnotationMirror) {
       AnnotationMirror keyAnno =
           AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
@@ -96,7 +97,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   @Override
-  public @Nullable V remove(Object key) {
+  public @Nullable V remove(@MustCallUnknown Object key) {
     if (key instanceof AnnotationMirror) {
       AnnotationMirror keyAnno =
           AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
