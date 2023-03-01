@@ -71,6 +71,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
    * @param expected the expected result
    */
   private void glbAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
+    QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
     AnnotationMirror result = qh.greatestLowerBound(arg1, arg2);
     if (!AnnotationUtils.areSame(expected, result)) {
       throw new AssertionError(
@@ -86,6 +87,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
    * @param expected the expected result
    */
   private void lubAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
+    QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
     AnnotationMirror result = qh.leastUpperBound(arg1, arg2);
     if (!AnnotationUtils.areSame(expected, result)) {
       throw new AssertionError(
@@ -147,8 +149,6 @@ public class FormatterLubGlbChecker extends FormatterChecker {
     AnnotationMirror formatIntAndTimeAnno = treeUtil.categoriesToFormatAnnotation(cc);
     cc[0] = ConversionCategory.NULL;
     AnnotationMirror formatNullAnno = treeUtil.categoriesToFormatAnnotation(cc);
-
-    QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
 
     // ** GLB tests **
 
