@@ -585,7 +585,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return the int range annotation is that equivalent to {@code anm}, or {@code anm} if one
    *     doesn't exist
    */
-  /* package-private */ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
+  /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm) {
     if (AnnotationUtils.areSameByName(anm, INTRANGE_FROMPOS_NAME)) {
       return createIntRangeAnnotation(1, Integer.MAX_VALUE);
@@ -607,7 +607,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param anno any annotation mirror
    * @return UnknownVal if {@code anno} is equivalent to it; otherwise, return {@code anno}
    */
-  /* package-private */ AnnotationMirror convertToUnknown(AnnotationMirror anno) {
+  /*package-private*/ AnnotationMirror convertToUnknown(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLENRANGE_NAME)) {
       Range range = getRange(anno);
       if (range.from == 0 && range.to >= Integer.MAX_VALUE) {
@@ -630,8 +630,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return the estimate for the length of a string or array with whose annotated type is {@code
    *     type}.
    */
-  /* package-private */ AnnotationMirror createArrayLengthResultAnnotation(
-      AnnotatedTypeMirror type) {
+  /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
     AnnotationMirror arrayAnno = type.getAnnotationInHierarchy(UNKNOWNVAL);
     switch (AnnotationUtils.annotationName(arrayAnno)) {
       case ARRAYLEN_NAME:
@@ -659,7 +658,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param value value to use
    * @return a constant value annotation with the {@code value}
    */
-  /* package-private */ AnnotationMirror createResultingAnnotation(
+  /*package-private*/ AnnotationMirror createResultingAnnotation(
       TypeMirror resultType, Object value) {
     return createResultingAnnotation(resultType, Collections.singletonList(value));
   }
@@ -672,7 +671,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param values must be a homogeneous list: every element of it has the same class
    * @return a constant value annotation with the {@code values}
    */
-  /* package-private */ AnnotationMirror createResultingAnnotation(
+  /*package-private*/ AnnotationMirror createResultingAnnotation(
       TypeMirror resultType, List<?> values) {
     if (values == null) {
       return UNKNOWNVAL;
@@ -818,8 +817,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /** Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation. */
-  /* package-private */ AnnotationMirror convertIntValToDoubleVal(AnnotationMirror intValAnno) {
+  /**
+   * Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation.
+   *
+   * @param intValAnno an {@code @IntVal} annotation
+   * @return a corresponding {@code @DoubleVal} annotation
+   */
+  /*package-private*/ AnnotationMirror convertIntValToDoubleVal(AnnotationMirror intValAnno) {
     List<Long> intValues = getIntValues(intValAnno);
     return createDoubleValAnnotation(convertLongListToDoubleList(intValues));
   }
@@ -830,7 +834,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param intValues a list of long integers
    * @return a list of double floating-point values
    */
-  /* package-private */ List<Double> convertLongListToDoubleList(List<Long> intValues) {
+  /*package-private*/ List<Double> convertLongListToDoubleList(List<Long> intValues) {
     return CollectionsPlume.mapList(Long::doubleValue, intValues);
   }
 
@@ -999,8 +1003,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
    * BOTTOMVAL or UNKNOWNVAL.
+   *
+   * @param from the lower bound
+   * @param to the upper bound
+   * @return an {@code @IntRange} annotation
    */
-  /* package-private */ AnnotationMirror createIntRangeAnnotation(long from, long to) {
+  /*package-private*/ AnnotationMirror createIntRangeAnnotation(long from, long to) {
     assert from <= to;
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
     builder.setValue("from", from);
@@ -1128,7 +1136,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return an ArrayLenRange annotation representing the possible lengths of the values of the
    *     given StringVal annotation
    */
-  /* package-private */ AnnotationMirror convertStringValToArrayLenRange(
+  /*package-private*/ AnnotationMirror convertStringValToArrayLenRange(
       AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
     List<Integer> lengths = ValueCheckerUtils.getLengthsForStringValues(values);
@@ -1136,12 +1144,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Converts an {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
+   * Converts a {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
    * {@code @StringVal} annotation contains string values of more than MAX_VALUES distinct lengths,
    * {@code @ArrayLenRange} annotation is returned instead.
+   *
+   * @param stringValAnno a {@code @StringVal} annotation
+   * @return a corresponding {@code @ArrayLen} annotation
    */
-  /* package-private */ AnnotationMirror convertStringValToArrayLen(
-      AnnotationMirror stringValAnno) {
+  /*package-private*/ AnnotationMirror convertStringValToArrayLen(AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
     return createArrayLenAnnotation(ValueCheckerUtils.getLengthsForStringValues(values));
   }
@@ -1153,7 +1163,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param stringValAnno a StringVal annotation
    * @return an equivalent MatchesReges annotation
    */
-  /* package-private */ AnnotationMirror convertStringValToMatchesRegex(
+  /*package-private*/ AnnotationMirror convertStringValToMatchesRegex(
       AnnotationMirror stringValAnno) {
     List<String> values = getStringValues(stringValAnno);
     List<@Regex String> valuesAsRegexes = CollectionsPlume.mapList(Pattern::quote, values);
