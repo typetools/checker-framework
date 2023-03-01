@@ -9,7 +9,7 @@ echo "SHELLOPTS=${SHELLOPTS}"
 # Optional argument $1 is the group.
 GROUPARG=$1
 echo "GROUPARG=$GROUPARG"
-# These are all the Java projects at https://github.com/plume-lib , as of Dec 2022.
+# These are all the Java projects at https://github.com/plume-lib as of Dec 2022.
 if [[ "${GROUPARG}" == "bcel-util" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "bibtex-clean" ]]; then PACKAGES=("${GROUPARG}"); fi
 if [[ "${GROUPARG}" == "html-pretty-print" ]]; then PACKAGES=("${GROUPARG}"); fi
