@@ -2459,7 +2459,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
-    Tree patternTree = TreeUtils.instanceOfGetPattern(tree);
+    Tree patternTree = TreeUtils.instanceOfTreeGetPattern(tree);
     if (patternTree != null) {
       VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
       validateTypeOf(variableTree);

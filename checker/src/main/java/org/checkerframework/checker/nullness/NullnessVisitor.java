@@ -552,7 +552,7 @@ public class NullnessVisitor
    * @param tree a method invocation whose first formal parameter is of String type
    * @return the first argument if it is a literal, otherwise null
    */
-  /* package-private */ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
+  /*package-private*/ static @Nullable String literalFirstArgument(MethodInvocationTree tree) {
     List<? extends ExpressionTree> args = tree.getArguments();
     assert args.size() > 0;
     ExpressionTree arg = args.get(0);
