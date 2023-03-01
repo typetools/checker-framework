@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.builder;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.Name;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.ArrayMap;
 
@@ -22,7 +23,7 @@ import org.plumelib.util.ArrayMap;
   }
 
   @Override
-  public Label get(@Nullable Object key) {
+  public Label get(@MustCallUnknown @Nullable Object key) {
     if (key == null) {
       throw new IllegalArgumentException();
     }
@@ -40,7 +41,7 @@ import org.plumelib.util.ArrayMap;
 
   @Override
   @SuppressWarnings("keyfor:contracts.conditional.postcondition") // get adds everything
-  public boolean containsKey(@Nullable Object key) {
+  public boolean containsKey(@MustCallUnknown @Nullable Object key) {
     return true;
   }
 
