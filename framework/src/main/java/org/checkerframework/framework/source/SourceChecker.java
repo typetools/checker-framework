@@ -1675,6 +1675,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param options all provided options
    * @return a value for {@link #activeOptions}
    */
+  @SuppressWarnings("LabelledBreakTarget")
   private Map<String, String> createActiveOptions(Map<String, String> options) {
     if (options.isEmpty()) {
       return Collections.emptyMap();

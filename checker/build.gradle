@@ -55,17 +55,17 @@ dependencies {
   shadow project(':checker-util')
 
   // Called Methods Checker AutoValue + Lombok support
-  testImplementation 'com.google.auto.value:auto-value-annotations:1.7.4'
-  testImplementation 'com.google.auto.value:auto-value:1.7.4'
+  testImplementation 'com.google.auto.value:auto-value-annotations:1.10.1'
+  testImplementation 'com.google.auto.value:auto-value:1.10.1'
   testImplementation 'com.ryanharter.auto.value:auto-value-parcel:0.2.9'
-  testImplementation 'org.projectlombok:lombok:1.18.24'
+  testImplementation 'org.projectlombok:lombok:1.18.26'
   // Called Methods Checker support for detecting misuses of AWS APIs
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
   testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.293')
   // For the Resource Leak Checker's support for JavaEE.
-  testImplementation 'javax.servlet:javax.servlet-api:3.1.0'
+  testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
   testImplementation 'commons-io:commons-io:2.11.0'
 
