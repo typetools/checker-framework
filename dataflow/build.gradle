@@ -246,8 +246,7 @@ publishing {
 
     dataflowShaded(MavenPublication) {
       dataflowShadedPom(it, 'shaded')
-
-      artifact getTasksByName('dataflowshadedJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflowshadedJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -255,7 +254,7 @@ publishing {
     dataflowShadednullaway(MavenPublication) {
       dataflowShadedPom(it, 'nullaway')
 
-      artifact getTasksByName('dataflownullawayJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflownullawayJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -263,7 +262,7 @@ publishing {
     dataflowShadederrorprone(MavenPublication) {
       dataflowShadedPom(it, 'errorprone')
 
-      artifact getTasksByName('dataflowerrorproneJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflowerrorproneJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -276,3 +275,19 @@ signing {
   sign publishing.publications.dataflowShadednullaway
   sign publishing.publications.dataflowShadederrorprone
 }
+
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowPublication)
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowPublication)
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowPublication)

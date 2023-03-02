@@ -35,8 +35,6 @@ Renamed `TreeUtils.instanceOfGetPattern()` to `TreeUtils.instanceOfTreeGetPatter
 Deprecated `AnnotatedTypes#isExplicitlySuperBounded` and `AnnotatedTypes#isExplicitlyExtendsBounded`
 because they are duplicates of `#hasExplicitSuperBound` and `#hasExplicitExtendsBound`.
 
-**Closed issues:**
-
 
 Version 3.31.0 (February 17, 2023)
 ------------------------------

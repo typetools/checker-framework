@@ -118,7 +118,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.31.1-SNAPSHOT'
+  version '3.32.1-SNAPSHOT'
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
