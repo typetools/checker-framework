@@ -14,11 +14,10 @@ plugins {
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
-  // Only works on JDK 11+.
+  // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
   id 'com.diffplug.spotless' version '6.16.0'
 }
 apply plugin: 'de.undercouch.download'
-apply plugin: 'com.diffplug.spotless'
 
 import org.ajoberstar.grgit.Grgit
 
@@ -178,6 +177,7 @@ allprojects {
     plumeUtilVersion = '1.6.5'
   }
 
+  apply plugin: 'com.diffplug.spotless'
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to spotlessPredeclare block.
