@@ -337,9 +337,10 @@ allprojects {
       options.compilerArgs += [
         '-g',
         '-Werror',
+        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
         // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
         //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-fallthrough',
+        '-Xlint:-options,-fallthrough',
         '-Xlint',
       ]
 
