@@ -12,7 +12,7 @@ jobs:
 
 # The dependsOn clauses are:
 #  * Everything depends on the canary jobs (the 4 main jdk17 jobs), except those jobs themselves.
-#  * Anything *_jdk11, or *_jdk19 depends on *_jdk17.
+#  * Anything *_jdk11 or *_jdk19 depends on *_jdk17.
 
 - job: canary_jobs
   dependsOn:
