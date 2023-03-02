@@ -61,20 +61,6 @@ ext {
   localRepo = '.git'
 }
 
-// Keep in sync with check in
-// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
-switch (JavaVersion.current()) {
-  case JavaVersion.VERSION_1_8:
-  case JavaVersion.VERSION_11:
-  case JavaVersion.VERSION_17:
-  case JavaVersion.VERSION_19:
-    break; // Supported versions
-  default:
-    logger.info('The Checker Framework has only been tested with JDK 8, 11, 17, and 19.' +
-    ' You are using JDK ' + JavaVersion.current().majorVersion + '.');
-    break;
-}
-
 task setLocalRepo(type:Exec) {
   commandLine 'git', 'worktree', 'list'
   standardOutput = new ByteArrayOutputStream()
