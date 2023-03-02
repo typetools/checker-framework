@@ -352,18 +352,6 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-- job: plume_lib_jdk8
-  dependsOn:
-   - canary_jobs
-   - plume_lib_jdk17
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk8:latest
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-plume-lib.sh
-    displayName: test-plume-lib.sh
 - job: plume_lib_jdk11
   dependsOn:
    - canary_jobs
