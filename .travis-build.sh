@@ -53,7 +53,7 @@ echo "In checker-framework/.travis-build.sh GROUP=$GROUP"
 case  $GROUP  in
     all)
         # Run cftests-junit, cftests-nonjunit, and cftests-inference separately,
-        # because cftests-all takes too long to run on Travis under JDK 11.
+        # because cftests-all takes too long to run on Travis.
         "$SCRIPTDIR/test-cftests-junit.sh"
         "$SCRIPTDIR/test-cftests-nonjunit.sh"
         "$SCRIPTDIR/test-cftests-inference.sh"
