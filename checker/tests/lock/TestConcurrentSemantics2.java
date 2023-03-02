@@ -12,7 +12,7 @@ public class TestConcurrentSemantics2 {
     //  * Context switch to a different thread.
     //  * bar() is called on the other thread.
     //  * Context switch back to this thread.
-    // o is no longer null and an assignment error should be issued.
+    // o is no longer null and an "assignment" error should be issued.
     // :: error: (assignment)
     @GuardedBy("b") Object o2 = o;
   }

@@ -338,7 +338,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** A class loader for looking up annotations. */
-  private static final ClassLoader classLoader =
+  private static final ClassLoader CLASSLOADER =
       InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
 
   /**
@@ -361,7 +361,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         Class<?> valueElement;
         try {
-          valueElement = Class.forName(theclassname, true, classLoader);
+          valueElement = Class.forName(theclassname, true, CLASSLOADER);
         } catch (ClassNotFoundException e) {
           String msg =
               String.format(
