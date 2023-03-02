@@ -48,9 +48,6 @@ clean_compile_output() {
     sed -i '/^.*warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
     sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
 
-    # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
-    sed -i '/^[0-9]* warning/d' "$out"
-
     # Remove directory names and line numbers
     sed -i 's/^[^ ]*\///' "$out"
     sed -i 's/:[0-9]+: /: /' "$out"

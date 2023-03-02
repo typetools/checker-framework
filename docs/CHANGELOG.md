@@ -1,4 +1,17 @@
-Version 3.31.1 (March 1, 2023)
+Version 3.33.0 (April 3, 2023)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+The Checker Framework no longer builds under JDK 8.
+However, you can still run the Checker Framework under JDK 8.
+
+**Closed issues:**
+
+
+Version 3.32.0 (March 2, 2023)
 ------------------------------
 
 **User-visible changes:**

@@ -12,9 +12,9 @@ source "$SCRIPTDIR"/build.sh
 
 PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 
-## Checker Framework demos
-"$PLUME_SCRIPTS/git-clone-related" typetools checker-framework.demos
-./gradlew :checker:demosTests --console=plain --warning-mode=all
+## Checker Framework demos have bit-rotted
+# "$PLUME_SCRIPTS/git-clone-related" typetools checker-framework.demos
+# ./gradlew :checker:demosTests --console=plain --warning-mode=all
 
 status=0
 
