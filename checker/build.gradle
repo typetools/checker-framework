@@ -4,6 +4,7 @@ plugins {
   // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
   id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
+
 sourceSets {
   main {
     resources {
@@ -13,7 +14,6 @@ sourceSets {
   }
   testannotations
 }
-
 
 sourcesJar {
   // The resources duplicate content from the src directory.
@@ -186,6 +186,7 @@ shadowJar {
   description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
+
   doLast{
     copy {
       from archiveFile.get()
@@ -309,8 +310,6 @@ task jtregJdk11Tests(group: 'Verification') {
         '.'
       ]
     }
-
-
   }
 }
 
@@ -786,6 +785,7 @@ task ainferNullnessGenerateJaifs(type: Test) {
 
     // JAIF-based WPI does not infer annotations on uses of type variables correctly.
     delete('tests/ainfer-nullness/annotated/TwoCtorGenericAbstract.java')
+    delete('tests/ainfer-nullness/annotated/TypeVarReturnAnnotated.java')
 
     // Inserting annotations from .jaif files in-place.
     String jaifsDir = 'tests/ainfer-nullness/inference-output';
@@ -1024,6 +1024,7 @@ final checkerPom(publication) {
     }
   }
 }
+
 publishing {
   publications {
     checker(MavenPublication) {
@@ -1035,6 +1036,7 @@ publishing {
     }
   }
 }
+
 signing {
   sign publishing.publications.checker
 }

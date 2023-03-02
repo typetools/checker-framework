@@ -114,6 +114,7 @@ allprojects {
   apply plugin: 'net.ltgt.errorprone'
 
   group 'org.checkerframework'
+
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
@@ -1144,7 +1145,7 @@ jar.onlyIf {false}
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {
-    url = 'https://checkerframework.org'
+    url = 'https://checkerframework.org/'
     developers {
       // These are the lead developers/maintainers, not all the developers or contributors.
       developer {

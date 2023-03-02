@@ -973,7 +973,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this
     // scenario).
     // Currently an annotation in such a tree, such as "new @GuardedBy("foo") Object()",
-    // results in a constructor.invocation error. This must be fixed first.
+    // results in a "constructor.invocation" error. This must be fixed first.
 
     path = path.getParentPath();
 
@@ -1092,8 +1092,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    */
   // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
   // the toString() method call should be visited instead of doing this. This would result
-  // in contracts.precondition errors being issued instead of
-  // contracts.precondition.field, so it would be clear that
+  // in "contracts.precondition" errors being issued instead of
+  // "contracts.precondition.field", so it would be clear that
   // the error refers to an implicit method call, not a dereference (field access).
   private void checkPreconditionsForImplicitToStringCall(ExpressionTree tree) {
     AnnotationMirror gbAnno =
