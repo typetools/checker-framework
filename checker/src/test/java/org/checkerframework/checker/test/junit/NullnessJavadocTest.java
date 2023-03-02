@@ -16,12 +16,7 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public NullnessJavadocTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.nullness.NullnessChecker.class,
-        "nullness",
-        // required for JDK 8 (maybe not required for JDK 11, but it does no harm)
-        toolsJarList());
+    super(testFiles, org.checkerframework.checker.nullness.NullnessChecker.class, "nullness");
   }
 
   /**
