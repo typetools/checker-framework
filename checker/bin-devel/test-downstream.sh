@@ -12,14 +12,9 @@ source "$SCRIPTDIR"/build.sh
 
 
 ## downstream tests:  projects that depend on the Checker Framework.
-## These are here so they can be run by pull requests.  (Pull requests
-## currently don't trigger downstream jobs.)
+## (There are none currently in this file.)
+## These are here so they can be run by pull requests.
 ## Exceptions:
 ##  * plume-lib is run by test-plume-lib.sh
 ##  * daikon-typecheck is run as a separate CI project
 ##  * guava is run as a separate CI project
-
-## This is moved to misc, because otherwise it would be the only work done by this script.
-# # Checker Framework demos
-# "$SCRIPTDIR/.plume-scripts/git-clone-related" typetools checker-framework.demos
-# ./gradlew :checker:demosTests --console=plain --warning-mode=all
