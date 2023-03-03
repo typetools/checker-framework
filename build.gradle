@@ -141,6 +141,7 @@ allprojects {
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   version '3.32.1-SNAPSHOT'
 
+  // Keep in sync with "repositories { ... }" block above.
   repositories {
     mavenCentral()
   }
@@ -366,7 +367,7 @@ allprojects {
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
         // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
         // warnings are suppressible with a "// fall through" comment.
         // -classfile: classgraph jar file and https://bugs.openjdk.org/browse/JDK-8190452
