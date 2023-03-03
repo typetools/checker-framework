@@ -1,3 +1,13 @@
+Version 3.32.1 (April 1, 2023)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.32.0 (March 2, 2023)
 ------------------------------
 
@@ -21,8 +31,6 @@ Renamed `TreeUtils.instanceOfGetPattern()` to `TreeUtils.instanceOfTreeGetPatter
 
 Deprecated `AnnotatedTypes#isExplicitlySuperBounded` and `AnnotatedTypes#isExplicitlyExtendsBounded`
 because they are duplicates of `#hasExplicitSuperBound` and `#hasExplicitExtendsBound`.
-
-**Closed issues:**
 
 
 Version 3.31.0 (February 17, 2023)

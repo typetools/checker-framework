@@ -157,7 +157,10 @@ task allSourcesJar(type: Jar, group: 'Build') {
 
 task allJavadocJar(type: Jar, group: 'Build') {
   description 'Creates javadoc jar include Javadoc for all of the framework'
-  dependsOn rootProject.tasks.allJavadoc
+  dependsOn (project(':framework').tasks.javadoc,
+      project(':dataflow').tasks.javadoc,
+      project(':javacutil').tasks.javadoc)
+
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   destinationDirectory = file("${projectDir}/dist")
   archiveFileName = 'framework-javadoc.jar'
