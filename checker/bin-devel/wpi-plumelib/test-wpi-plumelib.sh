@@ -76,6 +76,7 @@ test_wpi_plume_lib() {
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     DLJC_OUT_DIR="$TESTDIR/$project/dljc-out"
     ACTUAL_FILE="$DLJC_OUT_DIR"/typecheck.out
+    mkdir -p "$DLJC_OUT_DIR"
     touch "${ACTUAL_FILE}"
     clean_compile_output "$EXPECTED_FILE" "expected.txt"
     clean_compile_output "$ACTUAL_FILE" "actual.txt"
