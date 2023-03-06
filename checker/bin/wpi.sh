@@ -286,7 +286,7 @@ function configure_and_exec_dljc {
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts -q)
+  (cd "${SCRIPTDIR}"/../.. && ./gradlew getPlumeScripts)
   "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
   if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
       echo "Failed to clone do-like-javac"

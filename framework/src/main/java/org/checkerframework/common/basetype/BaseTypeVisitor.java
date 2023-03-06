@@ -2777,6 +2777,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     assert varType != null : "no variable found for tree: " + varTree;
 
     if (!validateType(varTree, varType)) {
+      if (showchecks) {
+        long valuePos = positions.getStartPosition(root, valueExpTree);
+        System.out.printf(
+            "%s %s (line %3d): actual tree = %s %s%n   expected: %s %s%n",
+            this.getClass().getSimpleName(),
+            "skipping test whether actual is a subtype of expected"
+                + " because validateType() returned false",
+            (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+            valueExpTree.getKind(),
+            valueExpTree,
+            varType.getKind(),
+            varType.toString());
+      }
       return;
     }
 
@@ -2798,12 +2811,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     if (shouldSkipUses(valueExpTree)) {
+      if (showchecks) {
+        long valuePos = positions.getStartPosition(root, valueExpTree);
+        System.out.printf(
+            "%s %s (line %3d): actual tree = %s %s%n   expected: %s %s%n",
+            this.getClass().getSimpleName(),
+            "skipping test whether actual is a subtype of expected"
+                + " because shouldSkipUses() returned true",
+            (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+            valueExpTree.getKind(),
+            valueExpTree,
+            varType.getKind(),
+            varType.toString());
+      }
       return;
     }
     if (valueExpTree.getKind() == Tree.Kind.MEMBER_REFERENCE
         || valueExpTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
       // Member references and lambda expressions are type checked separately
       // and do not need to be checked again as arguments.
+      if (showchecks) {
+        long valuePos = positions.getStartPosition(root, valueExpTree);
+        System.out.printf(
+            "%s %s (line %3d): actual tree = %s %s%n   expected: %s %s%n",
+            this.getClass().getSimpleName(),
+            "skipping test whether actual is a subtype of expected"
+                + " because member reference and lambda expression are type checked separately",
+            (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+            valueExpTree.getKind(),
+            valueExpTree,
+            varType.getKind(),
+            varType.toString());
+      }
       return;
     }
     if (varType.getKind() == TypeKind.ARRAY
@@ -2816,6 +2855,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkArrayInitialization(compType, arrayTree.getInitializers());
     }
     if (!validateTypeOf(valueExpTree)) {
+      if (showchecks) {
+        long valuePos = positions.getStartPosition(root, valueExpTree);
+        System.out.printf(
+            "%s %s (line %3d): actual tree = %s %s%n   expected: %s %s%n",
+            this.getClass().getSimpleName(),
+            "skipping test whether actual is a subtype of expected"
+                + " because validateType() returned false",
+            (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
+            valueExpTree.getKind(),
+            valueExpTree,
+            varType.getKind(),
+            varType.toString());
+      }
       return;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
