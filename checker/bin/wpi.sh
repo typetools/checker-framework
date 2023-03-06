@@ -225,8 +225,15 @@ function configure_and_exec_dljc {
   rm -rf dljc-out
 
   # Ensure the project is clean before invoking DLJC.
-  # If it fails, re-run without piping output to /dev/null.
-  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || eval "${CLEAN_CMD}" < /dev/null
+  DLJC_CLEAN_STATUS=0
+  eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || DLJC_CLEAN_STATUS=$?
+  if [[ $DLJC_CLEAN_STATUS -ne 0 ]] ; then
+    echo "Cleaning failed with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
+    WPI_RESULTS_AVAILABLE="dljc failed to clean: ${CLEAN_CMD}"
+    # Cleaning failed.  Re-run without piping output to /dev/null.
+    eval "${CLEAN_CMD}" < /dev/null || true
+    return
+  fi
 
   mkdir -p "${DIR}/dljc-out/"
   dljc_stdout=$(mktemp "${DIR}/dljc-out/dljc-stdout-$(date +%Y%m%d-%H%M%S)-XXX")
@@ -321,6 +328,7 @@ elif [ "${has_java17}" = "yes" ]; then
   export JAVA_HOME="${JAVA17_HOME}"
 fi
 configure_and_exec_dljc "$@"
+echo "First run configure_and_exec_dljc with JAVA_HOME=${JAVA_HOME}: WPI_RESULTS_AVAILABLE=${WPI_RESULTS_AVAILABLE}"
 
 # If results aren't available after the first run, then re-run with Java 11 if
 # it is available and the first run used Java 8 (since Java 8 has the highest priority,
@@ -330,6 +338,7 @@ if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java11}" = "yes" ]; then
     export JAVA_HOME="${JAVA11_HOME}"
     echo "wpi.sh couldn't build using Java 8; trying Java 11"
     configure_and_exec_dljc "$@"
+    echo "Second run configure_and_exec_dljc with JAVA_HOME=${JAVA_HOME}: WPI_RESULTS_AVAILABLE=${WPI_RESULTS_AVAILABLE}"
   fi
 fi
 
@@ -342,6 +351,7 @@ if [ "${WPI_RESULTS_AVAILABLE}" != "yes" ] && [ "${has_java17}" = "yes" ]; then
     export JAVA_HOME="${JAVA17_HOME}"
     echo "wpi.sh couldn't build using Java 11 or Java 8; trying Java 17"
     configure_and_exec_dljc "$@"
+    echo "Third run configure_and_exec_dljc with JAVA_HOME=${JAVA_HOME}: WPI_RESULTS_AVAILABLE=${WPI_RESULTS_AVAILABLE}"
   fi
 fi
 
