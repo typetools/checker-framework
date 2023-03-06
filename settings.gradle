@@ -1,6 +1,6 @@
 
-buildscript{
-  if(JavaVersion.current() == JavaVersion.VERSION_1_8){
+buildscript {
+  if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
     throw new Error("The Checker Framework can't be build with Java 8.")
   }
 }
