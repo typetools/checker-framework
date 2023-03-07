@@ -872,7 +872,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
+      // The width of the qualifier hierarchy must also be checked, because isSubtype will crash
+      // if e.g., upperAnnos contains one annotation from hierarchy A and rhsATM contains one
+      // annotation from hierarchy B (this happens in practice with e.g., the Nullness Checker
+      // when initialization checking is running).
       if (upperAnnos.size() == rhsATM.getAnnotations().size()
+          && upperAnnos.size() == atypeFactory.getQualifierHierarchy().getWidth()
           && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
         return;
       }
