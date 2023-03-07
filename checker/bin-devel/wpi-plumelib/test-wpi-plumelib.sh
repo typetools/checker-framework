@@ -69,9 +69,9 @@ test_wpi_plume_lib() {
     # may become redundant and javac -Xlint:all yields "warning: [cast] redundant cast to ...".
     "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
-    echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)"
+    echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)."
     "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
-    echo "test-wpi-plumelib.sh for ${project} returned from wpi.sh at $(date)"
+    echo "test-wpi-plumelib.sh for ${project} returned from wpi.sh at $(date)."
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
     DLJC_OUT_DIR="$TESTDIR/$project/dljc-out"

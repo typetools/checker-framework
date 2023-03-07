@@ -1,0 +1,2 @@
+// Dependabot doesn't understand that annotation-tools is an included build.  So, add a blank
+// build.gradle file here so that it doesn't error.
