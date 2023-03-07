@@ -1,3 +1,5 @@
+// test case for https://github.com/typetools/checker-framework/issues/5708
+
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 @SuppressWarnings({
