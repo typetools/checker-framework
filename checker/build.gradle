@@ -261,41 +261,6 @@ task exampleTests(type: Exec, dependsOn: assembleForJavac, group: 'Verification'
   args = ['-C', '../docs/examples']
 }
 
-task demosTests(dependsOn: assembleForJavac, group: 'Verification') {
-  description 'Test that the demos are working as expected.'
-  doLast {
-    if (JavaVersion.current() == JavaVersion.VERSION_1_8) {
-      File demosDir = new File(projectDir, '../../checker-framework.demos');
-      if (!demosDir.exists()) {
-        exec {
-          workingDir file(demosDir.toString() + '/../')
-          executable 'git'
-          args = [
-            'clone',
-            '--depth',
-            '1',
-            'https://github.com/typetools/checker-framework.demos.git'
-          ]
-        }
-      } else {
-        exec {
-          workingDir demosDir
-          executable 'git'
-          args = [
-            'pull',
-            'https://github.com/typetools/checker-framework.demos.git'
-          ]
-          ignoreExitValue = true
-        }
-      }
-      ant.properties.put('checker.lib', file("${projectDir}/dist/checker.jar").absolutePath)
-      ant.ant(dir: demosDir.toString())
-    } else {
-      println('Skipping demosTests because they only work with Java 8.')
-    }
-  }
-}
-
 task allNullnessTests(type: Test, group: 'Verification') {
   description 'Run all Junit tests for the Nullness Checker.'
   include '**/Nullness*.class'

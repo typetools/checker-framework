@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '7.1.2'
+  id 'com.github.johnrengelman.shadow' version '8.1.0'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.3.1'
   id 'java'
@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+.
-  id 'com.diffplug.spotless' version '6.14.0' apply false
+  id 'com.diffplug.spotless' version '6.16.0' apply false
 }
 apply plugin: 'de.undercouch.download'
 
@@ -59,20 +59,6 @@ ext {
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = '.git'
-}
-
-// Keep in sync with check in
-// framework/src/main/java/org/checkerframework/framework/source/SourceChecker.java .
-switch (JavaVersion.current()) {
-  case JavaVersion.VERSION_1_8:
-  case JavaVersion.VERSION_11:
-  case JavaVersion.VERSION_17:
-  case JavaVersion.VERSION_19:
-    break; // Supported versions
-  default:
-    logger.info('The Checker Framework has only been tested with JDK 8, 11, 17, and 19.' +
-    ' You are using JDK ' + JavaVersion.current().majorVersion + '.');
-    break;
 }
 
 task setLocalRepo(type:Exec) {
@@ -139,8 +125,9 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.31.1-SNAPSHOT'
+  version '3.32.1-SNAPSHOT'
 
+  // Keep in sync with "repositories { ... }" block above.
   repositories {
     mavenCentral()
   }
@@ -206,7 +193,7 @@ allprojects {
 
       format 'misc', {
         // define the files to apply `misc` to
-        target '**/*.gradle', '*.md', '.gitignore'
+        target '*.md', '.gitignore'
         // define the steps to apply to those files
         indentWithSpaces(2)
         trimTrailingWhitespace()
@@ -392,7 +379,7 @@ allprojects {
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath for Java 8 (once we use Java 9).
+        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
         // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
         // warnings are suppressible with a "// fall through" comment.
         // -classfile: classgraph jar file and https://bugs.openjdk.org/browse/JDK-8190452

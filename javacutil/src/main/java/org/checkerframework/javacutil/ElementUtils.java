@@ -848,8 +848,8 @@ public class ElementUtils {
   /**
    * Return true if the element is a binding variable.
    *
-   * <p>This implementation compiles under JDK 8 and 11 as well as versions that contain {@code
-   * ElementKind.BINDING_VARIABLE}.
+   * <p>This implementation compiles and runs under JDK 8 and 11 as well as versions that contain
+   * {@code ElementKind.BINDING_VARIABLE}.
    *
    * @param element the element to test
    * @return true if the element is a binding variable
