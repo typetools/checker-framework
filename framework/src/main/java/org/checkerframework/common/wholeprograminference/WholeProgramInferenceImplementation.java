@@ -860,25 +860,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // bound of declaration of the type variable.
     if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
       AnnotatedTypeVariable lhsTV = (AnnotatedTypeVariable) lhsATM;
-      AnnotationMirrorSet upperAnnos =
-          new AnnotationMirrorSet(lhsTV.getUpperBound().getEffectiveAnnotations());
-      // If the type variable has a primary annotation then it is copied to the upper bound of the
-      // use of the type variable, so remove any annotations that are the same as a primary
-      // annotations.
-      // TODO: this is kind of a hack.  It would be better to look up the type variable declaration
-      // to find the upper bound when there are primary annotations.
-      for (AnnotationMirror primary : lhsTV.getAnnotations()) {
-        upperAnnos.remove(primary);
-      }
+      AnnotatedTypeMirror decl =
+          atypeFactory.getAnnotatedType(lhsTV.getUnderlyingType().asElement());
+      AnnotationMirrorSet upperAnnos = decl.getEffectiveAnnotations();
+
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
-      // The width of the qualifier hierarchy must also be checked, because isSubtype will crash
-      // if e.g., upperAnnos contains one annotation from hierarchy A and rhsATM contains one
-      // annotation from hierarchy B (this happens in practice with e.g., the Nullness Checker
-      // when initialization checking is running).
-      if (upperAnnos.size() == rhsATM.getAnnotations().size()
-          && upperAnnos.size() == atypeFactory.getQualifierHierarchy().getWidth()
-          && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+      for (AnnotationMirror anno : rhsATM.getAnnotations()) {
+        AnnotationMirror upperAnno =
+            atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(upperAnnos, anno);
+        if (atypeFactory.getQualifierHierarchy().isSubtype(anno, upperAnno)) {
+          rhsATM.removeAnnotation(anno);
+        }
+      }
+      if (rhsATM.getAnnotations().isEmpty()) {
         return;
       }
     }
