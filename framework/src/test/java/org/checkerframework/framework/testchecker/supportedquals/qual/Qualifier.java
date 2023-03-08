@@ -5,7 +5,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-@SubtypeOf({})
 @Target(ElementType.TYPE_USE)
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
 public @interface Qualifier {}

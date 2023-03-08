@@ -20,8 +20,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultQualifierInHierarchy
 @SubtypeOf({})
+@DefaultQualifierInHierarchy
 @QualifierForLiterals(LiteralKind.NULL)
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND)
 @InvisibleQualifier
