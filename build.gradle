@@ -637,7 +637,7 @@ task manual(group: 'Documentation') {
  * @param url git repository to clone
  * @param directory where to clone
  * @param ignoreError whether to fail the build if the clone command fails
- * @param extraArgs an extra arguments to pass to git
+ * @param extraArgs any extra arguments to pass to git
  */
 void clone(url, directory, ignoreError, extraArgs = []){
   exec {
@@ -679,8 +679,8 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
       }
     } else {
       clone(url, directory, true, extraArgs)
-      if(!file(directory).exists()){
-        sleep(60000)
+      if (!file(directory).exists()) {
+        sleep(60000) // 1 minute
         clone(url, directory, false, extraArgs)
       }
     }
