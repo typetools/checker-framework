@@ -152,7 +152,7 @@ public final class CFGVisualizeLauncher {
    */
   String generateStringOfCFGWithoutAnalysis(
       String inputFile, String method, String clas, boolean verbose) {
-    @Nullable Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
+    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
     if (res != null) {
       String stringGraph = (String) res.get("stringGraph");
       if (stringGraph == null) {
