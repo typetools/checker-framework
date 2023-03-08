@@ -190,6 +190,17 @@ allprojects {
     spotless {
       // If you add any formatters to this block that require dependencies, then you must also
       // add them to spotlessPredeclare block.
+      def doNotFormat = [
+        'dataflow/manual/examples/',
+        '**/nullness-javac-errors/*',
+        '**/calledmethods-delomboked/*',
+        '**/returnsreceiverdelomboked/*',
+        '**/build/**',
+        '*/dist/**',
+      ]
+      if (!isJava17orHigher) {
+        doNotFormat += ['**/java17/', '**/*record*/']
+      }
 
       format 'misc', {
         // define the files to apply `misc` to
@@ -198,19 +209,7 @@ allprojects {
         indentWithSpaces(2)
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
-        def doNotFormat = [
-          'dataflow/manual/examples/',
-          '**/nullness-javac-errors/*',
-          '**/calledmethods-delomboked/*',
-          '**/returnsreceiverdelomboked/*',
-          '**/build/**',
-          '*/dist/**',
-        ]
-        if (isJava17orHigher) {
-          targetExclude doNotFormat
-        } else {
-          targetExclude doNotFormat, '**/java17/', '**/*record*/'
-        }
+        targetExclude doNotFormat
       }
 
       java {
@@ -233,20 +232,7 @@ allprojects {
             // Not .ajava files because formatting would remove import statements.
           ]}
         target targets
-
-        def doNotFormat = [
-          'dataflow/manual/examples/',
-          '**/nullness-javac-errors/*',
-          '**/calledmethods-delomboked/*',
-          '**/returnsreceiverdelomboked/*',
-          '**/build/**',
-          '*/dist/**',
-        ]
-        if (isJava17orHigher) {
-          targetExclude doNotFormat
-        } else {
-          targetExclude doNotFormat, '**/java17/', '**/*record*/'
-        }
+        targetExclude doNotFormat
 
         googleJavaFormat() // the formatter to apply to Java files
         formatAnnotations()
@@ -254,19 +240,7 @@ allprojects {
 
       groovyGradle {
         target '**/*.gradle'
-        def doNotFormat = [
-          'dataflow/manual/examples/',
-          '**/nullness-javac-errors/*',
-          '**/calledmethods-delomboked/*',
-          '**/returnsreceiverdelomboked/*',
-          '**/build/**',
-          '*/dist/**',
-        ]
-        if (isJava17orHigher) {
-          targetExclude doNotFormat
-        } else {
-          targetExclude doNotFormat, '**/java17/', '**/*record*/'
-        }
+        targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
         indentWithSpaces(2)
         trimTrailingWhitespace()
