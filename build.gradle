@@ -596,57 +596,64 @@ task manual(group: 'Documentation') {
   }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
-task getPlumeScripts() {
-  description 'Obtain or update plume-scripts'
-  if (file(plumeScriptsHome).exists()) {
-    exec {
-      workingDir plumeScriptsHome
-      executable 'git'
-      args = ['pull', '-q']
-      ignoreExitValue = true
-    }
-  } else {
-    exec {
-      workingDir "${plumeScriptsHome}/../"
-      executable 'git'
-      args = [
-        'clone',
-        '-q',
-        '--depth',
-        '1',
-        'https://github.com/plume-lib/plume-scripts.git',
-        '.plume-scripts'
-      ]
+/**
+ * Quietly clones the given git repository, {@code url}, to {@directory} at a depth of 1.
+ * @param url git repository to clone
+ * @param directory where to clone
+ * @param ignoreError whether to fail the build if the clone command fails
+ * @param extraArgs any extra arguments to pass to git
+ */
+void clone(url, directory, ignoreError, extraArgs = []){
+  exec {
+    workingDir "${directory}/../"
+    executable 'git'
+    args = [
+      'clone',
+      '-q',
+      '--depth',
+      '1',
+      url,
+      file(directory).toPath().last()
+    ]
+    args += extraArgs
+    ignoreExitValue = ignoreError
+
+  }
+}
+
+/**
+ * Creates a task named {@code taskName} that updates or clones the git repository at
+ * {@code url} into {@code directory}.  If the clone command fails, the tasks waits
+ * a minute and then trys again.
+ * @param taskName name of the created task
+ * @param url location of the git repository
+ * @param directory where to clone the repository
+ * @param extraArgs arguments to pass to the git command
+ */
+def createCloneTask(taskName, url, directory, extraArgs = []) {
+  tasks.create(name: taskName) {
+    description "Obtain or update ${url}"
+
+    if (file(directory).exists()) {
+      exec {
+        workingDir directory
+        executable 'git'
+        args = ['pull', '-q']
+        ignoreExitValue = true
+      }
+    } else {
+      clone(url, directory, true, extraArgs)
+      if (!file(directory).exists()) {
+        sleep(60000) // 1 minute
+        clone(url, directory, false, extraArgs)
+      }
     }
   }
 }
 
-// No group so it does not show up in the output of `gradlew tasks`
-task getHtmlTools() {
-  description 'Obtain or update html-tools'
-  if (file(htmlToolsHome).exists()) {
-    exec {
-      workingDir htmlToolsHome
-      executable 'git'
-      args = ['pull', '-q']
-      ignoreExitValue = true
-    }
-  } else {
-    exec {
-      workingDir "${htmlToolsHome}/../"
-      executable 'git'
-      args = [
-        'clone',
-        '-q',
-        '--depth',
-        '1',
-        'https://github.com/plume-lib/html-tools.git',
-        '.html-tools'
-      ]
-    }
-  }
-}
+
+createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git',plumeScriptsHome)
+createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git',htmlToolsHome)
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {

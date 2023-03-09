@@ -1789,6 +1789,24 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Like {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * annotations than {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param tree tree where the type is used
+   * @param type type to determine the defaulted version for
+   * @return the annotated type mirror with default annotations
+   */
+  public AnnotatedTypeMirror getDefaultAnnotationsForWarnRedundant(
+      Tree tree, AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror copy = type.deepCopy();
+    copy.removeAnnotations(type.getAnnotations());
+    addComputedTypeAnnotationsForWarnRedundant(tree, copy, false);
+    return copy;
+  }
+
+  /**
    * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
    * typically simply pass the boolean to calls to super.
    *
@@ -1849,6 +1867,22 @@ public abstract class GenericAnnotatedTypeFactory<
     log(
         "%s GATF.addComputedTypeAnnotations#9(%s, %s, %s) done%n",
         thisClass, treeString, type, iUseFlow);
+  }
+
+  /**
+   * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
+   *
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * annotations than {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
+   *
+   * @param tree an AST node
+   * @param type the type obtained from tree
+   * @param iUseFlow whether to use information from dataflow analysis
+   */
+  protected void addComputedTypeAnnotationsForWarnRedundant(
+      Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    // Default implementation does nothing special.
+    addComputedTypeAnnotations(tree, type, iUseFlow);
   }
 
   /**
