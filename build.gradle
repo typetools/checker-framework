@@ -126,6 +126,7 @@ allprojects {
   }
 
   configurations {
+    // This is required to run the Checker Framework on JDK 8.
     javacJar
 
     // Holds the combined classpath of all subprojects including the subprojects themselves.

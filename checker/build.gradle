@@ -124,6 +124,7 @@ task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
     }
 
     copy {
+      // This is required to *run* the Checker Framework on JDK 8.
       from configurations.javacJar
       into "${projectDir}/dist"
       rename { String fileName ->

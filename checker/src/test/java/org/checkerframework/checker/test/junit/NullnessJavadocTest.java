@@ -1,10 +1,8 @@
 package org.checkerframework.checker.test.junit;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
-import org.checkerframework.javacutil.SystemUtil;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -17,20 +15,6 @@ public class NullnessJavadocTest extends CheckerFrameworkPerDirectoryTest {
    */
   public NullnessJavadocTest(List<File> testFiles) {
     super(testFiles, org.checkerframework.checker.nullness.NullnessChecker.class, "nullness");
-  }
-
-  /**
-   * Return a list that contains the pathname to the tools.jar file, if it exists.
-   *
-   * @return a list that contains the pathname to the tools.jar file, if it exists
-   */
-  private static List<String> toolsJarList() {
-    String toolsJar = SystemUtil.getToolsJar();
-    if (toolsJar == null) {
-      return Collections.emptyList();
-    } else {
-      return Collections.singletonList(toolsJar);
-    }
   }
 
   @Parameters
