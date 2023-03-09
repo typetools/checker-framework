@@ -156,6 +156,14 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
+  public void addComputedTypeAnnotationsForWarnRedundant(
+      Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    // Compared to `addComputedTypeAnnotations()`,
+    // does not check whether the element is a compile-time constant.
+    super.addComputedTypeAnnotations(tree, type, useFlow);
+  }
+
+  @Override
   public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
     if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
       type.addAnnotation(INTERNED);
