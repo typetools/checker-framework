@@ -10,6 +10,9 @@ not warn about all redundant annotations, only some.
 
 **Implementation details:**
 
+The Checker Framework no longer builds under JDK 8.
+However, you can still run the Checker Framework under JDK 8.
+
 **Closed issues:**
 
 
