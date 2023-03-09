@@ -124,6 +124,7 @@ task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
     }
 
     copy {
+      // This is required to *run* the Checker Framework on JDK 8.
       from configurations.javacJar
       into "${projectDir}/dist"
       rename { String fileName ->
@@ -284,10 +285,6 @@ task jtregJdk11Tests(group: 'Verification') {
   String jtregOutput = "${buildDir}/jtregJdk11"
   String name = 'all'
   doLast {
-    if (isJava8) {
-      println 'This test is only run with JDK 11+.'
-      return;
-    }
     exec {
       executable 'jtreg'
       args = [
