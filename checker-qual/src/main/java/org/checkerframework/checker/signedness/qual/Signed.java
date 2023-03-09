@@ -22,6 +22,7 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSignedness.class})
+@DefaultQualifierInHierarchy
 @DefaultFor(
     typeKinds = {
       TypeKind.BYTE,
@@ -43,5 +44,4 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @UpperBoundFor(
     typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
     types = {java.lang.Float.class, java.lang.Double.class})
-@DefaultQualifierInHierarchy
 public @interface Signed {}
