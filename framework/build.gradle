@@ -48,7 +48,7 @@ dependencies {
   // See the comment in ../build.gradle in the shadowJar block.
   implementation "org.plumelib:plume-util:${plumeUtilVersion}"
   implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
-  implementation 'io.github.classgraph:classgraph:4.8.156'
+  implementation 'io.github.classgraph:classgraph:4.8.157'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
