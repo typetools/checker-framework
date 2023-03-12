@@ -243,7 +243,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *     iff there are no @CreatesMustCallFor annotations on elt. The returned list is always
    *     modifiable if it is non-empty.
    */
-  /* package-private */ static List<String> getCreatesMustCallForValues(
+  /*package-private*/ static List<String> getCreatesMustCallForValues(
       ExecutableElement elt,
       MustCallAnnotatedTypeFactory mcAtf,
       ResourceLeakAnnotatedTypeFactory atypeFactory) {

@@ -857,14 +857,23 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // For type variables, infer primary annotations for field type use locations, but
     // for other locations only infer primary annotations if they are a super type of the upper
-    // bound.
+    // bound of declaration of the type variable.
     if (defLoc != TypeUseLocation.FIELD && lhsATM instanceof AnnotatedTypeVariable) {
-      AnnotationMirrorSet upperAnnos =
-          ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
+      AnnotatedTypeVariable lhsTV = (AnnotatedTypeVariable) lhsATM;
+      AnnotatedTypeMirror decl =
+          atypeFactory.getAnnotatedType(lhsTV.getUnderlyingType().asElement());
+      AnnotationMirrorSet upperAnnos = decl.getEffectiveAnnotations();
+
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
-      if (upperAnnos.size() == rhsATM.getAnnotations().size()
-          && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+      for (AnnotationMirror anno : rhsATM.getAnnotations()) {
+        AnnotationMirror upperAnno =
+            atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(upperAnnos, anno);
+        if (atypeFactory.getQualifierHierarchy().isSubtype(anno, upperAnno)) {
+          rhsATM.removeAnnotation(anno);
+        }
+      }
+      if (rhsATM.getAnnotations().isEmpty()) {
         return;
       }
     }

@@ -276,7 +276,7 @@ public final class TypesUtils {
     if (t1.tsym.name != t2.tsym.name) {
       return false;
     }
-    return t1.toString().equals(t1.toString());
+    return t1.toString().equals(t2.toString());
   }
 
   /**
@@ -327,14 +327,13 @@ public final class TypesUtils {
   }
 
   /**
-   * Checks if the type represents a boolean type, that is either boolean (primitive type) or
-   * java.lang.Boolean.
+   * Returns true if the type is either boolean (primitive type) or java.lang.Boolean.
    *
    * @param type the type to test
    * @return true iff type represents a boolean type
    */
   public static boolean isBooleanType(TypeMirror type) {
-    return isDeclaredOfName(type, "java.lang.Boolean") || type.getKind() == TypeKind.BOOLEAN;
+    return type.getKind() == TypeKind.BOOLEAN || isDeclaredOfName(type, "java.lang.Boolean");
   }
 
   /**
@@ -681,6 +680,18 @@ public final class TypesUtils {
    * Get the type parameter for this wildcard from the underlying type's bound field This field is
    * sometimes null, in that case this method will return null.
    *
+   * @param wildcard wildcard type
+   * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
+   */
+  public static @Nullable TypeParameterElement wildcardToTypeParam(final WildcardType wildcard) {
+    return wildcardToTypeParam((Type.WildcardType) wildcard);
+  }
+
+  /**
+   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * sometimes null, in that case this method will return null.
+   *
+   * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
   public static @Nullable TypeParameterElement wildcardToTypeParam(

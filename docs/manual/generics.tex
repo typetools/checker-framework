@@ -89,7 +89,7 @@ will use a default.
 
 For a discussion of wildcards, see Section~\ref{annotations-on-wildcards}.
 
-For a concrete example, recall the type system of the Regex Checker (see
+For a concrete example, consider the type system of the Regex Checker (see
 Figure~\refwithpage{fig-regex-hierarchy}) in which
  \<@Regex(0)> :>
  \<@Regex(1)> :>
@@ -193,7 +193,7 @@ The rationale for this choice is:
   different annotated types.
 \end{itemize}
 
-Because of these rules, the recommended style is:
+Here are some style guidelines:
 \begin{itemize}
 \item
   Use ``\code{<T>}'' when there are no constraints on the type qualifiers.
@@ -936,7 +936,7 @@ the receiver expression at call sites to \<append>. For example,
 \begin{Verbatim}
 @Untainted Buffer untaintedBuffer = ...;
 @Tainted String taintedString = ...;
-untaintedBuffer.append(taintedString); // error: argument
+untaintedBuffer.append(taintedString); // error: (argument)
 \end{Verbatim}
 The above \<append> call is illegal because the \<@PolyTainted> is instantiated to \<@Untainted> and
 the type of the argument is \<@Tainted> which is a supertype of \<@Untainted>.  If the type of

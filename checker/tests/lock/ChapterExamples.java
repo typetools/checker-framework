@@ -474,7 +474,7 @@ public class ChapterExamples {
     @GuardedBy({}) int d;
     synchronized(lock) {
       // TODO re-enable this error (assignment)
-      d = b; // TODO: This should not result in assignment because 'b' is actually syntactic sugar for b.intValue().
+      d = b; // TODO: This should not result in "assignment" because 'b' is actually syntactic sugar for b.intValue().
       d = b.intValue(); // The de-sugared version does not issue an error.
     }
 

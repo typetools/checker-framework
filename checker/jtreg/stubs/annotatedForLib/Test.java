@@ -6,4 +6,8 @@ public class Test<T> {
   public void method1(T t) {}
 
   public void method2(@Nullable T t) {}
+
+  public Object method3() {
+    return "";
+  }
 }

@@ -686,7 +686,8 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-Note the JDK requirements (Section~\ref{installation}).
+The Checker Framework runs under any JDK version 8 or later.
+However, you must build the Checker Framework under JDK 11 or later.
 
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
@@ -728,7 +729,7 @@ sudo apt-get -qqy install \
  make maven mercurial python3-pip python3-requests unzip wget \
  autoconf devscripts dia hevea imagemagick junit jtreg6 latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
- libx17-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+ libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
  pdf2svg rsync shellcheck \
  texlive-font-utils texlive-fonts-recommended \
  texlive-latex-base texlive-latex-extra texlive-latex-recommended
@@ -759,15 +760,16 @@ In a startup file, write:
 brew update
 brew install git ant hevea maven mercurial librsvg unzip make
 brew tap AdoptOpenJDK/openjdk
-brew install --cask adoptopenjdk11
+brew install --cask adoptopenjdk17
 brew install --cask mactex
 \end{Verbatim}
 
-Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
+Make a \<latex> directory and copy \<hevea.sty> file into it.
+(\url{https://hevea.inria.fr/} gives the current version number.)
 
 \begin{Verbatim}
 mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
+cp -p /usr/local/Cellar/hevea/2.36/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
 \end{Verbatim}
 
 Note: If copy permission is denied, try \<sudo>.
@@ -775,11 +777,11 @@ Note: If copy permission is denied, try \<sudo>.
 In a startup file, write:
 
 \begin{Verbatim}
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.11)
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-17.jdk/Contents/Home/
 \end{Verbatim}
 
 
@@ -920,8 +922,8 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/cf-ubuntu-jdk8
-docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk17
+docker run -it mdernst/cf-ubuntu-jdk17 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
