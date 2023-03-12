@@ -329,6 +329,7 @@ public class Range {
    * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
    * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
    *
+   * @param isUnsigned true if this range should be treated as unsigned
    * @return this range, converted to a 32-bit integral range
    */
   @SuppressWarnings("UnnecessaryLongToIntConversion")
