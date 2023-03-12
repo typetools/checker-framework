@@ -6,6 +6,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -377,7 +378,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
                 TreeSet<Byte> exprValuesTree =
                     new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
-                return sortedSetEquals(castValuesTree, exprValuesTree);
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
               }
             case INT:
               {
@@ -385,7 +386,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
                 TreeSet<Integer> exprValuesTree =
                     new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
-                return sortedSetEquals(castValuesTree, exprValuesTree);
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
               }
             case SHORT:
               {
@@ -393,13 +394,13 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
                 TreeSet<Short> exprValuesTree =
                     new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
-                return sortedSetEquals(castValuesTree, exprValuesTree);
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
               }
             default:
               {
                 TreeSet<Long> castValuesTree = new TreeSet<>(castValues);
                 TreeSet<Long> exprValuesTree = new TreeSet<>(exprValues);
-                return sortedSetEquals(castValuesTree, exprValuesTree);
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
               }
           }
         }
@@ -411,24 +412,73 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
   // TODO: After plume-util 1.6.6 is released, use this method from CollectionsPlume instead.
   /**
-   * Returns true if the two sets contain the same elements in the same order.
+   * Returns true if the two sets contain the same elements in the same order. This is faster than
+   * regular {@code equals()}, for sets with the same ordering operator.
+   *
+   * <p>Java's SortedSet class does not special-case containsAll. This should be faster, especially
+   * for sets that are not extremely small.
    *
    * @param <T> the type of elements in the sets
    * @param set1 the first set to compare
    * @param set2 the first set to compare
-   * @return true if the two sets contain the same elements in the same order
+   * @return true if the first set contains all the elements of the second set
    */
-  private static <T> boolean sortedSetEquals(SortedSet<T> set1, SortedSet<T> set2) {
+  public static <T> boolean sortedSetContainsAll(SortedSet<T> set1, SortedSet<T> set2) {
     @SuppressWarnings("interning:not.interned")
     boolean sameObject = set1 == set2;
     if (sameObject) {
       return true;
     }
-    if (set1.size() != set2.size()) {
+    if (set1.size() < set2.size()) {
       return false;
     }
-    for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor1.hasNext(); ) {
-      if (!Objects.equals(itor1.next(), itor2.next())) {
+    Comparator<? super T> comparator1 = set1.comparator();
+    Comparator<? super T> comparator2 = set2.comparator();
+    if (!Objects.equals(comparator1, comparator2)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Sets %s and %s have different comparators %s and %s",
+              set1, set2, comparator1, comparator2));
+    }
+    if (comparator1 == null) {
+      outerloopNaturalOrder:
+      for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor2.hasNext(); ) {
+        T elt2 = itor2.next();
+        if (elt2 == null) {
+          throw new IllegalArgumentException("null element in set 2: " + set2);
+        }
+        while (itor1.hasNext()) {
+          T elt1 = itor1.next();
+          if (elt2 == null) {
+            throw new IllegalArgumentException("null element in set 2: " + set2);
+          }
+          @SuppressWarnings({
+            "unchecked", // Java warning about generic cast
+            "nullness:dereference", // next() has side effects, so elt1 isn't know to be non-null
+            "signedness:method.invocation" // generics problem; #979?
+          })
+          int comparison = ((Comparable<T>) elt1).compareTo(elt2);
+          if (comparison == 0) {
+            continue outerloopNaturalOrder;
+          } else if (comparison < 0) {
+            return false;
+          }
+        }
+        return false;
+      }
+    } else {
+      outerloopComparator:
+      for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor2.hasNext(); ) {
+        T elt2 = itor2.next();
+        while (itor1.hasNext()) {
+          T elt1 = itor1.next();
+          int comparison = comparator1.compare(elt1, elt2);
+          if (comparison == 0) {
+            continue outerloopComparator;
+          } else if (comparison < 0) {
+            return false;
+          }
+        }
         return false;
       }
     }
