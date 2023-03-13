@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -258,6 +259,11 @@ class ValueTreeAnnotator extends TreeAnnotator {
         return null;
       }
 
+      // I would like to call ((AnnotatedTypeTree) castTree).hasAnnotation(Unsigned.class), but
+      // `Unsigned` is in the checker package and this code is in the common package.
+      List<? extends AnnotationTree> annoTrees =
+          TreeUtils.getExplicitAnnotationTrees(null, tree.getType());
+      List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
       boolean isUnsigned =
           AnnotationUtils.containsSameByName(
               annos, "org.checkerframework.checker.signedness.qual.Unsigned");
