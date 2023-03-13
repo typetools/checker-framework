@@ -222,7 +222,8 @@ allprojects {
           // must call toString() to convert GString to String
           "${it}/**/*.java".toString(),
           // Not .ajava files because formatting would remove import statements.
-        ]}
+        ]
+      }
       target targets
       targetExclude doNotFormat
 
@@ -617,7 +618,6 @@ void clone(url, directory, ignoreError, extraArgs = []){
     ]
     args += extraArgs
     ignoreExitValue = ignoreError
-
   }
 }
 
@@ -918,7 +918,6 @@ subprojects {
               "Skipped: ${result.skippedTestCount}, " +
               "Time elapsed: ${seconds} sec\n"
         }
-
       }
     }
 
