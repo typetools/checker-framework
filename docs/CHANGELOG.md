@@ -8,6 +8,8 @@ annotations.  With this flag, a warning is issued if an explicitly written
 annotation on a type is the same as the default annotation.  This feature does
 not warn about all redundant annotations, only some.
 
+The Value Checker is cognizant of signedness annotations.
+
 **Implementation details:**
 
 The Checker Framework no longer builds under JDK 8.
@@ -56,7 +58,6 @@ Signedness Checker changes:
  * When incompatible arguments are passed to `@PolySigned` formal parameters,
    the error is expressed in terms of `@SignednessBottom` rather than the
    greatest lower bound of the argument types.
- * The Value Checker is cognizant of signedness annotations.
 
 **Implementation details:**
 
