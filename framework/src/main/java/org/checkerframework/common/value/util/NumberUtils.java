@@ -102,7 +102,7 @@ public class NumberUtils {
   private static Integer shortValueUnsigned(Number n) {
     int result = n.shortValue();
     if (result < 0) {
-      result = (short) (result + 65536);
+      result = result + 65536;
     }
     return result;
   }
@@ -116,7 +116,7 @@ public class NumberUtils {
   private static Long intValueUnsigned(Number n) {
     long result = n.intValue();
     if (result < 0) {
-      result = (short) (result + 4294967296L);
+      result = result + 4294967296L;
     }
     return result;
   }
