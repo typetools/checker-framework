@@ -297,7 +297,6 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         && exprAnno != null
         && atypeFactory.isIntRange(castAnno)
         && atypeFactory.isIntRange(exprAnno)) {
-      // TODO: Should handle signedness.
       final Range castRange = atypeFactory.getRange(castAnno);
       final TypeKind castTypeKind = castType.getKind();
       if (castTypeKind == TypeKind.BYTE && castRange.isByteEverything()) {
@@ -334,8 +333,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     return super.visitTypeCast(tree, p);
   }
 
-  // At this point, types are like: (@IntVal(-1) byte, @IntVal(255) int) and knowledge of
-  // signedness is gone.  So, use castType's underlying type to infer correctness of the cast.
+  // At this point, types are like: (@IntVal(-1) byte, @IntVal(255) int) and knowledge of signedness
+  // is gone.  So, use castType's underlying type to infer correctness of the cast.  This method
+  // returns true for (@IntVal(-1), @IntVal(255)) if the underlying type is `byte`, but not for any
+  // other underlying type.
   @Override
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
     TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
@@ -413,10 +414,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   // TODO: After plume-util 1.6.6 is released, use this method from CollectionsPlume instead.
   /**
    * Returns true if the two sets contain the same elements in the same order. This is faster than
-   * regular {@code equals()}, for sets with the same ordering operator.
-   *
-   * <p>Java's SortedSet class does not special-case containsAll. This should be faster, especially
-   * for sets that are not extremely small.
+   * regular {@code containsAll()}, for sets with the same ordering operator, especially for sets
+   * that are not extremely small.
    *
    * @param <T> the type of elements in the sets
    * @param set1 the first set to compare
