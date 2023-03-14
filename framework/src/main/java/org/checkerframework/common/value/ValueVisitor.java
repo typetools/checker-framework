@@ -435,10 +435,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     Comparator<? super T> comparator1 = set1.comparator();
     Comparator<? super T> comparator2 = set2.comparator();
     if (!Objects.equals(comparator1, comparator2)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Sets %s and %s have different comparators %s and %s",
-              set1, set2, comparator1, comparator2));
+      return set1.containsAll(set2);
     }
     if (comparator1 == null) {
       outerloopNaturalOrder:
