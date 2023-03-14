@@ -285,9 +285,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
           throw new UnsupportedOperationException(
               "ValueAnnotatedTypeFactory: can't convert int to boolean");
         } else {
-          newAnno =
-              atypeFactory.createIntRangeAnnotation(
-                  NumberUtils.castRange(newType, isUnsigned, range));
+          newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
         }
       } else {
         List<?> values =

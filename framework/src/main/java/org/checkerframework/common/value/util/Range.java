@@ -313,27 +313,6 @@ public class Range {
    */
   @SuppressWarnings("UnnecessaryLongToIntConversion")
   public Range intRange() {
-    return intRange(false);
-  }
-
-  /**
-   * Converts this range to a 32-bit integral range.
-   *
-   * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Integer range, then
-   * that bound is set to the bound of the Integer range.
-   *
-   * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Integer class, return INT_EVERYTHING.
-   *
-   * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
-   * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
-   *
-   * @param isUnsigned true if this range should be treated as unsigned
-   * @return this range, converted to a 32-bit integral range
-   */
-  @SuppressWarnings("UnnecessaryLongToIntConversion")
-  public Range intRange(boolean isUnsigned) {
     if (this.isNothing()) {
       return this;
     }
@@ -365,26 +344,6 @@ public class Range {
    * @return this range, converted to a 16-bit short range
    */
   public Range shortRange() {
-    return shortRange(false);
-  }
-
-  /**
-   * Converts a this range to a 16-bit short range.
-   *
-   * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Short range, then
-   * that bound is set to the bound of the Short range.
-   *
-   * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Short class, return SHORT_EVERYTHING.
-   *
-   * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 16-bit integers, convert the bounds to Short type in accordance with Java twos-complement
-   * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
-   *
-   * @param isUnsigned if true, return a range of unsigned shorts
-   * @return this range, converted to a 16-bit short range
-   */
-  public Range shortRange(boolean isUnsigned) {
     if (this.isNothing()) {
       return this;
     }
@@ -447,26 +406,6 @@ public class Range {
    * @return this range, converted to an 8-bit byte range
    */
   public Range byteRange() {
-    return byteRange(false);
-  }
-
-  /**
-   * Converts this range to an 8-bit byte range.
-   *
-   * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Byte range, then
-   * that bound is set to the bound of the Byte range.
-   *
-   * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Byte class, return BYTE_EVERYTHING.
-   *
-   * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
-   * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
-   *
-   * @param isUnsigned if true, return a range of unsigned bytes
-   * @return this range, converted to an 8-bit unsigned byte range
-   */
-  public Range byteRange(boolean isUnsigned) {
     if (this.isNothing()) {
       return this;
     }

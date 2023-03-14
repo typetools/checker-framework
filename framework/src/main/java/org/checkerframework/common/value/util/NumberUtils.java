@@ -130,32 +130,19 @@ public class NumberUtils {
    * @return the intersection of the given range and the possible values of the given type
    */
   public static Range castRange(TypeMirror type, Range range) {
-    return castRange(type, false, range);
-  }
-
-  /**
-   * Return a range that restricts the given range to the given type. That is, return the range
-   * resulting from casting a value with the given range.
-   *
-   * @param type the type for the cast; the result will be within it
-   * @param isUnsigned if true, {@code type} should be treated as unsigned
-   * @param range the original range; the result will be within it
-   * @return the intersection of the given range and the possible values of the given type
-   */
-  public static Range castRange(TypeMirror type, boolean isUnsigned, Range range) {
     TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
     if (typeKind == null) {
       throw new UnsupportedOperationException(type.toString());
     }
     switch (typeKind) {
       case BYTE:
-        return range.byteRange(isUnsigned);
+        return range.byteRange();
       case CHAR:
         return range.charRange();
       case SHORT:
-        return range.shortRange(isUnsigned);
+        return range.shortRange();
       case INT:
-        return range.intRange(isUnsigned);
+        return range.intRange();
       case LONG:
       case FLOAT:
       case DOUBLE:
