@@ -87,8 +87,8 @@ public class NumberUtils {
    */
   private static Short byteValueUnsigned(Number n) {
     short result = n.byteValue();
-    if (result > Byte.MAX_VALUE) {
-      result = (short) (result - 256);
+    if (result < 0) {
+      result = (short) (result + 256);
     }
     return result;
   }
@@ -101,8 +101,8 @@ public class NumberUtils {
    */
   private static Integer shortValueUnsigned(Number n) {
     int result = n.shortValue();
-    if (result > Short.MAX_VALUE) {
-      result = (short) (result - 65536);
+    if (result < 0) {
+      result = (short) (result + 65536);
     }
     return result;
   }
@@ -115,8 +115,8 @@ public class NumberUtils {
    */
   private static Long intValueUnsigned(Number n) {
     long result = n.intValue();
-    if (result > Integer.MAX_VALUE) {
-      result = (short) (result - 4294967296L);
+    if (result < 0) {
+      result = (short) (result + 4294967296L);
     }
     return result;
   }
