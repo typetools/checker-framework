@@ -5,6 +5,8 @@ public class Overflows {
   static void bytes() {
     byte max = Byte.MAX_VALUE;
     @IntVal(-128) byte maxPlus1 = (byte) (max + 1);
+    // :: error: (assignment)
+    @IntVal(-128) short maxPlus1Short = (short) (max + 1);
   }
 
   static void chars() {
@@ -16,6 +18,8 @@ public class Overflows {
   static void shorts() {
     short max = Short.MAX_VALUE;
     @IntVal(-32768) short maxPlus1 = (short) (max + 1);
+    // :: error: (assignment)
+    @IntVal(-32768) int maxPlus1Int = (int) (max + 1);
   }
 
   static void ints() {
