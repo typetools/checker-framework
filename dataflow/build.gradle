@@ -67,27 +67,22 @@ task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verificati
   doLast {
     javaexec {
       workingDir = 'tests/live-variable'
-      if (!JavaVersion.current().java9Compatible) {
-        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-      }
-      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-        jvmArgs += [
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        ]
-      }
+      jvmArgs += [
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      ]
 
       classpath = sourceSets.test.runtimeClasspath
       classpath += sourceSets.test.output
@@ -113,27 +108,23 @@ task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification'
   doLast {
     javaexec {
       workingDir = 'tests/issue3447'
-      if (!JavaVersion.current().java9Compatible) {
-        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-      }
-      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-        jvmArgs += [
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        ]
-      }
+      jvmArgs += [
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      ]
+
       classpath = sourceSets.test.runtimeClasspath
       classpath += sourceSets.test.output
 
@@ -155,27 +146,23 @@ task constantPropagationTest(dependsOn: [assemble, compileTestJava], group: 'Ver
   doLast {
     javaexec {
       workingDir = 'tests/constant-propagation'
-      if (!JavaVersion.current().java9Compatible) {
-        jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
-      }
-      else if (JavaVersion.current() > JavaVersion.VERSION_11) {
-        jvmArgs += [
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-          '--add-opens',
-          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-        ]
-      }
+      jvmArgs += [
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-opens',
+        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+      ]
+
       classpath = sourceSets.test.runtimeClasspath
       classpath += sourceSets.test.output
       mainClass = 'constantpropagation.ConstantPropagation'
@@ -246,8 +233,7 @@ publishing {
 
     dataflowShaded(MavenPublication) {
       dataflowShadedPom(it, 'shaded')
-
-      artifact getTasksByName('dataflowshadedJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflowshadedJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -255,7 +241,7 @@ publishing {
     dataflowShadednullaway(MavenPublication) {
       dataflowShadedPom(it, 'nullaway')
 
-      artifact getTasksByName('dataflownullawayJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflownullawayJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -263,7 +249,7 @@ publishing {
     dataflowShadederrorprone(MavenPublication) {
       dataflowShadedPom(it, 'errorprone')
 
-      artifact getTasksByName('dataflowerrorproneJar',false).iterator().next()
+      artifact project.tasks.getByName('dataflowerrorproneJar').archiveFile
       artifact sourcesJar
       artifact javadocJar
     }
@@ -276,3 +262,19 @@ signing {
   sign publishing.publications.dataflowShadednullaway
   sign publishing.publications.dataflowShadederrorprone
 }
+
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowPublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowPublication)
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowShadedPublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowPublication)
+publishDataflowShadederrorpronePublicationToMavenRepository.dependsOn(signDataflowShadednullawayPublication)
+
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowShadederrorpronePublication)
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowShadedPublication)
+publishDataflowShadednullawayPublicationToMavenRepository.dependsOn(signDataflowPublication)

@@ -33,7 +33,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
   NullnessChecker.LINT_TRUSTARRAYLENZERO,
   NullnessChecker.LINT_PERMITCLEARPROPERTY,
 })
-@SupportedOptions({"assumeKeyFor"})
+@SupportedOptions({"assumeKeyFor", "invocationPreservesArgumentNullness"})
 @StubFiles({"junit-assertions.astub"})
 public class NullnessChecker extends InitializationChecker {
 

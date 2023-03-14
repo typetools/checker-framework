@@ -74,7 +74,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -176,6 +175,10 @@ import org.plumelib.util.UtilPlume;
   // Whether to use a conservative value for type arguments that could not be inferred.
   // See Issue 979.
   "conservativeUninferredTypeArguments",
+
+  // Issues a "redundant.anno" warning if the annotation explicitly written on the type is
+  // the same as the default annotation for this type and location.
+  "warnRedundantAnnotations",
 
   // Whether to ignore all subtype tests for type arguments that
   // were inferred for a raw type. Defaults to true.
@@ -568,16 +571,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // The processingEnvironment field will be set by the superclass's init method.
     // This is used to trigger AggregateChecker's setProcessingEnvironment.
     setProcessingEnvironment(unwrappedEnv);
-
-    // Keep in sync with check in checker-framework/build.gradle .
-    int jreVersion = SystemUtil.jreVersion;
-    if (jreVersion != 8 && jreVersion != 11 && jreVersion != 17 && jreVersion != 19) {
-      message(
-          Kind.NOTE,
-          "The Checker Framework is tested with JDK 8, 11, 17, and 19."
-              + " You are using version %d.",
-          jreVersion);
-    }
 
     if (!hasOption("warnUnneededSuppressionsExceptions")) {
       warnUnneededSuppressionsExceptions = null;
@@ -1675,6 +1668,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param options all provided options
    * @return a value for {@link #activeOptions}
    */
+  @SuppressWarnings("LabelledBreakTarget")
   private Map<String, String> createActiveOptions(Map<String, String> options) {
     if (options.isEmpty()) {
       return Collections.emptyMap();

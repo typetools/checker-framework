@@ -605,7 +605,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 wildcard.getExtendsBound(),
                 capturedTypeVar.getUpperBound());
           }
-        } else if (AnnotatedTypes.isExplicitlySuperBounded(wildcard)) {
+        } else if (AnnotatedTypes.hasExplicitSuperBound(wildcard)) {
           // If the super bound of the wildcard is the same as the upper bound of the
           // type parameter, then javac uses the bound rather than creating a fresh
           // type variable.

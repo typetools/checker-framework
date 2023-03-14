@@ -112,7 +112,8 @@ There are two exceptions.
   An expression can have a supertype of the upper bound; that is, some expression could
   have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
   \item
-  Using usual CLIMB-to-top rules, local variables of type MyClass default to \<@A MyClass>.
+  Using usual CLIMB-to-top rules (Section~\ref{climb-to-top}),
+  local variables of type MyClass default to \<@A MyClass>.
   It is legal for \<@A MyClass> to be the type of a local variable.
   For consistency, users are allowed to write such a type on a local variable declaration.
 \end{itemize}
@@ -423,9 +424,12 @@ refined, so writing the top annotation is not the same as writing no annotation.
 
 \item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
-in any way.  If a user declared \code{class C<T> \ttlcb\ ...\ \ttrcb}, then
-the Checker Framework assumes that the user intended to allow any instantiation of the class,
-and the declaration is interpreted as \code{class C<T extends @Nullable
+in any way.
+
+Suppose a user declares a class as \code{class C<T> \ttlcb\ ...\ \ttrcb}.
+The Checker Framework assumes that the user intended to allow any
+instantiation of the class.  The Checker Framework interprets the
+declaration as \code{class C<T extends @Nullable
   Object> \ttlcb\ ...\ \ttrcb} rather than as \code{class C<T extends
   @NonNull Object> \ttlcb\ ...\ \ttrcb}.  The latter would forbid
 instantiations such as \code{C<@Nullable String>}, or would require
@@ -1113,6 +1117,23 @@ the one in the test.
   int computeValue() { ... }
 \end{Verbatim}
 \end{enumerate}
+
+There are two other ways to suppress the warning:
+
+\begin{itemize}
+\item
+  Put the expression in a local variable before the invocation.  A method
+  call never affects the value of a local variable.
+\item
+  If the warning is about a formal parameter (including the receiver) to a
+  method \<foo()>, then instead of declaring \<foo()> as
+  \<@SideEffectFree>, you can supply the
+  \<-AinvocationPreservesArgumentNullness> command-line argument; see
+  % A better cross-reference is
+  % nullness-invocationPreservesArgumentNullness, but the LaTeX
+  % cross-reference number is an itemized list number, not a section number.
+  Section~\ref{nullness-lint}.
+\end{itemize}
 
 
 \subsubsectionAndLabel{Relationship between \<@SideEffectFree> and \<@SideEffectsOnly>}{side-effects-relationship}

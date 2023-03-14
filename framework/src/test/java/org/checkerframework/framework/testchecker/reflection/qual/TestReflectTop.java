@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * @see TestReflectSibling1, TestReflectSibling2
  */
-@SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
 public @interface TestReflectTop {}

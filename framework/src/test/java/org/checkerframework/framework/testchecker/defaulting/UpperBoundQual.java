@@ -13,11 +13,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /** Created by jburke on 9/29/14. */
 public class UpperBoundQual {
 
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  @SubtypeOf({})
   @DefaultQualifierInHierarchy
   @Documented
   @Retention(RetentionPolicy.RUNTIME)
-  @SubtypeOf({})
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public static @interface UbTop {}
 
   @Documented
