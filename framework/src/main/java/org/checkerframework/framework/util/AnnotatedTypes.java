@@ -441,6 +441,9 @@ public class AnnotatedTypes {
         return result;
       case UNION:
       case DECLARED:
+        if (((AnnotatedDeclaredType) receiverType).isUnderlyingTypeRaw()) {
+          return memberType.getErased();
+        }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       default:
         throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
@@ -696,6 +699,10 @@ public class AnnotatedTypes {
     // Has the user supplied type arguments?
     if (!targs.isEmpty()) {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
+      if (tvars.isEmpty()) {
+        // This happens when the method is invoked with a raw receiver.
+        return Collections.emptyMap();
+      }
 
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
       for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
