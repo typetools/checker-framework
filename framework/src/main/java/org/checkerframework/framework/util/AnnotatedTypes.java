@@ -440,6 +440,7 @@ public class AnnotatedTypes {
         }
         return result;
       case UNION:
+        return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       case DECLARED:
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
         if (receiverTypeDT.isUnderlyingTypeRaw()
