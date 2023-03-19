@@ -1,5 +1,6 @@
 package org.checkerframework.common.value;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -257,6 +258,16 @@ class ValueTreeAnnotator extends TreeAnnotator {
       if (oldAnno == null) {
         return null;
       }
+
+      // I would like to call ((AnnotatedTypeTree) castTree).hasAnnotation(Unsigned.class), but
+      // `Unsigned` is in the checker package and this code is in the common package.
+      List<? extends AnnotationTree> annoTrees =
+          TreeUtils.getExplicitAnnotationTrees(null, tree.getType());
+      List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
+      boolean isUnsigned =
+          AnnotationUtils.containsSameByName(
+              annos, "org.checkerframework.checker.signedness.qual.Unsigned");
+
       TypeMirror newType = atm.getUnderlyingType();
       AnnotationMirror newAnno;
       Range range;
@@ -277,7 +288,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
           newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
         }
       } else {
-        List<?> values = ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, atypeFactory);
+        List<?> values =
+            ValueCheckerUtils.getValuesCastedToType(oldAnno, newType, isUnsigned, atypeFactory);
         newAnno = atypeFactory.createResultingAnnotation(atm.getUnderlyingType(), values);
       }
       atm.addMissingAnnotations(Collections.singleton(newAnno));
@@ -290,15 +302,29 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Get the "value" field of the annotation on {@code type}, casted to the given type. Empty list
-   * means no value is possible (dead code). Null means no information is known -- any value is
-   * possible.
+   * Get the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Empty list means no value is possible (dead code). Null means no information is known -- any
+   * value is possible.
    *
    * @param type the type with a Value Checker annotation
    * @param castTo the type to cast to
    * @return the Value Checker annotation's value, casted to the given type
    */
   private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
+    return getValues(type, castTo, false);
+  }
+
+  /**
+   * Get the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Empty list means no value is possible (dead code). Null means no information is known -- any
+   * value is possible.
+   *
+   * @param type the type with a Value Checker annotation
+   * @param castTo the type to cast to
+   * @param isUnsigned if true, treat {@code castTo} as unsigned
+   * @return the Value Checker annotation's value, casted to the given type
+   */
+  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
     AnnotationMirror anno = type.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
     if (anno == null) {
       // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
@@ -307,7 +333,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
       // unknown.  AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
       return null;
     }
-    return ValueCheckerUtils.getValuesCastedToType(anno, castTo, atypeFactory);
+    return ValueCheckerUtils.getValuesCastedToType(anno, castTo, isUnsigned, atypeFactory);
   }
 
   @Override

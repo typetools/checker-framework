@@ -8,6 +8,9 @@ annotations.  With this flag, a warning is issued if an explicitly written
 annotation on a type is the same as the default annotation.  This feature does
 not warn about all redundant annotations, only some.
 
+The Value Checker is cognizant of signedness annotations.  This eliminates some
+false positive warnings.
+
 **Implementation details:**
 
 The Checker Framework no longer builds under JDK 8.
