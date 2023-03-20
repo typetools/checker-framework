@@ -14,6 +14,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1766,6 +1768,56 @@ public final class TreeUtils {
         && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
   }
 
+  public static MemberReferenceKind getMemberReferenceKind(MemberReferenceTree tree) {
+    JCMemberReference memberTree = (JCMemberReference) tree;
+    switch (memberTree.kind) {
+      case SUPER:
+        return MemberReferenceKind.SUPER;
+      case UNBOUND:
+        return MemberReferenceKind.UNBOUND;
+      case STATIC:
+        return MemberReferenceKind.STATIC;
+      case BOUND:
+        return MemberReferenceKind.BOUND;
+      case IMPLICIT_INNER:
+        return MemberReferenceKind.IMPLICIT_INNER;
+      case TOPLEVEL:
+        return MemberReferenceKind.TOPLEVEL;
+      case ARRAY_CTOR:
+        return MemberReferenceKind.ARRAY_CTOR;
+      default:
+        throw new BugInCF("Unexpected ReferenceKind: %s", memberTree.kind);
+    }
+  }
+
+  public enum MemberReferenceKind {
+    /** super # instMethod */
+    SUPER(ReferenceMode.INVOKE, false),
+    /** Type # instMethod */
+    UNBOUND(ReferenceMode.INVOKE, true),
+    /** Type # staticMethod */
+    STATIC(ReferenceMode.INVOKE, false),
+    /** Expr # instMethod */
+    BOUND(ReferenceMode.INVOKE, false),
+    /** Inner # new */
+    IMPLICIT_INNER(ReferenceMode.NEW, false),
+    /** Toplevel # new */
+    TOPLEVEL(ReferenceMode.NEW, false),
+    /** ArrayType # new */
+    ARRAY_CTOR(ReferenceMode.NEW, false);
+
+    final ReferenceMode mode;
+    final boolean unbound;
+
+    private MemberReferenceKind(ReferenceMode mode, boolean unbound) {
+      this.mode = mode;
+      this.unbound = unbound;
+    }
+
+    public boolean isUnbound() {
+      return unbound;
+    }
+  }
   /**
    * Determine whether an expression {@link ExpressionTree} has the constant value true, according
    * to the compiler logic.

@@ -41,8 +41,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.io.IOException;
 import java.io.InputStream;
@@ -140,6 +138,7 @@ import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -3616,11 +3615,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // The type of the expression or type use, <expression>::method or <type use>::method.
     final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
-    final ReferenceKind memRefKind = ((JCMemberReference) memberReferenceTree).kind;
+    final MemberReferenceKind memRefKind = TreeUtils.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
     if (memberReferenceTree.getMode() == ReferenceMode.NEW
-        || memRefKind == ReferenceKind.UNBOUND
-        || memRefKind == ReferenceKind.STATIC) {
+        || memRefKind == MemberReferenceKind.UNBOUND
+        || memRefKind == MemberReferenceKind.STATIC) {
       // The "qualifier expression" is a type tree.
       enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
     } else {
@@ -3635,7 +3634,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (enclosingType.getKind() == TypeKind.DECLARED
         && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
-      if (memRefKind == ReferenceKind.UNBOUND) {
+      if (memRefKind == MemberReferenceKind.UNBOUND) {
         // The method reference is of the form: Type # instMethod and Type is a raw type.
         // If the first parameter of the function type, p1, is a subtype of type, then type
         // should be p1.  This has the effect of "inferring" the class type parameter.
@@ -3932,8 +3931,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     private boolean checkMemberReferenceReceivers() {
-      JCTree.JCMemberReference memberTree = (JCTree.JCMemberReference) overriderTree;
-
       if (overriderType.getKind() == TypeKind.ARRAY) {
         // Assume the receiver for all method on arrays are @Top
         // This simplifies some logic because an AnnotatedExecutableType for an array method
@@ -3942,8 +3939,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
 
+      MemberReferenceKind methodRefKind =
+          TreeUtils.getMemberReferenceKind((MemberReferenceTree) overriderTree);
       // These act like a traditional override
-      if (memberTree.kind == JCTree.JCMemberReference.ReferenceKind.UNBOUND) {
+      if (methodRefKind == MemberReferenceKind.UNBOUND) {
         AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
         AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
         boolean success =
@@ -3965,7 +3964,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // The rest act like method invocations
       AnnotatedTypeMirror receiverDecl;
       AnnotatedTypeMirror receiverArg;
-      switch (memberTree.kind) {
+      switch (methodRefKind) {
         case UNBOUND:
           throw new BugInCF("Case UNBOUND should already be handled.");
         case SUPER:
@@ -4071,8 +4070,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (isMethodReference) {
         // The functional interface of an unbound member reference has an extra parameter
         // (the receiver).
-        if (((JCTree.JCMemberReference) overriderTree)
-            .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
+        if (TreeUtils.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+            == MemberReferenceKind.UNBOUND) {
           overriddenParams = new ArrayList<>(overriddenParams);
           overriddenParams.remove(0);
         }
