@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -25,8 +26,8 @@ public class MavenExample {
 
     StrBuilder stb = new StrBuilder();
 
-    //    @NonNull Object nn = nullable; // error on this line
-    //    System.out.println(nn);
+    @NonNull Object nn = nullable; // error on this line
+    System.out.println(nn);
   }
 
   // Test for -J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED.
