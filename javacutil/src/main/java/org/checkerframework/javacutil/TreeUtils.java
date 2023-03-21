@@ -1768,28 +1768,11 @@ public final class TreeUtils {
         && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
   }
 
-  public static MemberReferenceKind getMemberReferenceKind(MemberReferenceTree tree) {
-    JCMemberReference memberTree = (JCMemberReference) tree;
-    switch (memberTree.kind) {
-      case SUPER:
-        return MemberReferenceKind.SUPER;
-      case UNBOUND:
-        return MemberReferenceKind.UNBOUND;
-      case STATIC:
-        return MemberReferenceKind.STATIC;
-      case BOUND:
-        return MemberReferenceKind.BOUND;
-      case IMPLICIT_INNER:
-        return MemberReferenceKind.IMPLICIT_INNER;
-      case TOPLEVEL:
-        return MemberReferenceKind.TOPLEVEL;
-      case ARRAY_CTOR:
-        return MemberReferenceKind.ARRAY_CTOR;
-      default:
-        throw new BugInCF("Unexpected ReferenceKind: %s", memberTree.kind);
-    }
-  }
-
+  /**
+   * This is a duplication of {@code
+   * com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind}, which is not part of the
+   * supported javac API.
+   */
   public enum MemberReferenceKind {
     /** super # instMethod */
     SUPER(ReferenceMode.INVOKE, false),
@@ -1806,12 +1789,48 @@ public final class TreeUtils {
     /** ArrayType # new */
     ARRAY_CTOR(ReferenceMode.NEW, false);
 
+    /** Whether this kind is a method reference or a constructor reference. */
     final ReferenceMode mode;
+
     final boolean unbound;
 
-    private MemberReferenceKind(ReferenceMode mode, boolean unbound) {
+    /**
+     * Creates a MemberReferenceKind.
+     *
+     * @param mode whether this kind is a method reference or a constructor reference
+     * @param unbound whether the kind is not bound
+     */
+    MemberReferenceKind(ReferenceMode mode, boolean unbound) {
       this.mode = mode;
       this.unbound = unbound;
+    }
+
+    /**
+     * Returns the kind of member reference {@code tree} is.
+     *
+     * @param tree a member reference tree
+     * @return the kind of member reference {@code tree} is
+     */
+    public static MemberReferenceKind getMemberReferenceKind(MemberReferenceTree tree) {
+      JCMemberReference memberTree = (JCMemberReference) tree;
+      switch (memberTree.kind) {
+        case SUPER:
+          return SUPER;
+        case UNBOUND:
+          return UNBOUND;
+        case STATIC:
+          return STATIC;
+        case BOUND:
+          return BOUND;
+        case IMPLICIT_INNER:
+          return IMPLICIT_INNER;
+        case TOPLEVEL:
+          return TOPLEVEL;
+        case ARRAY_CTOR:
+          return ARRAY_CTOR;
+        default:
+          throw new BugInCF("Unexpected ReferenceKind: %s", memberTree.kind);
+      }
     }
 
     public boolean isUnbound() {

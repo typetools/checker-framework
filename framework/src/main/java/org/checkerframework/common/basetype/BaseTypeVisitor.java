@@ -3615,7 +3615,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // The type of the expression or type use, <expression>::method or <type use>::method.
     final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
-    final MemberReferenceKind memRefKind = TreeUtils.getMemberReferenceKind(memberReferenceTree);
+    final MemberReferenceKind memRefKind =
+        MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
     if (memberReferenceTree.getMode() == ReferenceMode.NEW
         || memRefKind == MemberReferenceKind.UNBOUND
@@ -3938,9 +3939,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // have to compare "Array" to "String[]".
         return true;
       }
-
+      MemberReferenceTree memberTree = (MemberReferenceTree) overriderTree;
       MemberReferenceKind methodRefKind =
-          TreeUtils.getMemberReferenceKind((MemberReferenceTree) overriderTree);
+          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
       // These act like a traditional override
       if (methodRefKind == MemberReferenceKind.UNBOUND) {
         AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
@@ -4070,7 +4071,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (isMethodReference) {
         // The functional interface of an unbound member reference has an extra parameter
         // (the receiver).
-        if (TreeUtils.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+        if (MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
             == MemberReferenceKind.UNBOUND) {
           overriddenParams = new ArrayList<>(overriddenParams);
           overriddenParams.remove(0);
