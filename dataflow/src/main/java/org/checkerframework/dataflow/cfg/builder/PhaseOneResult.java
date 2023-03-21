@@ -29,16 +29,16 @@ public class PhaseOneResult {
    * treeToCfgNodes, while the Node for the post-conversion value is stored in the
    * treeToConvertedCfgNodes.
    */
-  /* package-private */ final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
+  /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
   /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  /* package-private */ final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
    * tree that is {@code v + 1} or {@code v - 1}.
    */
-  /* package-private */ final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
+  /*package-private*/ final IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes;
 
   /** The list of extended nodes. */
   /*package-private*/ final ArrayList<ExtendedNode> nodeList;
