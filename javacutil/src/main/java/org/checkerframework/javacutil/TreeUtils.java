@@ -1792,6 +1792,7 @@ public final class TreeUtils {
     /** Whether this kind is a method reference or a constructor reference. */
     final ReferenceMode mode;
 
+    /** Whether this kind is unbound. */
     final boolean unbound;
 
     /**
@@ -1803,6 +1804,15 @@ public final class TreeUtils {
     MemberReferenceKind(ReferenceMode mode, boolean unbound) {
       this.mode = mode;
       this.unbound = unbound;
+    }
+
+    /**
+     * Whether this kind is unbound.
+     *
+     * @return Whether this kind is unbound
+     */
+    public boolean isUnbound() {
+      return unbound;
     }
 
     /**
@@ -1831,10 +1841,6 @@ public final class TreeUtils {
         default:
           throw new BugInCF("Unexpected ReferenceKind: %s", memberTree.kind);
       }
-    }
-
-    public boolean isUnbound() {
-      return unbound;
     }
   }
   /**
