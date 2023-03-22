@@ -3931,11 +3931,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overriderType, overriddenType, superCPostFalse2, subCPostFalse2, postfalsemsg);
     }
 
-    /**
-     * Checks member reference receivers.
-     *
-     * @return whether the check passed
-     */
     private boolean checkMemberReferenceReceivers() {
       if (overriderType.getKind() == TypeKind.ARRAY) {
         // Assume the receiver for all method on arrays are @Top
