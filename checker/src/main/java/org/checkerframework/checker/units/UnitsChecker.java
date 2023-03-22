@@ -1,6 +1,6 @@
 package org.checkerframework.checker.units;
 
-import java.util.SortedSet;
+import java.util.NavigableSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
@@ -19,7 +19,7 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
 public class UnitsChecker extends BaseTypeChecker {
 
   @Override
-  public SortedSet<String> getSuppressWarningsPrefixes() {
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
     return SubtypingChecker.getSuppressWarningsPrefixes(
         this.visitor, super.getSuppressWarningsPrefixes());
   }

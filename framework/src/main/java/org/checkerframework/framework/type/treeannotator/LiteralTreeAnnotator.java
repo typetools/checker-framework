@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -43,12 +44,13 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    * at most one element.
    */
   /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
-  private final Map<Tree.Kind, Set<AnnotationMirror>> treeKinds;
+  private final Map<Tree.Kind, AnnotationMirrorSet> treeKinds;
   /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
-  private final Map<Class<?>, Set<AnnotationMirror>> treeClasses;
+  private final Map<Class<?>, AnnotationMirrorSet> treeClasses;
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
-  private final IdentityHashMap<Pattern, Set<AnnotationMirror>> stringPatterns;
+  private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 
+  /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   /**
@@ -125,7 +127,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       return this;
     }
     Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
-    Set<AnnotationMirror> defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
+    AnnotationMirrorSet defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
     if (tops.size() == defaultForNull.size()) {
       return this;
     }
@@ -207,17 +209,17 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
     // If this tree's class or any of its interfaces are in treeClasses, annotate the type, and
     // if it was an interface add a mapping for it to treeClasses.
     if (treeKinds.containsKey(tree.getKind())) {
-      Set<AnnotationMirror> fnd = treeKinds.get(tree.getKind());
+      AnnotationMirrorSet fnd = treeKinds.get(tree.getKind());
       type.addMissingAnnotations(fnd);
     } else if (!treeClasses.isEmpty()) {
       Class<? extends Tree> t = tree.getClass();
       if (treeClasses.containsKey(t)) {
-        Set<AnnotationMirror> fnd = treeClasses.get(t);
+        AnnotationMirrorSet fnd = treeClasses.get(t);
         type.addMissingAnnotations(fnd);
       }
       for (Class<?> c : t.getInterfaces()) {
         if (treeClasses.containsKey(c)) {
-          Set<AnnotationMirror> fnd = treeClasses.get(c);
+          AnnotationMirrorSet fnd = treeClasses.get(c);
           type.addMissingAnnotations(fnd);
           treeClasses.put(t, treeClasses.get(c));
         }
@@ -234,9 +236,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       List<Set<? extends AnnotationMirror>> nonMatches = new ArrayList<>();
 
       String string = (String) tree.getValue();
-      for (Map.Entry<Pattern, Set<AnnotationMirror>> entry : stringPatterns.entrySet()) {
+      for (Map.Entry<Pattern, AnnotationMirrorSet> entry : stringPatterns.entrySet()) {
         Pattern pattern = entry.getKey();
-        Set<AnnotationMirror> sam = entry.getValue();
+        AnnotationMirrorSet sam = entry.getValue();
         if (pattern.matcher(string).matches()) {
           matches.add(sam);
         } else {
@@ -257,8 +259,8 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
             }
             throw new BugInCF(
                 StringsPlume.joinLines(
-                    "Bug in @QualifierForLiterals(stringpatterns=...) in type hierarchy"
-                        + " definition:",
+                    "Bug in @QualifierForLiterals(stringpatterns=...) in type"
+                        + " hierarchy definition:",
                     " the glb of `matches` for \"" + string + "\" is " + res,
                     " which is a subtype of " + sam,
                     " whose pattern does not match \"" + string + "\".",

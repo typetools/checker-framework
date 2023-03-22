@@ -161,14 +161,14 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}.
+   * Returns true if {@code tree} is a call to a method annotated with {@code @FormatMethod}.
    *
-   * @param node a method call
+   * @param tree a method call
    * @param atypeFactory a type factory
-   * @return true if {@code node} is a call to a method annotated with {@code @FormatMethod}
+   * @return true if {@code tree} is a call to a method annotated with {@code @FormatMethod}
    */
-  public boolean isFormatMethodCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
-    ExecutableElement method = TreeUtils.elementFromUse(node);
+  public boolean isFormatMethodCall(MethodInvocationTree tree, AnnotatedTypeFactory atypeFactory) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
     AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, FormatMethod.class);
     return anno != null;
   }
@@ -289,16 +289,16 @@ public class FormatterTreeUtil {
                     return first.accept(
                         new SimpleTreeVisitor<InvocationType, Class<Void>>() {
                           @Override
-                          protected InvocationType defaultAction(Tree node, Class<Void> p) {
+                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
                             // just a normal array
                             return InvocationType.ARRAY;
                           }
 
                           @Override
-                          public InvocationType visitTypeCast(TypeCastTree node, Class<Void> p) {
+                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
                             // it's a (Object[])null
                             return atypeFactory
-                                        .getAnnotatedType(node.getExpression())
+                                        .getAnnotatedType(tree.getExpression())
                                         .getUnderlyingType()
                                         .getKind()
                                     == TypeKind.NULL
@@ -441,8 +441,7 @@ public class FormatterTreeUtil {
    * @param invalidFormatString an invalid formatter string
    * @return an {@link InvalidFormat} annotation with the given string as its value
    */
-  /* package-private */
-  AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
+  /*package-private*/ AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
     builder.setValue("value", invalidFormatString);
     return builder.build();

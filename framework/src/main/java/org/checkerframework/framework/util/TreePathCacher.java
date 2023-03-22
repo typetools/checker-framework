@@ -83,7 +83,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     private static final long serialVersionUID = 4948452207518392627L;
     /** The result of {@link #getPath}. */
     @SuppressWarnings("serial") // I do not intend to serialize Result objects
-    TreePath path;
+    private final TreePath path;
 
     /**
      * Create a {@link #getPath} result.
@@ -107,7 +107,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     if (tree != null && foundPaths.get(tree) == null) {
       TreePath current = new TreePath(path, tree);
       foundPaths.put(tree, current);
-      path = current;
+      this.path = current;
     } else {
       this.path = foundPaths.get(tree);
     }

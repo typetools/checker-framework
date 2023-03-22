@@ -73,10 +73,10 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
   /** Warns about LTLengthOf annotations with arguments whose lengths do not match. */
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
-      List<? extends ExpressionTree> args = node.getArguments();
+      List<? extends ExpressionTree> args = tree.getArguments();
       if (args.size() == 2) {
         // If offsets are provided, there must be the same number of them as there are
         // arrays.
@@ -88,7 +88,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 anno, atypeFactory.ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
           checker.reportError(
-              node, "different.length.sequences.offsets", sequences.size(), offsets.size());
+              tree, "different.length.sequences.offsets", sequences.size(), offsets.size());
           return null;
         }
       }
@@ -102,11 +102,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
       // check that each expression is parsable at the declaration of this class
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-      checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
-      checkEffectivelyFinalAndParsable(from, enclosingClass, node);
-      checkEffectivelyFinalAndParsable(to, enclosingClass, node);
+      checkEffectivelyFinalAndParsable(seq, enclosingClass, tree);
+      checkEffectivelyFinalAndParsable(from, enclosingClass, tree);
+      checkEffectivelyFinalAndParsable(to, enclosingClass, tree);
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 
   /**
@@ -263,7 +263,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
           valueType,
           valueTree);
       super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
-    } else if (checker.hasOption("showchecks")) {
+    } else if (showchecks) {
       commonAssignmentCheckEndDiagnostic(
           true, "relaxedCommonAssignment", varType, valueType, valueTree);
     }

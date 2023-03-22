@@ -1,6 +1,3 @@
-// Keep this file in sync with
-// ../../../../../tagletJdk8/java/org/checkerframework/taglet/ManualTaglet.java .
-
 package org.checkerframework.taglet;
 
 import com.sun.source.doctree.DocTree;
@@ -96,28 +93,28 @@ public class ManualTaglet implements Taglet {
   static String getText(DocTree dt) {
     return new SimpleDocTreeVisitor<String, Void>() {
       @Override
-      public String visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
-        for (DocTree dt : node.getContent()) {
+      public String visitUnknownBlockTag(UnknownBlockTagTree tree, Void p) {
+        for (DocTree dt : tree.getContent()) {
           return dt.accept(this, null);
         }
         return "";
       }
 
       @Override
-      public String visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
-        for (DocTree dt : node.getContent()) {
+      public String visitUnknownInlineTag(UnknownInlineTagTree tree, Void p) {
+        for (DocTree dt : tree.getContent()) {
           return dt.accept(this, null);
         }
         return "";
       }
 
       @Override
-      public String visitText(TextTree node, Void p) {
-        return node.getBody();
+      public String visitText(TextTree tree, Void p) {
+        return tree.getBody();
       }
 
       @Override
-      protected String defaultAction(DocTree node, Void p) {
+      protected String defaultAction(DocTree tree, Void p) {
         return "";
       }
     }.visit(dt, null);

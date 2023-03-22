@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -28,13 +27,13 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -142,12 +141,12 @@ public abstract class AnnotatedTypeMirror {
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
   // the class name of Annotation instead.
   // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
-  protected final Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+  protected final AnnotationMirrorSet annotations = new AnnotationMirrorSet();
 
   /** The explicitly written annotations on this type. */
   // TODO: use this to cache the result once computed? For generic types?
-  // protected final Set<AnnotationMirror> explicitannotations =
-  // AnnotationUtils.createAnnotationSet();
+  // protected final AnnotationMirrorSet explicitannotations =
+  // new AnnotationMirrorSet();
 
   /**
    * Constructor for AnnotatedTypeMirror.
@@ -263,10 +262,17 @@ public abstract class AnnotatedTypeMirror {
    * @param p the qualifier hierarchy to check for
    * @return an annotation from the same hierarchy as p if present
    */
-  public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+  public @Nullable AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
+    if (annotations.isEmpty()) {
+      return null;
+    }
     AnnotationMirror canonical = p;
     if (!atypeFactory.isSupportedQualifier(canonical)) {
       canonical = atypeFactory.canonicalAnnotation(p);
+      if (canonical == null) {
+        // This can happen if p is unrelated to this AnnotatedTypeMirror.
+        return null;
+      }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
       QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
@@ -312,8 +318,8 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return a unmodifiable set of the annotations on this
    */
-  public final Set<AnnotationMirror> getAnnotations() {
-    return Collections.unmodifiableSet(annotations);
+  public final AnnotationMirrorSet getAnnotations() {
+    return AnnotationMirrorSet.unmodifiableSet(annotations);
   }
 
   /**
@@ -326,7 +332,7 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return the set of the annotations on this; mutations affect this object
    */
-  protected final Set<AnnotationMirror> getAnnotationsField() {
+  protected final AnnotationMirrorSet getAnnotationsField() {
     return annotations;
   }
 
@@ -359,8 +365,8 @@ public abstract class AnnotatedTypeMirror {
    *
    * @return a set of the annotations on this
    */
-  public Set<AnnotationMirror> getEffectiveAnnotations() {
-    Set<AnnotationMirror> effectiveAnnotations = getErased().getAnnotations();
+  public AnnotationMirrorSet getEffectiveAnnotations() {
+    AnnotationMirrorSet effectiveAnnotations = getErased().getAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
     //                .size() : "Invalid number of effective annotations ("
     //                + effectiveAnnotations + "). Should be "
@@ -419,9 +425,9 @@ public abstract class AnnotatedTypeMirror {
    * @return the set of explicitly written annotations on this type that are supported by this
    *     checker
    */
-  public Set<AnnotationMirror> getExplicitAnnotations() {
+  public AnnotationMirrorSet getExplicitAnnotations() {
     // TODO JSR 308: The explicit type annotations should be always present
-    Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet explicitAnnotations = new AnnotationMirrorSet();
     List<? extends AnnotationMirror> typeAnnotations =
         this.getUnderlyingType().getAnnotationMirrors();
 
@@ -930,13 +936,13 @@ public abstract class AnnotatedTypeMirror {
       result.setTypeArguments(typeArgs);
 
       // If "this" is a type declaration with a type variable that references itself, e.g.
-      // MyClass<T extends List<T>>, then the type variable is a declaration, i.e. the first T,
-      // but the reference to the type variable is a use, i.e. the second T.  When "this" is
-      // converted to a use, then both type variables are uses and should be the same object.
-      // The code below does this.
+      // MyClass<T extends List<T>>, then the type variable is a declaration, i.e. the first
+      // T, but the reference to the type variable is a use, i.e. the second T.  When "this"
+      // is converted to a use, then both type variables are uses and should be the same
+      // object.  The code below does this.
       Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>(typeArgs.size());
-      for (AnnotatedTypeMirror typeArgs : result.getTypeArguments()) {
-        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArgs;
+      for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
+        AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) typeArg;
         mapping.put(typeVar.getUnderlyingType(), typeVar);
       }
       for (AnnotatedTypeMirror typeArg : result.getTypeArguments()) {
@@ -959,29 +965,27 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets the type arguments on this type.
      *
-     * @param ts the type arguments
+     * @param ts a list of type arguments to be captured by this method
      */
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
-      } else {
-        if (isDeclaration()) {
-          for (AnnotatedTypeMirror typeArg : ts) {
-            if (typeArg.getKind() != TypeKind.TYPEVAR) {
-              throw new BugInCF(
-                  "Type declaration must have type variables as type arguments. Found %s", typeArg);
-            }
-            if (!typeArg.isDeclaration()) {
-              throw new BugInCF(
-                  "Type declarations must have type variables that are declarations. Found %s",
-                  typeArg);
-            }
+      } else { if (isDeclaration()) {
+        for (AnnotatedTypeMirror typeArg : ts) {
+          if (typeArg.getKind() != TypeKind.TYPEVAR) {
+            throw new BugInCF(
+                "Type declaration must have type variables as type arguments. Found %s", typeArg);
           }
-          typeArgs = Collections.unmodifiableList(ts);
-        } else {
-          List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
-          typeArgs = Collections.unmodifiableList(uses);
+          if (!typeArg.isDeclaration()) {
+            throw new BugInCF(
+                "Type declarations must have type variables that are declarations. Found %s",
+                typeArg);
+          }
         }
+        typeArgs = Collections.unmodifiableList(ts);
+      } else {
+        List<AnnotatedTypeMirror> uses = CollectionsPlume.mapList(AnnotatedTypeMirror::asUse, ts);
+        typeArgs = Collections.unmodifiableList(uses);
       }
     }
 
@@ -1103,7 +1107,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param enclosingType the new enclosing type
      */
-    /*default-visibility*/ void setEnclosingType(@Nullable AnnotatedDeclaredType enclosingType) {
+    public void setEnclosingType(@Nullable AnnotatedDeclaredType enclosingType) {
       this.enclosingType = enclosingType;
     }
 
@@ -1181,7 +1185,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param params the parameter types, excluding the receiver
      */
-    void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
+    /*package-private*/ void setParameterTypes(List<? extends AnnotatedTypeMirror> params) {
       paramTypes =
           params.isEmpty()
               ? Collections.emptyList()
@@ -1214,7 +1218,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param returnType the return type
      */
-    void setReturnType(AnnotatedTypeMirror returnType) {
+    /*package-private*/ void setReturnType(AnnotatedTypeMirror returnType) {
       this.returnType = returnType;
       returnTypeComputed = true;
     }
@@ -1302,7 +1306,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param thrownTypes the thrown types
      */
-    void setThrownTypes(List<? extends AnnotatedTypeMirror> thrownTypes) {
+    /*package-private*/ void setThrownTypes(List<? extends AnnotatedTypeMirror> thrownTypes) {
       this.thrownTypes =
           thrownTypes.isEmpty()
               ? Collections.emptyList()
@@ -1335,7 +1339,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param types the type variables of this executable type
      */
-    void setTypeVariables(List<AnnotatedTypeVariable> types) {
+    /*package-private*/ void setTypeVariables(List<AnnotatedTypeVariable> types) {
       typeVarTypes =
           types.isEmpty()
               ? Collections.emptyList()
@@ -1393,11 +1397,21 @@ public abstract class AnnotatedTypeMirror {
       return shallowCopy(true);
     }
 
-    public @NonNull ExecutableElement getElement() {
+    /**
+     * Returns the element of this AnnotatedExecutableType.
+     *
+     * @return the element of this AnnotatedExecutableType
+     */
+    public ExecutableElement getElement() {
       return element;
     }
 
-    public void setElement(@NonNull ExecutableElement elem) {
+    /**
+     * Sets the element of this AnnotatedExecutableType.
+     *
+     * @param elem the new element for this AnnotatedExecutableType
+     */
+    public void setElement(ExecutableElement elem) {
       this.element = elem;
     }
 
@@ -1654,7 +1668,7 @@ public abstract class AnnotatedTypeMirror {
     // because otherwise the annotations are inconsistent.
     private void fixupBoundAnnotations() {
       if (!this.getAnnotationsField().isEmpty()) {
-        Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
+        AnnotationMirrorSet newAnnos = this.getAnnotationsField();
         if (upperBound != null) {
           upperBound.replaceAnnotations(newAnnos);
         }
@@ -2022,16 +2036,20 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
+     *
+     * @param typeParameterElement the type variable to which this wildcard is an argument
      */
-    void setTypeVariable(TypeParameterElement typeParameterElement) {
+    /*package-private*/ void setTypeVariable(TypeParameterElement typeParameterElement) {
       this.typeVariable = (TypeVariable) typeParameterElement.asType();
     }
 
     /**
      * Sets type variable to which this wildcard is an argument. This method should only be called
      * during initialization of the type.
+     *
+     * @param typeVariable the type variable to which this wildcard is an argument
      */
-    void setTypeVariable(TypeVariable typeVariable) {
+    /*package-private*/ void setTypeVariable(TypeVariable typeVariable) {
       this.typeVariable = typeVariable;
     }
 
@@ -2164,7 +2182,7 @@ public abstract class AnnotatedTypeMirror {
      */
     private void fixupBoundAnnotations() {
       if (!this.getAnnotationsField().isEmpty()) {
-        Set<AnnotationMirror> newAnnos = this.getAnnotationsField();
+        AnnotationMirrorSet newAnnos = this.getAnnotationsField();
         if (bounds != null) {
           for (AnnotatedTypeMirror bound : bounds) {
             if (bound.getKind() != TypeKind.TYPEVAR) {
@@ -2247,7 +2265,7 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Sets the bounds.
      *
-     * @param bounds bounds to use
+     * @param bounds a list of bounds to be captured by this method
      */
     public void setBounds(List<AnnotatedTypeMirror> bounds) {
       this.bounds = bounds;
@@ -2261,7 +2279,7 @@ public abstract class AnnotatedTypeMirror {
      * {@code @Nullable} and {@code @Initialized} are copied to the primary annotation location.
      */
     public void copyIntersectionBoundAnnotations() {
-      Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet annos = new AnnotationMirrorSet();
       for (AnnotatedTypeMirror bound : getBounds()) {
         for (AnnotationMirror a : bound.getAnnotations()) {
           if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)

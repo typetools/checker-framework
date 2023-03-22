@@ -35,7 +35,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
 import org.checkerframework.framework.util.typeinference.constraint.A2FReducer;
 import org.checkerframework.framework.util.typeinference.constraint.AFConstraint;
@@ -55,6 +54,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 import org.checkerframework.framework.util.typeinference.solver.OldInferenceResult;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
 import org.checkerframework.javacutil.BugInCF;

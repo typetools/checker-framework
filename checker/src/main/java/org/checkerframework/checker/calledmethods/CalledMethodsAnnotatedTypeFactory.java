@@ -65,11 +65,11 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       TreeUtils.getMethod("java.util.Collections", "singletonList", 1, getProcessingEnv());
 
   /** The {@link CalledMethods#value} element/argument. */
-  /* package-private */ final ExecutableElement calledMethodsValueElement =
+  /*package-private*/ final ExecutableElement calledMethodsValueElement =
       TreeUtils.getMethod(CalledMethods.class, "value", 0, processingEnv);
 
   /** The {@link EnsuresCalledMethodsVarArgs#value} element/argument. */
-  /* package-private */ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
 
   /**
@@ -380,7 +380,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @return a collection of builder frameworks that are enabled in this run of the checker
    */
-  /* package-private */ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
+  /*package-private*/ Collection<BuilderFrameworkSupport> getBuilderFrameworkSupports() {
     return builderFrameworkSupports;
   }
 

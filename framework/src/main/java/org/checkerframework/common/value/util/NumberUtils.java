@@ -9,9 +9,34 @@ import org.plumelib.util.CollectionsPlume;
 /** Utility routines for manipulating numbers. */
 public class NumberUtils {
 
-  /** Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types. */
+  /** Do not instantiate. */
+  private NumberUtils() {
+    throw new Error("Do not instantiate");
+  }
+
+  /**
+   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
+   *
+   * @param type the type to cast to
+   * @param numbers the numbers to cast to the given type
+   * @return a list of numbers of the given type
+   */
   public static List<? extends Number> castNumbers(
       TypeMirror type, List<? extends Number> numbers) {
+    return castNumbers(type, false, numbers);
+  }
+
+  /**
+   * Converts a {@code List<A>} to a {@code List<B>}, where A and B are numeric types.
+   *
+   * @param type the type to cast to
+   * @param isUnsigned if true, treat {@code type} as unsigned
+   * @param numbers the numbers to cast to the given type
+   * @return a list of numbers of the given type
+   */
+  @SuppressWarnings("unchecked")
+  public static List<? extends Number> castNumbers(
+      TypeMirror type, boolean isUnsigned, List<? extends Number> numbers) {
     if (numbers == null) {
       return null;
     }
@@ -21,7 +46,12 @@ public class NumberUtils {
     }
     switch (typeKind) {
       case BYTE:
-        return CollectionsPlume.mapList(Number::byteValue, numbers);
+        if (isUnsigned) {
+          return CollectionsPlume.<Number, Short>mapList(
+              NumberUtils::byteValueUnsigned, (Iterable<Number>) numbers);
+        } else {
+          return CollectionsPlume.mapList(Number::byteValue, numbers);
+        }
       case CHAR:
         return CollectionsPlume.mapList(Number::intValue, numbers);
       case DOUBLE:
@@ -29,14 +59,66 @@ public class NumberUtils {
       case FLOAT:
         return CollectionsPlume.mapList(Number::floatValue, numbers);
       case INT:
-        return CollectionsPlume.mapList(Number::intValue, numbers);
+        if (isUnsigned) {
+          return CollectionsPlume.<Number, Long>mapList(
+              NumberUtils::intValueUnsigned, (Iterable<Number>) numbers);
+        } else {
+          return CollectionsPlume.mapList(Number::intValue, numbers);
+        }
       case LONG:
         return CollectionsPlume.mapList(Number::longValue, numbers);
       case SHORT:
-        return CollectionsPlume.mapList(Number::shortValue, numbers);
+        if (isUnsigned) {
+          return CollectionsPlume.<Number, Integer>mapList(
+              NumberUtils::shortValueUnsigned, (Iterable<Number>) numbers);
+        } else {
+          return CollectionsPlume.mapList(Number::shortValue, numbers);
+        }
       default:
         throw new UnsupportedOperationException(typeKind + ": " + type);
     }
+  }
+
+  /**
+   * Returns the given number, casted to unsigned byte.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned byte
+   */
+  private static Short byteValueUnsigned(Number n) {
+    short result = n.byteValue();
+    if (result < 0) {
+      result = (short) (result + 256);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given number, casted to unsigned short.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned short
+   */
+  private static Integer shortValueUnsigned(Number n) {
+    int result = n.shortValue();
+    if (result < 0) {
+      result = result + 65536;
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given number, casted to unsigned int.
+   *
+   * @param n a number
+   * @return the given number, casted to unsigned int
+   */
+  private static Long intValueUnsigned(Number n) {
+    long result = n.intValue();
+    if (result < 0) {
+      result = result + 4294967296L;
+    }
+    return result;
   }
 
   /**

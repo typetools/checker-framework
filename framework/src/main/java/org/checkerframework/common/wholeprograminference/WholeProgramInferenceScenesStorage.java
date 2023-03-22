@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -161,6 +162,9 @@ public class WholeProgramInferenceScenesStorage
         break;
       case CLASS:
         className = ElementUtils.getBinaryName((TypeElement) elt);
+        break;
+      case PARAMETER:
+        className = ElementUtils.getEnclosingClassName((VariableElement) elt);
         break;
       default:
         throw new BugInCF("What element? %s %s", elt.getKind(), elt);
@@ -548,7 +552,7 @@ public class WholeProgramInferenceScenesStorage
     AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsATM.getUnderlyingType(), type);
     updateAtmWithLub(rhsATM, atmFromScene);
     if (lhsATM instanceof AnnotatedTypeVariable) {
-      Set<AnnotationMirror> upperAnnos =
+      AnnotationMirrorSet upperAnnos =
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
@@ -605,7 +609,7 @@ public class WholeProgramInferenceScenesStorage
     }
 
     // LUB primary annotations
-    Set<AnnotationMirror> annosToReplace = new HashSet<>(sourceCodeATM.getAnnotations().size());
+    AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
     for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
       AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
       // amJaif only contains annotations from the jaif, so it might be missing

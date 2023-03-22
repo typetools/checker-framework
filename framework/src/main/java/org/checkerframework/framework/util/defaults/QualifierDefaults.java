@@ -10,8 +10,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.BoundKind;
-import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -43,6 +41,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -278,7 +277,12 @@ public class QualifierDefaults {
     checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
   }
 
-  /** Sets the default annotation for unchecked elements. */
+  /**
+   * Add a default annotation for unchecked elements.
+   *
+   * @param uncheckedDefaultAnno the default annotation mirror
+   * @param location the type use location
+   */
   public void addUncheckedCodeDefault(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
     checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
@@ -302,7 +306,13 @@ public class QualifierDefaults {
     }
   }
 
-  /** Sets the default annotations for a certain Element. */
+  /**
+   * Sets the default annotations for a certain Element.
+   *
+   * @param elem the scope to set the default within
+   * @param elementDefaultAnno the default to set
+   * @param location the location to apply the default to
+   */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
     DefaultSet prevset = elementDefaults.get(elem);
@@ -606,11 +616,22 @@ public class QualifierDefaults {
       }
     }
 
-    elementAnnotatedFors.put(elt, elementAnnotatedForThisChecker);
+    if (atypeFactory.shouldCache
+        && !atypeFactory.stubTypes.isParsing()
+        && !atypeFactory.ajavaTypes.isParsing()) {
+      elementAnnotatedFors.put(elt, elementAnnotatedForThisChecker);
+    }
 
     return elementAnnotatedForThisChecker;
   }
 
+  /**
+   * Returns the defaults that apply to the given Element, considering defaults from enclosing
+   * Elements.
+   *
+   * @param elt the element
+   * @return the defaults
+   */
   private DefaultSet defaultsAt(final Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;
@@ -1188,24 +1209,22 @@ public class QualifierDefaults {
    * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    * its an argument.
    *
-   * @param annotatedWildcard the annotated wildcard type
+   * @param wildcardType the annotated wildcard type
    * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    *     its an argument
    */
-  public BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard) {
-
-    final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();
-
-    final BoundType boundType;
-    if (wildcard.kind == BoundKind.UNBOUND && wildcard.bound != null) {
-      boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement());
-
+  public BoundType getWildcardBoundType(final AnnotatedWildcardType wildcardType) {
+    if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
+      TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
+      if (e != null) {
+        return getTypeVarBoundType(e);
+      } else {
+        return BoundType.UNBOUNDED;
+      }
+    } else if (AnnotatedTypes.hasExplicitSuperBound(wildcardType)) {
+      return BoundType.LOWER;
     } else {
-      // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is
-      // already handled
-      boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
+      return BoundType.UPPER;
     }
-
-    return boundType;
   }
 }

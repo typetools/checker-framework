@@ -6,7 +6,12 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,6 +27,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.checkerframework.common.value.qual.IntRangeFromNonNegative;
 import org.checkerframework.common.value.qual.IntRangeFromPositive;
+import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
@@ -29,10 +35,13 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** Visitor for the Constant Value type system. */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
@@ -173,15 +182,15 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
    * Therefore, some validation is still done in #validateType below.
    */
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    List<? extends ExpressionTree> args = node.getArguments();
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    List<? extends ExpressionTree> args = tree.getArguments();
 
     if (args.isEmpty()) {
       // Nothing to do if there are no annotation arguments.
-      return super.visitAnnotation(node, p);
+      return super.visitAnnotation(tree, p);
     }
 
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     switch (AnnotationUtils.annotationName(anno)) {
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         // If there are 2 arguments, issue an error if from.greater.than.to.
@@ -192,7 +201,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           long from = getTypeFactory().getIntRangeFromValue(anno);
           long to = getTypeFactory().getIntRangeToValue(anno);
           if (from > to) {
-            checker.reportError(node, "from.greater.than.to");
+            checker.reportError(tree, "from.greater.than.to");
             return null;
           }
         }
@@ -207,11 +216,11 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
             AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
 
         if (values.isEmpty()) {
-          checker.reportWarning(node, "no.values.given");
+          checker.reportWarning(tree, "no.values.given");
           return null;
         } else if (values.size() > ValueAnnotatedTypeFactory.MAX_VALUES) {
           checker.reportWarning(
-              node,
+              tree,
               (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTVAL_NAME)
                   ? "too.many.values.given.int"
                   : "too.many.values.given"),
@@ -220,7 +229,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.ARRAYLEN_NAME)) {
           List<Integer> arrayLens = getTypeFactory().getArrayLength(anno);
           if (Collections.min(arrayLens) < 0) {
-            checker.reportWarning(node, "negative.arraylen", Collections.min(arrayLens));
+            checker.reportWarning(tree, "negative.arraylen", Collections.min(arrayLens));
             return null;
           }
         }
@@ -229,10 +238,10 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         long from = getTypeFactory().getArrayLenRangeFromValue(anno);
         long to = getTypeFactory().getArrayLenRangeToValue(anno);
         if (from > to) {
-          checker.reportError(node, "from.greater.than.to");
+          checker.reportError(tree, "from.greater.than.to");
           return null;
         } else if (from < 0) {
-          checker.reportWarning(node, "negative.arraylen", from);
+          checker.reportWarning(tree, "negative.arraylen", from);
           return null;
         }
         break;
@@ -244,7 +253,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           try {
             Pattern.compile(regex);
           } catch (PatternSyntaxException pse) {
-            checker.reportWarning(node, "invalid.matches.regex", pse.getMessage());
+            checker.reportWarning(tree, "invalid.matches.regex", pse.getMessage());
           }
         }
         break;
@@ -256,7 +265,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           try {
             Pattern.compile(regex);
           } catch (PatternSyntaxException pse) {
-            checker.reportWarning(node, "invalid.doesnotmatch.regex", pse.getMessage());
+            checker.reportWarning(tree, "invalid.doesnotmatch.regex", pse.getMessage());
           }
         }
         break;
@@ -264,20 +273,20 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         // Do nothing.
     }
 
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 
   @Override
-  public Void visitTypeCast(TypeCastTree node, Void p) {
-    if (node.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+  public Void visitTypeCast(TypeCastTree tree, Void p) {
+    if (tree.getExpression().getKind() == Tree.Kind.NULL_LITERAL) {
       return null;
     }
 
-    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
+    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(tree);
     AnnotationMirror castAnno = castType.getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
     AnnotationMirror exprAnno =
         atypeFactory
-            .getAnnotatedType(node.getExpression())
+            .getAnnotatedType(tree.getExpression())
             .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
 
     // It is always legal to cast to an IntRange type that includes all values
@@ -321,7 +330,155 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         }
       }
     }
-    return super.visitTypeCast(node, p);
+    return super.visitTypeCast(tree, p);
+  }
+
+  // At this point, types are like: (@IntVal(-1) byte, @IntVal(255) int) and knowledge of signedness
+  // is gone.  So, use castType's underlying type to infer correctness of the cast.  This method
+  // returns true for (@IntVal(-1), @IntVal(255)) if the underlying type is `byte`, but not for any
+  // other underlying type.
+  @Override
+  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    TypeKind castTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(castType.getUnderlyingType());
+    TypeKind exprTypeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(exprType.getUnderlyingType());
+    if (castTypeKind != null
+        && exprTypeKind != null
+        && TypeKindUtils.isIntegral(castTypeKind)
+        && TypeKindUtils.isIntegral(exprTypeKind)) {
+      AnnotationMirrorSet castAnnos = castType.getAnnotations();
+      AnnotationMirrorSet exprAnnos = exprType.getAnnotations();
+      if (castAnnos.equals(exprAnnos)) {
+        return true;
+      }
+      assert castAnnos.size() == 1;
+      assert exprAnnos.size() == 1;
+      AnnotationMirror castAnno = castAnnos.first();
+      AnnotationMirror exprAnno = exprAnnos.first();
+      boolean castAnnoIsIntVal = atypeFactory.areSameByClass(castAnno, IntVal.class);
+      boolean exprAnnoIsIntVal = atypeFactory.areSameByClass(exprAnno, IntVal.class);
+      if (castAnnoIsIntVal && exprAnnoIsIntVal) {
+        List<Long> castValues = atypeFactory.getIntValues(castAnno);
+        List<Long> exprValues = atypeFactory.getIntValues(exprAnno);
+        if (castValues.size() == 1 && exprValues.size() == 1) {
+          // Special-case singleton sets for speed.
+          switch (castTypeKind) {
+            case BYTE:
+              return castValues.get(0).byteValue() == exprValues.get(0).byteValue();
+            case INT:
+              return castValues.get(0).intValue() == exprValues.get(0).intValue();
+            case SHORT:
+              return castValues.get(0).shortValue() == exprValues.get(0).shortValue();
+            default:
+              return castValues.get(0).longValue() == exprValues.get(0).longValue();
+          }
+        } else {
+          switch (castTypeKind) {
+            case BYTE:
+              {
+                TreeSet<Byte> castValuesTree =
+                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, castValues));
+                TreeSet<Byte> exprValuesTree =
+                    new TreeSet<Byte>(CollectionsPlume.mapList(Number::byteValue, exprValues));
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
+              }
+            case INT:
+              {
+                TreeSet<Integer> castValuesTree =
+                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, castValues));
+                TreeSet<Integer> exprValuesTree =
+                    new TreeSet<Integer>(CollectionsPlume.mapList(Number::intValue, exprValues));
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
+              }
+            case SHORT:
+              {
+                TreeSet<Short> castValuesTree =
+                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, castValues));
+                TreeSet<Short> exprValuesTree =
+                    new TreeSet<Short>(CollectionsPlume.mapList(Number::shortValue, exprValues));
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
+              }
+            default:
+              {
+                TreeSet<Long> castValuesTree = new TreeSet<>(castValues);
+                TreeSet<Long> exprValuesTree = new TreeSet<>(exprValues);
+                return sortedSetContainsAll(castValuesTree, exprValuesTree);
+              }
+          }
+        }
+      }
+    }
+
+    return super.isTypeCastSafe(castType, exprType);
+  }
+
+  // TODO: After plume-util 1.6.6 is released, use this method from CollectionsPlume instead.
+  /**
+   * Returns true if the two sets contain the same elements in the same order. This is faster than
+   * regular {@code containsAll()}, for sets with the same ordering operator, especially for sets
+   * that are not extremely small.
+   *
+   * @param <T> the type of elements in the sets
+   * @param set1 the first set to compare
+   * @param set2 the first set to compare
+   * @return true if the first set contains all the elements of the second set
+   */
+  public static <T> boolean sortedSetContainsAll(SortedSet<T> set1, SortedSet<T> set2) {
+    @SuppressWarnings("interning:not.interned")
+    boolean sameObject = set1 == set2;
+    if (sameObject) {
+      return true;
+    }
+    if (set1.size() < set2.size()) {
+      return false;
+    }
+    Comparator<? super T> comparator1 = set1.comparator();
+    Comparator<? super T> comparator2 = set2.comparator();
+    if (!Objects.equals(comparator1, comparator2)) {
+      return set1.containsAll(set2);
+    }
+    if (comparator1 == null) {
+      outerloopNaturalOrder:
+      for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor2.hasNext(); ) {
+        T elt2 = itor2.next();
+        if (elt2 == null) {
+          throw new IllegalArgumentException("null element in set 2: " + set2);
+        }
+        while (itor1.hasNext()) {
+          T elt1 = itor1.next();
+          if (elt2 == null) {
+            throw new IllegalArgumentException("null element in set 2: " + set2);
+          }
+          @SuppressWarnings({
+            "unchecked", // Java warning about generic cast
+            "nullness:dereference", // next() has side effects, so elt1 isn't know to be non-null
+            "signedness:method.invocation" // generics problem; #979?
+          })
+          int comparison = ((Comparable<T>) elt1).compareTo(elt2);
+          if (comparison == 0) {
+            continue outerloopNaturalOrder;
+          } else if (comparison < 0) {
+            return false;
+          }
+        }
+        return false;
+      }
+    } else {
+      outerloopComparator:
+      for (Iterator<T> itor1 = set1.iterator(), itor2 = set2.iterator(); itor2.hasNext(); ) {
+        T elt2 = itor2.next();
+        while (itor1.hasNext()) {
+          T elt1 = itor1.next();
+          int comparison = comparator1.compare(elt1, elt2);
+          if (comparison == 0) {
+            continue outerloopComparator;
+          } else if (comparison < 0) {
+            return false;
+          }
+        }
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -388,25 +545,25 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
   }
 
   @Override
-  public Void visitMethod(MethodTree node, Void p) {
-    super.visitMethod(node, p);
+  public Void visitMethod(MethodTree tree, Void p) {
+    super.visitMethod(tree, p);
 
-    ExecutableElement method = TreeUtils.elementFromDeclaration(node);
+    ExecutableElement method = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(method, StaticallyExecutable.class) != null) {
       // The method is annotated as @StaticallyExecutable.
       if (atypeFactory.getDeclAnnotation(method, Pure.class) == null) {
-        checker.reportWarning(node, "statically.executable.not.pure");
+        checker.reportWarning(tree, "statically.executable.not.pure");
       }
       TypeMirror returnType = method.getReturnType();
       if (returnType.getKind() != TypeKind.VOID && !canBeConstant(returnType)) {
-        checker.reportError(node, "statically.executable.nonconstant.return.type", returnType);
+        checker.reportError(tree, "statically.executable.nonconstant.return.type", returnType);
       }
 
       // Ways to determine the receiver type.
       // 1. This definition of receiverType is null when receiver is implicit and method has
       //    class com.sun.tools.javac.code.Symbol$MethodSymbol.  WHY?
       //        TypeMirror receiverType = method.getReceiverType();
-      //    The same is true of TreeUtils.elementFromDeclaration(node).getReceiverType()
+      //    The same is true of TreeUtils.elementFromDeclaration(tree).getReceiverType()
       //    which seems to conflict with ExecutableType's documentation.
       // 2. Can't use the tree, because the receiver might not be explicit.
       // 3. Check whether method is static and use the declaring class.  Doesn't handle all
@@ -421,7 +578,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
           && receiverType.getKind() != TypeKind.NONE
           && !canBeConstant(receiverType)) {
         checker.reportError(
-            node,
+            tree,
             "statically.executable.nonconstant.parameter.type",
             "this (the receiver)",
             returnType);
@@ -431,7 +588,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         TypeMirror paramType = param.asType();
         if (paramType.getKind() != TypeKind.NONE && !canBeConstant(paramType)) {
           checker.reportError(
-              node,
+              tree,
               "statically.executable.nonconstant.parameter.type",
               param.getSimpleName().toString(),
               returnType);

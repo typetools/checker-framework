@@ -9,7 +9,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -201,7 +201,7 @@ public interface QualifierHierarchy {
           "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
     }
 
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
         AnnotationMirror lub = leastUpperBound(a1, a2);
@@ -290,7 +290,7 @@ public interface QualifierHierarchy {
           "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
     }
 
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
         AnnotationMirror glb = greatestLowerBound(a1, a2);
@@ -372,13 +372,13 @@ public interface QualifierHierarchy {
    * @return true if the update was done; false if there was a qualifier hierarchy collision
    */
   default <T> boolean updateMappingToMutableSet(
-      Map<T, Set<AnnotationMirror>> map, T key, AnnotationMirror qualifier) {
+      Map<T, AnnotationMirrorSet> map, T key, AnnotationMirror qualifier) {
     // https://github.com/typetools/checker-framework/issues/2000
     @SuppressWarnings("nullness:argument")
     boolean mapContainsKey = map.containsKey(key);
     if (mapContainsKey) {
       @SuppressWarnings("nullness:assignment") // key is a key for map.
-      @NonNull Set<AnnotationMirror> prevs = map.get(key);
+      @NonNull AnnotationMirrorSet prevs = map.get(key);
       AnnotationMirror old = findAnnotationInSameHierarchy(prevs, qualifier);
       if (old != null) {
         return false;
@@ -386,7 +386,7 @@ public interface QualifierHierarchy {
       prevs.add(qualifier);
       map.put(key, prevs);
     } else {
-      Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(qualifier);
       map.put(key, set);
     }

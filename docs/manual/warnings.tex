@@ -190,12 +190,24 @@ warnings.
 
 \<@SuppressWarnings> is a declaration annotation, so it may be placed on
 program declarations such as a local variable declaration, a method, or a
-class.  It cannot be used on statements, expressions, or types.
-(\<assert> plus \<@AssumeAssertion> can be used between statements and can
-affect arbitrary expressions; see Section~\ref{assumeassertion}.)
+class.
 
-Always write a \<@SuppressWarnings> annotation on the smallest possible
-scope.  To reduce the scope of a \<@SuppressWarnings> annotation, it is
+\<@SuppressWarnings> cannot be used on \textbf{statements, expressions, or types}.
+To work around this, you can
+\begin{itemize}
+\item
+  extract an expression into a local variable
+  and suppress a warning on its declaration,
+\item
+  write \<assert> plus \<@AssumeAssertion> between statements; it can
+  affect arbitrary expressions (see Section~\ref{assumeassertion}), or
+\item
+  use a type-system-specific method call, such as
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)}.
+\end{itemize}
+
+Always write a \<@SuppressWarnings> annotation on the \textbf{smallest possible
+scope}.  To reduce the scope of a \<@SuppressWarnings> annotation, it is
 sometimes desirable to refactor the code.  You might extract an expression
 into a local variable, so that warnings can be suppressed just for that
 local variable's initializer expression.  Likewise, you might extract some
@@ -468,7 +480,7 @@ warnings:  write specifications or suppress
 warnings; see below for an explanation of each approach.
 
 The method
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is not an
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} is not an
 assertion method.  It is a warning suppression method.
 
 Note that some libraries have an imprecise/incorrect specification of their assertion
@@ -520,7 +532,7 @@ guarantee that your code is correct and will not fail at run time.
 \begin{itemize}
 \item
   If the method is defined in your source code, annotate its definition just as
-  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} is
+  \refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} is
   annotated; see its Javadoc or the source code for the Checker Framework.
   Also, be sure to document the intention in the method's Javadoc, so that
   programmers do not

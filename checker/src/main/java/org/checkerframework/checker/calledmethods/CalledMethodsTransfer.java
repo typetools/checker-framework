@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -25,6 +24,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -99,7 +99,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       if (flowValue != null) {
         // Dataflow has already recorded information about the target.  Integrate it into
         // the list of values in the new annotation.
-        Set<AnnotationMirror> flowAnnos = flowValue.getAnnotations();
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;
         for (AnnotationMirror anno : flowAnnos) {
           if (atypeFactory.isAccumulatorAnnotation(anno)) {

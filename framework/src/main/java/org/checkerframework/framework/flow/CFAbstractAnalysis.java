@@ -2,7 +2,6 @@ package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -22,7 +21,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -188,7 +187,7 @@ public abstract class CFAbstractAnalysis<
    * @return an abstract value containing the given annotated {@code type}
    */
   public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
-    Set<AnnotationMirror> annos;
+    AnnotationMirrorSet annos;
     if (type.getKind() == TypeKind.WILDCARD) {
       annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
     } else if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
@@ -203,15 +202,17 @@ public abstract class CFAbstractAnalysis<
    * Returns an abstract value containing the given {@code annotations} and {@code underlyingType}.
    * Returns null if the annotation set has missing annotations.
    *
+   * @param annotations the annotations for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
    * @return an abstract value containing the given {@code annotations} and {@code underlyingType}
    */
   public abstract @Nullable V createAbstractValue(
-      Set<AnnotationMirror> annotations, TypeMirror underlyingType);
+      AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
-  /** Default implementation for {@link #createAbstractValue(Set, TypeMirror)}. */
+  /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
   public CFValue defaultCreateAbstractValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
-      Set<AnnotationMirror> annotations,
+      AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
       return null;
@@ -231,10 +232,14 @@ public abstract class CFAbstractAnalysis<
   /**
    * Returns an abstract value containing an annotated type with the annotation {@code anno}, and
    * 'top' for all other hierarchies. The underlying type is {@code underlyingType}.
+   *
+   * @param anno the annotation for the result annotated type
+   * @param underlyingType the unannotated type for the result annotated type
+   * @return an abstract value with {@code anno} and {@code underlyingType}
    */
   public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
     QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
-    Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet annos = new AnnotationMirrorSet();
     annos.addAll(hierarchy.getTopAnnotations());
     AnnotationMirror f = hierarchy.findAnnotationInSameHierarchy(annos, anno);
     annos.remove(f);

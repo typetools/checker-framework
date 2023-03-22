@@ -34,21 +34,21 @@ public class CompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
         super.createTreeAnnotator(),
         new TreeAnnotator(this) {
           @Override
-          protected Void defaultAction(Tree node, AnnotatedTypeMirror p) {
+          protected Void defaultAction(Tree tree, AnnotatedTypeMirror p) {
             // Just access the subchecker type factories to make
             // sure they were created properly
             GenericAnnotatedTypeFactory<?, ?, ?, ?> accATF =
                 getTypeFactoryOfSubchecker(AnotherCompoundChecker.class);
             @SuppressWarnings("unused")
-            AnnotatedTypeMirror another = accATF.getAnnotatedType(node);
+            AnnotatedTypeMirror another = accATF.getAnnotatedType(tree);
             GenericAnnotatedTypeFactory<?, ?, ?, ?> aliasingATF =
                 getTypeFactoryOfSubchecker(AliasingChecker.class);
             @SuppressWarnings("unused")
-            AnnotatedTypeMirror aliasing = aliasingATF.getAnnotatedType(node);
+            AnnotatedTypeMirror aliasing = aliasingATF.getAnnotatedType(tree);
             GenericAnnotatedTypeFactory<?, ?, ?, ?> valueATF =
                 getTypeFactoryOfSubchecker(ValueChecker.class);
             assert valueATF == null : "Should not be able to access the ValueChecker annotations.";
-            return super.defaultAction(node, p);
+            return super.defaultAction(tree, p);
           }
         });
   }

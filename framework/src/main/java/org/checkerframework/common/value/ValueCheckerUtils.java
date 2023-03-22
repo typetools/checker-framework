@@ -32,7 +32,7 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get a list of values of annotation, and then cast them to a given type.
+   * Get a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
    * @param castTo the type that is casted to
@@ -41,6 +41,23 @@ public class ValueCheckerUtils {
    */
   public static List<?> getValuesCastedToType(
       AnnotationMirror anno, TypeMirror castTo, ValueAnnotatedTypeFactory atypeFactory) {
+    return getValuesCastedToType(anno, castTo, false, atypeFactory);
+  }
+
+  /**
+   * Get a list of the values of an annotation, and then cast the values to a given type.
+   *
+   * @param anno the annotation that contains values
+   * @param castTo the unannotated type that is casted to
+   * @param isUnsigned true if the type being casted to is unsigned
+   * @param atypeFactory the type factory
+   * @return a list of values after the casting
+   */
+  public static List<?> getValuesCastedToType(
+      AnnotationMirror anno,
+      TypeMirror castTo,
+      boolean isUnsigned,
+      ValueAnnotatedTypeFactory atypeFactory) {
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {
@@ -49,12 +66,12 @@ public class ValueCheckerUtils {
         break;
       case ValueAnnotatedTypeFactory.INTVAL_NAME:
         List<Long> longs = atypeFactory.getIntValues(anno);
-        values = convertIntVal(longs, castType, castTo);
+        values = convertIntVal(longs, castType, castTo, isUnsigned);
         break;
       case ValueAnnotatedTypeFactory.INTRANGE_NAME:
         Range range = atypeFactory.getRange(anno);
         List<Long> rangeValues = getValuesFromRange(range, Long.class);
-        values = convertIntVal(rangeValues, castType, castTo);
+        values = convertIntVal(rangeValues, castType, castTo, isUnsigned);
         break;
       case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
         values = convertStringVal(anno, castType, atypeFactory);
@@ -113,14 +130,17 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get all possible values from the given type and cast them into a boxed primitive type.
+   * Get all possible values from the given type and cast them into a boxed primitive type. Returns
+   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
    *
+   * @param <T> the type of the values to obtain
    * @param range the given range
    * @param expectedType the expected type
-   * @return a list of all the values in the range
+   * @return a list of all the values in the range, or null if there would be more than {@link
+   *     ValueAnnotatedTypeFactory#MAX_VALUES}
    */
   public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
     if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
@@ -198,7 +218,18 @@ public class ValueCheckerUtils {
     return strings;
   }
 
-  private static List<?> convertIntVal(List<Long> longs, Class<?> newClass, TypeMirror newType) {
+  /**
+   * Convert a list of longs to a given type
+   *
+   * @param longs the integral values to convert
+   * @param newClass determines the type of the result
+   * @param newType the type to which to cast, if newClass is numeric
+   * @param isUnsigned if true, treat {@code newType} as unsigned
+   * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
+   *     {@code List<char[]>}
+   */
+  private static List<?> convertIntVal(
+      List<Long> longs, Class<?> newClass, TypeMirror newType, boolean isUnsigned) {
     if (longs == null) {
       return null;
     }
@@ -208,9 +239,9 @@ public class ValueCheckerUtils {
       return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
-          "ValueAnnotatedTypeFactory: can't convert int to boolean");
+          "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
     }
-    return NumberUtils.castNumbers(newType, longs);
+    return NumberUtils.castNumbers(newType, isUnsigned, longs);
   }
 
   /**

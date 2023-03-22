@@ -74,12 +74,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew getPlumeScripts -q
+	cd ../.. && ./gradlew getPlumeScripts
 
 .PHONY: contributors.tex
 contributors.tex:
 # Update plume-scripts even if it is already cloned
-	cd ../.. && ./gradlew getPlumeScripts -q
+	cd ../.. && ./gradlew getPlumeScripts
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
@@ -111,8 +111,9 @@ endif
 clean:
 	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex
 
+very-clean: very_clean
 very_clean: clean
-	@\rm -f manual.html CFLogo.png
+	@\rm -f manual.html CFLogo.png manual001.png favicon-checkerframework.png *.svg
 
 .PHONY: checklink
 checklink:

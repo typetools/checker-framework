@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -21,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AtmCombo;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -863,7 +863,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         return areEqualInHierarchy(subtype, supertype);
       } else if (subtypeHasAnno && !supertypeHasAnno) {
         // This is the case "@A T <: T" where T is a type variable.
-        Set<AnnotationMirror> superLBs =
+        AnnotationMirrorSet superLBs =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, supertype);
         AnnotationMirror superLB =
             qualifierHierarchy.findAnnotationInHierarchy(superLBs, currentTop);

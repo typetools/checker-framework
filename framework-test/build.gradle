@@ -2,7 +2,6 @@ import org.gradle.internal.jvm.Jvm
 
 sourceSets {
   taglet
-  tagletJdk8
 }
 
 dependencies {
@@ -11,10 +10,6 @@ dependencies {
   implementation project(':checker-qual')
 
   implementation "org.plumelib:plume-util:${plumeUtilVersion}"
-
-  if (Jvm.current().toolsJar) {
-    tagletJdk8Implementation files(Jvm.current().toolsJar)
-  }
 }
 
 jar.archiveBaseName = 'framework-test'
@@ -38,6 +33,7 @@ final frameworkTest(publication) {
     }
   }
 }
+
 publishing {
   publications {
     frameworkTest(MavenPublication) {
@@ -45,6 +41,7 @@ publishing {
     }
   }
 }
+
 signing {
   sign publishing.publications.frameworkTest
 }

@@ -1351,7 +1351,7 @@ public abstract class UBQualifier {
      *
      * @return the integer value
      */
-    int getValue() {
+    public int getValue() {
       return value;
     }
 
@@ -1435,8 +1435,13 @@ public abstract class UBQualifier {
     }
   }
 
+  /** The bottom qualifier for the upperbound type system. */
   private static class UpperBoundBottomQualifier extends UBQualifier {
+    /** The canonical bottom qualifier for the upperbound type system. */
     static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+
+    /** This class is a singleton. */
+    private UpperBoundBottomQualifier() {}
 
     @Override
     public boolean isBottom() {

@@ -19,25 +19,25 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
   }
 
   @Override
-  public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-    ExpressionTree var = node.getVariable();
-    ExpressionTree expr = node.getExpression();
+  public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+    ExpressionTree var = tree.getVariable();
+    ExpressionTree expr = tree.getExpression();
     AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-    Tree.Kind kind = node.getKind();
+    Tree.Kind kind = tree.getKind();
 
     if ((kind == Tree.Kind.PLUS_ASSIGNMENT || kind == Tree.Kind.MINUS_ASSIGNMENT)) {
       if (!atypeFactory
           .getQualifierHierarchy()
           .isSubtype(exprType.getEffectiveAnnotations(), varType.getEffectiveAnnotations())) {
-        checker.reportError(node, "compound.assignment", varType, exprType);
+        checker.reportError(tree, "compound.assignment", varType, exprType);
       }
     } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
-      checker.reportError(node, "compound.assignment", varType, exprType);
+      checker.reportError(tree, "compound.assignment", varType, exprType);
     }
 
-    return null; // super.visitCompoundAssignment(node, p);
+    return null; // super.visitCompoundAssignment(tree, p);
   }
 }

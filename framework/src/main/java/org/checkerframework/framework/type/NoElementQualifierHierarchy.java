@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -37,10 +38,10 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   protected final QualifierKindHierarchy qualifierKindHierarchy;
 
   /** Set of top annotation mirrors. */
-  protected final Set<AnnotationMirror> tops;
+  protected final AnnotationMirrorSet tops;
 
   /** Set of bottom annotation mirrors. */
-  protected final Set<AnnotationMirror> bottoms;
+  protected final AnnotationMirrorSet bottoms;
 
   /** Mapping from {@link QualifierKind} to its corresponding {@link AnnotationMirror}. */
   protected final Map<QualifierKind, AnnotationMirror> kindToAnnotationMirror;
@@ -59,8 +60,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
     this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
     this.kindToAnnotationMirror = createAnnotationMirrors(elements);
-    this.qualifiers =
-        AnnotationUtils.createUnmodifiableAnnotationSet(kindToAnnotationMirror.values());
+    this.qualifiers = AnnotationMirrorSet.unmodifiableSet(kindToAnnotationMirror.values());
 
     this.tops = createTops();
     this.bottoms = createBottoms();
@@ -105,9 +105,8 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
    * @return the unmodifiable set of top {@link AnnotationMirror}s
    */
   @RequiresNonNull({"this.kindToAnnotationMirror", "this.qualifierKindHierarchy"})
-  protected Set<AnnotationMirror> createTops(
-      @UnderInitialization NoElementQualifierHierarchy this) {
-    Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
+  protected AnnotationMirrorSet createTops(@UnderInitialization NoElementQualifierHierarchy this) {
+    AnnotationMirrorSet tops = new AnnotationMirrorSet();
     for (QualifierKind top : qualifierKindHierarchy.getTops()) {
       @SuppressWarnings(
           "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
@@ -115,7 +114,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
       @NonNull AnnotationMirror topAnno = kindToAnnotationMirror.get(top);
       tops.add(topAnno);
     }
-    return Collections.unmodifiableSet(tops);
+    return AnnotationMirrorSet.unmodifiableSet(tops);
   }
 
   /**
@@ -124,9 +123,9 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
    * @return the unmodifiable set of bottom {@link AnnotationMirror}s
    */
   @RequiresNonNull({"this.kindToAnnotationMirror", "this.qualifierKindHierarchy"})
-  protected Set<AnnotationMirror> createBottoms(
+  protected AnnotationMirrorSet createBottoms(
       @UnderInitialization NoElementQualifierHierarchy this) {
-    Set<AnnotationMirror> bottoms = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet bottoms = new AnnotationMirrorSet();
     for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
       @SuppressWarnings(
           "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
@@ -134,7 +133,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
       @NonNull AnnotationMirror bottomAnno = kindToAnnotationMirror.get(bottom);
       bottoms.add(bottomAnno);
     }
-    return Collections.unmodifiableSet(bottoms);
+    return AnnotationMirrorSet.unmodifiableSet(bottoms);
   }
 
   /**
@@ -155,6 +154,9 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   @Override
   public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
       Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+    if (annos.isEmpty()) {
+      return null;
+    }
     QualifierKind kind = getQualifierKind(annotationMirror);
     for (AnnotationMirror candidate : annos) {
       QualifierKind candidateKind = getQualifierKind(candidate);

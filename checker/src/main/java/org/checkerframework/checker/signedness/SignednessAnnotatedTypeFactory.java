@@ -24,6 +24,7 @@ import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
 import org.checkerframework.checker.signedness.qual.SignedPositiveFromUnsigned;
+import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -45,6 +46,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -70,6 +72,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @SignedPositiveFromUnsigned annotation. */
   protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
       AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+  /** The @SignednessBottom annotation. */
+  protected final AnnotationMirror SIGNEDNESS_BOTTOM =
+      AnnotationBuilder.fromClass(elements, SignednessBottom.class);
   /** The @PolySigned annotation. */
   protected final AnnotationMirror POLY_SIGNED =
       AnnotationBuilder.fromClass(elements, PolySigned.class);
@@ -142,12 +147,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignednessGlb if its value is within the signed positive
-   * range (i.e. its MSB is zero).
+   * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
    */
   private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
+    if (tree.getKind() == Tree.Kind.TYPE_CAST) {
+      return;
+    }
     TypeMirror javaType = type.getUnderlyingType();
     TypeKind javaTypeKind = javaType.getKind();
     if (tree.getKind() != Tree.Kind.VARIABLE) {
@@ -200,11 +208,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public Set<AnnotationMirror> getWidenedAnnotations(
-      Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+  public AnnotationMirrorSet getWidenedAnnotations(
+      AnnotationMirrorSet annos, TypeKind typeKind, TypeKind widenedTypeKind) {
     assert annos.size() == 1;
 
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     if (TypeKindUtils.isFloatingPoint(widenedTypeKind)) {
       result.add(SIGNED);
       return result;
@@ -222,11 +230,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public Set<AnnotationMirror> getNarrowedAnnotations(
-      Set<AnnotationMirror> annos, TypeKind typeKind, TypeKind narrowedTypeKind) {
+  public AnnotationMirrorSet getNarrowedAnnotations(
+      AnnotationMirrorSet annos, TypeKind typeKind, TypeKind narrowedTypeKind) {
     assert annos.size() == 1;
 
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
 
     if (narrowedTypeKind == TypeKind.CHAR) {
       result.add(SIGNED);
@@ -408,11 +416,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns true iff the given tree node is a mask operation (&amp; or |).
    *
-   * @param node a tree to test
+   * @param tree a tree to test
    * @return true iff node is a mask operation (&amp; or |)
    */
-  private boolean isMask(Tree node) {
-    Tree.Kind kind = node.getKind();
+  private boolean isMask(Tree tree) {
+    Tree.Kind kind = tree.getKind();
 
     return kind == Tree.Kind.AND || kind == Tree.Kind.OR;
   }
@@ -421,15 +429,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
    *
-   * @param node a tree that might be a cast to a primitive
+   * @param tree a tree that might be a cast to a primitive
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
-  private PrimitiveTypeTree primitiveTypeCast(Tree node) {
-    if (node.getKind() != Tree.Kind.TYPE_CAST) {
+  private PrimitiveTypeTree primitiveTypeCast(Tree tree) {
+    if (tree.getKind() != Tree.Kind.TYPE_CAST) {
       return null;
     }
 
-    TypeCastTree cast = (TypeCastTree) node;
+    TypeCastTree cast = (TypeCastTree) tree;
     Tree castType = cast.getType();
 
     Tree underlyingType;
@@ -602,7 +610,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is masked such that a signed or unsigned right shift has the
    *     same effect
    */
-  /* package-private */ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = enclosingPair.first;
@@ -650,7 +658,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true iff the right shift is type casted such that a signed or unsigned right shift has
    *     the same effect
    */
-  /* package-private */ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
+  /*package-private*/ boolean isCastedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
 
@@ -688,7 +696,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
    * arguments must have the same signedness type annotation.
    */
-  private static class SignednessQualifierPolymorphism extends DefaultQualifierPolymorphism {
+  // Not static because it references SIGNEDNESS_BOTTOM.
+  private class SignednessQualifierPolymorphism extends DefaultQualifierPolymorphism {
     /**
      * Creates a {@link SignednessQualifierPolymorphism}.
      *
@@ -700,7 +709,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       super(env, factory);
     }
 
-    /** Combines the two annotations using the least upper bound. */
+    /**
+     * Combines the two annotations. If they are comparable, return the lub. If they are
+     * incomparable, return @SignednessBottom.
+     *
+     * @param polyQual the polymorphic qualifier
+     * @param a1 the first annotation to compare
+     * @param a2 the second annotation to compare
+     * @return the lub, unless the annotations are incomparable
+     */
     @Override
     protected AnnotationMirror combine(
         AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
@@ -710,11 +727,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else {
+      } else if (qualHierarchy.isSubtype(a1, a2)) {
+        return a2;
+      } else if (qualHierarchy.isSubtype(a2, a1)) {
+        return a1;
+      } else
+        // The two annotations are incomparable
         // TODO: Issue a warning at the proper code location.
-        // Returning glb can lead to obscure error messages.
-        return qualHierarchy.greatestLowerBound(a1, a2);
-      }
+        // TODO: Returning bottom leads to obscure error messages.  It would probably be
+        // better to issue a warning in this method, then return lub as usual.
+        return SIGNEDNESS_BOTTOM;
     }
   }
 

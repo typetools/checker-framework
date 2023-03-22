@@ -133,7 +133,7 @@ public class TestTreeKinds {
   @GuardedBy("lock") myEnumType myEnum;
 
   void testEnumType() {
-    // TODO: assignment is technically correct, but we could
+    // TODO: "assignment" is technically correct, but we could
     // make it friendlier for the user if constant enum values on the RHS
     // automatically cast to the @GuardedBy annotation of the LHS.
     // :: error: (assignment)

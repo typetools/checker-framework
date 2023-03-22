@@ -46,6 +46,7 @@ import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseT
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -88,7 +89,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
-  /* package-private */ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+  /*package-private*/ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
       new IdentityHashMap<>(100);
 
   /** The MustCall.value field/element. */
@@ -107,6 +108,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private final ExecutableElement createsMustCallForValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
+  private final boolean noLightweightOwnership;
+
   /**
    * Creates a MustCallAnnotatedTypeFactory.
    *
@@ -122,6 +126,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       // In NO_RESOURCE_ALIASES mode, all @MustCallAlias annotations are ignored.
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
+    noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     this.postInit();
   }
 
@@ -226,8 +231,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
     for (int i = 0; i < parameterTypes.size(); i++) {
       Element paramDecl = declaration.getParameters().get(i);
-      if (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-          || getDeclAnnotation(paramDecl, Owning.class) == null) {
+      if (noLightweightOwnership || getDeclAnnotation(paramDecl, Owning.class) == null) {
         AnnotatedTypeMirror paramType = parameterTypes.get(i);
         if (!paramType.hasAnnotation(POLY)) {
           paramType.replaceAnnotation(TOP);
@@ -268,8 +272,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getExplicitAnnos(Element element) {
-      Set<AnnotationMirror> explict = super.getExplicitAnnos(element);
+    protected AnnotationMirrorSet getExplicitAnnos(Element element) {
+      AnnotationMirrorSet explict = super.getExplicitAnnos(element);
       if (explict.isEmpty() && ElementUtils.isTypeElement(element)) {
         AnnotationMirror inheritableMustCall =
             getDeclAnnotation(element, InheritableMustCall.class);
@@ -277,7 +281,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           List<String> mustCallVal =
               AnnotationUtils.getElementValueArray(
                   inheritableMustCall, inheritableMustCallValueElement, String.class);
-          return Collections.singleton(createMustCall(mustCallVal));
+          return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
         }
       }
       return explict;
@@ -301,8 +305,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
-      Set<AnnotationMirror> explict = super.getAnnotationFromElement(element);
+    protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
+      AnnotationMirrorSet explict = super.getAnnotationFromElement(element);
       if (!explict.isEmpty()) {
         return explict;
       }
@@ -311,9 +315,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         List<String> mustCallVal =
             AnnotationUtils.getElementValueArray(
                 inheritableMustCall, inheritableMustCallValueElement, String.class);
-        return Collections.singleton(createMustCall(mustCallVal));
+        return AnnotationMirrorSet.singleton(createMustCall(mustCallVal));
       }
-      return Collections.emptySet();
+      return AnnotationMirrorSet.emptySet();
     }
   }
 
@@ -415,17 +419,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromUse(node);
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+      Element elt = TreeUtils.elementFromUse(tree);
       if (elt.getKind() == ElementKind.PARAMETER
-          && (checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP)
-              || getDeclAnnotation(elt, Owning.class) == null)) {
+          && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
       if (isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
-      return super.visitIdentifier(node, type);
+      return super.visitIdentifier(tree, type);
     }
   }
 

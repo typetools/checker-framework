@@ -23,7 +23,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
 \\ \ref{faq-never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
-\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types (type qualifiers), or should I used Java subtypes?
+\\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types (type qualifiers), or should I use Java subtypes?
 
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
@@ -135,7 +135,7 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\subsectionAndLabel{Should I use pluggable types (type qualifiers), or should I used Java subtypes?}{faq-typequals-vs-subtypes}
+\subsectionAndLabel{Should I use pluggable types (type qualifiers), or should I use Java subtypes?}{faq-typequals-vs-subtypes}
 
 % Old labels, for backward compatibility.  Don't use them any longer.
 \label{when-to-use-type-qualifiers}
@@ -157,7 +157,7 @@ changing MyClass into an interface or abstract class, defining two
 subclasses, and ensuring that neither subclass ever refers to the other
 subclass nor to the parent class.
 
-If  Java subclasses solve your problem, then that is probably better.
+If Java subclasses solve your problem, then that is probably better.
 We do not encourage you to use type qualifiers as a poor substitute for
 classes.  An advantage of using classes is that the Java type-checker
 runs every time you compile your code;
@@ -169,13 +169,25 @@ better choice; here are some reasons:
 
 \item[Backward compatibility]
 Using a new class may make your code incompatible with existing libraries or
-clients.  Brian Goetz expands on this issue in an article on the
-pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
-is not a concern, a code change may introduce bugs, whereas adding
-annotations does not change the run-time behavior.  It is possible to add
-annotations to existing code, including code you do not maintain or cannot
-change.  For code that strictly cannot be changed, you
+clients.  You may need to write a conversion at every call to and return
+from a library call; these conversions add clutter, reduce performance, and
+(by creating new objects) break object equality properties.
+Brian Goetz also notes some problems in an article on the
+pseudo-typedef antipattern~\cite{Goetz2006:typedef}.
+
+It is possible to add annotations to code you do not maintain or cannot
+change; for example, you
 can write library annotations (see Chapter~\ref{annotating-libraries}).
+
+\item[Composability]
+A Java object has just one class at run time.  You care about multiple
+correctness properties, then using the Java type system requires a
+combinatorial number of classes (all possible combinations).  By contrast,
+arbitrary type qualifiers can be used at the same time.
+
+\item[No new bugs]
+A code change may introduce bugs, whereas adding
+annotations does not change the run-time behavior.
 
 \item[Broader applicability]
 Type annotations can be applied to primitives and to final classes such as
@@ -202,6 +214,11 @@ Java type-checker would reject.  Here are a few examples.
   as the Nullness Checker's treatment of \code{Map.get}.
 \end{itemize}
 
+\item[Partial annotation]
+  You can add type annotations to just part of your code, and suppress
+  warnings at entry points to the annotated portion.  By contrast, using a
+  new Java type requires using it everywhere or writing conversion routines
+  at every entry point.
 
 \item[Efficiency]
   Type qualifiers have no run-time representation.  Therefore, there is no
@@ -671,7 +688,7 @@ welcome it as a contribution to the Checker Framework.
 Some checkers have library methods that you can explicitly insert in your
 source code.
 Examples include the Nullness Checker's
-\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{-T-} method (see
+\refmethod{checker/nullness/util}{NullnessUtil}{castNonNull}{(T)} method (see
 Section~\ref{suppressing-warnings-with-assertions}) and the Regex Checker's
 \<RegexUtil> class (see Section~\ref{regexutil-methods}).
 But, it would be better to have more general support that does not require

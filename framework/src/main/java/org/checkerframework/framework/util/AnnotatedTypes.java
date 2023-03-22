@@ -9,7 +9,6 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.WildcardType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +49,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -237,40 +237,6 @@ public class AnnotatedTypes {
     } else {
       declaredAsSuper.setTypeArguments(Collections.emptyList());
     }
-  }
-
-  // Do not use `isUnbound()` because as of Java 18, it returns true for "?  extends Object".
-
-  /**
-   * This method identifies wildcard types that are unbound.
-   *
-   * @param wildcard the type to check
-   * @return true if the given card is an unbounded wildcard
-   */
-  public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
-    return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
-  }
-
-  /**
-   * This method identifies wildcard types that have an explicit super bound. NOTE:
-   * Type.WildcardType.isSuperBound will return true for BOTH unbound and super bound wildcards
-   * which necessitates this method
-   */
-  public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
-    final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
-    return wildcardType.isSuperBound()
-        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
-  }
-
-  /**
-   * This method identifies wildcard types that have an explicit extends bound. NOTE:
-   * Type.WildcardType.isExtendsBound will return true for BOTH unbound and extends bound wildcards
-   * which necessitates this method
-   */
-  public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcard) {
-    final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
-    return wildcardType.isExtendsBound()
-        && ((WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -868,9 +834,9 @@ public class AnnotatedTypes {
           glbJava.getKind(), glbJava, type1, type2);
     }
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> set1 =
+    AnnotationMirrorSet set1 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
-    Set<AnnotationMirror> set2 =
+    AnnotationMirrorSet set2 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
     Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(set1, set2);
 
@@ -942,7 +908,7 @@ public class AnnotatedTypes {
         if (subtype.getKind() != TypeKind.TYPEVAR) {
           throw new BugInCF("Missing primary annotations: subtype: %s", subtype);
         }
-        Set<AnnotationMirror> lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
+        AnnotationMirrorSet lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
         AnnotationMirror lbAnno = qualifierHierarchy.findAnnotationInHierarchy(lb, top);
         if (lbAnno != null && !qualifierHierarchy.isSubtype(lbAnno, superAnno)) {
           // The superAnno is lower than the lower bound annotation, so add it.
@@ -1426,9 +1392,11 @@ public class AnnotatedTypes {
    * This method returns the effective annotation on the lower bound of a type, or on the type
    * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
+   * @param qualifierHierarchy the qualifier hierarchy
+   * @param toSearch the type whose lower bound to examine
    * @return the set of effective annotation mirrors in all hierarchies
    */
-  public static Set<AnnotationMirror> findEffectiveLowerBoundAnnotations(
+  public static AnnotationMirrorSet findEffectiveLowerBoundAnnotations(
       final QualifierHierarchy qualifierHierarchy, final AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
@@ -1445,7 +1413,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          final Set<AnnotationMirror> glb =
+          final AnnotationMirrorSet glb =
               glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
           return glb;
 
@@ -1470,9 +1438,11 @@ public class AnnotatedTypes {
    * it finds a concrete type from which it can pull an annotation. This occurs for every hierarchy
    * in QualifierHierarchy.
    *
+   * @param qualifierHierarchy the qualifier hierarchy
+   * @param toSearch the type whose effective annotations to determine
    * @return the set of effective annotation mirrors in all hierarchies
    */
-  public static Set<AnnotationMirror> findEffectiveAnnotations(
+  public static AnnotationMirrorSet findEffectiveAnnotations(
       final QualifierHierarchy qualifierHierarchy, final AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
@@ -1489,7 +1459,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          final Set<AnnotationMirror> glb =
+          final AnnotationMirrorSet glb =
               glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
           return glb;
 
@@ -1530,9 +1500,9 @@ public class AnnotatedTypes {
    * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb
    * @return a set of annotations representing the glb of the intersection's bounds
    */
-  public static Set<AnnotationMirror> glbOfBounds(
+  public static AnnotationMirrorSet glbOfBounds(
       final AnnotatedIntersectionType isect, final QualifierHierarchy qualifierHierarchy) {
-    Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
       final AnnotationMirror glbAnno = glbOfBoundsInHierarchy(isect, top, qualifierHierarchy);
       if (glbAnno != null) {
@@ -1547,14 +1517,36 @@ public class AnnotatedTypes {
   // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
   /**
+   * This method identifies wildcard types that are unbound.
+   *
+   * @param wildcard the type to check
+   * @return true if the given card is an unbounded wildcard
+   */
+  public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
+    return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
+  }
+
+  /**
    * Returns true if wildcard type is explicitly super bounded.
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
+   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
    */
+  @Deprecated
   public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
-    return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound()
-        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
+    return hasExplicitSuperBound(wildcardType);
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit super bound.
+   *
+   * @param wildcard the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
+  public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
+    return ((Type.WildcardType) wildcard.getUnderlyingType()).isSuperBound()
+        && ((Type.WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
 
   /**
@@ -1562,8 +1554,20 @@ public class AnnotatedTypes {
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly extends bounded
+   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedTypeMirror)}.
    */
+  @Deprecated
   public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
+    return hasExplicitExtendsBound(wildcardType);
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit extends bound.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
+  public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcardType) {
     return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
         && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
   }
@@ -1605,7 +1609,7 @@ public class AnnotatedTypes {
     // TODO: There will be a nicer way to access this in 308 soon.
     List<Attribute.TypeCompound> decall =
         ((Symbol) constructor.getElement()).getRawTypeAttributes();
-    Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet decret = new AnnotationMirrorSet();
     for (Attribute.TypeCompound da : decall) {
       if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
         decret.add(da);
@@ -1613,7 +1617,7 @@ public class AnnotatedTypes {
     }
 
     // Collect all polymorphic qualifiers; we should substitute them.
-    Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet polys = new AnnotationMirrorSet();
     for (AnnotationMirror anno : returnType.getAnnotations()) {
       if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
         polys.add(anno);

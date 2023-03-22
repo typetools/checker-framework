@@ -6,10 +6,10 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -22,7 +22,12 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */
-public class DeclarationsIntoElements {
+public final class DeclarationsIntoElements {
+
+  /** Do not instantiate. */
+  private DeclarationsIntoElements() {
+    throw new AssertionError("Class DeclarationsIntoElements cannot be instantiated.");
+  }
 
   /**
    * The entry point.
@@ -53,7 +58,7 @@ public class DeclarationsIntoElements {
     MethodSymbol sym = (MethodSymbol) element;
     java.util.List<? extends AnnotationMirror> elementAnnos = element.getAnnotationMirrors();
 
-    Set<AnnotationMirror> declAnnotations = atypeFactory.getDeclAnnotations(sym);
+    AnnotationMirrorSet declAnnotations = atypeFactory.getDeclAnnotations(sym);
     List<Compound> tcs = List.nil();
 
     for (AnnotationMirror anno : declAnnotations) {

@@ -476,10 +476,11 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 % \refqualclass{framework/qual}{SubtypeOf} and
 % \sunjavadocanno{java.base/java/lang/annotation/Target.html}{Target}.)
 
-The annotations should be placed within a directory called \<qual>, and
-\<qual> should be placed in the same directory as your checker's source
-file (unless you are creating multiple distribution artifacts, one for your
-checker and one for its qualifiers).
+The qualifiers should be in a \<qual> subpackage of the type checker package ---
+by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
+As mentioned in {creating-parts-of-a-checker}, the files for that \<qual> package can be
+either in a subdirectory or in a separate gradle module, depending on whether
+they should be distributable separately.
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
 (See Section \ref{creating-indicating-supported-annotations} for more details.)
@@ -621,7 +622,7 @@ method arguments have the same signedness type.  Writing
 \end{Verbatim}
 
 \noindent
-permits every invocation, because one if its instantiations is
+permits every invocation, because one of its instantiations is
 
 \begin{Verbatim}
   void foo(@UnknownSignedness Object a, @UnknownSignedness Object b) { ... }
@@ -663,8 +664,8 @@ types are annotated with the polymorphic qualifier (e.g.,
 The declarative syntax suffices for most cases.  More complex type
 hierarchies can be expressed by overriding, in your subclass of
 \refclass{common/basetype}{BaseAnnotatedTypeFactory}, either
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{--}
-or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{--}
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createQualifierHierarchy}{()}
+or \refmethodterse{framework/type}{AnnotatedTypeFactory}{createTypeHierarchy}{()}
 (typically only one of these needs to be overridden).
 
 For more details, see the Javadoc of those methods and of the classes
@@ -709,7 +710,7 @@ files that the checker reads.
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by overriding the
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{-org.checkerframework.framework.util.defaults.QualifierDefaults-}
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{(org.checkerframework.framework.util.defaults.QualifierDefaults)}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy.
 \end{sloppypar}
@@ -757,31 +758,31 @@ qualifier on every type --- a defaulted or inferred type qualifier if the
 programmer didn't write a type qualifier explicitly.
 
 
-\subsectionAndLabel{Completeness of the type hierarchy}{creating-bottom-and-top-qualifier}
+\subsectionAndLabel{Completeness of the qualifier hierarchy}{creating-bottom-and-top-qualifier}
 
-When you define a type system, its type hierarchy must be a
-lattice:  every set of types has a unique least upper bound and a unique
-greatest lower bound.  This implies that there must be a top type that is a
-supertype of all other types, and there must be a bottom type that is a
-subtype of all other types.
-Furthermore, the top type and bottom type should be defined
+When you define a type system, its qualifier hierarchy must be a
+lattice:  every set of qualifiers has a unique least upper bound and a unique
+greatest lower bound.  This implies that there must be a top qualifier that is a
+supertype of all other qualifiers, and there must be a bottom qualifier that is a
+subtype of all other qualifiers.
+Furthermore, the top qualifier and bottom qualifier should be defined
 specifically for the type system.  Don't reuse an existing qualifier from the
 Checker Framework such as \<@Unqualified>.
 
-It is possible that a single type-checker checks multiple type hierarchies.
-An example is the Nullness Checker, which has three separate type
+It is possible that a single type-checker checks multiple qualifier hierarchies.
+An example is the Nullness Checker, which has three separate qualifier
 hierarchies, one each for
-nullness, initialization, and map keys.  In this case, each type hierarchy
+nullness, initialization, and map keys.  In this case, each qualifier hierarchy
 would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
 
 
 \paragraphAndLabel{Bottom qualifier}{creating-bottom-qualifier}
-Your type hierarchy must have a bottom qualifier
+Your qualifier hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-\<null> is the bottom type. Because the only value with type \<Void> is
+\<null> has the bottom type. Because the only value with type \<Void> is
 \<null>, uses of the type \<Void> are also bottom.
 (The only exception
 is if the type system has special treatment for \<null> values, as the
@@ -825,7 +826,7 @@ a bottom qualifier, but the actual implementation does contain a (non-user-visib
 
 
 \paragraphAndLabel{Top qualifier}{creating-top-qualifier}
-Your type hierarchy must have a top qualifier
+Your qualifier hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
 Here is one reason.
@@ -877,7 +878,7 @@ To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpr
 to any annotation element that should be interpreted as a Java expression.  The type of the
 element must be an array of Strings.  If your checker requires special handling of Java expressions,
 your checker implementation should override
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{--}
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createDependentTypesHelper}{()}
 to return a subclass of \<DependentTypesHelper>.
 
 Given a specific expression in the program (of type Tree or Node), a
@@ -887,9 +888,9 @@ it, or to compare to the string expression of an existing expression
 annotation.
 To obtain the string, first create a
 \refclass{dataflow/expression}{JavaExpression} object by calling
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{-com.sun.source.tree.ExpressionTree-}{fromTree(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromTree}{(com.sun.source.tree.ExpressionTree)}{fromTree(
 ExpressionTree)} or
-\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{-org.checkerframework.dataflow.cfg.node.Node-}{fromNode(AnnotationProvider,
+\refmethodanchortext{dataflow/expression}{JavaExpression}{fromNode}{(org.checkerframework.dataflow.cfg.node.Node)}{fromNode(
 Node)}.
 Then, call \<toString()> on the \<JavaExpression> object.
 
@@ -943,9 +944,9 @@ optional, and many checker classes do not have one.)
 The checker class bridges between the Java compiler and the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled.  The checker uses
-\refmethod{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethod{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
-\refmethod{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethod{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 to issue errors.
 
 Also, the checker class follows the factory method pattern to
@@ -962,9 +963,9 @@ must specify the component classes for construction.
 A checker can customize the default error messages through a
 \sunjavadoc{java.base/java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
-The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
-\refmethodterse{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 (like \code{"type.incompatible"}) and the values are the strings to be
 printed (\code{"cannot assign ..."}).
 The \<messages.properties> file only need to mention the new messages that
@@ -992,7 +993,7 @@ or
 To indicate support for annotations that are located outside of the \<qual>
 subdirectory, annotations that have other \<ElementType> values,
 checker writers can override the
-\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{--}
+\refmethodterse{framework/type}{AnnotatedTypeFactory}{createSupportedTypeQualifiers}{()}
 method (see its Javadoc for details).
 It is required to define \<createSupportedTypeQualifiers> if you are mixing
 qualifiers from multiple directories (including when extending an existing
@@ -1059,7 +1060,7 @@ that might be the case if MyHelperChecker computes some information that
 MyChecker needs to use.
 
 Override
-\<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{--}>
+\<MyChecker.\refmethodterse{common/basetype}{BaseTypeChecker}{getImmediateSubcheckerClasses}{()}>
 to return a list of the checkers that MyChecker depends on.  Every one of
 them will be run before MyChecker is run.  One of MyChecker's subcheckers
 may itself be a compound checker, and multiple checkers may declare a
@@ -1070,7 +1071,7 @@ A checker obtains information from its subcheckers (those that ran before
 it) by querying their \refclass{framework/type}{AnnotatedTypeFactory} to
 determine the types of variables.  Obtain the \<AnnotatedTypeFactory> by
 calling
-\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubchecker}{-java.lang.Class-}.
+\refmethodterse{common/basetype}{BaseTypeChecker}{getTypeFactoryOfSubchecker}{(java.lang.Class)}.
 
 \end{enumerate}
 
@@ -1151,9 +1152,9 @@ Java syntax trees as provided by Oracle's
 \href{https://docs.oracle.com/en/java/javase/17/docs/api/jdk.compiler/module-summary.html}{jdk.compiler
 API},
 and it issues a warning (by calling
-\refmethodterse{framework/source}{SourceChecker}{reportError}{-java.lang.Object-java.lang.String-java.lang.Object...-}
+\refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 or
-\refmethodterse{framework/source}{SourceChecker}{reportWarning}{-java.lang.Object-java.lang.String-java.lang.Object...-})
+\refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)})
 whenever the type system is violated.
 
 Most type-checkers
@@ -1318,12 +1319,12 @@ which is the Checker Framework's representation of an annotated type.
 \item
   Create a subclass of \refclass{framework/type}{AnnotatedTypeFactory} and
   override two \<addComputedTypeAnnotations> methods:
-  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{(com.sun.source.tree.Tree,org.checkerframework.framework.type.AnnotatedTypeMirror)}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
   (or
-  \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
+  \refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{(com.sun.source.tree.Tree,org.checkerframework.framework.type.AnnotatedTypeMirror,boolean)}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
   if extending \code{GenericAnnotatedTypeFactory})
   and
-  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
+  \refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{(javax.lang.model.element.Element,org.checkerframework.framework.type.AnnotatedTypeMirror)}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
   The methods can make arbitrary changes to the annotations on a type.
 
   Recall that \<AnnotatedTypeFactory>, when given a program
@@ -1368,7 +1369,7 @@ The steps to customizing type refinement are:
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
-\refmethod{checker/regex/util}{RegexUtil}{asRegex}{-java.lang.String-}
+\refmethod{checker/regex/util}{RegexUtil}{asRegex}{(java.lang.String)}
 run-time check is used as a running example.
 
 If needed, you can find more details about the implementation of
@@ -1989,7 +1990,7 @@ This does not work if you are using Maven, because it does not print
 the full output of the Java compiler (see \url{https://github.com/codehaus-plexus/plexus-compiler/issues/149}).
 % Also, with forked compilation,
 % the maven-compiler-plugin queues up all the output and then prints it at the end.
-(Also, maven-compiler-plugin versions before 3.10.1 are buggy: it sometimes
+(Also, maven-compiler-plugin is buggy: it sometimes
 doesn't print any output if it cannot parse it.)
 % Example of not producing output:
 % https://github.com/codehaus-plexus/plexus-compiler/issues/66
@@ -2383,7 +2384,7 @@ them.  Then, the checker performs any needed checks on the types/elements instea
 To obtain the position (line number and column number) of a Tree,
 cast the Tree to a \<com.sun.tools.javac.tree.JCTree> and then use one of
 its methods, such as \<pos()> which returns a \<JCDiagnostic.DiagnosticPosition>.
-\<com.sun.source.tree.CompilationUnitTree> has a LineMap lets you convert
+\<com.sun.source.tree.CompilationUnitTree> has a LineMap that lets you convert
 positions to line numbers.
 
 
@@ -2481,7 +2482,7 @@ build powerful and useful checkers.
 Beyond this document,
 other useful resources include the Java Infrastructure
 Developer's guide at
-\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.asciidoc} and the compiler
+\url{https://netbeans.apache.org/wiki/Java_DevelopersGuide.html} and the compiler
 mailing list archives at
 \url{https://mail.openjdk.org/pipermail/compiler-dev/}
 (subscribe at
