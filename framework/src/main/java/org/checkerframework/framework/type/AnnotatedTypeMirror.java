@@ -970,7 +970,7 @@ public abstract class AnnotatedTypeMirror {
     public void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
       if (ts == null || ts.isEmpty()) {
         typeArgs = Collections.emptyList();
-      } else { if (isDeclaration()) {
+      } else if (isDeclaration()) {
         for (AnnotatedTypeMirror typeArg : ts) {
           if (typeArg.getKind() != TypeKind.TYPEVAR) {
             throw new BugInCF(

@@ -1692,7 +1692,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return null;
       }
     }
-    ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+    ParameterizedExecutableType mType = atypeFactory.methodFromUse(tree);
     AnnotatedExecutableType invokedMethod = mType.executableType;
     List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 

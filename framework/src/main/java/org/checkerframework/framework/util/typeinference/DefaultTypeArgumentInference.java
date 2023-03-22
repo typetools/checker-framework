@@ -54,9 +54,9 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 import org.checkerframework.framework.util.typeinference.solver.OldInferenceResult;
 import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;

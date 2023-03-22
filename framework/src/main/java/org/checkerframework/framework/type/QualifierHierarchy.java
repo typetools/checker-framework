@@ -177,7 +177,7 @@ public interface QualifierHierarchy {
     Set<? extends AnnotationMirror> result = null;
     for (Collection<? extends AnnotationMirror> annos : qualifiers) {
       if (result == null) {
-        result = AnnotationUtils.createAnnotationSet(annos);
+        result = new AnnotationMirrorSet(annos);
       } else {
         result = leastUpperBounds(result, annos);
       }

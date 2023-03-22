@@ -353,7 +353,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param type annotated type mirror
    */
-  /*package-private*/ void initializeAtm(AnnotatedTypeMirror type) {
+  public void initializeAtm(AnnotatedTypeMirror type) {
     atmInitializer.visit(type);
   }
 

@@ -12,7 +12,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 public class UseOfVariable extends AbstractType {
   private final Variable variable;
@@ -25,8 +25,8 @@ public class UseOfVariable extends AbstractType {
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.variable = variable;
     this.hasPrimaryAnno = !type.getAnnotations().isEmpty();
-    this.bots = AnnotationUtils.createAnnotationSet();
-    this.tops = AnnotationUtils.createAnnotationSet();
+    this.bots = new AnnotationMirrorSet();
+    this.tops = new AnnotationMirrorSet();
     if (hasPrimaryAnno) {
       for (AnnotationMirror anno : type.getAnnotations()) {
         bots.add(qh.getBottomAnnotation(anno));
