@@ -3736,8 +3736,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Method type args
       requiresInference = true;
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
-        || ((JCTree.JCMemberReference) memberReferenceTree)
-            .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
+        || MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
       if (type.getKind() == TypeKind.DECLARED
           && ((AnnotatedDeclaredType) type).isUnderlyingTypeRaw()) {
         // Class type args
