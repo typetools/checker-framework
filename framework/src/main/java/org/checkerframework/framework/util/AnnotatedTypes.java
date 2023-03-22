@@ -440,7 +440,23 @@ public class AnnotatedTypes {
         }
         return result;
       case UNION:
+        return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       case DECLARED:
+        AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
+        if (receiverTypeDT.isUnderlyingTypeRaw()
+            && member
+                .getEnclosingElement()
+                .equals(receiverTypeDT.getUnderlyingType().asElement())) {
+          // Section 4.8, "Raw Types".
+          // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.8)
+          //
+          // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
+          // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
+          // is the raw type that corresponds to the erasure of its type in the generic declaration
+          // corresponding to C.
+
+          return memberType.getErased();
+        }
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       default:
         throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
@@ -696,6 +712,10 @@ public class AnnotatedTypes {
     // Has the user supplied type arguments?
     if (!targs.isEmpty()) {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
+      if (tvars.isEmpty()) {
+        // This happens when the method is invoked with a raw receiver.
+        return Collections.emptyMap();
+      }
 
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
       for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
