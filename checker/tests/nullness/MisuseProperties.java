@@ -16,8 +16,7 @@ public class MisuseProperties {
     p.put("line.separator", null);
     Hashtable h = p;
     // Error, because HashTable value has NonNull bound.
-    //// :: error: (argument) :: warning: [unchecked] unchecked call to
-    //// put(K,V) as a member of the raw type java.util.Hashtable
+    // put(K,V) as a member of the raw type java.util.Hashtable
     // :: warning: [unchecked] unchecked call to put(K,V) as a member of the raw type
     // java.util.Hashtable
     // :: error: (argument)
