@@ -14,6 +14,8 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -1766,6 +1768,81 @@ public final class TreeUtils {
         && ((JCLambda) tree).paramKind == ParameterKind.IMPLICIT;
   }
 
+  /**
+   * This is a duplication of {@code
+   * com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind}, which is not part of the
+   * supported javac API.
+   */
+  public enum MemberReferenceKind {
+    /** super # instMethod */
+    SUPER(ReferenceMode.INVOKE, false),
+    /** Type # instMethod */
+    UNBOUND(ReferenceMode.INVOKE, true),
+    /** Type # staticMethod */
+    STATIC(ReferenceMode.INVOKE, false),
+    /** Expr # instMethod */
+    BOUND(ReferenceMode.INVOKE, false),
+    /** Inner # new */
+    IMPLICIT_INNER(ReferenceMode.NEW, false),
+    /** Toplevel # new */
+    TOPLEVEL(ReferenceMode.NEW, false),
+    /** ArrayType # new */
+    ARRAY_CTOR(ReferenceMode.NEW, false);
+
+    /** Whether this kind is a method reference or a constructor reference. */
+    final ReferenceMode mode;
+
+    /** Whether this kind is unbound. */
+    final boolean unbound;
+
+    /**
+     * Creates a MemberReferenceKind.
+     *
+     * @param mode whether this kind is a method reference or a constructor reference
+     * @param unbound whether the kind is not bound
+     */
+    MemberReferenceKind(ReferenceMode mode, boolean unbound) {
+      this.mode = mode;
+      this.unbound = unbound;
+    }
+
+    /**
+     * Whether this kind is unbound.
+     *
+     * @return Whether this kind is unbound
+     */
+    public boolean isUnbound() {
+      return unbound;
+    }
+
+    /**
+     * Returns the kind of member reference {@code tree} is.
+     *
+     * @param tree a member reference tree
+     * @return the kind of member reference {@code tree} is
+     */
+    public static MemberReferenceKind getMemberReferenceKind(MemberReferenceTree tree) {
+      JCMemberReference memberTree = (JCMemberReference) tree;
+      switch (memberTree.kind) {
+        case SUPER:
+          return SUPER;
+        case UNBOUND:
+          return UNBOUND;
+        case STATIC:
+          return STATIC;
+        case BOUND:
+          return BOUND;
+        case IMPLICIT_INNER:
+          return IMPLICIT_INNER;
+        case TOPLEVEL:
+          return TOPLEVEL;
+        case ARRAY_CTOR:
+          return ARRAY_CTOR;
+        default:
+          throw new BugInCF("Unexpected ReferenceKind: %s", memberTree.kind);
+      }
+    }
+  }
   /**
    * Determine whether an expression {@link ExpressionTree} has the constant value true, according
    * to the compiler logic.
