@@ -3,5 +3,6 @@ python-style:
 	flake8
 
 check-python-style:
+	black --version
 	black . --check
 	flake8
