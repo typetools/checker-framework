@@ -651,8 +651,8 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
 }
 
 
-createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git',plumeScriptsHome)
-createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git',htmlToolsHome)
+createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
+createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
