@@ -733,6 +733,14 @@ public class AnnotatedTypes {
       throw new BugInCF("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
     }
 
+    if (preType.getReceiverType() != null) {
+      DeclaredType receiverTypeMirror = preType.getReceiverType().getUnderlyingType();
+      if (TypesUtils.isRaw(receiverTypeMirror)
+          && elt.getEnclosingElement().equals(receiverTypeMirror.asElement())) {
+        return Collections.emptyMap();
+      }
+    }
+
     // Has the user supplied type arguments?
     if (!targs.isEmpty() && !TreeUtils.isDiamondTree(expr)) {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();

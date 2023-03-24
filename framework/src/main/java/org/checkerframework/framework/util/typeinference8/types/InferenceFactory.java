@@ -371,6 +371,8 @@ public class InferenceFactory {
         executableType =
             (ExecutableType)
                 TypesUtils.substitute(executableType, typeVariables, args, context.env);
+      } else if (TypesUtils.isRaw(TreeUtils.typeOf(newClassTree))) {
+        executableType = (ExecutableType) context.types.erasure((Type) executableType);
       }
     }
     // Adapt to explicit method type arguments.
