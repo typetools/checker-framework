@@ -1,3 +1,8 @@
+**User-visible changes:**
+
+The Checker Framework runs under JDK 20 -- that is, it runs on a version 20 JVM.
+
+
 Version 3.33.0 (April 3, 2023)
 ------------------------------
 

@@ -33,9 +33,8 @@ ext {
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
 
-  // As of 2022-11-30, delombok crashes under JDK 19.
-  // As of mid-January 2023, a lombok release for Java 19 is coming "in a week".
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
+  // As of 2022-03-23, delombok doesn't yet support JDK 20.
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
 
   errorproneJavacVersion = '9+181-r4173-1'
 

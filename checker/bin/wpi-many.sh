@@ -73,11 +73,11 @@ else
   has_java17="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA19_HOME, not a typo of JAVA_HOME
-if [ "${JAVA19_HOME}" = "" ]; then
-  has_java19="no"
+# shellcheck disable=SC2153 # testing for JAVA20_HOME, not a typo of JAVA_HOME
+if [ "${JAVA20_HOME}" = "" ]; then
+  has_java20="no"
 else
-  has_java19="yes"
+  has_java20="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -99,9 +99,9 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
     fi
-    if [ "${has_java19}" = "no" ] && [ "${java_version}" = 19 ]; then
-      export JAVA19_HOME="${JAVA_HOME}"
-      has_java19="yes"
+    if [ "${has_java20}" = "no" ] && [ "${java_version}" = 19 ]; then
+      export JAVA20_HOME="${JAVA_HOME}"
+      has_java20="yes"
     fi
 fi
 
@@ -120,13 +120,13 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
-    echo "JAVA19_HOME is set to a non-existent directory ${JAVA19_HOME}"
+if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA20_HOME}" ]; then
+    echo "JAVA20_HOME is set to a non-existent directory ${JAVA20_HOME}"
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java20}" = "no" ]; then
+    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA20_HOME must be set."
     exit 1
 fi
 
