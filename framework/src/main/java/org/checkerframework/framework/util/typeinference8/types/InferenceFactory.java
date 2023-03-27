@@ -827,11 +827,11 @@ public class InferenceFactory {
     AnnotatedTypeMirror bAtm = b.getAnnotatedType();
     AnnotatedTypeMirror glbATM = AnnotatedTypes.annotatedGLB(typeFactory, aAtm, bAtm);
     if (context.types.isSameType(aJavaType, (Type) glb)) {
-      return a;
+      return a.create(glbATM, glb);
     }
 
     if (context.types.isSameType(bJavaType, (Type) glb)) {
-      return b;
+      return b.create(glbATM, glb);
     }
 
     if (a.isInferenceType()) {
