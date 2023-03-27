@@ -92,7 +92,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     // (to check for @Owning) and the corresponding Node (to call accumulate()).
     for (int i = 0; i < methodElt.getParameters().size(); i++) {
       VariableElement param = methodElt.getParameters().get(i);
-      if (rlTypeFactory.hasOwning(param)) {
+      if (rlTypeFactory.hasOwning(param) && !rlTypeFactory.noLightweightOwnership) {
         List<String> mcMethods = rlTypeFactory.getMustCallValue(param);
         Node correspondingArgument = node.getArgument(i);
         accumulate(correspondingArgument, result, mcMethods.toArray(new String[0]));
