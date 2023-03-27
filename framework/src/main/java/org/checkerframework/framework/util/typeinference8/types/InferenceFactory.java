@@ -30,7 +30,9 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -955,7 +957,11 @@ public class InferenceFactory {
    * @param upperBound an abstract type or null
    * @return a fresh type variable with the provided upper and lower bounds
    */
-  public AbstractType createFreshTypeVariable(ProperType lowerBound, AbstractType upperBound) {
+  public AbstractType createFreshTypeVariable(
+      ProperType lowerBound,
+      Set<? extends AnnotationMirror> lowerBoundAnnos,
+      AbstractType upperBound,
+      Set<? extends AnnotationMirror> upperBoundAnnos) {
     TypeMirror freshTypeVariable =
         TypesUtils.freshTypeVariable(
             upperBound == null ? null : upperBound.getJavaType(),
@@ -970,16 +976,12 @@ public class InferenceFactory {
     if (lowerBound != null) {
       typeVariable.setLowerBound(lowerBound.getAnnotatedType());
     } else {
-      typeVariable
-          .getLowerBound()
-          .addAnnotations(typeFactory.getQualifierHierarchy().getBottomAnnotations());
+      typeVariable.getLowerBound().addAnnotations(lowerBoundAnnos);
     }
     if (upperBound != null) {
       typeVariable.setUpperBound(upperBound.getAnnotatedType());
     } else {
-      typeVariable
-          .getUpperBound()
-          .addAnnotations(typeFactory.getQualifierHierarchy().getTopAnnotations());
+      typeVariable.getUpperBound().addAnnotations(upperBoundAnnos);
     }
     context.typeFactory.capturedTypeVarSubstitutor.substitute(
         typeVariable, Collections.singletonMap(typeVariable.getUnderlyingType(), typeVariable));

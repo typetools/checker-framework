@@ -3,13 +3,17 @@ package org.checkerframework.framework.util.typeinference8.util;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
@@ -17,6 +21,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
@@ -253,22 +258,28 @@ public class Resolution {
   private void resolveNoCapture(Variable ai) {
     assert !ai.getBounds().hasInstantiation();
     LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
-    Set<Set<AnnotationMirror>> qualifierLowerBounds =
-        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
 
     if (!lowerBounds.isEmpty()) {
-      ProperType lub = context.inferenceTypeFactory.lub(lowerBounds);
+      ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+      Set<Set<AnnotationMirror>> qualifierLowerBounds =
+          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
-        Set<? extends AnnotationMirror> lubAnnos =
-            context.typeFactory.getQualifierHierarchy().leastUpperBounds(qualifierLowerBounds);
-        lubAnnos =
-            context
-                .typeFactory
-                .getQualifierHierarchy()
-                .leastUpperBounds(lubAnnos, lub.getAnnotatedType().getAnnotations());
-        lub.getAnnotatedType().replaceAnnotations(lubAnnos);
+        QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+        Set<AnnotationMirror> lubAnnos =
+            new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
+        if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
+          Set<? extends AnnotationMirror> newLubAnnos =
+              qh.leastUpperBounds(lubAnnos, lubProperType.getAnnotatedType().getAnnotations());
+          lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
+        } else {
+
+          AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
+          Set<? extends AnnotationMirror> newLubAnnos =
+              qh.leastUpperBounds(lubAnnos, lubTV.getLowerBound().getAnnotations());
+          lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
+        }
       }
-      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, lub);
+      ai.getBounds().addBound(VariableBounds.BoundKind.EQUAL, lubProperType);
       return;
     }
 
@@ -319,12 +330,50 @@ public class Resolution {
       LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
 
+      Set<? extends AnnotationMirror> lowerBoundAnnos;
+      Set<Set<AnnotationMirror>> qualifierLowerBounds =
+          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+      if (!qualifierLowerBounds.isEmpty()) {
+        lowerBoundAnnos =
+            context.typeFactory.getQualifierHierarchy().leastUpperBounds(qualifierLowerBounds);
+        if (lowerBound != null) {
+          lowerBoundAnnos =
+              context
+                  .typeFactory
+                  .getQualifierHierarchy()
+                  .leastUpperBounds(
+                      lowerBoundAnnos, lowerBound.getAnnotatedType().getAnnotations());
+          lowerBound.getAnnotatedType().replaceAnnotations(lowerBoundAnnos);
+        }
+      } else {
+        lowerBoundAnnos = Collections.emptySet();
+      }
+
       LinkedHashSet<AbstractType> upperBounds = ai.getBounds().upperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
+      Set<? extends AnnotationMirror> upperBoundAnnos;
+      Set<Set<AnnotationMirror>> qualifierUpperBounds =
+          ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
+      if (!qualifierUpperBounds.isEmpty()) {
+        upperBoundAnnos =
+            context.typeFactory.getQualifierHierarchy().greatestLowerBounds(qualifierUpperBounds);
+        if (upperBound != null) {
+          upperBoundAnnos =
+              context
+                  .typeFactory
+                  .getQualifierHierarchy()
+                  .greatestLowerBounds(
+                      upperBoundAnnos, upperBound.getAnnotatedType().getAnnotations());
+          upperBound.getAnnotatedType().replaceAnnotations(upperBoundAnnos);
+        }
+      } else {
+        upperBoundAnnos = Collections.emptySet();
+      }
 
       typeVar.add(ai.getJavaType());
       AbstractType freshTypeVar =
-          context.inferenceTypeFactory.createFreshTypeVariable(lowerBound, upperBound);
+          context.inferenceTypeFactory.createFreshTypeVariable(
+              lowerBound, lowerBoundAnnos, upperBound, upperBoundAnnos);
       typeArg.add(freshTypeVar);
     }
 

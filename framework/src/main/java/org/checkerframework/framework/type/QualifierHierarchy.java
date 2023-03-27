@@ -305,6 +305,26 @@ public interface QualifierHierarchy {
   }
 
   /**
+   * Returns the greatest lower bound of the all the collections of qualifiers. The result is the
+   * glb of the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers A collection of collections of qualifiers
+   * @return the greatest lower bound of the collections of qualifiers
+   */
+  default Set<? extends AnnotationMirror> greatestLowerBounds(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = new AnnotationMirrorSet(annos);
+      } else {
+        result = greatestLowerBounds(result, annos);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
    * fewer qualifiers than the width of the QualifierHierarchy.
    *
