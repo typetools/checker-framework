@@ -34,13 +34,13 @@ public class GenericsBounds5 {
   void bad(Collection1<@NonNull Integer> nnarg) {
     // These have to be forbidden, because f1 might refer to a
     // collection that has NonNull as type argument.
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     addNull1(nnarg);
 
     // :: error: (argument)
     addNull2(nnarg);
 
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     addNull3(nnarg, Integer.valueOf(4));
   }
 }

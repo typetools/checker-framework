@@ -33,7 +33,7 @@ public class TestOpt {
   }
 
   void foo4b(@Nullable Object p) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (argument)
     String s = Opt.map(p, null);
   }
 
@@ -51,7 +51,7 @@ public class TestOpt {
   }
 
   void foo6b(@Nullable Object p) {
-    // :: error: (return)
+    // :: error: (type.arguments.not.inferred)
     @NonNull Object o = Opt.orElseGet(p, () -> null);
   }
 
@@ -65,7 +65,8 @@ public class TestOpt {
 
   void foo7b(@Nullable Object p) {
     try {
-      // :: error: (type.arguments.not.inferred))
+      // :: error: (assignment)
+      // :: error: (type.arguments.not.inferred)
       @NonNull Object o = Opt.orElseThrow(p, () -> null);
     } catch (Throwable t) {
       // p was null
