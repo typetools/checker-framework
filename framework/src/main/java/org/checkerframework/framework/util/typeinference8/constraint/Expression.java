@@ -274,7 +274,7 @@ public class Expression extends TypeConstraint {
     // 15.27.3:
     // If T is a wildcard-parameterized functional interface type and the lambda expression is
     // explicitly typed, then the ground target type is inferred as described in 18.5.3.
-    if (TreeUtils.isExplicitlyTypeLambda(lambda) && !lambda.getParameters().isEmpty()) {
+    if (TreeUtils.isExplicitlyTypeLambda(lambda)) {
       return explicitlyTypedLambdaWithWildcard(t, lambda, context);
     } else {
       // If T is a wildcard-parameterized functional interface type and the lambda expression

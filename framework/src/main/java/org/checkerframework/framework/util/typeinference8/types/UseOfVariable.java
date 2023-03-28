@@ -19,11 +19,14 @@ public class UseOfVariable extends AbstractType {
   private final boolean hasPrimaryAnno;
   private final Set<AnnotationMirror> bots;
   private final Set<AnnotationMirror> tops;
+  private final AnnotatedTypeVariable type;
 
-  public UseOfVariable(AnnotatedTypeMirror type, Variable variable, Java8InferenceContext context) {
+  public UseOfVariable(
+      AnnotatedTypeVariable type, Variable variable, Java8InferenceContext context) {
     super(context);
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.variable = variable;
+    this.type = type;
     this.hasPrimaryAnno = !type.getAnnotations().isEmpty();
     this.bots = new AnnotationMirrorSet();
     this.tops = new AnnotationMirrorSet();
@@ -67,7 +70,7 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public AnnotatedTypeVariable getAnnotatedType() {
-    return variable.typeVariable;
+    return type;
   }
 
   @Override
@@ -125,5 +128,10 @@ public class UseOfVariable extends AbstractType {
         variable.getBounds().addBound(BoundKind.LOWER, boundCopy);
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return "use of " + variable + (hasPrimaryAnno ? "with primary" : "");
   }
 }

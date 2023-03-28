@@ -13,6 +13,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -71,7 +72,7 @@ public class InferenceType extends AbstractType {
       return new ProperType(type, typeMirror, context);
     }
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(typeMirror)) {
-      return new UseOfVariable(type, map.get(typeMirror), context);
+      return new UseOfVariable((AnnotatedTypeVariable) type, map.get(typeMirror), context);
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
       return new InferenceType(type, typeMirror, map, context);
     } else {
