@@ -71,6 +71,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   /** True if -AnoResourceAliases was passed on the command line. */
   private final boolean noResourceAliases;
 
+  /** True if -AnoLightweightOwnership was passed on the command line. */
+  public final boolean noLightweightOwnership;
+
   /**
    * Bidirectional map to store temporary variables created for expressions with non-empty @MustCall
    * obligations and the corresponding trees. Keys are the artificial local variable nodes created
@@ -95,6 +98,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public ResourceLeakAnnotatedTypeFactory(final BaseTypeChecker checker) {
     super(checker);
     this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
+    this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     this.postInit();
   }
 
