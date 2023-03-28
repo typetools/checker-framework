@@ -33,7 +33,7 @@ public class TestOpt {
   }
 
   void foo4b(@Nullable Object p) {
-    // :: error: (argument)
+    // :: error: (type.arguments.not.inferred)
     String s = Opt.map(p, null);
   }
 
@@ -42,7 +42,7 @@ public class TestOpt {
   }
 
   void foo5b(@Nullable Object p) {
-    // :: error: (argument)
+    // :: error: (type.arguments.not.inferred)
     @NonNull Object o = Opt.orElse(p, null);
   }
 

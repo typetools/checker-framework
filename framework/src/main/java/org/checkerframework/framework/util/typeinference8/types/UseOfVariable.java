@@ -10,6 +10,8 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
+import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -132,6 +134,14 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public String toString() {
-    return "use of " + variable + (hasPrimaryAnno ? "with primary" : "");
+    return "use of " + variable + (hasPrimaryAnno ? " with primary" : "");
+  }
+
+  public ReductionResult isSuperType(ProperType s) {
+    if (hasPrimaryAnno) {
+      return s.isPrimarySubtype(this);
+    } else {
+      return ConstraintSet.TRUE;
+    }
   }
 }

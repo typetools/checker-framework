@@ -19,7 +19,7 @@ public class WildcardSubtyping2 {
 
   class UseMyGenericEB {
     MyGenericEB<@NonNull MyCloneClass> nonNull = new MyGenericEB<>();
-    // :: error: (type.argument)
+    // :: error: (type.argument) :: error: (type.arguments.not.inferred)
     MyGenericEB<@Nullable MyCloneClass> nullable = new MyGenericEB<>();
 
     MyGenericEB<? extends @NonNull Cloneable> interfaceNN = nonNull;

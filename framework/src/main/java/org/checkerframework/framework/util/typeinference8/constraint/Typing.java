@@ -128,14 +128,13 @@ public class Typing extends TypeConstraint {
       }
       return isSubtype;
     } else if (S.getTypeKind() == TypeKind.NULL) {
+      ProperType sProper = (ProperType) S;
       if (T.isUseOfVariable()) {
-        ((UseOfVariable) T)
-            .addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
-        return ConstraintSet.TRUE;
+        UseOfVariable tUseOf = (UseOfVariable) T;
+        tUseOf.addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
+        return tUseOf.isSuperType(sProper);
       } else {
-        // TODO: check that null is a subtype.
-        // T is an Inference Type
-        return ConstraintSet.TRUE;
+        return sProper.isPrimarySubtype(T);
       }
     } else if (T.getTypeKind() == TypeKind.NULL) {
       return ConstraintSet.FALSE;
