@@ -199,7 +199,7 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    return new InferenceResult(thetaPrime, b4.annoFail);
+    return new InferenceResult(thetaPrime, b4.annoFail, b4.errorMsg);
   }
 
   /**

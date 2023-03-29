@@ -261,10 +261,12 @@ public class ConstraintSet implements ReductionResult {
       } else {
         throw new RuntimeException("Not found " + result);
       }
+      if (this.annotationFailure) {
+        boundSet.annoFail = true;
+        boundSet.errorMsg = constraint.toString();
+      }
     }
-    if (this.annotationFailure) {
-      boundSet.annoFail = true;
-    }
+
     return boundSet;
   }
 }

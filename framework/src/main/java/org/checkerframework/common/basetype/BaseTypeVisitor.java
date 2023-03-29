@@ -1681,13 +1681,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
     ParameterizedExecutableType preI = atypeFactory.methodFromUse(tree, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()) {
-      InferenceResult args =
-          atypeFactory
-              .getTypeArgumentInference()
-              .inferNew(atypeFactory, tree, preI.executableType, getCurrentPath());
-      if (args == null || args.isAnnoInferenceFailed()) {
-        checker.reportError(
-            tree, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
+      if (checkInferredTypeArguments(tree, preI)) {
         return null;
       }
     }
@@ -1761,6 +1755,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // a set assignment context.
     scan(tree.getMethodSelect(), p);
     return null; // super.visitMethodInvocation(tree, p);
+  }
+
+  private boolean checkInferredTypeArguments(
+      ExpressionTree tree, ParameterizedExecutableType preI) {
+    InferenceResult args =
+        atypeFactory
+            .getTypeArgumentInference()
+            .inferNew(atypeFactory, tree, preI.executableType, getCurrentPath());
+    if (args != null && !args.isAnnoInferenceFailed()) {
+      return false;
+    }
+    String error;
+    if (args != null) {
+      error = args.getErrorMsg();
+    } else {
+      error = "";
+    }
+
+    checker.reportError(
+        tree,
+        "type.arguments.not.inferred",
+        preI.executableType.getElement().getSimpleName(),
+        error);
+    return true;
   }
 
   /**
@@ -2020,13 +2038,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ParameterizedExecutableType preI = atypeFactory.constructorFromUse(tree, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
-      InferenceResult args =
-          atypeFactory
-              .getTypeArgumentInference()
-              .inferNew(atypeFactory, tree, preI.executableType, getCurrentPath());
-      if (args == null || args.isAnnoInferenceFailed()) {
-        checker.reportError(
-            tree, "type.arguments.not.inferred", preI.executableType.getElement().getSimpleName());
+      if (checkInferredTypeArguments(tree, preI)) {
         return null;
       }
     }

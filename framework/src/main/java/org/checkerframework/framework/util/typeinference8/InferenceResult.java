@@ -11,7 +11,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 
 public class InferenceResult {
-  public static InferenceResult emptyResult = new InferenceResult(Collections.emptyList(), false);
+  public static InferenceResult emptyResult =
+      new InferenceResult(Collections.emptyList(), false, "");
 
   public static InferenceResult emptyResult() {
     return emptyResult;
@@ -19,10 +20,12 @@ public class InferenceResult {
 
   private final Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results;
   private final boolean annoInferenceFailed;
+  private final String errorMsg;
 
-  public InferenceResult(List<Variable> thetaPrime, boolean annoInferenceFailed) {
+  public InferenceResult(List<Variable> thetaPrime, boolean annoInferenceFailed, String errorMsg) {
     this.results = convert(thetaPrime);
     this.annoInferenceFailed = annoInferenceFailed;
+    this.errorMsg = errorMsg;
   }
 
   public Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> getResults() {
@@ -50,5 +53,9 @@ public class InferenceResult {
       return Collections.emptyMap();
     }
     return results.get(expressionTree);
+  }
+
+  public String getErrorMsg() {
+    return errorMsg;
   }
 }

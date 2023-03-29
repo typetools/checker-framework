@@ -33,6 +33,7 @@ public class BoundSet implements ReductionResult {
   private final LinkedHashSet<CaptureBound> captures;
 
   private final Java8InferenceContext context;
+  public String errorMsg = "";
 
   /** Whether or not this bounds set contains the false bound. */
   private boolean containsFalse;
@@ -106,6 +107,7 @@ public class BoundSet implements ReductionResult {
     containsFalse |= newSet.containsFalse;
     uncheckedConversion |= newSet.uncheckedConversion;
     annoFail |= newSet.annoFail;
+    errorMsg += " " + newSet.errorMsg;
     return changed;
   }
 
