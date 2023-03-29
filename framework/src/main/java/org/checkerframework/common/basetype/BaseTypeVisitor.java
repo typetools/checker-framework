@@ -1023,7 +1023,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (isDeterministic) {
       if (TreeUtils.isConstructor(tree)) {
         checker.reportWarning(tree, "purity.deterministic.constructor");
-      } else if (TreeUtils.typeOf(tree.getReturnType()).getKind() == TypeKind.VOID) {
+      } else if (TreeUtils.isVoidReturn(tree)) {
         checker.reportWarning(tree, "purity.deterministic.void.method");
       }
     }
@@ -1047,7 +1047,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // present (because they were inferred in a previous WPI round).
         additionalKinds.removeAll(kinds);
       }
-      if (TreeUtils.isConstructor(tree)) {
+      if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
         additionalKinds.remove(Pure.Kind.DETERMINISTIC);
       }
       if (!additionalKinds.isEmpty()) {

@@ -26,6 +26,7 @@ public class AinferTestCheckerAjavaValidationTest extends AinferValidatePerDirec
         "ainfer-testchecker/annotated",
         AinferTestCheckerAjavaTest.class,
         ajavaArgFromFiles(testFiles, "testchecker"),
+        "-AcheckPurityAnnotations",
         "-Awarns");
   }
 
