@@ -51,8 +51,7 @@ public class TestOpt {
   }
 
   void foo6b(@Nullable Object p) {
-    // TODO: This should be a lambda error.
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (return)
     @NonNull Object o = Opt.orElseGet(p, () -> null);
   }
 

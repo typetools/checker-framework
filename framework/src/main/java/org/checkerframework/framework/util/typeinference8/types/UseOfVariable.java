@@ -26,7 +26,7 @@ public class UseOfVariable extends AbstractType {
     super(context);
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.variable = variable;
-    this.type = type;
+    this.type = type.deepCopy();
     this.hasPrimaryAnno = !type.getAnnotations().isEmpty();
     this.bots = new AnnotationMirrorSet();
     this.tops = new AnnotationMirrorSet();
