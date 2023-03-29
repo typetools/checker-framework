@@ -136,6 +136,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         inferNew(typeFactory, expressionTree, methodType, pathToExpression);
     if (newInferenceResult != null) {
       return newInferenceResult.getTypeArgumentsForExpression(expressionTree);
+    } else if (newInferenceResult == null) {
+      throw new BugInCF("ERROR");
     }
     return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
   }
@@ -166,8 +168,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         methodType =
             typeFactory.constructorFromUseNoTypeArgInfere((NewClassTree) outerTree).executableType;
       } else {
-        // outertree is a lambda. Ignore for now.
-        return null;
+        throw new BugInCF(
+            "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
       }
     }
     if (java8Inference != null) {

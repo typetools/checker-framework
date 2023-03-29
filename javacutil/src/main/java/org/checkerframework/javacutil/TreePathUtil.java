@@ -281,6 +281,7 @@ public final class TreePathUtil {
     Tree parent = parentPath.getLeaf();
     switch (parent.getKind()) {
       case ASSIGNMENT: // See below for CompoundAssignmentTree.
+      case LAMBDA_EXPRESSION:
       case METHOD_INVOCATION:
       case NEW_ARRAY:
       case NEW_CLASS:

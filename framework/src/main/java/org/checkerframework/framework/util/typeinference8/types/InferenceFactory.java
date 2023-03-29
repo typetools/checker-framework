@@ -132,6 +132,13 @@ public class InferenceFactory {
         AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) assignmentContext);
         AnnotatedTypeMirror component = type.getComponentType();
         return new ProperType(component, arrayType.getComponentType(), context);
+      case LAMBDA_EXPRESSION:
+        {
+          LambdaExpressionTree lambdaTree = (LambdaExpressionTree) assignmentContext;
+          AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
+          AnnotatedTypeMirror res = fninf.getReturnType();
+          return new ProperType(res, res.getUnderlyingType(), context);
+        }
       case RETURN:
         HashSet<Kind> kinds =
             new HashSet<>(Arrays.asList(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD));

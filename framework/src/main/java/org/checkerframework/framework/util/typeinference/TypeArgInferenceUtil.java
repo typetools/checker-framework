@@ -208,7 +208,10 @@ public class TypeArgInferenceUtil {
             atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) enclosing);
         res = fninf.getReturnType();
       }
-
+    } else if (assignmentContext instanceof LambdaExpressionTree) {
+      AnnotatedExecutableType fninf =
+          atypeFactory.getFunctionTypeFromTree((LambdaExpressionTree) assignmentContext);
+      res = fninf.getReturnType();
     } else if (assignmentContext instanceof VariableTree) {
       res = assignedToVariable(atypeFactory, assignmentContext);
     } else {
