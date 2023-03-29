@@ -131,18 +131,6 @@ public class ProperType extends AbstractType {
     }
   }
 
-  public ConstraintSet isPrimarySubtype(AbstractType superType) {
-    if (context
-        .typeFactory
-        .getQualifierHierarchy()
-        .isSubtype(
-            this.type.getAnnotations(), superType.getAnnotatedType().getEffectiveAnnotations())) {
-      return ConstraintSet.TRUE;
-    } else {
-      return ConstraintSet.TRUE_ANNO_FAIL;
-    }
-  }
-
   /**
    * Is {@code this} an unchecked subtype of {@code superType}?
    *

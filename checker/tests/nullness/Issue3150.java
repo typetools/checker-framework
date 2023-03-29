@@ -11,9 +11,9 @@ public class Issue3150 {
     requireNonNull1(nble);
     requireNonNull1("hello");
     requireNonNull1(nn);
-    // :: error: (argument)
+    // :: error: (type.arguments.not.inferred)
     requireNonNull2(null);
-    // :: error: (argument)
+    // :: error: (arguments)
     requireNonNull2(nble);
     requireNonNull1("hello");
     requireNonNull1(nn);

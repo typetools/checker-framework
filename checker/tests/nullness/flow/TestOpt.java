@@ -33,7 +33,7 @@ public class TestOpt {
   }
 
   void foo4b(@Nullable Object p) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (argument)
     String s = Opt.map(p, null);
   }
 
@@ -42,7 +42,7 @@ public class TestOpt {
   }
 
   void foo5b(@Nullable Object p) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (argument)
     @NonNull Object o = Opt.orElse(p, null);
   }
 
@@ -51,6 +51,7 @@ public class TestOpt {
   }
 
   void foo6b(@Nullable Object p) {
+    // TODO: This should be a lambda error.
     // :: error: (type.arguments.not.inferred)
     @NonNull Object o = Opt.orElseGet(p, () -> null);
   }

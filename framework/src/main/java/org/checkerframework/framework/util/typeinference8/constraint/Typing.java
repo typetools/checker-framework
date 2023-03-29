@@ -128,14 +128,11 @@ public class Typing extends TypeConstraint {
       }
       return isSubtype;
     } else if (S.getTypeKind() == TypeKind.NULL) {
-      ProperType sProper = (ProperType) S;
       if (T.isUseOfVariable()) {
         UseOfVariable tUseOf = (UseOfVariable) T;
         tUseOf.addQualifierBound(BoundKind.LOWER, S.getAnnotatedType().getAnnotations());
-        return tUseOf.isSuperType(sProper);
-      } else {
-        return sProper.isPrimarySubtype(T);
       }
+      return ConstraintSet.TRUE;
     } else if (T.getTypeKind() == TypeKind.NULL) {
       return ConstraintSet.FALSE;
     }

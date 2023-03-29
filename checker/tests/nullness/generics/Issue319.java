@@ -39,7 +39,7 @@ class Issue319NN {
   }
 
   void fail() {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: (argument)
     Foo<Boolean> f = newFoo(null);
   }
 
