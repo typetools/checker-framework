@@ -960,6 +960,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Is this method's declared return type "void"?
+   *
+   * @param tree a method declaration
+   * @return true iff method's declared return type is "void"
+   */
+  public static boolean isVoidReturn(MethodTree tree) {
+    return typeOf(tree.getReturnType()).getKind() == TypeKind.VOID;
+  }
+
+  /**
    * Returns true if the tree is a constant-time expression.
    *
    * <p>A tree is a constant-time expression if it is:
