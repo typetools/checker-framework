@@ -1,25 +1,16 @@
-import java.util.function.Function;
+import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class CaptureSubtype {
 
-  interface FFunction<T, R> extends Function<T, R> {}
+  class MyGeneric<T extends @Tainted Number> {}
 
-  interface DInterface {}
+  class SubGeneric<T extends @Untainted Number> extends MyGeneric<T> {}
 
-  interface MInterface<P> {}
+  class UseMyGeneric {
+    SubGeneric<? extends @Tainted Object> wildcardUnbounded = new SubGeneric<@Untainted Number>();
 
-  interface QInterface<K extends MInterface<P>, V extends MInterface<P>, P> {}
-
-  FFunction<String, QInterface<?, @Untainted ?, DInterface>> r;
-
-  CaptureSubtype(
-      FFunction<
-              String,
-              QInterface<
-                  ? extends MInterface<DInterface>, ? extends MInterface<DInterface>, DInterface>>
-          r) {
-    // :: error: (assignment)
-    this.r = r;
+    MyGeneric<?> wildcardOutsideUB = wildcardUnbounded;
+    MyGeneric<? extends @Untainted Number> wildcardInsideUB2 = wildcardUnbounded;
   }
 }
