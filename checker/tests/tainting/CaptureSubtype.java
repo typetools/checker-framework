@@ -19,6 +19,7 @@ public class CaptureSubtype {
               QInterface<
                   ? extends MInterface<DInterface>, ? extends MInterface<DInterface>, DInterface>>
           r) {
+    // :: error: (assignment)
     this.r = r;
   }
 }

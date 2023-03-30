@@ -443,10 +443,7 @@ public class AnnotatedTypes {
         return substituteTypeVariables(types, atypeFactory, receiverType, member, memberType);
       case DECLARED:
         AnnotatedDeclaredType receiverTypeDT = (AnnotatedDeclaredType) receiverType;
-        if (receiverTypeDT.isUnderlyingTypeRaw()
-            && member
-                .getEnclosingElement()
-                .equals(receiverTypeDT.getUnderlyingType().asElement())) {
+        if (isRawCall(receiverTypeDT, member, types)) {
           // Section 4.8, "Raw Types".
           // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-4.html#jls-4.8)
           //
@@ -461,6 +458,31 @@ public class AnnotatedTypes {
       default:
         throw new BugInCF("asMemberOf called on unexpected type.%nt: %s", receiverType);
     }
+  }
+
+  private static boolean isRawCall(
+      AnnotatedDeclaredType receiverTypeDT, Element member, Types types) {
+    if (member.getEnclosingElement().equals(receiverTypeDT.getUnderlyingType().asElement())) {
+      return receiverTypeDT.isUnderlyingTypeRaw();
+    }
+
+    if ("<init>".contentEquals(member.getSimpleName())) {
+      ExecutableElement constructor = (ExecutableElement) member;
+      TypeMirror constructorClass = types.erasure(constructor.getEnclosingElement().asType());
+      TypeMirror directSuper = types.directSupertypes(receiverTypeDT.getUnderlyingType()).get(0);
+      while (!types.isSameType(types.erasure(directSuper), constructorClass)
+          && !TypesUtils.isObject(directSuper)) {
+        directSuper = types.directSupertypes(directSuper).get(0);
+      }
+      if (directSuper.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) directSuper;
+        TypeElement typeelem = (TypeElement) declaredType.asElement();
+        DeclaredType declty = (DeclaredType) typeelem.asType();
+        return !declty.getTypeArguments().isEmpty() && declaredType.getTypeArguments().isEmpty();
+      }
+    }
+
+    return false;
   }
 
   /**
