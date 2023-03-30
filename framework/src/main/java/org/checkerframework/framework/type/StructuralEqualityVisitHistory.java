@@ -73,4 +73,10 @@ public class StructuralEqualityVisitHistory {
     }
     return null;
   }
+
+  public void remove(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror hierarchy) {
+    falseHistory.remove(type1, type2, hierarchy);
+    trueHistory.remove(type1, type2, hierarchy);
+  }
 }
