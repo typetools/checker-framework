@@ -13,7 +13,7 @@ public class CaptureSubtype2 {
 
   FFunction<String, QInterface<?, @Untainted ?, DInterface>> r;
 
-  CaptureSubtype(
+  CaptureSubtype2(
       FFunction<
               String,
               QInterface<
