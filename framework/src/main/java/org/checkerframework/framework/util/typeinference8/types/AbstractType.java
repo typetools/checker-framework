@@ -551,9 +551,7 @@ public abstract class AbstractType {
    * @return if this type is a wildcard return its upper bound; otherwise, return null
    */
   public AbstractType getWildcardUpperBound() {
-    if (getJavaType().getKind() != TypeKind.WILDCARD) {
-      return null;
-    } else if (((Type.WildcardType) getJavaType()).isExtendsBound()) {
+    if (TypesUtils.isUnboundWildcard(getJavaType())) {
       TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
       if (upperBoundJava == null) {
         upperBoundJava = context.object.getJavaType();
