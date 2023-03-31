@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -804,7 +805,8 @@ public final class TypesUtils {
   }
 
   public static boolean isUnboundWildcard(TypeMirror type) {
-    return type.getKind() == TypeKind.WILDCARD && ((Type.WildcardType) type).isUnbound();
+    return type.getKind() == TypeKind.WILDCARD
+        && ((Type.WildcardType) type).kind == BoundKind.UNBOUND;
   }
 
   public static boolean isExtendsBoundWildcard(TypeMirror type) {
