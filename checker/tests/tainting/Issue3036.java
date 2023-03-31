@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.checkerframework.checker.tainting.qual.Tainted;
 
 public class Issue3036 {
 
@@ -30,12 +31,11 @@ public class Issue3036 {
                 "keyTag", dsData1.getKeyTag(),
                 "digest", dsData1.getDigest());
 
-    @SuppressWarnings("tainting:type.arguments.not.inferred")
     List<Map<String, ?>> dsData =
         getDsData().stream()
             .map(
                 dsData1 ->
-                    ImmutableMap.of(
+                    ImmutableMap.<@Tainted String, Object>of(
                         "keyTag", dsData1.getKeyTag(),
                         "digest", dsData1.getDigest()))
             .collect(Collectors.toList());

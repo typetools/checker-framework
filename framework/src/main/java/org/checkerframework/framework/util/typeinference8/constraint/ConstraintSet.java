@@ -263,7 +263,9 @@ public class ConstraintSet implements ReductionResult {
       }
       if (this.annotationFailure) {
         boundSet.annoFail = true;
-        boundSet.errorMsg = constraint.toString();
+        if (boundSet.errorMsg.equals("")) {
+          boundSet.errorMsg = constraint.toString();
+        }
       }
     }
 
