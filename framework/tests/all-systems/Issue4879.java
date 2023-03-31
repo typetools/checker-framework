@@ -14,6 +14,7 @@ class A4879<A> {
 
 class Issue4879 {
   private final class I4879 extends L4879<Object> {
+    @SuppressWarnings("nullness:argument") // expected error.
     private I4879() {
       super(new A4879.B4879<>().build());
     }
