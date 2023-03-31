@@ -87,7 +87,8 @@ public class InferenceFactory {
    * @return target type for the expression for which type arguments are being inferred
    */
   public @Nullable ProperType getTargetType() {
-    AnnotatedTypeFactory factory = context.typeFactory;
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> factory =
+        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
     TreePath path = context.pathToExpression;
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
     if (assignmentContext == null) {
@@ -102,7 +103,7 @@ public class InferenceFactory {
     switch (assignmentContext.getKind()) {
       case ASSIGNMENT:
         ExpressionTree variable = ((AssignmentTree) assignmentContext).getVariable();
-        AnnotatedTypeMirror atm = factory.getAnnotatedType(variable);
+        AnnotatedTypeMirror atm = factory.getAnnotatedTypeLhs(variable);
         return new ProperType(atm, TreeUtils.typeOf(variable), context);
       case VARIABLE:
         VariableTree variableTree = (VariableTree) assignmentContext;
@@ -162,7 +163,7 @@ public class InferenceFactory {
         if (assignmentContext.getKind().asInterface().equals(CompoundAssignmentTree.class)) {
           // 11 Tree kinds are compound assignments, so don't use it in the switch
           ExpressionTree var = ((CompoundAssignmentTree) assignmentContext).getVariable();
-          AnnotatedTypeMirror res = factory.getAnnotatedType(var);
+          AnnotatedTypeMirror res = factory.getAnnotatedTypeLhs(var);
 
           return new ProperType(res, TreeUtils.typeOf(var), context);
         } else {
