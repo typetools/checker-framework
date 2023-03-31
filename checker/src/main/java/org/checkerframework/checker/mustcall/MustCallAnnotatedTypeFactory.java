@@ -184,16 +184,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
   }
 
-  /**
-   * Returns true iff the given element is a resource variable.
-   *
-   * @param elt an element; may be null, in which case this method always returns false
-   * @return true iff the given element represents a resource variable
-   */
-  /*package-private*/ boolean isResourceVariable(@Nullable Element elt) {
-    return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
-  }
-
   /** Treat non-owning method parameters as @MustCallUnknown (top) when the method is called. */
   @Override
   public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
@@ -425,7 +415,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         type.replaceAnnotation(BOTTOM);
       }
-      if (isResourceVariable(elt)) {
+      if (ElementUtils.isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(tree, type);
