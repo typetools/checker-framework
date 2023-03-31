@@ -71,4 +71,18 @@ public class QualifierTyping implements Constraint {
     }
     return ConstraintSet.TRUE_ANNO_FAIL;
   }
+
+  @Override
+  public String toString() {
+    switch (kind) {
+      case QUALIFIER_SUBTYPE:
+        return Q + " <: " + R;
+
+      case QUALIFIER_EQUALITY:
+        return Q + " = " + R;
+      default:
+        assert false;
+        return super.toString();
+    }
+  }
 }
