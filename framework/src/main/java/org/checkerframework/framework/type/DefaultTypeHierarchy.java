@@ -508,6 +508,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     } catch (Exception e) {
       // Some types need to be captured first, so ignore crashes.
+      for (int i = 0; i < supertypeTypeArgs.size(); i++) {
+        areEqualVisitHistory.remove(
+            subtypeAsSuper.getTypeArguments().get(i), supertypeTypeArgs.get(i), currentTop);
+      }
     }
     // 5th paragraph:
     // Instead of calling isSubtype with the captured type, just check for containment.
