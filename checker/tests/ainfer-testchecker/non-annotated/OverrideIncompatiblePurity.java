@@ -1,0 +1,32 @@
+// This test case checks for the case where in a superclass a method is pure, but in
+// a subclass it is not. In this case, WPI shouldn't infer purity annotations for either
+// the superclass or the subclass, because they are unverifiable.
+
+import java.util.Random;
+
+public class OverrideIncompatiblePurity {
+
+  class Foo {
+
+    // This version is pure.
+    String getA(int x) {
+      return "A";
+    }
+  }
+
+  class Bar extends Foo {
+
+    String y;
+
+    // This version is neither deterministic nor side-effect free.
+    @java.lang.Override
+    String getA(int x) {
+      if (new Random().nextInt(5) > x) {
+        return "B";
+      } else {
+        y = "C";
+        return y;
+      }
+    }
+  }
+}
