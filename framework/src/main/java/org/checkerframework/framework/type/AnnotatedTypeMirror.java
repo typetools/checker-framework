@@ -826,6 +826,10 @@ public abstract class AnnotatedTypeMirror {
     return atypeFactory.containsUninferredTypeArguments(this);
   }
 
+  public boolean containsCapturedTypes() {
+    return atypeFactory.containsCapturedTypes(this);
+  }
+
   /**
    * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It includes
    * any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.

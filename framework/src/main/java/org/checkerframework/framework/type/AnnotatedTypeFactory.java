@@ -4530,6 +4530,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           Boolean::logicalOr,
           false);
 
+  /** The implementation of the visitor for #containsUninferredTypeArguments. */
+  private final SimpleAnnotatedTypeScanner<Boolean, Void> containsCapturedTypes =
+      new SimpleAnnotatedTypeScanner<>(
+          (type, p) -> TypesUtils.isCapturedTypeVariable(type.getUnderlyingType()),
+          Boolean::logicalOr,
+          false);
+
   /**
    * Returns whether this type or any component type is a wildcard type for which Java 7 type
    * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
@@ -4540,6 +4547,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public boolean containsUninferredTypeArguments(AnnotatedTypeMirror type) {
     return uninferredTypeArgumentScanner.visit(type);
+  }
+
+  public boolean containsCapturedTypes(AnnotatedTypeMirror type) {
+    return containsCapturedTypes.visit(type);
   }
 
   /**

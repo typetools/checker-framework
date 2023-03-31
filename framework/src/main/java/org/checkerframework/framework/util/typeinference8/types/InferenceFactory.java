@@ -91,7 +91,12 @@ public class InferenceFactory {
     TreePath path = context.pathToExpression;
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
     if (assignmentContext == null) {
-      return null;
+      AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
+      if (dummy == null || dummy.containsCapturedTypes()) {
+        return null;
+      }
+      dummy.containsUninferredTypeArguments();
+      return new ProperType(dummy, dummy.getUnderlyingType(), context);
     }
 
     switch (assignmentContext.getKind()) {
