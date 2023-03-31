@@ -6,6 +6,23 @@ import java.util.Random;
 
 public class OverrideIncompatiblePurity {
 
+  interface MyInterface {
+    // WPI should definitely not infer @Pure for this unless all
+    // implementations are pure.
+    void method();
+  }
+
+  class MyImplementation implements MyInterface {
+
+    int field;
+
+    @java.lang.Override
+    public void method() {
+      // Side effect!
+      field = 5;
+    }
+  }
+
   class Foo {
 
     // This version is pure.
