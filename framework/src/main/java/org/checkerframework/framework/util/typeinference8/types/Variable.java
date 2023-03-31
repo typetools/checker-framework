@@ -2,8 +2,6 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Iterator;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -13,7 +11,6 @@ import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kin
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /** An inference variable. */
 public class Variable {
@@ -103,13 +100,8 @@ public class Variable {
         break;
     }
 
-    Set<AnnotationMirror> notBot =
-        new AnnotationMirrorSet(typeVariable.getLowerBound().getAnnotations());
-    notBot.removeAll(context.typeFactory.getQualifierHierarchy().getBottomAnnotations());
-    if (!notBot.isEmpty()) {
-      variableBounds.addQualifierBound(
-          BoundKind.LOWER, typeVariable.getLowerBound().getAnnotations());
-    }
+    variableBounds.addQualifierBound(
+        BoundKind.LOWER, typeVariable.getLowerBound().getAnnotations());
   }
 
   public ExpressionTree getInvocation() {
