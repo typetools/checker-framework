@@ -30,7 +30,7 @@ public class Issue3036 {
                 "keyTag", dsData1.getKeyTag(),
                 "digest", dsData1.getDigest());
 
-    @SuppressWarnings("tainting:type.arguments.not.inferred")
+    @SuppressWarnings({"tainting:type.arguments.not.inferred", "regex:type.arguments.not.inferred"})
     List<Map<String, ?>> dsData =
         getDsData().stream()
             .map(
