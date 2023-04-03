@@ -369,7 +369,7 @@ public class Resolver {
           methodResult = (ExecutableElement) resolveResult;
         } else if (resolveResult.getKind() == ElementKind.OTHER
             && ACCESSERROR.isInstance(resolveResult)) {
-          // Return the inaccessible field that was found
+          // Return the inaccessible method that was found.
           methodResult =
               (ExecutableElement) wrapInvocation(resolveResult, ACCESSERROR_ACCESS, null, null);
         } else {
