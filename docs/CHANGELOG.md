@@ -1,3 +1,13 @@
+Version 3.33.1 (May 1, 2023)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.33.0 (April 3, 2023)
 ------------------------------
 
