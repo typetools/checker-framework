@@ -26,6 +26,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1063,6 +1064,23 @@ public final class TreeUtils {
         classTreeKinds.add(kind);
       }
     }
+  }
+
+  /** Kinds that represent a class or method tree. */
+  private static final Set<Tree.Kind> classAndMethodTreeKinds;
+
+  static {
+    classAndMethodTreeKinds = EnumSet.copyOf(classTreeKinds());
+    classAndMethodTreeKinds.add(Kind.METHOD);
+  }
+
+  /**
+   * Return the set of kinds that represent classes and methods.
+   *
+   * @return the set of kinds that represent classes and methods
+   */
+  public static Set<Tree.Kind> classAndMethodTreeKinds() {
+    return classAndMethodTreeKinds;
   }
 
   /**
