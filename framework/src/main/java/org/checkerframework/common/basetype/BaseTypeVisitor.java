@@ -86,6 +86,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityChecker;
@@ -214,6 +215,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationBuilder.fromClass(elements, SideEffectFree.class);
   /** The @{@link Pure} annotation. */
   protected final AnnotationMirror PURE = AnnotationBuilder.fromClass(elements, Pure.class);
+
+  /** The @{@link Impure} annotation. */
+  protected final AnnotationMirror IMPURE = AnnotationBuilder.fromClass(elements, Impure.class);
 
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
@@ -635,7 +639,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * annotated with a polymorphic qualifier.
    *
    * <p>Issues an error if {@code classTree} extends or implements a class/interface that has a
-   * qualifier parameter, but this class does not.
+   * qualifier parameter, but this class does not.x
    *
    * @param classTree the ClassTree to check for polymorphic fields
    */
@@ -1050,29 +1054,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
         additionalKinds.remove(Pure.Kind.DETERMINISTIC);
       }
-      if (!additionalKinds.isEmpty()) {
-        if (infer) {
-          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-          if (additionalKinds.size() == 2) {
-            wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
+      if (infer) {
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        if (additionalKinds.size() == 2) {
+          wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+          wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+          wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
         } else {
-          if (additionalKinds.size() == 2) {
-            checker.reportWarning(tree, "purity.more.pure", tree.getName());
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
+          assert additionalKinds.isEmpty();
+          wpi.addMethodDeclarationAnnotation(methodElt, IMPURE);
+        }
+      } else if (!additionalKinds.isEmpty()) {
+        if (additionalKinds.size() == 2) {
+          checker.reportWarning(tree, "purity.more.pure", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+        } else {
+          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
         }
       }
     }
