@@ -641,7 +641,8 @@ class MustCallConsistencyAnalyzer {
    *   <li>2) the expression already has a tracked Obligation (i.e. there is already a resource
    *       alias in some Obligation's resource alias set that refers to the expression), or
    *   <li>3) the method in which the invocation occurs also has an @CreatesMustCallFor annotation,
-   *       with the same expression.
+   *       with the same expression, or
+   *   <li>4) the expression is a resource variable.
    * </ul>
    *
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
@@ -667,6 +668,10 @@ class MustCallConsistencyAnalyzer {
         // the @Owning annotation can only be written on methods, parameters, and fields;
         // formal parameters are also represented by LocalVariable in the bodies of methods.
         // This satisfies case 1.
+        return true;
+      } else if (ElementUtils.isResourceVariable(elt)) {
+        // The expression is a resource variable, and therefore will be closed, so we can
+        // treat it as owning (case 4).
         return true;
       } else {
         Obligation toRemove = null;
