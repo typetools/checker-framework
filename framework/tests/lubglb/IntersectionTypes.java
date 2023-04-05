@@ -25,7 +25,7 @@ public class IntersectionTypes {
 
   void foo3(@LubglbB Baz baz3) {
     call1(baz3);
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     call2(baz3);
   }
 }
