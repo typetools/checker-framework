@@ -129,10 +129,6 @@ public class TypecheckResult {
         summaryBuilder.add("  " + missing.toString());
       }
     }
-
-    summaryBuilder.add(
-        "While type-checking "
-            + TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
     return summaryBuilder.toString();
   }
 
