@@ -906,20 +906,6 @@ subprojects {
         // Don't show the uninteresting stack traces from the exceptions.
         showStackTraces = false
       }
-
-      // After each test, print a summary.
-      afterSuite { desc, result ->
-        if (desc.getClassName() != null) {
-          long mils = result.getEndTime() - result.getStartTime()
-          double seconds = mils / 1000.0
-
-          println "Testsuite: ${desc.getClassName()}\n" +
-              "Tests run: ${result.testCount}, " +
-              "Failures: ${result.failedTestCount}, " +
-              "Skipped: ${result.skippedTestCount}, " +
-              "Time elapsed: ${seconds} sec\n"
-        }
-      }
     }
 
     // Create a nonJunitTests task per project
