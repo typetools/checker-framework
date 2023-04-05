@@ -1057,16 +1057,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (infer) {
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-        if (additionalKinds.size() == 2) {
-          wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-          wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-          wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-        } else {
-          assert additionalKinds.isEmpty();
-          wpi.addMethodDeclarationAnnotation(methodElt, IMPURE);
+        // Also must consider overridden methods, whose purity is also impacted by
+        // the purity of this method. If a superclass method is pure, but an implementation
+        // in a subclass is not, WPI ought to treat **neither** as pure. This is similar to
+        // a least upper bound over the purity annotations: "none"/impure is top, side-effect-free
+        // deterministic are siblings below it, and pure is bottom. The purity kind of the
+        // superclass method is technically the "lub" in this "lattice" of its own purity
+        // and the purity of all the methods that override it.
+        Set<? extends ExecutableElement> overriddenMethods = ElementUtils.getOverriddenMethods(methodElt, types);
+        // TODO: also walk up the subclass hierarchy
+        for (ExecutableElement elt : overriddenMethods) {
+          inferPurityAnno(additionalKinds, wpi, elt);
         }
+        if (overriddenMethods.isEmpty()) {
+          // Handle interfaces. Java prefers to override a method in a super class to an interface,
+          // so only explore the interfaces if no overridden methods in superclasses were found.
+          // Note: ElementUtils#getOverriddenMethods does not return methods in interfaces.
+          TypeElement enclosingElement = ElementUtils.enclosingTypeElement(methodElt);
+          List<? extends TypeMirror> implementedInterfaces = enclosingElement.getInterfaces();
+          for (TypeMirror interfaceTypeMirror : implementedInterfaces) {
+            TypeElement interfaceElement = (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
+            for (ExecutableElement interfaceMethod : ElementUtils.getAllMethodsIn(interfaceElement, elements)) {
+              if (elements.overrides(methodElt, interfaceMethod, enclosingElement)) {
+                inferPurityAnno(additionalKinds, wpi, interfaceMethod);
+              }
+            }
+          }
+        }
+
+        inferPurityAnno(additionalKinds, wpi, methodElt);
+
       } else if (!additionalKinds.isEmpty()) {
         if (additionalKinds.size() == 2) {
           checker.reportWarning(tree, "purity.more.pure", tree.getName());
@@ -1078,6 +1098,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           throw new BugInCF("Unexpected purity kind in " + additionalKinds);
         }
       }
+    }
+  }
+
+  private void inferPurityAnno(EnumSet<Pure.Kind> additionalKinds, WholeProgramInference wpi,
+      ExecutableElement elt) {
+    if (additionalKinds.size() == 2) {
+      wpi.addMethodDeclarationAnnotation(elt, PURE);
+    } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+      wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE);
+    } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+      wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC);
+    } else {
+      assert additionalKinds.isEmpty();
+      wpi.addMethodDeclarationAnnotation(elt, IMPURE);
     }
   }
 

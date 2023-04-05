@@ -253,6 +253,12 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
+  public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt) {
+    // TODO: implement properly
+    return AnnotationMirrorSet.emptySet();
+  }
+
+  @Override
   public ATypeElement getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);

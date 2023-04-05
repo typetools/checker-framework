@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Stores annotations from whole-program inference. For a given location such as a field or method,
@@ -169,6 +170,15 @@ public interface WholeProgramInferenceStorage<T> {
    *     otherwise
    */
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+
+  /**
+   * Return the list of declaration annotations inferred on the given method so far in this round
+   * of WPI.
+   *
+   * @param elt a method
+   * @return the declaration annotations inferred on elt so far (may be empty)
+   */
+  AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
 
   /**
    * Obtain the type from a storage location.

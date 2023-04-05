@@ -176,6 +176,23 @@ public class WholeProgramInferenceJavaParserStorage
     return getMethodAnnos(methodElt) != null;
   }
 
+  @Override
+  public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement methodElt) {
+    String className = ElementUtils.getEnclosingClassName(methodElt);
+    // Read in classes for the element.
+    getFileForElement(methodElt);
+    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    CallableDeclarationAnnos methodAnnos =
+        classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+    if (methodAnnos == null) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    return methodAnnos.getDeclarationAnnotations();
+  }
+
   /**
    * Get the annotations for a method or constructor.
    *
@@ -1232,7 +1249,8 @@ public class WholeProgramInferenceJavaParserStorage
         return AnnotationMirrorSet.emptySet();
       }
 
-      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
+      // TODO: this is an evil kludge. If it works, find a better way to do it.
+      return /*AnnotationMirrorSet.unmodifiableSet(*/declarationAnnotations;//);
     }
 
     /**
