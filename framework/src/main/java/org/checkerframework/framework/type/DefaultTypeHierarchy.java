@@ -127,9 +127,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   @Override
   public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
-    if (subtype.containsUninferredTypeArguments() || supertype.containsUninferredTypeArguments()) {
-      return subtype.atypeFactory.ignoreUninferredTypeArguments;
-    }
     for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
       if (!isSubtype(subtype, supertype, top)) {
         return false;
