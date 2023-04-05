@@ -150,12 +150,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       TreePath pathToExpression) {
     ExpressionTree outerTree =
         InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
-    if (java8Inference != null
-        && java8Inference.getContext().pathToExpression.getLeaf() == outerTree) {
-      // Inference is running and is asking for the type of the method before type arguments are
-      // substituted. So don't infer any type arguments.  This happens when getting the type of a
-      // lambda's returned expression.
-      return InferenceResult.emptyResult();
+    for (InvocationTypeInference i : java8InferenceStack) {
+      if (i.getContext().pathToExpression.getLeaf() == outerTree) {
+        // Inference is running and is asking for the type of the method before type arguments are
+        // substituted. So don't infer any type arguments.  This happens when getting the type of a
+        // lambda's returned expression.
+        return InferenceResult.emptyResult();
+      }
     }
     if (outerTree != expressionTree) {
       if (outerTree.getKind() == Tree.Kind.METHOD_INVOCATION) {

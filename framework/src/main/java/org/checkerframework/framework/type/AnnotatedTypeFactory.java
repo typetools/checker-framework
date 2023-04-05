@@ -4721,6 +4721,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror param =
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, index);
         if (param.getKind() == TypeKind.WILDCARD) {
+          // TODO: #979
           // param is an uninferred wildcard.
           TypeMirror typeMirror = TreeUtils.typeOf(tree);
           param = AnnotatedTypeMirror.createType(typeMirror, this, false);
