@@ -395,8 +395,11 @@ public class Resolver {
 
   /** Build an instance of {@code Resolve$MethodResolutionContext}. */
   protected Object buildMethodContext()
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-          InvocationTargetException, NoSuchFieldException {
+      throws ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchFieldException {
     // Class is not accessible, instantiate reflectively.
     Class<?> methCtxClss =
         Class.forName("com.sun.tools.javac.comp.Resolve$MethodResolutionContext");

@@ -1919,14 +1919,14 @@ public class AnnotationFileParser {
       NodeWithRange<?> astNode) {
     if (member instanceof MethodDeclaration) {
       MethodDeclaration method = (MethodDeclaration) member;
-      Element elt = findElement(typeElt, method, /*noWarn=*/ true);
+      Element elt = findElement(typeElt, method, /* noWarn= */ true);
       if (elt != null) {
         putIfAbsent(elementsToDecl, elt, method);
       } else {
         ExecutableElement overriddenMethod = fakeOverriddenMethod(typeElt, method);
         if (overriddenMethod == null) {
           // Didn't find the element and it isn't a fake override.  Issue a warning.
-          findElement(typeElt, method, /*noWarn=*/ false);
+          findElement(typeElt, method, /* noWarn= */ false);
         } else {
           List<BodyDeclaration<?>> l =
               fakeOverrideDecls.computeIfAbsent(overriddenMethod, __ -> new ArrayList<>(1));
