@@ -7,8 +7,7 @@ import java.util.Random;
 public class OverrideIncompatiblePurity {
 
   interface MyInterface {
-    // WPI should definitely not infer @Pure for this unless all
-    // implementations are pure.
+    // WPI should not infer @Pure for this unless all implementations are pure.
     void method();
   }
 
@@ -25,7 +24,7 @@ public class OverrideIncompatiblePurity {
 
   class Foo {
 
-    // This version is pure.
+    // This implementation is pure, but an overriding implementation in Bar is not.
     String getA(int x) {
       return "A";
     }
@@ -35,7 +34,7 @@ public class OverrideIncompatiblePurity {
 
     String y;
 
-    // This version is neither deterministic nor side-effect free.
+    // This implementation is neither deterministic nor side-effect free.
     @java.lang.Override
     String getA(int x) {
       if (new Random().nextInt(5) > x) {

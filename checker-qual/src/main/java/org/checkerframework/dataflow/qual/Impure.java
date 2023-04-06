@@ -7,18 +7,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code Impure} is a method annotation that means neither {@link SideEffectFree} and {@link
- * Deterministic} (i.e., not {@link Pure}).
+ * {@code Impure} is a method annotation that means the method might have side effects and/or might
+ * be nondeterministic. Conceptually, it completes the "lattice" of purity annotations by serving as
+ * a top element. That is, any {@code @}{@link Pure} method can be treated as {@code @}{@link
+ * SideEffectFree} or {@code @}{@link Determinsitic}, and any {@code @}{@link SideEffectFree} or
+ * {@code @}{@link Deterministic} method can be treated as {@code @Impure}.
  *
- * <p>This annotation should not be written by a programmer (leaving a method unannotated is
- * equivalent to writing this annotation), but it may be inferred by tools. Conceptually, it
- * completes the "lattice" of purity annotations by serving as a top element.
+ * <p>This annotation should not be written by a programmer, because leaving a method unannotated is
+ * equivalent to writing this annotation.
  *
- * <p>That is, any {@code Pure} method can be treated as {@code SideEffectFree} or {@code
- * Determinsitic}, any {@code Deterministic} method can be treated as {@code Impure}, etc. (Liskov
- * substitutability for method implementations). The completeness of this lattice is necessary for
- * practical inference of the purity of chains of overridden methods.
+ * <p>The purpose of this annotation is for use by tools, which can distinguish between unannotated
+ * methods (that the tool has not yet examined) and {@code @Impure} methods (that the tool has
+ * determined to be neither {@code @SideEffectFree} nor {@code @Deterministic}).
  *
+ * @see SideEffectFree
+ * @see Deterministic
+ * @see Pure
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */

@@ -767,13 +767,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       return;
     }
 
-    // Special-case handling for purity annotations: do a "least upper bound" between
-    // the current purity annotation inferred for the method and anno. This is necessary to
-    // avoid WPI inferring incompatible purity annotations on methods that override methods
-    // from their superclass. TODO: this would be unnecessary if purity was handled in a more
-    // standard manner.
+    // Special-case handling for purity annotations.
     AnnotationMirror annoToAdd;
-    if (isPurityAnno(anno)) {
+    if (!isPurityAnno(anno)) {
+      annoToAdd = anno;
+    } else {
+      // It's a purity annotation. Do a "least upper bound" between the current purity annotation
+      // inferred for the method and anno. This is necessary to avoid WPI inferring incompatible
+      // purity annotations on methods that override methods from their superclass. TODO: this would
+      // be unnecessary if purity implemented as a type system.
       AnnotationMirror currentPurityAnno = getPurityAnnotation(methodElt);
       if (currentPurityAnno == null) {
         annoToAdd = anno;
@@ -810,8 +812,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
           annoToAdd = IMPURE;
         }
       }
-    } else {
-      annoToAdd = anno;
     }
 
     String file = storage.getFileForElement(methodElt);
