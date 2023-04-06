@@ -382,6 +382,16 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   @Override
+  public boolean removeMethodDeclarationAnnotation(ExecutableElement elt, AnnotationMirror anno) {
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(elt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
+    return methodAnnos.removeDeclarationAnnotation(anno);
+  }
+
+  @Override
   public boolean addFieldDeclarationAnnotation(VariableElement field, AnnotationMirror anno) {
     FieldAnnos fieldAnnos = getFieldAnnos(field);
     if (fieldAnnos == null) {
@@ -1249,8 +1259,7 @@ public class WholeProgramInferenceJavaParserStorage
         return AnnotationMirrorSet.emptySet();
       }
 
-      // TODO: this is an evil kludge. If it works, find a better way to do it.
-      return /*AnnotationMirrorSet.unmodifiableSet(*/declarationAnnotations;//);
+      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
     }
 
     /**
@@ -1266,6 +1275,20 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return declarationAnnotations.add(annotation);
+    }
+
+    /**
+     * Attempts to remove the given declaration annotation from this callable declaration and returns
+     * whether an annotation was successfully removed.
+     *
+     * @param anno an annotation
+     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't be removed
+     */
+    /* package-private */ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
+      if (declarationAnnotations != null) {
+        return declarationAnnotations.remove(anno);
+      }
+      return false;
     }
 
     /**

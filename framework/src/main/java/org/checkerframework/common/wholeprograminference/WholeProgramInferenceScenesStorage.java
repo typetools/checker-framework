@@ -254,8 +254,20 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt) {
-    // TODO: implement properly
-    return AnnotationMirrorSet.emptySet();
+    AMethod methodAnnos = getMethodAnnos(elt);
+    Set<Annotation> annos = methodAnnos.tlAnnotationsHere;
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (Annotation anno : annos) {
+      result.add(AnnotationConverter.annotationToAnnotationMirror(anno, atypeFactory.getProcessingEnv()));
+    }
+    return result;
+  }
+
+  @Override
+  public boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt,
+      AnnotationMirror anno) {
+    AMethod methodAnnos = getMethodAnnos(methodElt);
+    return methodAnnos.tlAnnotationsHere.remove(AnnotationConverter.annotationMirrorToAnnotation(anno));
   }
 
   @Override

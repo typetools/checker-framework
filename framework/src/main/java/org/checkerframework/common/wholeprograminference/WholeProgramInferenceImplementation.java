@@ -779,8 +779,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       } else {
         // Clear the current purity annotation. Right now, this relies on the set being modifiable
         // (which is bad), so: TODO: find a way to do this cleanly
-        AnnotationMirrorSet methodDeclAnnos = storage.getMethodDeclarationAnnotations(methodElt);
-        methodDeclAnnos.remove(currentPurityAnno);
+        storage.removeMethodDeclarationAnnotation(methodElt, currentPurityAnno);
 
         // TODO: is this the best way to do this? Would it be easier to just write a subtype
         // routine for purity? Do we have code to handle this already somewhere?

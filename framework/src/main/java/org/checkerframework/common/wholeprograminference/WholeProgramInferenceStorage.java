@@ -181,6 +181,17 @@ public interface WholeProgramInferenceStorage<T> {
   AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
 
   /**
+   * Removes the given annotation from the given method element's inferred declaration annotation.
+   * If the given annotation was not in the list of inferred declaration annotations on the given
+   * method, calling this method is a no-op.
+   *
+   * @param methodElt a method element
+   * @param anno      a declaration annotation to remove
+   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't present)
+   */
+  boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
+
+  /**
    * Obtain the type from a storage location.
    *
    * @param typeMirror the underlying type for the result

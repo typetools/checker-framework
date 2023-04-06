@@ -1065,7 +1065,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // superclass method is technically the "lub" in this "lattice" of its own purity
         // and the purity of all the methods that override it.
         Set<? extends ExecutableElement> overriddenMethods = ElementUtils.getOverriddenMethods(methodElt, types);
-        // TODO: also walk up the subclass hierarchy
         for (ExecutableElement elt : overriddenMethods) {
           inferPurityAnno(additionalKinds, wpi, elt);
         }
