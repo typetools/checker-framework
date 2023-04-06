@@ -832,6 +832,9 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    */
   private @Nullable AnnotationMirror getPurityAnnotation(ExecutableElement methodElt) {
     AnnotationMirrorSet declAnnos = storage.getMethodDeclarationAnnotations(methodElt);
+    if (declAnnos.isEmpty()) {
+      return null;
+    }
     for (AnnotationMirror declAnno : declAnnos) {
       if (isPurityAnno(declAnno)) {
         return declAnno;
