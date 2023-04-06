@@ -1075,7 +1075,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Return the set of kinds that represent classes and methods.
+   * Returns the set of kinds that represent classes and methods.
    *
    * @return the set of kinds that represent classes and methods
    */
