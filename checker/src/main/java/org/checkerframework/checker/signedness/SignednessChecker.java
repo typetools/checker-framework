@@ -14,6 +14,9 @@ import org.checkerframework.framework.qual.StubFiles;
 @StubFiles({"junit-assertions.astub"})
 public class SignednessChecker extends BaseTypeChecker {
 
+  /** Creates a new SignednessChecker. */
+  public SignednessChecker() {}
+
   @Override
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
