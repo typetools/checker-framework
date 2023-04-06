@@ -12,11 +12,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 public class LowerBoundQual {
 
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  @SubtypeOf({})
   @DefaultQualifierInHierarchy
   @Documented
   @Retention(RetentionPolicy.RUNTIME)
-  @SubtypeOf({})
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public static @interface LbTop {}
 
   @Documented

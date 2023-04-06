@@ -5,6 +5,7 @@ updates:
   directory: "/"
   schedule:
     interval: "daily"
+  # Default open-pull-requests-limit = 5
   open-pull-requests-limit: 10
   ignore:
   - dependency-name: com.amazonaws:aws-java-sdk-bom

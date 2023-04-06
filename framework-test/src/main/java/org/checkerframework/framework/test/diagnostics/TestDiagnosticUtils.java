@@ -113,8 +113,8 @@ public class TestDiagnosticUtils {
         lineNumber,
         DiagnosticKind.JSpecify,
         stringFromJavaFile,
-        /*isFixable=*/ false,
-        /*omitParentheses=*/ true);
+        /* isFixable= */ false,
+        /* omitParentheses= */ true);
   }
 
   /**

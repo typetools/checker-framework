@@ -1,6 +1,3 @@
-// Keep this file in sync with
-// ../../../../../tagletJdk8/java/org/checkerframework/taglet/ManualTaglet.java .
-
 package org.checkerframework.taglet;
 
 import com.sun.source.doctree.DocTree;

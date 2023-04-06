@@ -29,6 +29,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -110,7 +111,7 @@ public class MustCallTransfer extends CFTransfer {
     // Remove "close" from the type in the store for resource variables.
     // The Resource Leak Checker relies on this code to avoid checking that
     // resource variables are closed.
-    if (atypeFactory.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
+    if (ElementUtils.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
       CFStore store = result.getRegularStore();
       JavaExpression expr = JavaExpression.fromNode(n.getTarget());
       CFValue value = store.getValue(expr);

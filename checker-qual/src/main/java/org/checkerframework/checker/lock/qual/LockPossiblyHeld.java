@@ -25,7 +25,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({})
 @InvisibleQualifier
-@SubtypeOf({}) // The top type in the hierarchy
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
 @DefaultFor(value = TypeUseLocation.LOWER_BOUND, types = Void.class)
 @QualifierForLiterals(LiteralKind.NULL)

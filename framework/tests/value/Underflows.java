@@ -3,8 +3,9 @@ import org.checkerframework.common.value.qual.*;
 public class Underflows {
   static void bytes() {
     byte min = Byte.MIN_VALUE;
-    // :: warning: (cast.unsafe)
     @IntVal(127) byte maxPlus1 = (byte) (min - 1);
+    // :: error: (assignment)
+    @IntVal(127) short maxPlus1Short = (short) (min - 1);
   }
 
   static void chars() {
@@ -15,8 +16,9 @@ public class Underflows {
 
   static void shorts() {
     short min = Short.MIN_VALUE;
-    // :: warning: (cast.unsafe)
     @IntVal(32767) short maxPlus1 = (short) (min - 1);
+    // :: error: (assignment)
+    @IntVal(32767) int maxPlus1Int = (int) (min - 1);
   }
 
   static void ints() {
