@@ -1278,11 +1278,12 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Attempts to remove the given declaration annotation from this callable declaration and returns
-     * whether an annotation was successfully removed.
+     * Attempts to remove the given declaration annotation from this callable declaration and
+     * returns whether an annotation was successfully removed.
      *
      * @param anno an annotation
-     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't be removed
+     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't
+     *     be removed
      */
     /* package-private */ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
       if (declarationAnnotations != null) {

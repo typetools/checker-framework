@@ -172,8 +172,8 @@ public interface WholeProgramInferenceStorage<T> {
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
 
   /**
-   * Return the list of declaration annotations inferred on the given method so far in this round
-   * of WPI.
+   * Return the list of declaration annotations inferred on the given method so far in this round of
+   * WPI.
    *
    * @param elt a method
    * @return the declaration annotations inferred on elt so far (may be empty)
@@ -186,8 +186,9 @@ public interface WholeProgramInferenceStorage<T> {
    * method, calling this method is a no-op.
    *
    * @param methodElt a method element
-   * @param anno      a declaration annotation to remove
-   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't present)
+   * @param anno a declaration annotation to remove
+   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't
+   *     present)
    */
   boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 

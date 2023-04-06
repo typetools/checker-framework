@@ -15,7 +15,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -150,8 +149,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
     this.showWpiFailedInferences = showWpiFailedInferences;
-    DETERMINISTIC = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Deterministic.class);
-    SIDE_EFFECT_FREE = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), SideEffectFree.class);
+    DETERMINISTIC =
+        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Deterministic.class);
+    SIDE_EFFECT_FREE =
+        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), SideEffectFree.class);
     PURE = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Pure.class);
     IMPURE = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Impure.class);
   }
@@ -786,14 +787,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         String pureName = "org.checkerframework.dataflow.qual.Pure";
         String detName = "org.checkerframework.dataflow.qual.Deterministic";
         String sefName = "org.checkerframework.dataflow.qual.SideEffectFree";
-        boolean currentIsDet = AnnotationUtils.areSameByName(currentPurityAnno, pureName) ||
-            AnnotationUtils.areSameByName(currentPurityAnno, detName);
-        boolean currentIsSEF = AnnotationUtils.areSameByName(currentPurityAnno, pureName) ||
-            AnnotationUtils.areSameByName(currentPurityAnno, sefName);
-        boolean annoIsDet = AnnotationUtils.areSameByName(anno, pureName) ||
-            AnnotationUtils.areSameByName(anno, detName);
-        boolean annoIsSEF = AnnotationUtils.areSameByName(anno, pureName) ||
-            AnnotationUtils.areSameByName(anno, sefName);
+        boolean currentIsDet =
+            AnnotationUtils.areSameByName(currentPurityAnno, pureName)
+                || AnnotationUtils.areSameByName(currentPurityAnno, detName);
+        boolean currentIsSEF =
+            AnnotationUtils.areSameByName(currentPurityAnno, pureName)
+                || AnnotationUtils.areSameByName(currentPurityAnno, sefName);
+        boolean annoIsDet =
+            AnnotationUtils.areSameByName(anno, pureName)
+                || AnnotationUtils.areSameByName(anno, detName);
+        boolean annoIsSEF =
+            AnnotationUtils.areSameByName(anno, pureName)
+                || AnnotationUtils.areSameByName(anno, sefName);
 
         if (currentIsSEF && currentIsDet && annoIsSEF && annoIsDet) {
           annoToAdd = PURE;
@@ -815,7 +820,6 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       storage.setFileModified(file);
     }
   }
-
 
   private @Nullable AnnotationMirror getPurityAnnotation(ExecutableElement methodElt) {
     AnnotationMirrorSet declAnnos = storage.getMethodDeclarationAnnotations(methodElt);
