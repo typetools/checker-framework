@@ -778,8 +778,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       if (currentPurityAnno == null) {
         annoToAdd = anno;
       } else {
-        // Clear the current purity annotation. Right now, this relies on the set being modifiable
-        // (which is bad), so: TODO: find a way to do this cleanly
+        // Clear the current purity annotation, because at this point a new one is definitely
+        // going to be inferred.
         storage.removeMethodDeclarationAnnotation(methodElt, currentPurityAnno);
 
         // TODO: is this the best way to do this? Would it be easier to just write a subtype
@@ -821,6 +821,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
   }
 
+  /**
+   * Returns the purity annotation ({@link Pure}, {@link SideEffectFree}, {@link Deterministic}, or
+   * {@link Impure}) currently associated with the given executable element in this round of
+   * inference, if there is one. Invariant: no more than one purity annotation should ever be
+   * present on a given executable element at a time.
+   *
+   * @param methodElt a method element
+   * @return the purity annotation, or null if none has yet been inferred
+   */
   private @Nullable AnnotationMirror getPurityAnnotation(ExecutableElement methodElt) {
     AnnotationMirrorSet declAnnos = storage.getMethodDeclarationAnnotations(methodElt);
     for (AnnotationMirror declAnno : declAnnos) {
@@ -831,6 +840,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     return null;
   }
 
+  /**
+   * Returns true if the given annotation is {@link Pure}, {@link SideEffectFree}, {@link
+   * Deterministic}, or {@link Impure}. Returns false otherwise.
+   *
+   * @param anno an annotation
+   * @return true iff the annotation is a purity annotation
+   */
   private boolean isPurityAnno(AnnotationMirror anno) {
     return AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.Pure")
         || AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.SideEffectFree")

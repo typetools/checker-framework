@@ -639,7 +639,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * annotated with a polymorphic qualifier.
    *
    * <p>Issues an error if {@code classTree} extends or implements a class/interface that has a
-   * qualifier parameter, but this class does not.x
+   * qualifier parameter, but this class does not.
    *
    * @param classTree the ClassTree to check for polymorphic fields
    */
