@@ -1026,19 +1026,20 @@ Create the property in the \code{properties} section of the POM:
 Change the reference to the \code{maven-dependency-plugin} within the \code{<plugins>}
 section, or add it if it is not present.
 
+% Use of 4 initial spaces improves pasteability into existing pom.xml files.
 \begin{alltt}
-  <plugin>
-    <!-- This plugin will set properties values using dependency information -->
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-dependency-plugin</artifactId>
-    <executions>
-      <execution>
-        <goals>
-          <goal>properties</goal>
-        </goals>
-      </execution>
-    </executions>
-  </plugin>
+    <plugin>
+      <!-- This plugin will set properties values using dependency information -->
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-dependency-plugin</artifactId>
+      <executions>
+        <execution>
+          <goals>
+            <goal>properties</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
 \end{alltt}
 
 \item Direct the Maven compiler plugin to use the desired checkers by
