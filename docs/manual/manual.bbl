@@ -443,8 +443,8 @@ Jianchu Li.
 Florian Lanzinger, Alexander Weigl, Mattias Ulbrich, and Werner Dietl.
 \newblock Scalability and precision by combining expressive type systems and
   deductive verification.
-\newblock {\em ACM Proceedings on Programming Languages}, 5(OOPSLA), October
-  2021.
+\newblock {\em Proceedings of the ACM on Programming Languages}, 5(OOPSLA),
+  October 2021.
 
 \bibitem[Mac16]{Mackie2016}
 Christopher~A. Mackie.

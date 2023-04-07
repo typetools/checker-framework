@@ -1043,11 +1043,16 @@ section, or add it if it is not present.
 
 \item Direct the Maven compiler plugin to use the desired checkers by
   creating three new profiles as shown below (the example uses the Nullness
-  Checker).  If your POM file does not already use the
+  Checker).  If you do not use Java 8, then you only need two of the
+  profiles, or you can combine them into one profile.
+
+  If your POM file does not already use the
   \code{maven-compiler-plugin} plugin, you can use the text below as is.
   If your POM file
   already uses the plugin, copy and edit the first profile to incorporate the
   existing configuration.
+  If the existing configuration uses \<proc:none>, you need to remove that
+  or comment it out.
 
 %% TODO: Is this comment still accurate?
 %              <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
@@ -1059,6 +1064,7 @@ section, or add it if it is not present.
   <profiles>
     <profile>
       <id>checkerframework</id>
+      <!-- If you omit the activation block, run mvn with "-P checkerframework" to run checkers. -->
       <activation>
         <jdk>[1.8,)</jdk>
       </activation>
