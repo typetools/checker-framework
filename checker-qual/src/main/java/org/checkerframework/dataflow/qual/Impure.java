@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * {@code Impure} is a method annotation that means the method might have side effects and/or might
  * be nondeterministic. Conceptually, it completes the "lattice" of purity annotations by serving as
  * a top element. That is, any {@code @}{@link Pure} method can be treated as {@code @}{@link
- * SideEffectFree} or {@code @}{@link Determinsitic}, and any {@code @}{@link SideEffectFree} or
+ * SideEffectFree} or {@code @}{@link Deterministic}, and any {@code @}{@link SideEffectFree} or
  * {@code @}{@link Deterministic} method can be treated as {@code @Impure}.
  *
  * <p>This annotation should not be written by a programmer, because leaving a method unannotated is
