@@ -16,13 +16,10 @@ import java.lang.annotation.Target;
  * <p>This annotation should not be written by a programmer, because leaving a method unannotated is
  * equivalent to writing this annotation.
  *
- * <p>The purpose of this annotation is for use by tools, which can distinguish between unannotated
+ * <p>The purpose of this annotation is for use by tools. A tool may distinguish between unannotated
  * methods (that the tool has not yet examined) and {@code @Impure} methods (that the tool has
  * determined to be neither {@code @SideEffectFree} nor {@code @Deterministic}).
  *
- * @see SideEffectFree
- * @see Deterministic
- * @see Pure
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and
  *     flow-sensitive analysis
  */

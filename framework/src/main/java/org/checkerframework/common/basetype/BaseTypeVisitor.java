@@ -1060,12 +1060,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         inferPurityAnno(additionalKinds, wpi, methodElt);
         // The purity of overridden methods is impacted by the purity of this method. If a
         // superclass method is pure, but an implementation in a subclass is not, WPI ought to treat
-        // **neither** as pure. This is similar to a least upper bound over the purity annotations:
-        // "none"/impure is top, side-effect-free deterministic are siblings below it, and pure is
-        // bottom. The purity kind of the superclass method is technically the "lub" in this
-        // "lattice" of its own purity and the purity of all the methods that override
-        // it. Logically, this rule is the same as the WPI rule for overrides, but purity isn't a
-        // type system and therefore must be special-cased.
+        // **neither** as pure. The purity kind of the superclass method is the LUB of its own
+        // purity and the purity of all the methods that override it. Logically, this rule is the
+        // same as the WPI rule for overrides, but purity isn't a type system and therefore must be
+        // special-cased.
         Set<? extends ExecutableElement> overriddenMethods =
             ElementUtils.getOverriddenMethods(methodElt, types);
         for (ExecutableElement elt : overriddenMethods) {
