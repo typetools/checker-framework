@@ -1058,23 +1058,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
         inferPurityAnno(additionalKinds, wpi, methodElt);
-        // Also must consider overridden methods, whose purity is also impacted by
-        // the purity of this method. If a superclass method is pure, but an implementation
-        // in a subclass is not, WPI ought to treat **neither** as pure. This is similar to
-        // a least upper bound over the purity annotations: "none"/impure is top, side-effect-free
-        // deterministic are siblings below it, and pure is bottom. The purity kind of the
-        // superclass method is technically the "lub" in this "lattice" of its own purity
-        // and the purity of all the methods that override it. Logically, this rule is the same
-        // as the WPI rule for overrides, but purity isn't a type system and therefore must be
-        // special-cased.
+        // The purity of overridden methods is impacted by the purity of this method. If a
+        // superclass method is pure, but an implementation in a subclass is not, WPI ought to treat
+        // **neither** as pure. This is similar to a least upper bound over the purity annotations:
+        // "none"/impure is top, side-effect-free deterministic are siblings below it, and pure is
+        // bottom. The purity kind of the superclass method is technically the "lub" in this
+        // "lattice" of its own purity and the purity of all the methods that override
+        // it. Logically, this rule is the same as the WPI rule for overrides, but purity isn't a
+        // type system and therefore must be special-cased.
         Set<? extends ExecutableElement> overriddenMethods =
             ElementUtils.getOverriddenMethods(methodElt, types);
         for (ExecutableElement elt : overriddenMethods) {
           inferPurityAnno(additionalKinds, wpi, elt);
         }
         if (overriddenMethods.isEmpty()) {
-          // Handle interfaces. Java prefers to override a method in a super class to an interface,
-          // so only explore the interfaces if no overridden methods in superclasses were found.
+          // Handle interfaces. Java overrides by default refer to superclasses,
+          // so only explore the interfaces if no overridden methods were found in superclasses.
           // Note: ElementUtils#getOverriddenMethods does not return methods in interfaces.
           TypeElement enclosingElement = ElementUtils.enclosingTypeElement(methodElt);
           List<? extends TypeMirror> implementedInterfaces = enclosingElement.getInterfaces();
@@ -1090,7 +1089,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         }
       } else if (!additionalKinds.isEmpty()) {
-        // Note: no need to suggest @Impure, since it has no semantics.
+        // Note: no need to suggest @Impure, since it is equivalent to no annotation.
         if (additionalKinds.size() == 2) {
           checker.reportWarning(tree, "purity.more.pure", tree.getName());
         } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
@@ -1105,9 +1104,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infer a purity annotation for {@code elt} based on the given set of purity kinds. This method
-   * "lubs" the given kinds with whatever purity annotation is already present on {@code elt} in the
-   * given Whole Program Inference instance.
+   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
+   *
+   * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
+   * special-cases purity annotations: that method lubs a purity argument with whatever purity
+   * annotation is already present on {@code elt}.
    *
    * @param kinds the set of purity kinds to use to infer the annotation
    * @param wpi the whole program inference instance to use to do the inferring
