@@ -472,6 +472,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       '10000',
       '-ArequirePrefixInWarningSuppressions',
       '-AwarnUnneededSuppressions',
+      '-AwarnRedundantAnnotations',
     ]
     options.compilerArgs += args
     options.forkOptions.jvmArgs += ['-Xmx2g']
