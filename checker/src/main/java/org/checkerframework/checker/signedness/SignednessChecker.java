@@ -3,6 +3,7 @@ package org.checkerframework.checker.signedness;
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.qual.StubFiles;
 
 /**
  * A type-checker that prevents mixing of unsigned and signed values, and prevents meaningless
@@ -10,7 +11,11 @@ import org.checkerframework.common.value.ValueChecker;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
+@StubFiles({"junit-assertions.astub"})
 public class SignednessChecker extends BaseTypeChecker {
+
+  /** Creates a new SignednessChecker. */
+  public SignednessChecker() {}
 
   @Override
   protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {

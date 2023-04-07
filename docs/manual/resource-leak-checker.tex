@@ -97,8 +97,10 @@ aliasing patterns related to resource leaks:
 \item[\refqualclass{checker/mustcall/qual}{NotOwning}]
   expresses ownership.  When two aliases exist to the same Java object,
   \<@Owning> and \<@NotOwning> indicate which of the two is responsible for
-  fulfilling must-call obligations.  For details, see
-  Section~\ref{resource-leak-ownership}.
+  fulfilling must-call obligations.
+  Constructor results are always \<@Owning>. Method returns default to
+  \<@Owning>.  Formal parameters and fields default to \<@NotOwning>.
+  For more details, see Section~\ref{resource-leak-ownership}.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   represents a ``resource-aliasing'' relationship.  Resource aliases are

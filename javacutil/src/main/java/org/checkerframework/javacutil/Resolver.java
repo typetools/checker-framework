@@ -367,6 +367,11 @@ public class Resolver {
         if (resolveResult.getKind() == ElementKind.METHOD
             || resolveResult.getKind() == ElementKind.CONSTRUCTOR) {
           methodResult = (ExecutableElement) resolveResult;
+        } else if (resolveResult.getKind() == ElementKind.OTHER
+            && ACCESSERROR.isInstance(resolveResult)) {
+          // Return the inaccessible method that was found.
+          methodResult =
+              (ExecutableElement) wrapInvocation(resolveResult, ACCESSERROR_ACCESS, null, null);
         } else {
           methodResult = null;
         }
@@ -390,8 +395,11 @@ public class Resolver {
 
   /** Build an instance of {@code Resolve$MethodResolutionContext}. */
   protected Object buildMethodContext()
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-          InvocationTargetException, NoSuchFieldException {
+      throws ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchFieldException {
     // Class is not accessible, instantiate reflectively.
     Class<?> methCtxClss =
         Class.forName("com.sun.tools.javac.comp.Resolve$MethodResolutionContext");

@@ -26,6 +26,7 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1065,6 +1066,23 @@ public final class TreeUtils {
     }
   }
 
+  /** Kinds that represent a class or method tree. */
+  private static final Set<Tree.Kind> classAndMethodTreeKinds;
+
+  static {
+    classAndMethodTreeKinds = EnumSet.copyOf(classTreeKinds());
+    classAndMethodTreeKinds.add(Kind.METHOD);
+  }
+
+  /**
+   * Returns the set of kinds that represent classes and methods.
+   *
+   * @return the set of kinds that represent classes and methods
+   */
+  public static Set<Tree.Kind> classAndMethodTreeKinds() {
+    return classAndMethodTreeKinds;
+  }
+
   /**
    * The kinds that represent declarations that might have {@code @SuppressWarnings} written on
    * them: classes, methods, and variables.
@@ -1616,7 +1634,7 @@ public final class TreeUtils {
    * @return true if the given path points to an anonymous constructor, false if it does not
    */
   public static boolean isAnonymousConstructor(final MethodTree method) {
-    @Nullable Element e = elementFromTree(method);
+    Element e = elementFromTree(method);
     if (e == null || e.getKind() != ElementKind.CONSTRUCTOR) {
       return false;
     }
@@ -1634,7 +1652,7 @@ public final class TreeUtils {
    * @return true if the given method is a compact canonical constructor
    */
   public static boolean isCompactCanonicalRecordConstructor(final MethodTree method) {
-    @Nullable Element e = elementFromTree(method);
+    Element e = elementFromTree(method);
     if (!(e instanceof Symbol)) {
       return false;
     }
