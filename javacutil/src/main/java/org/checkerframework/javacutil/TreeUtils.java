@@ -1634,7 +1634,7 @@ public final class TreeUtils {
    * @return true if the given path points to an anonymous constructor, false if it does not
    */
   public static boolean isAnonymousConstructor(final MethodTree method) {
-    @Nullable Element e = elementFromTree(method);
+    Element e = elementFromTree(method);
     if (e == null || e.getKind() != ElementKind.CONSTRUCTOR) {
       return false;
     }
@@ -1652,7 +1652,7 @@ public final class TreeUtils {
    * @return true if the given method is a compact canonical constructor
    */
   public static boolean isCompactCanonicalRecordConstructor(final MethodTree method) {
-    @Nullable Element e = elementFromTree(method);
+    Element e = elementFromTree(method);
     if (!(e instanceof Symbol)) {
       return false;
     }

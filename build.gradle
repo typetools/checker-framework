@@ -472,6 +472,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       '10000',
       '-ArequirePrefixInWarningSuppressions',
       '-AwarnUnneededSuppressions',
+      '-AwarnRedundantAnnotations',
     ]
     options.compilerArgs += args
     options.forkOptions.jvmArgs += ['-Xmx2g']
@@ -1033,6 +1034,7 @@ task checkBasicStyle(group: 'Format') {
     'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
     'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
     'checker/nullness/junit-assertions.astub',
+    'checker/signedness/junit-assertions.astub',
     'framework/src/main/resources/git.properties'
   ]
 
