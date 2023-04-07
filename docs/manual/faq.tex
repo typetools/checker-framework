@@ -39,6 +39,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
+\\ \ref{faq-warning-after-check}: Why does a checker issue a warning even though the code checks a property?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
 \\ \ref{faq-warnings-square-brackets}: What do square brackets mean in a Checker Framework warning message?
 \\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker guarantee that my code is correct?
@@ -475,6 +476,19 @@ behavior:  behavior that will avoid exceptions.
 \subsectionAndLabel{What should I do if a checker issues a warning about my code?}{faq-handling-warnings}
 
 For a discussion of this issue, see Section~\ref{handling-warnings}.
+
+
+\subsectionAndLabel{Why does a checker issue a warning even though the code checks a property?}{faq-warning-after-check}
+
+Suppose a checker issues a warning about a line of code.  One way to
+eliminate a warning is to perform a run-time test
+(Section~\ref{type-refinement-runtime-tests}), such as adding \<if (x !=
+null)> before a dereference of \<x> to avoid a warning about a potential
+null pointer dereference.  However, sometimes the checker issues a warning
+even though the code contains a run-time test.  Two common reasons are
+non-determinism in the expression being tested and or side effects to the
+expression after the run-time test.  For details and examples, see
+Section~\ref{type-refinement-side-effects}.
 
 
 \subsectionAndLabel{What does a certain Checker Framework warning message mean?}{faq-interpreting-warnings}
