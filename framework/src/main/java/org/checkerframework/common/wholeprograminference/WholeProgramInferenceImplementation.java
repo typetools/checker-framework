@@ -781,34 +781,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // Clear the current purity annotation, because at this point a new one is definitely
         // going to be inferred.
         storage.removeMethodDeclarationAnnotation(methodElt, currentPurityAnno);
-
-        // TODO: is this the best way to do this? Would it be easier to just write a subtype
-        // routine for purity? Do we have code to handle this already somewhere?
-        String pureName = "org.checkerframework.dataflow.qual.Pure";
-        String detName = "org.checkerframework.dataflow.qual.Deterministic";
-        String sefName = "org.checkerframework.dataflow.qual.SideEffectFree";
-        boolean currentIsDet =
-            AnnotationUtils.areSameByName(currentPurityAnno, pureName)
-                || AnnotationUtils.areSameByName(currentPurityAnno, detName);
-        boolean currentIsSEF =
-            AnnotationUtils.areSameByName(currentPurityAnno, pureName)
-                || AnnotationUtils.areSameByName(currentPurityAnno, sefName);
-        boolean annoIsDet =
-            AnnotationUtils.areSameByName(anno, pureName)
-                || AnnotationUtils.areSameByName(anno, detName);
-        boolean annoIsSEF =
-            AnnotationUtils.areSameByName(anno, pureName)
-                || AnnotationUtils.areSameByName(anno, sefName);
-
-        if (currentIsSEF && currentIsDet && annoIsSEF && annoIsDet) {
-          annoToAdd = PURE;
-        } else if (currentIsSEF && annoIsSEF) {
-          annoToAdd = SIDE_EFFECT_FREE;
-        } else if (currentIsDet && annoIsDet) {
-          annoToAdd = DETERMINISTIC;
-        } else {
-          annoToAdd = IMPURE;
-        }
+        annoToAdd = lubPurityAnnotations(anno, currentPurityAnno);
       }
     } else {
       annoToAdd = anno;
@@ -818,6 +791,49 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     boolean isNewAnnotation = storage.addMethodDeclarationAnnotation(methodElt, annoToAdd);
     if (isNewAnnotation) {
       storage.setFileModified(file);
+    }
+  }
+
+  /**
+   * Computes a "least upper bound" between two purity annotations (an annotation is a purity
+   * annotation if and only if {@link #isPurityAnno(AnnotationMirror)} returns true). In the
+   * "lattice", Impure is the top, SideEffectFree and Deterministic are siblings below it, and Pure
+   * is the bottom, below them. Note that this routine is "fail-safe": Impure is returned if either
+   * of the input annotations is not actually a purity annotation.
+   *
+   * @param anno1 a purity annotation
+   * @param anno2 another purity annotation
+   * @return the "least upper bound" between anno1 and anno2, as described above
+   */
+  private AnnotationMirror lubPurityAnnotations(AnnotationMirror anno1, AnnotationMirror anno2) {
+    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
+    // routine for purity? Do we have code to handle this already somewhere?
+    String pureName = "org.checkerframework.dataflow.qual.Pure";
+    String detName = "org.checkerframework.dataflow.qual.Deterministic";
+    String sefName = "org.checkerframework.dataflow.qual.SideEffectFree";
+
+    boolean anno1IsDet =
+        AnnotationUtils.areSameByName(anno1, pureName)
+            || AnnotationUtils.areSameByName(anno1, detName);
+    boolean anno1IsSEF =
+        AnnotationUtils.areSameByName(anno1, pureName)
+            || AnnotationUtils.areSameByName(anno1, sefName);
+
+    boolean anno2IsDet =
+        AnnotationUtils.areSameByName(anno2, pureName)
+            || AnnotationUtils.areSameByName(anno2, detName);
+    boolean anno2IsSEF =
+        AnnotationUtils.areSameByName(anno2, pureName)
+            || AnnotationUtils.areSameByName(anno2, sefName);
+
+    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+      return PURE;
+    } else if (anno2IsSEF && anno1IsSEF) {
+      return SIDE_EFFECT_FREE;
+    } else if (anno2IsDet && anno1IsDet) {
+      return DETERMINISTIC;
+    } else {
+      return IMPURE;
     }
   }
 
