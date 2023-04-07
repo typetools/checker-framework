@@ -708,16 +708,13 @@ public class BoundsInitializer {
       for (AnnotatedTypeVariable atv : annotatedTypeVars) {
         TypeVariableStructure list = typeVarToStructure.get(atv.getUnderlyingType());
         list.replaceTypeVariablesInType(atv);
+        list.annotatedTypeVar = atv;
       }
 
       if (type.getKind() == TypeKind.WILDCARD) {
         // Do the "top level" replacements.
         AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
         topLevelStructure.findAllReplacements(typeVarToStructure);
-        for (AnnotatedTypeVariable typeVar : topLevelStructure.getAnnotatedTypeVars()) {
-          TypeVariableStructure list = typeVarToStructure.get(typeVar.getUnderlyingType());
-          list.replaceTypeVariablesInType(typeVar);
-        }
         topLevelStructure.replaceTypeVariablesInType(wildcard);
       }
     }
@@ -873,7 +870,7 @@ public class BoundsInitializer {
      * typeVar. It is expanded during visitation and it is later used as a template for other uses
      * of typeVar
      */
-    public final AnnotatedTypeVariable annotatedTypeVar;
+    public AnnotatedTypeVariable annotatedTypeVar;
 
     /**
      * Creates an {@link TypeVariableStructure}
