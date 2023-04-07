@@ -1285,7 +1285,7 @@ public class WholeProgramInferenceJavaParserStorage
      * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't
      *     be removed
      */
-    /* package-private */ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
+    /*package-private*/ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
       if (declarationAnnotations != null) {
         return declarationAnnotations.remove(anno);
       }
