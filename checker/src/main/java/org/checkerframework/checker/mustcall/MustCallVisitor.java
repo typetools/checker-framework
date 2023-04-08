@@ -114,7 +114,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
               AnnotationUtils.getElementValueArray(
                   anyInheritableMustCall,
                   atypeFactory.inheritableMustCallValueElement,
-                  String.class);
+                  String.class,
+                  /* useDefaults= */ true);
           AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(inheritableMustCallVal);
 
           // Issue an error if there is an inconsistent, user-written @MustCall annotation
