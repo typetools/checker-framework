@@ -1098,14 +1098,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private void inferPurityAnno(
       EnumSet<Pure.Kind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
     if (kinds.size() == 2) {
-      wpi.addMethodDeclarationAnnotation(elt, PURE);
+      wpi.addMethodDeclarationAnnotation(elt, PURE, true);
     } else if (kinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-      wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE);
+      wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
     } else if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
-      wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC);
+      wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
     } else {
       assert kinds.isEmpty();
-      wpi.addMethodDeclarationAnnotation(elt, IMPURE);
+      wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
 

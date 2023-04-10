@@ -761,6 +761,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
+    this.addMethodDeclarationAnnotation(methodElt, anno, false);
+  }
+
+  @Override
+  public void addMethodDeclarationAnnotation(
+      ExecutableElement methodElt, AnnotationMirror anno, boolean lubPurity) {
 
     // Do not infer types for library code, only for type-checked source code.
     if (!ElementUtils.isElementFromSourceCode(methodElt)) {
@@ -769,7 +775,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // Special-case handling for purity annotations.
     AnnotationMirror annoToAdd;
-    if (!isPurityAnno(anno)) {
+    if (!(lubPurity && isPurityAnno(anno))) {
       annoToAdd = anno;
     } else {
       // It's a purity annotation. Do a "least upper bound" between the current purity annotation
