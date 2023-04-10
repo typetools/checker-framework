@@ -1069,23 +1069,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (ExecutableElement elt : overriddenMethods) {
           inferPurityAnno(additionalKinds, wpi, elt);
         }
-        if (overriddenMethods.isEmpty()) {
-          // Handle interfaces. Java overrides by default refer to superclasses,
-          // so only explore the interfaces if no overridden methods were found in superclasses.
-          // Note: ElementUtils#getOverriddenMethods does not return methods in interfaces.
-          TypeElement enclosingElement = ElementUtils.enclosingTypeElement(methodElt);
-          List<? extends TypeMirror> implementedInterfaces = enclosingElement.getInterfaces();
-          for (TypeMirror interfaceTypeMirror : implementedInterfaces) {
-            TypeElement interfaceElement =
-                (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
-            for (ExecutableElement interfaceMethod :
-                ElementUtils.getAllMethodsIn(interfaceElement, elements)) {
-              if (elements.overrides(methodElt, interfaceMethod, enclosingElement)) {
-                inferPurityAnno(additionalKinds, wpi, interfaceMethod);
-              }
-            }
-          }
-        }
       } else if (!additionalKinds.isEmpty()) {
         // Note: no need to suggest @Impure, since it is equivalent to no annotation.
         if (additionalKinds.size() == 2) {
