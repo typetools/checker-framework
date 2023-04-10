@@ -165,8 +165,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
                   tree,
                   "inconsistent.mustcall.subtype",
                   ElementUtils.getQualifiedName(classEle),
-                  inheritedMCAnno,
-                  effectiveMCAnno);
+                  effectiveMCAnno,
+                  inheritedMCAnno);
               return false;
             }
           }
