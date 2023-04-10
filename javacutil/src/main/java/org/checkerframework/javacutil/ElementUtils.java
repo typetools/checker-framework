@@ -166,7 +166,7 @@ public class ElementUtils {
   public static PackageElement enclosingPackage(Element elem) {
     Element result = elem;
     while (result != null && result.getKind() != ElementKind.PACKAGE) {
-      @Nullable Element encl = result.getEnclosingElement();
+      Element encl = result.getEnclosingElement();
       result = encl;
     }
     return (PackageElement) result;

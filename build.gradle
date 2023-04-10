@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.17.0'
+  id 'com.diffplug.spotless' version '6.18.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -472,6 +472,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       '10000',
       '-ArequirePrefixInWarningSuppressions',
       '-AwarnUnneededSuppressions',
+      '-AwarnRedundantAnnotations',
     ]
     options.compilerArgs += args
     options.forkOptions.jvmArgs += ['-Xmx2g']
@@ -983,6 +984,7 @@ task checkBasicStyle(group: 'Format') {
     '.html-tools',
     '.idea',
     '.plume-scripts',
+    '.run-google-java-format',
     'annotated',
     'api',
     'plume-bib',
@@ -1019,6 +1021,7 @@ task checkBasicStyle(group: 'Format') {
     'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
     'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
     'checker/nullness/junit-assertions.astub',
+    'checker/signedness/junit-assertions.astub',
     'framework/src/main/resources/git.properties'
   ]
 
@@ -1054,8 +1057,9 @@ task checkBasicStyle(group: 'Format') {
             println("Missing space: ${it.file.absolutePath}")
             failed = true
           }
-          if (line.matches('^.*/\\* package-private \\*/.*$')) {
-            println("Use /*package-private*/ to mark package-private elements: ${it.file.absolutePath}")
+          // String concatenation to avoid a match in this file!
+          if (line.contains('/* package' + '-private */')) {
+            println("Remove spaces in /* package" + "-private */: ${it.file.absolutePath} ${line}")
             failed = true
           }
           if (line.isEmpty()) {
