@@ -146,7 +146,7 @@ a declaration annotation.
 
 The Must Call Checker interacts with the \<@Owning> and \<@NotOwning> annotations of the
 Resource Leak Checker (Section~\ref{resource-leak-checker}). In particular, any location that
-the Resource Leak Checker would consider ''non-owning'' (e.g., unannotated parameters, \<@NotOwning>
+the Resource Leak Checker would consider ``non-owning'' (e.g., unannotated parameters, \<@NotOwning>
 returns, etc.) is treated as \<@MustCall({})> by the Must Call Checker. This can lead to surprising
 results when running the Must Call Checker alone (which is not recommended). For example,
 consider the following program:
