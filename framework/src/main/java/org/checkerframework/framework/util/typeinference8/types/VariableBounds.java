@@ -154,6 +154,7 @@ public class VariableBounds {
   }
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryQualifierBounds(
       BoundKind kind, Set<AnnotationMirror> s) {
     if (kind == BoundKind.EQUAL) {
@@ -194,6 +195,7 @@ public class VariableBounds {
   }
 
   /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
     if (kind == BoundKind.EQUAL) {
       for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
@@ -355,6 +357,7 @@ public class VariableBounds {
   }
 
   /** Apply instantiations to all bounds and constraints of this variable. */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
     boolean changed = false;
     for (Set<AbstractType> boundList : bounds.values()) {

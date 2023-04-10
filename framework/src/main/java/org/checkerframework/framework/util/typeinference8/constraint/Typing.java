@@ -322,6 +322,7 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
    * 18.2.4
    */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ReductionResult reduceEquality() {
     if (S.isProper()) {
       if (T.isProper()) {

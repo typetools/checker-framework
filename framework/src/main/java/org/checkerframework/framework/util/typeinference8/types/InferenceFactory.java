@@ -43,6 +43,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -160,7 +161,7 @@ public class InferenceFactory {
           return new ProperType(res, res.getUnderlyingType(), context);
         }
       default:
-        if (assignmentContext.getKind().asInterface().equals(CompoundAssignmentTree.class)) {
+        if (assignmentContext.getKind().asInterface() == CompoundAssignmentTree.class) {
           // 11 Tree kinds are compound assignments, so don't use it in the switch
           ExpressionTree var = ((CompoundAssignmentTree) assignmentContext).getVariable();
           AnnotatedTypeMirror res = factory.getAnnotatedTypeLhs(var);
@@ -282,6 +283,7 @@ public class InferenceFactory {
    * Returns whether argumentTree is the tree at the leaf of path. if tree is a conditional
    * expression, isArgument is called recursively on the true and false expressions.
    */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
     argumentTree = TreeUtils.withoutParens(argumentTree);
     if (argumentTree == path.getLeaf()) {
@@ -459,7 +461,8 @@ public class InferenceFactory {
     Iterator<? extends AnnotatedTypeVariable> iter1 =
         methodType.getAnnotatedTypeVariables().iterator();
     for (TypeVariable pl : methodType.getTypeVariables()) {
-      Variable al = new Variable(iter1.next(), pl, invocation, context, map);
+      @SuppressWarnings("interning:interned.object.creation")
+      Variable al = new @Interned Variable(iter1.next(), pl, invocation, context, map);
       map.put(pl, al);
     }
     if (TreeUtils.isDiamondTree(invocation)) {
@@ -485,7 +488,8 @@ public class InferenceFactory {
         }
         TypeVariable pl = (TypeVariable) typeMirror;
         AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-        Variable al = new Variable(atv, pl, invocation, context, map);
+        @SuppressWarnings("interning:interned.object.creation")
+        Variable al = new @Interned Variable(atv, pl, invocation, context, map);
         map.put(pl, al);
       }
     }
@@ -537,7 +541,8 @@ public class InferenceFactory {
         }
         TypeVariable pl = (TypeVariable) typeMirror;
         AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-        Variable al = new Variable(atv, pl, memRef, context, map);
+        @SuppressWarnings("interning:interned.object.creation")
+        Variable al = new @Interned Variable(atv, pl, memRef, context, map);
         map.put(pl, al);
       }
     }
@@ -547,7 +552,8 @@ public class InferenceFactory {
       Iterator<? extends AnnotatedTypeVariable> iter1 =
           compileTimeDecl.getAnnotatedTypeVariables().iterator();
       for (TypeVariable pl : compileTimeDecl.getTypeVariables()) {
-        Variable al = new Variable(iter1.next(), pl, memRef, context, map);
+        @SuppressWarnings("interning:interned.object.creation")
+        Variable al = new @Interned Variable(iter1.next(), pl, memRef, context, map);
         map.put(pl, al);
       }
     }
@@ -584,7 +590,8 @@ public class InferenceFactory {
     for (TypeParameterElement param : typeEle.getTypeParameters()) {
       TypeVariable typeVar = (TypeVariable) param.asType();
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-      Variable ai = new Variable(atv, typeVar, lambda, context, map);
+      @SuppressWarnings("interning:interned.object.creation")
+      Variable ai = new @Interned Variable(atv, typeVar, lambda, context, map);
       map.put(typeVar, ai);
     }
     for (Variable v : map.values()) {
@@ -612,7 +619,8 @@ public class InferenceFactory {
     for (TypeParameterElement pEle : ele.getTypeParameters()) {
       TypeVariable pl = (TypeVariable) pEle.asType();
       AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-      CaptureVariable al = new CaptureVariable(atv, pl, tree, context, map);
+      @SuppressWarnings("interning:interned.object.creation")
+      CaptureVariable al = new @Interned CaptureVariable(atv, pl, tree, context, map);
       map.put(pl, al);
     }
     for (Variable v : map.values()) {

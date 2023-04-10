@@ -142,6 +142,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
   }
 
+  @SuppressWarnings("interning:not.interned")
   @Override
   public InferenceResult inferNew(
       AnnotatedTypeFactory typeFactory,

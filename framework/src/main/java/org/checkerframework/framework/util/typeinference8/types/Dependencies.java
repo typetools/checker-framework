@@ -52,7 +52,7 @@ public class Dependencies {
         LinkedHashSet<Variable> gammas = entry.getValue();
         LinkedHashSet<Variable> betas = new LinkedHashSet<>();
         for (Variable gamma : gammas) {
-          if (gamma.equals(alpha)) {
+          if (gamma == alpha) {
             continue;
           }
           betas.addAll(map.get(gamma));

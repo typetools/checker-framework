@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
@@ -17,7 +18,8 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 
 /** A set of constraints and the operations that can be performed on them. */
 public class ConstraintSet implements ReductionResult {
-  public static final ConstraintSet TRUE =
+  @SuppressWarnings("interning:assignment")
+  public static final @InternedDistinct ConstraintSet TRUE =
       new ConstraintSet() {
         @Override
         public String toString() {
@@ -25,7 +27,8 @@ public class ConstraintSet implements ReductionResult {
         }
       };
 
-  public static final ConstraintSet TRUE_ANNO_FAIL =
+  @SuppressWarnings("interning:assignment")
+  public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
       new ConstraintSet(true) {
         @Override
         public String toString() {
@@ -33,7 +36,8 @@ public class ConstraintSet implements ReductionResult {
         }
       };
 
-  public static final ReductionResult FALSE =
+  @SuppressWarnings("interning:assignment")
+  public static final @InternedDistinct ReductionResult FALSE =
       new ReductionResult() {
         @Override
         public String toString() {
@@ -104,6 +108,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /** Remove all constraints in {@code subset} from this constraint set. */
+  @SuppressWarnings("interning:not.interned")
   public void remove(ConstraintSet subset) {
     if (this == subset) {
       list.clear();

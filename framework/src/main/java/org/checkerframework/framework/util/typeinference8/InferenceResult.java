@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 
 public class InferenceResult {
-  public static InferenceResult emptyResult =
+  @SuppressWarnings("interning:assignment")
+  public static @InternedDistinct InferenceResult emptyResult =
       new InferenceResult(Collections.emptyList(), false, "");
 
   public static InferenceResult emptyResult() {

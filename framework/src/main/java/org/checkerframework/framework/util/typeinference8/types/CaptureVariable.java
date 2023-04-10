@@ -2,13 +2,14 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /** Variables created as a part of a capture bound. */
-public class CaptureVariable extends Variable {
+@Interned public class CaptureVariable extends Variable {
 
   CaptureVariable(
       AnnotatedTypeVariable type,

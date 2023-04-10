@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 
 /**
@@ -12,7 +13,8 @@ public interface ReductionResult {
    * Indicates that the constraint reduced to true, but unchecked conversion is required for the
    * method to be applicable.
    */
-  ReductionResult UNCHECKED_CONVERSION =
+  @SuppressWarnings("interning:assignment")
+  @InternedDistinct ReductionResult UNCHECKED_CONVERSION =
       new ReductionResult() {
         @Override
         public String toString() {

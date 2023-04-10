@@ -778,6 +778,7 @@ public class InvocationTypeInference {
    * @param parentPath path to the parent of {@code tree} or null if no such parent exists
    * @return the outermost tree required to find the type of {@code tree}
    */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public static ExpressionTree outerInference(ExpressionTree tree, @Nullable TreePath parentPath) {
     if (parentPath == null) {
       return tree;

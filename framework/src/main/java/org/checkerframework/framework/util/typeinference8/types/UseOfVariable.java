@@ -86,7 +86,7 @@ public class UseOfVariable extends AbstractType {
   @Override
   public AbstractType applyInstantiations(List<Variable> instantiations) {
     for (Variable inst : instantiations) {
-      if (inst.equals(this.variable)) {
+      if (inst == this.variable) {
         return inst.getBounds().getInstantiation();
       }
     }

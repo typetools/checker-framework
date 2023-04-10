@@ -5,6 +5,7 @@ import java.util.Iterator;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
@@ -13,7 +14,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /** An inference variable. */
-public class Variable {
+@Interned public class Variable {
 
   /** Bounds of this variable. */
   protected final VariableBounds variableBounds;
@@ -46,6 +47,7 @@ public class Variable {
     this(typeVariable, typeVariableJava, invocation, context, map, context.getNextVariableId());
   }
 
+  @SuppressWarnings("interning:argument") // "this" is interned
   Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,
@@ -108,6 +110,7 @@ public class Variable {
     return invocation;
   }
 
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   @Override
   public boolean equals(Object o) {
     if (this == o) {
