@@ -997,6 +997,7 @@ task checkBasicStyle(group: 'Format') {
     '.html-tools',
     '.idea',
     '.plume-scripts',
+    '.run-google-java-format',
     'annotated',
     'api',
     'plume-bib',
@@ -1069,8 +1070,9 @@ task checkBasicStyle(group: 'Format') {
             println("Missing space: ${it.file.absolutePath}")
             failed = true
           }
-          if (line.matches('^.*/\\* package-private \\*/.*$')) {
-            println("Use /*package-private*/ to mark package-private elements: ${it.file.absolutePath}")
+          // String concatenation to avoid a match in this file!
+          if (line.contains('/* package' + '-private */')) {
+            println("Remove spaces in /* package" + "-private */: ${it.file.absolutePath} ${line}")
             failed = true
           }
           if (line.isEmpty()) {
