@@ -230,6 +230,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * @return true, if the type of any {@code argTrees} requires the type of the parameter it is
    *     psuedo-assigned to
    */
+  @SuppressWarnings("interning:not.interned") // Looking for exact object.
   private boolean needsInference(List<? extends ExpressionTree> argTrees, TreePath path) {
 
     for (ExpressionTree argTree : argTrees) {
