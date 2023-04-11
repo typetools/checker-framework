@@ -19,8 +19,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference;
-import com.sun.tools.javac.tree.JCTree.JCMemberReference.ReferenceKind;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +64,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -682,7 +681,7 @@ public class InferenceFactory {
       MemberReferenceTree memRef, AbstractType targetType) {
     // The type of the expression or type use, <expression>::method or <type use>::method.
     final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
-    final ReferenceKind memRefKind = ((JCMemberReference) memRef).kind;
+    final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
     AnnotatedTypeMirror enclosingType;
 
     if (memRef.getMode() == ReferenceMode.NEW) {
@@ -695,7 +694,7 @@ public class InferenceFactory {
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
-    } else if (memRefKind == ReferenceKind.UNBOUND) {
+    } else if (memRefKind == MemberReferenceKind.UNBOUND) {
       enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
       if (enclosingType.getKind() == TypeKind.DECLARED
           && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
@@ -704,10 +703,10 @@ public class InferenceFactory {
           enclosingType = params.get(0).getAnnotatedType();
         }
       }
-    } else if (memRefKind == ReferenceKind.STATIC) {
+    } else if (memRefKind == MemberReferenceKind.STATIC) {
       // The "qualifier expression" is a type tree.
       enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
-    } else {
+    } else { // memRefKind == MemberReferenceKind.BOUND
       // The "qualifier expression" is an expression.
       enclosingType = typeFactory.getAnnotatedType(qualifierExpression);
     }

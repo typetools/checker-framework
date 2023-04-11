@@ -24,6 +24,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 /**
  * &lt;Expression &rarr; T&gt; An expression is compatible in a loose invocation context with type T
@@ -159,7 +160,13 @@ public class Expression extends TypeConstraint {
           AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(qualifierExp);
           referenceType = T.create(atm, atm.getUnderlyingType());
         } else {
-          referenceType = new ProperType(qualifierExp, context);
+          if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
+            AnnotatedTypeMirror atm =
+                context.typeFactory.getAnnotatedTypeFromTypeTree(qualifierExp);
+            referenceType = new ProperType(atm, atm.getUnderlyingType(), context);
+          } else {
+            referenceType = new ProperType(qualifierExp, context);
+          }
         }
         constraintSet.add(new Typing(targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
       }

@@ -140,6 +140,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
+  public AnnotatedTypeMirror getAnnotatedTypeFromTypeTree(Tree tree) {
+    AnnotatedTypeMirror atm = super.getAnnotatedTypeFromTypeTree(tree);
+    if (!atm.hasAnnotation(POLY)) {
+      atm.replaceAnnotation(TOP);
+    }
+    return atm;
+  }
+
+  @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     // Explicitly name the qualifiers, in order to exclude @MustCallAlias.
     return new LinkedHashSet<>(
