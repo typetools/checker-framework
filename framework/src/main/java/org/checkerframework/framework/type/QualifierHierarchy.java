@@ -182,6 +182,9 @@ public interface QualifierHierarchy {
         result = leastUpperBounds(result, annos);
       }
     }
+    if (result == null) {
+      return AnnotationMirrorSet.emptySet();
+    }
     return result;
   }
   /**
@@ -320,6 +323,9 @@ public interface QualifierHierarchy {
       } else {
         result = greatestLowerBounds(result, annos);
       }
+    }
+    if (result == null) {
+      return AnnotationMirrorSet.emptySet();
     }
     return result;
   }
