@@ -166,7 +166,7 @@ public class ElementUtils {
   public static PackageElement enclosingPackage(Element elem) {
     Element result = elem;
     while (result != null && result.getKind() != ElementKind.PACKAGE) {
-      @Nullable Element encl = result.getEnclosingElement();
+      Element encl = result.getEnclosingElement();
       result = encl;
     }
     return (PackageElement) result;
@@ -1082,5 +1082,15 @@ public class ElementUtils {
 
     return elt.getKind() == ElementKind.CONSTRUCTOR
         && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+  }
+
+  /**
+   * Returns true iff the given element is a resource variable.
+   *
+   * @param elt an element; may be null, in which case this method always returns false
+   * @return true iff the given element represents a resource variable
+   */
+  public static boolean isResourceVariable(@Nullable Element elt) {
+    return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
 }

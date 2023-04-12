@@ -24,7 +24,7 @@ public class PuritySuggestionsClass {
     public PureClass() {}
   }
 
-  // :: warning: (purity.more.pure)
+  // :: warning: (purity.more.sideeffectfree)
   void nonpure() {}
 
   @Pure

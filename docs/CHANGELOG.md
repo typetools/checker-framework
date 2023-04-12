@@ -3,6 +3,16 @@
 The Checker Framework runs under JDK 20 -- that is, it runs on a version 20 JVM.
 
 
+Version 3.33.1 (May 1, 2023)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.33.0 (April 3, 2023)
 ------------------------------
 
@@ -22,6 +32,8 @@ The Checker Framework no longer builds under JDK 8.
 However, you can still run the Checker Framework under JDK 8.
 
 **Closed issues:**
+
+#3785, #5436, #5708, #5717, #5720, #5721, #5727, #5732.
 
 
 Version 3.32.0 (March 2, 2023)
@@ -74,6 +86,7 @@ Removed methods from AnnotationUtils that are no longer useful:
 `createAnnotationMap`, `createAnnotationSet`, `createUnmodifiableAnnotationSet`.
 
 **Closed issues:**
+
 #5597.
 
 
@@ -87,6 +100,7 @@ Version 3.30.0 (February 2, 2023)
 Renamed Gradle task `copyJarsToDist` to `assembleForJavac`.
 
 **Closed issues:**
+
 #5402, #5486, #5489, #5519, #5524, #5526.
 
 
