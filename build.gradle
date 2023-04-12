@@ -44,7 +44,8 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.25.1.jar"
+  stubparserVersion = "3.25.1"
+  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -408,7 +409,7 @@ task maybeCloneAndBuildDependencies() {
         workingDir stubparser
         executable 'git'
         args = ['pull', '-q']
-        ignoreExitValue = true
+        ignoreExitValue = true  // because of the doLast block below
       }
       exec {
         workingDir stubparser
@@ -422,7 +423,7 @@ task maybeCloneAndBuildDependencies() {
   }
   doLast {
     if (!file(stubparserJar).exists()) {
-      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser.jar!) are:"
+      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser-${stubparserVersion}.jar!) are:"
       exec {
         workingDir "${stubparser}/javaparser-core/target"
         executable 'ls'
