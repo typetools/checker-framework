@@ -171,6 +171,7 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
+  @SuppressWarnings("mustcall:type.arguments.not.inferred") // TODO: improve receiver defaulting.
   private static List<?> convertToStringVal(List<?> origValues) {
     if (origValues == null) {
       return null;

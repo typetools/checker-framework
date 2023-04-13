@@ -4,9 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * The top qualifier in the Must Call type hierarchy. It represents a type that might have an
@@ -21,6 +19,5 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultFor(TypeUseLocation.RECEIVER)
 @SubtypeOf({})
 public @interface MustCallUnknown {}
