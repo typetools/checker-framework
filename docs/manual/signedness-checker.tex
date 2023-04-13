@@ -22,7 +22,7 @@ Floating-point types \<float>, \<double>, \<Float>, and \<Double> are always sig
 
 Signedness is primarily about how the bits of the representation are
 \emph{interpreted}, not about the values that it can represent.  An unsigned value
-is always positive, but just because a variable's value is positive does
+is always non-negative, but just because a variable's value is non-negative does
 not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
 compared to a signed value, or used in arithmetic operations with a signed
 value, then $v$ should have signed type.
@@ -69,7 +69,7 @@ These are the qualifiers in the signedness type system:
     This is the default annotation.
 
 \item[\refqualclass{checker/signedness/qual}{SignedPositive}]
-    indicates that a value is known at compile time to be in the positive
+    indicates that a value is known at compile time to be in the non-negative
     signed range, so it has the same interpretation as signed or unsigned
     and may be used with either interpretation.  (Equivalently, the most
     significant bit is guaranteed to be 0.)  Programmers should usually
@@ -77,7 +77,7 @@ These are the qualifiers in the signedness type system:
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
 \item[\refqualclass{checker/signedness/qual}{SignedPositiveFromUnsigned}]
-    indicates that a value is in the positive signed range, as with
+    indicates that a value is in the non-negative signed range, as with
     \refqualclass{checker/signedness/qual}{SignedPositive}.  Furthermore,
     the value was derived from values that can be interpreted as
     \refqualclass{checker/signedness/qual}{Unsigned}.  Programmers should
@@ -88,8 +88,8 @@ These are the qualifiers in the signedness type system:
     covers the same cases as
     \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
     prevent the programmer from having to annotate them all explicitly.
-    \emph{This annotation should almost never be written by the
-    programmer.}
+    \emph{This annotation should rarely be written by the
+    programmer, except on fields whose value is a negative manifest literal.}
 
  \item[\refqualclass{checker/signedness/qual}{PolySigned}]
    indicates qualifier polymorphism.
