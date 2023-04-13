@@ -1,7 +1,7 @@
 import java.util.Collections;
 import java.util.List;
 
-public class SuperCrash {
+public class MethodRefSuperCrash {
   @FunctionalInterface
   public interface FuncInter<R> {
     R func(R r1, R r2);
