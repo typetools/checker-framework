@@ -89,7 +89,7 @@ public class TestConfigurationBuilder {
    *     compiler, and file manager used by Checker Framework tests
    */
   @SuppressWarnings(
-      "signature:argument" // for non-array non-primitive class, getName(): @BinaryName
+      "signature:cast.unsafe" // for non-array non-primitive class, getName(): @BinaryName
   )
   public static TestConfiguration buildDefaultConfiguration(
       String testSourcePath,
@@ -101,7 +101,7 @@ public class TestConfigurationBuilder {
         testSourcePath,
         Arrays.asList(testFile),
         Collections.emptyList(),
-        Arrays.asList(processor.getName()),
+        Arrays.asList((@BinaryName String) processor.getName()),
         options,
         shouldEmitDebugInfo);
   }
