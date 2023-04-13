@@ -2,8 +2,9 @@ Version 3.34.0 (May 1, 2023)
 ------------------------------
 
 **User-visible changes:**
+
 Explicit lambda parameters are defaulted the same as method parameters.  For
-example, `(String s) -> {...}` the type of `s` is `@NonNull String`.
+example, in `(String s) -> {...}` the type of `s` is `@NonNull String`.
 
 **Implementation details:**
 
