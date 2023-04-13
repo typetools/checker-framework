@@ -21,11 +21,11 @@ interface Noop {
   void noop();
 }
 
-public class Lambda {
+public class ManyLambda {
 
   public static void consumeStr(String str) {}
 
-  Lambda(Consumer<String> consumer) {
+  ManyLambda(Consumer<String> consumer) {
     consumer.consume("hello");
   }
 
@@ -56,7 +56,8 @@ public class Lambda {
             result *= i;
           }
           // conditional expression
-          Consumer<String> consumer = result > 100 ? Lambda::consumeStr : Lambda::consumeStr;
+          Consumer<String> consumer =
+              result > 100 ? ManyLambda::consumeStr : ManyLambda::consumeStr;
           return result;
         }
       };
