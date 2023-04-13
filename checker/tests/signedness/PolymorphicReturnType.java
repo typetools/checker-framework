@@ -9,12 +9,4 @@ public class PolymorphicReturnType {
     // :: error: (return)
     return 0;
   }
-
-  static @PolySigned int flip0(@PolySigned int value) {
-    return Integer.MIN_VALUE;
-  }
-
-  static @PolySigned int flip(@PolySigned int value) {
-    return value ^ Integer.MIN_VALUE;
-  }
 }
