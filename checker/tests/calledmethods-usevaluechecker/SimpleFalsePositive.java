@@ -10,6 +10,8 @@ public class SimpleFalsePositive {
     DescribeImagesRequest request =
         new DescribeImagesRequest()
             .withOwners("martin")
+            // TODO: poly + inference problem.
+            // :: error: (method.invocation)
             .withFilters(
                 Arrays.asList(
                     new Filter("platform", Arrays.asList("windows")),

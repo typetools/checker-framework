@@ -26,6 +26,8 @@ abstract class GuavaImmutable {
   }
 
   public static void buildSomethingRight() {
+    // TODO: poly + inference problem.
+    // :: error: (method.invocation)
     builder().names(ImmutableList.of()).build();
   }
 }
