@@ -129,7 +129,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION
         && expressionTree.getKind() != Tree.Kind.NEW_CLASS) {
-      return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
+      throw new BugInCF("Can only infer type args for method or constructor invocations.");
     }
 
     InferenceResult newInferenceResult =
