@@ -3,10 +3,13 @@
 The Checker Framework runs under JDK 20 -- that is, it runs on a version 20 JVM.
 
 
-Version 3.33.1 (May 1, 2023)
+Version 3.34.0 (May 1, 2023)
 ------------------------------
 
 **User-visible changes:**
+
+Explicit lambda parameters are defaulted the same as method parameters.  For
+example, in `(String s) -> {...}` the type of `s` is `@NonNull String`.
 
 **Implementation details:**
 
