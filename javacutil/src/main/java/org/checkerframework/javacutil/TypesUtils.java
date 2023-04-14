@@ -1028,6 +1028,7 @@ public final class TypesUtils {
    */
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
@@ -1141,9 +1142,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeVariables,
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
-
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
-
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
@@ -1316,7 +1317,7 @@ public final class TypesUtils {
    * Returns the most specific super type of {@code type} that is an array or null if {@code type}
    * is not a subtype of an array.
    */
-  public static TypeMirror getMostSpecificArrayType(TypeMirror type, Types types) {
+  public static @Nullable TypeMirror getMostSpecificArrayType(TypeMirror type, Types types) {
     if (type.getKind() == TypeKind.ARRAY) {
       return type;
     } else {
@@ -1365,12 +1366,13 @@ public final class TypesUtils {
    */
   public static TypeMirror createWildcard(
       TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+    TypeMirror nonObjectUpperBound = upperBound;
     if (isObject(upperBound)) {
-      upperBound = null;
+      nonObjectUpperBound = null;
     }
 
-    assert lowerBound == null || upperBound == null;
-    WildcardType wildcardType = types.getWildcardType(upperBound, lowerBound);
+    assert lowerBound == null || nonObjectUpperBound == null;
+    WildcardType wildcardType = types.getWildcardType(nonObjectUpperBound, lowerBound);
     return com.sun.tools.javac.util.List.of((Type) wildcardType).head;
   }
 }
