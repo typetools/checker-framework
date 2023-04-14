@@ -644,9 +644,15 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
         ignoreExitValue = true
       }
     } else {
-      clone(url, directory, true, extraArgs)
+      try {
+        clone(url, directory, true, extraArgs)
+      } catch (Throwable t) {
+        println "Exception while cloning ${url}"
+        t.printStackTrace()
+      }
       if (!file(directory).exists()) {
-        sleep(60000) // 1 minute
+        println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+        sleep(60000) // wait 1 minute, then try again
         clone(url, directory, false, extraArgs)
       }
     }
