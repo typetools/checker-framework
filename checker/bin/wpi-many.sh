@@ -132,7 +132,7 @@ if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" 
     echo "JAVA11_HOME = ${JAVA11_HOME}"
     echo "JAVA17_HOME = ${JAVA17_HOME}"
     echo "JAVA19_HOME = ${JAVA19_HOME}"
-    which java
+    command -v java
     java -version
     exit 1
 fi
