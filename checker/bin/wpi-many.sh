@@ -127,6 +127,13 @@ fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
     echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    echo "JAVA_HOME = ${JAVA_HOME}"
+    echo "JAVA8_HOME = ${JAVA8_HOME}"
+    echo "JAVA11_HOME = ${JAVA11_HOME}"
+    echo "JAVA17_HOME = ${JAVA17_HOME}"
+    echo "JAVA19_HOME = ${JAVA19_HOME}"
+    command -v java
+    java -version
     exit 1
 fi
 
