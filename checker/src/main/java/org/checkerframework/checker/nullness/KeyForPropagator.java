@@ -169,7 +169,7 @@ public class KeyForPropagator {
       return;
     }
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext instanceof VariableTree) {
+    if (assignmentContext != null && assignmentContext instanceof VariableTree) {
       if (TreeUtils.isVariableTreeDeclaredUsingVar((JCTree.JCVariableDecl) assignmentContext)) {
         return;
       }
