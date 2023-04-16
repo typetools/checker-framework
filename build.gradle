@@ -182,6 +182,7 @@ allprojects {
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to spotlessPredeclare block.
+
     def doNotFormat = [
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
@@ -196,12 +197,12 @@ allprojects {
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '.gitignore'
+      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      targetExclude doNotFormat
       // define the steps to apply to those files
       indentWithSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
-      targetExclude doNotFormat
     }
 
     java {
@@ -655,9 +656,15 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
         ignoreExitValue = true
       }
     } else {
-      clone(url, directory, true, extraArgs)
+      try {
+        clone(url, directory, true, extraArgs)
+      } catch (Throwable t) {
+        println "Exception while cloning ${url}"
+        t.printStackTrace()
+      }
       if (!file(directory).exists()) {
-        sleep(60000) // 1 minute
+        println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+        sleep(60000) // wait 1 minute, then try again
         clone(url, directory, false, extraArgs)
       }
     }
