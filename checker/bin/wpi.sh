@@ -89,7 +89,7 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
     fi
-    if [ "${has_java20}" = "no" ] && [ "${java_version}" = 19 ]; then
+    if [ "${has_java20}" = "no" ] && [ "${java_version}" = 20 ]; then
       export JAVA20_HOME="${JAVA_HOME}"
       has_java20="yes"
     fi
