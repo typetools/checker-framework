@@ -2399,7 +2399,7 @@ public final class TreeUtils {
    * @return true if the variableTree is declared using var
    */
   public static boolean isVariableTreeDeclaredUsingVar(JCTree.JCVariableDecl variableTree) {
-    if (SystemUtil.jreVersion < 10) {
+    if (isDeclaredUsingVar == null) {
       throw new BugInCF("Don't call JCTree.JCVariableDecl.declaredUsingVar on JDK < 10");
     }
     try {
