@@ -7,7 +7,7 @@
     "schedule:nonOfficeHours",
     ":disableDependencyDashboard"
   ],
-  "timezone": "America/Los_Angeles"
+  "timezone": "America/Los_Angeles",
   "packageRules": [
     {
       "packageNames": ["aws-sdk"],
