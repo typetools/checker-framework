@@ -8,17 +8,10 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -31,7 +24,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
-import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -40,7 +32,6 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -543,117 +534,5 @@ public class InvocationTypeInference {
       current.incorporateToFixedPoint(newBounds);
     }
     return current;
-  }
-
-  /**
-   * Returns the outermost tree required to find the type of {@code tree}.
-   *
-   * @param tree tree that may need an outer tree to find the type
-   * @param parentPath path to the parent of {@code tree} or null if no such parent exists
-   * @return the outermost tree required to find the type of {@code tree}
-   */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public static ExpressionTree outerInference(ExpressionTree tree, @Nullable TreePath parentPath) {
-    if (parentPath == null) {
-      return tree;
-    }
-    if (!TreeUtils.isPolyExpression(tree)) {
-      return tree;
-    }
-
-    Tree parentTree = parentPath.getLeaf();
-    switch (parentTree.getKind()) {
-      case PARENTHESIZED:
-      case CONDITIONAL_EXPRESSION:
-        // case SWITCH_EXPRESSION:
-        ExpressionTree outer =
-            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
-        if (outer == parentTree) {
-          return tree;
-        }
-        return outer;
-      case METHOD_INVOCATION:
-        MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
-        if (!methodInvocationTree.getTypeArguments().isEmpty()) {
-          return tree;
-        }
-        ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvocationTree);
-        if (methodElement.getTypeParameters().isEmpty()) {
-          return tree;
-        }
-        if (argumentNeedsInference(
-            methodElement, methodInvocationTree.getArguments(), tree, null)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
-        }
-        return tree;
-      case NEW_CLASS:
-        NewClassTree newClassTree = (NewClassTree) parentTree;
-        if (!newClassTree.getTypeArguments().isEmpty()) {
-          return tree;
-        }
-        ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
-        }
-        return tree;
-      case RETURN:
-        TreePath parentParentPath = parentPath.getParentPath();
-        if (parentParentPath.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-          return outerInference(
-              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
-        }
-        return tree;
-      default:
-        return tree;
-    }
-  }
-
-  /**
-   * Returns true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
-   * that contains a type variable that needs to be inferred.
-   *
-   * @param executableElement symbol of method or constructor
-   * @param argTrees all the arguments of the method or constructor call
-   * @param argTree the argument of interest
-   * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
-   * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
-   *     that contains a type variable that needs to be inferred.
-   */
-  private static boolean argumentNeedsInference(
-      ExecutableElement executableElement,
-      List<? extends ExpressionTree> argTrees,
-      Tree argTree,
-      @Nullable NewClassTree newClassTree) {
-    int index = -1;
-    for (int i = 0; i < argTrees.size(); i++) {
-      @SuppressWarnings("interning") // looking for exact argTree.
-      boolean found = argTrees.get(i) == argTree;
-      if (found) {
-        index = i;
-      }
-    }
-    if (index == -1) {
-      throw new BugInCF("Argument argTree not found in list of arguments.");
-    }
-
-    ExecutableType executableType = (ExecutableType) executableElement.asType();
-    // There are fewer parameters than arguments if this is a var args method.
-    if (executableType.getParameterTypes().size() <= index) {
-      index = executableType.getParameterTypes().size() - 1;
-    }
-    TypeMirror param = executableType.getParameterTypes().get(index);
-
-    if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
-      List<TypeVariable> list = new ArrayList<>(executableType.getTypeVariables());
-      if (newClassTree != null && TreeUtils.isDiamondTree(newClassTree)) {
-        DeclaredType declaredType =
-            (DeclaredType) ((DeclaredType) TreeUtils.typeOf(newClassTree)).asElement().asType();
-        for (TypeMirror typeVar : declaredType.getTypeArguments()) {
-          list.add((TypeVariable) typeVar);
-        }
-      }
-      return ContainsInferenceVariable.hasAnyTypeVariable(list, param);
-    }
-    return ContainsInferenceVariable.hasAnyTypeVariable(executableType.getTypeVariables(), param);
   }
 }

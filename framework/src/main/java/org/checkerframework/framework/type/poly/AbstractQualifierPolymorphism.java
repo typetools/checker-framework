@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
+import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
@@ -234,7 +234,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   private boolean needsInference(List<? extends ExpressionTree> argTrees, TreePath path) {
 
     for (ExpressionTree argTree : argTrees) {
-      if (InvocationTypeInference.outerInference(argTree, path) != argTree) {
+      if (DefaultTypeArgumentInference.outerInference(argTree, path) != argTree) {
         return true;
       }
       if (TreeUtils.isPolyExpression(argTree)) {

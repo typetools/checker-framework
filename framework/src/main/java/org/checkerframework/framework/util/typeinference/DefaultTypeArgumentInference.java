@@ -126,7 +126,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedExecutableType methodType) {
     TreePath pathToExpression = typeFactory.getPath(expressionTree);
     ExpressionTree outerTree =
-        InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
+        org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference
+            .outerInference(expressionTree, pathToExpression.getParentPath());
     for (InvocationTypeInference i : java8InferenceStack) {
       if (i.getContext().pathToExpression.getLeaf() == outerTree) {
         // Inference is running and is asking for the type of the method before type arguments are
