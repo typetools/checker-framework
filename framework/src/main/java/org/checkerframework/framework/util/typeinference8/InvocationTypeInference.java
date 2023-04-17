@@ -517,22 +517,25 @@ public class InvocationTypeInference {
    * constraints must be reduced in a particular order. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.
+   *
+   * @param b3 bound set created by previous inference step that is sideeffect and returned
+   * @param c constraints that are reduced and incorporated
+   * @return the result of reducing and incorporating the set of constraints
    */
-  // TODO: Is the parameter current returned, sideeffected or both?
-  private BoundSet getB4(BoundSet current, ConstraintSet c) {
-    // C might contain new variables that have not yet been added to the current bound set.
+  private BoundSet getB4(BoundSet b3, ConstraintSet c) {
+    // C might contain new variables that have not yet been added to the b3 bound set.
     Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
-      ConstraintSet subset = c.getClosedSubset(current.getDependencies(newVariables));
+      ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
-        BoundSet resolved = Resolution.resolve(alphas, current, context);
+        BoundSet resolved = Resolution.resolve(alphas, b3, context);
         c.applyInstantiations(resolved.getInstantiationsInAlphas(alphas));
       }
       c.remove(subset);
       BoundSet newBounds = subset.reduce(context);
-      current.incorporateToFixedPoint(newBounds);
+      b3.incorporateToFixedPoint(newBounds);
     }
-    return current;
+    return b3;
   }
 }
