@@ -2403,7 +2403,11 @@ public final class TreeUtils {
       throw new BugInCF("Don't call JCTree.JCVariableDecl.declaredUsingVar on JDK < 10");
     }
     try {
-      return (boolean) isDeclaredUsingVar.invoke(variableTree);
+      Object isVar = isDeclaredUsingVar.invoke(variableTree);
+      if (isVar != null) {
+        return (boolean) isVar;
+      }
+      return false;
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new BugInCF(
           "TreeUtils.isVariableTreeDeclaredUsingVar: reflection failed for tree: %s",
