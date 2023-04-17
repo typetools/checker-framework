@@ -98,8 +98,12 @@ public class InvocationTypeInference {
 
   /** Checker used to issue errors/warnings. */
   protected final SourceChecker checker;
+
   /** Stores information about the current inference problem being solved. */
-  protected Java8InferenceContext context;
+  protected final Java8InferenceContext context;
+
+  /** Tree for which type arguments are being inferred. */
+  protected final Tree inferenceExpression;
 
   /**
    * Creates an inference problem.
@@ -110,15 +114,16 @@ public class InvocationTypeInference {
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
+    this.inferenceExpression = pathToExpression.getLeaf();
   }
 
   /**
-   * Returns the context for this problem.
+   * Returns the tree for which inference is being inferred.
    *
-   * @return the context for this problem
+   * @return the tree for which inference is being inferred
    */
-  public Java8InferenceContext getContext() {
-    return context;
+  public Tree getInferenceExpression() {
+    return inferenceExpression;
   }
 
   /**
