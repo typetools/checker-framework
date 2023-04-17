@@ -118,37 +118,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     this.showInferenceSteps = typeFactory.getChecker().hasOption("showInferenceSteps");
   }
 
-  @Override
-  public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
-      AnnotatedTypeFactory typeFactory,
-      ExpressionTree expressionTree,
-      ExecutableElement methodElem,
-      AnnotatedExecutableType methodType) {
-
-    final TreePath pathToExpression = typeFactory.getPath(expressionTree);
-
-    if (expressionTree.getKind() != Tree.Kind.METHOD_INVOCATION
-        && expressionTree.getKind() != Tree.Kind.NEW_CLASS) {
-      throw new BugInCF("Can only infer type args for method or constructor invocations.");
-    }
-
-    InferenceResult newInferenceResult =
-        inferNew(typeFactory, expressionTree, methodType, pathToExpression);
-    if (newInferenceResult != null) {
-      return newInferenceResult.getTypeArgumentsForExpression(expressionTree);
-    } else if (newInferenceResult == null) {
-      throw new BugInCF("ERROR");
-    }
-    return oldInferTypeArgs(typeFactory, expressionTree, methodElem, methodType);
-  }
-
   @SuppressWarnings("interning:not.interned")
   @Override
-  public InferenceResult inferNew(
+  public InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
       ExpressionTree expressionTree,
-      AnnotatedExecutableType methodType,
-      TreePath pathToExpression) {
+      AnnotatedExecutableType methodType) {
+    TreePath pathToExpression = typeFactory.getPath(expressionTree);
     ExpressionTree outerTree =
         InvocationTypeInference.outerInference(expressionTree, pathToExpression.getParentPath());
     for (InvocationTypeInference i : java8InferenceStack) {

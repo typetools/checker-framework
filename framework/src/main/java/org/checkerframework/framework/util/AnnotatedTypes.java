@@ -792,7 +792,8 @@ public class AnnotatedTypes {
       if (inferTypeArgs) {
         return atypeFactory
             .getTypeArgumentInference()
-            .inferTypeArgs(atypeFactory, expr, elt, preType);
+            .inferTypeArgs(atypeFactory, expr, elt, preType)
+            .getTypeArgumentsForExpression(expr);
       } else {
         return Collections.emptyMap();
       }

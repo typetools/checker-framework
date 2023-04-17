@@ -1,12 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.util.TreePath;
-import java.util.Map;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 
@@ -30,12 +25,8 @@ import org.checkerframework.framework.util.typeinference8.InferenceResult;
  * Java, if T(A) = the type argument for a, in the above example T(A) == String and T(B) == Integer
  *
  * <p>For the Checker Framework we also need to infer reasonable annotations for these type
- * arguments. For information on inferring type arguments see the documentation in JLS7 and JLS8:
+ * arguments. For information on inferring type arguments see the documentation in JJLS8:
  * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html
- * https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
- *
- * <p>Note: It appears that Java 8 greatly improved the type argument inference and related error
- * messaging but I have found it useful to consult the JLS 7 as well.
  */
 public interface TypeArgumentInference {
 
@@ -45,22 +36,12 @@ public interface TypeArgumentInference {
    * @param typeFactory the type factory used to create methodType
    * @param invocation a tree representing the method or constructor invocation for which we are
    *     inferring type arguments
-   * @param methodElem the element for the declaration of the method being invoked
    * @param methodType the declaration type of method elem
-   * @return a mapping between the Java type parameter and the annotated type that was inferred for
-   *     it. Note: We use the Java TypeVariable type because this uniquely identifies a declaration
-   *     where as two uses of an AnnotatedTypeVariable may be uses of the same declaration but are
-   *     not .equals to each other.
+   * @return the result which includes the inferred type arguments or an error message if they were
+   *     not inferred.
    */
-  Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
-      final AnnotatedTypeFactory typeFactory,
-      final ExpressionTree invocation,
-      final ExecutableElement methodElem,
-      final AnnotatedExecutableType methodType);
-
-  InferenceResult inferNew(
+  InferenceResult inferTypeArgs(
       AnnotatedTypeFactory typeFactory,
-      ExpressionTree expressionTree,
-      AnnotatedExecutableType methodType,
-      TreePath pathToExpression);
+      ExpressionTree invocation,
+      AnnotatedExecutableType methodType);
 }

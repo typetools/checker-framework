@@ -8,32 +8,16 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.WildcardType;
-import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.IntersectionType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.TypeVisitor;
-import javax.lang.model.type.UnionType;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -58,7 +42,6 @@ import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Performs invocation type inference as described in <a
@@ -112,8 +95,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * 18.3</a>.
  *
  * <p>5. Finally, a type for each inference variable is computed by "resolving" the bounds.
- * Variables are resolved via {@link Resolution#resolve(BoundSet, Queue)}. Resolution is defined in
- * the <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
+ * Variables are resolved via {@link Resolution#resolve(Collection, BoundSet,
+ * Java8InferenceContext)}. Resolution is defined in the <a
+ * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS section
  * 18.4</a>.
  *
  * <p>An object of this class stores information about some particular invocation that requires
@@ -126,11 +110,22 @@ public class InvocationTypeInference {
   /** Stores information about the current inference problem being solved. */
   protected Java8InferenceContext context;
 
+  /**
+   * Creates an inference problem.
+   *
+   * @param factory the annotated type factory to use
+   * @param pathToExpression path to the expression for which inference is preformed
+   */
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
   }
 
+  /**
+   * Returns the context for this problem.
+   *
+   * @return the context for this problem
+   */
   public Java8InferenceContext getContext() {
     return context;
   }
@@ -142,32 +137,13 @@ public class InvocationTypeInference {
    *
    * @param invocation invocation which needs inference
    * @param methodType type of the method invocation
-   * @return a list of inference variables that have been instantiated
+   * @return the result of inference
+   * @throws FalseBoundException if inference fails because of the java types
    */
-  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType) {
-    InferenceResult result;
-    try {
-      ExecutableType e = methodType.getUnderlyingType();
-      InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
-      result = inferInternal(invocation, invocationType);
-    } catch (FalseBoundException ex) {
-      // TODO: For now, rethrow the exception so that the tests crash.
-      // This should never happen, if javac infers type arguments so should the Checker
-      // Framework. However, given how buggy javac inference is, this probably will, so deal with it
-      // gracefully.
-      //      checker.reportError(invocation, "type.inference.failed");
-      throw ex;
-      //      return null;
-    }
-    return result;
-  }
-
-  /**
-   * Perform invocation type inference on {@code invocation}. See <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
-   * 18.5.2</a>.
-   */
-  private InferenceResult inferInternal(ExpressionTree invocation, InvocationType invocationType) {
+  public InferenceResult infer(ExpressionTree invocation, AnnotatedExecutableType methodType)
+      throws FalseBoundException {
+    ExecutableType e = methodType.getUnderlyingType();
+    InvocationType invocationType = new InvocationType(methodType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -264,6 +240,11 @@ public class InvocationTypeInference {
    * Same as {@link #createB2(InvocationType, List, Theta)}, but for method references. A list of
    * types is used instead of a list of arguments. These types are the types of the formal
    * parameters of function type of target type of the method reference.
+   *
+   * @param methodType the type of the method or constructor invoked
+   * @param args types to use as arguments
+   * @param map map of type variables to (inference) variables
+   * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2MethodRef(InvocationType methodType, List<AbstractType> args, Theta map) {
     BoundSet b0 = BoundSet.initialBounds(map, context);
@@ -498,7 +479,7 @@ public class InvocationTypeInference {
    * @param expressionTree expression tree
    * @param isTargetVariable whether the corresponding target type (as derived from the signature of
    *     m) is a type parameter of m and therefore a variable
-   * @return whether or not {@code expressionTree} is pertinent to applicability
+   * @return whether {@code expressionTree} is pertinent to applicability
    */
   private boolean notPertinentToApplicability(
       ExpressionTree expressionTree, boolean isTargetVariable) {
@@ -565,213 +546,6 @@ public class InvocationTypeInference {
   }
 
   /**
-   * Issues an error if the type arguments computed by this class do not match those computed by
-   * javac.
-   */
-  @SuppressWarnings("Unused")
-  private void checkResult(
-      List<Variable> result, ExpressionTree invocation, ExecutableType methodType) {
-    Map<TypeVariable, TypeMirror> fromReturn =
-        getMappingFromReturnType(invocation, methodType, context.env);
-    for (Variable variable : result) {
-      if (!variable.getInvocation().equals(invocation)) {
-        // The variable is for a subexpression.
-        continue;
-      }
-      TypeVariable typeVariable = variable.getJavaType();
-      if (fromReturn.containsKey(typeVariable)) {
-        TypeMirror correctType = fromReturn.get(typeVariable);
-        TypeMirror inferredType = variable.getBounds().getInstantiation().getJavaType();
-        if (context.types.isSameType(
-            context.types.erasure((Type) correctType),
-            context.types.erasure((Type) inferredType))) {
-          if (areSameCapture(correctType, inferredType)) {
-            continue;
-          }
-        }
-        if (!context.types.isSameType((Type) correctType, (Type) inferredType)) {
-          // type.inference.not.same=type variable: %s\ninferred: %s\njava type: %s
-          checker.reportError(
-              invocation,
-              "type.inference.not.same",
-              typeVariable + "(" + variable + ")",
-              inferredType,
-              correctType);
-        }
-      }
-    }
-  }
-
-  /**
-   * @return true if actual and inferred are captures of the same wildcard or declared type.
-   */
-  private boolean areSameCapture(TypeMirror actual, TypeMirror inferred) {
-    if (TypesUtils.isCapturedTypeVariable(actual) && TypesUtils.isCapturedTypeVariable(inferred)) {
-      return context.types.isSameWildcard(
-          (WildcardType) TypesUtils.getCapturedWildcard((TypeVariable) actual),
-          (Type) TypesUtils.getCapturedWildcard((TypeVariable) inferred));
-    } else if (TypesUtils.isCapturedTypeVariable(actual)
-        && inferred.getKind() == TypeKind.WILDCARD) {
-      return context.types.isSameWildcard(
-          (WildcardType) TypesUtils.getCapturedWildcard((TypeVariable) actual), (Type) inferred);
-    } else if (actual.getKind() == TypeKind.DECLARED && inferred.getKind() == TypeKind.DECLARED) {
-      DeclaredType actualDT = (DeclaredType) actual;
-      DeclaredType inferredDT = (DeclaredType) inferred;
-      if (actualDT.getTypeArguments().size() == inferredDT.getTypeArguments().size()) {
-        for (int i = 0; i < actualDT.getTypeArguments().size(); i++) {
-          if (!areSameCapture(
-              actualDT.getTypeArguments().get(i), inferredDT.getTypeArguments().get(i))) {
-            return false;
-          }
-        }
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns a mapping of type variable to type argument computed using the type of {@code
-   * methodInvocationTree} and the return type of {@code methodType}.
-   */
-  private static Map<TypeVariable, TypeMirror> getMappingFromReturnType(
-      ExpressionTree methodInvocationTree, ExecutableType methodType, ProcessingEnvironment env) {
-    TypeMirror methodCallType = TreeUtils.typeOf(methodInvocationTree);
-    JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
-    Types types = Types.instance(javacEnv.getContext());
-    GetMapping mapping = new GetMapping(methodType.getTypeVariables(), types);
-    mapping.visit(methodType.getReturnType(), methodCallType);
-    return mapping.subs;
-  }
-
-  /**
-   * Helper class for {@link #getMappingFromReturnType(ExpressionTree, ExecutableType,
-   * ProcessingEnvironment)}
-   */
-  private static class GetMapping implements TypeVisitor<Void, TypeMirror> {
-
-    final Map<TypeVariable, TypeMirror> subs = new HashMap<>();
-    final List<? extends TypeVariable> typeVariables;
-    final Types types;
-
-    private GetMapping(List<? extends TypeVariable> typeVariables, Types types) {
-      this.typeVariables = typeVariables;
-      this.types = types;
-    }
-
-    @Override
-    public Void visit(TypeMirror t, TypeMirror mirror) {
-      if (t == null || mirror == null) {
-        return null;
-      }
-      return t.accept(this, mirror);
-    }
-
-    @Override
-    public Void visit(TypeMirror t) {
-      return null;
-    }
-
-    @Override
-    public Void visitPrimitive(PrimitiveType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitNull(NullType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitArray(ArrayType t, TypeMirror mirror) {
-      assert mirror.getKind() == TypeKind.ARRAY : mirror;
-      return visit(t.getComponentType(), ((ArrayType) mirror).getComponentType());
-    }
-
-    @Override
-    public Void visitDeclared(DeclaredType t, TypeMirror mirror) {
-      assert mirror.getKind() == TypeKind.DECLARED : mirror;
-      DeclaredType param = (DeclaredType) mirror;
-      if (types.isSubtype((Type) mirror, (Type) param)) {
-        param = (DeclaredType) types.asSuper((Type) mirror, ((Type) param).asElement());
-      }
-      if (t.getTypeArguments().size() == param.getTypeArguments().size()) {
-        for (int i = 0; i < t.getTypeArguments().size(); i++) {
-          visit(t.getTypeArguments().get(i), param.getTypeArguments().get(i));
-        }
-      }
-      return null;
-    }
-
-    @Override
-    public Void visitError(ErrorType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitTypeVariable(TypeVariable t, TypeMirror mirror) {
-      if (typeVariables.contains(t)) {
-        subs.put(t, mirror);
-      } else if (mirror.getKind() == TypeKind.TYPEVAR) {
-        TypeVariable param = (TypeVariable) mirror;
-        visit(t.getUpperBound(), param.getUpperBound());
-        visit(t.getLowerBound(), param.getLowerBound());
-      }
-      // else it's not a method type variable
-      return null;
-    }
-
-    @Override
-    public Void visitWildcard(javax.lang.model.type.WildcardType t, TypeMirror mirror) {
-      if (mirror.getKind() == TypeKind.WILDCARD) {
-        javax.lang.model.type.WildcardType param = (javax.lang.model.type.WildcardType) mirror;
-        visit(t.getExtendsBound(), param.getExtendsBound());
-        visit(t.getSuperBound(), param.getSuperBound());
-      } else if (mirror.getKind() == TypeKind.TYPEVAR) {
-        TypeVariable param = (TypeVariable) mirror;
-        visit(t.getExtendsBound(), param.getUpperBound());
-        visit(t.getSuperBound(), param.getLowerBound());
-      } else {
-        assert false : mirror;
-      }
-      return null;
-    }
-
-    @Override
-    public Void visitExecutable(ExecutableType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitNoType(NoType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitUnknown(TypeMirror t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitUnion(UnionType t, TypeMirror mirror) {
-      return null;
-    }
-
-    @Override
-    public Void visitIntersection(IntersectionType t, TypeMirror mirror) {
-      assert mirror.getKind() == TypeKind.INTERSECTION : mirror;
-      IntersectionType param = (IntersectionType) mirror;
-      assert t.getBounds().size() == param.getBounds().size();
-
-      for (int i = 0; i < t.getBounds().size(); i++) {
-        visit(t.getBounds().get(i), param.getBounds().get(i));
-      }
-
-      return null;
-    }
-  }
-
-  /**
    * Returns the outermost tree required to find the type of {@code tree}.
    *
    * @param tree tree that may need an outer tree to find the type
@@ -807,7 +581,8 @@ public class InvocationTypeInference {
         if (methodElement.getTypeParameters().isEmpty()) {
           return tree;
         }
-        if (needsInference(methodElement, methodInvocationTree.getArguments(), tree, null)) {
+        if (argumentNeedsInference(
+            methodElement, methodInvocationTree.getArguments(), tree, null)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         }
         return tree;
@@ -817,7 +592,7 @@ public class InvocationTypeInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
-        if (needsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
+        if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
           return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         }
         return tree;
@@ -833,21 +608,32 @@ public class InvocationTypeInference {
     }
   }
 
-  private static boolean needsInference(
+  /**
+   * Returns true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
+   * that contains a type variable that needs to be inferred.
+   *
+   * @param executableElement symbol of method or constructor
+   * @param argTrees all the arguments of the method or constructor call
+   * @param argTree the argument of interest
+   * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
+   * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
+   *     that contains a type variable that needs to be inferred.
+   */
+  private static boolean argumentNeedsInference(
       ExecutableElement executableElement,
       List<? extends ExpressionTree> argTrees,
-      Tree tree,
+      Tree argTree,
       @Nullable NewClassTree newClassTree) {
     int index = -1;
     for (int i = 0; i < argTrees.size(); i++) {
-      @SuppressWarnings("interning")
-      boolean found = argTrees.get(i) == tree;
+      @SuppressWarnings("interning") // looking for exact argTree.
+      boolean found = argTrees.get(i) == argTree;
       if (found) {
         index = i;
       }
     }
     if (index == -1) {
-      throw new BugInCF("Argument tree not found in list of arguments.");
+      throw new BugInCF("Argument argTree not found in list of arguments.");
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();
@@ -859,7 +645,7 @@ public class InvocationTypeInference {
 
     if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
       List<TypeVariable> list = new ArrayList<>(executableType.getTypeVariables());
-      if (TreeUtils.isDiamondTree(newClassTree)) {
+      if (newClassTree != null && TreeUtils.isDiamondTree(newClassTree)) {
         DeclaredType declaredType =
             (DeclaredType) ((DeclaredType) TreeUtils.typeOf(newClassTree)).asElement().asType();
         for (TypeMirror typeVar : declaredType.getTypeArguments()) {

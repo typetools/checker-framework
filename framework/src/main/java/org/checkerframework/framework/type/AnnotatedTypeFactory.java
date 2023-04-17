@@ -117,9 +117,9 @@ import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.TypeInformationPresenter;
-import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
+import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -1054,7 +1054,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * TypeArgumentInference infers the method type arguments when they are not explicitly written.
    */
   protected TypeArgumentInference createTypeArgumentInference() {
-    return new DefaultTypeArgumentInference(this);
+    return new DefaultTypeArgumentInference();
   }
 
   public TypeArgumentInference getTypeArgumentInference() {

@@ -1762,7 +1762,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     InferenceResult args =
         atypeFactory
             .getTypeArgumentInference()
-            .inferNew(atypeFactory, tree, preI.executableType, getCurrentPath());
+            .inferTypeArgs(atypeFactory, tree, preI.executableType);
     if (args != null && !args.isAnnoInferenceFailed()) {
       return false;
     }
