@@ -2648,7 +2648,7 @@ public final class TreeUtils {
             (DeclaredType) TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
         return (ExecutableType) env.getTypeUtils().asMemberOf(receiver, ctDecl);
       }
-      return (ExecutableType) TreeUtils.elementFromTree(memberReferenceTree).asType();
+      return (ExecutableType) ctDecl.asType();
     }
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     Types types = Types.instance(javacEnv.getContext());
