@@ -11,7 +11,7 @@
   "packageRules": [
     {
       "packageNames": ["aws-sdk"],
-      "schedule": ["every month on the last day of the month"]
+      "schedule": ["on the last day of the month"]
     }
   ]
 }
