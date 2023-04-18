@@ -33,9 +33,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
 
 # Report line numbers when the script fails, from
-# https://unix.stackexchange.com/a/522815
+# https://unix.stackexchange.com/a/522815 .
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
-         pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
+         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi.sh."
 
@@ -73,6 +73,11 @@ if [ "${JAVA19_HOME}" = "" ]; then
   has_java19="no"
 else
   has_java19="yes"
+fi
+
+if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
+    echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
+    exit 1
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
@@ -116,7 +121,18 @@ if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    if [ "${has_java_home}" = "yes" ]; then
+      echo "Cannot determine Java version from JAVA_HOME"
+    else
+      echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    fi
+    echo "JAVA_HOME = ${JAVA_HOME}"
+    echo "JAVA8_HOME = ${JAVA8_HOME}"
+    echo "JAVA11_HOME = ${JAVA11_HOME}"
+    echo "JAVA17_HOME = ${JAVA17_HOME}"
+    echo "JAVA19_HOME = ${JAVA19_HOME}"
+    command -v java
+    java -version
     exit 8
 fi
 

@@ -126,7 +126,11 @@ if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    if [ "${has_java_home}" = "yes" ]; then
+      echo "Cannot determine Java version from JAVA_HOME"
+    else
+      echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    fi
     echo "JAVA_HOME = ${JAVA_HOME}"
     echo "JAVA8_HOME = ${JAVA8_HOME}"
     echo "JAVA11_HOME = ${JAVA11_HOME}"
@@ -158,6 +162,8 @@ if [ "${INLIST}" = "" ]; then
 fi
 
 if [ "${GRADLECACHEDIR}" = "" ]; then
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
