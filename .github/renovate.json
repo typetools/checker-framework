@@ -11,11 +11,7 @@
   "packageRules": [
     {
       "packageNames": ["aws-sdk"],
-      "schedule": ["every month on the last day of the month"]
-    },
-    {
-      "packageNames": ["com.google.errorprone:javac"],
-      "schedule": ["never"]
+      "schedule": ["on the last day of the month"]
     }
   ]
 }
