@@ -86,7 +86,7 @@ if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
-    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
       export JAVA8_HOME="${JAVA_HOME}"
       has_java8="yes"
