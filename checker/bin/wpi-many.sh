@@ -255,7 +255,13 @@ do
       # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
       echo "wpi-many.sh about to call wpi.sh at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
-      echo "wpi-many.sh finished call to wpi.sh at $(date)"
+      wpi_status=$?
+      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} at $(date)"
+      if [[ "$wpi_status" != 0 ]]; then
+          echo "==== beginning of ${OUTDIR}-results/wpi-out ===="
+          cat "${OUTDIR}-results/wpi-out"
+          echo "==== end of ${OUTDIR}-results/wpi-out ===="
+      fi
     fi
 
     cd "${OUTDIR}" || exit 5
