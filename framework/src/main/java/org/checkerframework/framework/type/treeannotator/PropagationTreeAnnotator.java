@@ -51,6 +51,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   private final QualifierHierarchy qualHierarchy;
 
+  /** Used to replace annotations in var type according to initializer annotations. */
   private final AnnotatedTypeReplacer replacer = new AnnotatedTypeReplacer();
 
   /** Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}. */
@@ -363,6 +364,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * }</pre>
    *
    * The type of var after propagate would be: {@code ArrayList<@Untainted String>}
+   *
+   * @param initializerType AnnotatedDeclaredType of the initializer as source
+   * @param variableType AnnotatedDeclaredType of var as destination
+   * @param typeFactory AnnotatedTypeFactory to use for propagation
    */
   public void propagateInitializerAnnotationsToVar(
       final AnnotatedTypeMirror.AnnotatedDeclaredType initializerType,
