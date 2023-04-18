@@ -1,9 +1,11 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -62,6 +64,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         pathToExpression = typeFactory.getPath(outerTree);
         methodType =
             typeFactory.constructorFromUseNoTypeArgInfere((NewClassTree) outerTree).executableType;
+      } else if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
+        pathToExpression = typeFactory.getPath(outerTree);
+        methodType = null;
       } else {
         throw new BugInCF(
             "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
@@ -72,7 +77,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     try {
       java8Inference = new InvocationTypeInference(typeFactory, pathToExpression);
-      return java8Inference.infer(outerTree, methodType);
+      if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
+        return java8Inference.infer((MemberReferenceTree) outerTree);
+      } else {
+        return java8Inference.infer(outerTree, methodType);
+      }
     } catch (FalseBoundException ex) {
       // TODO: For now, rethrow the exception so that the tests crash.
       // This should never happen, if javac infers type arguments so should the Checker

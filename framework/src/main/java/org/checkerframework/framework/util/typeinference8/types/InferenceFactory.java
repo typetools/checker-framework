@@ -721,7 +721,8 @@ public class InferenceFactory {
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
     AnnotatedExecutableType compileTimeType =
-        typeFactory.methodFromUse(memRef, compileTimeDeclaration, enclosingType).executableType;
+        typeFactory.methodFromUseNoTypeArgInference(memRef, compileTimeDeclaration, enclosingType)
+            .executableType;
 
     return new InvocationType(
         compileTimeType,

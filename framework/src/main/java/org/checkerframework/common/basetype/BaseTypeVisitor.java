@@ -240,8 +240,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private final boolean assumeDeterministic;
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;
-  /** True if "-AconservativeUninferredTypeArguments" was passed on the command line. */
-  private final boolean conservativeUninferredTypeArguments;
 
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
   private final boolean warnRedundantAnnotations;
@@ -285,7 +283,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     assumeDeterministic =
         checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure");
     checkCastElementType = checker.hasOption("checkCastElementType");
-    conservativeUninferredTypeArguments = checker.hasOption("conservativeUninferredTypeArguments");
     warnRedundantAnnotations = checker.hasOption("warnRedundantAnnotations");
   }
 
@@ -3698,12 +3695,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
             .executableType;
 
-    if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
-      // Type argument inference is required, skip check.
-      // #checkMethodReferenceInference issued a warning.
-      return true;
-    }
-
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()
     if (invocationType.getTypeVariables().isEmpty() && !functionType.getTypeVariables().isEmpty()) {
@@ -3752,42 +3743,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // In that case, only return false if uninferred type arguments should not be ignored.
       return !atypeFactory.ignoreUninferredTypeArguments;
     }
-  }
-
-  /** Check if method reference type argument inference is required. Issue an error if it is. */
-  private boolean checkMethodReferenceInference(
-      MemberReferenceTree memberReferenceTree,
-      AnnotatedExecutableType invocationType,
-      AnnotatedTypeMirror type) {
-    // TODO: Issue #802
-    // TODO: https://github.com/typetools/checker-framework/issues/802
-    // TODO: Method type argument inference
-    // TODO: Enable checks for method reference with inferred type arguments.
-    // For now, error on mismatch of class or method type arguments.
-    boolean requiresInference = false;
-    // If the function to which the member reference refers is generic, but the member
-    // reference does not provide method type arguments, then Java 8 inference is required.
-    // Issue 979.
-    if (!invocationType.getTypeVariables().isEmpty()
-        && (memberReferenceTree.getTypeArguments() == null
-            || memberReferenceTree.getTypeArguments().isEmpty())) {
-      // Method type args
-      requiresInference = true;
-    } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
-        || MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
-      if (type.getKind() == TypeKind.DECLARED
-          && ((AnnotatedDeclaredType) type).isUnderlyingTypeRaw()) {
-        // Class type args
-        requiresInference = true;
-      }
-    }
-    if (requiresInference) {
-      if (conservativeUninferredTypeArguments) {
-        checker.reportWarning(memberReferenceTree, "methodref.inference.unimplemented");
-      }
-      return true;
-    }
-    return false;
   }
 
   /**

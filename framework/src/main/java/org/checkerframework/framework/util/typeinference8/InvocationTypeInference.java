@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -172,6 +173,38 @@ public class InvocationTypeInference {
       // are substituted into the method type.
     }
     return new InferenceResult(thetaPrime, b4.annoFail, b4.errorMsg);
+  }
+
+  public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
+
+    ProperType target = context.inferenceTypeFactory.getTargetType();
+    InvocationType compileTimeDecl =
+        context.inferenceTypeFactory.compileTimeDeclarationType(invocation, target);
+    assert target != null;
+    Theta map =
+        context.inferenceTypeFactory.createThetaForMethodReference(
+            invocation, compileTimeDecl, context);
+    BoundSet b2 = createB2MethodRef(compileTimeDecl, target.getFunctionTypeParameterTypes(), map);
+    AbstractType r = target.getFunctionTypeReturnType();
+    BoundSet b3;
+    if (r.getTypeKind() == TypeKind.VOID) {
+      b3 = b2;
+    } else {
+      b3 = createB3(b2, invocation, compileTimeDecl, r, map);
+    }
+
+    List<Variable> thetaPrime = b3.resolve();
+
+    if (b3.isUncheckedConversion()) {
+      // If unchecked conversion was necessary for the method to be applicable during
+      // constraint set reduction in 18.5.1, then the parameter types of the invocation type
+      // of m are obtained by applying thetaPrime to the parameter types of m's type, and the
+      // return type and thrown types of the invocation type of m are given by the erasure of
+      // the return type and thrown types of m's type.
+      // TODO: the erasure of the return type should happen were the inferred type arguments
+      // are substituted into the method type.
+    }
+    return new InferenceResult(thetaPrime, b3.annoFail, b3.errorMsg);
   }
 
   /**

@@ -32,7 +32,7 @@ class Super {
   class Sub extends Super {
     void context() {
       FunctionMR<Object, Object> f1 = super::func1;
-      // TODO: Issue 802: type argument inference
+      @SuppressWarnings("methodref.return") // FunctionMR is a raw type.
       FunctionMR f2 = super::func2;
       // Top level wildcards are ignored when type checking
       FunctionMR<? extends String, ? extends String> f3 = super::<String>func2;

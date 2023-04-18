@@ -4733,7 +4733,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case VARIABLE:
         VariableTree varTree = (VariableTree) parentTree;
         assertIsFunctionalInterface(TreeUtils.typeOf(varTree), parentTree, tree);
-        return getAnnotatedType(varTree.getType());
+        return getAnnotatedTypeFromTypeTree(varTree.getType());
 
       case ASSIGNMENT:
         AssignmentTree assignmentTree = (AssignmentTree) parentTree;

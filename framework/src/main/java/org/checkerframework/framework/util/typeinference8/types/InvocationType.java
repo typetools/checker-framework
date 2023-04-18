@@ -1,7 +1,10 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +23,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
 public class InvocationType {
 
@@ -65,8 +69,14 @@ public class InvocationType {
       returnType = typeFactory.getAnnotatedType(e);
     } else if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
         || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-      returnTypeJava = methodType.getReturnType();
       returnType = annotatedExecutableType.getReturnType();
+      if (invocation.getKind() == Kind.MEMBER_REFERENCE
+          && ((MemberReferenceTree) invocation).getMode() == ReferenceMode.NEW) {
+        returnTypeJava = returnType.getUnderlyingType();
+      } else {
+        returnTypeJava = methodType.getReturnType();
+      }
+
     } else {
       returnTypeJava = TreeUtils.typeOf(invocation);
       returnType = typeFactory.getAnnotatedType(invocation);
@@ -99,6 +109,12 @@ public class InvocationType {
       for (int i = paramsJava.size(); i < size; i++) {
         paramsJava.add(vararg.getComponentType());
       }
+    }
+    if (invocation.getKind() == Kind.MEMBER_REFERENCE
+        && MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) invocation)
+            .isUnbound()) {
+      params.add(0, annotatedExecutableType.getReceiverType());
+      paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
     }
     return InferenceType.create(params, paramsJava, map, context);
   }

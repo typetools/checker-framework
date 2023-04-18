@@ -2648,8 +2648,7 @@ public final class TreeUtils {
             (DeclaredType) TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
         return (ExecutableType) env.getTypeUtils().asMemberOf(receiver, ctDecl);
       }
-      TypeMirror functionalType = TreeUtils.typeOf(memberReferenceTree);
-      return TypesUtils.findFunctionType(functionalType, env);
+      return (ExecutableType) TreeUtils.elementFromTree(memberReferenceTree).asType();
     }
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     Types types = Types.instance(javacEnv.getContext());

@@ -755,8 +755,14 @@ public class AnnotatedTypes {
     } else if (expr instanceof MemberReferenceTree) {
       targs = ((MemberReferenceTree) expr).getTypeArguments();
       if (targs == null) {
-        // TODO: Add type argument inference as part of fix for #979
-        return new HashMap<>();
+        if (inferTypeArgs) {
+          return atypeFactory
+              .getTypeArgumentInference()
+              .inferTypeArgs(atypeFactory, expr, preType)
+              .getTypeArgumentsForExpression(expr);
+        } else {
+          return Collections.emptyMap();
+        }
       }
     } else {
       // This case should never happen.
