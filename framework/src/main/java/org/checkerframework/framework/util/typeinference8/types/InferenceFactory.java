@@ -13,6 +13,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
@@ -91,6 +92,12 @@ public class InferenceFactory {
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
     TreePath path = context.pathToExpression;
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
+    if (assignmentContext != null
+        && path.getLeaf().getKind() != Kind.MEMBER_REFERENCE
+        && assignmentContext.getKind() == Kind.TYPE_CAST) {
+      // TODO: Fix bug.
+      assignmentContext = null;
+    }
     if (assignmentContext == null) {
       AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
       if (dummy == null || dummy.containsCapturedTypes()) {
@@ -105,6 +112,10 @@ public class InferenceFactory {
         ExpressionTree variable = ((AssignmentTree) assignmentContext).getVariable();
         AnnotatedTypeMirror atm = factory.getAnnotatedTypeLhs(variable);
         return new ProperType(atm, TreeUtils.typeOf(variable), context);
+      case TYPE_CAST:
+        Tree cast = ((TypeCastTree) assignmentContext).getType();
+        AnnotatedTypeMirror castType = factory.getAnnotatedTypeFromTypeTree(cast);
+        return new ProperType(castType, TreeUtils.typeOf(cast), context);
       case VARIABLE:
         VariableTree variableTree = (VariableTree) assignmentContext;
         AnnotatedTypeMirror variableAtm = assignedToVariable(factory, assignmentContext);
@@ -522,7 +533,8 @@ public class InferenceFactory {
     }
 
     Theta map = new Theta();
-    if (TreeUtils.isDiamondMemberReference(memRef)) {
+    if (TreeUtils.isDiamondMemberReference(memRef)
+        || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
       // If memRef is a constructor of a generic class whose type argument isn't specified
       // such as HashSet::new,
       // then add variables for the type arguments to the class.
@@ -533,16 +545,18 @@ public class InferenceFactory {
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
-      for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
-        if (typeMirror.getKind() != TypeKind.TYPEVAR) {
-          throw new BugInCF("Expected type variable, found: %s", typeMirror);
+      if (((Type) type).getTypeArguments().isEmpty()) {
+        Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
+        for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
+          if (typeMirror.getKind() != TypeKind.TYPEVAR) {
+            throw new BugInCF("Expected type variable, found: %s", typeMirror);
+          }
+          TypeVariable pl = (TypeVariable) typeMirror;
+          AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
+          @SuppressWarnings("interning:interned.object.creation")
+          Variable al = new @Interned Variable(atv, pl, memRef, context, map);
+          map.put(pl, al);
         }
-        TypeVariable pl = (TypeVariable) typeMirror;
-        AnnotatedTypeVariable atv = (AnnotatedTypeVariable) iter.next();
-        @SuppressWarnings("interning:interned.object.creation")
-        Variable al = new @Interned Variable(atv, pl, memRef, context, map);
-        map.put(pl, al);
       }
     }
 

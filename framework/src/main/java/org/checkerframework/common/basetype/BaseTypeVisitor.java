@@ -38,6 +38,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -3668,25 +3669,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement compileTimeDeclaration =
         (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
 
-    if (enclosingType.getKind() == TypeKind.DECLARED
-        && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
-      if (memRefKind == MemberReferenceKind.UNBOUND) {
-        // The method reference is of the form: Type # instMethod and Type is a raw type.
-        // If the first parameter of the function type, p1, is a subtype of type, then type
-        // should be p1.  This has the effect of "inferring" the class type parameter.
-        AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
-        TypeMirror asSuper =
-            TypesUtils.asSuper(
-                p1.getUnderlyingType(),
-                enclosingType.getUnderlyingType(),
-                atypeFactory.getProcessingEnv());
-        if (asSuper != null) {
-          enclosingType = AnnotatedTypes.asSuper(atypeFactory, p1, enclosingType);
+    ParameterizedExecutableType preI =
+        atypeFactory.methodFromUseNoTypeArgInference(
+            memberReferenceTree, compileTimeDeclaration, enclosingType);
+    if (TreeUtils.isDiamondMemberReference(memberReferenceTree)
+        || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
+      TypeMirror type = TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
+      if (((Type) type).getTypeArguments().isEmpty()) {
+        if (checkInferredTypeArguments(memberReferenceTree, preI)) {
+          return true;
         }
       }
-      // else method reference is something like ArrayList::new
-      // TODO: Use diamond, <>, inference to infer the class type arguments.
-      // For now this case is skipped below in checkMethodReferenceInference.
     }
 
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression

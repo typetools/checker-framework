@@ -12,6 +12,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -144,6 +145,9 @@ public class TypeArgInferenceUtil {
   @SuppressWarnings("interning:not.interned") // AST node comparisons
   public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
+    if (assignmentContext != null && assignmentContext.getKind() == Kind.TYPE_CAST) {
+      assignmentContext = null;
+    }
     AnnotatedTypeMirror res;
     if (assignmentContext == null) {
       res = null;

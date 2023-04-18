@@ -51,7 +51,7 @@ public class InferenceResult {
 
   public Map<TypeVariable, AnnotatedTypeMirror> getTypeArgumentsForExpression(
       ExpressionTree expressionTree) {
-    if (this == emptyResult) {
+    if (this == emptyResult || results.isEmpty()) {
       return Collections.emptyMap();
     }
     return results.get(expressionTree);

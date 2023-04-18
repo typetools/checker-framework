@@ -5,6 +5,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
@@ -743,7 +744,9 @@ public class AnnotatedTypes {
       final AnnotatedExecutableType preType,
       boolean inferTypeArgs) {
     // Is the method a generic method?
-    if (elt.getTypeParameters().isEmpty() && !TreeUtils.isDiamondTree(expr)) {
+    if (expr.getKind() != Kind.MEMBER_REFERENCE
+        && elt.getTypeParameters().isEmpty()
+        && !TreeUtils.isDiamondTree(expr)) {
       return Collections.emptyMap();
     }
 
@@ -754,15 +757,23 @@ public class AnnotatedTypes {
       targs = ((NewClassTree) expr).getTypeArguments();
     } else if (expr instanceof MemberReferenceTree) {
       targs = ((MemberReferenceTree) expr).getTypeArguments();
+      MemberReferenceTree memRef = ((MemberReferenceTree) expr);
       if (targs == null) {
-        if (inferTypeArgs) {
-          return atypeFactory
-              .getTypeArgumentInference()
-              .inferTypeArgs(atypeFactory, expr, preType)
-              .getTypeArgumentsForExpression(expr);
-        } else {
-          return Collections.emptyMap();
+        if (inferTypeArgs
+            && (TreeUtils.isDiamondMemberReference(memRef)
+                || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound())) {
+          {
+            TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
+            if (((Type) type).getTypeArguments().isEmpty()) {
+
+              return atypeFactory
+                  .getTypeArgumentInference()
+                  .inferTypeArgs(atypeFactory, expr, preType)
+                  .getTypeArgumentsForExpression(expr);
+            }
+          }
         }
+        return Collections.emptyMap();
       }
     } else {
       // This case should never happen.

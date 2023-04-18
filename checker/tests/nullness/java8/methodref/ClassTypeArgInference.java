@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class ClassTypeArgInference {
   public static void main(String[] args) {
     Gen<String> o = new Gen<>("");
-    // :: error: (methodref.param)
+    // :: error: (type.arguments.not.inferred)
     Factory f = Gen::make;
     // :: error: (methodref.param)
     Factory f2 = Gen<String>::make;

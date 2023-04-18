@@ -33,6 +33,7 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -178,16 +179,19 @@ public class InvocationTypeInference {
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
     ProperType target = context.inferenceTypeFactory.getTargetType();
+    if (target == null) {
+      throw new BugInCF("Target of method reference should not be null: %s", invocation);
+    }
+
     InvocationType compileTimeDecl =
         context.inferenceTypeFactory.compileTimeDeclarationType(invocation, target);
-    assert target != null;
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, context);
     BoundSet b2 = createB2MethodRef(compileTimeDecl, target.getFunctionTypeParameterTypes(), map);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
-    if (r.getTypeKind() == TypeKind.VOID) {
+    if (r == null || r.getTypeKind() == TypeKind.VOID) {
       b3 = b2;
     } else {
       b3 = createB3(b2, invocation, compileTimeDecl, r, map);
