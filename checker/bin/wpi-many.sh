@@ -257,7 +257,7 @@ do
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
       wpi_status=$?
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} at $(date)"
-      ls ${OUTDIR}-results
+      ls "${OUTDIR}-results"
       # Gradle will copy a PROJECTNAME-*-typecheck.out file and a PROJECTNAME-*-wpi-stdout.log file to build/wpi-many-tests-results/, but here I need to check for local files and set wpi_status=1 .
       if [[ "$wpi_status" != 0 ]]; then
           echo "==== beginning of ${OUTDIR}-results/wpi-out ===="
