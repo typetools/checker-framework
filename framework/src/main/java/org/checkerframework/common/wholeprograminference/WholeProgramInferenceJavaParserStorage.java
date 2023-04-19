@@ -1286,10 +1286,10 @@ public class WholeProgramInferenceJavaParserStorage
      *     be removed
      */
     /*package-private*/ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
-      if (declarationAnnotations != null) {
-        return declarationAnnotations.remove(anno);
+      if (declarationAnnotations == null) {
+        return false;
       }
-      return false;
+      return declarationAnnotations.remove(anno);
     }
 
     /**

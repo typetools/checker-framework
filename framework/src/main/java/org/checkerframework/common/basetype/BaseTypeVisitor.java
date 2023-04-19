@@ -1066,20 +1066,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // special-cased.
         Set<? extends ExecutableElement> overriddenMethods =
             ElementUtils.getOverriddenMethods(methodElt, types);
-        for (ExecutableElement elt : overriddenMethods) {
-          inferPurityAnno(additionalKinds, wpi, elt);
+        for (ExecutableElement overriddenElt : overriddenMethods) {
+          inferPurityAnno(additionalKinds, wpi, overriddenElt);
         }
-      } else if (!additionalKinds.isEmpty()) {
-        // Note: no need to suggest @Impure, since it is equivalent to no annotation.
-        if (additionalKinds.size() == 2) {
-          checker.reportWarning(tree, "purity.more.pure", tree.getName());
-        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-        } else {
-          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-        }
+      } else if (additionalKinds.isEmpty()) {
+        // No need to suggest @Impure, since it is equivalent to no annotation.
+      } else if (additionalKinds.size() == 2) {
+        checker.reportWarning(tree, "purity.more.pure", tree.getName());
+      } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+        checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+      } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+        checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+      } else {
+        throw new BugInCF("Unexpected purity kind in " + additionalKinds);
       }
     }
   }

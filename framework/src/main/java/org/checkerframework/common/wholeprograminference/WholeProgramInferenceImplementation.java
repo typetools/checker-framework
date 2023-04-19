@@ -129,6 +129,15 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /** The @{@link Impure} annotation. */
   private final AnnotationMirror IMPURE;
 
+  /** The fully-qualified name of the @{@link Deterministic} class. */
+  private final String DETERMINISTIC_NAME = "org.checkerframework.dataflow.qual.Deterministic";
+  /** The fully-qualified name of the @{@link SideEffectFree} class. */
+  private final String SIDE_EFFECT_FREE_NAME = "org.checkerframework.dataflow.qual.SideEffectFree";
+  /** The fully-qualified name of the @{@link Pure} class. */
+  private final String PURE_NAME = "org.checkerframework.dataflow.qual.Pure";
+  /** The fully-qualified name of the @{@link Impure} class. */
+  private final String IMPURE_NAME = "org.checkerframework.dataflow.qual.Impure";
+
   /**
    * Constructs a new {@code WholeProgramInferenceImplementation} that has not yet inferred any
    * annotations.
@@ -778,10 +787,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     if (!(lubPurity && isPurityAnno(anno))) {
       annoToAdd = anno;
     } else {
-      // It's a purity annotation. Do a "least upper bound" between the current purity annotation
-      // inferred for the method and anno. This is necessary to avoid WPI inferring incompatible
-      // purity annotations on methods that override methods from their superclass. TODO: this would
-      // be unnecessary if purity implemented as a type system.
+      // It's a purity annotation and `lubPurity` is true. Do a "least upper bound" between the
+      // current purity annotation inferred for the method and anno. This is necessary to avoid WPI
+      // inferring incompatible purity annotations on methods that override methods from their
+      // superclass. TODO: this would be unnecessary if purity was implemented as a type system.
       AnnotationMirror currentPurityAnno = getPurityAnnotation(methodElt);
       if (currentPurityAnno == null) {
         annoToAdd = anno;
@@ -814,23 +823,20 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   private AnnotationMirror lubPurityAnnotations(AnnotationMirror anno1, AnnotationMirror anno2) {
     // TODO: is this the best way to do this? Would it be easier to just write a real subtype
     // routine for purity? Do we have code to handle this already somewhere?
-    String pureName = "org.checkerframework.dataflow.qual.Pure";
-    String detName = "org.checkerframework.dataflow.qual.Deterministic";
-    String sefName = "org.checkerframework.dataflow.qual.SideEffectFree";
 
     boolean anno1IsDet =
         AnnotationUtils.areSameByName(anno1, pureName)
-            || AnnotationUtils.areSameByName(anno1, detName);
+            || AnnotationUtils.areSameByName(anno1, DETERMINISTIC_NAME);
     boolean anno1IsSEF =
         AnnotationUtils.areSameByName(anno1, pureName)
-            || AnnotationUtils.areSameByName(anno1, sefName);
+            || AnnotationUtils.areSameByName(anno1, SIDE_EFFECT_FREE_NAME);
 
     boolean anno2IsDet =
         AnnotationUtils.areSameByName(anno2, pureName)
-            || AnnotationUtils.areSameByName(anno2, detName);
+            || AnnotationUtils.areSameByName(anno2, DETERMINISTIC_NAME);
     boolean anno2IsSEF =
         AnnotationUtils.areSameByName(anno2, pureName)
-            || AnnotationUtils.areSameByName(anno2, sefName);
+            || AnnotationUtils.areSameByName(anno2, SIDE_EFFECT_FREE_NAME);
 
     if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
       return PURE;
@@ -873,10 +879,10 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @return true iff the annotation is a purity annotation
    */
   private boolean isPurityAnno(AnnotationMirror anno) {
-    return AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.Pure")
-        || AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.SideEffectFree")
-        || AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.Deterministic")
-        || AnnotationUtils.areSameByName(anno, "org.checkerframework.dataflow.qual.Impure");
+    return AnnotationUtils.areSameByName(anno, PURE_NAME)
+        || AnnotationUtils.areSameByName(anno, SIDE_EFFECT_FREE_NAME)
+        || AnnotationUtils.areSameByName(anno, DETERMINISTIC_NAME)
+        || AnnotationUtils.areSameByName(anno, IMPURE_NAME);
   }
 
   @Override
