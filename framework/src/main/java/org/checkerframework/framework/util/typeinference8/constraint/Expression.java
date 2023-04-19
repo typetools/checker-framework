@@ -205,9 +205,7 @@ public class Expression extends TypeConstraint {
         context.inferenceTypeFactory.createThetaForMethodReference(
             memRef, compileTimeDecl, context);
     AbstractType compileTimeReturn = compileTimeDecl.getReturnType(map);
-    if ((TreeUtils.isDiamondMemberReference(memRef)
-            || (memRef.getTypeArguments() == null && compileTimeDecl.hasTypeVariables()))
-        && !compileTimeReturn.isProper()) {
+    if (TreeUtils.needsTypeArgInference(memRef) && !compileTimeReturn.isProper()) {
       BoundSet b2 =
           context.inference.createB2MethodRef(
               compileTimeDecl, T.getFunctionTypeParameterTypes(), map);

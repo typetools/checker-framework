@@ -2628,16 +2628,24 @@ public final class TreeUtils {
     return false;
   }
 
-  public static boolean needsTypeArgInference(MemberReferenceTree memberReferenceTree) {
-    if (isDiamondMemberReference(memberReferenceTree)) {
-      return true;
+  public static boolean isLikeDiamondMemberReference(ExpressionTree tree) {
+    if (tree.getKind() != Tree.Kind.MEMBER_REFERENCE) {
+      return false;
     }
+    MemberReferenceTree memberReferenceTree = (MemberReferenceTree) tree;
     if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
       TypeMirror qualifierExpressionType = typeOf(memberReferenceTree.getQualifierExpression());
-      if (TypesUtils.isRaw(qualifierExpressionType)) {
-        return true;
-      }
+      return TypesUtils.isRaw(qualifierExpressionType);
     }
+    return false;
+  }
+
+  public static boolean needsTypeArgInference(MemberReferenceTree memberReferenceTree) {
+    if (isDiamondMemberReference(memberReferenceTree)
+        || isLikeDiamondMemberReference(memberReferenceTree)) {
+      return true;
+    }
+
     ExecutableElement compileTimeDeclaration =
         (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
     if (!compileTimeDeclaration.getTypeParameters().isEmpty()) {

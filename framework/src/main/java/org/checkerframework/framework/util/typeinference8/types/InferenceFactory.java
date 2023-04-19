@@ -535,8 +535,7 @@ public class InferenceFactory {
     Theta map = new Theta();
     TypeMirror qualifierExpressionType = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (TreeUtils.isDiamondMemberReference(memRef)
-        || (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()
-            && TypesUtils.isRaw(qualifierExpressionType))) {
+        || TreeUtils.isLikeDiamondMemberReference(memRef)) {
       // If memRef is a constructor or method of a generic class whose type argument isn't specified
       // such as HashSet::new or HashSet::put
       // then add variables for the type arguments to the class.
@@ -701,8 +700,7 @@ public class InferenceFactory {
 
     if (memRef.getMode() == ReferenceMode.NEW) {
       enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
-      if (enclosingType.getKind() == TypeKind.DECLARED
-          && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
+      if (TreeUtils.isDiamondMemberReference(memRef)) {
         // The member reference is HashMap::new so the type arguments for HashMap must be
         // inferred.
         // So use the type declared type.
