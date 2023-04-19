@@ -142,6 +142,26 @@ a declaration annotation.
 %% This feature can be disabled by passing the \<-AnoLightweightOwnership> command-line parameter to the Must
 %% Call Checker.
 
+
+\sectionAndLabel{Relationship to lightweight ownership}{must-call-non-owning-parameter}
+
+The Must Call Checker interacts with the \<@Owning> and \<@NotOwning> annotations of the
+Resource Leak Checker (Section~\ref{resource-leak-checker}). In particular, any location that
+the Resource Leak Checker would consider ``non-owning'' (e.g., unannotated parameters, \<@NotOwning>
+returns, etc.) is treated as \<@MustCall({})> by the Must Call Checker. This can lead to surprising
+results when running the Must Call Checker alone (which is not recommended). For example,
+consider the following program:
+
+\begin{Verbatim}
+  @MustCall({"toString"}) String foo(@MustCall({"hashCode"}) String arg) {
+    return arg;
+  }
+\end{Verbatim}
+
+The Must Call Checker will not issue a warning about this code, because \<arg>
+is non-owning (and therefore treated as \<@MustCall({})>).
+
+
 \sectionAndLabel{Assumptions about reflection}{must-call-reflection}
 
 The Must Call Checker is unsound with respect to reflection: it assumes

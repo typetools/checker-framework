@@ -137,33 +137,21 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
     Tree declaredInTree =
         f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
-    if (declaredInTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+    if (declaredInTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
+        && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
-      if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
-        // The Java types should be exactly the same, but because invocation type
-        // inference (#979) isn't implement, check first. Use the erased types because the
-        // type arguments are not substituted when the annotated type arguments are.
-        if (TypesUtils.isErasedSubtype(
-            funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
-          return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
-        }
-        lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
-        return lambdaParam;
-
-      } else {
-        // The lambda expression is explicitly typed, so the parameters have declared types:
-        // (String s) -> ...
-        // The declared type may or may not have explicit annotations.
-        // If it does not have an annotation for a hierarchy, then copy the annotation from
-        // the function type rather than use usual defaulting rules.
-        // Note lambdaParam is a super type of funcTypeParam, so only primary annotations
-        // can be copied.
-        lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
-        return lambdaParam;
+      // The Java types should be exactly the same, but because invocation type
+      // inference (#979) isn't implement, check first. Use the erased types because the
+      // type arguments are not substituted when the annotated type arguments are.
+      if (TypesUtils.isErasedSubtype(
+          funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
+        return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
       }
+      lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
+      return lambdaParam;
     }
     return null;
   }
