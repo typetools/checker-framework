@@ -533,19 +533,20 @@ public class InferenceFactory {
     }
 
     Theta map = new Theta();
+    TypeMirror qualifierExpressionType = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (TreeUtils.isDiamondMemberReference(memRef)
-        || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
-      // If memRef is a constructor of a generic class whose type argument isn't specified
-      // such as HashSet::new,
+        || (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()
+            && TypesUtils.isRaw(qualifierExpressionType))) {
+      // If memRef is a constructor or method of a generic class whose type argument isn't specified
+      // such as HashSet::new or HashSet::put
       // then add variables for the type arguments to the class.
-      TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
-      TypeElement classEle = (TypeElement) ((Type) type).asElement();
+      TypeElement classEle = (TypeElement) ((Type) qualifierExpressionType).asElement();
       DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
 
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      if (((Type) type).getTypeArguments().isEmpty()) {
+      if (((Type) qualifierExpressionType).getTypeArguments().isEmpty()) {
         Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
         for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
           if (typeMirror.getKind() != TypeKind.TYPEVAR) {

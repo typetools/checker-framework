@@ -38,7 +38,6 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -3672,13 +3671,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ParameterizedExecutableType preI =
         atypeFactory.methodFromUseNoTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
-    if (TreeUtils.isDiamondMemberReference(memberReferenceTree)
-        || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
-      TypeMirror type = TreeUtils.typeOf(memberReferenceTree.getQualifierExpression());
-      if (((Type) type).getTypeArguments().isEmpty()) {
-        if (checkInferredTypeArguments(memberReferenceTree, preI)) {
-          return true;
-        }
+    if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
+      if (checkInferredTypeArguments(memberReferenceTree, preI)) {
+        return true;
       }
     }
 

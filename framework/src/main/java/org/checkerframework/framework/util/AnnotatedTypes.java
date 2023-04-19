@@ -743,7 +743,7 @@ public class AnnotatedTypes {
       final ExecutableElement elt,
       final AnnotatedExecutableType preType,
       boolean inferTypeArgs) {
-    // Is the method a generic method?
+
     if (expr.getKind() != Kind.MEMBER_REFERENCE
         && elt.getTypeParameters().isEmpty()
         && !TreeUtils.isDiamondTree(expr)) {
@@ -756,23 +756,15 @@ public class AnnotatedTypes {
     } else if (expr instanceof NewClassTree) {
       targs = ((NewClassTree) expr).getTypeArguments();
     } else if (expr instanceof MemberReferenceTree) {
-      targs = ((MemberReferenceTree) expr).getTypeArguments();
       MemberReferenceTree memRef = ((MemberReferenceTree) expr);
-      if (targs == null) {
-        if (inferTypeArgs
-            && (TreeUtils.isDiamondMemberReference(memRef)
-                || TreeUtils.MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound())) {
-          {
-            TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
-            if (((Type) type).getTypeArguments().isEmpty()) {
-
-              return atypeFactory
-                  .getTypeArgumentInference()
-                  .inferTypeArgs(atypeFactory, expr, preType)
-                  .getTypeArgumentsForExpression(expr);
-            }
-          }
-        }
+      if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
+        return atypeFactory
+            .getTypeArgumentInference()
+            .inferTypeArgs(atypeFactory, expr, preType)
+            .getTypeArgumentsForExpression(expr);
+      }
+      targs = memRef.getTypeArguments();
+      if (memRef.getTypeArguments() == null) {
         return Collections.emptyMap();
       }
     } else {

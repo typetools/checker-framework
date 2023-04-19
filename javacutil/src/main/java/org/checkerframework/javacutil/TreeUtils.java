@@ -2628,6 +2628,25 @@ public final class TreeUtils {
     return false;
   }
 
+  public static boolean needsTypeArgInference(MemberReferenceTree memberReferenceTree) {
+    if (isDiamondMemberReference(memberReferenceTree)) {
+      return true;
+    }
+    if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
+      TypeMirror qualifierExpressionType = typeOf(memberReferenceTree.getQualifierExpression());
+      if (TypesUtils.isRaw(qualifierExpressionType)) {
+        return true;
+      }
+    }
+    ExecutableElement compileTimeDeclaration =
+        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
+    if (!compileTimeDeclaration.getTypeParameters().isEmpty()) {
+      return memberReferenceTree.getTypeArguments() == null
+          || memberReferenceTree.getTypeArguments().isEmpty();
+    }
+    return false;
+  }
+
   /**
    * JLS 15.13.1: "The compile-time declaration of a method reference is the method to which the
    * expression refers."
