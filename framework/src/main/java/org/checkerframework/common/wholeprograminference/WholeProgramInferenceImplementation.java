@@ -825,17 +825,17 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     // routine for purity? Do we have code to handle this already somewhere?
 
     boolean anno1IsDet =
-        AnnotationUtils.areSameByName(anno1, pureName)
+        AnnotationUtils.areSameByName(anno1, PURE_NAME)
             || AnnotationUtils.areSameByName(anno1, DETERMINISTIC_NAME);
     boolean anno1IsSEF =
-        AnnotationUtils.areSameByName(anno1, pureName)
+        AnnotationUtils.areSameByName(anno1, PURE_NAME)
             || AnnotationUtils.areSameByName(anno1, SIDE_EFFECT_FREE_NAME);
 
     boolean anno2IsDet =
-        AnnotationUtils.areSameByName(anno2, pureName)
+        AnnotationUtils.areSameByName(anno2, PURE_NAME)
             || AnnotationUtils.areSameByName(anno2, DETERMINISTIC_NAME);
     boolean anno2IsSEF =
-        AnnotationUtils.areSameByName(anno2, pureName)
+        AnnotationUtils.areSameByName(anno2, PURE_NAME)
             || AnnotationUtils.areSameByName(anno2, SIDE_EFFECT_FREE_NAME);
 
     if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
