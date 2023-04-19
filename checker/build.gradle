@@ -897,8 +897,10 @@ task wpiManyTest(group: 'Verification') {
           commandLine 'cat', "${typecheckFilesDir}/wpi-out"
         }
         println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-        throw e
+      } else {
+        println("========= File ${typecheckFilesDir}/wpi-out does not exist. ========")
       }
+      throw e
     }
     // collect the logs from running WPI
     def typecheckFiles = fileTree(typecheckFilesDir).matching {
