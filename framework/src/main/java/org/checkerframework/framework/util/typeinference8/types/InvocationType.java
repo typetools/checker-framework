@@ -46,6 +46,10 @@ public class InvocationType {
     this.typeFactory = context.typeFactory;
   }
 
+  public ExpressionTree getInvocation() {
+    return invocation;
+  }
+
   public ExecutableType getJavaType() {
     return annotatedExecutableType.getUnderlyingType();
   }

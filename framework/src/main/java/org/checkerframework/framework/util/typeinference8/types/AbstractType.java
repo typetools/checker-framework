@@ -291,6 +291,7 @@ public abstract class AbstractType {
   // TODO: This method is named make ground, but is actually implements non-wildcard
   // parameterization as defined in
   // https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
+  // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.2
   static AnnotatedDeclaredType makeGround(
       AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
     Element e = type.getUnderlyingType().asElement();
