@@ -22,6 +22,13 @@ public class Pair<V1, V2> {
     return new Pair<>(v1, v2);
   }
 
+  // Makes a deep copy
+  @Override
+  public Pair<V1, V2> clone() {
+    // Cannot call super.clone() because fields are final
+    return of(first.clone(), second.clone());
+  }
+
   @SideEffectFree
   @Override
   public String toString() {

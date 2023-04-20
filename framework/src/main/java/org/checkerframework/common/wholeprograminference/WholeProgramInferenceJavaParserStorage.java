@@ -1040,6 +1040,14 @@ public class WholeProgramInferenceJavaParserStorage
       this.compilationUnit = compilationUnit;
     }
 
+    // Makes a deep copy.
+    @Override
+    public CompilationUnitAnnos clone() {
+      CompilationUnitAnnos result = (CompilationUnitAnnos) super.clone();
+      result.types = deepCopy(result.types);
+      return result;
+    }
+
     /**
      * Transfers all annotations inferred by whole program inference for the wrapped compilation
      * unit to their corresponding JavaParser locations.
@@ -1103,6 +1111,18 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
       classDeclaration = javaParserNode;
+    }
+
+    // Makes a deep copy
+    @Override
+    public ClassOrInterfaceAnnos clone() {
+      ClassOrInterfaceAnnos result = (ClassOrInterfaceAnnos) super.clone();
+      result.callableDeclarations = deepCopyValues(result.callableDeclarations);
+      result.fields = deepCopyValues(result.fields);
+      result.enumConstants = result.enumConstants.clone();
+      result.classAnnotations = result.classAnnotations.clone();
+      // no need to change classDeclaration
+      return result;
     }
 
     /**
@@ -1201,6 +1221,30 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public CallableDeclarationAnnos(CallableDeclaration<?> declaration) {
       this.declaration = declaration;
+    }
+
+    // Makes a deep copy.
+    @Override
+    public CallableDeclarationAnnos clone() {
+      CallableDeclarationAnnos result = (CallableDeclarationAnnos) super.clone();
+      // nothing to be done for declaration
+      if (result.returnType != null) {
+        result.returnType = result.returnType.clone();
+      }
+      if (result.receiverType != null) {
+        result.receiverType = result.receiverType.clone();
+      }
+      if (result.parameterType != null) {
+        result.parameterType = result.parameterType.clone();
+      }
+      if (result.declarationAnnotations != null) {
+        result.declarationAnnotations = result.declarationAnnotations.clone();
+      }
+      if (result.paramsDeclAnnos != null) {
+        result.paramsDeclAnnos = result.paramsDeclAnnos.clone();
+      }
+      result.preconditions = deepCopyValues(result.preconditions);
+      result.postconditions = deepCopyValues(result.postconditions);
     }
 
     /**

@@ -53,6 +53,48 @@ import org.plumelib.util.CollectionsPlume;
  */
 public abstract class AnnotatedTypeMirror {
 
+  protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
+  protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
+
+  /** The factory to use for lazily creating annotated types. */
+  protected final AnnotatedTypeFactory atypeFactory;
+
+  /** Actual type wrapped with this AnnotatedTypeMirror. */
+  protected final TypeMirror underlyingType;
+
+  /**
+   * Saves the result of {@code underlyingType.toString().hashcode()} to use when computing the hash
+   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
+   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
+   */
+  private int underlyingTypeHashCode = -1;
+
+  /** The annotations on this type. */
+  // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
+  // the class name of Annotation instead.
+  // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
+  protected final AnnotationMirrorSet annotations = new AnnotationMirrorSet();
+
+  /** The explicitly written annotations on this type. */
+  // TODO: use this to cache the result once computed? For generic types?
+  // protected final AnnotationMirrorSet explicitannotations =
+  // new AnnotationMirrorSet();
+
+  /**
+   * Constructor for AnnotatedTypeMirror.
+   *
+   * @param underlyingType the underlying type
+   * @param atypeFactory used to create further types and to access global information (Types,
+   *     Elements, ...)
+   */
+  private AnnotatedTypeMirror(TypeMirror underlyingType, AnnotatedTypeFactory atypeFactory) {
+    this.underlyingType = underlyingType;
+    assert atypeFactory != null;
+    this.atypeFactory = atypeFactory;
+  }
+
+  @Override
+
   /**
    * Creates an AnnotatedTypeMirror for the provided type. The result contains no annotations.
    *
@@ -119,46 +161,6 @@ public abstract class AnnotatedTypeMirror {
         result.addAnnotations(jctype.getAnnotationMirrors());
     }*/
     return result;
-  }
-
-  protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
-  protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
-
-  /** The factory to use for lazily creating annotated types. */
-  protected final AnnotatedTypeFactory atypeFactory;
-
-  /** Actual type wrapped with this AnnotatedTypeMirror. */
-  protected final TypeMirror underlyingType;
-
-  /**
-   * Saves the result of {@code underlyingType.toString().hashcode()} to use when computing the hash
-   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
-   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
-   */
-  private int underlyingTypeHashCode = -1;
-
-  /** The annotations on this type. */
-  // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
-  // the class name of Annotation instead.
-  // Caution: Assumes that a type can have at most one AnnotationMirror for any Annotation type.
-  protected final AnnotationMirrorSet annotations = new AnnotationMirrorSet();
-
-  /** The explicitly written annotations on this type. */
-  // TODO: use this to cache the result once computed? For generic types?
-  // protected final AnnotationMirrorSet explicitannotations =
-  // new AnnotationMirrorSet();
-
-  /**
-   * Constructor for AnnotatedTypeMirror.
-   *
-   * @param underlyingType the underlying type
-   * @param atypeFactory used to create further types and to access global information (Types,
-   *     Elements, ...)
-   */
-  private AnnotatedTypeMirror(TypeMirror underlyingType, AnnotatedTypeFactory atypeFactory) {
-    this.underlyingType = underlyingType;
-    assert atypeFactory != null;
-    this.atypeFactory = atypeFactory;
   }
 
   @Override

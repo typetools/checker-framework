@@ -38,7 +38,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors
+  /// Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -62,6 +62,8 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
   }
+
+  // There is no need to override clone() because AnnotationMirror is immutable.
 
   /**
    * Make this set unmodifiable.
