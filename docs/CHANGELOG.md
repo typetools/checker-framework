@@ -8,6 +8,8 @@ example, in `(String s) -> {...}` the type of `s` is `@NonNull String`.
 
 **Implementation details:**
 
+Renamed `AnnotatedTypeFactory.prepareMethodForWriting()` to `wpiPrepareMethodForWriting()`.
+
 **Closed issues:**
 
 

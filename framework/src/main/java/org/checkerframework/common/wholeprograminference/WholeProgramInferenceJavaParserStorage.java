@@ -838,7 +838,7 @@ public class WholeProgramInferenceJavaParserStorage
   public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      prepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(methodEntry.getValue());
     }
   }
 
@@ -848,8 +848,8 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.prepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
   }
 
   @Override
