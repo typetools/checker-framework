@@ -1677,7 +1677,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitMethodInvocation(tree, p);
     }
     ParameterizedExecutableType preI = atypeFactory.methodFromUse(tree, false);
-    if (!preI.executableType.getElement().getTypeParameters().isEmpty()) {
+    if (!preI.executableType.getElement().getTypeParameters().isEmpty()
+        && preI.typeArgs.isEmpty()) {
       if (checkInferredTypeArguments(tree, preI)) {
         return null;
       }
@@ -3653,7 +3654,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     final MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
-    if (memberReferenceTree.getMode() == ReferenceMode.NEW
+    if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
+      TypeElement typeEle = TypesUtils.getTypeElement(TreeUtils.typeOf(qualifierExpression));
+      enclosingType = atypeFactory.getAnnotatedType(typeEle);
+    } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
         || memRefKind == MemberReferenceKind.UNBOUND
         || memRefKind == MemberReferenceKind.STATIC) {
       // The "qualifier expression" is a type tree.

@@ -223,13 +223,12 @@ public abstract class AbstractType {
 
   Pair<AnnotatedExecutableType, ExecutableType> getFunctionType() {
     if (functionType == null) {
-      ExecutableType elementType = TypesUtils.findFunctionType(getJavaType(), context.env);
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
       AnnotatedDeclaredType groundType =
           makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
       AnnotatedExecutableType aet =
           AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
-      functionType = Pair.of(aet, elementType);
+      functionType = Pair.of(aet, aet.getUnderlyingType());
     }
     return functionType;
   }

@@ -711,10 +711,8 @@ public class InferenceFactory {
       enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
       if (enclosingType.getKind() == TypeKind.DECLARED
           && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
-        List<AbstractType> params = targetType.getFunctionTypeParameterTypes();
-        if (params.size() > 0) {
-          enclosingType = params.get(0).getAnnotatedType();
-        }
+        TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+        enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.STATIC) {
       // The "qualifier expression" is a type tree.
@@ -738,10 +736,7 @@ public class InferenceFactory {
             .executableType;
 
     return new InvocationType(
-        compileTimeType,
-        TreeUtils.compileTimeDeclarationType(memRef, targetType.getJavaType(), context.env),
-        memRef,
-        context);
+        compileTimeType, compileTimeType.getUnderlyingType(), memRef, context);
   }
 
   public Pair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
