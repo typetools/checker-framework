@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Stores annotations from whole-program inference. For a given location such as a field or method,
@@ -169,6 +170,27 @@ public interface WholeProgramInferenceStorage<T> {
    *     otherwise
    */
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+
+  /**
+   * Return the list of declaration annotations inferred on the given method so far in this round of
+   * WPI.
+   *
+   * @param elt a method
+   * @return the declaration annotations inferred on elt so far (may be empty)
+   */
+  AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
+
+  /**
+   * Removes the given annotation from the given method element's inferred declaration annotation.
+   * If the given annotation was not in the list of inferred declaration annotations on the given
+   * method, calling this method is a no-op.
+   *
+   * @param methodElt a method element
+   * @param anno a declaration annotation to remove
+   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't
+   *     present)
+   */
+  boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
    * Obtain the type from a storage location.
