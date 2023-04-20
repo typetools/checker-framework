@@ -808,7 +808,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void prepareSceneForWriting(AScene compilationUnitAnnos) {
     for (Map.Entry<String, AClass> classEntry : compilationUnitAnnos.classes.entrySet()) {
-      prepareClassForWriting(classEntry.getValue());
+      wpiPrepareClassForWriting(classEntry.getValue());
     }
   }
 
@@ -817,7 +817,7 @@ public class WholeProgramInferenceScenesStorage
    *
    * @param classAnnos the class annotations to modify
    */
-  public void prepareClassForWriting(AClass classAnnos) {
+  public void wpiPrepareClassForWriting(AClass classAnnos) {
     for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
       wpiPrepareMethodForWriting(methodEntry.getValue());
     }
