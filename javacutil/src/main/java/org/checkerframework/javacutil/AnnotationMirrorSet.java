@@ -63,7 +63,17 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     this.addAll(annos);
   }
 
-  // There is no need to override clone() because AnnotationMirror is immutable.
+  /**
+   * Returns a copy of this.
+   *
+   * @return a copy of this
+   */
+  @Override
+  public AnnotationMirrorSet clone() throws CloneNotSupportedException {
+    AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
+    result.shadowSet = CollectionUtils.deepCopy((TreeSet<AnnotationMirror>) shadowSet);
+    return result;
+  }
 
   /**
    * Make this set unmodifiable.

@@ -25,8 +25,12 @@ public class Pair<V1, V2> {
   // Makes a deep copy
   @Override
   public Pair<V1, V2> clone() {
-    // Cannot call super.clone() because fields are final
-    return of(first.clone(), second.clone());
+    // Cannot modify result of super.clone() because fields are final And, cannot call first.clone()
+    // anyway because Object.clone() is protected and so cannot be called from here.
+
+    V1 clonedFirst = CollectionUtils.clone(first);
+    V2 clonedSecond = CollectionUtils.clone(second);
+    return of(clonedFirst, clonedSecond);
   }
 
   @SideEffectFree
