@@ -4,11 +4,14 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 
 public class InferenceResult {
@@ -59,5 +62,18 @@ public class InferenceResult {
 
   public String getErrorMsg() {
     return errorMsg;
+  }
+
+  public InferenceResult swap(AnnotatedExecutableType methodType, ExpressionTree tree) {
+    Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
+    for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+      TypeVariable typeVariable = tv.getUnderlyingType();
+      for (TypeVariable t : new HashSet<>(map.keySet())) {
+        if (t.asElement().getSimpleName().contentEquals(typeVariable.asElement().getSimpleName())) {
+          map.put(typeVariable, map.remove(t));
+        }
+      }
+    }
+    return this;
   }
 }

@@ -104,7 +104,7 @@ import org.plumelib.util.StringsPlume;
  *       {@code T <: S}.
  * </ul>
  */
-public class DefaultTypeArgumentInference implements TypeArgumentInference {
+public class OldDefaultTypeArgumentInference implements TypeArgumentInference {
   private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
   private final SupertypesSolver supertypesSolver = new SupertypesSolver();
   private final SubtypesSolver subtypesSolver = new SubtypesSolver();
@@ -114,7 +114,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   private final boolean showInferenceSteps;
 
-  public DefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
+  public OldDefaultTypeArgumentInference(AnnotatedTypeFactory typeFactory) {
     this.showInferenceSteps = typeFactory.getChecker().hasOption("showInferenceSteps");
   }
 

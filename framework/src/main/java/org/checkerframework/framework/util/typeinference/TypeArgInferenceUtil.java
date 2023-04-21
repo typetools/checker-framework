@@ -397,7 +397,7 @@ public class TypeArgInferenceUtil {
   /**
    * Throws an exception if the type is an uninferred type argument.
    *
-   * <p>The error will be caught in DefaultTypeArgumentInference#infer and inference will be
+   * <p>The error will be caught in OldDefaultTypeArgumentInference#infer and inference will be
    * aborted, but type-checking will continue.
    */
   public static void checkForUninferredTypes(AnnotatedTypeMirror type) {
@@ -517,7 +517,7 @@ public class TypeArgInferenceUtil {
   }
 
   /**
-   * If the type arguments computed by DefaultTypeArgumentInference don't match the return type
+   * If the type arguments computed by OldDefaultTypeArgumentInference don't match the return type
    * mirror of {@code invocation}, then replace those type arguments with an uninferred wildcard.
    */
   protected static Map<TypeVariable, AnnotatedTypeMirror> correctResults(

@@ -54,23 +54,26 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return InferenceResult.emptyResult();
       }
     }
+    AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
       if (outerTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
         pathToExpression = typeFactory.getPath(outerTree);
-        methodType =
+        outerMethodType =
             typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) outerTree)
                 .executableType;
       } else if (outerTree.getKind() == Tree.Kind.NEW_CLASS) {
         pathToExpression = typeFactory.getPath(outerTree);
-        methodType =
+        outerMethodType =
             typeFactory.constructorFromUseNoTypeArgInfere((NewClassTree) outerTree).executableType;
       } else if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
         pathToExpression = typeFactory.getPath(outerTree);
-        methodType = null;
+        outerMethodType = null;
       } else {
         throw new BugInCF(
             "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
       }
+    } else {
+      outerMethodType = methodType;
     }
     if (java8Inference != null) {
       java8InferenceStack.push(java8Inference);
@@ -80,7 +83,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
         return java8Inference.infer((MemberReferenceTree) outerTree);
       } else {
-        return java8Inference.infer(outerTree, methodType);
+        return java8Inference.infer(outerTree, outerMethodType).swap(methodType, expressionTree);
       }
     } catch (FalseBoundException ex) {
       // TODO: For now, rethrow the exception so that the tests crash.
