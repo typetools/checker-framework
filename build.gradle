@@ -300,7 +300,7 @@ allprojects {
       // compilationTask.source = compilationTask.source.sort()
 
       // Don't try to use `options.release.set(8)` here.
-      if (JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_20) < 0) {
+      if (false && JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_20) < 0) {
         sourceCompatibility = 8
         targetCompatibility = 8
         // Because the target is 8, all of the public compiler classes are accessible, so
