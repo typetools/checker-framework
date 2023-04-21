@@ -23,10 +23,10 @@ public class Pair<V1, V2> {
   }
 
   // Makes a deep copy
+  @SuppressWarnings("nullness") // generics problem with clone()
   @Override
   public Pair<V1, V2> clone() {
-    // Cannot modify result of super.clone() because fields are final And, cannot call first.clone()
-    // anyway because Object.clone() is protected and so cannot be called from here.
+    // Cannot modify result of super.clone() because fields are final.
 
     V1 clonedFirst = CollectionUtils.clone(first);
     V2 clonedSecond = CollectionUtils.clone(second);

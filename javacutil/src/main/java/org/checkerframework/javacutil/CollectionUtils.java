@@ -130,7 +130,10 @@ public class CollectionUtils {
    * @param orig a list
    * @return a deep copy of {@code orig}
    */
-  @SuppressWarnings("signedness") // problem with UtilPlume.clone()
+  @SuppressWarnings({
+    "nullness:type.argument",
+    "mustcall:type.argument"
+  }) // problem with UtilPlume.clone()
   public static <@Nullable T> @PolyNull ArraySet<T> deepCopy(@PolyNull ArraySet<T> orig) {
     if (orig == null) {
       return null;

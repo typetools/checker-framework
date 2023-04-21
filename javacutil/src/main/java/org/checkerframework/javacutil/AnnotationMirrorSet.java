@@ -68,10 +68,15 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    *
    * @return a copy of this
    */
+  @SuppressWarnings({
+    "nullness:type.argument",
+    "keyfor:type.argument"
+  }) // generics problem with deepCopy()/clone()
   @Override
   public AnnotationMirrorSet clone() throws CloneNotSupportedException {
     AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
-    result.shadowSet = CollectionUtils.deepCopy((TreeSet<AnnotationMirror>) shadowSet);
+    result.shadowSet =
+        CollectionUtils.deepCopy((TreeSet<@KeyFor("result") AnnotationMirror>) shadowSet);
     return result;
   }
 
