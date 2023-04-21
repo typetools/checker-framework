@@ -824,9 +824,9 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param compilationUnitAnnos the compilation unit annotations to modify
    */
-  public void prepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
+  public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
-      prepareClassForWriting(type);
+      wpiPrepareClassForWriting(type);
     }
   }
 
@@ -835,10 +835,10 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param classAnnos the class annotations to modify
    */
-  public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+  public void wpiPrepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      prepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(methodEntry.getValue());
     }
   }
 
@@ -848,8 +848,8 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.prepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
   }
 
   @Override
@@ -865,7 +865,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
-      prepareCompilationUnitForWriting(root);
+      wpiPrepareCompilationUnitForWriting(root);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir = AJAVA_FILES_PATH;
