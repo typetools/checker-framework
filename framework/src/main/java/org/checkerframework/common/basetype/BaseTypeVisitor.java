@@ -86,6 +86,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityChecker;
@@ -214,6 +215,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationBuilder.fromClass(elements, SideEffectFree.class);
   /** The @{@link Pure} annotation. */
   protected final AnnotationMirror PURE = AnnotationBuilder.fromClass(elements, Pure.class);
+
+  /** The @{@link Impure} annotation. */
+  protected final AnnotationMirror IMPURE = AnnotationBuilder.fromClass(elements, Impure.class);
 
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
@@ -1050,31 +1054,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
         additionalKinds.remove(Pure.Kind.DETERMINISTIC);
       }
-      if (!additionalKinds.isEmpty()) {
-        if (infer) {
-          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-          if (additionalKinds.size() == 2) {
-            wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
-        } else {
-          if (additionalKinds.size() == 2) {
-            checker.reportWarning(tree, "purity.more.pure", tree.getName());
-          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-            checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-          } else {
-            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-          }
+      if (infer) {
+        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        inferPurityAnno(additionalKinds, wpi, methodElt);
+        // The purity of overridden methods is impacted by the purity of this method. If a
+        // superclass method is pure, but an implementation in a subclass is not, WPI ought to treat
+        // **neither** as pure. The purity kind of the superclass method is the LUB of its own
+        // purity and the purity of all the methods that override it. Logically, this rule is the
+        // same as the WPI rule for overrides, but purity isn't a type system and therefore must be
+        // special-cased.
+        Set<? extends ExecutableElement> overriddenMethods =
+            ElementUtils.getOverriddenMethods(methodElt, types);
+        for (ExecutableElement overriddenElt : overriddenMethods) {
+          inferPurityAnno(additionalKinds, wpi, overriddenElt);
         }
+      } else if (additionalKinds.isEmpty()) {
+        // No need to suggest @Impure, since it is equivalent to no annotation.
+      } else if (additionalKinds.size() == 2) {
+        checker.reportWarning(tree, "purity.more.pure", tree.getName());
+      } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+        checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+      } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+        checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+      } else {
+        throw new BugInCF("Unexpected purity kind in " + additionalKinds);
       }
+    }
+  }
+
+  /**
+   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
+   *
+   * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
+   * special-cases purity annotations: that method lubs a purity argument with whatever purity
+   * annotation is already present on {@code elt}.
+   *
+   * @param kinds the set of purity kinds to use to infer the annotation
+   * @param wpi the whole program inference instance to use to do the inferring
+   * @param elt the element whose purity is being inferred
+   */
+  private void inferPurityAnno(
+      EnumSet<Pure.Kind> kinds, WholeProgramInference wpi, ExecutableElement elt) {
+    if (kinds.size() == 2) {
+      wpi.addMethodDeclarationAnnotation(elt, PURE, true);
+    } else if (kinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+      wpi.addMethodDeclarationAnnotation(elt, SIDE_EFFECT_FREE, true);
+    } else if (kinds.contains(Pure.Kind.DETERMINISTIC)) {
+      wpi.addMethodDeclarationAnnotation(elt, DETERMINISTIC, true);
+    } else {
+      assert kinds.isEmpty();
+      wpi.addMethodDeclarationAnnotation(elt, IMPURE, true);
     }
   }
 

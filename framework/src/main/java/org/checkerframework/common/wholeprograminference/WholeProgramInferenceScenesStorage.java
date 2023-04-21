@@ -253,6 +253,26 @@ public class WholeProgramInferenceScenesStorage
   }
 
   @Override
+  public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt) {
+    AMethod methodAnnos = getMethodAnnos(elt);
+    Set<Annotation> annos = methodAnnos.tlAnnotationsHere;
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (Annotation anno : annos) {
+      result.add(
+          AnnotationConverter.annotationToAnnotationMirror(anno, atypeFactory.getProcessingEnv()));
+    }
+    return result;
+  }
+
+  @Override
+  public boolean removeMethodDeclarationAnnotation(
+      ExecutableElement methodElt, AnnotationMirror anno) {
+    AMethod methodAnnos = getMethodAnnos(methodElt);
+    return methodAnnos.tlAnnotationsHere.remove(
+        AnnotationConverter.annotationMirrorToAnnotation(anno));
+  }
+
+  @Override
   public ATypeElement getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
@@ -788,7 +808,7 @@ public class WholeProgramInferenceScenesStorage
    */
   public void prepareSceneForWriting(AScene compilationUnitAnnos) {
     for (Map.Entry<String, AClass> classEntry : compilationUnitAnnos.classes.entrySet()) {
-      prepareClassForWriting(classEntry.getValue());
+      wpiPrepareClassForWriting(classEntry.getValue());
     }
   }
 
@@ -797,9 +817,9 @@ public class WholeProgramInferenceScenesStorage
    *
    * @param classAnnos the class annotations to modify
    */
-  public void prepareClassForWriting(AClass classAnnos) {
+  public void wpiPrepareClassForWriting(AClass classAnnos) {
     for (Map.Entry<String, AMethod> methodEntry : classAnnos.methods.entrySet()) {
-      prepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(methodEntry.getValue());
     }
   }
 
@@ -809,8 +829,8 @@ public class WholeProgramInferenceScenesStorage
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void prepareMethodForWriting(AMethod methodAnnos) {
-    atypeFactory.prepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
   }
 
   @Override

@@ -181,9 +181,10 @@ allprojects {
   apply plugin: 'com.diffplug.spotless'
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
-    // add them to spotlessPredeclare block.
+    // add them to the spotlessPredeclare block.
 
     def doNotFormat = [
+      'checker/tests/ainfer-*/annotated/*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
       '**/calledmethods-delomboked/*',

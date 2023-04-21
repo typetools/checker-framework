@@ -189,6 +189,19 @@ public interface WholeProgramInference {
   void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
+   * Updates a method to add a declaration annotation. Optionally, may replace the current purity
+   * annotation on {@code elt} with the logical least upper bound between that purity annotation and
+   * {@code anno}, if {@code anno} is also a purity annotation.
+   *
+   * @param elt the method to annotate
+   * @param anno the declaration annotation to add to the method
+   * @param lubPurity if true and {@code anno} is a purity annotation, replaces the current purity
+   *     annotation with a least upper bound rather than just adding {@code anno}
+   */
+  void addMethodDeclarationAnnotation(
+      ExecutableElement elt, AnnotationMirror anno, boolean lubPurity);
+
+  /**
    * Updates a field to add a declaration annotation.
    *
    * @param fieldElt the field to annotate
