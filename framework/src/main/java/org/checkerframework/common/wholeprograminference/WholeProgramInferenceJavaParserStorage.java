@@ -1047,7 +1047,6 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param compilationUnit compilation unit to wrap
      * @param types wrappers for classes and interfaces in {@code compilationUnit}
-     * @return a copy of this
      */
     public CompilationUnitAnnos(
         CompilationUnit compilationUnit, List<ClassOrInterfaceAnnos> types) {
