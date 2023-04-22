@@ -10,7 +10,7 @@
   "timezone": "America/Los_Angeles",
   "packageRules": [
     {
-      "packageNames": ["aws-sdk"],
+      "matchPackageNames": ["aws-java-sdk-bom"],
       "schedule": ["on the last day of the month"]
     }
   ]
