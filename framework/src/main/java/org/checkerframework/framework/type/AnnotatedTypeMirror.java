@@ -101,6 +101,7 @@ public abstract class AnnotatedTypeMirror {
     /// I cannot call a constructor, because AnnotatedTypeMirror is abstract.
     // return new AnnotatedTypeMirror(
     //     underlyingType, atypeFactory, underlyingTypeHashCode, annotations.clone());
+
     try {
       AnnotatedTypeMirror result = (AnnotatedTypeMirror) super.clone();
       result.annotations = annotations.clone();

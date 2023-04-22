@@ -63,11 +63,6 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     this.addAll(annos);
   }
 
-  /**
-   * Returns a copy of this.
-   *
-   * @return a copy of this
-   */
   @SuppressWarnings({
     "nullness:type.argument",
     "keyfor:type.argument"
