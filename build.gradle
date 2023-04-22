@@ -301,7 +301,8 @@ allprojects {
       // compilationTask.source = compilationTask.source.sort()
 
       // Don't try to use `options.release.set(8)` here.
-      if (false && JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_20) < 0) {
+      // "true" is temporary, because omitting it causes wpiManyTest to fail, likely due to a bug in do-like-javac.
+      if (true || JavaVersion.current().compareTo(org.gradle.api.JavaVersion.VERSION_20) < 0) {
         sourceCompatibility = 8
         targetCompatibility = 8
         // Because the target is 8, all of the public compiler classes are accessible, so
