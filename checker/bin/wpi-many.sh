@@ -264,13 +264,7 @@ do
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
       wpi_status=$?
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
-      echo "${OUTDIR}-results:"
-      ls -l "${OUTDIR}-results"
-      if [[ "$wpi_status" != 0 ]]; then
-          echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
-          cat "${OUTDIR}-results/wpi-out"
-          echo "==== end of ${OUTDIR}-results/wpi-out ===="
-      fi
+      # The test of $wpi_status below may halt wpi-many.sh.
     fi
 
     cd "${OUTDIR}" || exit 5
@@ -306,6 +300,8 @@ do
             wpi_status=9999
         fi
         if [[ "$wpi_status" != 0 ]]; then
+            echo "${OUTDIR}-results:"
+            ls -l "${OUTDIR}-results"
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
