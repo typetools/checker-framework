@@ -40,7 +40,7 @@
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
-      <li><a href="#non-empty-checker">Ownership type system</a></li>
+      <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
@@ -957,7 +957,7 @@ usable and effective in finding/preventing bugs.
 </p>
 
 
-<h2 id="non-empty-checker">Ownership type system</h2>
+<h2 id="ownership-type-system">Ownership type system</h2>
 
 <p>
 The <a href="https://checkerframework.org/manual/#resource-leak-annotations">lightweight
@@ -968,6 +968,7 @@ Socket&gt;</code>.  It would also enable changing the Resource Leak Checker
 so that non-<code>@Owning</code> formal parameters do not have
 their <a href="https://checkerframework.org/manual/#resource-leak-owning-fields"><code>@MustCall</code>
 annotation erased</a>.
+</p>
 
 
 <h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
