@@ -1034,6 +1034,13 @@ task releaseAndTest {
 // Don't create an empty checker-framework-VERSION.jar
 jar.onlyIf {false}
 
+clean.doLast {
+  while (file("checker/build").exists()) {
+    sleep(10000)                // wait 10 seconds
+    file("checker/build").deleteDir()
+  }
+}
+
 /**
  * Adds the shared pom information to the given publication.
  * @param publication MavenPublication
