@@ -201,6 +201,7 @@ do
         echo "HASH=$HASH"
         echo "REPO_NAME=$REPO_NAME"
         echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+        echo "pwd=$(pwd)"
     fi
 
     # Use repo name and hash, but not owner.  We want
@@ -237,7 +238,7 @@ do
 
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
-    git checkout "${HASH}"
+    git checkout "${HASH}" || (echo "command failed in $(pwd): git checkout ${HASH}" && exit 5)
 
     REPO_FULLPATH=$(pwd)
 
@@ -265,7 +266,6 @@ do
       if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-wpi-stdout.log.out" ] ; then
         wpi_status=1
       fi
-      # Gradle will copy a PROJECTNAME-*-typecheck.out file and a PROJECTNAME-*-wpi-stdout.log file to build/wpi-many-tests-results/, but here I need to check for local files and set wpi_status=1 .
       if [[ "$wpi_status" != 0 ]]; then
           echo "==== beginning of ${OUTDIR}-results/wpi-out ===="
           cat "${OUTDIR}-results/wpi-out"

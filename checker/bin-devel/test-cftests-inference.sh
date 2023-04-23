@@ -11,7 +11,5 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
-# temporary
-echo "after build.sh, JAVA_HOME=${JAVA_HOME}"
 
 ./gradlew inferenceTests --console=plain --warning-mode=all --stacktrace
