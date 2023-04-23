@@ -11,7 +11,7 @@ set -eo pipefail
 
 DEBUG=0
 # To enable debugging, uncomment the following line.
-# DEBUG=1
+DEBUG=1
 
 while getopts "o:i:t:g:s" opt; do
   case $opt in
@@ -308,6 +308,10 @@ do
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
             exit 5
         fi
+    fi
+    if [ "$DEBUG" -eq "1" ]; then
+        echo "${OUTDIR}-results:"
+        ls -l "${OUTDIR}-results"
     fi
 
     cd "${OUTDIR}" || exit 5
