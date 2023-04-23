@@ -24,8 +24,8 @@ class MetaReturn {
   ConsumerSupplier t1 = () -> (s) -> s.toString();
   ConsumerSupplier t2 =
       () -> {
+        // :: error: (lambda.param)
         return (String s) -> {
-          // :: error: (dereference.of.nullable)
           s.toString();
         };
       };

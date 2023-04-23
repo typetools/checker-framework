@@ -30,6 +30,10 @@ import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Impure;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
@@ -44,7 +48,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -111,6 +117,27 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
   /** Whether to ignore assignments where the rhs is null. */
   private final boolean ignoreNullAssignments;
 
+  /** The @{@link Deterministic} annotation. */
+  private final AnnotationMirror DETERMINISTIC;
+
+  /** The @{@link SideEffectFree} annotation. */
+  private final AnnotationMirror SIDE_EFFECT_FREE;
+
+  /** The @{@link Pure} annotation. */
+  private final AnnotationMirror PURE;
+
+  /** The @{@link Impure} annotation. */
+  private final AnnotationMirror IMPURE;
+
+  /** The fully-qualified name of the @{@link Deterministic} class. */
+  private final String DETERMINISTIC_NAME = "org.checkerframework.dataflow.qual.Deterministic";
+  /** The fully-qualified name of the @{@link SideEffectFree} class. */
+  private final String SIDE_EFFECT_FREE_NAME = "org.checkerframework.dataflow.qual.SideEffectFree";
+  /** The fully-qualified name of the @{@link Pure} class. */
+  private final String PURE_NAME = "org.checkerframework.dataflow.qual.Pure";
+  /** The fully-qualified name of the @{@link Impure} class. */
+  private final String IMPURE_NAME = "org.checkerframework.dataflow.qual.Impure";
+
   /**
    * Constructs a new {@code WholeProgramInferenceImplementation} that has not yet inferred any
    * annotations.
@@ -131,6 +158,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         atypeFactory.getClass().getSimpleName().equals("NullnessAnnotatedTypeFactory");
     this.ignoreNullAssignments = !isNullness;
     this.showWpiFailedInferences = showWpiFailedInferences;
+    DETERMINISTIC =
+        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Deterministic.class);
+    SIDE_EFFECT_FREE =
+        AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), SideEffectFree.class);
+    PURE = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Pure.class);
+    IMPURE = AnnotationBuilder.fromClass(atypeFactory.getElementUtils(), Impure.class);
   }
 
   /**
@@ -737,17 +770,119 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno) {
+    this.addMethodDeclarationAnnotation(methodElt, anno, false);
+  }
+
+  @Override
+  public void addMethodDeclarationAnnotation(
+      ExecutableElement methodElt, AnnotationMirror anno, boolean lubPurity) {
 
     // Do not infer types for library code, only for type-checked source code.
     if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return;
     }
 
+    // Special-case handling for purity annotations.
+    AnnotationMirror annoToAdd;
+    if (!(lubPurity && isPurityAnno(anno))) {
+      annoToAdd = anno;
+    } else {
+      // It's a purity annotation and `lubPurity` is true. Do a "least upper bound" between the
+      // current purity annotation inferred for the method and anno. This is necessary to avoid WPI
+      // inferring incompatible purity annotations on methods that override methods from their
+      // superclass. TODO: this would be unnecessary if purity was implemented as a type system.
+      AnnotationMirror currentPurityAnno = getPurityAnnotation(methodElt);
+      if (currentPurityAnno == null) {
+        annoToAdd = anno;
+      } else {
+        // Clear the current purity annotation, because at this point a new one is definitely
+        // going to be inferred.
+        storage.removeMethodDeclarationAnnotation(methodElt, currentPurityAnno);
+        annoToAdd = lubPurityAnnotations(anno, currentPurityAnno);
+      }
+    }
+
     String file = storage.getFileForElement(methodElt);
-    boolean isNewAnnotation = storage.addMethodDeclarationAnnotation(methodElt, anno);
+    boolean isNewAnnotation = storage.addMethodDeclarationAnnotation(methodElt, annoToAdd);
     if (isNewAnnotation) {
       storage.setFileModified(file);
     }
+  }
+
+  /**
+   * Computes a "least upper bound" between two purity annotations (an annotation is a purity
+   * annotation if and only if {@link #isPurityAnno(AnnotationMirror)} returns true). In the
+   * "lattice", Impure is the top, SideEffectFree and Deterministic are siblings below it, and Pure
+   * is the bottom, below them. Note that this routine is "fail-safe": Impure is returned if either
+   * of the input annotations is not actually a purity annotation.
+   *
+   * @param anno1 a purity annotation
+   * @param anno2 another purity annotation
+   * @return the "least upper bound" between anno1 and anno2, as described above
+   */
+  private AnnotationMirror lubPurityAnnotations(AnnotationMirror anno1, AnnotationMirror anno2) {
+    // TODO: is this the best way to do this? Would it be easier to just write a real subtype
+    // routine for purity? Do we have code to handle this already somewhere?
+
+    boolean anno1IsDet =
+        AnnotationUtils.areSameByName(anno1, PURE_NAME)
+            || AnnotationUtils.areSameByName(anno1, DETERMINISTIC_NAME);
+    boolean anno1IsSEF =
+        AnnotationUtils.areSameByName(anno1, PURE_NAME)
+            || AnnotationUtils.areSameByName(anno1, SIDE_EFFECT_FREE_NAME);
+
+    boolean anno2IsDet =
+        AnnotationUtils.areSameByName(anno2, PURE_NAME)
+            || AnnotationUtils.areSameByName(anno2, DETERMINISTIC_NAME);
+    boolean anno2IsSEF =
+        AnnotationUtils.areSameByName(anno2, PURE_NAME)
+            || AnnotationUtils.areSameByName(anno2, SIDE_EFFECT_FREE_NAME);
+
+    if (anno2IsSEF && anno2IsDet && anno1IsSEF && anno1IsDet) {
+      return PURE;
+    } else if (anno2IsSEF && anno1IsSEF) {
+      return SIDE_EFFECT_FREE;
+    } else if (anno2IsDet && anno1IsDet) {
+      return DETERMINISTIC;
+    } else {
+      return IMPURE;
+    }
+  }
+
+  /**
+   * Returns the purity annotation ({@link Pure}, {@link SideEffectFree}, {@link Deterministic}, or
+   * {@link Impure}) currently associated with the given executable element in this round of
+   * inference, if there is one. Invariant: no more than one purity annotation should ever be
+   * present on a given executable element at a time.
+   *
+   * @param methodElt a method element
+   * @return the purity annotation, or null if none has yet been inferred
+   */
+  private @Nullable AnnotationMirror getPurityAnnotation(ExecutableElement methodElt) {
+    AnnotationMirrorSet declAnnos = storage.getMethodDeclarationAnnotations(methodElt);
+    if (declAnnos.isEmpty()) {
+      return null;
+    }
+    for (AnnotationMirror declAnno : declAnnos) {
+      if (isPurityAnno(declAnno)) {
+        return declAnno;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given annotation is {@link Pure}, {@link SideEffectFree}, {@link
+   * Deterministic}, or {@link Impure}. Returns false otherwise.
+   *
+   * @param anno an annotation
+   * @return true iff the annotation is a purity annotation
+   */
+  private boolean isPurityAnno(AnnotationMirror anno) {
+    return AnnotationUtils.areSameByName(anno, PURE_NAME)
+        || AnnotationUtils.areSameByName(anno, SIDE_EFFECT_FREE_NAME)
+        || AnnotationUtils.areSameByName(anno, DETERMINISTIC_NAME)
+        || AnnotationUtils.areSameByName(anno, IMPURE_NAME);
   }
 
   @Override
