@@ -892,7 +892,7 @@ task wpiManyTest(group: 'Verification') {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
       File wpiOut = new File("${typecheckFilesDir}/wpi-out")
       if (wpiOut.exists()) {
-        println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+        println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
         exec {
           commandLine 'cat', "${typecheckFilesDir}/wpi-out"
         }
@@ -921,7 +921,7 @@ task wpiManyTest(group: 'Verification') {
       exec {
         commandLine 'cat', "${project.projectDir}/tests/wpi-many/testin.txt"
       }
-      println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+      println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       exec {
         commandLine 'cat', "${typecheckFilesDir}/wpi-out"
       }

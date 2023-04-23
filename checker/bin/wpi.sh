@@ -391,4 +391,4 @@ else
   unset JAVA_HOME
 fi
 
-echo "Exiting wpi.sh."
+echo "Exiting wpi.sh successfully; pwd=$(pwd)"

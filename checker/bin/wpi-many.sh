@@ -236,6 +236,12 @@ do
         rm -rf -- "${REPO_NAME}/dljc-out"
     fi
 
+    if [ ! -d "${REPO_NAME}/.git" ]; then
+        echo "In $(pwd): no directory ${REPO_NAME}/.git"
+        ls -al -- "${REPO_NAME}"
+        exit 5
+    fi
+
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
     git checkout "${HASH}" || (echo "command failed in $(pwd): git checkout ${HASH}" && exit 5)
@@ -254,20 +260,14 @@ do
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
       # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
-      echo "wpi-many.sh about to call wpi.sh at $(date)"
+      echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
       wpi_status=$?
-      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} at $(date)"
+      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
       echo "${OUTDIR}-results:"
       ls -l "${OUTDIR}-results"
-      if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
-        wpi_status=1
-      fi
-      if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-wpi-stdout.log.out" ] ; then
-        wpi_status=1
-      fi
       if [[ "$wpi_status" != 0 ]]; then
-          echo "==== beginning of ${OUTDIR}-results/wpi-out ===="
+          echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
           cat "${OUTDIR}-results/wpi-out"
           echo "==== end of ${OUTDIR}-results/wpi-out ===="
       fi
@@ -285,6 +285,11 @@ do
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
+        if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
+          echo "Files are empty: "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+          ls -l "${REPO_FULLPATH}/dljc-out"
+          wpi_status=9999
+        fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
@@ -298,6 +303,12 @@ do
             echo "Start of wpi-stdout.log:"
             cat "${REPO_FULLPATH}"/dljc-out/wpi-stdout.log
             echo "End of wpi-stdout.log."
+            wpi_status=9999
+        fi
+        if [[ "$wpi_status" != 0 ]]; then
+            echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
+            cat "${OUTDIR}-results/wpi-out"
+            echo "==== end of ${OUTDIR}-results/wpi-out ===="
         fi
     fi
 
@@ -384,4 +395,4 @@ else
   fi
 fi
 
-echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."
+echo "Exiting wpi-many.sh successfully. Results were placed in ${OUTDIR}-results/."
