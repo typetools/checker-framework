@@ -286,7 +286,7 @@ do
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
         if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
-          echo "Files are empty: "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+          echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
           ls -l "${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
