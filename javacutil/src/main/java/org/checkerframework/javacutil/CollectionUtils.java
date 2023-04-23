@@ -44,7 +44,10 @@ public class CollectionUtils {
    * @param orig a list
    * @return a deep copy of {@code orig}
    */
-  @SuppressWarnings("signedness") // problem with clone()
+  @SuppressWarnings({
+    "signedness", // problem with clone()
+    "nullness:return" // "return null;"
+  })
   public static <@Nullable T, C extends @Nullable Collection<T>> C deepCopy(C orig) {
     if (orig == null) {
       return null;
