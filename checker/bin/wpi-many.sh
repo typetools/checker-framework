@@ -310,8 +310,18 @@ do
         fi
     fi
     if [ "$DEBUG" -eq "1" ]; then
+        echo "RESULT_LOG=${RESULT_LOG}"
+        echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
         echo "${OUTDIR}-results:"
         ls -l "${OUTDIR}-results"
+    fi
+    if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
+        echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+        exit 5
+    fi
+    if [ ! -s "${RESULT_LOG}" ] ; then
+        echo "File does not exist: ${RESULT_LOG}"
+        exit 5
     fi
 
     cd "${OUTDIR}" || exit 5
