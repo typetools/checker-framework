@@ -931,7 +931,7 @@ task wpiManyTest(group: 'Verification') {
       }
       logFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== printing contents of ${filename} ========")
+        println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -943,7 +943,7 @@ task wpiManyTest(group: 'Verification') {
       }
       cannotRunWpiFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== printing contents of ${filename} ========")
+        println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -977,7 +977,7 @@ task wpiManyTest(group: 'Verification') {
           return;
         }
         if (!line.trim().equals('')) {
-          println("======== printing contents of ${filename} ========")
+          println("======== start of contents of ${filename} ========")
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +

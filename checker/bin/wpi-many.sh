@@ -279,8 +279,9 @@ do
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
-        if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
-          echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+        if [ ! -s "${RESULT_LOG}" ] ; then
+          echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
+          echo "${REPO_FULLPATH}/dljc-out:"
           ls -l "${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
@@ -305,6 +306,7 @@ do
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
+            exit 5
         fi
     fi
 

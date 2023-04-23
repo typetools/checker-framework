@@ -283,7 +283,7 @@ function configure_and_exec_dljc {
   echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
     wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
-    echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
+    echo "=== ${wpi_no_output_message}: start of ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
   fi
