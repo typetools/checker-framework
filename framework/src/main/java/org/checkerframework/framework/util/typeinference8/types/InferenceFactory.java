@@ -468,12 +468,11 @@ public class InferenceFactory {
     Theta map = new Theta();
 
     // Create inference variables for the type parameters to methodType
-    Iterator<? extends AnnotatedTypeVariable> iter1 =
-        methodType.getAnnotatedTypeVariables().iterator();
-    for (TypeVariable pl : methodType.getTypeVariables()) {
+
+    for (AnnotatedTypeVariable pl : methodType.getAnnotatedTypeVariables()) {
       @SuppressWarnings("interning:interned.object.creation")
-      Variable al = new @Interned Variable(iter1.next(), pl, invocation, context, map);
-      map.put(pl, al);
+      Variable al = new @Interned Variable(pl, pl.getUnderlyingType(), invocation, context, map);
+      map.put(pl.getUnderlyingType(), al);
     }
     if (TreeUtils.isDiamondTree(invocation)) {
       // If the invocation is a diamondTree, such as new List<>(...), then create variables

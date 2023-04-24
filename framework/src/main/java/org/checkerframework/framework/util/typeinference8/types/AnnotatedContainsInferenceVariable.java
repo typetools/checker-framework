@@ -17,7 +17,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /** Helper class for determining if a type contains an inference variable. */
 public class AnnotatedContainsInferenceVariable {
@@ -55,8 +54,7 @@ public class AnnotatedContainsInferenceVariable {
 
     /** Returns true if {@code typeVar} is a type variable in {@code typeVariables} */
     private boolean isTypeVariableOfInterest(AnnotatedTypeVariable typeVar) {
-      if (typeVariables.contains(
-          TypeAnnotationUtils.unannotatedType(typeVar.getUnderlyingType()))) {
+      if (typeVariables.contains(typeVar.getUnderlyingType())) {
         foundVariables.add(typeVar.getUnderlyingType());
         return true;
       }

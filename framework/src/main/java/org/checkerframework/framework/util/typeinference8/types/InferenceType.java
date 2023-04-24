@@ -19,7 +19,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -67,12 +66,12 @@ public class InferenceType extends AbstractType {
   public static AbstractType create(
       AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
     assert type != null;
-    typeMirror = TypeAnnotationUtils.unannotatedType(typeMirror);
     if (map == null) {
       return new ProperType(type, typeMirror, context);
     }
-    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(typeMirror)) {
-      return new UseOfVariable((AnnotatedTypeVariable) type, map.get(typeMirror), context);
+    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+      return new UseOfVariable(
+          (AnnotatedTypeVariable) type, map.get(type.getUnderlyingType()), context);
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
       return new InferenceType(type, typeMirror, map, context);
     } else {
