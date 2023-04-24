@@ -220,6 +220,14 @@ clean {
   delete('tests/ainfer-resourceleak/inference-output')
 }
 
+clean.doLast {
+  while (buildDir.exists()) {
+    sleep(10000)                // wait 10 seconds
+    buildDir.deleteDir()
+  }
+}
+
+
 // Add non-junit tests
 createCheckTypeTask(project.name, 'CompilerMessages',
     'org.checkerframework.checker.compilermsgs.CompilerMessagesChecker')
