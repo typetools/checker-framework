@@ -274,6 +274,14 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
     dependsOn 'delombok'
   }
 }
+clean {
+  doLast{
+    //    buildDir.mkdir()
+    if(buildDir.exists()) {
+      println "hello!!!!"
+    }
+  }
+}
 
 // These are tests that should only be run with JDK 11+.
 task jtregJdk11Tests(group: 'Verification') {
