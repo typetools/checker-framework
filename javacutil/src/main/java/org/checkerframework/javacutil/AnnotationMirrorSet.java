@@ -28,7 +28,8 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
-public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") AnnotationMirror> {
+public class AnnotationMirrorSet
+    implements DeepCopyable, NavigableSet<@KeyFor("this") AnnotationMirror> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
@@ -63,16 +64,29 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     this.addAll(annos);
   }
 
+  /**
+   * Returns a deep copy of this.
+   *
+   * @return a deep copy of this
+   */
   @SuppressWarnings({
     "nullness:type.argument",
     "keyfor:type.argument"
-  }) // generics problem with deepCopy()/clone()
+  }) // generics problem with deepCopy()
   @Override
-  public AnnotationMirrorSet clone() throws CloneNotSupportedException {
-    AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
-    result.shadowSet =
-        CollectionUtils.deepCopy((TreeSet<@KeyFor("result") AnnotationMirror>) shadowSet);
-    return result;
+  public AnnotationMirrorSet deepCopy() {
+    try {
+      AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
+
+      result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+      for (AnnotationMirror am : shadowSet) {
+        AnnotationMirror newAm = AnnotationUtils.deepCopy(am);
+        result.shadowSet.add(newAm);
+      }
+      return result;
+    } catch (CloneNotSupportedException e) {
+      throw new Error(e);
+    }
   }
 
   /**

@@ -33,7 +33,8 @@ public class CollectionUtils {
   /// Temporary utility methods
   ///
 
-  // TODO: After plume-util 1.6.6 is released, use these methods from it.
+  // TODO: After code review, copy these methods into plume-util.
+  // After plume-util 1.6.6 is released, use these methods from it.
 
   /**
    * Returns a copy of {@code orig}, where each element of the result is a clone of the
@@ -45,7 +46,7 @@ public class CollectionUtils {
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings("signedness") // problem with clone()
-  public static <@Nullable T, C extends @Nullable Collection<T>> C deepCopy(C orig) {
+  public static <@Nullable T, C extends @Nullable Collection<T>> C cloneElements(C orig) {
     if (orig == null) {
       return null;
     }
@@ -68,8 +69,8 @@ public class CollectionUtils {
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V, M extends Map<K, V>> M deepCopy(M orig) {
-    return deepCopy(orig, false);
+  public static <K, V, M extends Map<K, V>> M cloneElements(M orig) {
+    return cloneElements(orig, false);
   }
 
   /**
@@ -83,8 +84,8 @@ public class CollectionUtils {
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V, M extends Map<K, V>> M deepCopyValues(M orig) {
-    return deepCopy(orig, false);
+  public static <K, V, M extends Map<K, V>> M cloneValues(M orig) {
+    return cloneElements(orig, false);
   }
 
   /**
@@ -99,7 +100,7 @@ public class CollectionUtils {
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  private static <K, V, M extends Map<K, V>> M deepCopy(@PolyNull M orig, boolean cloneKeys) {
+  private static <K, V, M extends Map<K, V>> M cloneElements(@PolyNull M orig, boolean cloneKeys) {
     if (orig == null) {
       return null;
     }
@@ -109,6 +110,90 @@ public class CollectionUtils {
       K oldKey = mapEntry.getKey();
       K newKey = cloneKeys ? clone(oldKey) : oldKey;
       result.put(newKey, clone(mapEntry.getValue()));
+    }
+    return result;
+  }
+
+  /**
+   * Returns a copy of {@code orig}, where each element of the result is a clone of the
+   * corresponding element of {@code orig}.
+   *
+   * @param <T> the type of elements of the list
+   * @param <C> the type of the list
+   * @param orig a list
+   * @return a deep copy of {@code orig}
+   */
+  @SuppressWarnings("signedness") // problem with clone()
+  public static <T extends @Nullable DeepCopyable, C extends @Nullable Collection<T>> C deepCopy(
+      C orig) {
+    if (orig == null) {
+      return null;
+    }
+    C result = clone(orig);
+    result.clear();
+    for (T elt : orig) {
+      @SuppressWarnings("unchecked")
+      T newElt = elt == null ? elt : (T) elt.deepCopy();
+      result.add(newElt);
+    }
+    return result;
+  }
+
+  /**
+   * Returns a copy of {@code orig}, where each key and value in the result is a deep copy of the
+   * corresponding element of {@code orig}.
+   *
+   * @param <K> the type of keys of the map
+   * @param <V> the type of values of the map
+   * @param <M> the type of the map
+   * @param orig a map
+   * @return a deep copy of {@code orig}
+   */
+  @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
+  public static <
+          K extends @Nullable DeepCopyable, V extends @Nullable DeepCopyable, M extends Map<K, V>>
+      M deepCopy(M orig) {
+    if (orig == null) {
+      return null;
+    }
+    M result = clone(orig);
+    result.clear();
+    for (Map.Entry<K, V> mapEntry : orig.entrySet()) {
+      K oldKey = mapEntry.getKey();
+      @SuppressWarnings("unchecked")
+      K newKey = oldKey == null ? oldKey : (K) oldKey.deepCopy();
+      V oldValue = mapEntry.getValue();
+      @SuppressWarnings("unchecked")
+      V newValue = oldValue == null ? oldValue : (V) oldValue.deepCopy();
+      result.put(newKey, newValue);
+    }
+    return result;
+  }
+
+  /**
+   * Returns a copy of {@code orig}, where each value of the result is a deep copy of the
+   * corresponding value of {@code orig}, but the keys are the same objects.
+   *
+   * @param <K> the type of keys of the map
+   * @param <V> the type of values of the map
+   * @param <M> the type of the map
+   * @param orig a map
+   * @return a deep copy of {@code orig}
+   */
+  @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
+  public static <K, V extends DeepCopyable, M extends Map<K, V>> M deepCopyValues(M orig) {
+    if (orig == null) {
+      return null;
+    }
+    M result = clone(orig);
+    result.clear();
+    for (Map.Entry<K, V> mapEntry : orig.entrySet()) {
+      K oldKey = mapEntry.getKey();
+      K newKey = oldKey;
+      V oldValue = mapEntry.getValue();
+      @SuppressWarnings("unchecked")
+      V newValue = oldValue == null ? oldValue : (V) oldValue.deepCopy();
+      result.put(newKey, newValue);
     }
     return result;
   }
