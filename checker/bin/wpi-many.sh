@@ -289,8 +289,8 @@ do
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
         else
-            echo "Could not find file $TYPECHECK_FILE"
-            echo "Therefore, file does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            echo "File does not exist: $TYPECHECK_FILE"
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             ls -l "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
