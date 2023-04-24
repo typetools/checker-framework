@@ -11,7 +11,7 @@ set -eo pipefail
 
 DEBUG=0
 # To enable debugging, uncomment the following line.
-DEBUG=1
+# DEBUG=1
 
 while getopts "o:i:t:g:s" opt; do
   case $opt in
@@ -311,7 +311,6 @@ do
     fi
     if [ "$DEBUG" -eq "1" ]; then
         echo "RESULT_LOG=${RESULT_LOG}"
-        echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
         echo "${OUTDIR}-results:"
         ls -l "${OUTDIR}-results"
     fi
