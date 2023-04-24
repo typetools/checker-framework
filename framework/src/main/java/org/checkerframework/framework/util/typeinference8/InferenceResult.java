@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -79,7 +80,8 @@ public class InferenceResult {
     return this;
   }
 
-  private boolean sames(TypeVariable key, TypeVariable other) {
+  @EqualsMethod
+  public static boolean sames(TypeVariable key, TypeVariable other) {
     if (key == other) {
       return true;
     }
