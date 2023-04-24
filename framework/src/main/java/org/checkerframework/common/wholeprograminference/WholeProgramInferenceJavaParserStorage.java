@@ -1613,15 +1613,14 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Helper method for deepCopy() that copies a set of pairs.
    *
-   * @param in a set of pairs
+   * @param orig a set of pairs
    * @return a deep copy of the set
    */
   private static Set<Pair<Integer, AnnotationMirror>> deepCopySetOfPairs(
-      Set<Pair<Integer, AnnotationMirror>> in) {
-    ArraySet<Pair<Integer, AnnotationMirror>> result =
-        (ArraySet<Pair<Integer, AnnotationMirror>>) CollectionUtils.clone(in);
+      Set<Pair<Integer, AnnotationMirror>> orig) {
+    Set<Pair<Integer, AnnotationMirror>> result = CollectionUtils.clone(orig);
     result.clear();
-    for (Pair<Integer, AnnotationMirror> p : in) {
+    for (Pair<Integer, AnnotationMirror> p : orig) {
       Pair<Integer, AnnotationMirror> newPair =
           Pair.of(p.first, AnnotationUtils.deepCopy(p.second));
       result.add(newPair);
@@ -1632,18 +1631,19 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Deep copy a pre- or post-condition map.
    *
-   * @param in the map to copy
+   * @param orig the map to copy
    * @return a deep copy of the map
    */
   private static Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-      deepCopyMapOfStringToPair(Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> in) {
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result = CollectionUtils.clone(in);
+      deepCopyMapOfStringToPair(Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
+        CollectionUtils.clone(orig);
     result.clear();
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry : in.entrySet()) {
+    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+        orig.entrySet()) {
       String javaExpression = entry.getKey();
       Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> atms = entry.getValue();
-      Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> newAtms = Pair.deepCopy(atms);
-      result.put(javaExpression, newAtms);
+      result.put(javaExpression, Pair.deepCopy(atms));
     }
     return result;
   }

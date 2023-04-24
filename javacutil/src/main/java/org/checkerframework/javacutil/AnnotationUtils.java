@@ -1535,10 +1535,10 @@ public class AnnotationUtils {
    *
    * @return a deep copy of this
    */
-  public static <T extends AnnotationMirror> T deepCopy(T am) {
+  public static <AM extends AnnotationMirror> AM deepCopy(AM am) {
     if (am instanceof DeepCopyable) {
       @SuppressWarnings("unchecked")
-      T result = (T) ((DeepCopyable) am).deepCopy();
+      AM result = (AM) ((DeepCopyable) am).deepCopy();
       return result;
     } else if (am instanceof Cloneable) {
       return CollectionUtils.clone(am);

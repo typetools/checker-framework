@@ -40,9 +40,9 @@ public class CollectionUtils {
    * Returns a copy of {@code orig}, where each element of the result is a clone of the
    * corresponding element of {@code orig}.
    *
-   * @param <T> the type of elements of the list
-   * @param <C> the type of the list
-   * @param orig a list
+   * @param <T> the type of elements of the collection
+   * @param <C> the type of the collection
+   * @param orig a collection
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings("signedness") // problem with clone()
@@ -115,12 +115,12 @@ public class CollectionUtils {
   }
 
   /**
-   * Returns a copy of {@code orig}, where each element of the result is a clone of the
+   * Returns a copy of {@code orig}, where each element of the result is a deep copy of the
    * corresponding element of {@code orig}.
    *
-   * @param <T> the type of elements of the list
-   * @param <C> the type of the list
-   * @param orig a list
+   * @param <T> the type of elements of the collection
+   * @param <C> the type of the collection
+   * @param orig a collection
    * @return a deep copy of {@code orig}
    */
   @SuppressWarnings("signedness") // problem with clone()
@@ -178,7 +178,7 @@ public class CollectionUtils {
    * @param <V> the type of values of the map
    * @param <M> the type of the map
    * @param orig a map
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig} whose values are deep copies
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
   public static <K, V extends DeepCopyable, M extends Map<K, V>> M deepCopyValues(M orig) {
