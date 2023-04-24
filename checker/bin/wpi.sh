@@ -80,6 +80,11 @@ if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
     exit 1
 fi
 
+if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
+    echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
+    exit 1
+fi
+
 if [ "${has_java_home}" = "yes" ]; then
     java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
@@ -278,7 +283,7 @@ function configure_and_exec_dljc {
   echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
     wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
-    echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
+    echo "=== ${wpi_no_output_message}: start of ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
   fi
@@ -309,7 +314,7 @@ function configure_and_exec_dljc {
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && ./gradlew --stacktrace getPlumeScripts)
+  (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts)))
   "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
   if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
       echo "Failed to clone do-like-javac"
@@ -386,4 +391,4 @@ else
   unset JAVA_HOME
 fi
 
-echo "Exiting wpi.sh."
+echo "Exiting wpi.sh successfully; pwd=$(pwd)"
