@@ -290,6 +290,7 @@ do
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
         else
             echo "Could not find file $TYPECHECK_FILE"
+            echo "Therefore, file does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             ls -l "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
@@ -300,6 +301,15 @@ do
             echo "End of wpi-stdout.log."
             wpi_status=9999
         fi
+        if [ "$DEBUG" -eq "1" ]; then
+            echo "RESULT_LOG=${RESULT_LOG}"
+            echo "${OUTDIR}-results:"
+            ls -l "${OUTDIR}-results"
+        fi
+        if [ ! -s "${RESULT_LOG}" ] ; then
+            echo "File does not exist: ${RESULT_LOG}"
+            wpi_status=9999
+        fi
         if [[ "$wpi_status" != 0 ]]; then
             echo "${OUTDIR}-results:"
             ls -l "${OUTDIR}-results"
@@ -308,19 +318,6 @@ do
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
             exit 5
         fi
-    fi
-    if [ "$DEBUG" -eq "1" ]; then
-        echo "RESULT_LOG=${RESULT_LOG}"
-        echo "${OUTDIR}-results:"
-        ls -l "${OUTDIR}-results"
-    fi
-    if [ ! -s "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
-        echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
-        exit 5
-    fi
-    if [ ! -s "${RESULT_LOG}" ] ; then
-        echo "File does not exist: ${RESULT_LOG}"
-        exit 5
     fi
 
     cd "${OUTDIR}" || exit 5
