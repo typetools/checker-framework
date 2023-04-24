@@ -104,7 +104,7 @@ plume-bib-update: plume-bib
 # Even if this command fails, it does not terminate the make job.
 # However, to skip it, invoke make as:  make NOGIT=1 ...
 ifndef NOGIT
-	-(cd plume-bib && git pull && make)
+	-(cd plume-bib && timeout 10s git pull && make)
 endif
 
 # Leaves manual.html, and .svg files that it references.

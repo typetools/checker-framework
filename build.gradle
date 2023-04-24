@@ -622,6 +622,7 @@ void clone(url, directory, ignoreError, extraArgs = []){
     ]
     args += extraArgs
     ignoreExitValue = ignoreError
+    timeout = Duration.ofMinutes(1)
   }
 }
 
@@ -644,6 +645,9 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
         executable 'git'
         args = ['pull', '-q']
         ignoreExitValue = true
+        // Why doesn't this work?
+        // timeout = Duration.ofMinutes(1)
+        timeout = 60000 // 60 seconds
       }
     } else {
       try {
