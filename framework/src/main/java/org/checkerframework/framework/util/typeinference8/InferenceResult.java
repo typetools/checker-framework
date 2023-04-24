@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -69,11 +71,22 @@ public class InferenceResult {
     for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
-        if (t.asElement().getSimpleName().contentEquals(typeVariable.asElement().getSimpleName())) {
+        if (sames(t, typeVariable)) {
           map.put(typeVariable, map.remove(t));
         }
       }
     }
     return this;
+  }
+
+  private boolean sames(TypeVariable key, TypeVariable other) {
+    if (key == other) {
+      return true;
+    }
+    Name otherName = other.asElement().getSimpleName();
+    Element otherEnclosingElement = other.asElement().getEnclosingElement();
+
+    return key.asElement().getSimpleName().contentEquals(otherName)
+        && otherEnclosingElement.equals(key.asElement().getEnclosingElement());
   }
 }
