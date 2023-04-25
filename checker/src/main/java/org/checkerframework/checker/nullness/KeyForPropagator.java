@@ -4,7 +4,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.tree.JCTree;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -170,7 +169,7 @@ public class KeyForPropagator {
     }
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
     if (assignmentContext != null && assignmentContext instanceof VariableTree) {
-      if (TreeUtils.isVariableTreeDeclaredUsingVar((JCTree.JCVariableDecl) assignmentContext)) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
         return;
       }
     }

@@ -13,21 +13,15 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.tree.JCTree;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
@@ -51,9 +45,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   /** The qualifier hierarchy to use. */
   private final QualifierHierarchy qualHierarchy;
-
-  /** Used to replace annotations in var type according to initializer annotations. */
-  private final AnnotatedTypeReplacer replacer = new AnnotatedTypeReplacer();
 
   /**
    * Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}.
@@ -308,16 +299,13 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   @Override
   public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
     if (type.getKind() == TypeKind.DECLARED) {
-      boolean isVar = TreeUtils.isVariableTreeDeclaredUsingVar((JCTree.JCVariableDecl) tree);
+      boolean isVar = TreeUtils.isVariableTreeDeclaredUsingVar(tree);
       if (isVar) {
         ExpressionTree initializer = tree.getInitializer();
         if (initializer != null) {
           AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
           if (initializerType.getKind() == TypeKind.DECLARED) {
-            propagateInitializerAnnotationsToVar(
-                (AnnotatedTypeMirror.AnnotatedDeclaredType) initializerType,
-                (AnnotatedTypeMirror.AnnotatedDeclaredType) type,
-                atypeFactory);
+            atypeFactory.replaceAnnotations(initializerType, type);
           }
         }
       }
@@ -362,50 +350,5 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     }
     type.addMissingAnnotations(annosToAdd);
     type.addMissingAnnotations(annos);
-  }
-
-  /**
-   * Propagate annotations from the type arguments of initializer type to var.
-   *
-   * <p>Simple Example:
-   *
-   * <pre>{@code
-   * typeOf(initializerType) = ArrayList<@Untainted String>
-   * typeOf(variableType) = var
-   * }</pre>
-   *
-   * The type of var after propagate would be: {@code ArrayList<@Untainted String>}
-   *
-   * @param initializerType AnnotatedDeclaredType of the initializer as source
-   * @param variableType AnnotatedDeclaredType of var as destination
-   * @param typeFactory AnnotatedTypeFactory to use for propagation
-   */
-  public void propagateInitializerAnnotationsToVar(
-      final AnnotatedTypeMirror.AnnotatedDeclaredType initializerType,
-      final AnnotatedTypeMirror.AnnotatedDeclaredType variableType,
-      final AnnotatedTypeFactory typeFactory) {
-    final TypeElement initializerTypeElement =
-        (TypeElement) initializerType.getUnderlyingType().asElement();
-    final TypeElement variableTypeElement =
-        (TypeElement) variableType.getUnderlyingType().asElement();
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
-
-    if (initializerType.getTypeArguments().isEmpty()) {
-      return;
-    }
-
-    Set<Pair<Integer, Integer>> typeParamMappings =
-        TypeArgumentMapper.mapTypeArgumentIndices(
-            initializerTypeElement, variableTypeElement, types);
-
-    final List<AnnotatedTypeMirror> initializerTypeArgs = initializerType.getTypeArguments();
-    final List<AnnotatedTypeMirror> variableTypeArgs = variableType.getTypeArguments();
-
-    for (final Pair<Integer, Integer> path : typeParamMappings) {
-      final AnnotatedTypeMirror initializerTypeArg = initializerTypeArgs.get(path.first);
-      final AnnotatedTypeMirror variableTypeArg = variableTypeArgs.get(path.second);
-
-      replacer.visit(initializerTypeArg, variableTypeArg);
-    }
   }
 }

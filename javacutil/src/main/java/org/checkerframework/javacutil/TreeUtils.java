@@ -2398,16 +2398,12 @@ public final class TreeUtils {
    * @param variableTree the variableTree to check
    * @return true if the variableTree is declared using var
    */
-  public static boolean isVariableTreeDeclaredUsingVar(JCTree.JCVariableDecl variableTree) {
+  public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     if (isDeclaredUsingVar == null) {
       throw new BugInCF("Don't call JCTree.JCVariableDecl.declaredUsingVar on JDK < 10");
     }
     try {
-      Object isVar = isDeclaredUsingVar.invoke(variableTree);
-      if (isVar != null) {
-        return (boolean) isVar;
-      }
-      return false;
+      return (boolean) isDeclaredUsingVar.invoke(variableTree);
     } catch (InvocationTargetException | IllegalAccessException e) {
       throw new BugInCF(
           "TreeUtils.isVariableTreeDeclaredUsingVar: reflection failed for tree: %s",

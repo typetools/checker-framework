@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java10-jdk-skip-test
@@ -17,11 +16,10 @@ public class Issue4170 {
   }
 
   public void method1() {
-    @NonNull String s = "s";
-    var v = s;
+    var s = new ArrayList<@Nullable String>();
   }
 
   public void method2() {
-    var s = new ArrayList<@NonNull String>();
+    var s = new ArrayList<@Nullable ArrayList<@Nullable String>>();
   }
 }
