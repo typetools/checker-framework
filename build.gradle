@@ -639,25 +639,29 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
   tasks.create(name: taskName) {
     description "Obtain or update ${url}"
 
-    if (file(directory).exists()) {
-      exec {
-        workingDir directory
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true
-        timeout = 60000 // 60 seconds
-      }
-    } else {
-      try {
-        clone(url, directory, true, extraArgs)
-      } catch (Throwable t) {
-        println "Exception while cloning ${url}"
-        t.printStackTrace()
-      }
-      if (!file(directory).exists()) {
-        println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
-        sleep(60000) // wait 1 minute, then try again
-        clone(url, directory, false, extraArgs)
+    // Always run.
+    outputs.upToDateWhen { false }
+    doLast {
+      if (file(directory).exists()) {
+        exec {
+          workingDir directory
+          executable 'git'
+          args = ['pull', '-q']
+          ignoreExitValue = true
+          timeout = 60000 // 60 seconds
+        }
+      } else {
+        try {
+          clone(url, directory, true, extraArgs)
+        } catch (Throwable t) {
+          println "Exception while cloning ${url}"
+          t.printStackTrace()
+        }
+        if (!file(directory).exists()) {
+          println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+          sleep(60000) // wait 1 minute, then try again
+          clone(url, directory, false, extraArgs)
+        }
       }
     }
   }
