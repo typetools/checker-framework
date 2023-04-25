@@ -238,7 +238,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 80
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25
@@ -253,7 +253,8 @@ jobs:
   # The guava job sometimes times out, because the time between these lines can be 30 minutes!
   #   [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
   #   [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
-  timeoutInMinutes: 80
+  # I think I have configured Maven to prevent that problem from occurring in the future.
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25
@@ -266,7 +267,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk19:latest
-  timeoutInMinutes: 80
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25

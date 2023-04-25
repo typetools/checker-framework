@@ -7,7 +7,7 @@ set -e
 
 DEBUG=0
 # To enable debugging, uncomment the following line.
-DEBUG=1
+# DEBUG=1
 
 if [ $DEBUG -eq 0 ] ; then
   DEBUG_FLAG=
