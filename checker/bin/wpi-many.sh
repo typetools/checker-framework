@@ -265,6 +265,14 @@ do
       wpi_status=$?
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
       # The test of $wpi_status below may halt wpi-many.sh.
+      if [ "$DEBUG" -eq "1" ]; then
+          echo "$(pwd):"
+          ls -l "$(pwd)"
+          echo "${REPO_FULLPATH}:"
+          ls -l "${REPO_FULLPATH}"
+          echo "${REPO_FULLPATH}/dljc-out:"
+          ls -l "${REPO_FULLPATH}/dljc-out"
+      fi
     fi
 
     cd "${OUTDIR}" || exit 5
