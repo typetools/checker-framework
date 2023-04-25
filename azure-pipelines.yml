@@ -238,7 +238,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 60
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
@@ -250,9 +250,10 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
-  # The guava job sometimes times out, but that is because the job stalls.
-  # When it doesn't stall, it finishes in about 30 minutes.
-  timeoutInMinutes: 60
+  # The guava job sometimes times out, because the time between these lines can be 30 minutes!
+  #   [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
+  #   [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
@@ -265,7 +266,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk19:latest
-  timeoutInMinutes: 60
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
