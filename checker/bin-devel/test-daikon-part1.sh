@@ -12,7 +12,7 @@ source "$SCRIPTDIR"/build.sh
 
 
 # daikon-typecheck: 15 minutes
-"$SCRIPTDIR/.plume-scripts/git-clone-related" codespecs daikon
+"$SCRIPTDIR/.plume-scripts/git-clone-related" --debug codespecs daikon
 cd ../daikon
 git log | head -n 5
 make compile

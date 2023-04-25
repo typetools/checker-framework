@@ -41,7 +41,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
   PACKAGEDIR="/tmp/${PACKAGE}"
   rm -rf "${PACKAGEDIR}"
-  "$SCRIPTDIR/.plume-scripts/git-clone-related" plume-lib "${PACKAGE}" "${PACKAGEDIR}"
+  "$SCRIPTDIR/.plume-scripts/git-clone-related" --debugplume-lib "${PACKAGE}" "${PACKAGEDIR}"
   # Uses "compileJava" target instead of "assemble" to avoid the javadoc error "Error fetching URL:
   # https://docs.oracle.com/en/java/javase/17/docs/api/" due to network problems.
   echo "About to call ./gradlew --console=plain -PcfLocal compileJava"
