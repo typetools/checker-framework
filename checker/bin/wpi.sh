@@ -310,7 +310,7 @@ function configure_and_exec_dljc {
   else
       WPI_RESULTS_AVAILABLE="dljc failed: file ${DIR}/dljc-out/wpi-stdout.log does not exist
 dljc output is in ${DIR}/dljc-out/
-stdout is in $dljc_stdout"
+stdout is in      $dljc_stdout"
       echo "${WPI_RESULTS_AVAILABLE}"
   fi
 }

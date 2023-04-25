@@ -238,6 +238,7 @@ do
 
     if [ ! -d "${REPO_NAME}/.git" ]; then
         echo "In $(pwd): no directory ${REPO_NAME}/.git"
+        echo "Listing of ${REPO_NAME}:"
         ls -al -- "${REPO_NAME}"
         exit 5
     fi
@@ -255,7 +256,9 @@ do
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
       if [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
-        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present,"
+	echo "indicating that an earlier run of WPI failed."
+	echo "To try again, delete the .cannot-run-wpi file and re-run the script."
       fi
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
@@ -266,11 +269,11 @@ do
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
       # The test of $wpi_status below may halt wpi-many.sh.
       if [ "$DEBUG" -eq "1" ]; then
-          echo "$(pwd):"
+          echo "Listing of $(pwd):"
           ls -al "$(pwd)"
-          echo "${REPO_FULLPATH}:"
+          echo "Listing of ${REPO_FULLPATH}:"
           ls -al "${REPO_FULLPATH}"
-          echo "${REPO_FULLPATH}/dljc-out:"
+          echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
       fi
     fi
@@ -280,15 +283,16 @@ do
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
         cat "${REPO_FULLPATH}/.cannot-run-wpi"
-        echo "$(pwd):"
+        echo "Listing of $(pwd):"
         ls -al "$(pwd)"
-        echo "${REPO_FULLPATH}:"
+        echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
-        echo "${REPO_FULLPATH}/dljc-out:"
+        echo "Listing of ${REPO_FULLPATH}/dljc-out:"
         ls -al "${REPO_FULLPATH}"/dljc-out
         for f in "${REPO_FULLPATH}"/dljc-out/* ; do
             echo "==== start of tail of ${f} ===="
             tail -n 2000 "${f}"
+            sleep 1
             echo "==== end of tail of ${f} ===="
         done
 
@@ -303,7 +307,7 @@ do
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
         if [ ! -s "${RESULT_LOG}" ] ; then
           echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
-          echo "${REPO_FULLPATH}/dljc-out:"
+          echo "Listing of ${REPO_FULLPATH}/dljc-out:"
           ls -al "${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
@@ -317,6 +321,7 @@ do
         else
             echo "File does not exist: $TYPECHECK_FILE"
             echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
@@ -330,9 +335,9 @@ do
         if [ "$DEBUG" -eq "1" ]; then
             echo "RESULT_LOG=${RESULT_LOG}"
             echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
-            ls -al "${TYPECHECK_FILE}"
-            ls -al "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
-            echo "${OUTDIR}-results:"
+            ls -l "${TYPECHECK_FILE}"
+            ls -l "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
         fi
         if [ ! -s "${RESULT_LOG}" ] ; then
@@ -344,7 +349,7 @@ do
             wpi_status=9999
         fi
         if [[ "$wpi_status" != 0 ]]; then
-            echo "${OUTDIR}-results:"
+            echo "Listing of ${OUTDIR}-results:"
             ls -al "${OUTDIR}-results"
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
@@ -392,7 +397,7 @@ else
 
     if [ ! -s "${listpath}" ] ; then
         echo "listpath ${listpath} has size zero"
-        ls -al "${listpath}"
+        ls -l "${listpath}"
         echo "results_available = ${results_available}"
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
