@@ -11,7 +11,7 @@ set -eo pipefail
 
 DEBUG=0
 # To enable debugging, uncomment the following line.
-# DEBUG=1
+DEBUG=1
 
 while getopts "o:i:t:g:s" opt; do
   case $opt in
@@ -288,6 +288,10 @@ do
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            if [ "$DEBUG" -eq "1" ]; then
+                echo "File exists: $TYPECHECK_FILE"
+                echo "File exists: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            fi
         else
             echo "File does not exist: $TYPECHECK_FILE"
             echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
@@ -303,6 +307,7 @@ do
         fi
         if [ "$DEBUG" -eq "1" ]; then
             echo "RESULT_LOG=${RESULT_LOG}"
+            echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
             echo "${OUTDIR}-results:"
             ls -l "${OUTDIR}-results"
         fi
