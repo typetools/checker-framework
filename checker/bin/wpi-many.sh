@@ -315,6 +315,10 @@ do
             echo "File does not exist: ${RESULT_LOG}"
             wpi_status=9999
         fi
+        if [ ! -e "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            wpi_status=9999
+        fi
         if [[ "$wpi_status" != 0 ]]; then
             echo "${OUTDIR}-results:"
             ls -l "${OUTDIR}-results"
