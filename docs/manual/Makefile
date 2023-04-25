@@ -79,7 +79,7 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 .PHONY: contributors.tex
 contributors.tex:
 # Update plume-scripts even if it is already cloned
-	cd ../.. && ./gradlew --stacktrace getPlumeScripts
+	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:

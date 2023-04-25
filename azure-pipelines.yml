@@ -238,6 +238,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25
@@ -249,6 +250,9 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
+  # The guava job sometimes times out, but that is because the job stalls.
+  # When it doesn't stall, it finishes in about 30 minutes.
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25
@@ -261,6 +265,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk19:latest
+  timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25

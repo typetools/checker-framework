@@ -86,7 +86,7 @@ if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
-    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
       export JAVA8_HOME="${JAVA_HOME}"
       has_java8="yes"
@@ -126,7 +126,18 @@ if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    if [ "${has_java_home}" = "yes" ]; then
+      echo "Cannot determine Java version from JAVA_HOME"
+    else
+      echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    fi
+    echo "JAVA_HOME = ${JAVA_HOME}"
+    echo "JAVA8_HOME = ${JAVA8_HOME}"
+    echo "JAVA11_HOME = ${JAVA11_HOME}"
+    echo "JAVA17_HOME = ${JAVA17_HOME}"
+    echo "JAVA19_HOME = ${JAVA19_HOME}"
+    command -v java
+    java -version
     exit 1
 fi
 
@@ -151,6 +162,8 @@ if [ "${INLIST}" = "" ]; then
 fi
 
 if [ "${GRADLECACHEDIR}" = "" ]; then
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
@@ -188,6 +201,7 @@ do
         echo "HASH=$HASH"
         echo "REPO_NAME=$REPO_NAME"
         echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+        echo "pwd=$(pwd)"
     fi
 
     # Use repo name and hash, but not owner.  We want
@@ -222,9 +236,15 @@ do
         rm -rf -- "${REPO_NAME}/dljc-out"
     fi
 
+    if [ ! -d "${REPO_NAME}/.git" ]; then
+        echo "In $(pwd): no directory ${REPO_NAME}/.git"
+        ls -al -- "${REPO_NAME}"
+        exit 5
+    fi
+
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
-    git checkout "${HASH}"
+    git checkout "${HASH}" || (echo "command failed in $(pwd): git checkout ${HASH}" && exit 5)
 
     REPO_FULLPATH=$(pwd)
 
@@ -240,9 +260,11 @@ do
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
       # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
-      echo "wpi-many.sh about to call wpi.sh at $(date)"
+      echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
-      echo "wpi-many.sh finished call to wpi.sh at $(date)"
+      wpi_status=$?
+      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
+      # The test of $wpi_status below may halt wpi-many.sh.
     fi
 
     cd "${OUTDIR}" || exit 5
@@ -257,11 +279,18 @@ do
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
+        if [ ! -s "${RESULT_LOG}" ] ; then
+          echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
+          echo "${REPO_FULLPATH}/dljc-out:"
+          ls -l "${REPO_FULLPATH}/dljc-out"
+          wpi_status=9999
+        fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
         else
-            echo "Could not find file $TYPECHECK_FILE"
+            echo "File does not exist: $TYPECHECK_FILE"
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             ls -l "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
@@ -270,6 +299,24 @@ do
             echo "Start of wpi-stdout.log:"
             cat "${REPO_FULLPATH}"/dljc-out/wpi-stdout.log
             echo "End of wpi-stdout.log."
+            wpi_status=9999
+        fi
+        if [ "$DEBUG" -eq "1" ]; then
+            echo "RESULT_LOG=${RESULT_LOG}"
+            echo "${OUTDIR}-results:"
+            ls -l "${OUTDIR}-results"
+        fi
+        if [ ! -s "${RESULT_LOG}" ] ; then
+            echo "File does not exist: ${RESULT_LOG}"
+            wpi_status=9999
+        fi
+        if [[ "$wpi_status" != 0 ]]; then
+            echo "${OUTDIR}-results:"
+            ls -l "${OUTDIR}-results"
+            echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
+            cat "${OUTDIR}-results/wpi-out"
+            echo "==== end of ${OUTDIR}-results/wpi-out ===="
+            exit 5
         fi
     fi
 
@@ -356,4 +403,4 @@ else
   fi
 fi
 
-echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."
+echo "Exiting wpi-many.sh successfully. Results were placed in ${OUTDIR}-results/."
