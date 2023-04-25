@@ -256,7 +256,7 @@ function configure_and_exec_dljc {
   if [[ $DLJC_CLEAN_STATUS -ne 0 ]] ; then
     WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
     echo "${WPI_RESULTS_AVAILABLE}"
-    echo "re-running"
+    echo "Re-running clean command."
     # Cleaning failed.  Re-run without piping output to /dev/null.
     eval "${CLEAN_CMD}" < /dev/null || true
     return

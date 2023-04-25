@@ -280,6 +280,18 @@ do
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
         echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
         cat "${REPO_FULLPATH}/.cannot-run-wpi"
+        echo "$(pwd):"
+        ls -al "$(pwd)"
+        echo "${REPO_FULLPATH}:"
+        ls -al "${REPO_FULLPATH}"
+        echo "${REPO_FULLPATH}/dljc-out:"
+        ls -al "${REPO_FULLPATH}"/dljc-out
+        for f in "${REPO_FULLPATH}"/dljc-out/* ; do
+            echo "==== start of tail of ${f} ===="
+            tail -n 2000 "${f}"
+            echo "==== end of tail of ${f} ===="
+        done
+
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can
         # delete it right away.
