@@ -308,6 +308,8 @@ do
         if [ "$DEBUG" -eq "1" ]; then
             echo "RESULT_LOG=${RESULT_LOG}"
             echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
+            ls -l "${TYPECHECK_FILE}"
+            ls -l "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "${OUTDIR}-results:"
             ls -l "${OUTDIR}-results"
         fi
@@ -328,6 +330,8 @@ do
             exit 5
         fi
     fi
+    # Avoid interleaved output from different iterations of the loop.
+    sleep 1
 
     cd "${OUTDIR}" || exit 5
 
