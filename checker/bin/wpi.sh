@@ -219,8 +219,8 @@ function configure_and_exec_dljc {
     CLEAN_CMD="ant clean ${EXTRA_BUILD_ARGS}"
     BUILD_CMD="ant clean ${BUILD_TARGET} ${EXTRA_BUILD_ARGS}"
   else
-      echo "no build file found for ${REPO_NAME}; not calling DLJC"
-      WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}"
+      WPI_RESULTS_AVAILABLE="no build file found for ${REPO_NAME}; not calling DLJC"
+      echo "${WPI_RESULTS_AVAILABLE}"
       return
   fi
 
@@ -254,8 +254,9 @@ function configure_and_exec_dljc {
   DLJC_CLEAN_STATUS=0
   eval "${CLEAN_CMD}" < /dev/null > /dev/null 2>&1 || DLJC_CLEAN_STATUS=$?
   if [[ $DLJC_CLEAN_STATUS -ne 0 ]] ; then
-    echo "Cleaning failed with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
-    WPI_RESULTS_AVAILABLE="dljc failed to clean: ${CLEAN_CMD}"
+    WPI_RESULTS_AVAILABLE="dljc failed to clean with ${JDK_VERSION_ARG}: ${CLEAN_CMD}"
+    echo "${WPI_RESULTS_AVAILABLE}"
+    echo "re-running"
     # Cleaning failed.  Re-run without piping output to /dev/null.
     eval "${CLEAN_CMD}" < /dev/null || true
     return
@@ -294,8 +295,8 @@ function configure_and_exec_dljc {
   fi
 
   if [[ $DLJC_STATUS -eq 124 ]]; then
-      echo "dljc timed out for ${DIR}"
       WPI_RESULTS_AVAILABLE="dljc timed out for ${DIR}"
+      echo "${WPI_RESULTS_AVAILABLE}"
       return
   fi
 
@@ -307,10 +308,10 @@ function configure_and_exec_dljc {
       echo "typecheck output is in ${DIR}/dljc-out/typecheck.out"
       echo "stdout is in $dljc_stdout"
   else
-      WPI_RESULTS_AVAILABLE="file ${DIR}/dljc-out/wpi-stdout.log does not exist"
-      echo "dljc failed: ${WPI_RESULTS_AVAILABLE}"
-      echo "dljc output is in ${DIR}/dljc-out/"
-      echo "stdout is in $dljc_stdout"
+      WPI_RESULTS_AVAILABLE="dljc failed: file ${DIR}/dljc-out/wpi-stdout.log does not exist
+dljc output is in ${DIR}/dljc-out/
+stdout is in $dljc_stdout"
+      echo "${WPI_RESULTS_AVAILABLE}"
   fi
 }
 
