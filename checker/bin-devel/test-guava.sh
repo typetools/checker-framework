@@ -26,4 +26,4 @@ fi
 ## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-cd guava && time mvn --debug -B compile -P checkerframework-local
+cd guava && time mvn -Dhttp.keepAlive=false --debug -B compile -P checkerframework-local
