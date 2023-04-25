@@ -1531,8 +1531,10 @@ public class AnnotationUtils {
   }
 
   /**
-   * Makes a deep copy of this, if possible; otherwise makes a clone.
+   * Makes a deep copy of its argument, if possible; otherwise makes a clone.
    *
+   * @param <AM> the type of the annotation to copy
+   * @param am the annotation to copy
    * @return a deep copy of this
    */
   public static <AM extends AnnotationMirror> AM deepCopy(AM am) {

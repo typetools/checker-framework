@@ -26,6 +26,8 @@ public class Pair<V1, V2> {
    * Returns a copy of this in which each element is a clone of the corresponding element of this.
    * {@code clone()} may or may not itself make a deep copy of the elements.
    *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
    * @param orig a pair
    * @return a copy of {@code orig}, with all elements cloned
    */
@@ -44,6 +46,8 @@ public class Pair<V1, V2> {
   /**
    * Returns a deep copy of this: each element is a deep copy of the corresponding element of this.
    *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
    * @param orig a pair
    * @return a deep copy of {@code orig}
    */
@@ -65,6 +69,8 @@ public class Pair<V1, V2> {
    * Returns a copy, where the {@code second} element is deep: {@code first} elements are identical
    * to the argument, and {@code} second elements are deep copies.
    *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
    * @param orig a pair
    * @return a copy of {@code orig}, where the second element is a deep copy
    */
