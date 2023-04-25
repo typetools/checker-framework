@@ -2714,10 +2714,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String getCheckerVersion() {
     Properties gitProperties = getProperties(getClass(), "/git.properties", false);
     String version = gitProperties.getProperty("git.build.version");
-    if (version != null) {
-      return version;
+    if (version == null) {
+      throw new BugInCF("Could not find the version in git.properties");
     }
-    throw new BugInCF("Could not find the version in git.properties");
+    if (version.endsWith("-SNAPSHOT")) {
+      version += ", commit " + gitProperties.getProperty("git.commit.id");
+    }
+    return version;
   }
 
   /**

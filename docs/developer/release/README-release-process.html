@@ -246,7 +246,7 @@ TreeAnnotator
 </ol>
 
   <h2 id="snapshot_release">Snapshot release</h2>
-  <p>This section explains how to release the Maven artifacts to the snapshot repository.</p>
+  <p>This section explains how to release the Maven artifacts to the Maven Central snapshot repository.</p>
   <ol>
     <li>
       Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
@@ -272,6 +272,9 @@ dependencies {
   compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
   testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
   checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+}
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
       </pre>
     </li>

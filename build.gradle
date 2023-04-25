@@ -2,14 +2,14 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '8.1.0'
+  id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.4.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '3.0.1'
+  id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '4.1.1' apply false
+  id 'org.ajoberstar.grgit' version '5.2.0' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
@@ -182,8 +182,10 @@ allprojects {
   apply plugin: 'com.diffplug.spotless'
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
-    // add them to spotlessPredeclare block.
+    // add them to the spotlessPredeclare block.
+
     def doNotFormat = [
+      'checker/tests/ainfer-*/annotated/*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
       '**/calledmethods-delomboked/*',
@@ -197,12 +199,12 @@ allprojects {
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '.gitignore'
+      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      targetExclude doNotFormat
       // define the steps to apply to those files
       indentWithSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
-      targetExclude doNotFormat
     }
 
     java {
@@ -636,18 +638,28 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
   tasks.create(name: taskName) {
     description "Obtain or update ${url}"
 
-    if (file(directory).exists()) {
-      exec {
-        workingDir directory
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true
-      }
-    } else {
-      clone(url, directory, true, extraArgs)
-      if (!file(directory).exists()) {
-        sleep(60000) // 1 minute
-        clone(url, directory, false, extraArgs)
+    // Always run.
+    outputs.upToDateWhen { false }
+    doLast {
+      if (file(directory).exists()) {
+        exec {
+          workingDir directory
+          executable 'git'
+          args = ['pull', '-q']
+          ignoreExitValue = true
+        }
+      } else {
+        try {
+          clone(url, directory, true, extraArgs)
+        } catch (Throwable t) {
+          println "Exception while cloning ${url}"
+          t.printStackTrace()
+        }
+        if (!file(directory).exists()) {
+          println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+          sleep(60000) // wait 1 minute, then try again
+          clone(url, directory, false, extraArgs)
+        }
       }
     }
   }
@@ -976,129 +988,6 @@ subprojects {
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
 
 assemble.dependsOn(':checker:assembleForJavac')
-
-task checkBasicStyle(group: 'Format') {
-  description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
-  String[] ignoreDirectories = [
-    '.git',
-    '.gradle',
-    '.html-tools',
-    '.idea',
-    '.plume-scripts',
-    '.run-google-java-format',
-    'annotated',
-    'api',
-    'plume-bib',
-    'bootstrap',
-    'build',
-    'jdk'
-  ]
-
-  String[] ignoreFilePatterns = [
-    '*.aux',
-    '*.bib',
-    '*.class',
-    '*.dvi',
-    '*.expected',
-    '*.gif',
-    '*.jar',
-    '*.jtr',
-    '*.log',
-    '*.out',
-    '*.patch',
-    '*.pdf',
-    '*.png',
-    '*.sty',
-    '*.toc',
-    '*.xcf',
-    '*~',
-    '#*#',
-    'CFLogo.ai',
-    'logfile.log.rec.index',
-    'manual.html',
-    'manual.html-e',
-    'junit.*.properties',
-    'securerandom.*',
-    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
-    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
-    'checker/nullness/junit-assertions.astub',
-    'checker/signedness/junit-assertions.astub',
-    'framework/src/main/resources/git.properties'
-  ]
-
-  doLast {
-    FileTree tree = fileTree(dir: projectDir)
-    for (String dir : ignoreDirectories) {
-      tree.exclude "**/${dir}/**"
-    }
-    for (String file : ignoreFilePatterns) {
-      tree.exclude "**/${file}"
-    }
-    boolean failed = false
-    tree.visit {
-      if (!it.file.isDirectory()) {
-        boolean blankLineAtEnd = false
-        String fileName = it.file.getName()
-        boolean checkTabs = !fileName.equals('Makefile')
-        it.file.eachLine { line ->
-          if (line.endsWith(' ')) {
-            println("Trailing whitespace: ${it.file.absolutePath}")
-            failed = true
-          }
-          if (checkTabs && line.contains('\t')) {
-            println("Contains tab (use spaces): ${it.file.absolutePath}")
-            failed = true
-            checkTabs = false
-          }
-          if (!line.startsWith('\\') &&
-              (line.matches('^.* (else|finally|try)\\{}.*$')
-              || line.matches('^.*}(catch|else|finally) .*$')
-              || line.matches('^.* (catch|for|if|while)\\('))) {
-            // This runs on non-java files, too.
-            println("Missing space: ${it.file.absolutePath}")
-            failed = true
-          }
-          // String concatenation to avoid a match in this file!
-          if (line.contains('/* package' + '-private */')) {
-            println("Remove spaces in /* package" + "-private */: ${it.file.absolutePath} ${line}")
-            failed = true
-          }
-          if (line.isEmpty()) {
-            blankLineAtEnd = true;
-          } else {
-            blankLineAtEnd = false;
-          }
-        }
-
-        if (blankLineAtEnd) {
-          println("Blank line at end of file: ${it.file.absolutePath}")
-          failed = true
-        }
-
-        RandomAccessFile file
-        try {
-          file = new RandomAccessFile(it.file, 'r')
-          int end = file.length() - 1;
-          if (end > 0) {
-            file.seek(end)
-            byte last = file.readByte()
-            if (last != '\n') {
-              println("Missing newline at end of file: ${it.file.absolutePath}")
-              failed = true
-            }
-          }
-        } finally {
-          if (file != null) {
-            file.close()
-          }
-        }
-      }
-    }
-    if (failed) {
-      throw new GradleException('Files do not meet basic style guidelines.')
-    }
-  }
-}
 
 assemble.mustRunAfter(clean)
 

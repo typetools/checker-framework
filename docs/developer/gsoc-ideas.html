@@ -40,6 +40,7 @@
     </ul></li>
   <li><a href="#create-new-type-system">Create a new type system</a>
     <ul>
+      <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
@@ -953,6 +954,20 @@ Checker Framework for easy use.
 Each of these projects requires you to design a <a href="https://checkerframework.org/manual/#creating-a-checker">new type system</a>,
 implement it, and perform case studies to demonstrate that it is both
 usable and effective in finding/preventing bugs.
+</p>
+
+
+<h2 id="ownership-type-system">Ownership type system</h2>
+
+<p>
+The <a href="https://checkerframework.org/manual/#resource-leak-annotations">lightweight
+ownership mechanism</a> of the Resource Leak Checker is not implemented as
+a type system, but it should be.  That would enable writing ownership
+annotations on generic type arguments, like <code>List&lt;@Owning
+Socket&gt;</code>.  It would also enable changing the Resource Leak Checker
+so that non-<code>@Owning</code> formal parameters do not have
+their <a href="https://checkerframework.org/manual/#resource-leak-owning-fields"><code>@MustCall</code>
+annotation erased</a>.
 </p>
 
 

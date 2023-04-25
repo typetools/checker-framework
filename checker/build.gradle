@@ -63,7 +63,7 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.293')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.454')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -219,6 +219,14 @@ clean {
   delete('tests/ainfer-resourceleak/annotated')
   delete('tests/ainfer-resourceleak/inference-output')
 }
+
+clean.doLast {
+  while (buildDir.exists()) {
+    sleep(10000)                // wait 10 seconds
+    buildDir.deleteDir()
+  }
+}
+
 
 // Add non-junit tests
 createCheckTypeTask(project.name, 'CompilerMessages',
@@ -896,13 +904,15 @@ task wpiManyTest(group: 'Verification') {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
       File wpiOut = new File("${typecheckFilesDir}/wpi-out")
       if (wpiOut.exists()) {
-        println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+        println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
         exec {
           commandLine 'cat', "${typecheckFilesDir}/wpi-out"
         }
         println("========= End of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
-        throw e
+      } else {
+        println("========= File ${typecheckFilesDir}/wpi-out does not exist. ========")
       }
+      throw e
     }
     // collect the logs from running WPI
     def typecheckFiles = fileTree(typecheckFilesDir).matching {
@@ -923,7 +933,7 @@ task wpiManyTest(group: 'Verification') {
       exec {
         commandLine 'cat', "${project.projectDir}/tests/wpi-many/testin.txt"
       }
-      println("========= Output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
+      println("========= Start of output from last run of wpi.sh (${typecheckFilesDir}/wpi-out): ========")
       exec {
         commandLine 'cat', "${typecheckFilesDir}/wpi-out"
       }
@@ -933,7 +943,7 @@ task wpiManyTest(group: 'Verification') {
       }
       logFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== printing contents of ${filename} ========")
+        println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -945,7 +955,7 @@ task wpiManyTest(group: 'Verification') {
       }
       cannotRunWpiFiles.visit { FileVisitDetails details ->
         def filename = "${typecheckFilesDir}" + details.getName()
-        println("======== printing contents of ${filename} ========")
+        println("======== start of contents of ${filename} ========")
         details.getFile().eachLine { line -> println(line) }
         println("======== end of contents of ${filename} ========")
       }
@@ -979,7 +989,7 @@ task wpiManyTest(group: 'Verification') {
           return;
         }
         if (!line.trim().equals('')) {
-          println("======== printing contents of ${filename} ========")
+          println("======== start of contents of ${filename} ========")
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +

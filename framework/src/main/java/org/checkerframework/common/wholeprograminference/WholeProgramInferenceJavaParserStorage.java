@@ -176,6 +176,23 @@ public class WholeProgramInferenceJavaParserStorage
     return getMethodAnnos(methodElt) != null;
   }
 
+  @Override
+  public AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement methodElt) {
+    String className = ElementUtils.getEnclosingClassName(methodElt);
+    // Read in classes for the element.
+    getFileForElement(methodElt);
+    ClassOrInterfaceAnnos classAnnos = classToAnnos.get(className);
+    if (classAnnos == null) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    CallableDeclarationAnnos methodAnnos =
+        classAnnos.callableDeclarations.get(JVMNames.getJVMMethodSignature(methodElt));
+    if (methodAnnos == null) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    return methodAnnos.getDeclarationAnnotations();
+  }
+
   /**
    * Get the annotations for a method or constructor.
    *
@@ -362,6 +379,16 @@ public class WholeProgramInferenceJavaParserStorage
       modifiedFiles.add(getFileForElement(methodElt));
     }
     return isNewAnnotation;
+  }
+
+  @Override
+  public boolean removeMethodDeclarationAnnotation(ExecutableElement elt, AnnotationMirror anno) {
+    CallableDeclarationAnnos methodAnnos = getMethodAnnos(elt);
+    if (methodAnnos == null) {
+      // See the comment on the similar exception in #getParameterAnnotations, above.
+      return false;
+    }
+    return methodAnnos.removeDeclarationAnnotation(anno);
   }
 
   @Override
@@ -797,9 +824,9 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param compilationUnitAnnos the compilation unit annotations to modify
    */
-  public void prepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
+  public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
-      prepareClassForWriting(type);
+      wpiPrepareClassForWriting(type);
     }
   }
 
@@ -808,10 +835,10 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param classAnnos the class annotations to modify
    */
-  public void prepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+  public void wpiPrepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      prepareMethodForWriting(methodEntry.getValue());
+      wpiPrepareMethodForWriting(methodEntry.getValue());
     }
   }
 
@@ -821,8 +848,8 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param methodAnnos the method or constructor annotations to modify
    */
-  public void prepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.prepareMethodForWriting(methodAnnos);
+  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
   }
 
   @Override
@@ -838,7 +865,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
-      prepareCompilationUnitForWriting(root);
+      wpiPrepareCompilationUnitForWriting(root);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir = AJAVA_FILES_PATH;
@@ -1248,6 +1275,21 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return declarationAnnotations.add(annotation);
+    }
+
+    /**
+     * Attempts to remove the given declaration annotation from this callable declaration and
+     * returns whether an annotation was successfully removed.
+     *
+     * @param anno an annotation
+     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't
+     *     be removed
+     */
+    /*package-private*/ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
+      if (declarationAnnotations == null) {
+        return false;
+      }
+      return declarationAnnotations.remove(anno);
     }
 
     /**

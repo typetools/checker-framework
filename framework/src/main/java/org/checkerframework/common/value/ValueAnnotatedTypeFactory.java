@@ -551,7 +551,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param anno annotation mirror from which to get values
    * @return the values in {@code anno} casted to longs
    */
-  /* package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
+  /*package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
       return CollectionsPlume.mapList(Integer::longValue, getArrayLength(anno));
     } else {

@@ -33,9 +33,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SCRIPTPATH="${SCRIPTDIR}/wpi.sh"
 
 # Report line numbers when the script fails, from
-# https://unix.stackexchange.com/a/522815
+# https://unix.stackexchange.com/a/522815 .
 trap 'echo >&2 "Error - exited with status $? at line $LINENO of wpi.sh:";
-         pr -tn $SCRIPTPATH | tail -n+$((LINENO - 3)) | head -n7' ERR
+         pr -tn ${SCRIPTPATH} | tail -n+$((LINENO - 3)) | head -n7' ERR
 
 echo "Starting wpi.sh."
 
@@ -75,8 +75,18 @@ else
   has_java19="yes"
 fi
 
+if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
+    echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
+    exit 1
+fi
+
+if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
+    echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
+    exit 1
+fi
+
 if [ "${has_java_home}" = "yes" ]; then
-    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
       export JAVA8_HOME="${JAVA_HOME}"
       has_java8="yes"
@@ -116,7 +126,18 @@ if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
 fi
 
 if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    if [ "${has_java_home}" = "yes" ]; then
+      echo "Cannot determine Java version from JAVA_HOME"
+    else
+      echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+    fi
+    echo "JAVA_HOME = ${JAVA_HOME}"
+    echo "JAVA8_HOME = ${JAVA8_HOME}"
+    echo "JAVA11_HOME = ${JAVA11_HOME}"
+    echo "JAVA17_HOME = ${JAVA17_HOME}"
+    echo "JAVA19_HOME = ${JAVA19_HOME}"
+    command -v java
+    java -version
     exit 8
 fi
 
@@ -262,7 +283,7 @@ function configure_and_exec_dljc {
   echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
     wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
-    echo "=== ${wpi_no_output_message}: printing ${wpi_log_path} ==="
+    echo "=== ${wpi_no_output_message}: start of ${wpi_log_path} ==="
     cat "${wpi_log_path}"
     echo "=== end of ${wpi_log_path} ==="
   fi
@@ -293,7 +314,7 @@ function configure_and_exec_dljc {
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && ./gradlew --stacktrace getPlumeScripts)
+  (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts)))
   "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
   if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
       echo "Failed to clone do-like-javac"
@@ -370,4 +391,4 @@ else
   unset JAVA_HOME
 fi
 
-echo "Exiting wpi.sh."
+echo "Exiting wpi.sh successfully; pwd=$(pwd)"

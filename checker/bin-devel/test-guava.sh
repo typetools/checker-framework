@@ -10,6 +10,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 source "$SCRIPTDIR"/build.sh
 
+# TODO: Maybe I should move this into the CI job, and do it for all CI jobs.
+cp "$SCRIPTDIR"/mvn-settings.xml ~/settings.xml
 
 "$SCRIPTDIR/.plume-scripts/git-clone-related" typetools guava
 cd ../guava
@@ -25,4 +27,4 @@ fi
 ## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-cd guava && time mvn --debug -B compile -P checkerframework-local
+cd guava && time mvn -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 --debug -B compile -P checkerframework-local
