@@ -71,6 +71,8 @@ public class Pair<V1, V2> {
    * Returns a copy, where the {@code first} element is deep: the {@code first} element is a deep
    * copy, and the {@code} second element is identical to the argument.
    *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
    * @param orig a pair
    * @return a copy of {@code orig}, where the first element is a deep copy
    */
