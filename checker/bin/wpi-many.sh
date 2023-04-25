@@ -265,11 +265,21 @@ do
       wpi_status=$?
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
       # The test of $wpi_status below may halt wpi-many.sh.
+      if [ "$DEBUG" -eq "1" ]; then
+          echo "$(pwd):"
+          ls -al "$(pwd)"
+          echo "${REPO_FULLPATH}:"
+          ls -al "${REPO_FULLPATH}"
+          echo "${REPO_FULLPATH}/dljc-out:"
+          ls -al "${REPO_FULLPATH}/dljc-out"
+      fi
     fi
 
     cd "${OUTDIR}" || exit 5
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
+        echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
+        cat "${REPO_FULLPATH}/.cannot-run-wpi"
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can
         # delete it right away.
@@ -282,16 +292,20 @@ do
         if [ ! -s "${RESULT_LOG}" ] ; then
           echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
           echo "${REPO_FULLPATH}/dljc-out:"
-          ls -l "${REPO_FULLPATH}/dljc-out"
+          ls -al "${REPO_FULLPATH}/dljc-out"
           wpi_status=9999
         fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            if [ "$DEBUG" -eq "1" ]; then
+                echo "File exists: $TYPECHECK_FILE"
+                echo "File exists: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            fi
         else
             echo "File does not exist: $TYPECHECK_FILE"
             echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
-            ls -l "${REPO_FULLPATH}/dljc-out"
+            ls -al "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
@@ -303,22 +317,31 @@ do
         fi
         if [ "$DEBUG" -eq "1" ]; then
             echo "RESULT_LOG=${RESULT_LOG}"
+            echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
+            ls -al "${TYPECHECK_FILE}"
+            ls -al "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
             echo "${OUTDIR}-results:"
-            ls -l "${OUTDIR}-results"
+            ls -al "${OUTDIR}-results"
         fi
         if [ ! -s "${RESULT_LOG}" ] ; then
             echo "File does not exist: ${RESULT_LOG}"
             wpi_status=9999
         fi
+        if [ ! -e "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            wpi_status=9999
+        fi
         if [[ "$wpi_status" != 0 ]]; then
             echo "${OUTDIR}-results:"
-            ls -l "${OUTDIR}-results"
+            ls -al "${OUTDIR}-results"
             echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
             cat "${OUTDIR}-results/wpi-out"
             echo "==== end of ${OUTDIR}-results/wpi-out ===="
             exit 5
         fi
     fi
+    # Avoid interleaved output from different iterations of the loop.
+    sleep 1
 
     cd "${OUTDIR}" || exit 5
 
@@ -338,6 +361,7 @@ results_available=$(grep -vl -e "no build file found for" \
     "${OUTDIR}-results/"*.log || true)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
+echo "results_available = ${results_available}"
 
 if [ -z "${results_available}" ]; then
   echo "No results are available."
@@ -356,13 +380,13 @@ else
 
     if [ ! -s "${listpath}" ] ; then
         echo "listpath ${listpath} has size zero"
-        ls -l "${listpath}"
+        ls -al "${listpath}"
         echo "results_available = ${results_available}"
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
         echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
         echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
-        ls -l "${OUTDIR}-results/"*.log
+        ls -al "${OUTDIR}-results/"*.log
         echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
         ## This is too much output; Azure cuts it off.
         # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
