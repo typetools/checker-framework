@@ -36,6 +36,8 @@ public class CollectionUtils {
   // TODO: After code review, copy these methods into plume-util.
   // After plume-util 1.6.6 is released, use these methods from it.
 
+  // A "deep copy" uses the deepCopy() method of the DeepCopyable interface.
+
   /**
    * Returns a copy of {@code orig}, where each element of the result is a clone of the
    * corresponding element of {@code orig}.
@@ -43,13 +45,13 @@ public class CollectionUtils {
    * @param <T> the type of elements of the collection
    * @param <C> the type of the collection
    * @param orig a collection
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({
     "signedness", // problem with clone()
-    "nullness:return" // "return null;"
+    "nullness" // generics problem
   })
-  public static <@Nullable T, C extends @Nullable Collection<T>> C cloneElements(C orig) {
+  public static <T extends @Nullable Object, C extends @Nullable Collection<T>> @PolyNull C cloneElements(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }
@@ -69,11 +71,11 @@ public class CollectionUtils {
    * @param <V> the type of values of the map
    * @param <M> the type of the map
    * @param orig a map
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V, M extends Map<K, V>> M cloneElements(M orig) {
-    return cloneElements(orig, false);
+  public static <K, V, M extends @Nullable Map<K, V>> @PolyNull M cloneElements(@PolyNull M orig) {
+    return cloneElements(orig, true);
   }
 
   /**
@@ -84,10 +86,10 @@ public class CollectionUtils {
    * @param <V> the type of values of the map
    * @param <M> the type of the map
    * @param orig a map
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V, M extends Map<K, V>> M cloneValues(M orig) {
+  public static <K, V, M extends @Nullable Map<K, V>> @PolyNull M cloneValues(@PolyNull M orig) {
     return cloneElements(orig, false);
   }
 
@@ -100,10 +102,11 @@ public class CollectionUtils {
    * @param <M> the type of the map
    * @param orig a map
    * @param cloneKeys if true, clone keys; otherwise, re-use them
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  private static <K, V, M extends Map<K, V>> M cloneElements(@PolyNull M orig, boolean cloneKeys) {
+  private static <K, V, M extends @Nullable Map<K, V>> @PolyNull M cloneElements(
+      @PolyNull M orig, boolean cloneKeys) {
     if (orig == null) {
       return null;
     }
@@ -124,7 +127,7 @@ public class CollectionUtils {
    * @param <T> the type of elements of the collection
    * @param <C> the type of the collection
    * @param orig a collection
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"signedness", "nullness:argument"}) // problem with clone()
   public static <T extends @Nullable DeepCopyable, C extends @Nullable Collection<T>> @PolyNull C deepCopy(@PolyNull C orig) {
@@ -141,6 +144,8 @@ public class CollectionUtils {
     return result;
   }
 
+  // The following two methods cannot share an implementation because their generic bounds differ.
+
   /**
    * Returns a copy of {@code orig}, where each key and value in the result is a deep copy of the
    * corresponding element of {@code orig}.
@@ -149,12 +154,14 @@ public class CollectionUtils {
    * @param <V> the type of values of the map
    * @param <M> the type of the map
    * @param orig a map
-   * @return a deep copy of {@code orig}
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
   public static <
-          K extends @Nullable DeepCopyable, V extends @Nullable DeepCopyable, M extends Map<K, V>>
-      M deepCopy(M orig) {
+          K extends @Nullable DeepCopyable,
+          V extends @Nullable DeepCopyable,
+          M extends @Nullable Map<K, V>>
+      @PolyNull M deepCopy(@PolyNull M orig) {
     if (orig == null) {
       return null;
     }
@@ -180,10 +187,10 @@ public class CollectionUtils {
    * @param <V> the type of values of the map
    * @param <M> the type of the map
    * @param orig a map
-   * @return a copy of {@code orig} whose values are deep copies
+   * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V extends DeepCopyable, M extends Map<K, V>> M deepCopyValues(M orig) {
+  public static <K, V extends @Nullable DeepCopyable, M extends @Nullable Map<K, V>> @PolyNull M deepCopyValues(@PolyNull M orig) {
     if (orig == null) {
       return null;
     }
