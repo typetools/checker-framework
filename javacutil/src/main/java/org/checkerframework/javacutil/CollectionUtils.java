@@ -126,9 +126,8 @@ public class CollectionUtils {
    * @param orig a collection
    * @return a deep copy of {@code orig}
    */
-  @SuppressWarnings("signedness") // problem with clone()
-  public static <T extends @Nullable DeepCopyable, C extends @Nullable Collection<T>> C deepCopy(
-      C orig) {
+  @SuppressWarnings({"signedness", "nullness:argument"}) // problem with clone()
+  public static <T extends @Nullable DeepCopyable, C extends @Nullable Collection<T>> @PolyNull C deepCopy(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }

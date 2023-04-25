@@ -69,10 +69,6 @@ public class AnnotationMirrorSet
    *
    * @return a deep copy of this
    */
-  @SuppressWarnings({
-    "nullness:type.argument",
-    "keyfor:type.argument"
-  }) // generics problem with deepCopy()
   @Override
   public AnnotationMirrorSet deepCopy() {
     try {
@@ -80,7 +76,8 @@ public class AnnotationMirrorSet
 
       result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
       for (AnnotationMirror am : shadowSet) {
-        AnnotationMirror newAm = AnnotationUtils.deepCopy(am);
+        @SuppressWarnings("keyfor:cast.unsafe")
+        AnnotationMirror newAm = (@KeyFor("result") AnnotationMirror) AnnotationUtils.deepCopy(am);
         result.shadowSet.add(newAm);
       }
       return result;
