@@ -49,12 +49,17 @@ import org.checkerframework.javacutil.TypeKindUtils;
  */
 public class PropagationTreeAnnotator extends TreeAnnotator {
 
+  /** The qualifier hierarchy to use. */
   private final QualifierHierarchy qualHierarchy;
 
   /** Used to replace annotations in var type according to initializer annotations. */
   private final AnnotatedTypeReplacer replacer = new AnnotatedTypeReplacer();
 
-  /** Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}. */
+  /**
+   * Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}.
+   *
+   * @param atypeFactory type factory to use
+   */
   public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
     this.qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -321,6 +326,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
+  /**
+   * Returns true if {@code type} has a primary annotation in all hierarchies.
+   *
+   * @param type the type to check
+   * @return true if {@code type} has a primary annotation in all hierarchies
+   */
   private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
     boolean annotated = true;
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
