@@ -270,6 +270,8 @@ do
     cd "${OUTDIR}" || exit 5
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
+        echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
+        cat "${REPO_FULLPATH}/.cannot-run-wpi"
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can
         # delete it right away.
@@ -351,6 +353,7 @@ results_available=$(grep -vl -e "no build file found for" \
     "${OUTDIR}-results/"*.log || true)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
+echo "results_available = ${results_available}"
 
 if [ -z "${results_available}" ]; then
   echo "No results are available."
