@@ -54,7 +54,7 @@ import org.plumelib.util.CollectionsPlume;
  *
  * @see TypeMirror
  */
-public abstract class AnnotatedTypeMirror implements DeepCopyable {
+public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeMirror> {
 
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();

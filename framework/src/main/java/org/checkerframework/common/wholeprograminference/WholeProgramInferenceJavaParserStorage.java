@@ -1027,7 +1027,7 @@ public class WholeProgramInferenceJavaParserStorage
    * Stores the JavaParser node for a compilation unit and the list of wrappers for the classes and
    * interfaces in that compilation unit.
    */
-  private static class CompilationUnitAnnos implements DeepCopyable {
+  private static class CompilationUnitAnnos implements DeepCopyable<CompilationUnitAnnos> {
     /** Compilation unit being wrapped. */
     public final CompilationUnit compilationUnit;
     /** Wrappers for classes and interfaces in {@code compilationUnit}. */
@@ -1103,7 +1103,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Stores wrappers for the locations where annotations may be inferred in a class or interface.
    */
-  private static class ClassOrInterfaceAnnos implements DeepCopyable {
+  private static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
     /**
      * Mapping from JVM method signatures to the wrapper containing the corresponding executable.
      */
@@ -1206,7 +1206,7 @@ public class WholeProgramInferenceJavaParserStorage
    * Stores the JavaParser node for a method or constructor and the annotations that have been
    * inferred about its parameters and return type.
    */
-  public class CallableDeclarationAnnos implements DeepCopyable {
+  public class CallableDeclarationAnnos implements DeepCopyable<CallableDeclarationAnnos> {
     /** Wrapped method or constructor declaration. */
     public final CallableDeclaration<?> declaration;
     /**
@@ -1264,18 +1264,13 @@ public class WholeProgramInferenceJavaParserStorage
       try {
         CallableDeclarationAnnos result = (CallableDeclarationAnnos) super.clone();
         // nothing to be done for declaration
-        if (result.returnType != null) {
-          result.returnType = result.returnType.deepCopy();
-        }
-        if (result.receiverType != null) {
-          result.receiverType = result.receiverType.deepCopy();
-        }
+        result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
+        result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
         if (result.parameterTypes != null) {
           result.parameterTypes = CollectionUtils.deepCopy(result.parameterTypes);
         }
-        if (result.declarationAnnotations != null) {
-          result.declarationAnnotations = result.declarationAnnotations.deepCopy();
-        }
+        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+
         if (result.paramsDeclAnnos != null) {
           result.paramsDeclAnnos = deepCopySetOfPairs(result.paramsDeclAnnos);
         }
@@ -1620,7 +1615,7 @@ public class WholeProgramInferenceJavaParserStorage
     Set<Pair<Integer, AnnotationMirror>> result = CollectionUtils.clone(orig);
     result.clear();
     // No copying:  Pair, Integer, AnnotationMirror are all immutable.
-    result.addAll(orig); // no copying
+    result.addAll(orig);
     return result;
   }
 
@@ -1645,7 +1640,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /** Stores the JavaParser node for a field and the annotations that have been inferred for it. */
-  private static class FieldAnnos implements DeepCopyable {
+  private static class FieldAnnos implements DeepCopyable<FieldAnnos> {
     /** Wrapped field declaration. */
     public final VariableDeclarator declaration;
     /** Inferred type for field, initialized the first time it's accessed. */
@@ -1671,12 +1666,8 @@ public class WholeProgramInferenceJavaParserStorage
     public FieldAnnos deepCopy() {
       try {
         FieldAnnos result = (FieldAnnos) super.clone();
-        if (type != null) {
-          type = type.deepCopy();
-        }
-        if (declarationAnnotations != null) {
-          declarationAnnotations = declarationAnnotations.deepCopy();
-        }
+        result.type = DeepCopyable.deepCopyOrNull(this.type);
+        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
         return result;
       } catch (CloneNotSupportedException e) {
         throw new Error("this can't happen", e);

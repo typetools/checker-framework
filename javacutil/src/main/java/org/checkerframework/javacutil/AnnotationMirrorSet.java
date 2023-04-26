@@ -29,7 +29,7 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
 public class AnnotationMirrorSet
-    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable {
+    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable<AnnotationMirrorSet> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
