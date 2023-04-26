@@ -397,7 +397,7 @@ else
 
     if [ ! -s "${listpath}" ] ; then
         echo "listpath ${listpath} has size zero"
-        ls -l "${listpath}"
+        ls -al "${listpath}"
         echo "results_available = ${results_available}"
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
