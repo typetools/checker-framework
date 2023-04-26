@@ -23,6 +23,7 @@ jobs:
    - misc_jdk17
    - guava_jdk17
    - plume_lib_jdk17
+   - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -208,8 +209,6 @@ jobs:
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
 - job: daikon_jdk17
-  dependsOn:
-   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
