@@ -130,16 +130,14 @@ public class CollectionUtils {
    * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"signedness", "nullness:argument"}) // problem with clone()
-  public static <T extends @Nullable DeepCopyable, C extends @Nullable Collection<T>> @PolyNull C deepCopy(@PolyNull C orig) {
+  public static <T extends @Nullable DeepCopyable<T>, C extends @Nullable Collection<T>> @PolyNull C deepCopy(@PolyNull C orig) {
     if (orig == null) {
       return null;
     }
     C result = clone(orig);
     result.clear();
     for (T elt : orig) {
-      @SuppressWarnings("unchecked")
-      T newElt = elt == null ? elt : (T) elt.deepCopy();
-      result.add(newElt);
+      result.add(DeepCopyable.deepCopyOrNull(elt));
     }
     return result;
   }
@@ -158,8 +156,8 @@ public class CollectionUtils {
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
   public static <
-          K extends @Nullable DeepCopyable,
-          V extends @Nullable DeepCopyable,
+          K extends @Nullable DeepCopyable<K>,
+          V extends @Nullable DeepCopyable<V>,
           M extends @Nullable Map<K, V>>
       @PolyNull M deepCopy(@PolyNull M orig) {
     if (orig == null) {
@@ -169,12 +167,8 @@ public class CollectionUtils {
     result.clear();
     for (Map.Entry<K, V> mapEntry : orig.entrySet()) {
       K oldKey = mapEntry.getKey();
-      @SuppressWarnings("unchecked")
-      K newKey = oldKey == null ? oldKey : (K) oldKey.deepCopy();
       V oldValue = mapEntry.getValue();
-      @SuppressWarnings("unchecked")
-      V newValue = oldValue == null ? oldValue : (V) oldValue.deepCopy();
-      result.put(newKey, newValue);
+      result.put(DeepCopyable.deepCopyOrNull(oldKey), DeepCopyable.deepCopyOrNull(oldValue));
     }
     return result;
   }
@@ -190,7 +184,7 @@ public class CollectionUtils {
    * @return a copy of {@code orig}, as described above
    */
   @SuppressWarnings({"nullness", "signedness"}) // generics problem with clone
-  public static <K, V extends @Nullable DeepCopyable, M extends @Nullable Map<K, V>> @PolyNull M deepCopyValues(@PolyNull M orig) {
+  public static <K, V extends @Nullable DeepCopyable<V>, M extends @Nullable Map<K, V>> @PolyNull M deepCopyValues(@PolyNull M orig) {
     if (orig == null) {
       return null;
     }
@@ -198,11 +192,8 @@ public class CollectionUtils {
     result.clear();
     for (Map.Entry<K, V> mapEntry : orig.entrySet()) {
       K oldKey = mapEntry.getKey();
-      K newKey = oldKey;
       V oldValue = mapEntry.getValue();
-      @SuppressWarnings("unchecked")
-      V newValue = oldValue == null ? oldValue : (V) oldValue.deepCopy();
-      result.put(newKey, newValue);
+      result.put(oldKey, DeepCopyable.deepCopyOrNull(oldValue));
     }
     return result;
   }

@@ -1529,23 +1529,4 @@ public class AnnotationUtils {
       throw new BugInCF(e);
     }
   }
-
-  /**
-   * Makes a deep copy of its argument, if possible; otherwise makes a clone.
-   *
-   * @param <AM> the type of the annotation to copy
-   * @param am the annotation to copy
-   * @return a deep copy of this
-   */
-  public static <AM extends AnnotationMirror> AM deepCopy(AM am) {
-    if (am instanceof DeepCopyable) {
-      @SuppressWarnings("unchecked")
-      AM result = (AM) ((DeepCopyable) am).deepCopy();
-      return result;
-    } else if (am instanceof Cloneable) {
-      return CollectionUtils.clone(am);
-    } else {
-      throw new Error(String.format("Cannot deepCopy or clone: %s [%s]", am, am.getClass()));
-    }
-  }
 }

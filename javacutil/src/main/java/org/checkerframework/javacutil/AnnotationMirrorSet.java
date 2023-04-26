@@ -29,7 +29,7 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
 public class AnnotationMirrorSet
-    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable {
+    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable<AnnotationMirrorSet> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
@@ -75,11 +75,7 @@ public class AnnotationMirrorSet
       AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
 
       result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-      for (AnnotationMirror am : shadowSet) {
-        @SuppressWarnings("keyfor:cast.unsafe")
-        AnnotationMirror newAm = (@KeyFor("result") AnnotationMirror) AnnotationUtils.deepCopy(am);
-        result.shadowSet.add(newAm);
-      }
+      result.shadowSet.addAll(shadowSet);
       return result;
     } catch (CloneNotSupportedException e) {
       throw new Error(e);
