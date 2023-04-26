@@ -11,7 +11,8 @@
   "packageRules": [
     {
       "matchPackageNames": ["aws-java-sdk-bom"],
-      "schedule": ["on the last day of the month"]
+      "schedule_does_not_work": ["on the last day of the month"]
+      "schedule": ["* 23 28 * * "]
     }
   ]
 }
