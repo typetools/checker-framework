@@ -69,6 +69,7 @@ public class AnnotationMirrorSet
    *
    * @return a deep copy of this
    */
+  @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
   @Override
   public AnnotationMirrorSet deepCopy() {
     try {

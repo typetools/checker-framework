@@ -5,7 +5,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-/** Simple immutable pair class for multiple returns. */
+/**
+ * Simple immutable pair class for multiple returns.
+ *
+ * @param <V1> the type of the first element of the pair
+ * @param <V2> the type of the second element of the pair
+ */
 // TODO: as class is immutable, use @Covariant annotation.
 public class Pair<V1, V2> {
   /** The first element in the pair. */
