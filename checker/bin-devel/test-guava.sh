@@ -27,4 +27,6 @@ fi
 ## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-cd guava && time mvn -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 --debug -B compile -P checkerframework-local
+# The maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
+cd guava && time mvn --debug -B compile -P checkerframework-local \
+  -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
