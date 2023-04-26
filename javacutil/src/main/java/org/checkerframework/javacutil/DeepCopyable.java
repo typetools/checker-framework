@@ -5,7 +5,7 @@ package org.checkerframework.javacutil;
  *
  * @param <T> the type of the subtype of DeepCopyable
  */
-public interface DeepCopyable<T> extends Cloneable {
+public interface DeepCopyable<T> {
 
   /**
    * Returns a deep copy of this. A deep copy is equal to the original, but side effects to either
