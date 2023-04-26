@@ -89,8 +89,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *       is, if omitting it has the same effect as writing it.
  * </ol>
  *
- * @param <T> the type used by the storage to store annotations. See {@link
- *     WholeProgramInferenceStorage}
+ * @param <T> the type used by the storage to store annotations
+ * @see WholeProgramInferenceStorage
  */
 // TODO: We could add an option to update the type of explicitly annotated elements, but this
 // currently is not recommended since the insert-annotations-to-source tool, which adds annotations

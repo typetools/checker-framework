@@ -2433,7 +2433,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod. Does
-   * not modify the AMethod. This method must only be called when using WholeProgramInferenceScenes.
+   * not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @return contract annotations for the method
@@ -2447,8 +2449,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the precondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @return precondition annotations for the method
@@ -2477,8 +2480,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
@@ -2514,6 +2518,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Return the contract annotations (that is, pre- and post-conditions) for the given
    * CallableDeclarationAnnos. Does not modify the CallableDeclarationAnnos.
    *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
+   *
    * @param methodAnnos annotation data for a method
    * @return contract annotations for the method
    */
@@ -2529,6 +2535,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Return the precondition annotations for the given CallableDeclarationAnnos. Does not modify the
    * CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @return precondition annotations for the method
@@ -2549,6 +2557,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Return the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
    * the CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
