@@ -73,13 +73,8 @@ public class AnnotationMirrorSet
   public AnnotationMirrorSet deepCopy() {
     try {
       AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
-
       result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-      for (AnnotationMirror am : shadowSet) {
-        @SuppressWarnings("keyfor:cast.unsafe")
-        AnnotationMirror newAm = (@KeyFor("result") AnnotationMirror) AnnotationUtils.deepCopy(am);
-        result.shadowSet.add(newAm);
-      }
+      result.shadowSet.addAll(shadowSet);
       return result;
     } catch (CloneNotSupportedException e) {
       throw new Error(e);

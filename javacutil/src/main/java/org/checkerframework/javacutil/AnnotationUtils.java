@@ -44,7 +44,11 @@ import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotati
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
-/** A utility class for working with annotations. */
+/**
+ * A utility class for working with annotations.
+ *
+ * <p>Note: {@code AnnotationMirror}s are immutable.
+ */
 public class AnnotationUtils {
 
   // Class cannot be instantiated.
@@ -1527,25 +1531,6 @@ public class AnnotationUtils {
       return Class.forName(AnnotationUtils.annotationBinaryName(am));
     } catch (ClassNotFoundException e) {
       throw new BugInCF(e);
-    }
-  }
-
-  /**
-   * Makes a deep copy of its argument, if possible; otherwise makes a clone.
-   *
-   * @param <AM> the type of the annotation to copy
-   * @param am the annotation to copy
-   * @return a deep copy of this
-   */
-  public static <AM extends AnnotationMirror> AM deepCopy(AM am) {
-    if (am instanceof DeepCopyable) {
-      @SuppressWarnings("unchecked")
-      AM result = (AM) ((DeepCopyable) am).deepCopy();
-      return result;
-    } else if (am instanceof Cloneable) {
-      return CollectionUtils.clone(am);
-    } else {
-      throw new Error(String.format("Cannot deepCopy or clone: %s [%s]", am, am.getClass()));
     }
   }
 }

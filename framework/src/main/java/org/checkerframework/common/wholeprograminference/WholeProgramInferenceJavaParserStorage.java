@@ -78,7 +78,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.DeepCopyable;
@@ -1620,11 +1619,8 @@ public class WholeProgramInferenceJavaParserStorage
       Set<Pair<Integer, AnnotationMirror>> orig) {
     Set<Pair<Integer, AnnotationMirror>> result = CollectionUtils.clone(orig);
     result.clear();
-    for (Pair<Integer, AnnotationMirror> p : orig) {
-      Pair<Integer, AnnotationMirror> newPair =
-          Pair.of(p.first, AnnotationUtils.deepCopy(p.second));
-      result.add(newPair);
-    }
+    // No copying:  Pair, Integer, AnnotationMirror are all immutable.
+    result.addAll(orig); // no copying
     return result;
   }
 
