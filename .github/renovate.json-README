@@ -1,0 +1,2 @@
+This schedule doesn't work:  Renovate accepts it but updates the dependency every day.
+      "schedule": ["on the last day of the month"],
