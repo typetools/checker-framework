@@ -397,6 +397,11 @@ public class Resolver {
    * Build an instance of {@code Resolve$MethodResolutionContext}.
    *
    * @return a MethodResolutionContext
+   * @throws ClassNotFoundException if there is trouble constructing the instance
+   * @throws InstantiationException if there is trouble constructing the instance
+   * @throws IllegalAccessException if there is trouble constructing the instance
+   * @throws InvocationTargetException if there is trouble constructing the instance
+   * @throws NoSuchFieldException if there is trouble constructing the instance
    */
   protected Object buildMethodContext()
       throws ClassNotFoundException,
