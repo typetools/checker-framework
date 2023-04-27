@@ -27,8 +27,12 @@ fi
 ## This command works locally, but on Azure it fails with timouts while downloading Maven dependencies.
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
-# The maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
+# This block attempts to avoid timeouts when downloading a Maven dependency hangs.
+# I wonder whether "dependency-go-offline" does too much work.
+# I believe that "dependency:resolve" builds the application, so don't do that.
+# Comment about -D flags: the maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
 (cd guava && \
-(timeout 5m mvn dependency:go-offline || (sleep 1m && timeout 5m mvn dependency:go-offline)) && \
+(timeout 5m dependency:resolve-plugins || (sleep 1m && (timeout 5m mvn dependency:resolve-plugins || true))) && \
+(timeout 5m mvn dependency:go-offline || (sleep 1m && (timeout 5m mvn dependency:go-offline || true))) && \
 time mvn --debug -B compile -P checkerframework-local \
   -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
