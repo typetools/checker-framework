@@ -1153,11 +1153,6 @@ public class WholeProgramInferenceJavaParserStorage
       this.types = types;
     }
 
-    /**
-     * Returns a deep copy of this.
-     *
-     * @return a deep copy of this
-     */
     @Override
     public CompilationUnitAnnos deepCopy() {
       /// Calling super.clone() does not work because field `types` is final.
@@ -1236,11 +1231,6 @@ public class WholeProgramInferenceJavaParserStorage
       classDeclaration = javaParserNode;
     }
 
-    /**
-     * Returns a deep copy of this.
-     *
-     * @return a deep copy of this
-     */
     @Override
     public ClassOrInterfaceAnnos deepCopy() {
       try {
@@ -1355,11 +1345,6 @@ public class WholeProgramInferenceJavaParserStorage
       this.declaration = declaration;
     }
 
-    /**
-     * Returns a deep copy of this.
-     *
-     * @return a deep copy of this
-     */
     @Override
     public CallableDeclarationAnnos deepCopy() {
       try {
@@ -1373,7 +1358,7 @@ public class WholeProgramInferenceJavaParserStorage
         result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
 
         if (result.paramsDeclAnnos != null) {
-          result.paramsDeclAnnos = deepCopySetOfPairs(result.paramsDeclAnnos);
+          result.paramsDeclAnnos = new ArraySet<>(result.paramsDeclAnnos);
         }
         result.preconditions = deepCopyMapOfStringToPair(result.preconditions);
         result.postconditions = deepCopyMapOfStringToPair(result.postconditions);
@@ -1706,22 +1691,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Helper method for deepCopy() that copies a set of pairs.
-   *
-   * @param orig a set of pairs
-   * @return a deep copy of the set
-   */
-  private static Set<Pair<Integer, AnnotationMirror>> deepCopySetOfPairs(
-      Set<Pair<Integer, AnnotationMirror>> orig) {
-    Set<Pair<Integer, AnnotationMirror>> result = CollectionUtils.clone(orig);
-    result.clear();
-    // No copying:  Pair, Integer, AnnotationMirror are all immutable.
-    result.addAll(orig);
-    return result;
-  }
-
-  /**
-   * Deep copy a pre- or post-condition map.
+   * Deep copy (according to the {@code DeepCopyable} interface) a pre- or post-condition map.
    *
    * @param orig the map to copy
    * @return a deep copy of the map
@@ -1758,11 +1728,6 @@ public class WholeProgramInferenceJavaParserStorage
       this.declaration = declaration;
     }
 
-    /**
-     * Returns a deep copy of this.
-     *
-     * @return a deep copy of this
-     */
     @Override
     public FieldAnnos deepCopy() {
       try {

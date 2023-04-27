@@ -121,8 +121,8 @@ public class CollectionUtils {
   }
 
   /**
-   * Returns a copy of {@code orig}, where each element of the result is a deep copy of the
-   * corresponding element of {@code orig}.
+   * Returns a copy of {@code orig}, where each element of the result is a deep copy (according to
+   * the {@code DeepCopyable} interface) of the corresponding element of {@code orig}.
    *
    * @param <T> the type of elements of the collection
    * @param <C> the type of the collection
@@ -145,8 +145,8 @@ public class CollectionUtils {
   // The following two methods cannot share an implementation because their generic bounds differ.
 
   /**
-   * Returns a copy of {@code orig}, where each key and value in the result is a deep copy of the
-   * corresponding element of {@code orig}.
+   * Returns a copy of {@code orig}, where each key and value in the result is a deep copy
+   * (according to the {@code DeepCopyable} interface) of the corresponding element of {@code orig}.
    *
    * @param <K> the type of keys of the map
    * @param <V> the type of values of the map
@@ -174,8 +174,9 @@ public class CollectionUtils {
   }
 
   /**
-   * Returns a copy of {@code orig}, where each value of the result is a deep copy of the
-   * corresponding value of {@code orig}, but the keys are the same objects.
+   * Returns a copy of {@code orig}, where each value of the result is a deep copy (according to the
+   * {@code DeepCopyable} interface) of the corresponding value of {@code orig}, but the keys are
+   * the same objects.
    *
    * @param <K> the type of keys of the map
    * @param <V> the type of values of the map
