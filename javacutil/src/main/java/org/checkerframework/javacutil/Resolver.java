@@ -393,7 +393,11 @@ public class Resolver {
     }
   }
 
-  /** Build an instance of {@code Resolve$MethodResolutionContext}. */
+  /**
+   * Build an instance of {@code Resolve$MethodResolutionContext}.
+   *
+   * @return a MethodResolutionContext
+   */
   protected Object buildMethodContext()
       throws ClassNotFoundException,
           InstantiationException,
