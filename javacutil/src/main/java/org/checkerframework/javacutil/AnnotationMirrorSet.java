@@ -64,11 +64,6 @@ public class AnnotationMirrorSet
     this.addAll(annos);
   }
 
-  /**
-   * Returns a deep copy of this.
-   *
-   * @return a deep copy of this
-   */
   @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
   @Override
   public AnnotationMirrorSet deepCopy() {
