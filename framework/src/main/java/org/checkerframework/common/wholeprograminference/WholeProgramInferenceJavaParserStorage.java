@@ -4,6 +4,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -44,12 +45,14 @@ import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -59,6 +62,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -103,11 +107,20 @@ public class WholeProgramInferenceJavaParserStorage
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /** The element utilities for {@code atypeFactory}. */
+  protected final Elements elements;
+
   /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
    */
   private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos = new HashMap<>();
+
+  /** Maps from binary class name to binary names of all supertypes. */
+  private Map<@BinaryName String, Set<@BinaryName String>> supertypesMap = new HashMap<>();
+
+  /** Maps from binary class name to binary names of all known subtypes. */
+  private Map<@BinaryName String, Set<@BinaryName String>> subtypesMap = new HashMap<>();
 
   /**
    * Files containing classes for which an annotation has been inferred since the last time files
@@ -156,6 +169,7 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.elements = atypeFactory.getElementUtils();
     this.inferOutputOriginal = inferOutputOriginal;
   }
 
@@ -557,6 +571,25 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
+   * Computes the binary names of a type and all nested types.
+   *
+   * @param td a type declaration
+   * @param prefix the package, or package+outerclass, prefix in a binary name
+   * @param result a list to which to add the binary names of all classes defined in the compilation
+   *     unit
+   */
+  private static void addDeclaredTypes(
+      TypeDeclaration<?> td, String prefix, List<@BinaryName String> result) {
+    String typeName = prefix + td.getName().asString();
+    result.add(typeName);
+    for (BodyDeclaration<?> member : td.getMembers()) {
+      if (member.isTypeDeclaration()) {
+        addDeclaredTypes(member.asTypeDeclaration(), typeName + "$", result);
+      }
+    }
+  }
+
+  /**
    * The first two arguments are a javac tree and a JavaParser node representing the same class.
    * This method creates wrappers around all the classes, fields, and methods in that class, and
    * stores those wrappers in {@code sourceAnnos}.
@@ -648,7 +681,7 @@ public class WholeProgramInferenceJavaParserStorage
            * @param tree tree to add. Its corresponding element is used as the key for {@code
            *     classToAnnos} if {@code classNameKey} is null.
            * @param classNameKey if non-null, used as the key for {@code classToAnnos} instead of
-           *     the element corresponding to {@code tree}
+           *     the binary name of the element corresponding to {@code tree}
            * @param javaParserNode the node corresponding to the declaration, which is used to place
            *     annotations on the class itself. Can be null, e.g. for an anonymous class.
            */
@@ -660,6 +693,16 @@ public class WholeProgramInferenceJavaParserStorage
             if (classNameKey == null) {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
               className = ElementUtils.getBinaryName(classElt);
+
+              for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
+                String supertypeName = ElementUtils.getBinaryName(supertypeElement);
+                Set<String> supertypeSet =
+                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                supertypeSet.add(supertypeName);
+                Set<String> subtypeSet =
+                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                subtypeSet.add(className);
+              }
             } else {
               className = classNameKey;
             }
@@ -828,20 +871,63 @@ public class WholeProgramInferenceJavaParserStorage
    */
   public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
-      wpiPrepareClassForWriting(type);
+      wpiPrepareClassForWriting(
+          type, supertypesMap.get(type.className), subtypesMap.get(type.className));
     }
   }
 
   /**
    * Side-effects the class annotations to make any desired changes before writing to a file.
    *
+   * <p>Because of the side effect, clients may want to pass a copy into this method.
+   *
    * @param classAnnos the class annotations to modify
+   * @param supertypes the binary names of all supertypes; not side-effected
+   * @param subtypes the binary names of all subtypes; not side-effected
    */
-  public void wpiPrepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+  public void wpiPrepareClassForWriting(
+      ClassOrInterfaceAnnos classAnnos,
+      Collection<@BinaryName String> supertypes,
+      Collection<@BinaryName String> subtypes) {
+    if (classAnnos.callableDeclarations.isEmpty()) {
+      return;
+    }
+
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      String jvmSignature = methodEntry.getKey();
+      List<CallableDeclarationAnnos> inSupertypes =
+          findOverloads(jvmSignature, supertypesMap.get(classAnnos.className));
+      List<CallableDeclarationAnnos> inSubtypes =
+          findOverloads(jvmSignature, subtypesMap.get(classAnnos.className));
+
+      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
+  }
+
+  /**
+   * Return all the CallableDeclarationAnnos for the given signature.
+   *
+   * @param jvmSignature the JVM signature
+   * @param typeNames a collection of type names
+   * @return the CallableDeclarationAnnos for the given signature, in all of the types
+   */
+  private List<CallableDeclarationAnnos> findOverloads(
+      String jvmSignature, Collection<@BinaryName String> typeNames) {
+    if (typeNames == null) {
+      return Collections.emptyList();
+    }
+    List<CallableDeclarationAnnos> result = new ArrayList<>();
+    for (String typeName : typeNames) {
+      ClassOrInterfaceAnnos classAnnos = classToAnnos.get(typeName);
+      if (classAnnos != null) {
+        CallableDeclarationAnnos callableAnnos = classAnnos.callableDeclarations.get(jvmSignature);
+        if (callableAnnos != null) {
+          result.add(callableAnnos);
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -849,9 +935,18 @@ public class WholeProgramInferenceJavaParserStorage
    * to a file.
    *
    * @param methodAnnos the method or constructor annotations to modify
+   * @param inSupertypes the method or constructor annotations for all overridden methods; not
+   *     side-effected
+   * @param inSubtypes the method or constructor annotations for all overriding methods; not
+   *     side-effected
    */
-  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  // TODO: The type factory implementation must consider both inferred annotations *and* those
+  // written by the programmer.  Handle annotations in elements later.
+  public void wpiPrepareMethodForWriting(
+      CallableDeclarationAnnos methodAnnos,
+      Collection<CallableDeclarationAnnos> inSupertypes,
+      Collection<CallableDeclarationAnnos> inSubtypes) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
   @Override
@@ -1120,15 +1215,18 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull AnnotationMirrorSet classAnnotations = null;
 
     /**
-     * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
+     * The JavaParser TypeDeclaration representing the class's declaration. Used for placing
      * annotations inferred on the class declaration itself.
      */
     private @MonotonicNonNull TypeDeclaration<?> classDeclaration;
 
+    /** The binary name of the class. */
+    private @BinaryName String className;
+
     /**
      * Create a new ClassOrInterfaceAnnos.
      *
-     * @param javaParserNode the java parser node corresponding to the class declaration, which is
+     * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
      *     used for placing annotations on the class declaration
      */
     public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
