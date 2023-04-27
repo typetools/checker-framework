@@ -28,5 +28,7 @@ fi
 # cd guava && time mvn --debug -B package -P checkerframework-local -Dmaven.test.skip=true -Danimal.sniffer.skip=true
 
 # The maven.wagon settings should not be relevant to Maven 3.9 and later, but try them anyway.
-cd guava && time mvn --debug -B compile -P checkerframework-local \
-  -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+(cd guava && \
+(timeout 5m mvn dependency:go-offline || (sleep 1m && timeout 5m mvn dependency:go-offline)) && \
+time mvn --debug -B compile -P checkerframework-local \
+  -Dhttp.keepAlive=false -Daether.connector.http.connectionMaxTtl=25 -Dmaven.wagon.http.pool=false -Dmaven.wagon.httpconnectionManager.ttlSeconds=120)
