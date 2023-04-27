@@ -162,7 +162,7 @@ public class InferenceFactory {
         Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
         if (enclosing.getKind() == Tree.Kind.METHOD) {
           MethodTree methodTree = (MethodTree) enclosing;
-          AnnotatedTypeMirror res = factory.getAnnotatedType(methodTree).getReturnType();
+          AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), context);
         } else {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
