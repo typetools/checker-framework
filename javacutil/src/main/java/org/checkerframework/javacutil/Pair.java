@@ -5,7 +5,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-/** Simple pair class for multiple returns. */
+/**
+ * Simple immutable pair class for multiple returns.
+ *
+ * @param <V1> the type of the first element of the pair
+ * @param <V2> the type of the second element of the pair
+ */
 // TODO: as class is immutable, use @Covariant annotation.
 public class Pair<V1, V2> {
   /** The first element in the pair. */
@@ -20,6 +25,72 @@ public class Pair<V1, V2> {
 
   public static <V1, V2> Pair<V1, V2> of(V1 v1, V2 v2) {
     return new Pair<>(v1, v2);
+  }
+
+  // The typical way to make a copy is to first call super.clone() and then modify it.
+  // That implementation strategy does not work for Pair because its fields are final, so the clone
+  // and deepCopy methods use of() instead.
+
+  /**
+   * Returns a copy of this in which each element is a clone of the corresponding element of this.
+   * {@code clone()} may or may not itself make a deep copy of the elements.
+   *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
+   * @param orig a pair
+   * @return a copy of {@code orig}, with all elements cloned
+   */
+  @SuppressWarnings("nullness") // generics problem with deepCopy()
+  public static <V1 extends Cloneable, V2 extends Cloneable> Pair<V1, V2> cloneElements(
+      Pair<V1, V2> orig) {
+
+    V1 oldFirst = orig.first;
+    V1 newFirst = oldFirst == null ? oldFirst : CollectionUtils.clone(oldFirst);
+    V2 oldSecond = orig.second;
+    V2 newSecond = oldSecond == null ? oldSecond : CollectionUtils.clone(oldSecond);
+    return of(newFirst, newSecond);
+  }
+
+  /**
+   * Returns a deep copy of this: each element is a deep copy of the corresponding element of this.
+   *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
+   * @param orig a pair
+   * @return a deep copy of {@code orig}
+   */
+  @SuppressWarnings("nullness") // generics problem with deepCopy()
+  public static <V1 extends DeepCopyable<V1>, V2 extends DeepCopyable<V2>> Pair<V1, V2> deepCopy(
+      Pair<V1, V2> orig) {
+    return of(DeepCopyable.deepCopyOrNull(orig.first), DeepCopyable.deepCopyOrNull(orig.second));
+  }
+
+  /**
+   * Returns a copy, where the {@code first} element is deep: the {@code first} element is a deep
+   * copy, and the {@code} second element is identical to the argument.
+   *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
+   * @param orig a pair
+   * @return a copy of {@code orig}, where the first element is a deep copy
+   */
+  @SuppressWarnings("nullness") // generics problem with deepCopy()
+  public static <V1 extends DeepCopyable<V1>, V2> Pair<V1, V2> deepCopyFirst(Pair<V1, V2> orig) {
+    return of(DeepCopyable.deepCopyOrNull(orig.first), orig.second);
+  }
+
+  /**
+   * Returns a copy, where the {@code second} element is deep: the {@code first} element is
+   * identical to the argument, and the {@code} second element is a deep copy.
+   *
+   * @param <V1> the type of the first element of the pair
+   * @param <V2> the type of the second element of the pair
+   * @param orig a pair
+   * @return a copy of {@code orig}, where the second element is a deep copy
+   */
+  @SuppressWarnings("nullness") // generics problem with deepCopy()
+  public static <V1, V2 extends DeepCopyable<V2>> Pair<V1, V2> deepCopySecond(Pair<V1, V2> orig) {
+    return of(orig.first, DeepCopyable.deepCopyOrNull(orig.second));
   }
 
   @SideEffectFree
