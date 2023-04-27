@@ -28,7 +28,8 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
-public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") AnnotationMirror> {
+public class AnnotationMirrorSet
+    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable<AnnotationMirrorSet> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
@@ -38,7 +39,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors
+  /// Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -61,6 +62,24 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    */
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
+  }
+
+  /**
+   * Returns a deep copy of this.
+   *
+   * @return a deep copy of this
+   */
+  @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
+  @Override
+  public AnnotationMirrorSet deepCopy() {
+    try {
+      AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
+      result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
+      result.shadowSet.addAll(shadowSet);
+      return result;
+    } catch (CloneNotSupportedException e) {
+      throw new Error(e);
+    }
   }
 
   /**
