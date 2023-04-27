@@ -3,6 +3,7 @@ package org.checkerframework.common.wholeprograminference;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
@@ -51,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -131,6 +133,9 @@ public class WholeProgramInferenceJavaParserStorage
   /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
   private Map<String, CompilationUnitAnnos> sourceToAnnos = new HashMap<>();
 
+  /** Maps from binary class name to the source file that contains it. */
+  private Map<String, String> classToSource = new HashMap<>();
+
   /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
 
@@ -181,6 +186,53 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public void setFileModified(String path) {
     modifiedFiles.add(path);
+  }
+
+  /**
+   * Set the source file as modified, for the given class.
+   *
+   * @param className the binary name of a class that should be written to disk
+   */
+  private void setClassModified(@Nullable @BinaryName String className) {
+    if (className == null) {
+      return;
+    }
+    String path = classToSource.get(className);
+    if (path != null) {
+      setFileModified(path);
+    }
+  }
+
+  /**
+   * Set the source files as modified, for all the given classes.
+   *
+   * @param classNames the binary names of classes that should be written to disk
+   */
+  private void setClassesModified(@Nullable Collection<@BinaryName String> classNames) {
+    if (classNames == null) {
+      return;
+    }
+    for (String className : classNames) {
+      setClassModified(className);
+    }
+  }
+
+  /**
+   * For every modified file, consider its subclasses and superclasses modified, too. The reason is
+   * that an annotation change in a class might require annotations in its superclasses and
+   * supclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
+   * cause it to be written out, and while writing out, the annotations will be made consistent
+   * across the class hierarchy by {@link #wpiPrepareCompilationUnitForWriting}.
+   */
+  public void setSupertypesAndSubtypesModified() {
+    for (String path : modifiedFiles) {
+      CompilationUnitAnnos cuAnnos = sourceToAnnos.get(path);
+      for (ClassOrInterfaceAnnos classAnnos : cuAnnos.types) {
+        String className = classAnnos.className;
+        setClassesModified(supertypesMap.get(className));
+        setClassesModified(subtypesMap.get(className));
+      }
+    }
   }
 
   ///
@@ -568,6 +620,16 @@ public class WholeProgramInferenceJavaParserStorage
     JavaParserUtil.concatenateAddedStringLiterals(root);
     CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
     sourceToAnnos.put(path, sourceAnnos);
+
+    Optional<PackageDeclaration> oPackageDecl = root.getPackageDeclaration();
+    String prefix = oPackageDecl.isPresent() ? oPackageDecl.get().getName().asString() + "." : "";
+    List<@BinaryName String> typeNames = new ArrayList<>();
+    for (TypeDeclaration<?> type : root.getTypes()) {
+      addDeclaredTypes(type, prefix, typeNames);
+    }
+    for (String typeName : typeNames) {
+      classToSource.put(typeName, path);
+    }
   }
 
   /**
@@ -962,6 +1024,8 @@ public class WholeProgramInferenceJavaParserStorage
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
+
+    setSupertypesAndSubtypesModified();
 
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
