@@ -272,7 +272,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree tree, AnnotatedTypeFactory f) {
     AnnotatedTypeMirror type = f.getAnnotatedType(tree.getExpression());
     if (type.getKind() == TypeKind.ARRAY) {
-      return ((AnnotatedArrayType) type).getComponentType();
+      AnnotatedTypeMirror t = ((AnnotatedArrayType) type).getComponentType();
+      t = f.applyCaptureConversion(t);
+      return t;
     } else if (type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
       // Clean-up after Issue #979.
