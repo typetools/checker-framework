@@ -17,6 +17,7 @@ public class Issue4170 {
 
   public void method1() {
     var s = new ArrayList<@Nullable String>();
+    for (var str : s) {}
   }
 
   public void method2() {

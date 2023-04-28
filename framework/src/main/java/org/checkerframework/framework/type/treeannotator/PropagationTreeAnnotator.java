@@ -302,6 +302,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       boolean isVar = TreeUtils.isVariableTreeDeclaredUsingVar(tree);
       if (isVar) {
         ExpressionTree initializer = tree.getInitializer();
+        // Skip propagation of annotations when initializer can be null.
+        // E.g.
+        // for (var i : list) {}
         if (initializer != null) {
           AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
           if (initializerType.getKind() == TypeKind.DECLARED) {
