@@ -15,6 +15,7 @@ import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 
 /** A set of constraints and the operations that can be performed on them. */
 public class ConstraintSet implements ReductionResult {
@@ -242,6 +243,9 @@ public class ConstraintSet implements ReductionResult {
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
+      if (this.list.size() > 100) {
+        throw new BugInCF("TO MANY CONSTRAINTS!!!");
+      }
       Constraint constraint = this.pop();
       ReductionResult result = constraint.reduce(context);
       if (result instanceof ReductionResultPair) {
