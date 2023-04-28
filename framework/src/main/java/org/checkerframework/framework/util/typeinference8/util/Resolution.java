@@ -334,9 +334,9 @@ public class Resolution {
       Set<Set<AnnotationMirror>> qualifierLowerBounds =
           ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
+        QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+        lowerBoundAnnos = new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
         if (lowerBound != null) {
-          QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-          lowerBoundAnnos = new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
                 qh.leastUpperBounds(
@@ -350,8 +350,6 @@ public class Resolution {
             lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
             lowerBoundAnnos = newLubAnnos;
           }
-        } else {
-          lowerBoundAnnos = Collections.emptySet();
         }
       } else {
         lowerBoundAnnos = Collections.emptySet();
