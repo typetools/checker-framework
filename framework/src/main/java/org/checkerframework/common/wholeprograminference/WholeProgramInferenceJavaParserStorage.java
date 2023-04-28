@@ -91,6 +91,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraySet;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -771,7 +772,8 @@ public class WholeProgramInferenceJavaParserStorage
             } else {
               className = classNameKey;
             }
-            ClassOrInterfaceAnnos typeWrapper = new ClassOrInterfaceAnnos(javaParserNode);
+            ClassOrInterfaceAnnos typeWrapper =
+                new ClassOrInterfaceAnnos(className, javaParserNode);
             if (!classToAnnos.containsKey(className)) {
               classToAnnos.put(className, typeWrapper);
             }
@@ -1290,8 +1292,10 @@ public class WholeProgramInferenceJavaParserStorage
      * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
      *     used for placing annotations on the class declaration
      */
-    public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
-      classDeclaration = javaParserNode;
+    public ClassOrInterfaceAnnos(
+        @BinaryName String className, @Nullable TypeDeclaration<?> javaParserNode) {
+      this.classDeclaration = javaParserNode;
+      this.className = className;
     }
 
     @Override
