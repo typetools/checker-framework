@@ -105,7 +105,8 @@ public class ConstraintSet implements ReductionResult {
    */
   public Constraint pop() {
     assert !isEmpty();
-    return list.remove(0);
+    // Pop from the bottom so that newer constraints are resolved first.
+    return list.remove(list.size() - 1);
   }
 
   /** Remove all constraints in {@code subset} from this constraint set. */
@@ -243,7 +244,7 @@ public class ConstraintSet implements ReductionResult {
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
-      if (this.list.size() > 100) {
+      if (this.list.size() > 1000) {
         throw new BugInCF("TO MANY CONSTRAINTS!!!");
       }
       Constraint constraint = this.pop();
