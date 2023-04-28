@@ -1223,11 +1223,6 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CompilationUnitAnnos deepCopy() {
-      /// Calling super.clone() does not work because field `types` is final.
-      // CompilationUnitAnnos result = (CompilationUnitAnnos) super.clone();
-      // result.types = CollectionUtils.deepCopy(types);
-      // return result;
-
       return new CompilationUnitAnnos(compilationUnit, CollectionUtils.deepCopy(types));
     }
 
@@ -1301,18 +1296,16 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public ClassOrInterfaceAnnos deepCopy() {
-      try {
-        ClassOrInterfaceAnnos result = (ClassOrInterfaceAnnos) super.clone();
-        result.callableDeclarations = CollectionUtils.deepCopyValues(result.callableDeclarations);
-        result.fields = CollectionUtils.deepCopyValues(result.fields);
-        result.enumConstants =
-            CollectionUtils.clone(result.enumConstants); // no deep copy: elements are strings
-        result.classAnnotations = result.classAnnotations.deepCopy();
-        // no need to change classDeclaration
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
+      ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
+      result.callableDeclarations = CollectionUtils.deepCopyValues(callableDeclarations);
+      result.fields = CollectionUtils.deepCopyValues(fields);
+      result.enumConstants =
+          CollectionUtils.clone(enumConstants); // no deep copy: elements are strings
+      if (classAnnotations != null) {
+        result.classAnnotations = classAnnotations.deepCopy();
       }
+      // no need to change classDeclaration
+      return result;
     }
 
     /**
@@ -1415,25 +1408,20 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      try {
-        CallableDeclarationAnnos result = (CallableDeclarationAnnos) super.clone();
-        // nothing to be done for declaration
-        result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
-        result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
-        if (result.parameterTypes != null) {
-          result.parameterTypes = CollectionUtils.deepCopy(result.parameterTypes);
-        }
-        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
-
-        if (result.paramsDeclAnnos != null) {
-          result.paramsDeclAnnos = new ArraySet<>(result.paramsDeclAnnos);
-        }
-        result.preconditions = deepCopyMapOfStringToPair(result.preconditions);
-        result.postconditions = deepCopyMapOfStringToPair(result.postconditions);
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
+      CallableDeclarationAnnos result = new CallableDeclarationAnnos(declaration);
+      result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
+      result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
+      if (parameterTypes != null) {
+        result.parameterTypes = CollectionUtils.deepCopy(this.parameterTypes);
       }
+      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+
+      if (result.paramsDeclAnnos != null) {
+        result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
+      }
+      result.preconditions = deepCopyMapOfStringToPair(this.preconditions);
+      result.postconditions = deepCopyMapOfStringToPair(this.postconditions);
+      return result;
     }
 
     /**
@@ -1765,9 +1753,13 @@ public class WholeProgramInferenceJavaParserStorage
    * @return a deep copy of the map
    */
   private static Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-      deepCopyMapOfStringToPair(Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+      deepCopyMapOfStringToPair(
+          @Nullable Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+    if (orig == null) {
+      return null;
+    }
     Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
-        CollectionUtils.clone(orig);
+        new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
     result.clear();
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         orig.entrySet()) {
@@ -1798,14 +1790,10 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public FieldAnnos deepCopy() {
-      try {
-        FieldAnnos result = (FieldAnnos) super.clone();
-        result.type = DeepCopyable.deepCopyOrNull(this.type);
-        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
-      }
+      FieldAnnos result = new FieldAnnos(declaration);
+      result.type = DeepCopyable.deepCopyOrNull(this.type);
+      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      return result;
     }
 
     /**
