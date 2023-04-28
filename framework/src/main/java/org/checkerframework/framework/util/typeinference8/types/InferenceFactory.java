@@ -154,6 +154,9 @@ public class InferenceFactory {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) assignmentContext;
           AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
           AnnotatedTypeMirror res = fninf.getReturnType();
+          if (res.getKind() == TypeKind.VOID) {
+            return null;
+          }
           return new ProperType(res, res.getUnderlyingType(), context);
         }
       case RETURN:
