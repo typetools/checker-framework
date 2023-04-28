@@ -653,26 +653,6 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Computes the binary names of a type and all nested types.
-   *
-   * @param td a type declaration
-   * @param prefix the package, or package+outerclass, prefix in a binary name
-   * @param result a list to which to add the binary names of all classes defined in the compilation
-   *     unit
-   */
-  private static void addDeclaredTypes(
-      TypeDeclaration<?> td, String prefix, List<@BinaryName String> result) {
-    @SuppressWarnings("signature:assignment") // string concatenation
-    @BinaryName String typeName = prefix + td.getName().asString();
-    result.add(typeName);
-    for (BodyDeclaration<?> member : td.getMembers()) {
-      if (member.isTypeDeclaration()) {
-        addDeclaredTypes(member.asTypeDeclaration(), typeName + "$", result);
-      }
-    }
-  }
-
-  /**
    * The first two arguments are a javac tree and a JavaParser node representing the same class.
    * This method creates wrappers around all the classes, fields, and methods in that class, and
    * stores those wrappers in {@code sourceAnnos}.
