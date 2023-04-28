@@ -978,7 +978,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @return the CallableDeclarationAnnos for the given signature, in all of the types
    */
   private List<CallableDeclarationAnnos> findOverloads(
-      String jvmSignature, Collection<@BinaryName String> typeNames) {
+      String jvmSignature, @Nullable Collection<@BinaryName String> typeNames) {
     if (typeNames == null) {
       return Collections.emptyList();
     }
@@ -997,7 +997,8 @@ public class WholeProgramInferenceJavaParserStorage
 
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
-   * to a file.
+   * to a file. For example, this method may make inferred annotations consistent with one another
+   * between superclasses and subclasses.
    *
    * @param methodAnnos the method or constructor annotations to modify
    * @param inSupertypes the method or constructor annotations for all overridden methods; not
@@ -1005,8 +1006,11 @@ public class WholeProgramInferenceJavaParserStorage
    * @param inSubtypes the method or constructor annotations for all overriding methods; not
    *     side-effected
    */
-  // TODO: The type factory implementation must consider both inferred annotations *and* those
-  // written by the programmer.  Handle annotations in elements later.
+  // TODO:  Inferred annotations must be consistent both with one another and with
+  // programmer-written annotations.  The latter are stored in elements and, with the given formal
+  // parameter list, are not accessible to this method.  In the future, the annotations stored in
+  // elements should also be passed to this method (or maybe they are already available to the type
+  // factory?).  I'm leaving that enhancement until later.
   public void wpiPrepareMethodForWriting(
       CallableDeclarationAnnos methodAnnos,
       Collection<CallableDeclarationAnnos> inSupertypes,
