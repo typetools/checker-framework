@@ -962,9 +962,9 @@ public class WholeProgramInferenceJavaParserStorage
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
       List<CallableDeclarationAnnos> inSupertypes =
-          findOverloads(jvmSignature, supertypesMap.get(classAnnos.className));
+          findOverrides(jvmSignature, supertypesMap.get(classAnnos.className));
       List<CallableDeclarationAnnos> inSubtypes =
-          findOverloads(jvmSignature, subtypesMap.get(classAnnos.className));
+          findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
 
       wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
@@ -977,7 +977,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param typeNames a collection of type names
    * @return the CallableDeclarationAnnos for the given signature, in all of the types
    */
-  private List<CallableDeclarationAnnos> findOverloads(
+  private List<CallableDeclarationAnnos> findOverrides(
       String jvmSignature, @Nullable Collection<@BinaryName String> typeNames) {
     if (typeNames == null) {
       return Collections.emptyList();
