@@ -3,7 +3,9 @@ package org.checkerframework.common.wholeprograminference;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
+import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
@@ -44,12 +46,15 @@ import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -59,6 +64,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -103,11 +109,20 @@ public class WholeProgramInferenceJavaParserStorage
   /** The type factory associated with this. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /** The element utilities for {@code atypeFactory}. */
+  protected final Elements elements;
+
   /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
    */
   private Map<@BinaryName String, ClassOrInterfaceAnnos> classToAnnos = new HashMap<>();
+
+  /** Maps from binary class name to binary names of all supertypes. */
+  private Map<@BinaryName String, Set<@BinaryName String>> supertypesMap = new HashMap<>();
+
+  /** Maps from binary class name to binary names of all known subtypes. */
+  private Map<@BinaryName String, Set<@BinaryName String>> subtypesMap = new HashMap<>();
 
   /**
    * Files containing classes for which an annotation has been inferred since the last time files
@@ -117,6 +132,9 @@ public class WholeProgramInferenceJavaParserStorage
 
   /** Mapping from source file to the wrapper for the compilation unit parsed from that file. */
   private Map<String, CompilationUnitAnnos> sourceToAnnos = new HashMap<>();
+
+  /** Maps from binary class name to the source file that contains it. */
+  private Map<String, String> classToSource = new HashMap<>();
 
   /** Whether the {@code -AinferOutputOriginal} option was supplied to the checker. */
   private final boolean inferOutputOriginal;
@@ -156,6 +174,7 @@ public class WholeProgramInferenceJavaParserStorage
   public WholeProgramInferenceJavaParserStorage(
       AnnotatedTypeFactory atypeFactory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
+    this.elements = atypeFactory.getElementUtils();
     this.inferOutputOriginal = inferOutputOriginal;
   }
 
@@ -167,6 +186,53 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public void setFileModified(String path) {
     modifiedFiles.add(path);
+  }
+
+  /**
+   * Set the source file as modified, for the given class.
+   *
+   * @param className the binary name of a class that should be written to disk
+   */
+  private void setClassModified(@Nullable @BinaryName String className) {
+    if (className == null) {
+      return;
+    }
+    String path = classToSource.get(className);
+    if (path != null) {
+      setFileModified(path);
+    }
+  }
+
+  /**
+   * Set the source files as modified, for all the given classes.
+   *
+   * @param classNames the binary names of classes that should be written to disk
+   */
+  private void setClassesModified(@Nullable Collection<@BinaryName String> classNames) {
+    if (classNames == null) {
+      return;
+    }
+    for (String className : classNames) {
+      setClassModified(className);
+    }
+  }
+
+  /**
+   * For every modified file, consider its subclasses and superclasses modified, too. The reason is
+   * that an annotation change in a class might require annotations in its superclasses and
+   * supclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
+   * cause it to be written out, and while writing out, the annotations will be made consistent
+   * across the class hierarchy by {@link #wpiPrepareCompilationUnitForWriting}.
+   */
+  public void setSupertypesAndSubtypesModified() {
+    for (String path : modifiedFiles) {
+      CompilationUnitAnnos cuAnnos = sourceToAnnos.get(path);
+      for (ClassOrInterfaceAnnos classAnnos : cuAnnos.types) {
+        String className = classAnnos.className;
+        setClassesModified(supertypesMap.get(className));
+        setClassesModified(subtypesMap.get(className));
+      }
+    }
   }
 
   ///
@@ -554,6 +620,36 @@ public class WholeProgramInferenceJavaParserStorage
     JavaParserUtil.concatenateAddedStringLiterals(root);
     CompilationUnitAnnos sourceAnnos = new CompilationUnitAnnos(root);
     sourceToAnnos.put(path, sourceAnnos);
+
+    Optional<PackageDeclaration> oPackageDecl = root.getPackageDeclaration();
+    String prefix = oPackageDecl.isPresent() ? oPackageDecl.get().getName().asString() + "." : "";
+    List<@BinaryName String> typeNames = new ArrayList<>();
+    for (TypeDeclaration<?> type : root.getTypes()) {
+      addDeclaredTypes(type, prefix, typeNames);
+    }
+    for (String typeName : typeNames) {
+      classToSource.put(typeName, path);
+    }
+  }
+
+  /**
+   * Computes the binary names of a type and all nested types.
+   *
+   * @param td a type declaration
+   * @param prefix the package, or package+outerclass, prefix in a binary name
+   * @param result a list to which to add the binary names of all classes defined in the compilation
+   *     unit
+   */
+  private static void addDeclaredTypes(
+      TypeDeclaration<?> td, String prefix, List<@BinaryName String> result) {
+    @SuppressWarnings("signature:assignment") // string concatenation
+    @BinaryName String typeName = prefix + td.getName().asString();
+    result.add(typeName);
+    for (BodyDeclaration<?> member : td.getMembers()) {
+      if (member.isTypeDeclaration()) {
+        addDeclaredTypes(member.asTypeDeclaration(), typeName + "$", result);
+      }
+    }
   }
 
   /**
@@ -648,7 +744,7 @@ public class WholeProgramInferenceJavaParserStorage
            * @param tree tree to add. Its corresponding element is used as the key for {@code
            *     classToAnnos} if {@code classNameKey} is null.
            * @param classNameKey if non-null, used as the key for {@code classToAnnos} instead of
-           *     the element corresponding to {@code tree}
+           *     the binary name of the element corresponding to {@code tree}
            * @param javaParserNode the node corresponding to the declaration, which is used to place
            *     annotations on the class itself. Can be null, e.g. for an anonymous class.
            */
@@ -660,6 +756,18 @@ public class WholeProgramInferenceJavaParserStorage
             if (classNameKey == null) {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
               className = ElementUtils.getBinaryName(classElt);
+
+              for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
+                String supertypeName = ElementUtils.getBinaryName(supertypeElement);
+                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                Set<String> supertypeSet =
+                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                supertypeSet.add(supertypeName);
+                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                Set<String> subtypeSet =
+                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                subtypeSet.add(className);
+              }
             } else {
               className = classNameKey;
             }
@@ -864,6 +972,8 @@ public class WholeProgramInferenceJavaParserStorage
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
+
+    setSupertypesAndSubtypesModified();
 
     for (String path : modifiedFiles) {
       CompilationUnitAnnos root = sourceToAnnos.get(path);
@@ -1124,6 +1234,9 @@ public class WholeProgramInferenceJavaParserStorage
      * annotations inferred on the class declaration itself.
      */
     private @MonotonicNonNull TypeDeclaration<?> classDeclaration;
+
+    /** The binary name of the class. */
+    private @BinaryName String className;
 
     /**
      * Create a new ClassOrInterfaceAnnos.
