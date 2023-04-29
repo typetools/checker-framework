@@ -938,30 +938,86 @@ public class WholeProgramInferenceJavaParserStorage
    */
   public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
-      wpiPrepareClassForWriting(type);
+      wpiPrepareClassForWriting(
+          type, supertypesMap.get(type.className), subtypesMap.get(type.className));
     }
   }
 
   /**
    * Side-effects the class annotations to make any desired changes before writing to a file.
    *
+   * <p>Because of the side effect, clients may want to pass a copy into this method.
+   *
    * @param classAnnos the class annotations to modify
+   * @param supertypes the binary names of all supertypes; not side-effected
+   * @param subtypes the binary names of all subtypes; not side-effected
    */
-  public void wpiPrepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+  public void wpiPrepareClassForWriting(
+      ClassOrInterfaceAnnos classAnnos,
+      Collection<@BinaryName String> supertypes,
+      Collection<@BinaryName String> subtypes) {
+    if (classAnnos.callableDeclarations.isEmpty()) {
+      return;
+    }
+
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      String jvmSignature = methodEntry.getKey();
+      List<CallableDeclarationAnnos> inSupertypes =
+          findOverrides(jvmSignature, supertypesMap.get(classAnnos.className));
+      List<CallableDeclarationAnnos> inSubtypes =
+          findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
+
+      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
   }
 
   /**
+   * Return all the CallableDeclarationAnnos for the given signature.
+   *
+   * @param jvmSignature the JVM signature
+   * @param typeNames a collection of type names
+   * @return the CallableDeclarationAnnos for the given signature, in all of the types
+   */
+  private List<CallableDeclarationAnnos> findOverrides(
+      String jvmSignature, @Nullable Collection<@BinaryName String> typeNames) {
+    if (typeNames == null) {
+      return Collections.emptyList();
+    }
+    List<CallableDeclarationAnnos> result = new ArrayList<>();
+    for (String typeName : typeNames) {
+      ClassOrInterfaceAnnos classAnnos = classToAnnos.get(typeName);
+      if (classAnnos != null) {
+        CallableDeclarationAnnos callableAnnos = classAnnos.callableDeclarations.get(jvmSignature);
+        if (callableAnnos != null) {
+          result.add(callableAnnos);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
-   * to a file.
+   * to a file. For example, this method may make inferred annotations consistent with one another
+   * between superclasses and subclasses.
    *
    * @param methodAnnos the method or constructor annotations to modify
+   * @param inSupertypes the method or constructor annotations for all overridden methods; not
+   *     side-effected
+   * @param inSubtypes the method or constructor annotations for all overriding methods; not
+   *     side-effected
    */
-  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  // TODO:  Inferred annotations must be consistent both with one another and with
+  // programmer-written annotations.  The latter are stored in elements and, with the given formal
+  // parameter list, are not accessible to this method.  In the future, the annotations stored in
+  // elements should also be passed to this method (or maybe they are already available to the type
+  // factory?).  I'm leaving that enhancement until later.
+  public void wpiPrepareMethodForWriting(
+      CallableDeclarationAnnos methodAnnos,
+      Collection<CallableDeclarationAnnos> inSupertypes,
+      Collection<CallableDeclarationAnnos> inSubtypes) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
   @Override
@@ -1222,7 +1278,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull AnnotationMirrorSet classAnnotations = null;
 
     /**
-     * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
+     * The JavaParser TypeDeclaration representing the class's declaration. Used for placing
      * annotations inferred on the class declaration itself.
      */
     private @MonotonicNonNull TypeDeclaration<?> classDeclaration;

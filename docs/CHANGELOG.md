@@ -14,6 +14,7 @@ Renamings in `AnnotatedTypeFactory`:
  * `prepareCompilationUnitForWriting()` => `wpiPrepareCompilationUnitForWriting()`
  * `prepareClassForWriting()` => `wpiPrepareClassForWriting()`
  * `prepareMethodForWriting()` => `wpiPrepareMethodForWriting()`
+   and changed its signature by adding two formal parameters
 
 **Closed issues:**
 
