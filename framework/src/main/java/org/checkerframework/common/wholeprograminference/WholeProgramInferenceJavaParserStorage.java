@@ -1289,6 +1289,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Create a new ClassOrInterfaceAnnos.
      *
+     * @param className the binary name of the class
      * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
      *     used for placing annotations on the class declaration
      */
