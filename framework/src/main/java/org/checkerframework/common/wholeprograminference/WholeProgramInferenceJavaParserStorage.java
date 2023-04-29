@@ -91,6 +91,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraySet;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -771,7 +772,8 @@ public class WholeProgramInferenceJavaParserStorage
             } else {
               className = classNameKey;
             }
-            ClassOrInterfaceAnnos typeWrapper = new ClassOrInterfaceAnnos(javaParserNode);
+            ClassOrInterfaceAnnos typeWrapper =
+                new ClassOrInterfaceAnnos(className, javaParserNode);
             if (!classToAnnos.containsKey(className)) {
               classToAnnos.put(className, typeWrapper);
             }
@@ -936,30 +938,86 @@ public class WholeProgramInferenceJavaParserStorage
    */
   public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
-      wpiPrepareClassForWriting(type);
+      wpiPrepareClassForWriting(
+          type, supertypesMap.get(type.className), subtypesMap.get(type.className));
     }
   }
 
   /**
    * Side-effects the class annotations to make any desired changes before writing to a file.
    *
+   * <p>Because of the side effect, clients may want to pass a copy into this method.
+   *
    * @param classAnnos the class annotations to modify
+   * @param supertypes the binary names of all supertypes; not side-effected
+   * @param subtypes the binary names of all subtypes; not side-effected
    */
-  public void wpiPrepareClassForWriting(ClassOrInterfaceAnnos classAnnos) {
+  public void wpiPrepareClassForWriting(
+      ClassOrInterfaceAnnos classAnnos,
+      Collection<@BinaryName String> supertypes,
+      Collection<@BinaryName String> subtypes) {
+    if (classAnnos.callableDeclarations.isEmpty()) {
+      return;
+    }
+
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
-      wpiPrepareMethodForWriting(methodEntry.getValue());
+      String jvmSignature = methodEntry.getKey();
+      List<CallableDeclarationAnnos> inSupertypes =
+          findOverrides(jvmSignature, supertypesMap.get(classAnnos.className));
+      List<CallableDeclarationAnnos> inSubtypes =
+          findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
+
+      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
   }
 
   /**
+   * Return all the CallableDeclarationAnnos for the given signature.
+   *
+   * @param jvmSignature the JVM signature
+   * @param typeNames a collection of type names
+   * @return the CallableDeclarationAnnos for the given signature, in all of the types
+   */
+  private List<CallableDeclarationAnnos> findOverrides(
+      String jvmSignature, @Nullable Collection<@BinaryName String> typeNames) {
+    if (typeNames == null) {
+      return Collections.emptyList();
+    }
+    List<CallableDeclarationAnnos> result = new ArrayList<>();
+    for (String typeName : typeNames) {
+      ClassOrInterfaceAnnos classAnnos = classToAnnos.get(typeName);
+      if (classAnnos != null) {
+        CallableDeclarationAnnos callableAnnos = classAnnos.callableDeclarations.get(jvmSignature);
+        if (callableAnnos != null) {
+          result.add(callableAnnos);
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
-   * to a file.
+   * to a file. For example, this method may make inferred annotations consistent with one another
+   * between superclasses and subclasses.
    *
    * @param methodAnnos the method or constructor annotations to modify
+   * @param inSupertypes the method or constructor annotations for all overridden methods; not
+   *     side-effected
+   * @param inSubtypes the method or constructor annotations for all overriding methods; not
+   *     side-effected
    */
-  public void wpiPrepareMethodForWriting(CallableDeclarationAnnos methodAnnos) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos);
+  // TODO:  Inferred annotations must be consistent both with one another and with
+  // programmer-written annotations.  The latter are stored in elements and, with the given formal
+  // parameter list, are not accessible to this method.  In the future, the annotations stored in
+  // elements should also be passed to this method (or maybe they are already available to the type
+  // factory?).  I'm leaving that enhancement until later.
+  public void wpiPrepareMethodForWriting(
+      CallableDeclarationAnnos methodAnnos,
+      Collection<CallableDeclarationAnnos> inSupertypes,
+      Collection<CallableDeclarationAnnos> inSubtypes) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
   @Override
@@ -1167,11 +1225,6 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CompilationUnitAnnos deepCopy() {
-      /// Calling super.clone() does not work because field `types` is final.
-      // CompilationUnitAnnos result = (CompilationUnitAnnos) super.clone();
-      // result.types = CollectionUtils.deepCopy(types);
-      // return result;
-
       return new CompilationUnitAnnos(compilationUnit, CollectionUtils.deepCopy(types));
     }
 
@@ -1225,7 +1278,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull AnnotationMirrorSet classAnnotations = null;
 
     /**
-     * The Java Parser TypeDeclaration representing the class's declaration. Used for placing
+     * The JavaParser TypeDeclaration representing the class's declaration. Used for placing
      * annotations inferred on the class declaration itself.
      */
     private @MonotonicNonNull TypeDeclaration<?> classDeclaration;
@@ -1236,27 +1289,28 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Create a new ClassOrInterfaceAnnos.
      *
-     * @param javaParserNode the java parser node corresponding to the class declaration, which is
+     * @param className the binary name of the class
+     * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
      *     used for placing annotations on the class declaration
      */
-    public ClassOrInterfaceAnnos(@Nullable TypeDeclaration<?> javaParserNode) {
-      classDeclaration = javaParserNode;
+    public ClassOrInterfaceAnnos(
+        @BinaryName String className, @Nullable TypeDeclaration<?> javaParserNode) {
+      this.classDeclaration = javaParserNode;
+      this.className = className;
     }
 
     @Override
     public ClassOrInterfaceAnnos deepCopy() {
-      try {
-        ClassOrInterfaceAnnos result = (ClassOrInterfaceAnnos) super.clone();
-        result.callableDeclarations = CollectionUtils.deepCopyValues(result.callableDeclarations);
-        result.fields = CollectionUtils.deepCopyValues(result.fields);
-        result.enumConstants =
-            CollectionUtils.clone(result.enumConstants); // no deep copy: elements are strings
-        result.classAnnotations = result.classAnnotations.deepCopy();
-        // no need to change classDeclaration
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
+      ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
+      result.callableDeclarations = CollectionUtils.deepCopyValues(callableDeclarations);
+      result.fields = CollectionUtils.deepCopyValues(fields);
+      result.enumConstants =
+          CollectionUtils.clone(enumConstants); // no deep copy: elements are strings
+      if (classAnnotations != null) {
+        result.classAnnotations = classAnnotations.deepCopy();
       }
+      // no need to change classDeclaration
+      return result;
     }
 
     /**
@@ -1327,11 +1381,15 @@ public class WholeProgramInferenceJavaParserStorage
      * parameter is accessed, and each parameter is initialized the first time it's accessed.
      */
     private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
-    /** Annotations on the callable declaration. */
-    private @MonotonicNonNull AnnotationMirrorSet declarationAnnotations = null;
 
     /** Declaration annotations on the parameters. */
     private @MonotonicNonNull Set<Pair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
+
+    /**
+     * Annotations on the callable declaration. This does not include preconditions and
+     * postconditions.
+     */
+    private @MonotonicNonNull AnnotationMirrorSet declarationAnnotations = null;
 
     /**
      * Mapping from expression strings to pairs of (inferred precondition, declared type). The keys
@@ -1359,25 +1417,20 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CallableDeclarationAnnos deepCopy() {
-      try {
-        CallableDeclarationAnnos result = (CallableDeclarationAnnos) super.clone();
-        // nothing to be done for declaration
-        result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
-        result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
-        if (result.parameterTypes != null) {
-          result.parameterTypes = CollectionUtils.deepCopy(result.parameterTypes);
-        }
-        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
-
-        if (result.paramsDeclAnnos != null) {
-          result.paramsDeclAnnos = new ArraySet<>(result.paramsDeclAnnos);
-        }
-        result.preconditions = deepCopyMapOfStringToPair(result.preconditions);
-        result.postconditions = deepCopyMapOfStringToPair(result.postconditions);
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
+      CallableDeclarationAnnos result = new CallableDeclarationAnnos(declaration);
+      result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
+      result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
+      if (parameterTypes != null) {
+        result.parameterTypes = CollectionUtils.deepCopy(this.parameterTypes);
       }
+      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+
+      if (result.paramsDeclAnnos != null) {
+        result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
+      }
+      result.preconditions = deepCopyMapOfStringToPair(this.preconditions);
+      result.postconditions = deepCopyMapOfStringToPair(this.postconditions);
+      return result;
     }
 
     /**
@@ -1709,9 +1762,13 @@ public class WholeProgramInferenceJavaParserStorage
    * @return a deep copy of the map
    */
   private static Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-      deepCopyMapOfStringToPair(Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+      deepCopyMapOfStringToPair(
+          @Nullable Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+    if (orig == null) {
+      return null;
+    }
     Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
-        CollectionUtils.clone(orig);
+        new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
     result.clear();
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         orig.entrySet()) {
@@ -1742,14 +1799,10 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public FieldAnnos deepCopy() {
-      try {
-        FieldAnnos result = (FieldAnnos) super.clone();
-        result.type = DeepCopyable.deepCopyOrNull(this.type);
-        result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
-        return result;
-      } catch (CloneNotSupportedException e) {
-        throw new Error("this can't happen", e);
-      }
+      FieldAnnos result = new FieldAnnos(declaration);
+      result.type = DeepCopyable.deepCopyOrNull(this.type);
+      result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
+      return result;
     }
 
     /**
@@ -1770,20 +1823,6 @@ public class WholeProgramInferenceJavaParserStorage
 
       return this.type;
     }
-    /**
-     * Adds a declaration annotation to this field declaration and returns whether it was a new
-     * annotation.
-     *
-     * @param annotation declaration annotation to add
-     * @return true if {@code annotation} wasn't previously stored for this field declaration
-     */
-    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
-      if (declarationAnnotations == null) {
-        declarationAnnotations = new AnnotationMirrorSet();
-      }
-
-      return declarationAnnotations.add(annotation);
-    }
 
     /**
      * Returns the inferred declaration annotations on this field, or an empty set if there are no
@@ -1798,6 +1837,21 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
+    }
+
+    /**
+     * Adds a declaration annotation to this field declaration and returns whether it was a new
+     * annotation.
+     *
+     * @param annotation declaration annotation to add
+     * @return true if {@code annotation} wasn't previously stored for this field declaration
+     */
+    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+      if (declarationAnnotations == null) {
+        declarationAnnotations = new AnnotationMirrorSet();
+      }
+
+      return declarationAnnotations.add(annotation);
     }
 
     /**
