@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  * ensures that with the ajava files in place, the errors that those annotations remove are no
  * longer issued.
  */
-@Category(AinferResourceLeakAjavaTest.class)
+@Category(AinferResourceLeakAjavaGenerationTest.class)
 public class AinferResourceLeakAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
   /**
@@ -24,7 +24,7 @@ public class AinferResourceLeakAjavaValidationTest extends AinferValidatePerDire
         ResourceLeakChecker.class,
         "resourceleak",
         "ainfer-resourceleak/annotated",
-        AinferResourceLeakAjavaTest.class,
+        AinferResourceLeakAjavaGenerationTest.class,
         ajavaArgFromFiles(testFiles, "resourceleak"),
         "-Awarns");
   }
