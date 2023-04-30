@@ -7,7 +7,7 @@
 
 public class UnwantedECMInference {
 
-  class Foo {
+  class Bar {
     Object field;
 
     void doStuff() {
@@ -15,7 +15,7 @@ public class UnwantedECMInference {
     }
   }
 
-  class Bar extends Foo {
+  class Baz extends Bar {
     void doStuff() {
       // This method does not call toString(), so an @EnsuresCalledMethods("toString") annotation on
       // either this method or on the overridden method is an error!
