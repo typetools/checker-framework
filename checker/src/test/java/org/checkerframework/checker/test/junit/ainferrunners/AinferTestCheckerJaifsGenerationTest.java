@@ -14,12 +14,12 @@ import org.junit.runners.Parameterized.Parameters;
  * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(AinferTestCheckerJaifsTest.class)
-public class AinferTestCheckerJaifsTest extends AinferGeneratePerDirectoryTest {
+@Category(AinferTestCheckerJaifsGenerationTest.class)
+public class AinferTestCheckerJaifsGenerationTest extends AinferGeneratePerDirectoryTest {
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public AinferTestCheckerJaifsTest(List<File> testFiles) {
+  public AinferTestCheckerJaifsGenerationTest(List<File> testFiles) {
     super(
         testFiles,
         AinferTestChecker.class,

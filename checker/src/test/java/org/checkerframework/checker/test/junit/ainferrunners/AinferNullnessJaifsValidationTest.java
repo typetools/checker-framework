@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests whole-program type inference with the aid of .jaif files. This test is the second pass,
  * which ensures that with the annotations inserted, the errors are no longer issued.
  */
-@Category(AinferNullnessJaifsTest.class)
+@Category(AinferNullnessJaifsGenerationTest.class)
 public class AinferNullnessJaifsValidationTest extends CheckerFrameworkPerDirectoryTest {
   /**
    * @param testFiles the files containing test code, which will be type-checked
@@ -25,7 +25,8 @@ public class AinferNullnessJaifsValidationTest extends CheckerFrameworkPerDirect
     // Only run if annotated files have been created.
     // See ainferTest task.
     if (!new File("tests/ainfer-nullness/annotated/").exists()) {
-      throw new RuntimeException(AinferNullnessJaifsTest.class + " must be run before this test.");
+      throw new RuntimeException(
+          AinferNullnessJaifsGenerationTest.class + " must be run before this test.");
     }
     super.run();
   }
