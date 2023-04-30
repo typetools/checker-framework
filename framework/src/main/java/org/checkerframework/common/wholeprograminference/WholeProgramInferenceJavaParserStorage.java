@@ -1479,50 +1479,6 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred declaration annotations on this executable, or null if there are no
-     * annotations.
-     *
-     * @return the declaration annotations for this callable declaration
-     */
-    public AnnotationMirrorSet getDeclarationAnnotations() {
-      if (declarationAnnotations == null) {
-        return AnnotationMirrorSet.emptySet();
-      }
-
-      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
-    }
-
-    /**
-     * Adds a declaration annotation to this callable declaration and returns whether it was a new
-     * annotation.
-     *
-     * @param annotation declaration annotation to add
-     * @return true if {@code annotation} wasn't previously stored for this callable declaration
-     */
-    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
-      if (declarationAnnotations == null) {
-        declarationAnnotations = new AnnotationMirrorSet();
-      }
-
-      return declarationAnnotations.add(annotation);
-    }
-
-    /**
-     * Attempts to remove the given declaration annotation from this callable declaration and
-     * returns whether an annotation was successfully removed.
-     *
-     * @param anno an annotation
-     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't
-     *     be removed
-     */
-    /*package-private*/ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
-      if (declarationAnnotations == null) {
-        return false;
-      }
-      return declarationAnnotations.remove(anno);
-    }
-
-    /**
      * Adds a declaration annotation to this parameter and returns whether it was a new annotation.
      *
      * @param annotation declaration annotation to add
@@ -1577,6 +1533,50 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       return returnType;
+    }
+
+    /**
+     * Returns the inferred declaration annotations on this executable, or null if there are no
+     * annotations.
+     *
+     * @return the declaration annotations for this callable declaration
+     */
+    public AnnotationMirrorSet getDeclarationAnnotations() {
+      if (declarationAnnotations == null) {
+        return AnnotationMirrorSet.emptySet();
+      }
+
+      return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
+    }
+
+    /**
+     * Adds a declaration annotation to this callable declaration and returns whether it was a new
+     * annotation.
+     *
+     * @param annotation declaration annotation to add
+     * @return true if {@code annotation} wasn't previously stored for this callable declaration
+     */
+    public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
+      if (declarationAnnotations == null) {
+        declarationAnnotations = new AnnotationMirrorSet();
+      }
+
+      return declarationAnnotations.add(annotation);
+    }
+
+    /**
+     * Attempts to remove the given declaration annotation from this callable declaration and
+     * returns whether an annotation was successfully removed.
+     *
+     * @param anno an annotation
+     * @return true if {@code anno} was removed; false if it was not present or otherwise couldn't
+     *     be removed
+     */
+    /*package-private*/ boolean removeDeclarationAnnotation(AnnotationMirror anno) {
+      if (declarationAnnotations == null) {
+        return false;
+      }
+      return declarationAnnotations.remove(anno);
     }
 
     /**
