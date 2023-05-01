@@ -229,7 +229,8 @@ public class WholeProgramInferenceJavaParserStorage
    * across the class hierarchy by {@link #wpiPrepareCompilationUnitForWriting}.
    */
   public void setSupertypesAndSubtypesModified() {
-    for (String path : modifiedFiles) {
+    // Copy into a list to avoid a ConcurrentModificationException.
+    for (String path : new ArrayList<>(modifiedFiles)) {
       CompilationUnitAnnos cuAnnos = sourceToAnnos.get(path);
       for (ClassOrInterfaceAnnos classAnnos : cuAnnos.types) {
         String className = classAnnos.className;
