@@ -444,12 +444,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     return am;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>If a method is annotated with {@code @FormatMethod}, remove any {@code @Format} annotation
-   * from its first argument.
-   */
+  // TODO: Probably move (parts of) the next two methods up into AnnotatedTypeFactory, eventually.
+
   @Override
   public void wpiPrepareMethodForWriting(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
@@ -458,7 +454,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       WholeProgramInferenceImplementation<?> wpi) {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes, wpi);
 
-    // TODO: Probably move (parts of) this up into AnnotatedTypeMirror, eventually.
     Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> precondMap =
         methodAnnos.getPreconditions();
     Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> postcondMap =
@@ -485,6 +480,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     post-condition annotations
    * @param otherIsSupertype true if {@code otherDeclAnnos} are on a supertype; false if they are on
    *     a subtype
+   * @param wpi the Whole Program Inference implementation
    */
   public void makeConditionConsistentWithOtherMethod(
       Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> conditionMap,

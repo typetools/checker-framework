@@ -114,7 +114,6 @@ public class WholeProgramInferenceJavaParserStorage
   protected final Elements elements;
 
   /** The WPI implementation associated with this. */
-  // TODO: Define setter method rather than making the field public.
   public @MonotonicNonNull WholeProgramInferenceImplementation<AnnotatedTypeMirror> wpi;
 
   /**
@@ -939,6 +938,7 @@ public class WholeProgramInferenceJavaParserStorage
    * file.
    *
    * @param compilationUnitAnnos the compilation unit annotations to modify
+   * @param wpi the Whole Program Inference implementation
    */
   public void wpiPrepareCompilationUnitForWriting(
       CompilationUnitAnnos compilationUnitAnnos, WholeProgramInferenceImplementation<?> wpi) {
@@ -956,6 +956,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param classAnnos the class annotations to modify
    * @param supertypes the binary names of all supertypes; not side-effected
    * @param subtypes the binary names of all subtypes; not side-effected
+   * @param wpi the Whole Program Inference implementation
    */
   public void wpiPrepareClassForWriting(
       ClassOrInterfaceAnnos classAnnos,
@@ -1013,6 +1014,7 @@ public class WholeProgramInferenceJavaParserStorage
    *     side-effected
    * @param inSubtypes the method or constructor annotations for all overriding methods; not
    *     side-effected
+   * @param wpi the Whole Program Inference implementation
    */
   // TODO:  Inferred annotations must be consistent both with one another and with
   // programmer-written annotations.  The latter are stored in elements and, with the given formal

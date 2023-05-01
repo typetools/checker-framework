@@ -5601,6 +5601,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     side-effected
    * @param inSubtypes the method or constructor annotations for all overriding methods; not
    *     side-effected
+   * @param wpi the Whole Program Inference implementation
    */
   public void wpiPrepareMethodForWriting(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
