@@ -17,6 +17,7 @@ Renamings in `AnnotatedTypeFactory`:
    and changed its signature by adding two formal parameters
 
 **Closed issues:**
+#803, #5739, #5749, #5767, #5781, #5787.
 
 
 Version 3.33.0 (April 3, 2023)
