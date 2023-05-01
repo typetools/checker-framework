@@ -1276,6 +1276,7 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @return a verbose printed representation of this
      */
+    @SuppressWarnings("UnusedMethod")
     public String toStringVerbose() {
       StringJoiner sb = new StringJoiner(System.lineSeparator());
       sb.add("CompilationUnitAnnos:");
