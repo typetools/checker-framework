@@ -1390,6 +1390,11 @@ public class WholeProgramInferenceJavaParserStorage
           + "]";
     }
 
+    /**
+     * Returns a verbose printed representation of this.
+     *
+     * @return a verbose printed representation of this
+     */
     public String toStringVerbose() {
       return toString();
     }
