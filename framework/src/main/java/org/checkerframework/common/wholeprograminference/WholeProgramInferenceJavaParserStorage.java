@@ -1490,7 +1490,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Adds a declaration annotation to this parameter and returns whether it was a new annotation.
      *
-     * @param annotation declaration annotation to add
+     * @param annotation the declaration annotation to add
      * @param index index of the parameter
      * @return true if {@code annotation} wasn't previously stored for this parameter
      */
@@ -1562,7 +1562,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Adds a declaration annotation to this callable declaration and returns whether it was a new
      * annotation.
      *
-     * @param annotation declaration annotation to add
+     * @param annotation the declaration annotation to add
      * @return true if {@code annotation} wasn't previously stored for this callable declaration
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
@@ -1619,7 +1619,7 @@ public class WholeProgramInferenceJavaParserStorage
      * such changes will be reflected in the receiver CallableDeclarationAnnos object.
      *
      * @return a mapping from Java expression string to pairs of (inferred postcondition for the
-     *     expression, declared type of the expression).
+     *     expression, declared type of the expression)
      * @see #getPostconditionsForExpression
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
