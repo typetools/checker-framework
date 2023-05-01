@@ -1481,7 +1481,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Adds a declaration annotation to this parameter and returns whether it was a new annotation.
      *
-     * @param annotation declaration annotation to add
+     * @param annotation the declaration annotation to add
      * @param index index of the parameter
      * @return true if {@code annotation} wasn't previously stored for this parameter
      */
@@ -1553,7 +1553,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Adds a declaration annotation to this callable declaration and returns whether it was a new
      * annotation.
      *
-     * @param annotation declaration annotation to add
+     * @param annotation the declaration annotation to add
      * @return true if {@code annotation} wasn't previously stored for this callable declaration
      */
     public boolean addDeclarationAnnotation(AnnotationMirror annotation) {
@@ -1580,12 +1580,16 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred preconditions for this callable declaration.
+     * Returns the inferred preconditions for this callable declaration. The keys of the returned
+     * map use the same string formatting as the {@link
+     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the first
+     * parameter.
+     *
+     * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
+     * such changes will be reflected in the receiver CallableDeclarationAnnos object.
      *
      * @return a mapping from Java expression string to pairs of (inferred precondition for the
-     *     expression, declared type of the expression). The keys of this map use the same string
-     *     formatting as the {@link org.checkerframework.framework.qual.RequiresQualifier}
-     *     annotation, e.g. "#1" for the first parameter.
+     *     expression, declared type of the expression)
      * @see #getPreconditionsForExpression
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
@@ -1597,12 +1601,16 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration.
+     * Returns the inferred postconditions for this callable declaration. The keys of the returned
+     * map use the same string formatting as the {@link
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the first
+     * parameter.
+     *
+     * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
+     * such changes will be reflected in the receiver CallableDeclarationAnnos object.
      *
      * @return a mapping from Java expression string to pairs of (inferred postcondition for the
-     *     expression, declared type of the expression). The keys of this map use the same string
-     *     formatting as the {@link org.checkerframework.framework.qual.EnsuresQualifier}
-     *     annotation, e.g. "#1" for the first parameter.
+     *     expression, declared type of the expression)
      * @see #getPostconditionsForExpression
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
