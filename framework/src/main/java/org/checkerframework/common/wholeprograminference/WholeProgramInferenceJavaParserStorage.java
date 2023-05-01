@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
@@ -1257,6 +1259,21 @@ public class WholeProgramInferenceJavaParserStorage
     public TypeDeclaration<?> getClassOrInterfaceDeclarationByName(String name) {
       return JavaParserUtil.getTypeDeclarationByName(compilationUnit, name);
     }
+
+    /**
+     * Returns a verbose printed representation of this.
+     *
+     * @return a verbose printed representation of this
+     */
+    @SuppressWarnings("UnusedMethod")
+    public String toStringVerbose() {
+      StringJoiner sb = new StringJoiner(System.lineSeparator());
+      sb.add("CompilationUnitAnnos:");
+      for (ClassOrInterfaceAnnos type : types) {
+        sb.add(type.toStringVerbose());
+      }
+      return sb.toString();
+    }
   }
 
   /**
@@ -1352,11 +1369,23 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public String toString() {
-      return "ClassOrInterfaceAnnos [callableDeclarations="
-          + callableDeclarations
+      return "ClassOrInterfaceAnnos ["
+          + classDeclaration.getName()
+          + ": callableDeclarations="
+          // For deterministic output
+          + new TreeMap<>(callableDeclarations)
           + ", fields="
           + fields
           + "]";
+    }
+
+    /**
+     * Returns a verbose printed representation of this.
+     *
+     * @return a verbose printed representation of this
+     */
+    public String toStringVerbose() {
+      return toString();
     }
   }
 
