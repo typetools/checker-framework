@@ -3962,6 +3962,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overriderType, overriddenType, superCPostFalse2, subCPostFalse2, postfalsemsg);
     }
 
+    /**
+     * Issue a "methodref.receiver" or "methodref.receiver.bound" error if the receiver for the
+     * method reference does not satify overriding rules.
+     *
+     * @return true if the override is legal
+     */
     private boolean checkMemberReferenceReceivers() {
       if (overriderType.getKind() == TypeKind.ARRAY) {
         // Assume the receiver for all method on arrays are @Top
