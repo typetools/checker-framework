@@ -482,7 +482,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     a subtype
    * @param wpi the Whole Program Inference implementation
    */
-  public void makeConditionConsistentWithOtherMethod(
+  private void makeConditionConsistentWithOtherMethod(
       Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> conditionMap,
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos otherDeclAnnos,
       boolean isPrecondition,
