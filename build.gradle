@@ -970,6 +970,7 @@ subprojects {
         dependsOn('issue3447Test')
         dependsOn('constantPropagationTest')
       }
+      dependsOn('publishToMavenLocal')
     }
 
     // Create an inferenceTests task per project
