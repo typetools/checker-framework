@@ -113,6 +113,10 @@ public class WholeProgramInferenceJavaParserStorage
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
 
+  /** The WPI implementation associated with this. */
+  // TODO: Define setter method rather than making the field public.
+  public @MonotonicNonNull WholeProgramInferenceImplementation<AnnotatedTypeMirror> wpi;
+
   /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
@@ -936,10 +940,11 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param compilationUnitAnnos the compilation unit annotations to modify
    */
-  public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
+  public void wpiPrepareCompilationUnitForWriting(
+      CompilationUnitAnnos compilationUnitAnnos, WholeProgramInferenceImplementation<?> wpi) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
       wpiPrepareClassForWriting(
-          type, supertypesMap.get(type.className), subtypesMap.get(type.className));
+          type, supertypesMap.get(type.className), subtypesMap.get(type.className), wpi);
     }
   }
 
@@ -955,7 +960,8 @@ public class WholeProgramInferenceJavaParserStorage
   public void wpiPrepareClassForWriting(
       ClassOrInterfaceAnnos classAnnos,
       Collection<@BinaryName String> supertypes,
-      Collection<@BinaryName String> subtypes) {
+      Collection<@BinaryName String> subtypes,
+      WholeProgramInferenceImplementation<?> wpi) {
     if (classAnnos.callableDeclarations.isEmpty()) {
       return;
     }
@@ -968,7 +974,7 @@ public class WholeProgramInferenceJavaParserStorage
       List<CallableDeclarationAnnos> inSubtypes =
           findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
+      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes, wpi);
     }
   }
 
@@ -1016,8 +1022,9 @@ public class WholeProgramInferenceJavaParserStorage
   public void wpiPrepareMethodForWriting(
       CallableDeclarationAnnos methodAnnos,
       Collection<CallableDeclarationAnnos> inSupertypes,
-      Collection<CallableDeclarationAnnos> inSubtypes) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
+      Collection<CallableDeclarationAnnos> inSubtypes,
+      WholeProgramInferenceImplementation<?> wpi) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes, wpi);
   }
 
   @Override
@@ -1034,8 +1041,10 @@ public class WholeProgramInferenceJavaParserStorage
     setSupertypesAndSubtypesModified();
 
     for (String path : modifiedFiles) {
-      CompilationUnitAnnos root = sourceToAnnos.get(path);
-      wpiPrepareCompilationUnitForWriting(root);
+      // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side effects
+      // that we don't want to be persistent.
+      CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
+      wpiPrepareCompilationUnitForWriting(root, this.wpi);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir = AJAVA_FILES_PATH;
@@ -1580,12 +1589,16 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred preconditions for this callable declaration.
+     * Returns the inferred preconditions for this callable declaration. The keys of the returned
+     * map use the same string formatting as the {@link
+     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the first
+     * parameter.
+     *
+     * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
+     * such changes will be reflected in the receiver CallableDeclarationAnnos object.
      *
      * @return a mapping from Java expression string to pairs of (inferred precondition for the
-     *     expression, declared type of the expression). The keys of this map use the same string
-     *     formatting as the {@link org.checkerframework.framework.qual.RequiresQualifier}
-     *     annotation, e.g. "#1" for the first parameter.
+     *     expression, declared type of the expression)
      * @see #getPreconditionsForExpression
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
@@ -1597,17 +1610,21 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred postconditions for this callable declaration.
+     * Returns the inferred postconditions for this callable declaration. The keys of the returned
+     * map use the same string formatting as the {@link
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the first
+     * parameter.
+     *
+     * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
+     * such changes will be reflected in the receiver CallableDeclarationAnnos object.
      *
      * @return a mapping from Java expression string to pairs of (inferred postcondition for the
-     *     expression, declared type of the expression). The keys of this map use the same string
-     *     formatting as the {@link org.checkerframework.framework.qual.EnsuresQualifier}
-     *     annotation, e.g. "#1" for the first parameter.
+     *     expression, declared type of the expression).
      * @see #getPostconditionsForExpression
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
       if (postconditions == null) {
-        return Collections.emptyMap();
+        postconditions = new HashMap<>(1);
       }
 
       return Collections.unmodifiableMap(postconditions);
@@ -1837,7 +1854,7 @@ public class WholeProgramInferenceJavaParserStorage
     @SuppressWarnings("UnusedMethod")
     public AnnotationMirrorSet getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
-        return AnnotationMirrorSet.emptySet();
+        declarationAnnotations = new AnnotationMirrorSet();
       }
 
       return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);

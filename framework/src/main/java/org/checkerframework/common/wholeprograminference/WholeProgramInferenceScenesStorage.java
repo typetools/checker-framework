@@ -593,7 +593,7 @@ public class WholeProgramInferenceScenesStorage
    * @param sourceCodeATM the annotated type on the source code
    * @param jaifATM the annotated type on the .jaif file
    */
-  private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
+  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
 
     switch (sourceCodeATM.getKind()) {
       case TYPEVAR:
