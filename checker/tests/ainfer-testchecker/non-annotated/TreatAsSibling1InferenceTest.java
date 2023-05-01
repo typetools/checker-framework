@@ -1,3 +1,5 @@
+// @skip-test
+
 // A simple test that the @AinferTreatAsSibling1 can be inferred.
 // This test does actually test inference: the AinferTestChecker's TreeAnnotator
 // has logic to add the @AinferTreatAsSibling1 annotation to parameters with

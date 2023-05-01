@@ -1042,7 +1042,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
    * @param sourceCodeATM the annotated type on the source code; side effected by this method
    * @param ajavaATM the annotated type on the ajava file
    */
-  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+  private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
     if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
       // Ignore null types: passing them to asSuper causes a crash, as they cannot be
