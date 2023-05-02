@@ -488,6 +488,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         // other is a subtype & compare postconditions.
         Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> otherConditionMap =
             isPrecondition ? otherDeclAnnos.getPreconditions() : otherDeclAnnos.getPostconditions();
+        // TODO: Complete support for "every expression" conditions, then remove the
+        // `!otherConditionMap.containsKey(expr)` test.
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
           // otherInferredType was inferred to be @CalledMethods({}).
