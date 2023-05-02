@@ -495,8 +495,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
           // otherInferredType was inferred to be @CalledMethods({}).
-          // Replace any @CalledMethods annotation on inferredType by @CalledMethods({}).
-          inferredType.replaceAnnotation(top);
+          // Replace put @CalledMethods({}) on inferredType.
+          // (The implementation does not use getQualifierParameterHierarchies() because there might
+          // not already be a @CalledMethods annotation on inferredType.)
+          inferredType.replaceAnnotations(this.getQualifierHierarchy().getTopAnnotations());
         } else {
           AnnotatedTypeMirror otherInferredType =
               isPrecondition
