@@ -19,7 +19,6 @@ import org.checkerframework.checker.formatter.util.FormatUtil;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -110,9 +109,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public void wpiPrepareMethodForWriting(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
-      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes,
-      WholeProgramInferenceImplementation<?> wpi) {
-    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes, wpi);
+      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
+    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
       AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
       atm.removeAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);

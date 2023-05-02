@@ -615,12 +615,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             "-AinferOutputOriginal only works with -Ainfer=ajava, so it is being ignored.");
       }
       if (wpiOutputFormat == WholeProgramInference.OutputFormat.AJAVA) {
-        WholeProgramInferenceJavaParserStorage storage =
-            new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal);
-        storage.wpi =
+        wholeProgramInference =
             new WholeProgramInferenceImplementation<AnnotatedTypeMirror>(
-                this, storage, showWpiFailedInferences);
-        wholeProgramInference = storage.wpi;
+                this,
+                new WholeProgramInferenceJavaParserStorage(this, inferOutputOriginal),
+                showWpiFailedInferences);
       } else {
         wholeProgramInference =
             new WholeProgramInferenceImplementation<ATypeElement>(
@@ -5601,13 +5600,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     side-effected
    * @param inSubtypes the method or constructor annotations for all overriding methods; not
    *     side-effected
-   * @param wpi the Whole Program Inference implementation
    */
   public void wpiPrepareMethodForWriting(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
-      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes,
-      WholeProgramInferenceImplementation<?> wpi) {
+      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
     // This implementation does nothing.
   }
 

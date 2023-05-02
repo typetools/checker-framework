@@ -28,7 +28,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
@@ -443,9 +442,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   public void wpiPrepareMethodForWriting(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
-      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes,
-      WholeProgramInferenceImplementation<?> wpi) {
-    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes, wpi);
+      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
+    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
 
     Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> precondMap =
         methodAnnos.getPreconditions();
@@ -453,12 +451,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         methodAnnos.getPostconditions();
     for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSupertype :
         inSupertypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSupertype, true, true, wpi);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSupertype, false, true, wpi);
+      makeConditionConsistentWithOtherMethod(precondMap, inSupertype, true, true);
+      makeConditionConsistentWithOtherMethod(postcondMap, inSupertype, false, true);
     }
     for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSubtype : inSubtypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false, wpi);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false, wpi);
+      makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false);
+      makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false);
     }
   }
 
@@ -473,14 +471,12 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     post-condition annotations
    * @param otherIsSupertype true if {@code otherDeclAnnos} are on a supertype; false if they are on
    *     a subtype
-   * @param wpi the Whole Program Inference implementation
    */
   private void makeConditionConsistentWithOtherMethod(
       Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> conditionMap,
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos otherDeclAnnos,
       boolean isPrecondition,
-      boolean otherIsSupertype,
-      WholeProgramInferenceImplementation<?> wpi) {
+      boolean otherIsSupertype) {
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         conditionMap.entrySet()) {
       String expr = entry.getKey();
@@ -504,7 +500,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
               isPrecondition
                   ? otherDeclAnnos.getPreconditionsForExpression(expr, declaredType, this)
                   : otherDeclAnnos.getPostconditionsForExpression(expr, declaredType, this);
-          wpi.updateAtmWithLub(inferredType, otherInferredType);
+          this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
         }
       }
     }

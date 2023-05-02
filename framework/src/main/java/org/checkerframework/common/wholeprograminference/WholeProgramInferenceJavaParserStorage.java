@@ -115,9 +115,6 @@ public class WholeProgramInferenceJavaParserStorage
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
 
-  /** The WPI implementation associated with this. */
-  public @MonotonicNonNull WholeProgramInferenceImplementation<AnnotatedTypeMirror> wpi;
-
   /**
    * Maps from binary class name to the wrapper containing the class. Contains all classes in Java
    * source files containing an Element for which an annotation has been inferred.
@@ -941,13 +938,11 @@ public class WholeProgramInferenceJavaParserStorage
    * file.
    *
    * @param compilationUnitAnnos the compilation unit annotations to modify
-   * @param wpi the Whole Program Inference implementation
    */
-  public void wpiPrepareCompilationUnitForWriting(
-      CompilationUnitAnnos compilationUnitAnnos, WholeProgramInferenceImplementation<?> wpi) {
+  public void wpiPrepareCompilationUnitForWriting(CompilationUnitAnnos compilationUnitAnnos) {
     for (ClassOrInterfaceAnnos type : compilationUnitAnnos.types) {
       wpiPrepareClassForWriting(
-          type, supertypesMap.get(type.className), subtypesMap.get(type.className), wpi);
+          type, supertypesMap.get(type.className), subtypesMap.get(type.className));
     }
   }
 
@@ -959,13 +954,11 @@ public class WholeProgramInferenceJavaParserStorage
    * @param classAnnos the class annotations to modify
    * @param supertypes the binary names of all supertypes; not side-effected
    * @param subtypes the binary names of all subtypes; not side-effected
-   * @param wpi the Whole Program Inference implementation
    */
   public void wpiPrepareClassForWriting(
       ClassOrInterfaceAnnos classAnnos,
       Collection<@BinaryName String> supertypes,
-      Collection<@BinaryName String> subtypes,
-      WholeProgramInferenceImplementation<?> wpi) {
+      Collection<@BinaryName String> subtypes) {
     if (classAnnos.callableDeclarations.isEmpty()) {
       return;
     }
@@ -978,7 +971,7 @@ public class WholeProgramInferenceJavaParserStorage
       List<CallableDeclarationAnnos> inSubtypes =
           findOverrides(jvmSignature, subtypesMap.get(classAnnos.className));
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes, wpi);
+      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
     }
   }
 
@@ -1017,7 +1010,6 @@ public class WholeProgramInferenceJavaParserStorage
    *     side-effected
    * @param inSubtypes the method or constructor annotations for all overriding methods; not
    *     side-effected
-   * @param wpi the Whole Program Inference implementation
    */
   // TODO:  Inferred annotations must be consistent both with one another and with
   // programmer-written annotations.  The latter are stored in elements and, with the given formal
@@ -1027,9 +1019,8 @@ public class WholeProgramInferenceJavaParserStorage
   public void wpiPrepareMethodForWriting(
       CallableDeclarationAnnos methodAnnos,
       Collection<CallableDeclarationAnnos> inSupertypes,
-      Collection<CallableDeclarationAnnos> inSubtypes,
-      WholeProgramInferenceImplementation<?> wpi) {
-    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes, wpi);
+      Collection<CallableDeclarationAnnos> inSubtypes) {
+    atypeFactory.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
   }
 
   @Override
@@ -1049,7 +1040,7 @@ public class WholeProgramInferenceJavaParserStorage
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side effects
       // that we don't want to be persistent.
       CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
-      wpiPrepareCompilationUnitForWriting(root, this.wpi);
+      wpiPrepareCompilationUnitForWriting(root);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
         packageDir = AJAVA_FILES_PATH;
