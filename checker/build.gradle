@@ -221,6 +221,7 @@ clean {
 }
 
 clean.doLast {
+  buildDir.deleteDir()
   while (buildDir.exists()) {
     sleep(10000)                // wait 10 seconds
     buildDir.deleteDir()
