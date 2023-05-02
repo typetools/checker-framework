@@ -557,7 +557,7 @@ http://CheckerFramework.org/
 
 Changes for Checker Framework version %s:
 
-<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md .>>
+<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
 """ % (
         version,
         version,
