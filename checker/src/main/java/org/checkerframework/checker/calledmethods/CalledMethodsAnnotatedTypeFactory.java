@@ -463,7 +463,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Performs side effects to make {@code conditionMap} obey behavioral subtyping constraints with
-   * {@code otherConditionAnnos}.
+   * {@code otherDeclAnnos}.
    *
    * @param conditionMap pre- or post-condition annotations on a method M; may be side-effected
    * @param otherDeclAnnos annotations on a method that M overrides or that overrides M; that is, on
@@ -493,8 +493,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
         // `!otherConditionMap.containsKey(expr)` test.
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
-          // otherInferredType was inferred to be @CalledMethods({}).
-          // Replace put @CalledMethods({}) on inferredType.
+          // `otherInferredType` was inferred to be @CalledMethods({}).
+          // Put @CalledMethods({}) on `inferredType`.
           // (The implementation does not use getQualifierParameterHierarchies() because there might
           // not already be a @CalledMethods annotation on inferredType.)
           inferredType.replaceAnnotations(this.getQualifierHierarchy().getTopAnnotations());
