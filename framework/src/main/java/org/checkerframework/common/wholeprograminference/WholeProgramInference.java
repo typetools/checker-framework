@@ -180,6 +180,8 @@ public interface WholeProgramInference {
       ExecutableElement methodElement,
       CFAbstractStore<?, ?> store);
 
+  // TODO: This Javadoc should explain why this method is in WholeProgramInference and not in some
+  // AnnotatedTypeMirror related class.
   /**
    * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
