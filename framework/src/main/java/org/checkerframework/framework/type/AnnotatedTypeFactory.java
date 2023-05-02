@@ -5585,8 +5585,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an annotation file.
    *
-   * <p>Overriding implementations should call {@code super.wpiPrepareMethodForWriting(...)}.
-   *
    * @param methodAnnos the method or constructor annotations to modify
    */
   public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
@@ -5596,8 +5594,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an ajava file.
-   *
-   * <p>Overriding implementations should call {@code super.wpiPrepareMethodForWriting(...)}.
    *
    * @param methodAnnos the method or constructor annotations to modify
    * @param inSupertypes the method or constructor annotations for all overridden methods; not
@@ -5609,65 +5605,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
       Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> precondMap =
-        methodAnnos.getPreconditions();
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> postcondMap =
-        methodAnnos.getPostconditions();
-    for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSupertype :
-        inSupertypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSupertype, true, true);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSupertype, false, true);
-    }
-    for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSubtype : inSubtypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false);
-    }
-  }
-
-  /**
-   * Performs side effects to make {@code conditionMap} obey behavioral subtyping constraints with
-   * {@code otherConditionAnnos}.
-   *
-   * @param conditionMap pre- or post-condition annotations on a method M; may be side-effected
-   * @param otherDeclAnnos annotations on a method that M overrides or that overrides M; that is, on
-   *     a method in the same "method family" as M; may be side-effected
-   * @param isPrecondition true if the annotations are pre-condition annotations, false if they are
-   *     post-condition annotations
-   * @param otherIsSupertype true if {@code otherDeclAnnos} are on a supertype; false if they are on
-   *     a subtype
-   */
-  protected void makeConditionConsistentWithOtherMethod(
-      Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> conditionMap,
-      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos otherDeclAnnos,
-      boolean isPrecondition,
-      boolean otherIsSupertype) {
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        conditionMap.entrySet()) {
-      String expr = entry.getKey();
-      Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> pair = entry.getValue();
-      AnnotatedTypeMirror inferredType = pair.first;
-      AnnotatedTypeMirror declaredType = pair.second;
-      if (otherIsSupertype ? isPrecondition : !isPrecondition) {
-        // other is a supertype & compare preconditions, or
-        // other is a subtype & compare postconditions.
-        Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> otherConditionMap =
-            isPrecondition ? otherDeclAnnos.getPreconditions() : otherDeclAnnos.getPostconditions();
-        if (otherConditionMap.containsKey("every expression")
-            || !otherConditionMap.containsKey(expr)) {
-          // otherInferredType was inferred to be @CalledMethods({}).
-          // Replace put @CalledMethods({}) on inferredType.
-          // (The implementation does not use getQualifierParameterHierarchies() because there might
-          // not already be a @CalledMethods annotation on inferredType.)
-          inferredType.replaceAnnotations(this.getQualifierHierarchy().getTopAnnotations());
-        } else {
-          AnnotatedTypeMirror otherInferredType =
-              isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(expr, declaredType, this);
-          this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
-        }
-      }
-    }
+    // This implementation does nothing.
   }
 
   /**
