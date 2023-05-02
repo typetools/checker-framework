@@ -181,6 +181,16 @@ public interface WholeProgramInference {
       CFAbstractStore<?, ?> store);
 
   /**
+   * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
+   * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
+   * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
+   *
+   * @param sourceCodeATM the annotated type on the source code; side effected by this method
+   * @param ajavaATM the annotated type on the annotation file
+   */
+  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM);
+
+  /**
    * Updates a method to add a declaration annotation.
    *
    * @param methodElt the method to annotate
