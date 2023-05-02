@@ -64,22 +64,12 @@ public class AnnotationMirrorSet
     this.addAll(annos);
   }
 
-  /**
-   * Returns a deep copy of this.
-   *
-   * @return a deep copy of this
-   */
   @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
   @Override
   public AnnotationMirrorSet deepCopy() {
-    try {
-      AnnotationMirrorSet result = (AnnotationMirrorSet) super.clone();
-      result.shadowSet = new TreeSet<>(AnnotationUtils::compareAnnotationMirrors);
-      result.shadowSet.addAll(shadowSet);
-      return result;
-    } catch (CloneNotSupportedException e) {
-      throw new Error(e);
-    }
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    result.shadowSet.addAll(shadowSet);
+    return result;
   }
 
   /**

@@ -52,7 +52,8 @@ public class Pair<V1, V2> {
   }
 
   /**
-   * Returns a deep copy of this: each element is a deep copy of the corresponding element of this.
+   * Returns a deep copy of this: each element is a deep copy (according to the {@code DeepCopyable}
+   * interface) of the corresponding element of this.
    *
    * @param <V1> the type of the first element of the pair
    * @param <V2> the type of the second element of the pair
@@ -67,7 +68,8 @@ public class Pair<V1, V2> {
 
   /**
    * Returns a copy, where the {@code first} element is deep: the {@code first} element is a deep
-   * copy, and the {@code} second element is identical to the argument.
+   * copy (according to the {@code DeepCopyable} interface), and the {@code} second element is
+   * identical to the argument.
    *
    * @param <V1> the type of the first element of the pair
    * @param <V2> the type of the second element of the pair
@@ -81,7 +83,8 @@ public class Pair<V1, V2> {
 
   /**
    * Returns a copy, where the {@code second} element is deep: the {@code first} element is
-   * identical to the argument, and the {@code} second element is a deep copy.
+   * identical to the argument, and the {@code} second element is a deep copy (according to the
+   * {@code DeepCopyable} interface).
    *
    * @param <V1> the type of the first element of the pair
    * @param <V2> the type of the second element of the pair

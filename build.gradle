@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '8.1.1'
+  id 'com.github.johnrengelman.shadow' version '8.1.0'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.4.0'
   id 'java'
@@ -33,9 +33,8 @@ ext {
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
 
-  // As of 2022-11-30, delombok crashes under JDK 19.
-  // As of mid-January 2023, a lombok release for Java 19 is coming "in a week".
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
+  // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
 
   errorproneJavacVersion = '9+181-r4173-1'
 
@@ -119,7 +118,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.33.1-SNAPSHOT'
+  version '3.34.1-SNAPSHOT'
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
@@ -301,38 +300,53 @@ allprojects {
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
 
-      // Don't try to use `options.release.set(8)` here.
-      sourceCompatibility = 8
-      targetCompatibility = 8
-      // Because the target is 8, all of the public compiler classes are accessible, so
-      // --add-exports are not required (nor are they allowed with target 8). See
-      // https://openjdk.org/jeps/247 for details on compiling for older versions.
-
-      // When sourceCompatibility or release is changed to 11, then the following will be required.
-      // options.compilerArgs += [
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      // ]
-      // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
-      // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
-      // reflective access to private members.
-      //
-      // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
-      // "The effect of each instance [of --add-exports] is to add a qualified export of the
-      // named package from the source module to the target module. This is, essentially, a
-      // command-line form of an exports clause in a module declaration[...].
-      // [...]
-      // The --add-exports option enables access to the public types of a specified package.
-      // It is sometimes necessary to go further and enable access to all non-public elements
-      // via the setAccessible method of the core reflection API. The --add-opens option can
-      // be used, at run time, to do this."
+      // This test is for whether the Checker Framework supports (runs under) Java 8.
+      // Currently, the Checker Framework does support Java 8.
+      if (true) {
+        // Using `options.release.set(8)` here leads to compilation
+        // errors such as "package com.sun.source.tree does not exist".
+        sourceCompatibility = 8
+        targetCompatibility = 8
+        // Because the target is 8, all of the public compiler classes are accessible, so
+        // --add-exports are not required (nor are they allowed with target 8). See
+        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      } else {
+        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
+        options.release.set(11)
+        options.compilerArgs += [
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+        // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
+        // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
+        // reflective access to private members.
+        //
+        // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
+        // "The effect of each instance [of --add-exports] is to add a qualified export of the
+        // named package from the source module to the target module. This is, essentially, a
+        // command-line form of an exports clause in a module declaration[...].
+        // [...]
+        // The --add-exports option enables access to the public types of a specified package.
+        // It is sometimes necessary to go further and enable access to all non-public elements
+        // via the setAccessible method of the core reflection API. The --add-opens option can
+        // be used, at run time, to do this."
+      }
 
       options.failOnError = true
       options.deprecation = true

@@ -2443,6 +2443,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getContractAnnotations(AMethod m) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
@@ -2457,12 +2458,18 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return precondition annotations for the method
    */
   public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
+    int size = m.getPreconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
     for (Map.Entry<String, AField> entry : m.getPreconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
       TypeMirror typeMirror = entry.getValue().getTypeMirror();
       if (typeMirror == null) {
         throw new BugInCF(
@@ -2491,12 +2498,18 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
       AMethod m, List<AnnotationMirror> preconds) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
+    int size = m.getPostconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
     for (Map.Entry<String, AField> entry : m.getPostconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
       TypeMirror typeMirror = entry.getValue().getTypeMirror();
       if (typeMirror == null) {
         throw new BugInCF(

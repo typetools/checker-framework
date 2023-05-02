@@ -12,7 +12,7 @@ jobs:
 
 # The dependsOn clauses are:
 #  * Everything depends on the canary jobs (the 4 main jdk17 jobs), except those jobs themselves.
-#  * Anything *_jdk11 or *_jdk19 depends on *_jdk17.
+#  * Anything *_jdk11 or *_jdk20 depends on *_jdk17.
 
 - job: canary_jobs
   dependsOn:
@@ -49,12 +49,12 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
-- job: junit_tests_jdk19
+- job: junit_tests_jdk20
   dependsOn:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -82,12 +82,12 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-nonjunit.sh
     displayName: test-cftests-nonjunit.sh
-- job: nonjunit_tests_jdk19
+- job: nonjunit_tests_jdk20
   dependsOn:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -118,13 +118,13 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
-- job: inference_tests_jdk19
+- job: inference_tests_jdk20
   dependsOn:
    - canary_jobs
    - inference_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -151,13 +151,13 @@ jobs:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
-- job: misc_jdk19
+- job: misc_jdk20
   dependsOn:
    # - canary_jobs
    - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19-plus:latest
+  container: mdernst/cf-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
   - bash: ./checker/bin-devel/test-misc.sh
@@ -183,12 +183,12 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
-- job: typecheck_jdk19
+- job: typecheck_jdk20
   dependsOn:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19-plus:latest
+  container: mdernst/cf-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -219,14 +219,14 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-- job: daikon_jdk19
+- job: daikon_jdk20
   dependsOn:
    - canary_jobs
    # Could comment out the "daikon_jdk17" dependency to reduce latency.
    - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -252,21 +252,24 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
-  # The guava job sometimes times out, but that is because the job stalls.
-  # When it doesn't stall, it finishes in about 30 minutes.
+  # The guava job sometimes times out, because the time between these lines can be 30 minutes!
+  #   [INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
+  #   [INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugin-tools/maven-plugin-tools-generators/3.5.1/maven-plugin-tools-generators-3.5.1.pom
+  # I tried to configure Maven to prevent that problem, but it is still ocurring.
+  # Maybe I need to use caching? https://learn.microsoft.com/en-us/azure/devops/pipelines/release/caching?view=azure-devops
   timeoutInMinutes: 60
   steps:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
-- job: guava_jdk19
+- job: guava_jdk20
   dependsOn:
    - canary_jobs
    - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 60
   steps:
   - checkout: self
@@ -296,13 +299,13 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-plume-lib.sh
     displayName: test-plume-lib.sh
-- job: plume_lib_jdk19
+- job: plume_lib_jdk20
   dependsOn:
    - canary_jobs
    - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk19:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -332,13 +335,13 @@ jobs:
 #     fetchDepth: 25
 #   - bash: ./checker/bin-devel/test-downstream.sh
 #     displayName: test-downstream.sh
-# - job: downstream_jdk19
+# - job: downstream_jdk20
 #   dependsOn:
 #    - canary_jobs
 #    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk19:latest
+#   container: mdernst/cf-ubuntu-jdk20:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
