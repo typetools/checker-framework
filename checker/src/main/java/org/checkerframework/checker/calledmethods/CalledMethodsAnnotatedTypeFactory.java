@@ -488,7 +488,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       boolean isPrecondition,
       boolean otherIsSupertype,
       WholeProgramInferenceImplementation<?> wpi) {
-    // Iterate over a copy to avoid ConcurrentModificationException.
     for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         conditionMap.entrySet()) {
       String expr = entry.getKey();
