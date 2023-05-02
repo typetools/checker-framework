@@ -1,4 +1,4 @@
-// @skip-test
+// @skip-test https://tinyurl.com/cfissue/5829
 
 // A simple test that the @AinferTreatAsSibling1 can be inferred.
 // This test does actually test inference: the AinferTestChecker's TreeAnnotator
