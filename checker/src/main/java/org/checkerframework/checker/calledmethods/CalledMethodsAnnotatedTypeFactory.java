@@ -76,9 +76,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   /*package-private*/ final ExecutableElement ensuresCalledMethodsVarArgsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethodsVarArgs.class, "value", 0, processingEnv);
 
-  /** The annotation {@code @CalledMethods({})}. */
-  /*package-private*/ final AnnotationMirror emptyCalledMethods;
-
   /**
    * Create a new CalledMethodsAnnotatedTypeFactory.
    *
@@ -107,10 +104,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     // therefore treat it as top.
     addAliasedTypeAnnotation(
         "org.checkerframework.checker.builder.qual.NotCalledMethods", this.top);
-
-    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, CalledMethods.class);
-    builder.setValue("value", new String[0]);
-    emptyCalledMethods = builder.build();
 
     // Don't call postInit() for subclasses.
     if (this.getClass() == CalledMethodsAnnotatedTypeFactory.class) {
@@ -503,7 +496,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             || !otherConditionMap.containsKey(expr)) {
           // otherInferredType was inferred to be @CalledMethods({}).
           // Replace any @CalledMethods annotation on inferredType by @CalledMethods({}).
-          inferredType.replaceAnnotation(emptyCalledMethods);
+          inferredType.replaceAnnotation(top);
         } else {
           AnnotatedTypeMirror otherInferredType =
               isPrecondition
