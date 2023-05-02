@@ -557,7 +557,7 @@ http://CheckerFramework.org/
 
 Changes for Checker Framework version %s:
 
-<<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
+<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md .>>
 """ % (
         version,
         version,
