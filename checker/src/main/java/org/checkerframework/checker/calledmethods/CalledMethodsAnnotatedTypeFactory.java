@@ -437,7 +437,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   // TODO: Probably move (parts of) the next two methods up into AnnotatedTypeFactory, eventually.
-  // I tried and there were some test failures, so this isn't a trivial copy-and-paste.
+  // I tried and there were some test failures, so this isn't a trivial cut-and-paste.
 
   @Override
   public void wpiPrepareMethodForWriting(
