@@ -2539,6 +2539,7 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(methodAnnos);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(methodAnnos, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
