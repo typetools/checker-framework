@@ -1369,13 +1369,21 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public String toString() {
+      String fieldsString = fields.toString();
+      if (fieldsString.length() > 100) {
+        // The quoting increases the likelihood that all delimiters are balanced in the result.
+        // That makes it easier to manipulate the result (such as skipping over it) in an
+        // editor.  The quoting also makes clear that the value is truncated.
+        fieldsString = "\"" + fieldsString.substring(0, 95) + "...\"";
+      }
+
       return "ClassOrInterfaceAnnos ["
-          + classDeclaration.getName()
+          + (classDeclaration == null ? "unnamed" : classDeclaration.getName())
           + ": callableDeclarations="
           // For deterministic output
           + new TreeMap<>(callableDeclarations)
           + ", fields="
-          + fields
+          + fieldsString
           + "]";
     }
 
