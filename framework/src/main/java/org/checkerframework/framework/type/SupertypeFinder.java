@@ -275,7 +275,8 @@ final class SupertypeFinder {
       // Find the super types: Start with enums and superclass
       if (typeElement.getKind() == ElementKind.ENUM) {
         supertypes.add(createEnumSuperType(type, typeElement));
-      } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
+      } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE
+          && typeElement.getSuperclass().getKind() != TypeKind.ERROR) {
         DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
         AnnotatedDeclaredType dt =
             (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(superClass, false);
@@ -286,6 +287,10 @@ final class SupertypeFinder {
       }
 
       for (TypeMirror st : typeElement.getInterfaces()) {
+        if (st.getKind() == TypeKind.ERROR) {
+          // This can happen while parsing the JDK.
+          continue;
+        }
         if (type.isUnderlyingTypeRaw()) {
           st = types.erasure(st);
         }
