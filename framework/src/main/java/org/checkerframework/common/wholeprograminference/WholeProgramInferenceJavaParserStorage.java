@@ -1655,7 +1655,7 @@ public class WholeProgramInferenceJavaParserStorage
      */
     public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
       if (postconditions == null) {
-        postconditions = new HashMap<>(1);
+        return Collections.emptyMap();
       }
 
       return Collections.unmodifiableMap(postconditions);
@@ -1885,7 +1885,7 @@ public class WholeProgramInferenceJavaParserStorage
     @SuppressWarnings("UnusedMethod")
     public AnnotationMirrorSet getDeclarationAnnotations() {
       if (declarationAnnotations == null) {
-        declarationAnnotations = new AnnotationMirrorSet();
+        return AnnotationMirrorSet.emptySet();
       }
 
       return AnnotationMirrorSet.unmodifiableSet(declarationAnnotations);
