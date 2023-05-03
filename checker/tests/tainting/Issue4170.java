@@ -6,6 +6,7 @@ import org.checkerframework.checker.tainting.qual.Untainted;
 public class Issue4170 {
   public void method1() {
     var list = new ArrayList<@Untainted String>();
+    ArrayList<@Untainted String> list2 = list;
     var stream = list.stream();
   }
 
