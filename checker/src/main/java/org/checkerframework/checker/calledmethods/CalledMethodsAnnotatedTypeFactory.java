@@ -463,7 +463,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Performs side effects to make {@code conditionMap} obey behavioral subtyping constraints with
-   * {@code otherDeclAnnos}.
+   * {@code otherDeclAnnos}, that is, postconditions must be at least as strong as the postcondition
+   * on the superclass, and preconditions must be at most as strong as the condition on the
+   * superclass.
    *
    * @param conditionMap pre- or post-condition annotations on a method M; may be side-effected
    * @param otherDeclAnnos annotations on a method that M overrides or that overrides M; that is, on
@@ -491,13 +493,15 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
             isPrecondition ? otherDeclAnnos.getPreconditions() : otherDeclAnnos.getPostconditions();
         // TODO: Complete support for "every expression" conditions, then remove the
         // `!otherConditionMap.containsKey(expr)` test.
+        // If a condition map contains the key "every expression", that means that inference
+        // completed without inferring any conditions of that type.  For example, if no
+        // @EnsuresCalledMethods was inferred for any expression, the map would contain the key
+        // "every expression", which is not a legal Java expression.
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
-          // `otherInferredType` was inferred to be @CalledMethods({}).
-          // Put @CalledMethods({}) on `inferredType`.
-          // (The implementation does not use getQualifierParameterHierarchies() because there might
-          // not already be a @CalledMethods annotation on inferredType.)
-          inferredType.replaceAnnotations(this.getQualifierHierarchy().getTopAnnotations());
+          // `otherInferredType` was inferred to be the top type.
+          // Put the top type on `inferredType`.
+          inferredType.replaceAnnotations(declaredType.getAnnotations());
         } else {
           AnnotatedTypeMirror otherInferredType =
               isPrecondition
