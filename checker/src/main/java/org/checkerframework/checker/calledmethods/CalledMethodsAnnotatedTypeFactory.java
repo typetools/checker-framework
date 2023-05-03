@@ -7,7 +7,6 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -28,7 +27,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -40,7 +38,6 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -434,82 +431,5 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     builder.setValue("methods", calledMethods.toArray(new String[calledMethods.size()]));
     AnnotationMirror am = builder.build();
     return am;
-  }
-
-  // TODO: Probably move (parts of) the next two methods up into AnnotatedTypeFactory, eventually.
-  // I tried and there were some test failures, so this isn't a trivial cut-and-paste.
-
-  @Override
-  public void wpiPrepareMethodForWriting(
-      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
-      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
-      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
-    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
-
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> precondMap =
-        methodAnnos.getPreconditions();
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> postcondMap =
-        methodAnnos.getPostconditions();
-    for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSupertype :
-        inSupertypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSupertype, true, true);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSupertype, false, true);
-    }
-    for (WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos inSubtype : inSubtypes) {
-      makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false);
-      makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false);
-    }
-  }
-
-  /**
-   * Performs side effects to make {@code conditionMap} obey behavioral subtyping constraints with
-   * {@code otherDeclAnnos}, that is, postconditions must be at least as strong as the postcondition
-   * on the superclass, and preconditions must be at most as strong as the condition on the
-   * superclass.
-   *
-   * @param conditionMap pre- or post-condition annotations on a method M; may be side-effected
-   * @param otherDeclAnnos annotations on a method that M overrides or that overrides M; that is, on
-   *     a method in the same "method family" as M; may be side-effected
-   * @param isPrecondition true if the annotations are pre-condition annotations, false if they are
-   *     post-condition annotations
-   * @param otherIsSupertype true if {@code otherDeclAnnos} are on a supertype; false if they are on
-   *     a subtype
-   */
-  private void makeConditionConsistentWithOtherMethod(
-      Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> conditionMap,
-      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos otherDeclAnnos,
-      boolean isPrecondition,
-      boolean otherIsSupertype) {
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
-        conditionMap.entrySet()) {
-      String expr = entry.getKey();
-      Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> pair = entry.getValue();
-      AnnotatedTypeMirror inferredType = pair.first;
-      AnnotatedTypeMirror declaredType = pair.second;
-      if (otherIsSupertype ? isPrecondition : !isPrecondition) {
-        // other is a supertype & compare preconditions, or
-        // other is a subtype & compare postconditions.
-        Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> otherConditionMap =
-            isPrecondition ? otherDeclAnnos.getPreconditions() : otherDeclAnnos.getPostconditions();
-        // TODO: Complete support for "every expression" conditions, then remove the
-        // `!otherConditionMap.containsKey(expr)` test.
-        // If a condition map contains the key "every expression", that means that inference
-        // completed without inferring any conditions of that type.  For example, if no
-        // @EnsuresCalledMethods was inferred for any expression, the map would contain the key
-        // "every expression", which is not a legal Java expression.
-        if (otherConditionMap.containsKey("every expression")
-            || !otherConditionMap.containsKey(expr)) {
-          // `otherInferredType` was inferred to be the top type.
-          // Put the top type on `inferredType`.
-          inferredType.replaceAnnotations(declaredType.getAnnotations());
-        } else {
-          AnnotatedTypeMirror otherInferredType =
-              isPrecondition
-                  ? otherDeclAnnos.getPreconditionsForExpression(expr, declaredType, this)
-                  : otherDeclAnnos.getPostconditionsForExpression(expr, declaredType, this);
-          this.getWholeProgramInference().updateAtmWithLub(inferredType, otherInferredType);
-        }
-      }
-    }
   }
 }
