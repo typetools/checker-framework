@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 
 /** Helper class for determining if a type contains an inference variable. */
 public class ContainsInferenceVariable {
@@ -54,9 +55,11 @@ public class ContainsInferenceVariable {
 
     /** Returns true if {@code typeVar} is a type variable in {@code typeVariables} */
     private boolean isTypeVariableOfInterest(TypeVariable typeVar) {
-      if (typeVariables.contains(typeVar)) {
-        foundVariables.add(typeVar);
-        return true;
+      for (TypeVariable tv : typeVariables) {
+        if (InferenceResult.sames(tv, typeVar)) {
+          foundVariables.add(tv);
+          return true;
+        }
       }
       return false;
     }
