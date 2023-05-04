@@ -1,54 +1,54 @@
-// @skip-test temporary
-
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 
 public class ECMInference {
 
   class A1 {
-    Object field;
-
     void doStuff() {
-      field.toString();
+      toString();
     }
 
-    void client() {
+    void clientA1() {
       doStuff();
+      // :: warning: (assignment)
       @CalledMethods("toString") A1 a1 = this;
     }
   }
 
   class B1 extends A1 {
+    @Override
     void doStuff() {
-      field.toString();
+      toString();
     }
 
-    void client() {
+    void clientB1() {
       doStuff();
+      // :: warning: (assignment)
       @CalledMethods("toString") B1 b1 = this;
     }
   }
 
   class A2 {
-    Object field;
-
     void doStuff() {
-      field.toString();
+      toString();
     }
 
-    void client(@CalledMethods("toString") A2 this) {
+    void clientA2() {
       doStuff();
+      // :: warning: (assignment)
       @CalledMethods("toString") A2 a2 = this;
     }
   }
 
   class B2 extends A2 {
+    @Override
     void doStuff() {
-      field.toString();
-      field.hashCode();
+      toString();
+      hashCode();
     }
 
-    void client() {
+    void clientB2() {
       doStuff();
+      // :: warning: (assignment)
       @CalledMethods({"toString", "hashCode"}) B2 b2 = this;
     }
   }
