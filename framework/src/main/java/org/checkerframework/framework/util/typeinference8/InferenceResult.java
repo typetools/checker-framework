@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 public class InferenceResult {
   @SuppressWarnings("interning:assignment")
   public static @InternedDistinct InferenceResult emptyResult =
-      new InferenceResult(Collections.emptyList(), false, "");
+      new InferenceResult(Collections.emptyList(), false, false, "");
 
   public static InferenceResult emptyResult() {
     return emptyResult;
@@ -28,16 +28,26 @@ public class InferenceResult {
 
   private final Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results;
   private final boolean annoInferenceFailed;
+  private final boolean uncheckedConversion;
   private final String errorMsg;
 
-  public InferenceResult(List<Variable> thetaPrime, boolean annoInferenceFailed, String errorMsg) {
+  public InferenceResult(
+      List<Variable> thetaPrime,
+      boolean uncheckedConversion,
+      boolean annoInferenceFailed,
+      String errorMsg) {
     this.results = convert(thetaPrime);
+    this.uncheckedConversion = uncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
   }
 
   public Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> getResults() {
     return results;
+  }
+
+  public boolean isUncheckedConversion() {
+    return uncheckedConversion;
   }
 
   public boolean isAnnoInferenceFailed() {

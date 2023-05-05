@@ -173,7 +173,7 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    return new InferenceResult(thetaPrime, b4.annoFail, b4.errorMsg);
+    return new InferenceResult(thetaPrime, b4.isUncheckedConversion(), b4.annoFail, b4.errorMsg);
   }
 
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
@@ -208,7 +208,7 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    return new InferenceResult(thetaPrime, b3.annoFail, b3.errorMsg);
+    return new InferenceResult(thetaPrime, b3.isUncheckedConversion(), b3.annoFail, b3.errorMsg);
   }
 
   /**

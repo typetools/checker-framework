@@ -50,6 +50,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -727,7 +728,7 @@ public class AnnotatedTypes {
    * @return the mapping of the type variables to type arguments for this method or constructor
    *     invocation
    */
-  public static Map<TypeVariable, AnnotatedTypeMirror> findTypeArguments(
+  public static Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
       final ProcessingEnvironment processingEnv,
       final AnnotatedTypeFactory atypeFactory,
       final ExpressionTree expr,
@@ -736,7 +737,7 @@ public class AnnotatedTypes {
     return findTypeArguments(processingEnv, atypeFactory, expr, elt, preType, true);
   }
 
-  public static Map<TypeVariable, AnnotatedTypeMirror> findTypeArguments(
+  public static Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
       final ProcessingEnvironment processingEnv,
       final AnnotatedTypeFactory atypeFactory,
       final ExpressionTree expr,
@@ -747,7 +748,7 @@ public class AnnotatedTypes {
     if (expr.getKind() != Kind.MEMBER_REFERENCE
         && elt.getTypeParameters().isEmpty()
         && !TreeUtils.isDiamondTree(expr)) {
-      return Collections.emptyMap();
+      return Pair.of(Collections.emptyMap(), false);
     }
 
     List<? extends Tree> targs;
@@ -758,14 +759,15 @@ public class AnnotatedTypes {
     } else if (expr instanceof MemberReferenceTree) {
       MemberReferenceTree memRef = ((MemberReferenceTree) expr);
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
-        return atypeFactory
-            .getTypeArgumentInference()
-            .inferTypeArgs(atypeFactory, expr, preType)
-            .getTypeArgumentsForExpression(expr);
+        InferenceResult inferenceResult =
+            atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
+        return Pair.of(
+            inferenceResult.getTypeArgumentsForExpression(expr),
+            inferenceResult.isUncheckedConversion());
       }
       targs = memRef.getTypeArguments();
       if (memRef.getTypeArguments() == null) {
-        return Collections.emptyMap();
+        return Pair.of(Collections.emptyMap(), false);
       }
     } else {
       // This case should never happen.
@@ -776,7 +778,7 @@ public class AnnotatedTypes {
       DeclaredType receiverTypeMirror = preType.getReceiverType().getUnderlyingType();
       if (TypesUtils.isRaw(receiverTypeMirror)
           && elt.getEnclosingElement().equals(receiverTypeMirror.asElement())) {
-        return Collections.emptyMap();
+        return Pair.of(Collections.emptyMap(), false);
       }
     }
 
@@ -785,7 +787,7 @@ public class AnnotatedTypes {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
       if (tvars.isEmpty()) {
         // This happens when the method is invoked with a raw receiver.
-        return Collections.emptyMap();
+        return Pair.of(Collections.emptyMap(), false);
       }
 
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
@@ -796,15 +798,16 @@ public class AnnotatedTypes {
         // already should be a declaration.
         typeArguments.put(typeVar.getUnderlyingType(), typeArg);
       }
-      return typeArguments;
+      return Pair.of(typeArguments, false);
     } else {
       if (inferTypeArgs) {
-        return atypeFactory
-            .getTypeArgumentInference()
-            .inferTypeArgs(atypeFactory, expr, preType)
-            .getTypeArgumentsForExpression(expr);
+        InferenceResult inferenceResult =
+            atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
+        return Pair.of(
+            inferenceResult.getTypeArgumentsForExpression(expr),
+            inferenceResult.isUncheckedConversion());
       } else {
-        return Collections.emptyMap();
+        return Pair.of(Collections.emptyMap(), false);
       }
     }
   }

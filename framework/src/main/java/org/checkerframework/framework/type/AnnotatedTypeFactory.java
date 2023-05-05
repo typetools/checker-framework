@@ -2334,10 +2334,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberTypeWithOverrides);
     List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodElt.getTypeParameters().size());
 
-    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
+    Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> pair =
         AnnotatedTypes.findTypeArguments(
             processingEnv, this, tree, methodElt, methodType, inferTypeArgs);
-
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = pair.first;
     if (!typeParamToTypeArg.isEmpty()) {
       typeParamToTypeArg = captureMethodTypeArgs(typeParamToTypeArg, methodType.getTypeVariables());
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
@@ -2355,6 +2355,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       methodType =
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
+    }
+    if (pair.second) {
+      methodType.setReturnType(methodType.getReturnType().getErased());
     }
 
     if (tree.getKind() == Tree.Kind.METHOD_INVOCATION
@@ -2709,10 +2712,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
     }
-
-    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg =
-        new HashMap<>(
-            AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con, shouldInfer));
+    Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> pair =
+        AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con, shouldInfer);
+    Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = new HashMap<>(pair.first);
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
       typeargs = Collections.emptyList();
