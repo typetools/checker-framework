@@ -3883,7 +3883,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    /** Checks that overrides obey behavioral subtyping. */
+    /**
+     * Checks that overrides obey behavioral subtyping, that is, postconditions must be at least as
+     * strong as the postcondition on the superclass, and preconditions must be at most as strong as
+     * the condition on the superclass.
+     */
     private void checkPreAndPostConditions() {
       String msgKey = isMethodReference ? "methodref" : "override";
       if (isMethodReference) {
