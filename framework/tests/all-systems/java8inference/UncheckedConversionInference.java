@@ -35,7 +35,7 @@ public class UncheckedConversionInference {
 
     @Override
     public Set<Cell<C, R, V>> cellSet() {
-      return null;
+      throw new RuntimeException();
     }
   }
 
