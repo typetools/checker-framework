@@ -152,7 +152,7 @@ public class UseOfVariable extends AbstractType {
     if (hasPrimaryAnno != that.hasPrimaryAnno) {
       return false;
     }
-    if (!variable.equals(that.variable)) {
+    if (variable != that.variable) {
       return false;
     }
     if (!bots.equals(that.bots)) {
