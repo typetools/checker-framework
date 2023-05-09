@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kind;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -121,7 +122,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
     }
 
     Variable variable = (Variable) o;
-    return context.modelTypes.isSameType(typeVariableJava, variable.typeVariableJava)
+    return InferenceResult.sames(typeVariableJava, variable.typeVariableJava)
         && invocation == variable.invocation;
   }
 

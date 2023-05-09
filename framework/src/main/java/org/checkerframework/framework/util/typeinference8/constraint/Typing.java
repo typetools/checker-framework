@@ -100,6 +100,7 @@ public class Typing extends TypeConstraint {
 
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
+
     switch (getKind()) {
       case TYPE_COMPATIBILITY:
         return reduceCompatible();

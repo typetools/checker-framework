@@ -134,4 +134,45 @@ public class UseOfVariable extends AbstractType {
   public String toString() {
     return "use of " + variable + (hasPrimaryAnno ? " with primary" : "");
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+
+    UseOfVariable that = (UseOfVariable) o;
+
+    if (hasPrimaryAnno != that.hasPrimaryAnno) {
+      return false;
+    }
+    if (!variable.equals(that.variable)) {
+      return false;
+    }
+    if (!bots.equals(that.bots)) {
+      return false;
+    }
+    if (!tops.equals(that.tops)) {
+      return false;
+    }
+
+    return type.equals(that.type);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result = 31 * result + variable.hashCode();
+    result = 31 * result + (hasPrimaryAnno ? 1 : 0);
+    result = 31 * result + bots.hashCode();
+    result = 31 * result + tops.hashCode();
+    result = 31 * result + type.hashCode();
+    return result;
+  }
 }

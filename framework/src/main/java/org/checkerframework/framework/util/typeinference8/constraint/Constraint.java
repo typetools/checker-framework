@@ -24,7 +24,7 @@ public interface Constraint extends ReductionResult {
    */
   ReductionResult reduce(Java8InferenceContext context);
 
-  public enum Kind {
+  enum Kind {
     /**
      * {@code < Expression -> T >}: An expression is compatible in a loose invocation context with
      * type T

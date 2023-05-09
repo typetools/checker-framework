@@ -10,9 +10,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -199,7 +201,13 @@ public class ProperType extends AbstractType {
     if (!type.equals(otherProperType.type)) {
       return false;
     }
-
+    if (properType.getKind() == TypeKind.TYPEVAR) {
+      if (otherProperType.properType.getKind() == TypeKind.TYPEVAR) {
+        return InferenceResult.sames(
+            (TypeVariable) properType, (TypeVariable) otherProperType.properType);
+      }
+      return false;
+    }
     return properType == otherProperType.properType // faster
         || context.env.getTypeUtils().isSameType(properType, otherProperType.properType); // slower
   }

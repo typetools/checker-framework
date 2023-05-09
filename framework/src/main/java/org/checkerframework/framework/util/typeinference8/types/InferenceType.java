@@ -14,6 +14,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -115,6 +116,12 @@ public class InferenceType extends AbstractType {
 
     InferenceType variable = (InferenceType) o;
     if (!type.equals(variable.type)) {
+      return false;
+    }
+    if (typeMirror.getKind() == TypeKind.TYPEVAR) {
+      if (variable.typeMirror.getKind() == TypeKind.TYPEVAR) {
+        return InferenceResult.sames((TypeVariable) typeMirror, (TypeVariable) variable.typeMirror);
+      }
       return false;
     }
     return context.modelTypes.isSameType(typeMirror, variable.typeMirror);

@@ -81,7 +81,7 @@ public class ConstraintSet implements ReductionResult {
     if (constraintSet.annotationFailure) {
       this.annotationFailure = true;
     }
-    list.addAll(constraintSet.list);
+    constraintSet.list.forEach(this::add);
   }
 
   /** Adds all constraints in {@code constraintSet} to this constraint set. */
@@ -245,40 +245,47 @@ public class ConstraintSet implements ReductionResult {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
       if (this.list.size() > 1000) {
-        throw new BugInCF("TO MANY CONSTRAINTS!!!");
+        throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
       }
-      Constraint constraint = this.pop();
-      ReductionResult result = constraint.reduce(context);
-      if (result instanceof ReductionResultPair) {
-        boundSet.merge(((ReductionResultPair) result).boundSet);
-        if (boundSet.containsFalse()) {
-          throw new FalseBoundException(constraint, result);
-        }
-        this.addAll(((ReductionResultPair) result).constraintSet);
-      } else if (result instanceof TypeConstraint) {
-        this.add((Constraint) result);
-      } else if (result instanceof ConstraintSet) {
-        this.addAll((ConstraintSet) result);
-      } else if (result instanceof BoundSet) {
-        boundSet.merge((BoundSet) result);
-        if (boundSet.containsFalse()) {
-          throw new FalseBoundException(constraint, result);
-        }
-      } else if (result == null || result == ConstraintSet.FALSE || result instanceof FalseBound) {
-        throw new FalseBoundException(constraint, result);
-      } else if (result == UNCHECKED_CONVERSION) {
-        boundSet.setUncheckedConversion(true);
-      } else {
-        throw new RuntimeException("Not found " + result);
-      }
-      if (this.annotationFailure) {
-        boundSet.annoFail = true;
-        if (boundSet.errorMsg.equals("")) {
-          boundSet.errorMsg = constraint.toString();
-        }
-      }
+      boundSet.merge(reduceOneStep(context));
     }
 
+    return boundSet;
+  }
+
+  public BoundSet reduceOneStep(Java8InferenceContext context) {
+    BoundSet boundSet = new BoundSet(context);
+
+    Constraint constraint = this.pop();
+    ReductionResult result = constraint.reduce(context);
+    if (result instanceof ReductionResultPair) {
+      boundSet.merge(((ReductionResultPair) result).boundSet);
+      if (boundSet.containsFalse()) {
+        throw new FalseBoundException(constraint, result);
+      }
+      this.addAll(((ReductionResultPair) result).constraintSet);
+    } else if (result instanceof TypeConstraint) {
+      this.add((Constraint) result);
+    } else if (result instanceof ConstraintSet) {
+      this.addAll((ConstraintSet) result);
+    } else if (result instanceof BoundSet) {
+      boundSet.merge((BoundSet) result);
+      if (boundSet.containsFalse()) {
+        throw new FalseBoundException(constraint, result);
+      }
+    } else if (result == null || result == ConstraintSet.FALSE || result instanceof FalseBound) {
+      throw new FalseBoundException(constraint, result);
+    } else if (result == UNCHECKED_CONVERSION) {
+      boundSet.setUncheckedConversion(true);
+    } else {
+      throw new RuntimeException("Not found " + result);
+    }
+    if (this.annotationFailure) {
+      boundSet.annoFail = true;
+      if (boundSet.errorMsg.equals("")) {
+        boundSet.errorMsg = constraint.toString();
+      }
+    }
     return boundSet;
   }
 }

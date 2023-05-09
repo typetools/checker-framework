@@ -585,4 +585,28 @@ public abstract class AbstractType {
       return null;
     }
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    AbstractType that = (AbstractType) o;
+
+    if (!context.equals(that.context)) {
+      return false;
+    }
+    return typeFactory.equals(that.typeFactory);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = context.hashCode();
+    result = 31 * result + typeFactory.hashCode();
+    return result;
+  }
 }

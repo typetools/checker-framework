@@ -282,12 +282,12 @@ public class BoundSet implements ReductionResult {
       }
       boundsChangeInst |= captures.addAll(newBounds.captures);
       for (Variable alpha : variables) {
-        if (alpha.getInstantiation() == null) {
-          boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds(instantiations);
-        }
-        if (!alpha.getBounds().constraints.isEmpty()) {
+        boundsChangeInst = alpha.getBounds().applyInstantiationsToBounds(instantiations);
+
+        while (!alpha.getBounds().constraints.isEmpty()) {
           boundsChangeInst = true;
-          merge(alpha.getBounds().constraints.reduce(context));
+          merge(alpha.getBounds().constraints.reduceOneStep(context));
+          alpha.getBounds().applyInstantiationsToBounds(getInstantiatedVariables());
         }
       }
       if (newBounds.isUncheckedConversion()) {
