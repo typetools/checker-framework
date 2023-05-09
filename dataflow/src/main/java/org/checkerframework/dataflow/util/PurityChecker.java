@@ -3,10 +3,12 @@ package org.checkerframework.dataflow.util;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -15,13 +17,18 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -175,7 +182,11 @@ public class PurityChecker {
   // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
   // overriding more visit* methods.  I'm not sure whether such an optimization would be worth it.
 
-  /** Helper class to keep {@link PurityChecker}'s interface clean. */
+  /**
+   * Helper class to keep {@link PurityChecker}'s interface clean.
+   *
+   * <p>The scanner is run on a single statement, not on a class or method.
+   */
   protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
     /** The purity result. */
@@ -333,6 +344,12 @@ public class PurityChecker {
      */
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
+      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
+      if (fieldElt != null && isFieldInCurrentClass(fieldElt) && inConstructor()) {
+        // assigning a field in a constructor
+        // TODO: add a check for ArrayAccessTree too.
+        return;
+      }
       if (TreeUtils.isFieldAccess(variable)) {
         // lhs is a field access
         purityResult.addNotBothReason(variable, "assign.field");
@@ -343,6 +360,30 @@ public class PurityChecker {
         // lhs is a local variable
         assert isLocalVariable(variable);
       }
+    }
+
+    /**
+     * Returns true if the given field is defined by the current class.
+     *
+     * @param fieldElt a field
+     * @return true if the given field is defined by the current class
+     */
+    private boolean isFieldInCurrentClass(VariableElement fieldElt) {
+      ClassTree currentTypeTree = TreePathUtil.enclosingClass(getCurrentPath());
+      TypeElement currentType = TreeUtils.elementFromDeclaration(currentTypeTree);
+      TypeElement definesField = ElementUtils.enclosingTypeElement(fieldElt);
+      return currentType.equals(definesField);
+    }
+
+    /**
+     * Returns true if currently processing a constructor.
+     *
+     * @return true if currently processing a constructor
+     */
+    private boolean inConstructor() {
+      MethodTree currentMethodTree = TreePathUtil.enclosingMethod(getCurrentPath());
+      ExecutableElement currentMethod = TreeUtils.elementFromDeclaration(currentMethodTree);
+      return currentMethod != null && currentMethod.getKind() == ElementKind.CONSTRUCTOR;
     }
 
     /**
