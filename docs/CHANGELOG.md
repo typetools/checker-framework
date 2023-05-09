@@ -3,6 +3,9 @@ Version 3.34.1 (June 1, 2023)
 
 **User-visible changes:**
 
+Signedness Checker:
+ * The receiver type of `Object.hashCode()` is now `@UnknownSignedness`.
+
 **Implementation details:**
 
 **Closed issues:**
