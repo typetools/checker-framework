@@ -322,6 +322,12 @@ public class TestUtilities {
     return comparisonFile;
   }
 
+  /**
+   * Given an option map, return a list of option names.
+   *
+   * @param options an option map
+   * @return return a list of option names
+   */
   @SuppressWarnings("nullness:argument") // Why? getValue is @Pure.
   public static List<String> optionMapToList(Map<String, @Nullable String> options) {
     List<String> optionList = new ArrayList<>(options.size() * 2);
