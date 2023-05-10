@@ -8,7 +8,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -17,7 +16,6 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -345,7 +343,9 @@ public class PurityChecker {
     protected void assignmentCheck(ExpressionTree variable) {
       variable = TreeUtils.withoutParens(variable);
       VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
-      if (fieldElt != null && isFieldInCurrentClass(fieldElt) && inConstructor()) {
+      if (fieldElt != null
+          && isFieldInCurrentClass(fieldElt)
+          && TreePathUtil.inConstructor(getCurrentPath())) {
         // assigning a field in a constructor
         // TODO: add a check for ArrayAccessTree too.
         return;
@@ -375,18 +375,6 @@ public class PurityChecker {
       assert currentType != null : "@AssumeAssertion(nullness)";
       TypeElement definesField = ElementUtils.enclosingTypeElement(fieldElt);
       return currentType.equals(definesField);
-    }
-
-    /**
-     * Returns true if currently processing a constructor.
-     *
-     * @return true if currently processing a constructor
-     */
-    private boolean inConstructor() {
-      MethodTree currentMethodTree = TreePathUtil.enclosingMethod(getCurrentPath());
-      assert currentMethodTree != null : "@AssumeAssertion(nullness)";
-      ExecutableElement currentMethod = TreeUtils.elementFromDeclaration(currentMethodTree);
-      return currentMethod != null && currentMethod.getKind() == ElementKind.CONSTRUCTOR;
     }
 
     /**
