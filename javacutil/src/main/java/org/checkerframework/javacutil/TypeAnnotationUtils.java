@@ -174,7 +174,6 @@ public class TypeAnnotationUtils {
       }
       for (Map.Entry<Symbol.MethodSymbol, Attribute> map1entry : map1.entrySet()) {
         Attribute attr1 = map1entry.getValue();
-        @SuppressWarnings("nullness:assignment") // same keys in map1 & map2
         @NonNull Attribute attr2 = map2.get(map1entry.getKey());
         if (!attributeEquals(attr1, attr2, types)) {
           return false;
