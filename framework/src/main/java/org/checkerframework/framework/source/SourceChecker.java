@@ -940,19 +940,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected int errsOnLastExit = 0;
 
   /**
-   * Report "type.checking.not.run" error.
-   *
-   * @param p error is reported at the leaf of the path
-   */
-  @SuppressWarnings("interning:assignment") // used in == tests
-  protected void reportJavacError(TreePath p) {
-    // If javac issued any errors, do not type check any file, so that the Checker Framework
-    // does not have to deal with error types.
-    currentRoot = p.getCompilationUnit();
-    reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
-  }
-
-  /**
    * Type-check the code using this checker's visitor.
    *
    * @see Processor#process(Set, RoundEnvironment)
@@ -960,7 +947,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public void typeProcess(TypeElement e, TreePath p) {
     if (javacErrored) {
-      reportJavacError(p);
       return;
     }
 
@@ -1001,7 +987,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (log.nerrors > this.errsOnLastExit) {
       this.errsOnLastExit = log.nerrors;
       javacErrored = true;
-      reportJavacError(p);
       return;
     }
 
