@@ -359,7 +359,6 @@ public interface QualifierHierarchy {
     @SuppressWarnings("nullness:argument")
     boolean mapContainsKey = map.containsKey(key);
     if (mapContainsKey) {
-      @SuppressWarnings("nullness:assignment") // key is a key for map.
       @NonNull AnnotationMirrorSet prevs = map.get(key);
       AnnotationMirror old = findAnnotationInSameHierarchy(prevs, qualifier);
       if (old != null) {
