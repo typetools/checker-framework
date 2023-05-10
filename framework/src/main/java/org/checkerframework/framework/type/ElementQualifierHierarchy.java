@@ -199,6 +199,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
   @Override
   public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
+    @SuppressWarnings("nullness:assignment") // All tops are a key for topsMap.
     @NonNull AnnotationMirror result = topsMap.get(kind.getTop());
     return result;
   }
@@ -231,6 +232,7 @@ public abstract class ElementQualifierHierarchy implements QualifierHierarchy {
   @Override
   public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
+    @SuppressWarnings("nullness:assignment") // All bottoms are keys for bottomsMap.
     @NonNull AnnotationMirror result = bottomsMap.get(kind.getBottom());
     return result;
   }

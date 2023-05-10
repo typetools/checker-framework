@@ -599,7 +599,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSame(a1, a2)) {
           return a1;
         } else {
-          @SuppressWarnings("nullness:assignment")
+          @SuppressWarnings({
+            "nullness:assignment" // Every qualifier kind is a
+            // key in directSuperQualifierMap.
+          })
           @NonNull AnnotationMirror lub =
               ((UnitsQualifierKindHierarchy) qualifierKindHierarchy)
                   .directSuperQualifierMap.get(qualifierKind1);

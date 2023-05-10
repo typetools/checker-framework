@@ -54,6 +54,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     return shadowMap.isEmpty();
   }
 
+  @SuppressWarnings("keyfor:contracts.conditional.postcondition") // delegation
   @Override
   public boolean containsKey(Object key) {
     if (key instanceof AnnotationMirror) {
@@ -68,10 +69,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     return shadowMap.containsValue(value);
   }
 
-  @SuppressWarnings("nullness:return") // Map.get
   @Override
   @Pure
-  public V get(Object key) {
+  public @Nullable V get(Object key) {
     if (key instanceof AnnotationMirror) {
       AnnotationMirror keyAnno =
           AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
@@ -88,16 +88,15 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     "keyfor:argument"
   }) // delegation
   @Override
-  public V put(AnnotationMirror key, V value) {
+  public @Nullable V put(AnnotationMirror key, V value) {
     V pre = get(key);
     remove(key);
     shadowMap.put(key, value);
     return pre;
   }
 
-  @SuppressWarnings("nullness:return") // Map.remove
   @Override
-  public V remove(Object key) {
+  public @Nullable V remove(Object key) {
     if (key instanceof AnnotationMirror) {
       AnnotationMirror keyAnno =
           AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
@@ -154,7 +153,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
     }
 
     try {
-      for (Entry<@KeyFor("this") AnnotationMirror, V> e : entrySet()) {
+      for (Entry<AnnotationMirror, V> e : entrySet()) {
         AnnotationMirror key = e.getKey();
         V value = e.getValue();
         if (value == null) {
@@ -173,9 +172,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   @Override
   public int hashCode() {
     int result = 0;
-    for (Entry<@KeyFor("this") AnnotationMirror, V> entry : entrySet()) {
-      result += entry.hashCode();
-    }
+    for (Entry<AnnotationMirror, V> entry : entrySet()) result += entry.hashCode();
     return result;
   }
 }

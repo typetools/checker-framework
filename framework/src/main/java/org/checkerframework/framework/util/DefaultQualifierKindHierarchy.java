@@ -93,12 +93,14 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
   @Override
   public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in lubs.
     QualifierKind result = lubs.get(q1).get(q2);
     return result;
   }
 
   @Override
   public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
+    @SuppressWarnings("nullness:dereference.of.nullable") // All QualifierKinds are keys in glbs.
     QualifierKind result = glbs.get(q1).get(q2);
     return result;
   }
@@ -419,7 +421,6 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
    *     qualifier kinds; created by {@link #createDirectSuperMap()}
    */
-  @SuppressWarnings("keyfor:argument")
   @RequiresNonNull({"this.qualifierKinds", "this.tops", "this.bottoms"})
   protected void initializeQualifierKindFields(
       @UnderInitialization DefaultQualifierKindHierarchy this,
