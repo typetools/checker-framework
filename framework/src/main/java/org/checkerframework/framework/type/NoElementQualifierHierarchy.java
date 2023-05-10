@@ -108,9 +108,6 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   protected AnnotationMirrorSet createTops(@UnderInitialization NoElementQualifierHierarchy this) {
     AnnotationMirrorSet tops = new AnnotationMirrorSet();
     for (QualifierKind top : qualifierKindHierarchy.getTops()) {
-      @SuppressWarnings(
-          "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
-      )
       @NonNull AnnotationMirror topAnno = kindToAnnotationMirror.get(top);
       tops.add(topAnno);
     }
@@ -127,9 +124,6 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
       @UnderInitialization NoElementQualifierHierarchy this) {
     AnnotationMirrorSet bottoms = new AnnotationMirrorSet();
     for (QualifierKind bottom : qualifierKindHierarchy.getBottoms()) {
-      @SuppressWarnings(
-          "nullness:assignment" // All QualifierKinds are keys in kindToAnnotationMirror
-      )
       @NonNull AnnotationMirror bottomAnno = kindToAnnotationMirror.get(bottom);
       bottoms.add(bottomAnno);
     }
@@ -179,9 +173,6 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
-  // kindToAnnotationMirror
-  )
   public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
     return kindToAnnotationMirror.get(kind.getTop());
@@ -193,9 +184,6 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  @SuppressWarnings("nullness:return" // every QualifierKind is a key in its corresponding
-  // kindToAnnotationMirror
-  )
   public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
     QualifierKind kind = getQualifierKind(start);
     return kindToAnnotationMirror.get(kind.getBottom());
