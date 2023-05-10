@@ -374,6 +374,7 @@ public class PurityChecker {
       TypeElement currentType = TreeUtils.elementFromDeclaration(currentTypeTree);
       assert currentType != null : "@AssumeAssertion(nullness)";
       TypeElement definesField = ElementUtils.enclosingTypeElement(fieldElt);
+      assert definesField != null : "@AssumeAssertion(nullness)";
       return currentType.equals(definesField);
     }
 
