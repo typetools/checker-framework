@@ -11,6 +11,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -171,7 +172,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   private static void mergeTreeLookup(
       IdentityHashMap<Tree, Set<Node>> treeLookup,
       IdentityHashMap<Tree, Set<Node>> otherTreeLookup) {
-    for (Map.Entry<Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
+    for (Map.Entry<@KeyFor("otherTreeLookup") Tree, Set<Node>> entry : otherTreeLookup.entrySet()) {
       Set<Node> hit = treeLookup.get(entry.getKey());
       if (hit == null) {
         treeLookup.put(entry.getKey(), entry.getValue());

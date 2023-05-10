@@ -285,7 +285,6 @@ public class CFGTranslationPhaseThree {
         if (e.getSuccessor() == cur) {
           return singleSuccessorHolder(e, cur);
         } else {
-          @SuppressWarnings("keyfor:assignment") // ignore keyfor type
           Set<Map.Entry<TypeMirror, Set<Block>>> entrySet = e.getExceptionalSuccessors().entrySet();
           for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
             if (entry.getValue().contains(cur)) {

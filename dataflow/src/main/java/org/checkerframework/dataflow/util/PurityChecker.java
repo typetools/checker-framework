@@ -370,7 +370,9 @@ public class PurityChecker {
      */
     private boolean isFieldInCurrentClass(VariableElement fieldElt) {
       ClassTree currentTypeTree = TreePathUtil.enclosingClass(getCurrentPath());
+      assert currentTypeTree != null : "@AssumeAssertion(nullness)";
       TypeElement currentType = TreeUtils.elementFromDeclaration(currentTypeTree);
+      assert currentType != null : "@AssumeAssertion(nullness)";
       TypeElement definesField = ElementUtils.enclosingTypeElement(fieldElt);
       return currentType.equals(definesField);
     }
@@ -382,6 +384,7 @@ public class PurityChecker {
      */
     private boolean inConstructor() {
       MethodTree currentMethodTree = TreePathUtil.enclosingMethod(getCurrentPath());
+      assert currentMethodTree != null : "@AssumeAssertion(nullness)";
       ExecutableElement currentMethod = TreeUtils.elementFromDeclaration(currentMethodTree);
       return currentMethod != null && currentMethod.getKind() == ElementKind.CONSTRUCTOR;
     }
