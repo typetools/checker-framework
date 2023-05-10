@@ -186,6 +186,7 @@ public class Resolution {
         if (!ai.isCaptureVariable()) {
           resolveNoCapture(ai);
         }
+        throw new RuntimeException("This code isn't right.");
       }
       //      fixes(new ArrayList<>(as), boundSet);
       as.removeAll(boundSet.getInstantiatedVariables());
