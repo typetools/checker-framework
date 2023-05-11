@@ -359,9 +359,4 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   @Override
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-
-  @Override
-  protected boolean shouldWarnAboutIrrelevantJavaTypes() {
-    return true;
-  }
 }
