@@ -84,10 +84,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     } else if (TreeUtils.isMethodInvocation(tree, matchResultEndInt, env)
         || TreeUtils.isMethodInvocation(tree, matchResultGroupInt, env)
         || TreeUtils.isMethodInvocation(tree, matchResultStartInt, env)) {
-      /**
-       * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
-       * MatchResult.group} to ensure that a valid group number is passed.
-       */
+      // Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
+      // MatchResult.group} to ensure that a valid group number is passed.
       ExpressionTree group = tree.getArguments().get(0);
       if (group.getKind() == Tree.Kind.INT_LITERAL) {
         LiteralTree literal = (LiteralTree) group;
@@ -117,7 +115,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     return super.visitMethodInvocation(tree, p);
   }
 
-  /** Case 2: Check String compound concatenation for valid Regex use. */
+  // Case 2: Check String compound concatenation for valid Regex use.
   // TODO: Remove this. This should be handled by flow.
   /*
   @Override
