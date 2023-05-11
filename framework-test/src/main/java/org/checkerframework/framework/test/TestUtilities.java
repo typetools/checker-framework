@@ -322,14 +322,20 @@ public class TestUtilities {
     return comparisonFile;
   }
 
+  /**
+   * Given an option map, return a list of option names.
+   *
+   * @param options an option map
+   * @return return a list of option names
+   */
   public static List<String> optionMapToList(Map<String, @Nullable String> options) {
     List<String> optionList = new ArrayList<>(options.size() * 2);
 
-    for (Map.Entry<String, @Nullable String> opt : options.entrySet()) {
-      optionList.add(opt.getKey());
+    for (Map.Entry<String, @Nullable String> optEntry : options.entrySet()) {
+      optionList.add(optEntry.getKey());
 
-      if (opt.getValue() != null) {
-        optionList.add(opt.getValue());
+      if (optEntry.getValue() != null) {
+        optionList.add(optEntry.getValue());
       }
     }
 
