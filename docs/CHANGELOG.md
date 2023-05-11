@@ -3,8 +3,12 @@ Version 3.35.0 (June 1, 2023)
 
 **User-visible changes:**
 
+
 The Checker Framework no longer issues `type.checking.not.run` errors.
 This reduces clutter.
+
+Signedness Checker:
+ * The receiver type of `Object.hashCode()` is now `@UnknownSignedness`.
 
 **Implementation details:**
 

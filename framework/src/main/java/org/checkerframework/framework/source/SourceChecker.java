@@ -434,6 +434,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** File name of the localized messages. */
   protected static final String MSGS_FILE = "messages.properties";
 
+  /** True if the Checker Framework version number has already been printed. */
+  private static boolean printedVersion = false;
+
   /**
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
    * #fullMessageOf} or {@link #processArg}.
@@ -875,8 +878,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                   }
                 });
       }
-      if (hasOption("version")) {
+      if (!printedVersion && hasOption("version")) {
         messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
+        printedVersion = true;
       }
     } catch (UserError ce) {
       logUserError(ce);
