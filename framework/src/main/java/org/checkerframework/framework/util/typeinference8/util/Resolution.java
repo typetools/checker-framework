@@ -181,13 +181,7 @@ public class Resolution {
 
     BoundSet resolvedBounds;
     if (boundSet.containsCapture(as)) {
-      // First resolve the non-capture variables using the usual resolution algorithm.
-      for (Variable ai : as) {
-        if (!ai.isCaptureVariable()) {
-          resolveNoCapture(ai);
-        }
-      }
-      //      fixes(new ArrayList<>(as), boundSet);
+      fixes(new ArrayList<>(as), boundSet);
       as.removeAll(boundSet.getInstantiatedVariables());
       // Then resolve the capture variables
       resolvedBounds = resolveWithCapture(as, boundSet, context);
@@ -212,7 +206,6 @@ public class Resolution {
   }
 
   // TODO: I'm not sure what's going on with this method, I need to investigate it.
-  @SuppressWarnings("UnusedMethod")
   private void fixes(List<Variable> variables, BoundSet boundSet) {
     Variable smallV;
     do {
