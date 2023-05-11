@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Objects;
@@ -2398,7 +2399,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       indexOfChecker = className.lastIndexOf("Subchecker");
     }
     String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-    return result.toLowerCase();
+    return result.toLowerCase(Locale.getDefault());
   }
 
   ///////////////////////////////////////////////////////////////////////////
