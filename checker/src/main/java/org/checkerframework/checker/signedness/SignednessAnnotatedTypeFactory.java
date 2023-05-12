@@ -313,11 +313,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (debug) {
-        System.out.printf(
-            "SATF.visitTypeCast(%s, %s); isCharOrCharacter(type)=%s%n",
-            tree, type, isCharOrCharacter(type));
-      }
+      log(
+          "SATF.visitTypeCast(%s, %s); isCharOrCharacter(type)=%s%n",
+          tree, type, isCharOrCharacter(type));
       if (isCharOrCharacter(type)) {
         type.replaceAnnotation(UNSIGNED);
       } else if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
@@ -327,10 +325,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.addAnnotation(SIGNED);
         }
       }
-      if (debug) {
-        System.out.printf("SATF.visitTypeCast(%s, ...) final: %s%n", tree, type);
-        System.out.printf("SATF: treeAnnotator=%s%n", treeAnnotator);
-      }
+      log("SATF.visitTypeCast(%s, ...) final: %s%n", tree, type);
+      log("SATF: treeAnnotator=%s%n", treeAnnotator);
       return null;
     }
   }

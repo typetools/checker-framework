@@ -147,7 +147,8 @@ public abstract class GenericAnnotatedTypeFactory<
     extends AnnotatedTypeFactory {
 
   /**
-   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}.
+   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
+   * and {@link AnnotatedTypeFactory#debugGat}.
    */
   private static final boolean debug = false;
 
@@ -553,14 +554,10 @@ public abstract class GenericAnnotatedTypeFactory<
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
-        if (debug) {
-          System.out.printf("GatfTreeAnnotator(%s, %s)%n", tree, type);
-        }
+        log("GatfTreeAnnotator(%s, %s)%n", tree, type);
         type.replaceAnnotations(
             ((GenericAnnotatedTypeFactory) atypeFactory).annotationsForIrrelevantJavaTypes());
-        if (debug) {
-          System.out.printf("  GatfTreeAnnotator final type = %s%n", type);
-        }
+        log("GatfTreeAnnotator(%s, ...) final type = %s%n", type);
         return null;
       }
       return super.visitTypeCast(tree, type);
@@ -2135,13 +2132,11 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
-    // System.out.printf("addComputedTypeAnnotations(%s, %s)%n", elt, type);
     addAnnotationsFromDefaultForType(elt, type);
     applyQualifierParameterDefaults(elt, type);
     typeAnnotator.visit(type, null);
     defaults.annotate(elt, type);
     dependentTypesHelper.atLocalVariable(type, elt);
-    // System.out.printf("addComputedTypeAnnotations(%s, ...) final: %s%n", elt, type);
   }
 
   @Override
