@@ -1,6 +1,10 @@
 package org.checkerframework.framework.type;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
