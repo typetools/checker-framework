@@ -35,7 +35,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // for (var i : list) {}
     if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
         && variableTree.getInitializer() != null) {
-      result = TypeFromTree.fromExpression(f, variableTree.getInitializer());
+      result = f.getAnnotatedType(variableTree.getInitializer());
+      // Let normal defaulting happen for the primary annotation.
+      result.clearPrimaryAnnotations();
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those
       // are added to the type below).
