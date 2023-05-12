@@ -11,7 +11,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import java.util.Set;
@@ -42,14 +41,9 @@ import org.checkerframework.javacutil.TypeKindUtils;
  */
 public class PropagationTreeAnnotator extends TreeAnnotator {
 
-  /** The qualifier hierarchy to use. */
   private final QualifierHierarchy qualHierarchy;
 
-  /**
-   * Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}.
-   *
-   * @param atypeFactory type factory to use
-   */
+  /** Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}. */
   public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
     this.qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -295,17 +289,6 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     return null;
   }
 
-  @Override
-  public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
-    return super.visitVariable(tree, type);
-  }
-
-  /**
-   * Returns true if {@code type} has a primary annotation in all hierarchies.
-   *
-   * @param type the type to check
-   * @return true if {@code type} has a primary annotation in all hierarchies
-   */
   private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
     boolean annotated = true;
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
