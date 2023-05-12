@@ -26,7 +26,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
@@ -298,23 +297,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   @Override
   public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
-    if (type.getKind() == TypeKind.DECLARED) {
-      boolean isVar = TreeUtils.isVariableTreeDeclaredUsingVar(tree);
-      if (isVar) {
-        ExpressionTree initializer = tree.getInitializer();
-        // Skip propagation of annotations when initializer can be null.
-        // E.g.
-        // for (var i : list) {}
-        if (initializer != null) {
-          AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
-          if (initializerType.getKind() == TypeKind.DECLARED) {
-            atypeFactory.replaceAnnotations(initializerType, type);
-          }
-        }
-      }
-    }
-
-    return null;
+    return super.visitVariable(tree, type);
   }
 
   /**

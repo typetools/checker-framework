@@ -7,7 +7,8 @@ public class Issue4170 {
   public void method1() {
     var list = new ArrayList<@Untainted String>();
     ArrayList<@Untainted String> list2 = list;
-    ArrayList<@Untainted String> list3 = new ArrayList<@Untainted String>();
+    // :: error: assignment
+    ArrayList<String> list3 = new ArrayList<@Untainted String>();
     ArrayList<@Tainted String> list4 = list3;
     var stream = list.stream();
   }
@@ -29,6 +30,7 @@ public class Issue4170 {
 
   public ArrayList<@Tainted String> method5() {
     var list = new ArrayList<@Untainted String>();
+    // :: error: (return)
     return list;
   }
 
