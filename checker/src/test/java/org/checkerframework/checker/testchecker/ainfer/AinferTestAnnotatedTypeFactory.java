@@ -39,6 +39,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -197,8 +198,8 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Set<? extends AnnotationMirror> getBottomAnnotations() {
-      return Collections.singleton(BOTTOM);
+    public AnnotationMirrorSet getBottomAnnotations() {
+      return new AnnotationMirrorSet(BOTTOM);
     }
 
     @Override

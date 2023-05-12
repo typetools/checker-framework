@@ -12,6 +12,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -144,6 +145,11 @@ public abstract class GenericAnnotatedTypeFactory<
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
+
+  /**
+   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}.
+   */
+  private static final boolean debug = false;
 
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -529,12 +535,36 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected TreeAnnotator createTreeAnnotator() {
     List<TreeAnnotator> treeAnnotators = new ArrayList<>(2);
+    treeAnnotators.add(new GatfTreeAnnotator(this));
     treeAnnotators.add(new PropagationTreeAnnotator(this));
     treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
     if (dependentTypesHelper.hasDependentAnnotations()) {
       treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator());
     }
     return new ListTreeAnnotator(treeAnnotators);
+  }
+
+  /** Do not propagate types through binary/compound operations. */
+  private static class GatfTreeAnnotator extends TreeAnnotator {
+    public GatfTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    @Override
+    public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
+      if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
+        if (debug) {
+          System.out.printf("GatfTreeAnnotator(%s, %s)%n", tree, type);
+        }
+        type.replaceAnnotations(
+            ((GenericAnnotatedTypeFactory) atypeFactory).annotationsForIrrelevantJavaTypes());
+        if (debug) {
+          System.out.printf("  GatfTreeAnnotator final type = %s%n", type);
+        }
+        return null;
+      }
+      return super.visitTypeCast(tree, type);
+    }
   }
 
   /**
@@ -555,11 +585,19 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(
-          new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this, annotationsForIrrelevantJavaTypes()));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
+  }
+
+  /**
+   * Returns the annotations that should appear on irrelevant Java types.
+   *
+   * @return the annotations that should appear on irrelevant Java types
+   */
+  protected AnnotationMirrorSet annotationsForIrrelevantJavaTypes() {
+    return getQualifierHierarchy().getTopAnnotations();
   }
 
   /**
@@ -1844,14 +1882,18 @@ public abstract class GenericAnnotatedTypeFactory<
     applyQualifierParameterDefaults(tree, type);
     log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
     treeAnnotator.visit(tree, type);
-    log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
+        thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
       // If a tree annotator, did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
     typeAnnotator.visit(type, null);
-    log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#6(%s, %s)%n  typeAnnotator=%s%n",
+        thisClass, treeString, type, typeAnnotator);
     defaults.annotate(tree, type);
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
@@ -2093,11 +2135,13 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    // System.out.printf("addComputedTypeAnnotations(%s, %s)%n", elt, type);
     addAnnotationsFromDefaultForType(elt, type);
     applyQualifierParameterDefaults(elt, type);
     typeAnnotator.visit(type, null);
     defaults.annotate(elt, type);
     dependentTypesHelper.atLocalVariable(type, elt);
+    // System.out.printf("addComputedTypeAnnotations(%s, ...) final: %s%n", elt, type);
   }
 
   @Override
@@ -2317,10 +2361,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
-  // You can change this temporarily to produce verbose logs.
-  /** Whether to output verbose, low-level debugging messages. */
-  private static final boolean debug = false;
-
   /**
    * Output a message, if logging is on.
    *
@@ -2356,6 +2396,16 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if users can write type annotations from this type system on the given type.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on the given type
+   */
+  public final boolean isRelevant(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    * Does not use a cache. Is a helper method for {@link #isRelevant}.
    *
@@ -2364,7 +2414,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   private boolean isRelevantHelper(TypeMirror tm) {
 
-    if (relevantJavaTypes.contains(tm)) {
+    if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;
     }
 

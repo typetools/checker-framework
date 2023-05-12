@@ -35,22 +35,30 @@ public class SignednessEquals {
 
   void nonIntegralEquality() {
     so.equals(sn);
+    // :: error: (comparison.mixed.unsignedrhs)
     so.equals(un);
+    // :: error: (comparison.mixed.unsignedlhs)
     uo.equals(sn);
     uo.equals(un);
 
     Objects.equals(so, sn);
+    // :: error: (comparison.mixed.unsignedrhs)
     Objects.equals(so, un);
+    // :: error: (comparison.mixed.unsignedlhs)
     Objects.equals(uo, sn);
     Objects.equals(uo, un);
 
     sI.equals(sn);
+    // :: error: (comparison.mixed.unsignedrhs)
     sI.equals(un);
+    // :: error: (comparison.mixed.unsignedlhs)
     uI.equals(sn);
     uI.equals(un);
 
     Objects.equals(sI, sn);
+    // :: error: (comparison.mixed.unsignedrhs)
     Objects.equals(sI, un);
+    // :: error: (comparison.mixed.unsignedlhs)
     Objects.equals(uI, sn);
     Objects.equals(uI, un);
   }

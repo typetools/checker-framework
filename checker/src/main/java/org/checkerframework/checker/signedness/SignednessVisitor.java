@@ -74,9 +74,11 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   public Void visitBinary(BinaryTree tree, Void p) {
     // Used in diagnostic messages.
     ExpressionTree leftOp = tree.getLeftOperand();
+    // System.out.printf("leftOp = %s%n", leftOp);
     ExpressionTree rightOp = tree.getRightOperand();
 
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    // System.out.printf("binaryTreeArgsTypes(%s) => %s%n", tree, argTypes);
     AnnotatedTypeMirror leftOpType = argTypes.first;
     AnnotatedTypeMirror rightOpType = argTypes.second;
 
@@ -137,6 +139,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(tree)) {
+          // System.out.printf(
+          //     "leftOpType = %s, effectiveAnnotations = %s%n",
+          //     leftOpType, leftOpType.getEffectiveAnnotations());
           AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotations().iterator().next();
           AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotations().iterator().next();
 

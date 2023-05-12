@@ -12,12 +12,17 @@ import org.checkerframework.framework.qual.StubFiles;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
+// Character and char are special cases:  they are always @Unsigned (the user is not allowed to
+// write @Signed or @Unsigned on them), but they are listed in the @RelevantJavaTypes annotation
+// because we don't want GatfTreeAnnotator.visitTypeCast() to overwrite its @Unsigned annotation.
 @RelevantJavaTypes({
   Byte.class,
+  Character.class,
   Short.class,
   Integer.class,
   Long.class,
   byte.class,
+  char.class,
   short.class,
   int.class,
   long.class,

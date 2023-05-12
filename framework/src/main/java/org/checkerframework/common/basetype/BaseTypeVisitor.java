@@ -2364,6 +2364,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
+    if (!atypeFactory.isRelevant(castType)) {
+      return;
+    }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
     boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
@@ -2935,6 +2938,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
+    if (atypeFactory.debugGat) {
+      System.out.printf(
+          "BTV: %s.getAnnotatedType(%s) => %s%n",
+          atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
+    }
     assert valueType != null : "null type for expression: " + valueExpTree;
     commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
   }

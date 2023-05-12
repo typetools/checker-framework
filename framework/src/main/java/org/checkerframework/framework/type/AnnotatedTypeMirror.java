@@ -375,6 +375,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return a set of the annotations on this
    */
   public AnnotationMirrorSet getEffectiveAnnotations() {
+    // System.out.printf(
+    //     "getEffectiveAnnotations(%s): getErased()=%s, effective=%s%n",
+    //     this, getErased(), getErased().getAnnotations());
     AnnotationMirrorSet effectiveAnnotations = getErased().getAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
     //                .size() : "Invalid number of effective annotations ("

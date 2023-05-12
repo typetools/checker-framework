@@ -20,6 +20,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
+  /**
+   * Whether to output verbose, low-level debugging messages. Also see {@code
+   * GenericAnnotatedTypeFactory.debug}.
+   */
+  protected final boolean debug = false;
+
   /** The type factory. */
   protected final AnnotatedTypeFactory atypeFactory;
 

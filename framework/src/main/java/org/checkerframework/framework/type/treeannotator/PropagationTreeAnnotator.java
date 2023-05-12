@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -207,11 +208,23 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
+      return null;
+    }
+
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBounds(
             argTypes.first.getEffectiveAnnotations(), argTypes.second.getEffectiveAnnotations());
+    if (debug) {
+      System.out.printf(
+          "%s PTA.visitBinary(%s, %s)%n  argTypes=%s%n  lubs=%s%n",
+          atypeFactory.getClass().getSimpleName(), tree, type, argTypes, lubs);
+    }
     type.addMissingAnnotations(lubs);
+    if (debug) {
+      System.out.printf("PTA.visitBinary(%s, ...): final type = %s%n", tree, type);
+    }
 
     return null;
   }
@@ -247,6 +260,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     if (hasPrimaryAnnotationInAllHierarchies(type)) {
       // If the type is already has a primary annotation in all hierarchies, then the
       // propagated annotations won't be applied.  So don't compute them.
+      if (debug) {
+        System.out.printf(
+            "PTA.visitTypeCast(%s, %s): hasPrimaryAnnotationInAllHierarchies%n", tree, type);
+      }
       return null;
     }
 
@@ -260,6 +277,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     } else {
       // Use effective annotations from the expression, to get upper bound of type variables.
       AnnotationMirrorSet expressionAnnos = exprType.getEffectiveAnnotations();
+      if (debug) {
+        System.out.printf(
+            "PTA.visitTypeCast(%s, %s): getEffectiveAnnotations(%s) = %s%n",
+            tree, type, exprType, expressionAnnos);
+      }
 
       TypeKind castKind = type.getPrimitiveKind();
       if (castKind != null) {
@@ -308,6 +330,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * @param annos annotations to add to type
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
+    // TODO: Check whether the type is relevant.
+    if (debug) {
+      System.out.printf("addAnnoOrBound(%s, %s)%n", type, annos);
+    }
     AnnotationMirrorSet boundAnnos =
         atypeFactory.getQualifierUpperBounds().getBoundQualifiers(type.getUnderlyingType());
     AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
@@ -318,6 +344,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       }
     }
     type.addMissingAnnotations(annosToAdd);
+    if (debug) {
+      System.out.printf("addAnnoOrBound#2(%s, %s)%n", type, annos);
+    }
     type.addMissingAnnotations(annos);
+    if (debug) {
+      System.out.printf("addAnnoOrBound#3(%s, %s)%n", type, annos);
+    }
   }
 }

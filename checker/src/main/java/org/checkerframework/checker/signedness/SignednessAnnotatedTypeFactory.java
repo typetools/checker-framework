@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -96,6 +97,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final TypeMirror numberTM =
       elements.getTypeElement(Number.class.getCanonicalName()).asType();
 
+  /** A set containing just {@code @Signed}. */
+  private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+
   /**
    * Create a SignednessAnnotatedTypeFactory.
    *
@@ -160,6 +164,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     TypeKind javaTypeKind = javaType.getKind();
     if (tree.getKind() != Tree.Kind.VARIABLE) {
       if (javaTypeKind == TypeKind.BYTE
+          // TODO: Should CHAR be here?
           || javaTypeKind == TypeKind.CHAR
           || javaTypeKind == TypeKind.SHORT
           || javaTypeKind == TypeKind.INT
@@ -178,7 +183,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           if (treeRange != null) {
             switch (javaType.getKind()) {
               case BYTE:
-              case CHAR:
+              case CHAR: // TODO: Should CHAR be here?
                 if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
                   type.replaceAnnotation(SIGNEDNESS_GLB);
                 }
@@ -249,6 +254,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new ListTreeAnnotator(new SignednessTreeAnnotator(this), super.createTreeAnnotator());
   }
 
+  @Override
+  protected AnnotationMirrorSet annotationsForIrrelevantJavaTypes() {
+    return SIGNED_SINGLETON;
+  }
+
   /**
    * This TreeAnnotator ensures that:
    *
@@ -264,22 +274,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
-    }
-
-    /**
-     * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
-     * PropagationTreeAnnotator} does not change the type of them.
-     *
-     * @param type a type to change the annotation of, if it is boolean
-     */
-    private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
-      switch (type.getKind()) {
-        case BOOLEAN:
-          type.addAnnotation(SIGNED);
-          break;
-        default:
-          // Nothing for other cases.
-      }
     }
 
     @Override
@@ -298,23 +292,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotations(lht.getAnnotations());
           }
           break;
-        case PLUS:
-          if (TreeUtils.isStringConcatenation(tree)) {
-            TypeMirror lht = TreeUtils.typeOf(tree.getLeftOperand());
-            TypeMirror rht = TreeUtils.typeOf(tree.getRightOperand());
-
-            if (lht.getKind() == TypeKind.CHAR
-                || TypesUtils.isDeclaredOfName(lht, "java.lang.Character")
-                || rht.getKind() == TypeKind.CHAR
-                || TypesUtils.isDeclaredOfName(rht, "java.lang.Character")) {
-              type.replaceAnnotation(SIGNED);
-            }
-          }
-          break;
         default:
           // Do nothing
       }
-      annotateBooleanAsUnknownSignedness(type);
       return null;
     }
 
@@ -328,21 +308,51 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.replaceAnnotation(SIGNED);
         }
       }
-      annotateBooleanAsUnknownSignedness(type);
       return null;
     }
 
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
+      if (debug) {
+        System.out.printf(
+            "SATF.visitTypeCast(%s, %s); isCharOrCharacter(type)=%s%n",
+            tree, type, isCharOrCharacter(type));
+      }
+      if (isCharOrCharacter(type)) {
+        type.replaceAnnotation(UNSIGNED);
+      } else if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
             && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
           type.addAnnotation(SIGNED);
         }
       }
+      if (debug) {
+        System.out.printf("SATF.visitTypeCast(%s, ...) final: %s%n", tree, type);
+        System.out.printf("SATF: treeAnnotator=%s%n", treeAnnotator);
+      }
       return null;
+    }
+  }
+
+  /**
+   * Returns true if the type's underlying type is {@code char} or {@code Character}.
+   *
+   * @param type a type
+   * @return true if the type is {@code char} or {@code Character}.
+   */
+  public boolean isCharOrCharacter(AnnotatedTypeMirror type) {
+    TypeKind kind = type.getKind();
+    switch (kind) {
+      case CHAR:
+        return true;
+      case DECLARED:
+        TypeMirror erasedType = types.erasure(type.getUnderlyingType());
+        String typeString = TypesUtils.getQualifiedName((DeclaredType) erasedType).toString();
+        return typeString.equals("java.lang.Character");
+      default:
+        return false;
     }
   }
 
