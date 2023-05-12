@@ -186,7 +186,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         removedOtherFieldValues.put(invariantField, v);
       }
 
-      @SuppressWarnings("compilermessages:argument")
+      @SuppressWarnings("allcheckers:argument") // not sure what is happening here
       boolean result = super.supersetOf(other);
       return result;
     } finally {
