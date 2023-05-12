@@ -164,7 +164,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     TypeKind javaTypeKind = javaType.getKind();
     if (tree.getKind() != Tree.Kind.VARIABLE) {
       if (javaTypeKind == TypeKind.BYTE
-          // TODO: Should CHAR be here?
           || javaTypeKind == TypeKind.CHAR
           || javaTypeKind == TypeKind.SHORT
           || javaTypeKind == TypeKind.INT
@@ -183,7 +182,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           if (treeRange != null) {
             switch (javaType.getKind()) {
               case BYTE:
-              case CHAR: // TODO: Should CHAR be here?
+              case CHAR:
                 if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
                   type.replaceAnnotation(SIGNEDNESS_GLB);
                 }
