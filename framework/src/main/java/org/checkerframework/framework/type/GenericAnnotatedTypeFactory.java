@@ -2335,8 +2335,12 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
-  /** For each type, whether it is relevant. A cache to avoid repeated re-computation. */
-  private final Map<TypeMirror, Boolean> isRelevantCache = CollectionUtils.createLRUCache(300);
+  /**
+   * Cache of types found that are relevantTypes or subclass of supported types. Used so that
+   * isSubtype doesn't need to be called repeatedly on the same types.
+   */
+  private final Map<TypeMirror, Boolean> allFoundRelevantTypes =
+      CollectionUtils.createLRUCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
@@ -2346,12 +2350,12 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
-    Boolean cachedResult = isRelevantCache.get(tm);
+    Boolean cachedResult = allFoundRelevantTypes.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
     boolean result = isRelevantHelper(tm);
-    isRelevantCache.put(tm, result);
+    allFoundRelevantTypes.put(tm, result);
     return result;
   }
 
