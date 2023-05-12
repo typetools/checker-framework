@@ -73,7 +73,7 @@ test_wpi_plume_lib() {
     "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
     echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)."
-    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
+    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
     echo "test-wpi-plumelib.sh for ${project} returned from wpi.sh at $(date)."
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"
