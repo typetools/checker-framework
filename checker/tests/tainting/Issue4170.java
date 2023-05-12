@@ -46,4 +46,11 @@ public class Issue4170 {
   }
 
   public void method8(ArrayList<@Untainted String> data) {}
+
+  public void method9(List<@Tainted String> taintedlist, List<@Untainted String> untaintedList) {
+    var list1 = taintedlist;
+    List<@Tainted String> l = list1;
+    // :: error: (assignment)
+    list1 = untaintedList;
+  }
 }
