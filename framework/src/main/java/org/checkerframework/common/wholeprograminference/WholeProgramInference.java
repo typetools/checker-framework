@@ -180,6 +180,18 @@ public interface WholeProgramInference {
       ExecutableElement methodElement,
       CFAbstractStore<?, ?> store);
 
+  // TODO: This Javadoc should explain why this method is in WholeProgramInference and not in some
+  // AnnotatedTypeMirror related class.
+  /**
+   * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
+   * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
+   * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
+   *
+   * @param sourceCodeATM the annotated type on the source code; side effected by this method
+   * @param ajavaATM the annotated type on the annotation file
+   */
+  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM);
+
   /**
    * Updates a method to add a declaration annotation.
    *
@@ -233,7 +245,7 @@ public interface WholeProgramInference {
    * class will be the last one in the type-checking process.
    *
    * @param format the file format in which to write the results
-   * @param checker the checker from which this method is called, for naming stub files
+   * @param checker the checker from which this method is called, for naming annotation files
    */
   void writeResultsToFile(OutputFormat format, BaseTypeChecker checker);
 

@@ -15,13 +15,13 @@ import org.junit.runners.Parameterized.Parameters;
  * relevant. The meaning of this test class is to test if the generated ajava files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(AinferTestCheckerAjavaTest.class)
-public class AinferTestCheckerAjavaTest extends AinferGeneratePerDirectoryTest {
+@Category(AinferTestCheckerAjavaGenerationTest.class)
+public class AinferTestCheckerAjavaGenerationTest extends AinferGeneratePerDirectoryTest {
 
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public AinferTestCheckerAjavaTest(List<File> testFiles) {
+  public AinferTestCheckerAjavaGenerationTest(List<File> testFiles) {
     super(
         testFiles,
         AinferTestChecker.class,

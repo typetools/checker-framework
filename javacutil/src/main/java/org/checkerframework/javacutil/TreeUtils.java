@@ -1445,22 +1445,43 @@ public final class TreeUtils {
    * @return true iff if tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
+    return asFieldAccess(tree) != null;
+  }
+
+  /**
+   * Return the field that {@code tree} is a field access expression for, or null.
+   *
+   * <pre>
+   *   <em>f</em>
+   *   <em>obj</em> . <em>f</em>
+   * </pre>
+   *
+   * This method currently also returns non-null true for class literals and qualified this.
+   *
+   * @param tree a tree that might be a field access
+   * @return the element if tree is a field access expression (implicit or explicit); null otherwise
+   */
+  public static @Nullable VariableElement asFieldAccess(Tree tree) {
     if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
       // explicit member access (or a class literal or a qualified this)
       MemberSelectTree memberSelect = (MemberSelectTree) tree;
       assert isUseOfElement(memberSelect) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(memberSelect);
-      return el.getKind().isField();
+      if (el.getKind().isField()) {
+        return (VariableElement) el;
+      }
     } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
       // implicit field access
       IdentifierTree ident = (IdentifierTree) tree;
       assert isUseOfElement(ident) : "@AssumeAssertion(nullness): tree kind";
       Element el = TreeUtils.elementFromUse(ident);
-      return el.getKind().isField()
+      if (el.getKind().isField()
           && !ident.getName().contentEquals("this")
-          && !ident.getName().contentEquals("super");
+          && !ident.getName().contentEquals("super")) {
+        return (VariableElement) el;
+      }
     }
-    return false;
+    return null;
   }
 
   /**

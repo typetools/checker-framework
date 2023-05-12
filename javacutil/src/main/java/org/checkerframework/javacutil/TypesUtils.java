@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -67,7 +68,7 @@ public final class TypesUtils {
     if (clazz == void.class) {
       return types.getNoType(TypeKind.VOID);
     } else if (clazz.isPrimitive()) {
-      String primitiveName = clazz.getName().toUpperCase();
+      String primitiveName = clazz.getName().toUpperCase(Locale.getDefault());
       TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
       return types.getPrimitiveType(primitiveKind);
     } else if (clazz.isArray()) {

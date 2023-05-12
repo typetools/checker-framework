@@ -89,8 +89,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *       is, if omitting it has the same effect as writing it.
  * </ol>
  *
- * @param <T> the type used by the storage to store annotations. See {@link
- *     WholeProgramInferenceStorage}
+ * @param <T> the type used by the storage to store annotations
+ * @see WholeProgramInferenceStorage
  */
 // TODO: We could add an option to update the type of explicitly annotated elements, but this
 // currently is not recommended since the insert-annotations-to-source tool, which adds annotations
@@ -1034,15 +1034,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     System.out.println("WPI failed to make an inference: " + reason);
   }
 
-  /**
-   * Updates sourceCodeATM to contain the LUB between sourceCodeATM and ajavaATM, ignoring missing
-   * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
-   * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
-   *
-   * @param sourceCodeATM the annotated type on the source code; side effected by this method
-   * @param ajavaATM the annotated type on the ajava file
-   */
-  private void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
+  @Override
+  public void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM) {
 
     if (sourceCodeATM.getKind() != ajavaATM.getKind()) {
       // Ignore null types: passing them to asSuper causes a crash, as they cannot be

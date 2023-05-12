@@ -10,8 +10,8 @@
   "timezone": "America/Los_Angeles",
   "packageRules": [
     {
-      "matchPackageNames": ["aws-java-sdk-bom"],
-      "schedule": ["on the last day of the month"]
+      "matchPackageNames": ["com.amazonaws:aws-java-sdk-bom"],
+      "schedule": ["before 3am on the first day of the month"]
     }
   ]
 }

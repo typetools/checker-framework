@@ -272,4 +272,13 @@ public class Purity {
       return 42;
     }
   }
+
+  class Wrapper {
+    Object key;
+
+    @SideEffectFree
+    public Wrapper(Object key) {
+      this.key = key;
+    }
+  }
 }

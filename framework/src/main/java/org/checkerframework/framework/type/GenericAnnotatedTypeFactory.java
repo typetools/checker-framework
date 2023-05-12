@@ -2335,12 +2335,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
-  /**
-   * Cache of types found that are relevantTypes or subclass of supported types. Used so that
-   * isSubtype doesn't need to be called repeatedly on the same types.
-   */
-  private final Map<TypeMirror, Boolean> allFoundRelevantTypes =
-      CollectionUtils.createLRUCache(300);
+  /** For each type, whether it is relevant. A cache to avoid repeated re-computation. */
+  private final Map<TypeMirror, Boolean> isRelevantCache = CollectionUtils.createLRUCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
@@ -2350,12 +2346,12 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
-    Boolean cachedResult = allFoundRelevantTypes.get(tm);
+    Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
     boolean result = isRelevantHelper(tm);
-    allFoundRelevantTypes.put(tm, result);
+    isRelevantCache.put(tm, result);
     return result;
   }
 
@@ -2432,7 +2428,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod. Does
-   * not modify the AMethod. This method must only be called when using WholeProgramInferenceScenes.
+   * not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @return contract annotations for the method
@@ -2440,25 +2438,33 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getContractAnnotations(AMethod m) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
   }
 
   /**
-   * Return the precondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Return the precondition annotations for the given AMethod. Does not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @return precondition annotations for the method
    */
   public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
+    int size = m.getPreconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
     for (Map.Entry<String, AField> entry : m.getPreconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
       TypeMirror typeMirror = entry.getValue().getTypeMirror();
       if (typeMirror == null) {
         throw new BugInCF(
@@ -2476,8 +2482,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
    * @param m AFU representation of a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
@@ -2486,12 +2493,18 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
       AMethod m, List<AnnotationMirror> preconds) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
+    int size = m.getPostconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
     for (Map.Entry<String, AField> entry : m.getPostconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
       TypeMirror typeMirror = entry.getValue().getTypeMirror();
       if (typeMirror == null) {
         throw new BugInCF(
@@ -2513,6 +2526,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Return the contract annotations (that is, pre- and post-conditions) for the given
    * CallableDeclarationAnnos. Does not modify the CallableDeclarationAnnos.
    *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
+   *
    * @param methodAnnos annotation data for a method
    * @return contract annotations for the method
    */
@@ -2520,6 +2535,7 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(methodAnnos);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(methodAnnos, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
@@ -2528,6 +2544,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Return the precondition annotations for the given CallableDeclarationAnnos. Does not modify the
    * CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @return precondition annotations for the method
@@ -2548,6 +2566,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Return the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
    * the CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @param preconds the precondition annotations for the method; used to suppress redundant

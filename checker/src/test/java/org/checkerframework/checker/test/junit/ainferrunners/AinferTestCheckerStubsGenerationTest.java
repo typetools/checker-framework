@@ -15,13 +15,13 @@ import org.junit.runners.Parameterized.Parameters;
  * relevant. The meaning of this test class is to test if the generated stub files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(AinferTestCheckerStubsTest.class)
-public class AinferTestCheckerStubsTest extends AinferGeneratePerDirectoryTest {
+@Category(AinferTestCheckerStubsGenerationTest.class)
+public class AinferTestCheckerStubsGenerationTest extends AinferGeneratePerDirectoryTest {
 
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public AinferTestCheckerStubsTest(List<File> testFiles) {
+  public AinferTestCheckerStubsGenerationTest(List<File> testFiles) {
     super(
         testFiles,
         AinferTestChecker.class,

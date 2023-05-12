@@ -11,17 +11,19 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests RLC-specific inference features with the aid of ajava files. This test is the first pass on
  * the test data, which generates the ajava files.
  *
+ * <p>This does not run WPI; it just runs one round of type-checking with {@code -Ainfer} enabled.
+ *
  * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-resourceleak/ are not
  * relevant. The meaning of this test class is to test if the generated ajava files are similar to
  * the expected ones. The errors on .java files must be ignored.
  */
-@Category(AinferResourceLeakAjavaTest.class)
-public class AinferResourceLeakAjavaTest extends AinferGeneratePerDirectoryTest {
+@Category(AinferResourceLeakAjavaGenerationTest.class)
+public class AinferResourceLeakAjavaGenerationTest extends AinferGeneratePerDirectoryTest {
 
   /**
    * @param testFiles the files containing test code, which will be type-checked
    */
-  public AinferResourceLeakAjavaTest(List<File> testFiles) {
+  public AinferResourceLeakAjavaGenerationTest(List<File> testFiles) {
     super(
         testFiles,
         ResourceLeakChecker.class,

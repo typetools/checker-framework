@@ -13,13 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.CollectionsPlume;
 
 /** This file contains basic utility functions. */
 public class SystemUtil {
@@ -115,97 +112,6 @@ public class SystemUtil {
               toolsJarFile, javaHome, System.getProperty("java.home")));
     }
     return toolsJarFile.toString();
-  }
-
-  ///
-  /// Array and collection methods
-  ///
-
-  /**
-   * Returns a list that contains all the distinct elements of the two lists: that is, the union of
-   * the two arguments.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param list1 a list
-   * @param list2 a list
-   * @return a list that contains all the distinct elements of the two lists
-   * @deprecated use CollectionsPlume.listUnion
-   */
-  @Deprecated // 2023-01-08
-  public static <T> List<T> union(List<T> list1, List<T> list2) {
-    List<T> result = new ArrayList<>(list1.size() + list2.size());
-    addWithoutDuplicates(result, list1);
-    addWithoutDuplicates(result, list2);
-    return result;
-  }
-
-  /**
-   * Adds, to dest, all the elements of source that are not already in dest.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param dest a list to add to
-   * @param source a list of elements to add
-   * @deprecated use CollectionsPlume.adjoinAll
-   */
-  @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible
-  // with null and `source` might contain null.
-  )
-  @Deprecated // 2023-01-08
-  public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
-    for (T elt : source) {
-      if (!dest.contains(elt)) {
-        dest.add(elt);
-      }
-    }
-  }
-
-  /**
-   * Returns a list that contains all the elements that are in both lists: that is, the set
-   * difference of the two arguments.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param list1 a list
-   * @param list2 a list
-   * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
-   * @deprecated use CollectionsPlume.listIntersection
-   */
-  @Deprecated // 2023-01-08
-  public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
-    List<T> result = new ArrayList<>(list1);
-    result.retainAll(list2);
-    return result;
-  }
-
-  /**
-   * Returns a list with the same contents as its argument, but sorted and without duplicates. May
-   * return its argument if its argument is sorted and has no duplicates, but is not guaranteed to
-   * do so. The argument is not modified.
-   *
-   * <p>This is like {@code withoutDuplicates}, but requires the list elements to implement {@link
-   * Comparable}, and thus can be more efficient.
-   *
-   * @param <T> the type of elements in {@code values}
-   * @param values a list of values
-   * @return the values, with duplicates removed
-   */
-  // TODO: Deprecate or delete once plume-util 1.6.6 (from which this is taken) is released.
-  public static <T extends Comparable<T>> List<T> withoutDuplicatesSorted(List<T> values) {
-    // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-    if (CollectionsPlume.isSortedNoDuplicates(values)) {
-      return values;
-    }
-
-    Set<T> set = new TreeSet<>(values);
-    return new ArrayList<>(set);
   }
 
   ///

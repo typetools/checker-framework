@@ -44,7 +44,11 @@ import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotati
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
-/** A utility class for working with annotations. */
+/**
+ * A utility class for working with annotations.
+ *
+ * <p>Note: {@code AnnotationMirror}s are immutable.
+ */
 public class AnnotationUtils {
 
   // Class cannot be instantiated.

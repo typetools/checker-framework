@@ -15,6 +15,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -55,7 +56,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
       String trees = checker.getOption("reportTreeKinds");
       treeKinds = EnumSet.noneOf(Tree.Kind.class);
       for (String treeKind : trees.split(",")) {
-        treeKinds.add(Tree.Kind.valueOf(treeKind.toUpperCase()));
+        treeKinds.add(Tree.Kind.valueOf(treeKind.toUpperCase(Locale.getDefault())));
       }
     } else {
       treeKinds = null;
@@ -65,7 +66,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
       String mods = checker.getOption("reportModifiers");
       modifiers = EnumSet.noneOf(Modifier.class);
       for (String modifier : mods.split(",")) {
-        modifiers.add(Modifier.valueOf(modifier.toUpperCase()));
+        modifiers.add(Modifier.valueOf(modifier.toUpperCase(Locale.getDefault())));
       }
     } else {
       modifiers = null;
