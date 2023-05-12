@@ -2336,7 +2336,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the lint option "cast:redundant" is set, this methods issues a warning if the cast is
+   * If the lint option "cast:redundant" is set, this method issues a warning if the cast is
    * redundant.
    */
   protected void checkTypecastRedundancy(TypeCastTree typeCastTree) {

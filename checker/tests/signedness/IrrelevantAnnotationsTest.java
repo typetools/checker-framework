@@ -1,3 +1,4 @@
+import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public final class IrrelevantAnnotationsTest {
