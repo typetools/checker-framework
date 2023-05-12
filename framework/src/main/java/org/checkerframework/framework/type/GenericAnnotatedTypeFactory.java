@@ -2362,6 +2362,16 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if users can write type annotations from this type system on the given type.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on the given type
+   */
+  public final boolean isRelevant(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    * Does not use a cache. Is a helper method for {@link #isRelevant}.
    *
