@@ -215,7 +215,8 @@ public class Resolution {
         v.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
         if (v.getBounds().hasInstantiation()) {
           variables.remove(v);
-          // TODO: Why break rather than searching all variables?
+          // loop again because a new instantiation has been found.
+          // (Also avoids concurrent modification exception.)
           break;
         }
         if (!v.isCaptureVariable()) {
