@@ -58,6 +58,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Position;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -133,8 +134,6 @@ public final class TreeUtils {
   private static @MonotonicNonNull Method switchExpressionGetCases = null;
   /** The {@code YieldTree.getValue()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method yieldGetValue = null;
-  /** The {@code JCTree.JCVariableDecl.declaredUsingVar()} method. Null on JDK 9 and lower. */
-  private static @MonotonicNonNull Method isDeclaredUsingVar = null;
 
   /** Tree kinds that represent a binary comparison. */
   private static final Set<Tree.Kind> BINARY_COMPARISON_TREE_KINDS =
@@ -178,13 +177,6 @@ public final class TreeUtils {
         yieldGetValue = yieldTreeClass.getMethod("getValue");
       } catch (ClassNotFoundException | NoSuchMethodException e) {
         throw new BugInCF("JDK 12+ reflection problem", e);
-      }
-    }
-    if (SystemUtil.jreVersion >= 10) {
-      try {
-        isDeclaredUsingVar = JCTree.JCVariableDecl.class.getDeclaredMethod("declaredUsingVar");
-      } catch (NoSuchMethodException e) {
-        throw new BugInCF("JDK 10+ reflection problem", e);
       }
     }
   }
@@ -2420,16 +2412,8 @@ public final class TreeUtils {
    * @return true if the variableTree is declared using var
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
-    if (isDeclaredUsingVar == null) {
-      throw new BugInCF("Don't call JCTree.JCVariableDecl.declaredUsingVar on JDK < 10");
-    }
-    try {
-      return (boolean) isDeclaredUsingVar.invoke(variableTree);
-    } catch (InvocationTargetException | IllegalAccessException e) {
-      throw new BugInCF(
-          "TreeUtils.isVariableTreeDeclaredUsingVar: reflection failed for tree: %s",
-          variableTree, e);
-    }
+    JCExpression type = (JCExpression) variableTree.getType();
+    return type != null && type.pos == Position.NOPOS;
   }
 
   /**
