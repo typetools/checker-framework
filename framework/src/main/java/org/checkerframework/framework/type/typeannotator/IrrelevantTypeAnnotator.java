@@ -2,7 +2,6 @@ package org.checkerframework.framework.type.typeannotator;
 
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -49,9 +48,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         // go on
     }
 
-    TypeMirror typeMirror = type.getUnderlyingType();
-
-    if (!((GenericAnnotatedTypeFactory) typeFactory).isRelevant(typeMirror)) {
+    if (!((GenericAnnotatedTypeFactory) typeFactory).isRelevant(type)) {
       type.addMissingAnnotations(annotations);
     }
     return super.scan(type, aVoid);
