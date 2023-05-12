@@ -1416,7 +1416,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the set of qualifiers that are the upper bound for a type use if no other bound is
    *     specified for the type
    */
-  protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
+  protected AnnotationMirrorSet getDefaultTypeDeclarationBounds() {
     return qualHierarchy.getTopAnnotations();
   }
 

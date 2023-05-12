@@ -12,6 +12,12 @@ Signedness Checker:
 
 **Implementation details:**
 
+Methods that return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
+ * `getTopAnnotations()`
+ * `getBottomAnnotations()`
+ * `getDefaultTypeDeclarationBounds()`
+ * `getExceptionParameterLowerBoundAnnotations()`
+
 **Closed issues:**
 
 
