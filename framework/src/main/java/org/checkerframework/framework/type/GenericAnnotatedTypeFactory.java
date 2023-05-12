@@ -545,8 +545,13 @@ public abstract class GenericAnnotatedTypeFactory<
     return new ListTreeAnnotator(treeAnnotators);
   }
 
-  /** Do not propagate types through binary/compound operations. */
+  /** A tree annotator that adds annotations for irrelevant Java types. */
   private static class GatfTreeAnnotator extends TreeAnnotator {
+    /**
+     * Creates a new GatfTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
     public GatfTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
