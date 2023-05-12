@@ -1672,7 +1672,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
-    System.out.printf("fromTypeTree(%s) => %s%n", tree, result);
 
     if (shouldCache) {
       fromTypeTreeCache.put(tree, result.deepCopy());

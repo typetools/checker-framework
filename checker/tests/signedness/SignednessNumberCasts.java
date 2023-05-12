@@ -4,7 +4,6 @@ public class SignednessNumberCasts {
   Double d2;
 
   void test(MyClass<?> o, MyClass<? extends Number> signed) {
-    @Signed SignednessNumberCasts j = (SignednessNumberCasts) o.get();
     // :: error: (assignment)
     @Signed int i = (Integer) o.get();
     @Signed int i2 = (Integer) signed.get();

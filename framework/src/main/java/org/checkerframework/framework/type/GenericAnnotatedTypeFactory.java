@@ -2345,16 +2345,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if users can write type annotations from this type system on the given Java type
    */
   public boolean isRelevant(TypeMirror tm) {
-    System.out.printf("isRelevant(this=%s, %s)%n", this.getClass().getSimpleName(), tm);
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
-      System.out.printf("isRelevant(%s) => [cached] %s%n", tm, cachedResult);
       return cachedResult;
     }
     boolean result = isRelevantHelper(tm);
-    System.out.printf(
-        "isRelevantHelper(this=%s, %s) => %s%n", this.getClass().getSimpleName(), tm, result);
     isRelevantCache.put(tm, result);
     return result;
   }
