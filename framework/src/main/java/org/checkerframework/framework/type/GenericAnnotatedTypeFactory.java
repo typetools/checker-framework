@@ -2374,7 +2374,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   private boolean isRelevantHelper(TypeMirror tm) {
 
-    if (relevantJavaTypes.contains(tm)) {
+    if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;
     }
 
