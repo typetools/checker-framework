@@ -343,8 +343,9 @@ public class AnnotatedTypeCopier
   /**
    * Returns a copy of the given type.
    *
-   * @param original a type
-   * @return a copy of the given type
+   * @param <T> the type of the AnnotatedTypeMirror to copy
+   * @param original an AnnotatedTypeMirror (more specifically, a {@code T})
+   * @return a copy of the given AnnotatedTypeMirror
    */
   @SuppressWarnings({
     "unchecked",

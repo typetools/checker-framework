@@ -134,6 +134,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
    * @param <T> the type to cast to
    * @param type a values of the type to cast to
    * @param lub the value to cast to {@code T}
+   * @return {@code lub}, casted to {@code T}
    */
   @SuppressWarnings({
     "compilermessages:return",
