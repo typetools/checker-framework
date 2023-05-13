@@ -20,6 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -204,6 +205,10 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       // propagated annotations won't be applied.  So don't compute them.
       // Also, calling getAnnotatedType on the left and right operands is potentially
       // expensive.
+      return null;
+    }
+
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
       return null;
     }
 

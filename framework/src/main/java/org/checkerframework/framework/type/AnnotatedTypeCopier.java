@@ -323,7 +323,11 @@ public class AnnotatedTypeCopier
    *     over the visitor
    * @return a copy of original
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({
+    "unchecked",
+    "compilermessages:return", // different lower bounds for two occurrences of T
+    "formatter:return"
+  })
   protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
       T original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
     if (originalToCopy.containsKey(original)) {
@@ -343,7 +347,11 @@ public class AnnotatedTypeCopier
    * @param original an AnnotatedTypeMirror (more specifically, a {@code T})
    * @return a copy of the given AnnotatedTypeMirror
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({
+    "unchecked",
+    "compilermessages:return", // different lower bounds for two occurrences of T
+    "formatter:return"
+  })
   protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
 
     final T copy =

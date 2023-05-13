@@ -9,9 +9,6 @@ public class SignednessAssignments {
   @Signed Byte sB;
   @Unsigned Byte uB;
 
-  @Unsigned char uc;
-  @Unsigned Character uC;
-
   @Signed short ss;
   @Unsigned short us;
   @Signed Short sS;
@@ -78,9 +75,6 @@ public class SignednessAssignments {
     // :: error: (assignment)
     @SignedPositive int i4 = uB;
 
-    @SignedPositive int i6 = uc;
-    @SignedPositive int i8 = uC;
-
     // :: error: (assignment)
     @SignedPositive int i9 = ss;
     // :: error: (assignment)
@@ -110,9 +104,6 @@ public class SignednessAssignments {
     @SignedPositive long i3 = sB;
     // :: error: (assignment)
     @SignedPositive long i4 = uB;
-
-    @SignedPositive long i6 = uc;
-    @SignedPositive long i8 = uC;
 
     // :: error: (assignment)
     @SignedPositive long i9 = ss;

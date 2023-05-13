@@ -12,6 +12,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -529,12 +530,37 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected TreeAnnotator createTreeAnnotator() {
     List<TreeAnnotator> treeAnnotators = new ArrayList<>(2);
+    treeAnnotators.add(new GatfTreeAnnotator(this));
     treeAnnotators.add(new PropagationTreeAnnotator(this));
     treeAnnotators.add(new LiteralTreeAnnotator(this).addStandardLiteralQualifiers());
     if (dependentTypesHelper.hasDependentAnnotations()) {
       treeAnnotators.add(dependentTypesHelper.createDependentTypesTreeAnnotator());
     }
     return new ListTreeAnnotator(treeAnnotators);
+  }
+
+  /** A tree annotator that adds annotations for irrelevant Java types. */
+  private static class GatfTreeAnnotator extends TreeAnnotator {
+    /**
+     * Creates a new GatfTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
+    public GatfTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+      super(atypeFactory);
+    }
+
+    @Override
+    public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
+      if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
+        log("GatfTreeAnnotator(%s, %s)%n", tree, type);
+        type.replaceAnnotations(
+            ((GenericAnnotatedTypeFactory) atypeFactory).annotationsForIrrelevantJavaTypes());
+        log("GatfTreeAnnotator(%s, ...) final type = %s%n", tree, type);
+        return null;
+      }
+      return super.visitTypeCast(tree, type);
+    }
   }
 
   /**
@@ -555,11 +581,19 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(
-          new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this, annotationsForIrrelevantJavaTypes()));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
+  }
+
+  /**
+   * Returns the annotations that should appear on irrelevant Java types.
+   *
+   * @return the annotations that should appear on irrelevant Java types
+   */
+  protected AnnotationMirrorSet annotationsForIrrelevantJavaTypes() {
+    return getQualifierHierarchy().getTopAnnotations();
   }
 
   /**
@@ -602,7 +636,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the appropriate flow analysis class that is used for the org.checkerframework.dataflow
    *     analysis
    */
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({
+    "unchecked",
+    "rawtypes",
+    "compilermessages:return", // different lower bounds for two occurrences of FlowAnalysis
+    "formatter:return"
+  })
   protected FlowAnalysis createFlowAnalysis() {
 
     // Try to reflectively load the visitor.
@@ -641,6 +680,10 @@ public abstract class GenericAnnotatedTypeFactory<
   // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
   // TransferFunction>.
   // However, we ran into issues in callers of the method if we used that type.
+  @SuppressWarnings({
+    "compilermessages:return", // different lower bounds for two occurrences of TransferFunction
+    "formatter:return"
+  })
   public TransferFunction createFlowTransferFunction(
       CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
@@ -2147,7 +2190,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
    * @return the AnnotatedTypeFactory of the subchecker or null if no subchecker exists
    */
-  @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
+  @SuppressWarnings({
+    "TypeParameterUnusedInFormals", // Intentional abuse
+    "compilermessages:return", // different lower bounds for two occurrences of T
+    "formatter:return"
+  })
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
       Class<? extends BaseTypeChecker> subCheckerClass) {
     BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);

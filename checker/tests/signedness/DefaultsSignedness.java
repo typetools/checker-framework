@@ -47,17 +47,6 @@ public class DefaultsSignedness {
 
     // :: error: (assignment)
     botLong = testLong;
-
-    // Test chars with literal values
-    @SignednessGlb char conChar;
-    @SignednessBottom char botChar;
-
-    char testChar = 'a';
-
-    conChar = testChar;
-
-    // :: error: (assignment)
-    botChar = testChar;
   }
 
   public void SignedTest(
