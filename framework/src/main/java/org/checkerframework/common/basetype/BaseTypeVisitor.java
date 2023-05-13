@@ -3858,6 +3858,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
 
+    protected AnnotatedTypeFactory getTypeFactory() {
+      return atypeFactory;
+    }
+
     /**
      * Perform the check.
      *
@@ -4074,11 +4078,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
+      if (!((GenericAnnotatedTypeFactory) getTypeFactory()).isRelevant(overriderReceiver)) {
+        // The receiver has the only annotation it possibly can; don't issue a warning.
+        return true;
+      }
       AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
       QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
       // Check the receiver type.
       // isSubtype() requires its arguments to be actual subtypes with respect to JLS, but
-      // overrider receiver is not a subtype of the overridden receiver.  So, just check
+      // an overrider receiver is not a subtype of the overridden receiver.  So, just check
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
