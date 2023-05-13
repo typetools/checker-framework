@@ -3858,6 +3858,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
 
+    /**
+     * Returns the type factory associated with this.
+     *
+     * @return the type factory associated with this
+     */
     protected AnnotatedTypeFactory getTypeFactory() {
       return atypeFactory;
     }
