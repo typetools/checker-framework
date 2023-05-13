@@ -313,9 +313,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      log(
-          "SATF.visitTypeCast(%s, %s); isCharOrCharacter(type)=%s%n",
-          tree, type, isCharOrCharacter(type));
       if (isCharOrCharacter(type)) {
         type.replaceAnnotation(UNSIGNED);
       } else if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
