@@ -50,7 +50,6 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
 
     if (!((GenericAnnotatedTypeFactory) typeFactory).isRelevant(type)) {
       type.addMissingAnnotations(annotations);
-      // System.out.printf("not relevant: %s (after adding missing)%n", type);
     }
     return super.scan(type, aVoid);
   }
