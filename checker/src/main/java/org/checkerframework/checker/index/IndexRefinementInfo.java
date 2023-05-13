@@ -83,7 +83,7 @@ public class IndexRefinementInfo {
   }
 
   /**
-   * Returns the annotation in the given hierarchy.
+   * Returns the annotation (from the given set) in the given hierarchy.
    *
    * @param set a set of annotations
    * @param hierarchy a qualifier hierarchy

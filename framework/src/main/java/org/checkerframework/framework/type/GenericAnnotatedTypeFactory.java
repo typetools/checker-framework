@@ -631,14 +631,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the appropriate transfer function that is used for the org.checkerframework.dataflow
-   * analysis.
+   * Returns the appropriate transfer function that is used for the given
+   * org.checkerframework.dataflow analysis.
    *
    * <p>This implementation uses the checker naming convention to create the appropriate transfer
    * function. If no transfer function is found, it returns an instance of {@link CFTransfer}.
    *
    * <p>Subclasses have to override this method to create the appropriate transfer function if they
    * do not follow the checker naming convention.
+   *
+   * @param analysis a dataflow analysis
+   * @return a new transfer function
    */
   // A more precise type for the parameter would be FlowAnalysis, which
   // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
