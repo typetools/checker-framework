@@ -2416,6 +2416,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if qualifiers may be written on this. If this returns false, the qualifiers are
+   * not checked.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on the given type
+   */
+  public boolean canBeAnnotated(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    * Does not use a cache. Is a helper method for {@link #isRelevant}.
    *

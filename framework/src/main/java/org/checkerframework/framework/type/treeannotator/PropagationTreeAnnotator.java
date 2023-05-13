@@ -208,7 +208,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).canBeAnnotated(type)) {
       return null;
     }
 

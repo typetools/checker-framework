@@ -2366,10 +2366,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-    if (!atypeFactory.isRelevant(castType)) {
+    if (!atypeFactory.canBeAnnotated(castType)) {
       return;
     }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
+    if (!atypeFactory.canBeAnnotated(exprType)) {
+      return;
+    }
     boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
       if (!isInvariantTypeCastSafe(castType, exprType, top)) {
@@ -2964,7 +2967,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueExpTree);
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
-    boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
+    boolean success =
+        !atypeFactory.canBeAnnotated(widenedValueType)
+            || atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
     // TODO: integrate with subtype test.
     if (success) {
@@ -2979,12 +2984,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return;
         }
       }
-    }
-
-    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
-
-    // Use an error key only if it's overridden by a checker.
-    if (!success) {
+    } else {
+      // `success` is false.
+      // Use an error key only if it's overridden by a checker.
       FoundRequired pair = FoundRequired.of(valueType, varType);
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
@@ -2993,6 +2995,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           errorKey,
           ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
+
+    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
   }
 
   /**
@@ -3430,7 +3434,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * A helper method to check that each passed argument is a subtype of the corresponding required
-   * argument, and issues "argument" error for each passed argument that not a subtype of the
+   * argument. Issues an "argument" error for each passed argument that not a subtype of the
    * required one.
    *
    * <p>Note this method requires the lists to have the same length, as it does not handle cases
@@ -4083,7 +4087,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-      if (!((GenericAnnotatedTypeFactory) getTypeFactory()).isRelevant(overriderReceiver)) {
+      if (!((GenericAnnotatedTypeFactory) getTypeFactory()).canBeAnnotated(overriderReceiver)) {
         // The receiver has the only annotation it possibly can; don't issue a warning.
         return true;
       }
