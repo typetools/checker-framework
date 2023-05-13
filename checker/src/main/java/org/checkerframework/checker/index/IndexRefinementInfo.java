@@ -83,6 +83,13 @@ public class IndexRefinementInfo {
     this(result, analysis, node.getRightOperand(), node.getLeftOperand());
   }
 
+  /**
+   * Returns the annotation (from the given set) in the given hierarchy.
+   *
+   * @param set a set of annotations
+   * @param hierarchy a qualifier hierarchy
+   * @return the annotation (from {@code set}) in the given hierarchy
+   */
   private static AnnotationMirror getAnno(AnnotationMirrorSet set, QualifierHierarchy hierarchy) {
     Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
     if (tops.size() != 1) {
