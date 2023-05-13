@@ -50,7 +50,7 @@ for PACKAGE in "${PACKAGES[@]}"; do
   (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
 
-if [ -n "$var" ] ; then
+if [ -n "${failing_packages}" ] ; then
   echo "Failing packages: ${failing_packages}"
   exit 1
 fi
