@@ -332,7 +332,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns true if the type's underlying type is {@code char} or {@code Character}.
+   * Returns true if the argument's underlying type is {@code char} or {@code Character}.
    *
    * @param type a type
    * @return true if the type is {@code char} or {@code Character}.
