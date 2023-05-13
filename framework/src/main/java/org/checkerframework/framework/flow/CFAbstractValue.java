@@ -227,6 +227,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror,
    * AnnotationMirror)}, then the respective value from {@code backup} is used.
    */
+  @SuppressWarnings({
+    "compilermessages:return", // different lower bounds for two occurrences of V
+    "formatter:return"
+  })
   public V mostSpecific(@Nullable V other, @Nullable V backup) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -406,6 +410,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return upperBound(previous, true);
   }
 
+  @SuppressWarnings({
+    "compilermessages:return", // different lower bounds for two occurrences of V
+    "formatter:return"
+  })
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -525,6 +533,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param other another value
    * @return the greatest lower bound of two values
    */
+  @SuppressWarnings({
+    "compilermessages:return", // different lower bounds for two occurrences of V
+    "formatter:return"
+  })
   public V greatestLowerBound(@Nullable V other) {
     if (other == null) {
       @SuppressWarnings("unchecked")

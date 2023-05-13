@@ -129,6 +129,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
   }
 
   /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
+  @SuppressWarnings({
+    "compilermessages:return",
+    "formatter:return"
+  }) // different lower bounds for two occurrences of T
   private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
     if (type.getKind() != lub.getKind()) {
       throw new BugInCF(
