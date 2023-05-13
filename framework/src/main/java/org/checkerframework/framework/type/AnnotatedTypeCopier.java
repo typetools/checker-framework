@@ -340,6 +340,12 @@ public class AnnotatedTypeCopier
     return copy;
   }
 
+  /**
+   * Returns a copy of the given type.
+   *
+   * @param original a type
+   * @return a copy of the given type
+   */
   @SuppressWarnings({
     "unchecked",
     "compilermessages:return", // different lower bounds for two occurrences of T
