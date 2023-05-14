@@ -186,12 +186,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         removedOtherFieldValues.put(invariantField, v);
       }
 
-      @SuppressWarnings({
-        "formatter:argument",
-        "compilermessages:argument"
-      }) // not sure what is happening here, generic types are complex
-      boolean result = super.supersetOf(other);
-      return result;
+      return super.supersetOf(other);
     } finally {
       // Restore removed values.
       fieldValues.putAll(removedFieldValues);

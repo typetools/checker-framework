@@ -633,6 +633,12 @@ public final class TypesUtils {
     return javacTypes.isFunctionalInterface((Type) type);
   }
 
+  /**
+   * Returns true if the given type is a compound type.
+   *
+   * @param type a type
+   * @return true if the given type is a compound type
+   */
   public static boolean isCompoundType(TypeMirror type) {
     switch (type.getKind()) {
       case ARRAY:
