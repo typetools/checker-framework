@@ -311,7 +311,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @SuppressWarnings({
     "unchecked", // unchecked cast to type variable
-    "mustcall:cast.unsafe" // cast to type variable, hairy generics error message
+    "mustcall:cast.unsafe", // cast to type variable, hairy generics error message
+    "compilermessages:return", // different lower bounds for two occurrences of Factory
+    "formatter:return"
   })
   protected Factory createTypeFactory() {
     // Try to reflectively load the type factory.

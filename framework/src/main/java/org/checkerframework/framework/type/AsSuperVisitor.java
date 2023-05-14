@@ -60,7 +60,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    */
   @SuppressWarnings({
     "unchecked",
-    "interning:not.interned" // optimized special case
+    "interning:not.interned", // optimized special case
+    "compilermessages:return", // different lower bounds for two occurrences of T
+    "formatter:return"
   })
   public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
     if (type == null || superType == null) {
