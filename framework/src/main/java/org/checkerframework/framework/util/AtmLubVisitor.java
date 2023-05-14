@@ -136,10 +136,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
    * @param lub the value to cast to {@code T}
    * @return {@code lub}, casted to {@code T}
    */
-  @SuppressWarnings({
-    "compilermessages:return",
-    "formatter:return"
-  }) // different lower bounds for two occurrences of T
+  @SuppressWarnings({"formatter:return"}) // different lower bounds for two occurrences of T
   private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
     if (type.getKind() != lub.getKind()) {
       throw new BugInCF(
