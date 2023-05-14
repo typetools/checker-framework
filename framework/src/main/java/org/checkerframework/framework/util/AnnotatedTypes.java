@@ -127,10 +127,6 @@ public class AnnotatedTypes {
    * @param supertype supertype that subtype is transformed to
    * @return subtype as an instance of supertype
    */
-  @SuppressWarnings({
-    "compilermessages:return", // different lower bounds for two occurrences of T
-    "formatter:return"
-  })
   public static <T extends AnnotatedTypeMirror> T castedAsSuper(
       final AnnotatedTypeFactory atypeFactory,
       final AnnotatedTypeMirror subtype,

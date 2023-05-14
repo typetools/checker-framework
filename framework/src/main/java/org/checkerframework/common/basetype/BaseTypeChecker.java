@@ -408,7 +408,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @param checkerClass the class of the subchecker to return
    * @return the requested subchecker or null if not found
    */
-  @SuppressWarnings({"unchecked", "formatter:return"})
+  @SuppressWarnings("unchecked")
   public <T extends BaseTypeChecker> T getSubchecker(Class<T> checkerClass) {
     for (BaseTypeChecker checker : immediateSubcheckers) {
       if (checker.getClass() == checkerClass) {

@@ -123,7 +123,6 @@ public class TypeVariableSubstitutor {
     }
 
     @Override
-    @SuppressWarnings({"formatter:return"}) // different lower bounds for two occurrences of T
     protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
       if (original.getKind() == TypeKind.TYPEVAR) {
         return super.makeCopy(original);

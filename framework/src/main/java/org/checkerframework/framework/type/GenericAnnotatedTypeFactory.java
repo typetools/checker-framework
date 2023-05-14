@@ -636,12 +636,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the appropriate flow analysis class that is used for the org.checkerframework.dataflow
    *     analysis
    */
-  @SuppressWarnings({
-    "unchecked",
-    "rawtypes",
-    "compilermessages:return", // different lower bounds for two occurrences of FlowAnalysis
-    "formatter:return"
-  })
+  @SuppressWarnings({"unchecked", "rawtypes"})
   protected FlowAnalysis createFlowAnalysis() {
 
     // Try to reflectively load the visitor.
@@ -680,10 +675,6 @@ public abstract class GenericAnnotatedTypeFactory<
   // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
   // TransferFunction>.
   // However, we ran into issues in callers of the method if we used that type.
-  @SuppressWarnings({
-    "compilermessages:return", // different lower bounds for two occurrences of TransferFunction
-    "formatter:return"
-  })
   public TransferFunction createFlowTransferFunction(
       CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
@@ -2190,11 +2181,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
    * @return the AnnotatedTypeFactory of the subchecker or null if no subchecker exists
    */
-  @SuppressWarnings({
-    "TypeParameterUnusedInFormals", // Intentional abuse
-    "compilermessages:return", // different lower bounds for two occurrences of T
-    "formatter:return"
-  })
+  @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
       Class<? extends BaseTypeChecker> subCheckerClass) {
     BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);
