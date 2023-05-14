@@ -2966,9 +2966,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueExpTree);
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
-    // Don't use `!atypeFactory.canBeAnnotated(widenedValueType)` because widenedValueType might be
-    // a compound type (such as an array or generic type), in which case its component types must be
-    // tested.
     boolean success =
         (!atypeFactory.canBeAnnotated(widenedValueType)
                 && !TypesUtils.isCompoundType(widenedValueType.getUnderlyingType()))
