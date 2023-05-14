@@ -10,7 +10,6 @@ public class LocalVarDefaults {
 
   // :: error: (annotations.on.use) :: error: (anno.on.irrelevant)
   void methodDouble(@Unsigned double unsigned, @Signed double signed) {
-    // :: error: (assignment)
     double local = unsigned;
     double local2 = signed;
   }
@@ -22,7 +21,6 @@ public class LocalVarDefaults {
 
   // :: error: (annotations.on.use) :: error: (anno.on.irrelevant)
   void methodDoubleWrapper(@Unsigned Double unsigned, @Signed Double signed) {
-    // :: error: (assignment)
     Double local = unsigned;
     Double local2 = signed;
   }
