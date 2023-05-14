@@ -2708,6 +2708,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new BugInCF("Could not find the version in git.properties");
     }
     if (version.endsWith("-SNAPSHOT")) {
+      version += ", branch " + gitProperties.getProperty("git.branch");
       version += ", commit " + gitProperties.getProperty("git.commit.id");
     }
     return version;
