@@ -2644,8 +2644,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            checker.reportError(
-                t, "anno.on.irrelevant", supportedAnnoTrees, t, atypeFactory.relevantJavaTypes);
+            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t);
           }
           return;
         case ANNOTATED_TYPE:
