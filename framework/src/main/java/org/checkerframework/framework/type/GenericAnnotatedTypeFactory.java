@@ -2509,7 +2509,6 @@ public abstract class GenericAnnotatedTypeFactory<
               return true;
           }
         }
-        System.out.printf("not relevant: %s ; no non-primitives in %s%n", tm, relevantJavaTypes);
         return false;
 
       default:
