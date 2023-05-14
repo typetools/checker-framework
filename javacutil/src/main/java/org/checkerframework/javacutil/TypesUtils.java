@@ -644,15 +644,13 @@ public final class TypesUtils {
       case ARRAY:
       case INTERSECTION:
       case UNION:
+      case TYPEVAR:
+      case WILDCARD:
         return true;
 
       case DECLARED:
         DeclaredType declaredType = (DeclaredType) type;
         return !declaredType.getTypeArguments().isEmpty();
-
-      case TYPEVAR:
-      case WILDCARD:
-        return false;
 
       default:
         return false;
