@@ -621,17 +621,6 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} has an enclosing type.
-   *
-   * @param type type to checker
-   * @return true if {@code type} has an enclosing type
-   */
-  public static boolean hasEnclosingType(TypeMirror type) {
-    Type e = ((Type) type).getEnclosingType();
-    return e.getKind() != TypeKind.NONE;
-  }
-
-  /**
    * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
@@ -642,6 +631,37 @@ public final class TypesUtils {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     return javacTypes.isFunctionalInterface((Type) type);
+  }
+
+  public static boolean isCompoundType(TypeMirror type) {
+    switch (type.getKind()) {
+      case ARRAY:
+      case INTERSECTION:
+      case UNION:
+        return true;
+
+      case DECLARED:
+        DeclaredType declaredType = (DeclaredType) type;
+        return !declaredType.getTypeArguments().isEmpty();
+
+      case TYPEVAR:
+      case WILDCARD:
+        return false;
+
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Returns true if {@code type} has an enclosing type.
+   *
+   * @param type type to checker
+   * @return true if {@code type} has an enclosing type
+   */
+  public static boolean hasEnclosingType(TypeMirror type) {
+    Type e = ((Type) type).getEnclosingType();
+    return e.getKind() != TypeKind.NONE;
   }
 
   /// Type variables and wildcards
