@@ -2422,6 +2422,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if qualifiers may be written on this. If this returns false, the qualifiers are
+   * not checked.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on the given type
+   */
+  public boolean canBeAnnotated(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    * Does not use a cache. Is a helper method for {@link #isRelevant}.
    *
@@ -2470,6 +2481,36 @@ public abstract class GenericAnnotatedTypeFactory<
 
       case TYPEVAR:
         return isRelevant(((TypeVariable) tm).getUpperBound());
+
+      case NULL:
+        for (TypeMirror relevantJavaType : relevantJavaTypes) {
+          switch (relevantJavaType.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+              continue;
+
+            case ERROR:
+            case NONE:
+            case VOID:
+              continue;
+
+            case MODULE:
+            case PACKAGE:
+              continue;
+
+            case NULL:
+            default:
+              return true;
+          }
+        }
+        System.out.printf("not relevant: %s ; no non-primitives in %s%n", tm, relevantJavaTypes);
+        return false;
 
       default:
         throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());

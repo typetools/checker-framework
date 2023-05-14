@@ -689,6 +689,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
+  @Override
+  public final boolean canBeAnnotated(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType()) && !isCharOrCharacter(tm);
+  }
+
   /**
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
    * arguments must have the same signedness type annotation.
