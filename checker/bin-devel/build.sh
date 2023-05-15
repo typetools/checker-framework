@@ -34,7 +34,7 @@ echo "JAVA_HOME=${JAVA_HOME}"
 # Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts -q)` leads to infinite regress.
 PLUME_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.plume-scripts"
 if [ -d "$PLUME_SCRIPTS" ] ; then
-  (cd "$PLUME_SCRIPTS" && git pull -q)
+  (cd "$PLUME_SCRIPTS" && (git pull -q || true))
 else
   (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
