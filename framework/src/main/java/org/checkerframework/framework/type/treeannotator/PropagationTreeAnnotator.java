@@ -253,7 +253,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   @Override
   public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-    if (hasPrimaryAnnotationInAllHierarchies(type)) {
+    if (hasPrimaryAnnotationInAllHierarchies(type)
+        || !((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
       // If the type is already has a primary annotation in all hierarchies, then the
       // propagated annotations won't be applied.  So don't compute them.
       log("PTA.visitTypeCast(%s, %s): hasPrimaryAnnotationInAllHierarchies%n", tree, type);

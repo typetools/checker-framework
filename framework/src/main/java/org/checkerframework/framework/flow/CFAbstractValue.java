@@ -231,10 +231,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param backup the value to use if {@code this} and {@code other} are incomparable
    * @return the more specific of two values {@code this} and {@code other}
    */
-  @SuppressWarnings({
-    "compilermessages:return", // different lower bounds for two occurrences of V
-    "formatter:return"
-  })
   public V mostSpecific(@Nullable V other, @Nullable V backup) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -421,10 +417,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param shouldWiden true if the lub should perform widening
    * @return the least upper bound of this and {@code other}
    */
-  @SuppressWarnings({
-    "compilermessages:return", // different lower bounds for two occurrences of V
-    "formatter:return"
-  })
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -544,10 +536,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param other another value
    * @return the greatest lower bound of two values
    */
-  @SuppressWarnings({
-    "compilermessages:return", // different lower bounds for two occurrences of V
-    "formatter:return"
-  })
   public V greatestLowerBound(@Nullable V other) {
     if (other == null) {
       @SuppressWarnings("unchecked")

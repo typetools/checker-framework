@@ -186,10 +186,6 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         removedOtherFieldValues.put(invariantField, v);
       }
 
-      @SuppressWarnings({
-        "compilermessages:argument",
-        "formatter:argument"
-      }) // complex generics problem
       boolean result = super.supersetOf(other);
       return result;
     } finally {

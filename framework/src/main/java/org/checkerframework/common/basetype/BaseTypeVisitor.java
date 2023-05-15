@@ -311,9 +311,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @SuppressWarnings({
     "unchecked", // unchecked cast to type variable
-    "mustcall:cast.unsafe", // cast to type variable, hairy generics error message
-    "compilermessages:return", // different lower bounds for two occurrences of Factory
-    "formatter:return"
+    "mustcall:cast.unsafe" // cast to type variable, hairy generics error message
   })
   protected Factory createTypeFactory() {
     // Try to reflectively load the type factory.
@@ -4090,7 +4088,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-      if (!((GenericAnnotatedTypeFactory) getTypeFactory()).canBeAnnotated(overriderReceiver)) {
+      if (!atypeFactory.canBeAnnotated(overriderReceiver)) {
         // The receiver has the only annotation it possibly can; don't issue a warning.
         return true;
       }

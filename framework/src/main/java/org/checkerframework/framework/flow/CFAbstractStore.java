@@ -1082,7 +1082,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* Helper and miscellaneous methods */
   /* --------------------------------------------------------- */
 
-  @SuppressWarnings({"unchecked", "compilermessages:argument", "formatter:argument"})
+  @SuppressWarnings("unchecked")
   @Override
   public S copy() {
     return analysis.createCopiedStore((S) this);

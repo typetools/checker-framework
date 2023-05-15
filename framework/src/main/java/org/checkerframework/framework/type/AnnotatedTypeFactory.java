@@ -5349,10 +5349,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     @Override
-    @SuppressWarnings({
-      "compilermessages:return",
-      "formatter:return"
-    }) // different lower bounds for two occurrences of T
     protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
         T original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
       AnnotatedTypeMirror copy = originalToCopy.get(original);
