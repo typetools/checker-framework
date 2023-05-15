@@ -1,6 +1,8 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -164,6 +167,13 @@ public class KeyForPropagator {
     if (path == null) {
       return;
     }
+    Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
+    if (assignmentContext != null && assignmentContext instanceof VariableTree) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
+        return;
+      }
+    }
+
     AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
     if (assignedTo == null) {
       return;

@@ -32,9 +32,21 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     Element elt = TreeUtils.elementFromDeclaration(variableTree);
 
     // Create the ATM and add non-primary annotations
-    // (variableTree.getType() does not include the annotation before the type, so those
-    // are added to the type below).
-    AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+    AnnotatedTypeMirror result;
+    // Propagate initializer annotated type to variable if declared using var.
+    // Skip propagation of annotations when initializer can be null.
+    // E.g.
+    // for (var i : list) {}
+    if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+        && variableTree.getInitializer() != null) {
+      result = f.getAnnotatedType(variableTree.getInitializer());
+      // Let normal defaulting happen for the primary annotation.
+      result.clearPrimaryAnnotations();
+    } else {
+      // (variableTree.getType() does not include the annotation before the type, so those
+      // are added to the type below).
+      result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+    }
 
     // Handle any annotations in variableTree.getModifiers().
     List<AnnotationMirror> modifierAnnos;
