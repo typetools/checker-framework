@@ -43,6 +43,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.CollectionUtils;
@@ -218,8 +219,8 @@ public class QualifierDefaults {
   /** Add standard unchecked defaults that do not conflict with previously added defaults. */
   public void addUncheckedStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
-    Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
-    Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
+    AnnotationMirrorSet bottoms = qualHierarchy.getBottomAnnotations();
 
     for (TypeUseLocation loc : STANDARD_UNCHECKED_DEFAULTS_TOP) {
       // Only add standard defaults in locations where a default has not be specified
@@ -243,8 +244,8 @@ public class QualifierDefaults {
   /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
   public void addClimbStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
-    Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
-    Set<? extends AnnotationMirror> bottoms = qualHierarchy.getBottomAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
+    AnnotationMirrorSet bottoms = qualHierarchy.getBottomAnnotations();
 
     for (TypeUseLocation loc : STANDARD_CLIMB_DEFAULTS_TOP) {
       for (AnnotationMirror top : tops) {
