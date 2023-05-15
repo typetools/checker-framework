@@ -3864,15 +3864,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Returns the type factory associated with this.
-     *
-     * @return the type factory associated with this
-     */
-    protected AnnotatedTypeFactory getTypeFactory() {
-      return atypeFactory;
-    }
-
-    /**
      * Perform the check.
      *
      * @return true if the override is allowed
