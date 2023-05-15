@@ -2406,10 +2406,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the {@code variableTree} is declared using var.
+   * Returns true if the {@code variableTree} is declared using the {@code var} Java keyword.
    *
    * @param variableTree the variableTree to check
-   * @return true if the variableTree is declared using var
+   * @return true if the variableTree is declared using the {@code var} Java keyword
    */
   public static boolean isVariableTreeDeclaredUsingVar(VariableTree variableTree) {
     JCExpression type = (JCExpression) variableTree.getType();

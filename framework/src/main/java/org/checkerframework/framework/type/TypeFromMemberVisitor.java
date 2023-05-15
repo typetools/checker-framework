@@ -33,7 +33,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
 
     // Create the ATM and add non-primary annotations
     AnnotatedTypeMirror result;
-    // Propagate initializer annotated type to variable if declared using var
+    // Propagate initializer annotated type to variable if declared using var.
     // Skip propagation of annotations when initializer can be null.
     // E.g.
     // for (var i : list) {}
