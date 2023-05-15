@@ -2648,7 +2648,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t);
+            checker.reportError(
+                t, "anno.on.irrelevant", supportedAnnoTrees, t, atypeFactory.relevantJavaTypes);
           }
           return;
         case ANNOTATED_TYPE:
@@ -2986,12 +2987,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return;
         }
       }
-    }
-
-    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
-
-    // Use an error key only if it's overridden by a checker.
-    if (!success) {
+    } else {
+      // `success` is false.
+      // Use an error key only if it's overridden by a checker.
       FoundRequired pair = FoundRequired.of(valueType, varType);
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
@@ -3000,6 +2998,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           errorKey,
           ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
+
+    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
   }
 
   /**

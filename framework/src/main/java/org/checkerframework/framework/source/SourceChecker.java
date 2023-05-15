@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableSet;
 import java.util.Objects;
@@ -433,6 +434,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** File name of the localized messages. */
   protected static final String MSGS_FILE = "messages.properties";
+
+  /** True if the Checker Framework version number has already been printed. */
+  private static boolean printedVersion = false;
 
   /**
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
@@ -875,8 +879,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                   }
                 });
       }
-      if (hasOption("version")) {
+      if (!printedVersion && hasOption("version")) {
         messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
+        printedVersion = true;
       }
     } catch (UserError ce) {
       logUserError(ce);
@@ -940,19 +945,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected int errsOnLastExit = 0;
 
   /**
-   * Report "type.checking.not.run" error.
-   *
-   * @param p error is reported at the leaf of the path
-   */
-  @SuppressWarnings("interning:assignment") // used in == tests
-  protected void reportJavacError(TreePath p) {
-    // If javac issued any errors, do not type check any file, so that the Checker Framework
-    // does not have to deal with error types.
-    currentRoot = p.getCompilationUnit();
-    reportError(p.getLeaf(), "type.checking.not.run", getClass().getSimpleName());
-  }
-
-  /**
    * Type-check the code using this checker's visitor.
    *
    * @see Processor#process(Set, RoundEnvironment)
@@ -960,7 +952,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public void typeProcess(TypeElement e, TreePath p) {
     if (javacErrored) {
-      reportJavacError(p);
       return;
     }
 
@@ -1001,7 +992,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (log.nerrors > this.errsOnLastExit) {
       this.errsOnLastExit = log.nerrors;
       javacErrored = true;
-      reportJavacError(p);
       return;
     }
 
@@ -2398,7 +2388,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       indexOfChecker = className.lastIndexOf("Subchecker");
     }
     String result = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
-    return result.toLowerCase();
+    return result.toLowerCase(Locale.getDefault());
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -2717,7 +2707,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (version == null) {
       throw new BugInCF("Could not find the version in git.properties");
     }
-    if (version.endsWith("-SNAPSHOT")) {
+    String branch = gitProperties.getProperty("git.branch");
+    if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
+      version += ", branch " + branch;
       version += ", commit " + gitProperties.getProperty("git.commit.id");
     }
     return version;

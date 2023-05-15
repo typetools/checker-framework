@@ -1042,7 +1042,7 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side effects
       // that we don't want to be persistent.
-      CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
+      CompilationUnitAnnos root = sourceToAnnos.get(path);
       wpiPrepareCompilationUnitForWriting(root);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {

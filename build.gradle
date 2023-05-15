@@ -103,6 +103,12 @@ spotlessPredeclare {
 }
 
 allprojects {
+  // Increment the minor version (second number) rather than just the patch
+  // level (third number) if:
+  //   * any new checkers have been added, or
+  //   * backward-incompatible changes have been made to APIs or elsewhere.
+  version '3.34.1-SNAPSHOT'
+
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
   }
@@ -113,12 +119,6 @@ allprojects {
   apply plugin: 'net.ltgt.errorprone'
 
   group 'org.checkerframework'
-
-  // Increment the minor version (second number) rather than just the patch
-  // level (third number) if:
-  //   * any new checkers have been added, or
-  //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.34.1-SNAPSHOT'
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
@@ -175,7 +175,7 @@ allprojects {
     ]
 
     reflectionUtilVersion = '1.0.6'
-    plumeUtilVersion = '1.6.5'
+    plumeUtilVersion = '1.7.0'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -717,7 +717,7 @@ subprojects {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    ext.errorproneVersion = '2.18.0'
+    ext.errorproneVersion = '2.19.1'
     errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.

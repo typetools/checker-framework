@@ -80,13 +80,13 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Runs the inference algorithm on the contents of the {@link #cfg} field.
+   * Runs the inference algorithm on the contents of the {@link #cfg} field and parameters.
    *
-   * <p>Operationally, it checks method invocations for fields with non-empty @MustCall obligations
-   * along all paths to the regular exit point in the method body of the method represented by
-   * {@link #cfg}, and updates the {@link #owningFieldToECM} set if it discovers an owning field
-   * whose must-call obligations were satisfied along one of the checked paths. //TODO update the
-   * document
+   * <p>Operationally, it checks method invocations for fields and parameters with
+   * non-empty @MustCall obligations along all paths to the regular exit point in the method body of
+   * the method represented by {@link #cfg}, and updates the {@link #owningFieldToECM} set or
+   * adds @Owning to the formal parameter if it discovers their must-call obligations were satisfied
+   * along one of the checked paths.
    */
   /*package-private*/ void runInference() {
 
@@ -120,7 +120,14 @@ public class MustCallInferenceLogic {
     }
   }
 
-  // TODO add documentation
+  /**
+   * Returns a set of obligations representing the non-empty MustCall parameters of the current
+   * method.
+   *
+   * @param cfg the ControlFlowGraph for the current method
+   * @return a set of obligations representing the non-empty MustCall parameters of the current
+   *     method
+   */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
@@ -169,7 +176,12 @@ public class MustCallInferenceLogic {
     wpi.addDeclarationAnnotationToFormalParameter(enMethodElt, index, OWNING);
   }
 
-  // TODO
+  /**
+   * Checks if the given node is a field and if it is a new Owning field.
+   *
+   * @param node the possible owning field
+   * @param mNode method invocation node
+   */
   private void isOwningField(@Nullable Node node, MethodInvocationNode mNode) {
     if (node == null) {
       return;
@@ -190,7 +202,17 @@ public class MustCallInferenceLogic {
     }
   }
 
-  // TODO refactor this
+  /**
+   * Updates a set of obligations based on an assignment statement node. If the left-hand side of
+   * the assignment is a field that is an "enclosed owning field", adds the owning field to the
+   * method's parameters if its alias is assigned to the field. If the left-hand side of the
+   * assignment is a resource variable and the right-hand side is a must-call-close method call,
+   * adds the owning resource to the method's parameters if its alias is assigned to the resource
+   * variable. Otherwise, updates the obligations based on the assignment.
+   *
+   * @param obligations The set of obligations to update.
+   * @param assignmentNode The assignment statement node.
+   */
   private void updateObligationsForAssignment(
       Set<Obligation> obligations, AssignmentNode assignmentNode) {
     Node lhs = assignmentNode.getTarget();
@@ -215,7 +237,7 @@ public class MustCallInferenceLogic {
 
       if (TreeUtils.isConstructor(enMethodTree)) {
         addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
-      } else if (!(rhs instanceof NullLiteralNode)) {
+      } else {
         if (owningFieldToECM.contains((VariableElement) lhsElement)) {
           owningFieldToECM.remove((VariableElement) lhsElement);
         }
@@ -223,9 +245,7 @@ public class MustCallInferenceLogic {
       }
 
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
-      if (rhs instanceof LocalVariableNode) {
-        addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
-      }
+      addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       Obligation lhsObligation =
@@ -243,6 +263,14 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Adds owning fields to the method's parameters, if its alias referred to by the right-hand side
+   * of the assignment is disposed of during the assignment.
+   *
+   * @param obligations The set of obligations to update.
+   * @param rhsObligation The obligation associated with the right-hand side of the assignment.
+   * @param rhs The right-hand side of the assignment.
+   */
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
@@ -340,6 +368,14 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Checks the arguments of a method invocation to see if any of them is passed as an owning
+   * parameter. If so, it adds owning to the corresponding parameters of the enclosing method.
+   *
+   * @param obligations Set of obligations associated with the current code block.
+   * @param mNode The method invocation node to check.
+   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
+   */
   private void checkArgsOfMethodCall(
       Set<Obligation> obligations,
       MethodInvocationNode mNode,
@@ -350,7 +386,6 @@ public class MustCallInferenceLogic {
       return;
     }
 
-    // TODO check this again
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = NodeUtils.removeCasts(arguments.get(i));
 
@@ -375,6 +410,15 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Checks if the receiver of a method call has an obligation that is satisfied by the method
+   * invocation node. If the receiver is a field, check if it is an owning field, if the receiver is
+   * resource alias with any parameter of the enclosing method, add owning to that parameter.
+   *
+   * @param obligations Set of obligations associated with the current code block.
+   * @param mNode Method invocation node to check.
+   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
+   */
   private void checkReceiverOfMethodCall(
       Set<Obligation> obligations,
       MethodInvocationNode mNode,
@@ -424,6 +468,15 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Checks for indirect calls within the method represented by the given MethodInvocationNode. It
+   * checks the called-methods set of each argument after the call and adds owning to the field or
+   * parameter passed as an argument to this call.
+   *
+   * @param obligations Set of obligations associated with the current code block.
+   * @param mNode Method invocation node to check.
+   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
+   */
   private void checkIndirectCalls(
       Set<Obligation> obligations,
       MethodInvocationNode mNode,
@@ -435,7 +488,6 @@ public class MustCallInferenceLogic {
       return;
     }
 
-    // TODO check this again
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = NodeUtils.removeCasts(arguments.get(i));
       Element argElt = TreeUtils.elementFromTree(arg.getTree());
@@ -472,6 +524,15 @@ public class MustCallInferenceLogic {
     }
   }
 
+  /**
+   * Returns the set of resource aliases associated with the given argument node, by looking up the
+   * corresponding obligation in the set of obligations passed as an argument.
+   *
+   * @param obligations the set of obligations to search in
+   * @param arg the argument node whose corresponding resource aliases are to be returned
+   * @return the set of resource aliases associated with the given argument node, or an empty set if
+   *     the node does not
+   */
   private Set<ResourceAlias> getResourceAliasOfArgument(Set<Obligation> obligations, Node arg) {
     Node tempVar = mcca.getTempVarOrNode(arg);
     if (!(tempVar instanceof LocalVariableNode)) {
@@ -505,7 +566,17 @@ public class MustCallInferenceLogic {
     checkIndirectCalls(obligations, mNode, paramsOfEnclosingMethod);
   }
 
-  // TODO replace with checkMustCall in mcca
+  /**
+   * Checks if a MustCall obligation of the element is satisfied via the given method call. A
+   * MustCall obligation of an element is satisfied if the called-methods set contains the target of
+   * its must-call obligation.
+   *
+   * @param mNode The method invocation node being checked for satisfaction of the MustCall
+   *     obligation.
+   * @param varElt The element representing the variable annotated with the MustCall annotation.
+   * @param target The target of the MustCall obligation, represented as a JavaExpression.
+   * @return {@code true} if the MustCall obligation is satisfied, {@code false} otherwise.
+   */
   private boolean mustCallObligationSatisfied(
       MethodInvocationNode mNode, Element varElt, JavaExpression target) {
 
@@ -541,7 +612,13 @@ public class MustCallInferenceLogic {
     return false;
   }
 
-  // probably replace with updateObligationsWithInvocationResult in mcca TODO
+  /**
+   * Updates the set of obligations any must-call-alias parameters passed to the given method
+   * invocation or object creation node.
+   *
+   * @param obligations the set of obligations to update
+   * @param node the node representing the method invocation or object creation
+   */
   private void updateMethodInvocationOrObjectCreationNode(Set<Obligation> obligations, Node node) {
     List<Node> arguments = mcca.getArgumentsOfInvocation(node);
     List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(node);

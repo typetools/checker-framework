@@ -473,7 +473,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       try {
         instance = subcheckerClass.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
-        throw new BugInCF("Could not create an instance of " + subcheckerClass);
+        throw new BugInCF("Could not create an instance of " + subcheckerClass, e);
       }
 
       instance.setProcessingEnvironment(this.processingEnv);
@@ -519,14 +519,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
       treePathCacher = new TreePathCacher();
     }
     return treePathCacher;
-  }
-
-  @Override
-  protected void reportJavacError(TreePath p) {
-    if (parentChecker == null) {
-      // Only the parent checker should report the "type.checking.not.run" error.
-      super.reportJavacError(p);
-    }
   }
 
   // AbstractTypeProcessor delegation

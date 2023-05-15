@@ -2,9 +2,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.checkerframework.checker.regex.qual.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class InvariantTypes {
   String[] sa = {"a"};
@@ -104,14 +102,6 @@ public class InvariantTypes {
 
   String s1 = join(" ", Arrays.asList("1", "2", "3"));
   String s2 = "xxx" + join(" ", Arrays.asList("1", "2", "3"));
-
-  <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror> V mapGetHelper(
-      Map<K, V> mappings) {
-    return null;
-  }
-
-  Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings;
-  AnnotatedTypeMirror found = mapGetHelper(mappings);
 
   class TV<T> {
     List<List<T>> emptylist = Collections.emptyList();

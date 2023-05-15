@@ -34,7 +34,7 @@ echo "JAVA_HOME=${JAVA_HOME}"
 # Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts -q)` leads to infinite regress.
 PLUME_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.plume-scripts"
 if [ -d "$PLUME_SCRIPTS" ] ; then
-  (cd "$PLUME_SCRIPTS" && git pull -q)
+  (cd "$PLUME_SCRIPTS" && (git pull -q || true))
 else
   (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
@@ -90,8 +90,8 @@ echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 ## Compile
 
 # Download dependencies, trying a second time if there is a failure.
-(./gradlew --write-verification-metadata sha256 help --dry-run ||
-     (sleep 60 && ./gradlew --write-verification-metadata sha256 help --dry-run))
+(TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run ||
+     (sleep 1m && ./gradlew --write-verification-metadata sha256 help --dry-run))
 
 echo "running \"./gradlew assemble\" for checker-framework"
 ./gradlew assemble --console=plain --warning-mode=all -s -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
