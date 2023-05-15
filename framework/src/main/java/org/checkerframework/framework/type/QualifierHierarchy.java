@@ -74,7 +74,7 @@ public interface QualifierHierarchy {
    *
    * @return the bottom type qualifiers in the hierarchy
    */
-  Set<? extends AnnotationMirror> getBottomAnnotations();
+  AnnotationMirrorSet getBottomAnnotations();
 
   /**
    * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code

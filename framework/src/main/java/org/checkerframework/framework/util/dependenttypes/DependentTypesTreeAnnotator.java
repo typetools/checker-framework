@@ -43,7 +43,9 @@ public class DependentTypesTreeAnnotator extends TreeAnnotator {
 
   @Override
   public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror annotatedType) {
+    log("DTTA.visitTypeCast(%s, %s)%n", tree, annotatedType);
     helper.atExpression(annotatedType, tree);
+    log("DTTA.visitTypeCast(%s, ...) annotatedType=%s; about to call super%n", tree, annotatedType);
     return super.visitTypeCast(tree, annotatedType);
   }
 

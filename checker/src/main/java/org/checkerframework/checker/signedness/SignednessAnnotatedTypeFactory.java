@@ -322,6 +322,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.addAnnotation(SIGNED);
         }
       }
+      log("SATF.visitTypeCast(%s, ...) final: %s%n", tree, type);
+      log("SATF: treeAnnotator=%s%n", treeAnnotator);
       return null;
     }
   }

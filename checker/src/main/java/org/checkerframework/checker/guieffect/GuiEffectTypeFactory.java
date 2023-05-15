@@ -35,6 +35,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -529,7 +530,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
+  protected AnnotationMirrorSet getDefaultTypeDeclarationBounds() {
     return qualHierarchy.getBottomAnnotations();
   }
 

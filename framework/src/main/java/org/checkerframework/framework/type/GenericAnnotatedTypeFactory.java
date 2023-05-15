@@ -146,6 +146,12 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
+  /**
+   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
+   * and {@link AnnotatedTypeFactory#debugGat}.
+   */
+  private static final boolean debug = false;
+
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
@@ -1890,14 +1896,18 @@ public abstract class GenericAnnotatedTypeFactory<
     applyQualifierParameterDefaults(tree, type);
     log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
     treeAnnotator.visit(tree, type);
-    log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
+        thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
       // If a tree annotator, did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
     typeAnnotator.visit(type, null);
-    log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#6(%s, %s)%n  typeAnnotator=%s%n",
+        thisClass, treeString, type, typeAnnotator);
     defaults.annotate(tree, type);
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
@@ -2366,10 +2376,6 @@ public abstract class GenericAnnotatedTypeFactory<
       defaultForTypeAnnotator.visit(type);
     }
   }
-
-  // You can change this temporarily to produce verbose logs.
-  /** Whether to output verbose, low-level debugging messages. */
-  private static final boolean debug = false;
 
   /**
    * Output a message, if logging is on.
