@@ -2373,23 +2373,13 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if users can write type annotations from this type system on the given type.
+   * Returns true if users can write type annotations from this type system on the given type. If
+   * this returns false, the qualifiers are not checked.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given type
    */
   public final boolean isRelevant(AnnotatedTypeMirror tm) {
-    return isRelevant(tm.getUnderlyingType());
-  }
-
-  /**
-   * Returns true if qualifiers may be written on this. If this returns false, the qualifiers are
-   * not checked.
-   *
-   * @param tm a type
-   * @return true if users can write type annotations from this type system on the given type
-   */
-  public boolean canBeAnnotated(AnnotatedTypeMirror tm) {
     return isRelevant(tm.getUnderlyingType());
   }
 

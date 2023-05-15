@@ -2363,11 +2363,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-    if (!atypeFactory.canBeAnnotated(castType)) {
+    if (!atypeFactory.isRelevant(castType)) {
       return;
     }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-    if (!atypeFactory.canBeAnnotated(exprType)) {
+    if (!atypeFactory.isRelevant(exprType)) {
       return;
     }
     boolean reported = false;
@@ -2968,7 +2968,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
     boolean success =
-        (!atypeFactory.canBeAnnotated(widenedValueType)
+        (!atypeFactory.isRelevant(widenedValueType)
                 && !TypesUtils.isCompoundType(widenedValueType.getUnderlyingType()))
             || atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
@@ -4079,7 +4079,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-      if (!atypeFactory.canBeAnnotated(overriderReceiver)) {
+      if (!atypeFactory.isRelevant(overriderReceiver)) {
         // The receiver has the only annotation it possibly can; don't issue a warning.
         return true;
       }

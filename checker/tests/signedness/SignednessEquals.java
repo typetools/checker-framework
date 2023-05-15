@@ -15,8 +15,8 @@ public class SignednessEquals {
   @Signed Byte sB;
   @Unsigned Byte uB;
 
-  @Unsigned char uc;
-  @Unsigned Character uC;
+  char uc;
+  Character uC;
 
   @Signed short ss;
   @Unsigned short us;
