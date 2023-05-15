@@ -1,7 +1,6 @@
 package org.checkerframework.framework.flow;
 
 import java.util.Objects;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -649,7 +648,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotatedTypeVariable aAtv = getEffectTypeVar(aTypeMirror);
       AnnotatedTypeVariable bAtv = getEffectTypeVar(bTypeMirror);
       QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
+      AnnotationMirrorSet tops = hierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
         AnnotationMirror a = hierarchy.findAnnotationInHierarchy(aSet, top);
