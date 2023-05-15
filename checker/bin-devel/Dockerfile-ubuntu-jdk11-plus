@@ -12,12 +12,18 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& apt-get -y install aptitude \
+&& aptitude -y install \
+  apt-utils
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& aptitude -y install \
   openjdk-11-jdk
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   ant \
   cpp \
   git \
@@ -28,14 +34,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   make \
   maven \
   mercurial \
-  python3-pip \
   python3-requests \
   unzip \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   autoconf \
   devscripts \
   dia \
@@ -55,7 +60,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-latex-extra \
   texlive-latex-recommended
 
-RUN pip3 install black flake8 html5validator
+oRUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& aptitude -y install \
+  pipx \
+&& pipx install black flake8 html5validator
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get clean \
