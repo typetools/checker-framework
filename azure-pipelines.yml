@@ -54,7 +54,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -87,7 +87,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -122,7 +122,7 @@ jobs:
    - inference_tests_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -224,7 +224,7 @@ jobs:
    - daikon_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -267,7 +267,7 @@ jobs:
    - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   timeoutInMinutes: 60
   steps:
   - checkout: self
@@ -303,7 +303,7 @@ jobs:
    - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20:latest
+  container: mdernst/cf-ubuntu-jdk20-testing:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -339,7 +339,7 @@ jobs:
 #    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk20:latest
+#   container: mdernst/cf-ubuntu-jdk20-testing:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
