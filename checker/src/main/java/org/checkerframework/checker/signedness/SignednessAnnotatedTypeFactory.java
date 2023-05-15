@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -340,9 +339,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       case CHAR:
         return true;
       case DECLARED:
-        TypeMirror erasedType = types.erasure(type.getUnderlyingType());
-        String typeString = TypesUtils.getQualifiedName((DeclaredType) erasedType).toString();
-        return typeString.equals("java.lang.Character");
+        return TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character");
       default:
         return false;
     }
