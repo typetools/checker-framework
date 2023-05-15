@@ -186,8 +186,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         removedOtherFieldValues.put(invariantField, v);
       }
 
-      boolean result = super.supersetOf(other);
-      return result;
+      return super.supersetOf(other);
     } finally {
       // Restore removed values.
       fieldValues.putAll(removedFieldValues);
