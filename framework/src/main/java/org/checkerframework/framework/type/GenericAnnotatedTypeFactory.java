@@ -2421,6 +2421,35 @@ public abstract class GenericAnnotatedTypeFactory<
       case TYPEVAR:
         return isRelevant(((TypeVariable) tm).getUpperBound());
 
+      case NULL:
+        for (TypeMirror relevantJavaType : relevantJavaTypes) {
+          switch (relevantJavaType.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+              continue;
+
+            case ERROR:
+            case NONE:
+            case VOID:
+              continue;
+
+            case MODULE:
+            case PACKAGE:
+              continue;
+
+            case NULL:
+            default:
+              return true;
+          }
+        }
+        return false;
+
       default:
         throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
