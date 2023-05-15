@@ -474,7 +474,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       try {
         instance = subcheckerClass.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
-        throw new BugInCF("Could not create an instance of " + subcheckerClass);
+        throw new BugInCF("Could not create an instance of " + subcheckerClass, e);
       }
 
       instance.setProcessingEnvironment(this.processingEnv);
