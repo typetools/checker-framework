@@ -1122,7 +1122,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet constructorAnnotations = constructorType.getReturnType().getAnnotations();
-    Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = qualifierHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
       AnnotationMirror constructorAnno =
@@ -1824,8 +1824,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
     AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
     AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
-    Set<? extends AnnotationMirror> topAnnotations =
-        atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet topAnnotations = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorTypeMirror =
@@ -2700,15 +2699,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // **********************************************************************
 
   /** Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once. */
-  private @MonotonicNonNull Set<? extends AnnotationMirror>
-      getExceptionParameterLowerBoundAnnotationsCache;
+  private @MonotonicNonNull AnnotationMirrorSet getExceptionParameterLowerBoundAnnotationsCache;
   /**
    * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. The same as
    * {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache.
    *
    * @return a set of AnnotationMirrors that is a lower bound for exception parameters
    */
-  private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
+  private AnnotationMirrorSet getExceptionParameterLowerBoundAnnotationsCached() {
     if (getExceptionParameterLowerBoundAnnotationsCache == null) {
       getExceptionParameterLowerBoundAnnotationsCache =
           getExceptionParameterLowerBoundAnnotations();
@@ -2728,8 +2726,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkExceptionParameter(CatchTree tree) {
 
-    Set<? extends AnnotationMirror> requiredAnnotations =
-        getExceptionParameterLowerBoundAnnotationsCached();
+    AnnotationMirrorSet requiredAnnotations = getExceptionParameterLowerBoundAnnotationsCached();
     AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(tree.getParameter());
 
     for (AnnotationMirror required : requiredAnnotations) {
@@ -2762,7 +2759,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return set of annotation mirrors, one per hierarchy, that form a lower bound of annotations
    *     that can be written on an exception parameter
    */
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
     return atypeFactory.getQualifierHierarchy().getTopAnnotations();
   }
 
@@ -2829,7 +2826,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return set of annotation mirrors, one per hierarchy, that form an upper bound of thrown
    *     expressions
    */
-  protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
+  protected AnnotationMirrorSet getThrowUpperBoundAnnotations() {
     return getExceptionParameterLowerBoundAnnotations();
   }
 
@@ -2945,6 +2942,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
+    atypeFactory.logGat(
+        "BTV: %s.getAnnotatedType(%s) => %s%n",
+        atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
     commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
   }
@@ -4618,7 +4618,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
-    Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     AnnotationMirrorSet upperBounds =
         atypeFactory
             .getQualifierUpperBounds()

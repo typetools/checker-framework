@@ -1,6 +1,5 @@
 package org.checkerframework.checker.index;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -91,7 +90,7 @@ public class IndexRefinementInfo {
    * @return the annotation (from {@code set}) in the given hierarchy
    */
   private static AnnotationMirror getAnno(AnnotationMirrorSet set, QualifierHierarchy hierarchy) {
-    Set<? extends AnnotationMirror> tops = hierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = hierarchy.getTopAnnotations();
     if (tops.size() != 1) {
       throw new TypeSystemError(
           "%s: Found %d tops, but expected one.%nFound: %s",
