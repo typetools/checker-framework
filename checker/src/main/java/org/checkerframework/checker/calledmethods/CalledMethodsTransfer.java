@@ -1,5 +1,6 @@
 package org.checkerframework.checker.calledmethods;
 
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -59,6 +60,16 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
+  }
+
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    return false;
+  }
+
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+    return false;
   }
 
   @Override

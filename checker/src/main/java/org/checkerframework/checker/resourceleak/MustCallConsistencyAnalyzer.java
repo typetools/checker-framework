@@ -1021,7 +1021,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return the temporary for node, or node if no temporary exists
    */
-  private Node getTempVarOrNode(final Node node) {
+  protected Node getTempVarOrNode(final Node node) {
     Node temp = typeFactory.getTempVarForNode(node);
     if (temp != null) {
       return temp;
@@ -1150,7 +1150,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the node
    * @return true if must-call type of node only contains close
    */
-  private boolean isMustCallClose(Node node) {
+  protected boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
@@ -1164,7 +1164,8 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the set of Obligations
    * @param var a variable
    */
-  private void removeObligationsContainingVar(Set<Obligation> obligations, LocalVariableNode var) {
+  protected void removeObligationsContainingVar(
+      Set<Obligation> obligations, LocalVariableNode var) {
     Obligation obligationForVar = getObligationForVar(obligations, var);
     while (obligationForVar != null) {
       obligations.remove(obligationForVar);
@@ -1585,7 +1586,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a MethodInvocation or ObjectCreation node
    * @return the arguments, in order
    */
-  private List<Node> getArgumentsOfInvocation(Node node) {
+  protected List<Node> getArgumentsOfInvocation(Node node) {
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
       return invocationNode.getArguments();
@@ -1604,7 +1605,7 @@ class MustCallConsistencyAnalyzer {
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  private List<? extends VariableElement> getParametersOfInvocation(Node node) {
+  protected List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -1987,7 +1988,7 @@ class MustCallConsistencyAnalyzer {
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation
    */
-  private static @Nullable Obligation getObligationForVar(
+  protected static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
@@ -2225,7 +2226,7 @@ class MustCallConsistencyAnalyzer {
    * consists of BlockWithObligations objects, each representing the need to handle the set of
    * dataflow facts reaching the block during analysis.
    */
-  private static class BlockWithObligations {
+  static class BlockWithObligations {
 
     /** The block. */
     public final Block block;

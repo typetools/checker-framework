@@ -756,21 +756,24 @@ public class WholeProgramInferenceJavaParserStorage
               ClassTree tree,
               @Nullable @BinaryName String classNameKey,
               @Nullable TypeDeclaration<?> javaParserNode) {
-            String className;
+            String className = null;
             if (classNameKey == null) {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-              className = ElementUtils.getBinaryName(classElt);
+              if (classElt != null) {
+                className = ElementUtils.getBinaryName(classElt);
 
-              for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
-                String supertypeName = ElementUtils.getBinaryName(supertypeElement);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> supertypeSet =
-                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
-                supertypeSet.add(supertypeName);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> subtypeSet =
-                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
-                subtypeSet.add(className);
+                for (TypeElement supertypeElement :
+                    ElementUtils.getSuperTypes(classElt, elements)) {
+                  String supertypeName = ElementUtils.getBinaryName(supertypeElement);
+                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                  Set<String> supertypeSet =
+                      supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                  supertypeSet.add(supertypeName);
+                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                  Set<String> subtypeSet =
+                      subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                  subtypeSet.add(className);
+                }
               }
             } else {
               className = classNameKey;
@@ -1911,10 +1914,6 @@ public class WholeProgramInferenceJavaParserStorage
      * nodes for that field.
      */
     public void transferAnnotations() {
-      if (type == null) {
-        return;
-      }
-
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration

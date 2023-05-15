@@ -36,7 +36,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
@@ -110,9 +109,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true iff the given element is a final field with non-empty @MustCall obligation
    */
   /*package-private*/ boolean isCandidateOwningField(Element element) {
-    return (element.getKind().isField()
-        && ElementUtils.isFinal(element)
-        && !getMustCallValue(element).isEmpty());
+    return (element.getKind().isField() && !getMustCallValue(element).isEmpty());
   }
 
   @Override
@@ -140,7 +137,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     // Inferring owning annotations for final owning fields
     if (getWholeProgramInference() != null) {
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(this, cfg);
+        MustCallInferenceLogic mustCallInferenceLogic =
+            new MustCallInferenceLogic(this, cfg, mustCallConsistencyAnalyzer);
         mustCallInferenceLogic.runInference();
       }
     }
