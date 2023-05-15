@@ -1195,6 +1195,28 @@ statements whose message contains the text \<@AssumeAssertion>; see
 Section~\ref{assumeassertion}.
 
 
+\subsectionAndLabel{Var Keyword}{type-refinement-var}
+
+The initial type of a variable declared with \code{var} is exactly
+the type of the initializer expression at the declaration.
+
+\begin{Verbatim}
+    var list1 = new ArrayList<@Tainted String>(); // type of list1 is ArrayList<@Tainted String>
+    var list2 = new ArrayList<@Untainted String>(); // type of list2 is ArrayList<@Untainted String>
+\end{Verbatim}
+
+Flow-sensitive type refinement applies to these variables as usual.
+The base type qualifier may change at a later program point due to
+a subsequent assignment, but the qualifiers on type parameters and
+array contents remain exactly the same.
+
+\begin{Verbatim}
+    var list1 = new ArrayList<@Tainted String>(); // type of list1 is ArrayList<@Tainted String>
+    var list2 = new ArrayList<@Untainted String>(); // type of list2 is ArrayList<@Untainted String>
+    var list3 = list1; // type of list3 is ArrayList<@Tainted String>
+    list2 = list1; // assignment error
+\end{Verbatim}
+
 % If you add a Javadoc link to this location, also add the qualifier to the
 % list below.
 \sectionAndLabel{Writing Java expressions as annotation arguments}{java-expressions-as-arguments}
