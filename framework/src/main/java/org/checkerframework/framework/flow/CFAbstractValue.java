@@ -219,13 +219,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns the more specific version of two values {@code this} and {@code other}. If they do not
-   * contain information for all hierarchies, then it is possible that information from both {@code
-   * this} and {@code other} are taken.
+   * Returns the more specific of two values {@code this} and {@code other}. If they do not contain
+   * information for all hierarchies, then it is possible that information from both {@code this}
+   * and {@code other} are taken.
    *
    * <p>If neither of the two is more specific for one of the hierarchies (i.e., if the two are
    * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror,
    * AnnotationMirror)}, then the respective value from {@code backup} is used.
+   *
+   * @param other the other value to obtain information from
+   * @param backup the value to use if {@code this} and {@code other} are incomparable
+   * @return the more specific of two values {@code this} and {@code other}
    */
   public V mostSpecific(@Nullable V other, @Nullable V backup) {
     if (other == null) {
@@ -406,6 +410,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return upperBound(previous, true);
   }
 
+  /**
+   * Returns the least upper bound of this and {@code other}.
+   *
+   * @param other an abstract value
+   * @param shouldWiden true if the lub should perform widening
+   * @return the least upper bound of this and {@code other}
+   */
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
