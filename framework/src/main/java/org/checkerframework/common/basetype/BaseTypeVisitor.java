@@ -2933,6 +2933,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
+    atypeFactory.logGat(
+        "BTV: %s.getAnnotatedType(%s) => %s%n",
+        atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
     commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
   }

@@ -211,7 +211,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBounds(
             argTypes.first.getEffectiveAnnotations(), argTypes.second.getEffectiveAnnotations());
+    log(
+        "%s PTA.visitBinary(%s, %s)%n  argTypes=%s%n  lubs=%s%n",
+        atypeFactory.getClass().getSimpleName(), tree, type, argTypes, lubs);
     type.addMissingAnnotations(lubs);
+    log("PTA.visitBinary(%s, ...): final type = %s%n", tree, type);
 
     return null;
   }
@@ -247,6 +251,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     if (hasPrimaryAnnotationInAllHierarchies(type)) {
       // If the type is already has a primary annotation in all hierarchies, then the
       // propagated annotations won't be applied.  So don't compute them.
+      log("PTA.visitTypeCast(%s, %s): hasPrimaryAnnotationInAllHierarchies%n", tree, type);
       return null;
     }
 
@@ -260,6 +265,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     } else {
       // Use effective annotations from the expression, to get upper bound of type variables.
       AnnotationMirrorSet expressionAnnos = exprType.getEffectiveAnnotations();
+      log(
+          "PTA.visitTypeCast(%s, %s): getEffectiveAnnotations(%s) = %s%n",
+          tree, type, exprType, expressionAnnos);
 
       TypeKind castKind = type.getPrimitiveKind();
       if (castKind != null) {
@@ -308,6 +316,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * @param annos annotations to add to type
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
+    log("addAnnoOrBound(%s, %s)%n", type, annos);
     AnnotationMirrorSet boundAnnos =
         atypeFactory.getQualifierUpperBounds().getBoundQualifiers(type.getUnderlyingType());
     AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
@@ -318,6 +327,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       }
     }
     type.addMissingAnnotations(annosToAdd);
+    log("addAnnoOrBound#2(%s, %s)%n", type, annos);
     type.addMissingAnnotations(annos);
+    log("addAnnoOrBound#3(%s, %s)%n", type, annos);
   }
 }
