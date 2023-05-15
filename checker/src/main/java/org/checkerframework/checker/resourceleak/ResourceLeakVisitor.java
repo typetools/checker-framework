@@ -17,6 +17,7 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -76,6 +77,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checkCreatesMustCallForOverrides(tree, elt, mcAtf, cmcfValues);
       checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
     }
+    checkOwningOverrides(tree, elt, mcAtf);
     return super.visitMethod(tree, p);
   }
 
@@ -138,6 +140,50 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             overriddenClassname + "#" + overridden,
             foundCmcfValueString,
             neededCmcfValueString);
+      }
+    }
+  }
+
+  /**
+   * Checks that overrides respect behavioral subtyping for @Owning and @NotOwning annotations. In
+   * particular, checks that 1) if an overridden method has an @Owning parameter, then that
+   * parameter is @Owning in the overrider, and 2) if an overridden method has an @NotOwning return,
+   * then the overrider also has an @NotOwning return.
+   *
+   * @param tree overriding method, for error reporting
+   * @param overrider element for overriding method
+   * @param mcAtf the type factory
+   */
+  private void checkOwningOverrides(
+      MethodTree tree, ExecutableElement overrider, MustCallAnnotatedTypeFactory mcAtf) {
+    for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(overrider, this.types)) {
+      // Check for @Owning parameters. Must use an explicitly-indexed for loop so that the same
+      // parameter index can be accessed in the overrider's parameter list, which is the same
+      // length.
+      for (int i = 0; i < overridden.getParameters().size(); i++) {
+        if (mcAtf.getDeclAnnotation(overridden.getParameters().get(i), Owning.class) != null) {
+          if (mcAtf.getDeclAnnotation(overrider.getParameters().get(i), Owning.class) == null) {
+            checker.reportError(
+                tree,
+                "owning.override.param",
+                overrider.getParameters().get(i).getSimpleName().toString(),
+                overrider.getSimpleName().toString(),
+                ElementUtils.getEnclosingClassName(overrider),
+                overridden.getSimpleName().toString(),
+                ElementUtils.getEnclosingClassName(overridden));
+          }
+        }
+      }
+      // Check for @NotOwning returns.
+      if (mcAtf.getDeclAnnotation(overridden, NotOwning.class) != null
+          && mcAtf.getDeclAnnotation(overrider, NotOwning.class) == null) {
+        checker.reportError(
+            tree,
+            "owning.override.return",
+            overrider.getSimpleName().toString(),
+            ElementUtils.getEnclosingClassName(overrider),
+            overridden.getSimpleName().toString(),
+            ElementUtils.getEnclosingClassName(overridden));
       }
     }
   }

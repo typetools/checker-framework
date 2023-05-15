@@ -128,7 +128,14 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     lub.replaceAnnotations(lubSet);
   }
 
-  /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
+  /**
+   * Casts lub to the type of type, or issues an error if type and lub are not the same kind.
+   *
+   * @param <T> the type to cast to
+   * @param type a values of the type to cast to
+   * @param lub the value to cast to {@code T}
+   * @return {@code lub}, casted to {@code T}
+   */
   private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
     if (type.getKind() != lub.getKind()) {
       throw new BugInCF(

@@ -174,7 +174,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  public Set<? extends AnnotationMirror> getTopAnnotations() {
+  public AnnotationMirrorSet getTopAnnotations() {
     return tops;
   }
 
@@ -188,7 +188,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
   }
 
   @Override
-  public Set<? extends AnnotationMirror> getBottomAnnotations() {
+  public AnnotationMirrorSet getBottomAnnotations() {
     return bottoms;
   }
 
