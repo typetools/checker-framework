@@ -757,7 +757,9 @@ public class WholeProgramInferenceJavaParserStorage
               @Nullable @BinaryName String classNameKey,
               @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
-            if (classNameKey == null) {
+            if (classNameKey != null) {
+              className = classNameKey;
+            } else {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
               className = ElementUtils.getBinaryName(classElt);
 
@@ -772,8 +774,6 @@ public class WholeProgramInferenceJavaParserStorage
                     subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
                 subtypeSet.add(className);
               }
-            } else {
-              className = classNameKey;
             }
             ClassOrInterfaceAnnos typeWrapper =
                 new ClassOrInterfaceAnnos(className, javaParserNode);
