@@ -50,7 +50,6 @@ public class AnnotationMirrorSet
    *
    * @param value the AnnotationMirror to put in the set
    */
-  @Deprecated // Is this called?
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
