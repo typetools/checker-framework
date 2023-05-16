@@ -38,7 +38,7 @@ if [ -d "$PLUME_SCRIPTS" ] ; then
 else
   (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
-       git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts))
+       (sleep 1m && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)))
 fi
 
 # Clone the annotated JDK into ../jdk .
@@ -82,7 +82,7 @@ echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 # if [[ "$version" -ge 9 ]]; then
 #   echo "Running:  (cd ../jspecify/ && ./gradlew build)"
 #   # If failure, retry in case the failure was due to network lossage.
-#   (cd ../jspecify/ && export JDK_JAVA_OPTIONS='--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' && (./gradlew build || (sleep 60 && ./gradlew build)))
+#   (cd ../jspecify/ && export JDK_JAVA_OPTIONS='--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED' && (./gradlew build || (sleep 60s && ./gradlew build)))
 #   echo "... done: (cd ../jspecify/ && ./gradlew build)"
 # fi
 
@@ -90,7 +90,7 @@ echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 ## Compile
 
 # Download dependencies, trying a second time if there is a failure.
-(TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run ||
+(TERM=dumb timeout 300 ./gradlew --write-verification-metadata sha256 help --dry-run || \
      (sleep 1m && ./gradlew --write-verification-metadata sha256 help --dry-run))
 
 echo "running \"./gradlew assemble\" for checker-framework"
