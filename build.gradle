@@ -174,7 +174,7 @@ allprojects {
       'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
     ]
 
-    reflectionUtilVersion = '1.0.6'
+    reflectionUtilVersion = '1.1.0'
     plumeUtilVersion = '1.7.0'
   }
 
