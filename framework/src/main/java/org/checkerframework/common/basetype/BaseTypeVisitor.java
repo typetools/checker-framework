@@ -789,7 +789,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!qualifierHierarchy.isSubtype(classAnno, superAnno)) {
         checker.reportError(
             superClause,
-            "declaration.inconsistent.with." + (isExtends ? "extends" : "implements") + ".clause",
+            (isExtends
+                ? "declaration.inconsistent.with.extends.clause"
+                : "declaration.inconsistent.with.implements.clause"),
             classAnno,
             superAnno);
       }
