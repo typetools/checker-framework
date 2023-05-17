@@ -51,6 +51,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected final BaseTypeChecker checker;
 
+  /** The type factory that is associated with this. */
+  protected final GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
+
   /** The qualifier hierarchy that is associated with this. */
   protected final QualifierHierarchy qualifierHierarchy;
   /** The equality comparer. */
@@ -92,6 +95,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean ignoreRawTypes,
       boolean invariantArrayComponents) {
     this.checker = checker;
+    this.atypeFactory = checker.getTypeFactory();
     this.qualifierHierarchy = qualifierHierarchy;
     this.isSubtypeVisitHistory = new SubtypeVisitHistory();
     this.areEqualVisitHistory = new StructuralEqualityVisitHistory();
@@ -128,8 +132,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
 
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = checker.getTypeFactory();
-    if (!atf.isRelevantOrCompound(subtype) || !atf.isRelevantOrCompound(supertype)) {
+    if (!atypeFactory.isRelevantOrCompound(subtype)
+        || !atypeFactory.isRelevantOrCompound(supertype)) {
       return true;
     }
 
@@ -146,6 +150,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Returns true if {@code subtype <: supertype}, but only for the hierarchy of which {@code top}
    * is the top.
    *
+   * <p>Does not check whether the given types are relevant (per {@link RelevantJavaTypes}); the
+   * client should do so before calling this method.
+   *
    * @param subtype expected subtype
    * @param supertype expected supertype
    * @param top the top of the hierarchy for which we want to make a comparison
@@ -157,10 +164,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       final AnnotatedTypeMirror supertype,
       final AnnotationMirror top) {
 
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = checker.getTypeFactory();
-    if (!atf.isRelevantOrCompound(subtype) || !atf.isRelevantOrCompound(supertype)) {
-      return true;
-    }
+    // This implementation does not check isRelevantOrCompound; it assumes that clients have already
+    // done so.  (As of 2023-05-16, the only client is isSubtype(AnnotatedTypeMirror,
+    // AnnotatedTypeMirror), defined just above.  I verified that by marking this method as
+    // deprecated and then building the Checker Framework.
 
     assert top != null;
     currentTop = top;
@@ -193,6 +200,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     for the current top.
    */
   protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+    if (!atypeFactory.isRelevantOrCompound(subtype)
+        || !atypeFactory.isRelevantOrCompound(supertype)) {
+      return true;
+    }
+
     final AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
     final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
     if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
@@ -760,6 +772,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
+    if (!atypeFactory.isRelevantOrCompound(subtype)
+        || !atypeFactory.isRelevantOrCompound(supertype)) {
+      return true;
+    }
+
     if (supertype.atypeFactory.ignoreUninferredTypeArguments
         && supertype.isUninferredTypeArgument()) {
       return true;
@@ -936,6 +953,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitWildcard_Declared(
       AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, Void p) {
+
+    if (!atypeFactory.isRelevantOrCompound(supertype)) {
+      return true;
+    }
+
     if (subtype.isUninferredTypeArgument()) {
       if (subtype.atypeFactory.ignoreUninferredTypeArguments) {
         return true;
