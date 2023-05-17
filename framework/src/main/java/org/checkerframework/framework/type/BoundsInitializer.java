@@ -151,7 +151,7 @@ public class BoundsInitializer {
    *
    * @param typeVar the type variable whose lower bound is being initialized
    */
-  public static void initializeBounds(final AnnotatedTypeVariable typeVar) {
+  public static void initializeBounds(AnnotatedTypeVariable typeVar) {
     initializeBounds(typeVar, null);
   }
 
@@ -163,7 +163,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeBounds(
-      final AnnotatedTypeVariable typeVar, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedTypeVariable typeVar, Map<TypeVariable, AnnotatedTypeMirror> map) {
     final AnnotationMirrorSet annos = saveAnnotations(typeVar);
 
     InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(typeVar), map);
@@ -194,7 +194,7 @@ public class BoundsInitializer {
    * @param type a type whose annotations to read, clear, and return
    * @return the original primary annotations on {@code type}, or null if none
    */
-  private static @Nullable AnnotationMirrorSet saveAnnotations(final AnnotatedTypeMirror type) {
+  private static @Nullable AnnotationMirrorSet saveAnnotations(AnnotatedTypeMirror type) {
     if (!type.getAnnotationsField().isEmpty()) {
       final AnnotationMirrorSet annos = new AnnotationMirrorSet(type.getAnnotations());
       type.clearPrimaryAnnotations();
@@ -204,8 +204,7 @@ public class BoundsInitializer {
     return null;
   }
 
-  private static void restoreAnnotations(
-      final AnnotatedTypeMirror type, final AnnotationMirrorSet annos) {
+  private static void restoreAnnotations(AnnotatedTypeMirror type, AnnotationMirrorSet annos) {
     if (annos != null) {
       type.addAnnotations(annos);
     }
@@ -217,7 +216,7 @@ public class BoundsInitializer {
    *
    * @param wildcard the wildcard whose lower bound is being initialized
    */
-  public static void initializeSuperBound(final AnnotatedWildcardType wildcard) {
+  public static void initializeSuperBound(AnnotatedWildcardType wildcard) {
     initializeSuperBound(wildcard, null);
   }
 
@@ -229,7 +228,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeSuperBound(
-      final AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
     final AnnotationMirrorSet annos = saveAnnotations(wildcard);
 
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
@@ -245,7 +244,7 @@ public class BoundsInitializer {
    *
    * @param wildcard the wildcard whose extends bound is being initialized
    */
-  public static void initializeExtendsBound(final AnnotatedWildcardType wildcard) {
+  public static void initializeExtendsBound(AnnotatedWildcardType wildcard) {
     initializeExtendsBound(wildcard, null);
   }
 
@@ -257,7 +256,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeExtendsBound(
-      final AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
     final AnnotationMirrorSet annos = saveAnnotations(wildcard);
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
     visitor.initializeExtendsBound(wildcard);

@@ -26,7 +26,7 @@ public class Default implements Comparable<Default> {
    * @param anno the default annotation mirror
    * @param location the type use location
    */
-  public Default(final AnnotationMirror anno, final TypeUseLocation location) {
+  public Default(AnnotationMirror anno, TypeUseLocation location) {
     this.anno = anno;
     this.location = location;
   }

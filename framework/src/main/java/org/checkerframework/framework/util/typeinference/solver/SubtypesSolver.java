@@ -34,16 +34,16 @@ public class SubtypesSolver {
    *     and will not infer that the target is equivalent to another target.
    */
   public InferenceResult solveFromSubtypes(
-      final Set<TypeVariable> remainingTargets,
-      final ConstraintMap constraints,
-      final AnnotatedTypeFactory typeFactory) {
+      Set<TypeVariable> remainingTargets,
+      ConstraintMap constraints,
+      AnnotatedTypeFactory typeFactory) {
     return glbSubtypes(remainingTargets, constraints, typeFactory);
   }
 
   public InferenceResult glbSubtypes(
-      final Set<TypeVariable> remainingTargets,
-      final ConstraintMap constraints,
-      final AnnotatedTypeFactory typeFactory) {
+      Set<TypeVariable> remainingTargets,
+      ConstraintMap constraints,
+      AnnotatedTypeFactory typeFactory) {
     final InferenceResult inferenceResult = new InferenceResult();
     final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
 
@@ -69,7 +69,7 @@ public class SubtypesSolver {
           }
         });
 
-    for (final TypeVariable target : targetsSubtypesLast) {
+    for (TypeVariable target : targetsSubtypesLast) {
       Subtypes subtypes = constraints.getConstraints(target).subtypes;
 
       if (subtypes.types.isEmpty()) {
@@ -139,11 +139,11 @@ public class SubtypesSolver {
    * this target.
    */
   protected static void propagatePreviousGlbs(
-      final Subtypes targetSubtypes,
+      Subtypes targetSubtypes,
       InferenceResult solution,
-      final Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
+      Map<AnnotatedTypeMirror, AnnotationMirrorSet> subtypesOfTarget) {
 
-    for (final Map.Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
+    for (Map.Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
         targetSubtypes.targets.entrySet()) {
       final InferredValue subtargetInferredGlb = solution.get(subtypeTarget.getKey());
 
@@ -168,8 +168,8 @@ public class SubtypesSolver {
    * @param qualifierHierarchy the qualifier of the annotation hierarchy
    * @return the GLB of annos
    */
-  private static final AnnotationMirror greatestLowerBound(
-      final Iterable<? extends AnnotationMirror> annos, QualifierHierarchy qualifierHierarchy) {
+  private static AnnotationMirror greatestLowerBound(
+      Iterable<? extends AnnotationMirror> annos, QualifierHierarchy qualifierHierarchy) {
     Iterator<? extends AnnotationMirror> annoIter = annos.iterator();
     AnnotationMirror glb = annoIter.next();
 

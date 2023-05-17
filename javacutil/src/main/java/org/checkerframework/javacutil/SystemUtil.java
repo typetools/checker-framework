@@ -127,8 +127,8 @@ public class SystemUtil {
    * @deprecated use Files.readAllLines
    */
   @Deprecated // 2021-03-10
-  public static List<String> readFile(final File argFile) throws IOException {
-    try (final BufferedReader br = new BufferedReader(new FileReader(argFile))) {
+  public static List<String> readFile(File argFile) throws IOException {
+    try (BufferedReader br = new BufferedReader(new FileReader(argFile))) {
       String line;
       List<String> lines = new ArrayList<>();
       while ((line = br.readLine()) != null) {

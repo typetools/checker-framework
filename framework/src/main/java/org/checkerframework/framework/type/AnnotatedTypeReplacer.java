@@ -37,7 +37,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    */
   @Deprecated // 2021-03-25
   @SuppressWarnings("interning:not.interned") // assertion
-  public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  public static void replace(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (from == to) {
       throw new BugInCF("From == to");
     }
@@ -58,7 +58,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
   @Deprecated // 2021-03-25
   @SuppressWarnings("interning:not.interned") // assertion
   public static void replace(
-      final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+      AnnotatedTypeMirror from, AnnotatedTypeMirror to, AnnotationMirror top) {
     if (from == to) {
       throw new BugInCF("from == to: %s", from);
     }
@@ -79,7 +79,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    *
    * @param top if top != null, then only annotation in the hierarchy of top are affected
    */
-  public AnnotatedTypeReplacer(final AnnotationMirror top) {
+  public AnnotatedTypeReplacer(AnnotationMirror top) {
     this.top = top;
   }
 
@@ -110,7 +110,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * @param from the source of the annotations
    * @param to the destination of the annotations, modified by this method
    */
-  protected void replaceAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (top == null) {
       to.replaceAnnotations(from.getAnnotations());
     } else {
@@ -149,7 +149,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
         }
       } else {
         List<AnnotationMirror> toRemove = new ArrayList<>(1);
-        for (final AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
+        for (AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
           if (from.getAnnotationInHierarchy(toPrimaryAnno) == null) {
             // Doing the removal here directly can lead to a
             // ConcurrentModificationException,

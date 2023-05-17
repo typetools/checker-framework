@@ -479,7 +479,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param type type that may carry a Regex annotation
      * @return the Integer value of the Regex annotation (0 if no value exists)
      */
-    private Integer getMinimumRegexCount(final AnnotatedTypeMirror type) {
+    private Integer getMinimumRegexCount(AnnotatedTypeMirror type) {
       final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {
@@ -491,7 +491,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
           case INTERSECTION:
             Integer maxBound = null;
-            for (final AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
+            for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
               Integer boundRegexNum = getMinimumRegexCount(bound);
               if (boundRegexNum != null) {
                 if (maxBound == null || boundRegexNum > maxBound) {

@@ -3500,8 +3500,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @return true if both types are type variables and outer contains inner
    */
-  protected boolean testTypevarContainment(
-      final AnnotatedTypeMirror inner, final AnnotatedTypeMirror outer) {
+  protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
       final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;

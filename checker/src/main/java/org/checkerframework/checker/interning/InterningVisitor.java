@@ -459,7 +459,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    */
   // TODO: handle != comparisons too!
   // TODO: handle more methods, such as early return from addAll when this == arg
-  private boolean suppressInsideComparison(final BinaryTree binaryTree) {
+  private boolean suppressInsideComparison(BinaryTree binaryTree) {
     // Only handle == binary trees
     if (binaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;
@@ -624,7 +624,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits a pattern such as (a == b || a.equals(b))
    */
-  private boolean suppressEarlyEquals(final BinaryTree topBinaryTree) {
+  private boolean suppressEarlyEquals(BinaryTree topBinaryTree) {
     // Only handle == binary trees
     if (topBinaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;
@@ -747,7 +747,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits the pattern (a == b || a.compareTo(b) == 0)
    */
-  private boolean suppressEarlyCompareTo(final BinaryTree topBinaryTree) {
+  private boolean suppressEarlyCompareTo(BinaryTree topBinaryTree) {
     // Only handle == binary trees
     if (topBinaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;

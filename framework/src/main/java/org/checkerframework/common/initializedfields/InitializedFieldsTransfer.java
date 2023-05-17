@@ -18,13 +18,13 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
    *
    * @param analysis the analysis
    */
-  public InitializedFieldsTransfer(final CFAnalysis analysis) {
+  public InitializedFieldsTransfer(CFAnalysis analysis) {
     super(analysis);
   }
 
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
-      final AssignmentNode node, final TransferInput<CFValue, CFStore> input) {
+      AssignmentNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitAssignment(node, input);
     Node lhs = node.getTarget();
     if (lhs instanceof FieldAccessNode) {

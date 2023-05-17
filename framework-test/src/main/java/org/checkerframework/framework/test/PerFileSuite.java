@@ -187,7 +187,7 @@ public class PerFileSuite extends Suite {
     }
 
     @Override
-    protected String testName(final FrameworkMethod method) {
+    protected String testName(FrameworkMethod method) {
       return String.format("%s[%s]", method.getName(), testCaseName());
     }
 

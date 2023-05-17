@@ -85,7 +85,7 @@ public class TreeDebug extends AbstractProcessor {
      *
      * @param text additional information for the AST node
      */
-    private final void insert(Object text) {
+    private void insert(Object text) {
       buf.insert(buf.length() - 1, " ");
       buf.insert(buf.length() - 1, text);
     }
