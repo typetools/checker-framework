@@ -1164,13 +1164,7 @@ public abstract class UBQualifier {
       if (divisor == 1) {
         return this;
       } else if (divisor > 1) {
-        OffsetEquationFunction divideFunc =
-            eq -> {
-              if (eq.isNegativeOrZero()) {
-                return eq;
-              }
-              return null;
-            };
+        OffsetEquationFunction divideFunc = eq -> (eq.isNegativeOrZero() ? eq : null);
         return computeNewOffsets(divideFunc);
       }
       return UpperBoundUnknownQualifier.UNKNOWN;

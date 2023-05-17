@@ -61,7 +61,6 @@ public class SubtypesSolver {
           } else if (types.isSubtype(o2, o1)) {
             return -1;
           }
-
           return 0;
         });
 
