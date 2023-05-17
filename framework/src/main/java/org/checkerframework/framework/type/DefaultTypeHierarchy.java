@@ -151,8 +151,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       final AnnotatedTypeMirror supertype,
       final AnnotationMirror top) {
 
-    if (!checker.getTypeFactory().isRelevant(subtype)
-        || !checker.getTypeFactory().isRelevant(supertype)) {
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = checker.getTypeFactory();
+    if (!atf.isRelevantOrCompound(subtype) || !atf.isRelevantOrCompound(supertype)) {
       return true;
     }
 

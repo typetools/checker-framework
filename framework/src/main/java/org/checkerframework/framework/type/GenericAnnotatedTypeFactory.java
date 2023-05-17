@@ -2356,10 +2356,13 @@ public abstract class GenericAnnotatedTypeFactory<
   private final Map<TypeMirror, Boolean> isRelevantCache = CollectionUtils.createLRUCache(300);
 
   /**
-   * Returns true if users can write type annotations from this type system on the given Java type.
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type. Does not account for whether it is possible to write type qualifiers on elements of
+   * {@code tm}, if it is a compound type.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given Java type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
    */
   public boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
@@ -2379,8 +2382,22 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given type
    */
+  @Deprecated
   public final boolean isRelevant(AnnotatedTypeMirror tm) {
     return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system on the given type OR on
+   * a type element of it. If this returns false, the qualifiers are not checked.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on the given type
+   *     (anywhere, recursively)
+   */
+  public final boolean isRelevantOrCompound(AnnotatedTypeMirror tm) {
+    TypeMirror underlying = tm.getUnderlyingType();
+    return isRelevant(underlying) || TypesUtils.isCompoundType(underlying);
   }
 
   /**
