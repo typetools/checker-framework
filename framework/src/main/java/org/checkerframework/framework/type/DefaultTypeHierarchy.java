@@ -51,9 +51,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected final BaseTypeChecker checker;
 
-  /** The type factory that is associated with this. */
-  protected final GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
-
   /** The qualifier hierarchy that is associated with this. */
   protected final QualifierHierarchy qualifierHierarchy;
   /** The equality comparer. */
