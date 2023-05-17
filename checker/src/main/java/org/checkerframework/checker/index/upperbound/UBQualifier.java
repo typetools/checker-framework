@@ -1144,6 +1144,12 @@ public abstract class UBQualifier {
       return computeNewOffsets(removeSequenceLenFunc);
     }
 
+    /**
+     * Returns a new qualifier, which is this qualifier plus the given offset.
+     *
+     * @param newOffset the offset to add to this
+     * @return a new qualifier, which is this qualifier plus the given offset
+     */
     private UBQualifier addOffset(final OffsetEquation newOffset) {
       OffsetEquationFunction addOffsetFunc = eq -> eq.copyAdd('+', newOffset);
       return computeNewOffsets(addOffsetFunc);
