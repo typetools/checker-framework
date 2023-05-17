@@ -18,6 +18,8 @@ Methods that now return `AnnotationMirrorSet` instead of `Set<? extends Annotati
  * `getDefaultTypeDeclarationBounds()`
  * `getExceptionParameterLowerBoundAnnotations()`
 
+Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements()`.
+
 **Closed issues:**
 
 
