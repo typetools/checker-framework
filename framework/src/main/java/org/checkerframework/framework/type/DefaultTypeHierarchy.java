@@ -150,8 +150,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Returns true if {@code subtype <: supertype}, but only for the hierarchy of which {@code top}
    * is the top.
    *
-   * <p>Does not check whether the given types are relevant (per {@link RelevantJavaTypes}); the
-   * client should do so before calling this method.
+   * <p>Does not check whether the given types are relevant (per {@link
+   * org.checkerframework.framework.qual.RelevantJavaTypes}); the client should do so before calling
+   * this method.
    *
    * @param subtype expected subtype
    * @param supertype expected supertype
