@@ -95,7 +95,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       boolean ignoreRawTypes,
       boolean invariantArrayComponents) {
     this.checker = checker;
-    this.atypeFactory = checker.getTypeFactory();
     this.qualifierHierarchy = qualifierHierarchy;
     this.isSubtypeVisitHistory = new SubtypeVisitHistory();
     this.areEqualVisitHistory = new StructuralEqualityVisitHistory();
@@ -132,8 +131,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
 
-    if (!atypeFactory.isRelevantOrCompound(subtype)
-        || !atypeFactory.isRelevantOrCompound(supertype)) {
+    if (!checker.getTypeFactory().isRelevantOrCompound(subtype)
+        || !checker.getTypeFactory().isRelevantOrCompound(supertype)) {
       return true;
     }
 
@@ -201,8 +200,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     for the current top.
    */
   protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    if (!atypeFactory.isRelevantOrCompound(subtype)
-        || !atypeFactory.isRelevantOrCompound(supertype)) {
+    if (!checker.getTypeFactory().isRelevantOrCompound(subtype)
+        || !checker.getTypeFactory().isRelevantOrCompound(supertype)) {
       return true;
     }
 
@@ -773,8 +772,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
-    if (!atypeFactory.isRelevantOrCompound(subtype)
-        || !atypeFactory.isRelevantOrCompound(supertype)) {
+    if (!checker.getTypeFactory().isRelevantOrCompound(subtype)
+        || !checker.getTypeFactory().isRelevantOrCompound(supertype)) {
       return true;
     }
 
@@ -955,7 +954,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitWildcard_Declared(
       AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, Void p) {
 
-    if (!atypeFactory.isRelevantOrCompound(supertype)) {
+    if (!checker.getTypeFactory().isRelevantOrCompound(supertype)) {
       return true;
     }
 
