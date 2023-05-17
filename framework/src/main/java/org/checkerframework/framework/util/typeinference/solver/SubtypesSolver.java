@@ -2,7 +2,6 @@ package org.checkerframework.framework.util.typeinference.solver;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -56,17 +55,14 @@ public class SubtypesSolver {
     // when determining the glb of B
     Collections.sort(
         targetsSubtypesLast,
-        new Comparator<TypeVariable>() {
-          @Override
-          public int compare(TypeVariable o1, TypeVariable o2) {
-            if (types.isSubtype(o1, o2)) {
-              return 1;
-            } else if (types.isSubtype(o2, o1)) {
-              return -1;
-            }
-
-            return 0;
+        (o1, o2) -> {
+          if (types.isSubtype(o1, o2)) {
+            return 1;
+          } else if (types.isSubtype(o2, o1)) {
+            return -1;
           }
+
+          return 0;
         });
 
     for (final TypeVariable target : targetsSubtypesLast) {

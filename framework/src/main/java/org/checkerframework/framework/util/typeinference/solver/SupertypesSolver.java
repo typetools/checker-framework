@@ -2,7 +2,6 @@ package org.checkerframework.framework.util.typeinference.solver;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -224,17 +223,14 @@ public class SupertypesSolver {
     // when determining the LUB of A
     Collections.sort(
         targetsSupertypesLast,
-        new Comparator<TypeVariable>() {
-          @Override
-          public int compare(TypeVariable o1, TypeVariable o2) {
-            if (types.isSubtype(o1, o2)) {
-              return -1;
-            } else if (types.isSubtype(o2, o1)) {
-              return 1;
-            }
-
-            return 0;
+        (o1, o2) -> {
+          if (types.isSubtype(o1, o2)) {
+            return -1;
+          } else if (types.isSubtype(o2, o1)) {
+            return 1;
           }
+
+          return 0;
         });
 
     for (final TypeVariable target : targetsSupertypesLast) {

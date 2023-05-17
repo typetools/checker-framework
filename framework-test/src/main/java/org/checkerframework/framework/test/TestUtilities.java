@@ -200,14 +200,7 @@ public class TestUtilities {
 
     @SuppressWarnings("nullness") // checked above that it's a directory
     File @NonNull [] in = directory.listFiles();
-    Arrays.sort(
-        in,
-        new Comparator<File>() {
-          @Override
-          public int compare(File o1, File o2) {
-            return o1.getName().compareTo(o2.getName());
-          }
-        });
+    Arrays.sort(in, Comparator.comparing(File::getName));
     for (File file : in) {
       if (file.isDirectory()) {
         javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));

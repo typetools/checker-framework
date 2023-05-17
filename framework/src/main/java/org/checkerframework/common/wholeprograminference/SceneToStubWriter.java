@@ -716,18 +716,14 @@ public final class SceneToStubWriter {
     List<@BinaryName String> classes = new ArrayList<>(scene.getAScene().getClasses().keySet());
     Collections.sort(
         classes,
-        new Comparator<@BinaryName String>() {
-          @Override
-          public int compare(@BinaryName String o1, @BinaryName String o2) {
-            return ComparisonChain.start()
+        (o1, o2) ->
+            ComparisonChain.start()
                 .compare(
                     packagePart(o1),
                     packagePart(o2),
                     Comparator.nullsFirst(Comparator.naturalOrder()))
                 .compare(basenamePart(o1), basenamePart(o2))
-                .result();
-          }
-        });
+                .result());
 
     boolean anyClassPrintable = false;
 

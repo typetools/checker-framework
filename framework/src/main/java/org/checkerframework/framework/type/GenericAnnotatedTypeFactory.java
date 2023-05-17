@@ -1478,18 +1478,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
-      new Comparator<Tree>() {
-        @Override
-        public int compare(Tree t1, Tree t2) {
-          boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
-          boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
-          if (variable1 && !variable2) {
-            return -1;
-          } else if (!variable1 && variable2) {
-            return 1;
-          } else {
-            return 0;
-          }
+      (t1, t2) -> {
+        boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
+        boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
+        if (variable1 && !variable2) {
+          return -1;
+        } else if (!variable1 && variable2) {
+          return 1;
+        } else {
+          return 0;
         }
       };
 
