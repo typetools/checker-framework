@@ -758,10 +758,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     TypeMirror classType = TreeUtils.typeOf(classTree);
     AnnotationMirrorSet classBounds = atypeFactory.getTypeDeclarationBounds(classType);
-    // If "@B class Y extends @A X {}", then enforce that @B must be a subtype of @A.
-    // classTree.getExtendsClause() is null when there is no explicitly-written extends clause,
-    // as in "class X {}". This is equivalent to writing "class X extends @Top Object {}", so
-    // there is no need to do any subtype checking.
+    // No explicitly-written extends clause, as in "class X {}", is equivalent to writing "class X
+    // extends @Top Object {}", so there is no need to do any subtype checking.
     if (classTree.getExtendsClause() != null) {
       Tree superClause = classTree.getExtendsClause();
       checkExtendsOrImplements(superClause, classBounds, true);
