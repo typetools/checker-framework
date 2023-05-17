@@ -150,6 +150,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       final AnnotatedTypeMirror subtype,
       final AnnotatedTypeMirror supertype,
       final AnnotationMirror top) {
+
+    if (!checker.getTypeFactory().isRelevant(subtype)
+        || !checker.getTypeFactory().isRelevant(supertype)) {
+      return true;
+    }
+
     assert top != null;
     currentTop = top;
     return AtmCombo.accept(subtype, supertype, null, this);
