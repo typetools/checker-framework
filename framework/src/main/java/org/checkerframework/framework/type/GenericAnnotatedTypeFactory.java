@@ -2357,8 +2357,12 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if users can write type annotations from this type system directly on the given
-   * Java type. Does not account for whether it is possible to write type qualifiers on elements of
-   * {@code tm}, if it is a compound type.
+   * Java type.
+   *
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
+   *
+   * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
@@ -2376,12 +2380,14 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if users can write type annotations from this type system on the given type OR on
-   * a type element of it. If this returns false, the qualifiers are not checked.
+   * Returns true if users can write type annotations from this type system on the given type OR
+   * within it (i.e., on an element of a compound type).
+   *
+   * <p>If this returns false, the qualifiers are not checked.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given type
-   *     (anywhere, recursively)
+   * @return true if users can write type annotations from this type system on or within the given
+   *     type
    */
   public final boolean isRelevantOrCompound(AnnotatedTypeMirror tm) {
     TypeMirror underlying = tm.getUnderlyingType();
