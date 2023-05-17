@@ -82,13 +82,10 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     // check for subtype meta-annotation
-    for (Class<? extends Annotation> qual : new LinkedHashSet<>(qualSet)) {
+    for (Class<? extends Annotation> qual : qualSet) {
       Annotation subtypeOfAnnotation = qual.getAnnotation(SubtypeOf.class);
       if (subtypeOfAnnotation != null) {
         for (Class<? extends Annotation> superqual : qual.getAnnotation(SubtypeOf.class).value()) {
-          if (superqual == Unqualified.class) {
-            qualSet.add(superqual);
-          }
           if (!qualSet.contains(superqual)) {
             throw new UserError(
                 "SubtypingChecker: qualifier "
