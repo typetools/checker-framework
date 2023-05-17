@@ -303,10 +303,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             TypeMirror lht = TreeUtils.typeOf(tree.getLeftOperand());
             TypeMirror rht = TreeUtils.typeOf(tree.getRightOperand());
 
-            if (lht.getKind() == TypeKind.CHAR
-                || TypesUtils.isDeclaredOfName(lht, "java.lang.Character")
-                || rht.getKind() == TypeKind.CHAR
-                || TypesUtils.isDeclaredOfName(rht, "java.lang.Character")) {
+            if (TypesUtils.isCharOrCharacter(lht) || TypesUtils.isCharOrCharacter(rht)) {
               type.replaceAnnotation(SIGNED);
             }
           }
@@ -321,10 +318,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isStringCompoundConcatenation(tree)) {
-        TypeMirror expr = TreeUtils.typeOf(tree.getExpression());
-
-        if (expr.getKind() == TypeKind.CHAR
-            || TypesUtils.isDeclaredOfName(expr, "java.lang.Character")) {
+        if (TypesUtils.isCharOrCharacter(TreeUtils.typeOf(tree.getExpression()))) {
           type.replaceAnnotation(SIGNED);
         }
       }
@@ -401,10 +395,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (TypesUtils.isFloatingPrimitive(type.getUnderlyingType())
-        || TypesUtils.isBoxedFloating(type.getUnderlyingType())
-        || type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
+    TypeMirror underlying = type.getUnderlyingType();
+    if (TypesUtils.isFloatingPrimitive(underlying)
+        || TypesUtils.isBoxedFloating(underlying)
+        || TypesUtils.isCharOrCharacter(underlying)) {
       // Floats are always signed and chars are always unsigned.
       super.addAnnotationsFromDefaultForType(null, type);
     } else {
