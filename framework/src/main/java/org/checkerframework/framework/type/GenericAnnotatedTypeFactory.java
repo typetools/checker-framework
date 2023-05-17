@@ -2378,12 +2378,14 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if users can write type annotations from this type system on the given type OR on
-   * a type element of it. If this returns false, the qualifiers are not checked.
+   * Returns true if users can write type annotations from this type system on or within the given
+   * type. "Within" means "on or within an element of this, if this is a compound type.
+   *
+   * <p>If this returns false, the qualifiers are not checked.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given type
-   *     (anywhere, recursively)
+   * @return true if users can write type annotations from this type system on or within the given
+   *     type
    */
   public final boolean isRelevantOrCompound(AnnotatedTypeMirror tm) {
     TypeMirror underlying = tm.getUnderlyingType();
