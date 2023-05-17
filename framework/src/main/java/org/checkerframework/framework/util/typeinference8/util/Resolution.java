@@ -51,10 +51,13 @@ public class Resolution {
    */
   public static BoundSet resolve(
       Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
+
+    // Remove any variables that already have instantiations
+    List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
+    as.removeAll(resolvedVars);
     if (as.isEmpty()) {
       return boundSet;
     }
-
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
     Dependencies dependencies = boundSet.getDependencies();
@@ -68,7 +71,6 @@ public class Resolution {
     }
 
     // Remove any variables that already have instantiations
-    List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
       return boundSet;

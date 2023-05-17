@@ -191,7 +191,7 @@ public class BoundSet implements ReductionResult {
 
   /** Resolve all inference variables mentioned in any bound. */
   public List<Variable> resolve() {
-    BoundSet b = Resolution.resolve(variables, this, context);
+    BoundSet b = Resolution.resolve(new ArrayList<>(variables), this, context);
     return b.getInstantiationsInAlphas(variables);
   }
 
