@@ -299,10 +299,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isStringCompoundConcatenation(tree)) {
-        TypeMirror expr = TreeUtils.typeOf(tree.getExpression());
-
-        if (expr.getKind() == TypeKind.CHAR
-            || TypesUtils.isDeclaredOfName(expr, "java.lang.Character")) {
+        if (TypesUtils.isCharOrCharacter(TreeUtils.typeOf(tree.getExpression()))) {
           type.replaceAnnotation(SIGNED);
         }
       }
@@ -312,7 +309,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (isCharOrCharacter(type)) {
+      if (TypesUtils.isCharOrCharacter(type.getUnderlyingType())) {
         type.replaceAnnotation(UNSIGNED);
       } else if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
@@ -324,24 +321,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       log("SATF.visitTypeCast(%s, ...) final: %s%n", tree, type);
       log("SATF: treeAnnotator=%s%n", treeAnnotator);
       return null;
-    }
-  }
-
-  /**
-   * Returns true if the argument's underlying type is {@code char} or {@code Character}.
-   *
-   * @param type a type
-   * @return true if the type is {@code char} or {@code Character}.
-   */
-  public boolean isCharOrCharacter(AnnotatedTypeMirror type) {
-    TypeKind kind = type.getKind();
-    switch (kind) {
-      case CHAR:
-        return true;
-      case DECLARED:
-        return TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character");
-      default:
-        return false;
     }
   }
 
@@ -398,10 +377,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (TypesUtils.isFloatingPrimitive(type.getUnderlyingType())
-        || TypesUtils.isBoxedFloating(type.getUnderlyingType())
-        || type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Character")) {
+    TypeMirror underlying = type.getUnderlyingType();
+    if (TypesUtils.isFloatingPrimitive(underlying)
+        || TypesUtils.isBoxedFloating(underlying)
+        || TypesUtils.isCharOrCharacter(underlying)) {
       // Floats are always signed and chars are always unsigned.
       super.addAnnotationsFromDefaultForType(null, type);
     } else {

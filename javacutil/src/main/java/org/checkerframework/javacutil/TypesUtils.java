@@ -328,13 +328,25 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the type is either boolean (primitive type) or java.lang.Boolean.
+   * Returns true if the type is either {@code boolean} (primitive type) or {@code
+   * java.lang.Boolean}.
    *
    * @param type the type to test
    * @return true iff type represents a boolean type
    */
   public static boolean isBooleanType(TypeMirror type) {
     return type.getKind() == TypeKind.BOOLEAN || isDeclaredOfName(type, "java.lang.Boolean");
+  }
+
+  /**
+   * Returns true if the type is {@code char} or {@code Character}.
+   *
+   * @param type a type
+   * @return true if the type is {@code char} or {@code Character}
+   */
+  public static boolean isCharOrCharacter(TypeMirror type) {
+    return type.getKind() == TypeKind.CHAR
+        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
