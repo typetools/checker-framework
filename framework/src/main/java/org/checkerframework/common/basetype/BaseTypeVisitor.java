@@ -2414,6 +2414,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
+    if (!atypeFactory.isRelevantOrCompound(castType)
+        || !atypeFactory.isRelevantOrCompound(exprType)) {
+      return true;
+    }
+
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
 
     AnnotationMirrorSet castAnnos;
