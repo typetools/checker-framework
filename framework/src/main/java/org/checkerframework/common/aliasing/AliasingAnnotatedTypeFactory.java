@@ -114,19 +114,6 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
-        // @LeakedToResult and @NonLeaked were supposed to be non-type-qualifiers
-        // annotations.
-        // Currently the stub parser does not support non-type-qualifier annotations on
-        // receiver parameters (Issue 383), therefore these annotations are implemented as
-        // type qualifiers but the warnings related to the hierarchy are ignored.
-        return true;
-      }
-      return super.isSubtype(subAnno, superAnno);
-    }
-
-    @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,
         TypeMirror subType,
@@ -140,7 +127,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // type qualifiers but the warnings related to the hierarchy are ignored.
         return true;
       }
-      return super.isSubtype(subAnno, superAnno);
+      return super.isSubtype(subAnno, subType, superAnno, superType);
     }
   }
 }
