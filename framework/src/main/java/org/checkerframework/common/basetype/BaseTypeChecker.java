@@ -389,7 +389,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     BaseTypeVisitor<?> visitor = getVisitor();
     // Avoid NPE if this method is called during initialization.
     if (visitor == null) {
-      return null;
+      throw new TypeSystemError("Called getTypeFactory() before initialization was complete");
     }
     return visitor.getTypeFactory();
   }
