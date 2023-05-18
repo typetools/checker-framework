@@ -1977,8 +1977,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror necessaryAnnotation,
       AnnotationMirror inferredAnnotation,
       CFAbstractStore<?, ?> store) {
-    return inferredAnnotation != null
-        && atypeFactory.getQualifierHierarchy().isSubtype(inferredAnnotation, necessaryAnnotation);
+    if (inferredAnnotation == null) {
+      return false;
+    }
+    return atypeFactory.getQualifierHierarchy().isSubtype(inferredAnnotation, necessaryAnnotation);
   }
 
   /**
