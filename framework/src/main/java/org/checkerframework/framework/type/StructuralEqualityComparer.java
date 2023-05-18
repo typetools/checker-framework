@@ -136,11 +136,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
           types2.size());
     }
 
-    final Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
-    final Iterator<? extends AnnotatedTypeMirror> types2Iter = types2.iterator();
+    Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
+    Iterator<? extends AnnotatedTypeMirror> types2Iter = types2.iterator();
     while (types1Iter.hasNext()) {
-      final AnnotatedTypeMirror type1 = types1Iter.next();
-      final AnnotatedTypeMirror type2 = types2Iter.next();
+      AnnotatedTypeMirror type1 = types1Iter.next();
+      AnnotatedTypeMirror type2 = types2Iter.next();
       if (!checkOrAreEqual(type1, type2)) {
         return false;
       }
@@ -163,7 +163,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return pastResult;
     }
 
-    final Boolean result = areEqual(type1, type2);
+    Boolean result = areEqual(type1, type2);
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }
@@ -224,8 +224,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
     // ignoreRawTypes
-    final List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
-    final List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
+    List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
+    List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
 
     if (type1Args.isEmpty() && type2Args.isEmpty()) {
       return true;

@@ -135,7 +135,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
           (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeParamElement);
       pause = false;
 
-      final AnnotationMirrorSet tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
+      AnnotationMirrorSet tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
 
       if (AnnotatedTypes.hasNoExplicitBound(wildcard)) {
         propagateExtendsBound(wildcard, typeParam, tops);
@@ -188,7 +188,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
 
     for (AnnotationMirror top : tops) {
       if (wildcardBound.getAnnotationInHierarchy(top) == null) {
-        final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
+        AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
         if (typeParamAnno == null) {
           throw new BugInCF(
               StringsPlume.joinLines(

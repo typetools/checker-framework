@@ -197,8 +197,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // In lub(), asSuper is called on type1 and type2, but asSuper does not recur into type
     // arguments, so call asSuper on the type arguments so that they have the same underlying
     // type.
-    final AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
-    final AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
+    AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
+    AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
 
     // If the type argument is a wildcard or captured type argument, then the lub computation is
     // slightly different.  The primary annotation on the lower bound is the glb of lower bounds

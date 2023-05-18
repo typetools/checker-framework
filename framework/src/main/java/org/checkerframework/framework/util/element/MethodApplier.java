@@ -133,7 +133,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
         methodType.getReturnType(), methodSymbol.getAnnotationMirrors());
 
-    final List<AnnotatedTypeMirror> params = methodType.getParameterTypes();
+    List<AnnotatedTypeMirror> params = methodType.getParameterTypes();
     for (int i = 0; i < params.size(); ++i) {
       // Add declaration annotations to the parameter type
       ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
@@ -154,8 +154,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   @Override
   protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
-    final List<TypeCompound> unmatched = new ArrayList<>();
-    final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
+    List<TypeCompound> unmatched = new ArrayList<>();
+    Map<TargetType, List<TypeCompound>> targetTypeToAnno =
         ElementAnnotationUtil.partitionByTargetType(
             targeted,
             unmatched,
@@ -185,7 +185,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   /** For each thrown type, collect all the annotations for that type and apply them. */
   private void applyThrowsAnnotations(List<Attribute.TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
-    final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
+    List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
     if (thrown.isEmpty()) {
       return;
     }
@@ -196,9 +196,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     for (TypeCompound anno : annos) {
-      final TypeAnnotationPosition annoPos = anno.position;
+      TypeAnnotationPosition annoPos = anno.position;
       if (annoPos.type_index >= 0 && annoPos.type_index < thrown.size()) {
-        final AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
+        AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
         typeToAnnos.get(thrownType).add(anno);
 
       } else {

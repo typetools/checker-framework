@@ -241,7 +241,7 @@ public class TestConfigurationBuilder {
       errors.add("No processors were specified!");
     }
 
-    final Map<String, @Nullable String> optionMap = options.getOptions();
+    Map<String, @Nullable String> optionMap = options.getOptions();
     if (!optionMap.containsKey("-d") || optionMap.get("-d") == null) {
       errors.add("No output directory was specified.");
     }
@@ -448,7 +448,7 @@ public class TestConfigurationBuilder {
    */
   private static <T> List<T> catListAndIterable(
       List<? extends T> list, Iterable<? extends T> iterable) {
-    final List<T> newList = new ArrayList<>(list);
+    List<T> newList = new ArrayList<>(list);
 
     for (T iterObject : iterable) {
       newList.add(iterObject);

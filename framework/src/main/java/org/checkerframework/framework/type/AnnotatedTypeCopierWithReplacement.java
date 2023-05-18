@@ -58,7 +58,7 @@ public class AnnotatedTypeCopierWithReplacement {
       // runtime exception would occur.
       if (visitingExecutableTypeParam) {
         visitingExecutableTypeParam = false;
-        final AnnotatedTypeVariable copy =
+        AnnotatedTypeVariable copy =
             (AnnotatedTypeVariable)
                 AnnotatedTypeMirror.createType(
                     original.getUnderlyingType(), original.atypeFactory, original.isDeclaration());

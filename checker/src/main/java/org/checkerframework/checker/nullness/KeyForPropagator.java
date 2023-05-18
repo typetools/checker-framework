@@ -98,9 +98,9 @@ public class KeyForPropagator {
       AnnotatedDeclaredType supertype,
       PropagationDirection direction,
       AnnotatedTypeFactory typeFactory) {
-    final TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
-    final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
+    TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
+    TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
+    Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
     // Note: The right hand side of this or expression will cover raw types
     if (subtype.getTypeArguments().isEmpty()) {
@@ -118,12 +118,12 @@ public class KeyForPropagator {
     Set<Pair<Integer, Integer>> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-    final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
-    final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
+    List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
+    List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
     for (Pair<Integer, Integer> path : typeParamMappings) {
-      final AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
-      final AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
+      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
+      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
 
       if (subtypeArg.getKind() == TypeKind.WILDCARD
           || supertypeArg.getKind() == TypeKind.WILDCARD) {

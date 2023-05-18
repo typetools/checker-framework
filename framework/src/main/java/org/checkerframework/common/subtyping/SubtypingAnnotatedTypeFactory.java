@@ -110,7 +110,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
       DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        final TypeUseLocation[] locations = defaultFor.value();
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
         foundOtherwise =
             foundOtherwise || Arrays.asList(locations).contains(TypeUseLocation.OTHERWISE);

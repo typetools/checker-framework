@@ -801,7 +801,7 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
       DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        final TypeUseLocation[] locations = defaultFor.value();
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
       }
 
@@ -1321,9 +1321,9 @@ public abstract class GenericAnnotatedTypeFactory<
     classQueue.add(Pair.of(classTree, null));
 
     while (!classQueue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = classQueue.remove();
-      final ClassTree ct = qel.first;
-      final Store capturedStore = qel.second;
+      Pair<ClassTree, Store> qel = classQueue.remove();
+      ClassTree ct = qel.first;
+      Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
       TreePath preTreePath = getVisitorTreePath();

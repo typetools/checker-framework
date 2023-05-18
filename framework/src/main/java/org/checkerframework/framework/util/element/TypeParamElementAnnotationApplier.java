@@ -94,13 +94,13 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
   @Override
   protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
-    final int paramIndex = getElementIndex();
-    final List<TypeCompound> upperBoundAnnos = new ArrayList<>();
-    final List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
+    int paramIndex = getElementIndex();
+    List<TypeCompound> upperBoundAnnos = new ArrayList<>();
+    List<TypeCompound> lowerBoundAnnos = new ArrayList<>();
 
     for (TypeCompound anno : targeted) {
-      final AnnotationMirror aliasedAnno = typeFactory.canonicalAnnotation(anno);
-      final AnnotationMirror canonicalAnno = (aliasedAnno != null) ? aliasedAnno : anno;
+      AnnotationMirror aliasedAnno = typeFactory.canonicalAnnotation(anno);
+      AnnotationMirror canonicalAnno = (aliasedAnno != null) ? aliasedAnno : anno;
 
       if (anno.position.parameter_index != paramIndex
           || !typeFactory.isSupportedQualifier(canonicalAnno)) {
@@ -128,16 +128,15 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
    */
   private void applyUpperBounds(List<TypeCompound> upperBounds) {
     if (!upperBounds.isEmpty()) {
-      final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
+      AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
 
       if (upperBoundType.getKind() == TypeKind.INTERSECTION) {
 
-        final List<AnnotatedTypeMirror> bounds =
-            ((AnnotatedIntersectionType) upperBoundType).getBounds();
-        final int boundIndexOffset = ElementAnnotationUtil.getBoundIndexOffset(bounds);
+        List<AnnotatedTypeMirror> bounds = ((AnnotatedIntersectionType) upperBoundType).getBounds();
+        int boundIndexOffset = ElementAnnotationUtil.getBoundIndexOffset(bounds);
 
         for (TypeCompound anno : upperBounds) {
-          final int boundIndex = anno.position.bound_index + boundIndexOffset;
+          int boundIndex = anno.position.bound_index + boundIndexOffset;
 
           if (boundIndex < 0 || boundIndex > bounds.size()) {
             throw new BugInCF(
@@ -173,7 +172,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
    */
   private void applyLowerBounds(List<? extends AnnotationMirror> annos) {
     if (!annos.isEmpty()) {
-      final AnnotatedTypeMirror lowerBound = typeParam.getLowerBound();
+      AnnotatedTypeMirror lowerBound = typeParam.getLowerBound();
 
       for (AnnotationMirror anno : annos) {
         lowerBound.addAnnotation(anno);
@@ -191,16 +190,15 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
   private void applyComponentAnnotation(TypeCompound anno)
       throws UnexpectedAnnotationLocationException {
-    final AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
+    AnnotatedTypeMirror upperBoundType = typeParam.getUpperBound();
 
     Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnotations = new HashMap<>();
 
     if (anno.position.type == upperBoundTarget()) {
 
       if (upperBoundType.getKind() == TypeKind.INTERSECTION) {
-        final List<AnnotatedTypeMirror> bounds =
-            ((AnnotatedIntersectionType) upperBoundType).getBounds();
-        final int boundIndex =
+        List<AnnotatedTypeMirror> bounds = ((AnnotatedIntersectionType) upperBoundType).getBounds();
+        int boundIndex =
             anno.position.bound_index + ElementAnnotationUtil.getBoundIndexOffset(bounds);
 
         if (boundIndex < 0 || boundIndex > bounds.size()) {

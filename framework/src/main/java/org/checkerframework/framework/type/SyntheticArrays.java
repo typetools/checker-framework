@@ -40,7 +40,7 @@ public final class SyntheticArrays {
    */
   public static AnnotatedExecutableType replaceReturnType(
       Element methodElem, AnnotatedArrayType newReturnType) {
-    final AnnotatedExecutableType method =
+    AnnotatedExecutableType method =
         (AnnotatedExecutableType) newReturnType.atypeFactory.getAnnotatedType(methodElem);
     method.setReturnType(newReturnType);
     return method;

@@ -59,7 +59,7 @@ public class TypeVisualizer {
    * @param type the type to be written
    */
   public static void drawToDot(File dest, AnnotatedTypeMirror type) {
-    final Drawing drawer = new Drawing("Type", type);
+    Drawing drawer = new Drawing("Type", type);
     drawer.draw(dest);
   }
 
@@ -82,7 +82,7 @@ public class TypeVisualizer {
    */
   public static void drawToPng(File dest, AnnotatedTypeMirror type) {
     try {
-      final File dotFile = File.createTempFile(dest.getName(), ".dot");
+      File dotFile = File.createTempFile(dest.getName(), ".dot");
       drawToDot(dotFile, type);
       execDotToPng(dotFile, dest);
 
@@ -144,8 +144,7 @@ public class TypeVisualizer {
       List<String> typeVarNames,
       String directory,
       boolean png) {
-    final String dirPath =
-        directory.endsWith(File.separator) ? directory : directory + File.separator;
+    String dirPath = directory.endsWith(File.separator) ? directory : directory + File.separator;
     String varName = typeVariable.getUnderlyingType().asElement().toString();
 
     if (typeVarNames.contains(varName)) {
@@ -234,7 +233,7 @@ public class TypeVisualizer {
     }
 
     private void addConnections() {
-      final ConnectionDrawer connectionDrawer = new ConnectionDrawer();
+      ConnectionDrawer connectionDrawer = new ConnectionDrawer();
       for (Node node : nodes.keySet()) {
         connectionDrawer.visit(node.type);
       }
@@ -279,7 +278,7 @@ public class TypeVisualizer {
 
       @Override
       public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
-        final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+        List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
         for (int i = 0; i < typeArgs.size(); i++) {
           lines.add(connect(type, typeArgs.get(i)) + " " + makeTypeArgLabel(i));
         }
@@ -288,7 +287,7 @@ public class TypeVisualizer {
 
       @Override
       public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
-        final List<AnnotatedTypeMirror> bounds = type.getBounds();
+        List<AnnotatedTypeMirror> bounds = type.getBounds();
         for (int i = 0; i < bounds.size(); i++) {
           lines.add(connect(type, bounds.get(i)) + " " + makeLabel("&"));
         }
@@ -297,7 +296,7 @@ public class TypeVisualizer {
 
       @Override
       public Void visitUnion(AnnotatedUnionType type, Void aVoid) {
-        final List<AnnotatedDeclaredType> alternatives = type.getAlternatives();
+        List<AnnotatedDeclaredType> alternatives = type.getAlternatives();
         for (int i = 0; i < alternatives.size(); i++) {
           lines.add(connect(type, alternatives.get(i)) + " " + makeLabel("|"));
         }
@@ -310,10 +309,10 @@ public class TypeVisualizer {
         ExecutableElement methodElem = type.getElement();
         lines.add(connect(type, type.getReturnType()) + " " + makeLabel("returns"));
 
-        final List<? extends TypeParameterElement> typeVarElems = methodElem.getTypeParameters();
-        final List<AnnotatedTypeVariable> typeVars = type.getTypeVariables();
+        List<? extends TypeParameterElement> typeVarElems = methodElem.getTypeParameters();
+        List<AnnotatedTypeVariable> typeVars = type.getTypeVariables();
         for (int i = 0; i < typeVars.size(); i++) {
-          final String typeVarName = typeVarElems.get(i).getSimpleName().toString();
+          String typeVarName = typeVarElems.get(i).getSimpleName().toString();
           lines.add(connect(type, typeVars.get(i)) + " " + makeMethodTypeArgLabel(typeVarName));
         }
 
@@ -321,14 +320,14 @@ public class TypeVisualizer {
           lines.add(connect(type, type.getReceiverType()) + " " + makeLabel("receiver"));
         }
 
-        final List<? extends VariableElement> paramElems = methodElem.getParameters();
-        final List<AnnotatedTypeMirror> params = type.getParameterTypes();
+        List<? extends VariableElement> paramElems = methodElem.getParameters();
+        List<AnnotatedTypeMirror> params = type.getParameterTypes();
         for (int i = 0; i < params.size(); i++) {
-          final String paramName = paramElems.get(i).getSimpleName().toString();
+          String paramName = paramElems.get(i).getSimpleName().toString();
           lines.add(connect(type, params.get(i)) + " " + makeParamLabel(paramName));
         }
 
-        final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
+        List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
         for (int i = 0; i < thrown.size(); i++) {
           lines.add(connect(type, thrown.get(i)) + " " + makeThrownLabel(i));
         }
@@ -554,7 +553,7 @@ public class TypeVisualizer {
       }
 
       public boolean checkOrAdd(AnnotatedTypeMirror atm) {
-        final Node node = new Node(atm);
+        Node node = new Node(atm);
         if (nodes.containsKey(node)) {
           return false;
         }
@@ -567,7 +566,7 @@ public class TypeVisualizer {
       }
 
       public String makeLabeledNode(AnnotatedTypeMirror type, String label, String attributes) {
-        final String attr = (attributes != null) ? ", " + attributes : "";
+        String attr = (attributes != null) ? ", " + attributes : "";
         return nodes.get(new Node(type)) + " [label=\"" + label + "\"" + attr + "]";
       }
 
@@ -580,9 +579,9 @@ public class TypeVisualizer {
       }
 
       public String makeMethodLabel(AnnotatedExecutableType methodType) {
-        final ExecutableElement methodElem = methodType.getElement();
+        ExecutableElement methodElem = methodType.getElement();
 
-        final StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append(methodElem.getReturnType().toString());
         builder.append(" <");
 

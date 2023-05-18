@@ -67,7 +67,7 @@ public abstract class AFConstraint {
       return false;
     }
 
-    final AFConstraint that = (AFConstraint) thatObject;
+    AFConstraint that = (AFConstraint) thatObject;
 
     return this.argument.equals(that.argument) && this.formalParameter.equals(that.formalParameter);
   }
@@ -107,9 +107,8 @@ public abstract class AFConstraint {
    * @return a new constraint that contains no use of the keys in substitutions
    */
   public AFConstraint substitute(Map<TypeVariable, AnnotatedTypeMirror> substitutions) {
-    final AnnotatedTypeMirror newArgument =
-        TypeArgInferenceUtil.substitute(substitutions, argument);
-    final AnnotatedTypeMirror newFormalParameter =
+    AnnotatedTypeMirror newArgument = TypeArgInferenceUtil.substitute(substitutions, argument);
+    AnnotatedTypeMirror newFormalParameter =
         TypeArgInferenceUtil.substitute(substitutions, formalParameter);
     return construct(newArgument, newFormalParameter);
   }

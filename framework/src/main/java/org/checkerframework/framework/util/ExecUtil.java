@@ -11,17 +11,17 @@ public class ExecUtil {
 
   public static int execute(String[] cmd, OutputStream std, OutputStream err) {
 
-    final Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
-    final Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
+    Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
+    Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
 
     try {
-      final Process proc = Runtime.getRuntime().exec(cmd);
+      Process proc = Runtime.getRuntime().exec(cmd);
       outRedirect.redirect(proc.getInputStream());
       errRedirect.redirect(proc.getErrorStream());
 
-      final IOException stdExc = outRedirect.join();
-      final IOException errExc = errRedirect.join();
-      final int exitStatus = proc.waitFor();
+      IOException stdExc = outRedirect.join();
+      IOException errExc = errRedirect.join();
+      int exitStatus = proc.waitFor();
 
       if (stdExc != null) {
         throw stdExc;

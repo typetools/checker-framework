@@ -491,8 +491,8 @@ public class NullnessAnnotatedTypeFactory
 
     // Make the captured wildcard always @NonNull, regardless of the declared type.
 
-    final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
-    final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+    AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
+    List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
     AnnotatedTypeVariable classWildcardArg = (AnnotatedTypeVariable) typeArgs.get(0);
     classWildcardArg.getUpperBound().replaceAnnotation(NONNULL);
   }

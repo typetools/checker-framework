@@ -70,7 +70,7 @@ public abstract class TUConstraint {
       return false;
     }
 
-    final TUConstraint that = (TUConstraint) thatObject;
+    TUConstraint that = (TUConstraint) thatObject;
 
     return this.typeVariable.equals(that.typeVariable) && this.relatedType.equals(that.relatedType);
   }

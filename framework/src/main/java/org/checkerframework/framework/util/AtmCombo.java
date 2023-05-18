@@ -46,10 +46,10 @@ enum AtmKind {
    * @return the AtmKind corresponding to the class of atm
    */
   public static AtmKind valueOf(AnnotatedTypeMirror atm) {
-    final Class<?> argClass = atm.getClass();
+    Class<?> argClass = atm.getClass();
 
     for (AtmKind atmKind : AtmKind.values()) {
-      final Class<?> kindClass = atmKind.atmClass;
+      Class<?> kindClass = atmKind.atmClass;
       if (argClass == kindClass) {
         return atmKind;
       }
@@ -261,7 +261,7 @@ public enum AtmCombo {
       AnnotatedTypeMirror type2,
       PARAM initialParam,
       AtmComboVisitor<RETURN_TYPE, PARAM> visitor) {
-    final AtmCombo combo = valueOf(type1, type2);
+    AtmCombo combo = valueOf(type1, type2);
     switch (combo) {
       case ARRAY_ARRAY:
         return visitor.visitArray_Array(

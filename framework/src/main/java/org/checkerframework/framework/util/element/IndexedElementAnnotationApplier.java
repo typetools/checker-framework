@@ -34,13 +34,12 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
   @Override
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
       Iterable<Attribute.TypeCompound> typeCompounds) {
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos =
-        super.sift(typeCompounds);
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos = super.sift(typeCompounds);
 
-    final List<Attribute.TypeCompound> targeted = targetClassToAnnos.get(TargetClass.TARGETED);
-    final List<Attribute.TypeCompound> valid = targetClassToAnnos.get(TargetClass.VALID);
+    List<Attribute.TypeCompound> targeted = targetClassToAnnos.get(TargetClass.TARGETED);
+    List<Attribute.TypeCompound> valid = targetClassToAnnos.get(TargetClass.VALID);
 
-    final int paramIndex = getElementIndex();
+    int paramIndex = getElementIndex();
 
     // filter out annotations in targeted that don't have the correct parameter index. (i.e the
     // one's that are on the same method but don't pertain to the parameter element being
