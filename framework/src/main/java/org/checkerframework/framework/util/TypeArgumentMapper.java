@@ -65,7 +65,7 @@ public class TypeArgumentMapper {
    * parameters in supertype.
    */
   public static Set<Pair<Integer, Integer>> mapTypeArgumentIndices(
-      final TypeElement subtype, final TypeElement supertype, final Types types) {
+      TypeElement subtype, TypeElement supertype, Types types) {
     Set<Pair<Integer, Integer>> result = new HashSet<>();
     if (subtype.equals(supertype)) {
       for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
@@ -128,7 +128,7 @@ public class TypeArgumentMapper {
    *     which they are a type argument
    */
   public static Map<TypeParameterElement, Set<TypeParameterElement>> mapTypeArguments(
-      final TypeElement subtype, final TypeElement supertype, final Types types) {
+      TypeElement subtype, TypeElement supertype, Types types) {
 
     final List<TypeRecord> pathToSupertype =
         depthFirstSearchForSupertype(subtype, supertype, types);
@@ -192,7 +192,7 @@ public class TypeArgumentMapper {
     if (elements == null) {
       return result;
     }
-    for (final TypeParameterElement oldElement : elements) {
+    for (TypeParameterElement oldElement : elements) {
       Set<TypeParameterElement> substitutions = map.get(oldElement);
       if (substitutions != null) {
         result.addAll(flattenPath(elements, map));
@@ -204,9 +204,9 @@ public class TypeArgumentMapper {
   }
 
   private static void addToSetMap(
-      final Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
-      final TypeParameterElement element,
-      final TypeParameterElement typeParam) {
+      Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
+      TypeParameterElement element,
+      TypeParameterElement typeParam) {
     Set<TypeParameterElement> set = setMap.computeIfAbsent(element, __ -> new HashSet<>());
     set.add(typeParam);
   }
@@ -249,7 +249,7 @@ public class TypeArgumentMapper {
    *     and target
    */
   private static List<TypeRecord> depthFirstSearchForSupertype(
-      final TypeElement subtype, final TypeElement target, final Types types) {
+      TypeElement subtype, TypeElement target, Types types) {
     ArrayDeque<TypeRecord> pathFromRoot = new ArrayDeque<>();
     final TypeRecord pathStart = new TypeRecord(subtype, null);
     pathFromRoot.push(pathStart);
@@ -267,7 +267,7 @@ public class TypeArgumentMapper {
    *     target
    */
   private static List<TypeRecord> recursiveDepthFirstSearch(
-      final ArrayDeque<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
+      ArrayDeque<TypeRecord> pathFromRoot, TypeElement target, Types types) {
     if (pathFromRoot.isEmpty()) {
       return null;
     }
@@ -329,7 +329,7 @@ public class TypeArgumentMapper {
     public final TypeElement element;
     public final DeclaredType type;
 
-    TypeRecord(final TypeElement element, final DeclaredType type) {
+    TypeRecord(TypeElement element, DeclaredType type) {
       this.element = element;
       this.type = type;
     }

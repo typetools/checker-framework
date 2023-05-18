@@ -30,7 +30,7 @@ public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
     return optionsWithStub;
   }
 
-  protected String getFullPath(final File javaFile, final String filename) {
+  protected String getFullPath(File javaFile, String filename) {
     final String dirname = javaFile.getParentFile().getAbsolutePath();
     return dirname + File.separator + filename;
   }

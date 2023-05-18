@@ -46,7 +46,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
   public final AnnotatedTypeFactory typeFactory;
 
   protected AFReducingVisitor(
-      final Class<? extends AFConstraint> reducerType, final AnnotatedTypeFactory typeFactory) {
+      Class<? extends AFConstraint> reducerType, AnnotatedTypeFactory typeFactory) {
     this.reducerType = reducerType;
     this.typeFactory = typeFactory;
   }
@@ -216,7 +216,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // Note: AnnotatedIntersectionTypes cannot have a type variable as one of the direct
     // parameters but a type variable may be the type subtype to an intersection bound <e.g.  <T
     // extends Serializable & Iterable<T>>
-    for (final AnnotatedTypeMirror intersectionBound : supertype.getBounds()) {
+    for (AnnotatedTypeMirror intersectionBound : supertype.getBounds()) {
       if (intersectionBound instanceof AnnotatedDeclaredType
           && !((AnnotatedDeclaredType) intersectionBound).getTypeArguments().isEmpty()) {
         addConstraint(subtype, supertype, constraints);

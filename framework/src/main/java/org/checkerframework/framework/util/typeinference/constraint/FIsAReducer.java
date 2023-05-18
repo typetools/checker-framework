@@ -29,7 +29,7 @@ public class FIsAReducer implements AFReducer {
   protected final FIsAReducingVisitor visitor;
   private final AnnotatedTypeFactory typeFactory;
 
-  public FIsAReducer(final AnnotatedTypeFactory typeFactory) {
+  public FIsAReducer(AnnotatedTypeFactory typeFactory) {
     this.typeFactory = typeFactory;
     this.visitor = new FIsAReducingVisitor();
   }

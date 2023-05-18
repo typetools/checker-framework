@@ -31,8 +31,7 @@ public class GlbUtil {
    *     annotations of typeMirrors.
    */
   public static AnnotatedTypeMirror glbAll(
-      final Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors,
-      final AnnotatedTypeFactory typeFactory) {
+      Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {
     final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
     if (typeMirrors.isEmpty()) {
       return null;
@@ -97,7 +96,7 @@ public class GlbUtil {
     // if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise there are
     // two types in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
     boolean incomparable = false;
-    for (final AnnotatedTypeMirror type : glbTypes) {
+    for (AnnotatedTypeMirror type : glbTypes) {
       if (!incomparable
           && type.getKind() != TypeKind.NULL
           && (!TypesUtils.isErasedSubtype(
@@ -119,7 +118,7 @@ public class GlbUtil {
 
   /** Returns an AnnotatedNullType with the given annotations as primaries. */
   private static AnnotatedNullType createBottom(
-      final AnnotatedTypeFactory typeFactory, final Set<? extends AnnotationMirror> annos) {
+      AnnotatedTypeFactory typeFactory, Set<? extends AnnotationMirror> annos) {
     return typeFactory.getAnnotatedNullType(annos);
   }
 
@@ -130,8 +129,7 @@ public class GlbUtil {
    * List<String>, AbstractList<String>, ArrayList<String>}
    */
   public static void sortForGlb(
-      final List<? extends AnnotatedTypeMirror> typeMirrors,
-      final AnnotatedTypeFactory typeFactory) {
+      List<? extends AnnotatedTypeMirror> typeMirrors, AnnotatedTypeFactory typeFactory) {
     Collections.sort(typeMirrors, new GlbSortComparator(typeFactory));
   }
 
@@ -152,8 +150,8 @@ public class GlbUtil {
 
     @Override
     public int compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-      final TypeMirror underlyingType1 = type1.getUnderlyingType();
-      final TypeMirror underlyingType2 = type2.getUnderlyingType();
+      TypeMirror underlyingType1 = type1.getUnderlyingType();
+      TypeMirror underlyingType2 = type2.getUnderlyingType();
 
       if (types.isSameType(underlyingType1, underlyingType2)) {
         return compareAnnotations(qualifierHierarchy, type1, type2);

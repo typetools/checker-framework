@@ -202,7 +202,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   protected void reportValidityResult(
-      final @CompilerMessageKey String errorType, final AnnotatedTypeMirror type, final Tree p) {
+      @CompilerMessageKey String errorType, AnnotatedTypeMirror type, Tree p) {
     checker.reportError(p, errorType, type.getAnnotations(), type.toString());
     isValid = false;
   }
@@ -216,7 +216,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * instead of "{@code @Bad List<String>}".
    */
   protected void reportValidityResultOnUnannotatedType(
-      final @CompilerMessageKey String errorType, final AnnotatedTypeMirror type, final Tree p) {
+      @CompilerMessageKey String errorType, AnnotatedTypeMirror type, Tree p) {
     TypeMirror underlying =
         TypeAnnotationUtils.unannotatedType(type.getErased().getUnderlyingType());
     checker.reportError(p, errorType, type.getAnnotations(), underlying.toString());
@@ -233,7 +233,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @param type the type with invalid bounds
    * @param tree where to report the error
    */
-  protected void reportInvalidBounds(final AnnotatedTypeMirror type, final Tree tree) {
+  protected void reportInvalidBounds(AnnotatedTypeMirror type, Tree tree) {
     final String label;
     final AnnotatedTypeMirror upperBound;
     final AnnotatedTypeMirror lowerBound;
@@ -265,7 +265,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     isValid = false;
   }
 
-  protected void reportInvalidType(final AnnotatedTypeMirror type, final Tree p) {
+  protected void reportInvalidType(AnnotatedTypeMirror type, Tree p) {
     reportValidityResult("type.invalid", type, p);
   }
 
@@ -275,7 +275,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @param type the type with invalid annotations
    * @param p the tree where to report the error
    */
-  protected void reportInvalidAnnotationsOnUse(final AnnotatedTypeMirror type, final Tree p) {
+  protected void reportInvalidAnnotationsOnUse(AnnotatedTypeMirror type, Tree p) {
     reportValidityResultOnUnannotatedType("annotations.on.use", type, p);
   }
 
@@ -676,8 +676,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * @return true if the effective annotations on the upperBound are above those on the lowerBound
    */
-  public boolean areBoundsValid(
-      final AnnotatedTypeMirror upperBound, final AnnotatedTypeMirror lowerBound) {
+  public boolean areBoundsValid(AnnotatedTypeMirror upperBound, AnnotatedTypeMirror lowerBound) {
     final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     final AnnotationMirrorSet upperBoundAnnos =
         AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, upperBound);

@@ -36,7 +36,7 @@ public class TargetConstraints {
    */
   public final Subtypes subtypes;
 
-  public TargetConstraints(final TypeVariable target) {
+  public TargetConstraints(TypeVariable target) {
     this.target = target;
     this.equalities = new Equalities();
     this.supertypes = new Supertypes();

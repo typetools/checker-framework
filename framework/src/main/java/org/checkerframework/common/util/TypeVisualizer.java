@@ -58,7 +58,7 @@ public class TypeVisualizer {
    * @param dest the destination dot file
    * @param type the type to be written
    */
-  public static void drawToDot(final File dest, final AnnotatedTypeMirror type) {
+  public static void drawToDot(File dest, AnnotatedTypeMirror type) {
     final Drawing drawer = new Drawing("Type", type);
     drawer.draw(dest);
   }
@@ -69,7 +69,7 @@ public class TypeVisualizer {
    * @param dest the destination dot file, this string will be directly passed to new File(dest)
    * @param type the type to be written
    */
-  public static void drawToDot(final String dest, final AnnotatedTypeMirror type) {
+  public static void drawToDot(String dest, AnnotatedTypeMirror type) {
     drawToDot(new File(dest), type);
   }
 
@@ -80,7 +80,7 @@ public class TypeVisualizer {
    * @param dest the destination png file
    * @param type the type to be written
    */
-  public static void drawToPng(final File dest, final AnnotatedTypeMirror type) {
+  public static void drawToPng(File dest, AnnotatedTypeMirror type) {
     try {
       final File dotFile = File.createTempFile(dest.getName(), ".dot");
       drawToDot(dotFile, type);
@@ -98,7 +98,7 @@ public class TypeVisualizer {
    * @param dest the destination png file, this string will be directly passed to new File(dest)
    * @param type the type to be written
    */
-  public static void drawToPng(final String dest, final AnnotatedTypeMirror type) {
+  public static void drawToPng(String dest, AnnotatedTypeMirror type) {
     drawToPng(new File(dest), type);
   }
 
@@ -109,7 +109,7 @@ public class TypeVisualizer {
    * @param dotFile the dot file to convert
    * @param pngFile the destination of the resultant png file
    */
-  public static void execDotToPng(final File dotFile, final File pngFile) {
+  public static void execDotToPng(File dotFile, File pngFile) {
     String[] cmd =
         new String[] {"dot", "-Tpng", dotFile.getAbsolutePath(), "-o", pngFile.getAbsolutePath()};
     System.out.println("Printing dotFile: " + dotFile + " to loc: " + pngFile);
@@ -124,9 +124,7 @@ public class TypeVisualizer {
    * @return true if the type variable was printed, otherwise false
    */
   public static boolean printTypevarToDotIfMatches(
-      final AnnotatedTypeVariable typeVariable,
-      final List<String> typeVarNames,
-      final String directory) {
+      AnnotatedTypeVariable typeVariable, List<String> typeVarNames, String directory) {
     return printTypevarIfMatches(typeVariable, typeVarNames, directory, false);
   }
 
@@ -137,17 +135,15 @@ public class TypeVisualizer {
    * @return true if the type variable was printed, otherwise false
    */
   public static boolean printTypevarToPngIfMatches(
-      final AnnotatedTypeVariable typeVariable,
-      final List<String> typeVarNames,
-      final String directory) {
+      AnnotatedTypeVariable typeVariable, List<String> typeVarNames, String directory) {
     return printTypevarIfMatches(typeVariable, typeVarNames, directory, true);
   }
 
   private static boolean printTypevarIfMatches(
-      final AnnotatedTypeVariable typeVariable,
-      final List<String> typeVarNames,
-      final String directory,
-      final boolean png) {
+      AnnotatedTypeVariable typeVariable,
+      List<String> typeVarNames,
+      String directory,
+      boolean png) {
     final String dirPath =
         directory.endsWith(File.separator) ? directory : directory + File.separator;
     String varName = typeVariable.getUnderlyingType().asElement().toString();
@@ -181,7 +177,7 @@ public class TypeVisualizer {
      *
      * @param type the type that the newly-constructed Node represents
      */
-    private Node(final @FindDistinct AnnotatedTypeMirror type) {
+    private Node(@FindDistinct AnnotatedTypeMirror type) {
       this.type = type;
     }
 
@@ -222,24 +218,24 @@ public class TypeVisualizer {
     /** Used to identify nodes uniquely. This field is monotonically increasing. */
     private int nextId = 0;
 
-    public Drawing(final String graphName, final AnnotatedTypeMirror type) {
+    public Drawing(String graphName, AnnotatedTypeMirror type) {
       this.graphName = graphName;
       this.type = type;
     }
 
-    public void draw(final File file) {
+    public void draw(File file) {
       addNodes(type);
       addConnections();
       write(file);
     }
 
-    private void addNodes(final AnnotatedTypeMirror type) {
+    private void addNodes(AnnotatedTypeMirror type) {
       new NodeDrawer().visit(type);
     }
 
     private void addConnections() {
       final ConnectionDrawer connectionDrawer = new ConnectionDrawer();
-      for (final Node node : nodes.keySet()) {
+      for (Node node : nodes.keySet()) {
         connectionDrawer.visit(node.type);
       }
     }
@@ -249,11 +245,11 @@ public class TypeVisualizer {
      *
      * @param file the file to write to
      */
-    private void write(final File file) {
+    private void write(File file) {
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
         writer.write("digraph " + graphName + "{");
         writer.newLine();
-        for (final String line : lines) {
+        for (String line : lines) {
           writer.write(line + ";");
           writer.newLine();
         }
@@ -375,27 +371,27 @@ public class TypeVisualizer {
         return null;
       }
 
-      private String connect(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+      private String connect(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
         return nodes.get(new Node(from)) + " -> " + nodes.get(new Node(to));
       }
 
-      private String makeLabel(final String text) {
+      private String makeLabel(String text) {
         return "[label=\"" + text + "\"]";
       }
 
-      private String makeTypeArgLabel(final int argIndex) {
+      private String makeTypeArgLabel(int argIndex) {
         return makeLabel("<" + argIndex + ">");
       }
 
-      private String makeMethodTypeArgLabel(final String paramName) {
+      private String makeMethodTypeArgLabel(String paramName) {
         return makeLabel("<" + paramName + ">");
       }
 
-      private String makeParamLabel(final String paramName) {
+      private String makeParamLabel(String paramName) {
         return makeLabel(paramName);
       }
 
-      private String makeThrownLabel(final int index) {
+      private String makeThrownLabel(int index) {
         return makeLabel("throws: " + index);
       }
     }
@@ -413,8 +409,8 @@ public class TypeVisualizer {
       /** Create a new NodeDrawer. */
       public NodeDrawer() {}
 
-      private void visitAll(final List<? extends AnnotatedTypeMirror> types) {
-        for (final AnnotatedTypeMirror type : types) {
+      private void visitAll(List<? extends AnnotatedTypeMirror> types) {
+        for (AnnotatedTypeMirror type : types) {
           visit(type);
         }
       }
@@ -548,16 +544,16 @@ public class TypeVisualizer {
        * @param atm an annotated type
        * @return a string representation of the annotations on {@code atm}
        */
-      public String getAnnoStr(final AnnotatedTypeMirror atm) {
+      public String getAnnoStr(AnnotatedTypeMirror atm) {
         StringJoiner sj = new StringJoiner(" ");
-        for (final AnnotationMirror anno : atm.getAnnotations()) {
+        for (AnnotationMirror anno : atm.getAnnotations()) {
           // TODO: More comprehensive escaping
           sj.add(annoFormatter.formatAnnotationMirror(anno).replace("\"", "\\"));
         }
         return sj.toString();
       }
 
-      public boolean checkOrAdd(final AnnotatedTypeMirror atm) {
+      public boolean checkOrAdd(AnnotatedTypeMirror atm) {
         final Node node = new Node(atm);
         if (nodes.containsKey(node)) {
           return false;
@@ -566,26 +562,24 @@ public class TypeVisualizer {
         return true;
       }
 
-      public String makeLabeledNode(final AnnotatedTypeMirror type, final String label) {
+      public String makeLabeledNode(AnnotatedTypeMirror type, String label) {
         return makeLabeledNode(type, label, null);
       }
 
-      public String makeLabeledNode(
-          final AnnotatedTypeMirror type, final String label, final String attributes) {
+      public String makeLabeledNode(AnnotatedTypeMirror type, String label, String attributes) {
         final String attr = (attributes != null) ? ", " + attributes : "";
         return nodes.get(new Node(type)) + " [label=\"" + label + "\"" + attr + "]";
       }
 
-      public void addLabeledNode(final AnnotatedTypeMirror type, final String label) {
+      public void addLabeledNode(AnnotatedTypeMirror type, String label) {
         lines.add(makeLabeledNode(type, label));
       }
 
-      public void addLabeledNode(
-          final AnnotatedTypeMirror type, final String label, final String attributes) {
+      public void addLabeledNode(AnnotatedTypeMirror type, String label, String attributes) {
         lines.add(makeLabeledNode(type, label, attributes));
       }
 
-      public String makeMethodLabel(final AnnotatedExecutableType methodType) {
+      public String makeMethodLabel(AnnotatedExecutableType methodType) {
         final ExecutableElement methodElem = methodType.getElement();
 
         final StringBuilder builder = new StringBuilder();

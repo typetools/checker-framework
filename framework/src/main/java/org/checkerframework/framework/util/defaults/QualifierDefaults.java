@@ -584,7 +584,7 @@ public class QualifierDefaults {
     }
   }
 
-  private boolean isElementAnnotatedForThisChecker(final Element elt) {
+  private boolean isElementAnnotatedForThisChecker(Element elt) {
     boolean elementAnnotatedForThisChecker = false;
 
     if (elt == null) {
@@ -633,7 +633,7 @@ public class QualifierDefaults {
    * @param elt the element
    * @return the defaults
    */
-  private DefaultSet defaultsAt(final Element elt) {
+  private DefaultSet defaultsAt(Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;
     }
@@ -706,7 +706,7 @@ public class QualifierDefaults {
    * @param annotationScope the element that the conservative default might apply to
    * @return whether the conservative default applies to the given element
    */
-  public boolean applyConservativeDefaults(final Element annotationScope) {
+  public boolean applyConservativeDefaults(Element annotationScope) {
     if (annotationScope == null) {
       return false;
     }
@@ -755,7 +755,7 @@ public class QualifierDefaults {
    *     inference)
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
-  private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
+  private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
     DefaultSet defaults = defaultsAt(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
@@ -843,8 +843,7 @@ public class QualifierDefaults {
      * @param type type to which qual would be applied
      * @return true if this application should proceed
      */
-    protected boolean shouldBeAnnotated(
-        final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
+    protected boolean shouldBeAnnotated(AnnotatedTypeMirror type, boolean applyToTypeVar) {
 
       return !(type == null
           // TODO: executables themselves should not be annotated
@@ -1112,8 +1111,8 @@ public class QualifierDefaults {
      */
     UNBOUNDED;
 
-    public boolean isOneOf(final BoundType... choices) {
-      for (final BoundType choice : choices) {
+    public boolean isOneOf(BoundType... choices) {
+      for (BoundType choice : choices) {
         if (this == choice) {
           return true;
         }
@@ -1130,7 +1129,7 @@ public class QualifierDefaults {
    *     AnnotatedTypeVariable.
    * @return the boundType for type
    */
-  private BoundType getBoundType(final AnnotatedTypeMirror type) {
+  private BoundType getBoundType(AnnotatedTypeMirror type) {
     if (type instanceof AnnotatedTypeVariable) {
       return getTypeVarBoundType((AnnotatedTypeVariable) type);
     }
@@ -1148,7 +1147,7 @@ public class QualifierDefaults {
    * @param typeVar the type variable
    * @return the bound type of the input typeVar
    */
-  private BoundType getTypeVarBoundType(final AnnotatedTypeVariable typeVar) {
+  private BoundType getTypeVarBoundType(AnnotatedTypeVariable typeVar) {
     return getTypeVarBoundType((TypeParameterElement) typeVar.getUnderlyingType().asElement());
   }
 
@@ -1159,7 +1158,7 @@ public class QualifierDefaults {
    * @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem
    */
   // Results are cached in {@link elementToBoundType}.
-  private BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem) {
+  private BoundType getTypeVarBoundType(TypeParameterElement typeParamElem) {
     final BoundType prev = elementToBoundType.get(typeParamElem);
     if (prev != null) {
       return prev;
@@ -1214,7 +1213,7 @@ public class QualifierDefaults {
    * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
    *     its an argument
    */
-  public BoundType getWildcardBoundType(final AnnotatedWildcardType wildcardType) {
+  public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
     if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {
       TypeParameterElement e = TypesUtils.wildcardToTypeParam(wildcardType.getUnderlyingType());
       if (e != null) {

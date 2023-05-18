@@ -657,7 +657,7 @@ public class AnnotationBuilder {
    * @param obj the value to be stored in an annotation element/field
    * @return an AnnotationValue for the given Java value
    */
-  private static AnnotationValue createValue(final Object obj) {
+  private static AnnotationValue createValue(Object obj) {
     return new CheckerFrameworkAnnotationValue(obj);
   }
 

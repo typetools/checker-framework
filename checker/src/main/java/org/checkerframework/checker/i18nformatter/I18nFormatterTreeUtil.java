@@ -567,7 +567,7 @@ public class I18nFormatterTreeUtil {
    * @param type a TypeMirror
    * @return the class corresponding to the argument
    */
-  private static final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
+  private static Class<? extends Object> typeMirrorToClass(TypeMirror type) {
     return type.accept(typeMirrorToClassVisitor, Void.TYPE);
   }
 }

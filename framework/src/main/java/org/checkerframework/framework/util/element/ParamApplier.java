@@ -39,7 +39,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
   public static final int RECEIVER_PARAM_INDEX = Integer.MIN_VALUE;
 
-  public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror type, Element element) {
     return element.getKind() == ElementKind.PARAMETER;
   }
 
@@ -220,7 +220,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    *     == getIndex
    */
   @Override
-  protected void handleTargeted(final List<TypeCompound> targeted)
+  protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
 
     final List<TypeCompound> formalParams = new ArrayList<>();
@@ -243,7 +243,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    * @param element an element
    * @return true if element represents the receiver parameter of a method
    */
-  private boolean isReceiver(final Element element) {
+  private boolean isReceiver(Element element) {
     return element.getKind() == ElementKind.PARAMETER
         && element.getSimpleName().contentEquals("this");
   }
@@ -261,7 +261,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    *     parameter or return type)
    * @return the MethodSymbol of the method containing methodChildElem
    */
-  public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {
+  public static Symbol.MethodSymbol getParentMethod(Element methodChildElem) {
     if (!(methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {
       throw new BugInCF(
           "Element is not a direct child of a MethodSymbol. Element ( "

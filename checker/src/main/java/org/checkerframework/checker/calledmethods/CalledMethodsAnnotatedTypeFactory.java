@@ -174,8 +174,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     return the first argument.
    */
   // This cannot return a Name because filterTreeToMethodName cannot.
-  public String adjustMethodNameUsingValueChecker(
-      final String methodName, final MethodInvocationTree tree) {
+  public String adjustMethodNameUsingValueChecker(String methodName, MethodInvocationTree tree) {
     if (!useValueChecker) {
       return methodName;
     }

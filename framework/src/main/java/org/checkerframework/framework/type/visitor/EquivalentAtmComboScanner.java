@@ -28,8 +28,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
 
   /** Entry point for this scanner. */
   @Override
-  public RETURN_TYPE visit(
-      final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, PARAM param) {
+  public RETURN_TYPE visit(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
     visited.clear();
     return scan(type1, type2, param);
   }
@@ -210,12 +209,12 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       visits.clear();
     }
 
-    public boolean contains(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+    public boolean contains(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
       return recordFor1 != null && recordFor1.containsKey(type2);
     }
 
-    public RETURN_TYPE getResult(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+    public RETURN_TYPE getResult(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
       if (recordFor1 == null) {
         return null;
@@ -231,8 +230,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
      * @param type2 the second type
      * @param ret the result
      */
-    public void add(
-        final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, final RETURN_TYPE ret) {
+    public void add(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, RETURN_TYPE ret) {
       IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 =
           visits.computeIfAbsent(type1, __ -> new IdentityHashMap<>());
       recordFor1.put(type2, ret);

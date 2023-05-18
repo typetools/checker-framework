@@ -15,7 +15,7 @@ public class F2AReducer implements AFReducer {
 
   protected final F2AReducingVisitor visitor;
 
-  public F2AReducer(final AnnotatedTypeFactory typeFactory) {
+  public F2AReducer(AnnotatedTypeFactory typeFactory) {
     this.visitor = new F2AReducingVisitor(typeFactory);
   }
 

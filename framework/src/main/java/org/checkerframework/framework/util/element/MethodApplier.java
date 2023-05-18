@@ -32,7 +32,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     new MethodApplier(type, element, typeFactory).extractAndApply();
   }
 
-  public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
     return element instanceof Symbol.MethodSymbol && typeMirror instanceof AnnotatedExecutableType;
   }
 
@@ -152,7 +152,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
   // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
   @Override
-  protected void handleTargeted(final List<TypeCompound> targeted)
+  protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
     final List<TypeCompound> unmatched = new ArrayList<>();
     final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
@@ -183,7 +183,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /** For each thrown type, collect all the annotations for that type and apply them. */
-  private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos)
+  private void applyThrowsAnnotations(List<Attribute.TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
     final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
     if (thrown.isEmpty()) {
@@ -191,7 +191,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos = new LinkedHashMap<>();
-    for (final AnnotatedTypeMirror thrownType : thrown) {
+    for (AnnotatedTypeMirror thrownType : thrown) {
       typeToAnnos.put(thrownType, new ArrayList<>());
     }
 
@@ -213,8 +213,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
       }
     }
 
-    for (final Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
-        typeToAnnos.entrySet()) {
+    for (Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnos.entrySet()) {
       ElementAnnotationUtil.annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
     }
   }

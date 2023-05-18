@@ -324,13 +324,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * </ul>
    */
   private Map<TypeVariable, AnnotatedTypeMirror> infer(
-      final AnnotatedTypeFactory typeFactory,
-      final List<AnnotatedTypeMirror> argumentTypes,
-      final AnnotatedTypeMirror assignedTo,
-      final ExecutableElement methodElem,
-      final AnnotatedExecutableType methodType,
-      final Set<TypeVariable> targets,
-      final boolean useNullArguments) {
+      AnnotatedTypeFactory typeFactory,
+      List<AnnotatedTypeMirror> argumentTypes,
+      AnnotatedTypeMirror assignedTo,
+      ExecutableElement methodElem,
+      AnnotatedExecutableType methodType,
+      Set<TypeVariable> targets,
+      boolean useNullArguments) {
 
     // 1.  Step 1 - Build up argument constraints
     // The AFConstraints for arguments are used also in the
@@ -472,10 +472,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @return a set of argument constraints
    */
   protected Set<AFConstraint> createArgumentAFConstraints(
-      final AnnotatedTypeFactory typeFactory,
-      final List<AnnotatedTypeMirror> argTypes,
-      final AnnotatedExecutableType methodType,
-      final Set<TypeVariable> targets,
+      AnnotatedTypeFactory typeFactory,
+      List<AnnotatedTypeMirror> argTypes,
+      AnnotatedExecutableType methodType,
+      Set<TypeVariable> targets,
       boolean useNullArguments) {
     final List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.expandVarArgsParametersFromTypes(methodType, argTypes);
@@ -508,9 +508,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * of the methods arguments.
    */
   private Pair<InferenceResult, InferenceResult> inferFromArguments(
-      final AnnotatedTypeFactory typeFactory,
-      final Set<AFConstraint> afArgumentConstraints,
-      final Set<TypeVariable> targets) {
+      AnnotatedTypeFactory typeFactory,
+      Set<AFConstraint> afArgumentConstraints,
+      Set<TypeVariable> targets) {
     Set<TUConstraint> tuArgConstraints = afToTuConstraints(afArgumentConstraints, targets);
     addConstraintsBetweenTargets(tuArgConstraints, targets, false, typeFactory);
 
@@ -534,10 +534,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** Step 3. Infer type arguments from the equality constraints of the assignment context. */
   private InferenceResult inferFromAssignmentEqualities(
-      final AnnotatedTypeMirror assignedTo,
-      final AnnotatedTypeMirror boxedReturnType,
-      final Set<TypeVariable> targets,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeMirror assignedTo,
+      AnnotatedTypeMirror boxedReturnType,
+      Set<TypeVariable> targets,
+      AnnotatedTypeFactory typeFactory) {
     Set<FIsA> afInitialAssignmentConstraints =
         createInitialAssignmentConstraints(assignedTo, boxedReturnType, typeFactory, targets);
 
@@ -553,10 +553,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * these set of constraints and remove any that is not an equality (FIsA) constraint.
    */
   protected Set<FIsA> createInitialAssignmentConstraints(
-      final AnnotatedTypeMirror assignedTo,
-      final AnnotatedTypeMirror boxedReturnType,
-      final AnnotatedTypeFactory typeFactory,
-      final Set<TypeVariable> targets) {
+      AnnotatedTypeMirror assignedTo,
+      AnnotatedTypeMirror boxedReturnType,
+      AnnotatedTypeFactory typeFactory,
+      Set<TypeVariable> targets) {
     final Set<FIsA> result = new LinkedHashSet<>();
 
     if (assignedTo != null) {
@@ -567,7 +567,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
       reduceAfConstraints(typeFactory, reducedConstraints, constraints, targets);
 
-      for (final AFConstraint reducedConstraint : reducedConstraints) {
+      for (AFConstraint reducedConstraint : reducedConstraints) {
         if (reducedConstraint instanceof FIsA) {
           result.add((FIsA) reducedConstraint);
         }
@@ -589,13 +589,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * </ul>
    */
   public ConstraintMap createAssignmentConstraints(
-      final AnnotatedTypeMirror assignedTo,
-      final AnnotatedTypeMirror boxedReturnType,
-      final AnnotatedExecutableType methodType,
-      final Set<AFConstraint> afArgumentConstraints,
-      final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs,
-      final Set<TypeVariable> targets,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeMirror assignedTo,
+      AnnotatedTypeMirror boxedReturnType,
+      AnnotatedExecutableType methodType,
+      Set<AFConstraint> afArgumentConstraints,
+      Map<TypeVariable, AnnotatedTypeMirror> inferredArgs,
+      Set<TypeVariable> targets,
+      AnnotatedTypeFactory typeFactory) {
 
     final ArrayDeque<AFConstraint> assignmentAfs =
         new ArrayDeque<>(2 * methodType.getTypeVariables().size() + afArgumentConstraints.size());
@@ -639,13 +639,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** The Second half of step 6. Use the assignment context to infer a result. */
   private InferenceResult inferFromAssignment(
-      final AnnotatedTypeMirror assignedTo,
-      final AnnotatedTypeMirror boxedReturnType,
-      final AnnotatedExecutableType methodType,
-      final Set<AFConstraint> afArgumentConstraints,
-      final InferenceResult inferredArgs,
-      final Set<TypeVariable> targets,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeMirror assignedTo,
+      AnnotatedTypeMirror boxedReturnType,
+      AnnotatedExecutableType methodType,
+      Set<AFConstraint> afArgumentConstraints,
+      InferenceResult inferredArgs,
+      Set<TypeVariable> targets,
+      AnnotatedTypeFactory typeFactory) {
     ConstraintMap assignmentConstraints =
         createAssignmentConstraints(
             assignedTo,
@@ -679,7 +679,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
 
     final InferenceResult result = new InferenceResult();
-    for (final TypeVariable target : targets) {
+    for (TypeVariable target : targets) {
       final InferredValue equalityInferred = equalityResult.get(target);
       final InferredValue supertypeInferred = supertypeResult.get(target);
 
@@ -752,10 +752,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * return a set of AFConstraints in which the F is a use of one of the type parameters to infer.
    */
   protected void reduceAfConstraints(
-      final AnnotatedTypeFactory typeFactory,
-      final Set<AFConstraint> outgoing,
-      final Queue<AFConstraint> toProcess,
-      final Set<TypeVariable> targets) {
+      AnnotatedTypeFactory typeFactory,
+      Set<AFConstraint> outgoing,
+      Queue<AFConstraint> toProcess,
+      Set<TypeVariable> targets) {
 
     final Set<AFConstraint> visited = new HashSet<>();
 
@@ -794,7 +794,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   protected Set<TUConstraint> afToTuConstraints(
       Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
     final Set<TUConstraint> outgoing = new LinkedHashSet<>();
-    for (final AFConstraint afConstraint : afConstraints) {
+    for (AFConstraint afConstraint : afConstraints) {
       if (!afConstraint.isIrreducible(targets)) {
         throw new BugInCF(
             StringsPlume.joinLines(

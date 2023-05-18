@@ -29,7 +29,7 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
    * @param anno an annotation we might wish to apply
    * @return the index value this applier compares against the getElementIndex
    */
-  public abstract int getTypeCompoundIndex(final Attribute.TypeCompound anno);
+  public abstract int getTypeCompoundIndex(Attribute.TypeCompound anno);
 
   @Override
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(

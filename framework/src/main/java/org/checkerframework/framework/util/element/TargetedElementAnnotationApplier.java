@@ -88,7 +88,7 @@ abstract class TargetedElementAnnotationApplier {
    * @param type the type to annotate
    * @param element an element identifying type
    */
-  TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
+  TargetedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {
     this.type = type;
     this.element = element;
   }
@@ -152,7 +152,7 @@ abstract class TargetedElementAnnotationApplier {
    * @return a {@literal Map<TargetClass => Annotations>.}
    */
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
-      final Iterable<Attribute.TypeCompound> typeCompounds) {
+      Iterable<Attribute.TypeCompound> typeCompounds) {
 
     final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
         new EnumMap<>(TargetClass.class);
@@ -160,7 +160,7 @@ abstract class TargetedElementAnnotationApplier {
       targetClassToCompound.put(targetClass, new ArrayList<>());
     }
 
-    for (final Attribute.TypeCompound typeCompound : typeCompounds) {
+    for (Attribute.TypeCompound typeCompound : typeCompounds) {
       final TargetType typeCompoundTarget = typeCompound.position.type;
       final List<Attribute.TypeCompound> destList;
 

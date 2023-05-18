@@ -175,9 +175,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * wildcard bound.
    */
   private void applyAnnosFromBound(
-      final AnnotatedTypeMirror wildcardBound,
-      final AnnotatedTypeMirror typeParamBound,
-      final Set<? extends AnnotationMirror> tops) {
+      AnnotatedTypeMirror wildcardBound,
+      AnnotatedTypeMirror typeParamBound,
+      Set<? extends AnnotationMirror> tops) {
     // Type variables do not need primary annotations.
     // The type variable will have annotations placed on its
     // bounds via its declaration or defaulting rules
@@ -186,7 +186,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       return;
     }
 
-    for (final AnnotationMirror top : tops) {
+    for (AnnotationMirror top : tops) {
       if (wildcardBound.getAnnotationInHierarchy(top) == null) {
         final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
         if (typeParamAnno == null) {
@@ -211,7 +211,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * @return the type parameter in {@code declaredType} that corresponds to {@code typeArg}
    */
   private Element getTypeParameterElement(
-      final @FindDistinct AnnotatedTypeMirror typeArg, final AnnotatedDeclaredType declaredType) {
+      @FindDistinct AnnotatedTypeMirror typeArg, AnnotatedDeclaredType declaredType) {
     for (int i = 0; i < declaredType.getTypeArguments().size(); i++) {
       if (declaredType.getTypeArguments().get(i) == typeArg) {
         TypeElement typeElement = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
