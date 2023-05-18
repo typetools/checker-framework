@@ -556,7 +556,7 @@ public final class TypesUtils {
       return false;
     }
 
-    final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
     switch (primitiveType.getKind()) {
       case BOOLEAN:
         return qualifiedName.equals("java.lang.Boolean");

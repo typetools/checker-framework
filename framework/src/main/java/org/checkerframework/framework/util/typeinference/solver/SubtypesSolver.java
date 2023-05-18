@@ -44,10 +44,10 @@ public class SubtypesSolver {
       Set<TypeVariable> remainingTargets,
       ConstraintMap constraints,
       AnnotatedTypeFactory typeFactory) {
-    final InferenceResult inferenceResult = new InferenceResult();
-    final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+    InferenceResult inferenceResult = new InferenceResult();
+    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
 
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
+    Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
     List<TypeVariable> targetsSubtypesLast = new ArrayList<>(remainingTargets);
 
@@ -82,22 +82,22 @@ public class SubtypesSolver {
       // but we may have primary annotations that need to be GLBed
       AnnotationMirrorMap<AnnotationMirrorSet> primaries = subtypes.primaries;
       if (subtypes.types.size() == 1) {
-        final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry =
+        Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> entry =
             subtypes.types.entrySet().iterator().next();
         AnnotatedTypeMirror supertype = entry.getKey().deepCopy();
 
         for (AnnotationMirror top : entry.getValue()) {
-          final AnnotationMirrorSet superAnnos = primaries.get(top);
+          AnnotationMirrorSet superAnnos = primaries.get(top);
           // if it is null we're just going to use the anno already on supertype
           if (superAnnos != null) {
-            final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(top);
+            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(top);
             superAnnos.add(supertypeAnno);
           }
         }
 
         if (!primaries.isEmpty()) {
           for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            final AnnotationMirror glb =
+            AnnotationMirror glb =
                 greatestLowerBound(subtypes.primaries.get(top), qualifierHierarchy);
             supertype.replaceAnnotation(glb);
           }
@@ -109,13 +109,13 @@ public class SubtypesSolver {
 
         // GLB all of the types than combine this with the GLB of primary annotation
         // constraints
-        final AnnotatedTypeMirror glbType = GlbUtil.glbAll(subtypes.types, typeFactory);
+        AnnotatedTypeMirror glbType = GlbUtil.glbAll(subtypes.types, typeFactory);
         if (glbType != null) {
           if (!primaries.isEmpty()) {
             for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-              final AnnotationMirror glb =
+              AnnotationMirror glb =
                   greatestLowerBound(subtypes.primaries.get(top), qualifierHierarchy);
-              final AnnotationMirror currentAnno = glbType.getAnnotationInHierarchy(top);
+              AnnotationMirror currentAnno = glbType.getAnnotationInHierarchy(top);
 
               if (currentAnno == null) {
                 glbType.addAnnotation(glb);
@@ -145,10 +145,10 @@ public class SubtypesSolver {
 
     for (Map.Entry<TypeVariable, AnnotationMirrorSet> subtypeTarget :
         targetSubtypes.targets.entrySet()) {
-      final InferredValue subtargetInferredGlb = solution.get(subtypeTarget.getKey());
+      InferredValue subtargetInferredGlb = solution.get(subtypeTarget.getKey());
 
       if (subtargetInferredGlb != null) {
-        final AnnotatedTypeMirror subtargetGlbType = ((InferredType) subtargetInferredGlb).type;
+        AnnotatedTypeMirror subtargetGlbType = ((InferredType) subtargetInferredGlb).type;
         AnnotationMirrorSet subtargetAnnos = subtypesOfTarget.get(subtargetGlbType);
         if (subtargetAnnos != null) {
           // there is already an equivalent type in the list of subtypes, just add

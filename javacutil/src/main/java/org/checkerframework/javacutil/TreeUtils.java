@@ -1745,7 +1745,7 @@ public final class TreeUtils {
       NewArrayTree tree, int level) {
 
     assert tree instanceof JCNewArray;
-    final JCNewArray newArray = ((JCNewArray) tree);
+    JCNewArray newArray = ((JCNewArray) tree);
 
     if (level == -1) {
       return annotationsFromTypeAnnotationTrees(newArray.annotations);

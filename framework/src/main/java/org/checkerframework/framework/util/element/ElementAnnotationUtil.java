@@ -130,13 +130,13 @@ public class ElementAnnotationUtil {
    */
   static Map<TargetType, List<TypeCompound>> partitionByTargetType(
       Collection<TypeCompound> annos, List<TypeCompound> unmatched, TargetType... targetTypes) {
-    final Map<TargetType, List<TypeCompound>> targetTypeToAnnos = new HashMap<>();
+    Map<TargetType, List<TypeCompound>> targetTypeToAnnos = new HashMap<>();
     for (TargetType targetType : targetTypes) {
       targetTypeToAnnos.put(targetType, new ArrayList<>());
     }
 
     for (TypeCompound anno : annos) {
-      final List<TypeCompound> annoSet = targetTypeToAnnos.get(anno.getPosition().type);
+      List<TypeCompound> annoSet = targetTypeToAnnos.get(anno.getPosition().type);
       if (annoSet != null) {
         annoSet.add(anno);
       } else if (unmatched != null) {
@@ -224,8 +224,7 @@ public class ElementAnnotationUtil {
       // if the typepath entry ends in Wildcard then the annotation should go on a bound
       // otherwise, the annotation is in front of the wildcard
       // e.g. @HERE ? extends Object
-      final boolean isInFrontOfWildcard =
-          anno.getPosition().location.last() != TypePathEntry.WILDCARD;
+      boolean isInFrontOfWildcard = anno.getPosition().location.last() != TypePathEntry.WILDCARD;
       if (isInFrontOfWildcard && isUnbounded) {
         possiblyBoth.add(anno);
 
@@ -254,8 +253,8 @@ public class ElementAnnotationUtil {
      * beginning of this class.
      */
     void apply() {
-      final AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
-      final AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+      AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
+      AnnotatedTypeMirror superBound = wildcard.getSuperBound();
 
       for (AnnotationMirror extAnno : upperBoundAnnos) {
         extendsBound.addAnnotation(extAnno);
@@ -291,10 +290,9 @@ public class ElementAnnotationUtil {
    * @param type the type in which annos should be placed
    * @param annos all of the element annotations, TypeCompounds, for type
    */
-  static void annotateViaTypeAnnoPosition(
-      final AnnotatedTypeMirror type, Collection<TypeCompound> annos)
+  static void annotateViaTypeAnnoPosition(AnnotatedTypeMirror type, Collection<TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
-    final IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
+    IdentityHashMap<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos =
         new IdentityHashMap<>();
     for (TypeCompound anno : annos) {
       AnnotatedTypeMirror target = getTypeAtLocation(type, anno.position.location, anno, false);

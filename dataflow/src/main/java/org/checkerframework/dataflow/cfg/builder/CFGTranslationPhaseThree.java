@@ -249,7 +249,7 @@ public class CFGTranslationPhaseThree {
         return singleSuccessorHolder(s, cur);
       case CONDITIONAL_BLOCK:
         // add pred correctly to predecessor list
-        final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+        ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
         if (c.getThenSuccessor() == cur) {
           return new PredecessorHolder() {
             @Override
@@ -280,7 +280,7 @@ public class CFGTranslationPhaseThree {
         }
       case EXCEPTION_BLOCK:
         // add pred correctly to predecessor list
-        final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+        ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
         if (e.getSuccessor() == cur) {
           return singleSuccessorHolder(e, cur);
         } else {

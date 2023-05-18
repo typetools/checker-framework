@@ -117,9 +117,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       ExecutableElement methodElem,
       AnnotatedExecutableType methodType) {
 
-    final List<AnnotatedTypeMirror> argTypes =
+    List<AnnotatedTypeMirror> argTypes =
         TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
-    final TreePath pathToExpression = typeFactory.getPath(expressionTree);
+    TreePath pathToExpression = typeFactory.getPath(expressionTree);
     assert pathToExpression != null;
     AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(typeFactory, pathToExpression);
 
@@ -134,7 +134,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           assignedTo);
     }
 
-    final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
+    Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
     if (TreePathUtil.enclosingNonParen(pathToExpression).first.getKind()
             == Tree.Kind.LAMBDA_EXPRESSION
@@ -215,7 +215,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     if (!hasNullType(inferredArgs)) {
       return;
     }
-    final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithoutNull =
+    Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithoutNull =
         infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, false);
     for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
       TypeVariable typeVar = atv.getUnderlyingType();
@@ -342,8 +342,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     Pair<InferenceResult, InferenceResult> argInference =
         inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
-    final InferenceResult fromArgEqualities = argInference.first; // result 2.a
-    final InferenceResult fromArgSubandSupers = argInference.second; // result 2.b
+    InferenceResult fromArgEqualities = argInference.first; // result 2.a
+    InferenceResult fromArgSubandSupers = argInference.second; // result 2.b
 
     clampToLowerBound(fromArgSubandSupers, methodType.getTypeVariables(), typeFactory);
 
@@ -355,8 +355,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return fromArgEqualities.toAtmMap();
     } // else
 
-    final AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
-    final AnnotatedTypeMirror boxedReturnType;
+    AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
+    AnnotatedTypeMirror boxedReturnType;
     if (declaredReturnType == null) {
       boxedReturnType = null;
     } else if (declaredReturnType.getKind().isPrimitive()) {
@@ -365,7 +365,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       boxedReturnType = declaredReturnType;
     }
 
-    final InferenceResult fromArguments = fromArgEqualities;
+    InferenceResult fromArguments = fromArgEqualities;
     if (!((MethodSymbol) methodElem).isConstructor()) {
       // Step 3 - Infer a solution from the equality constraints in the assignment context
       InferenceResult fromAssignmentEqualities =
@@ -437,18 +437,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       InferenceResult fromArgSupertypes,
       List<AnnotatedTypeVariable> targetDeclarations,
       AnnotatedTypeFactory typeFactory) {
-    final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-    final AnnotationMirrorSet tops =
-        new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
+    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
 
     for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
       InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
       if (inferred instanceof InferredType) {
-        final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
+        AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
         for (AnnotationMirror top : tops) {
-          final AnnotationMirror lowerBoundAnno =
+          AnnotationMirror lowerBoundAnno =
               lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
-          final AnnotationMirror argAnno =
+          AnnotationMirror argAnno =
               ((InferredType) inferred).type.getEffectiveAnnotationInHierarchy(top);
           if (qualifierHierarchy.isSubtype(argAnno, lowerBoundAnno)) {
             ((InferredType) inferred).type.replaceAnnotation(lowerBoundAnno);
@@ -477,7 +476,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedExecutableType methodType,
       Set<TypeVariable> targets,
       boolean useNullArguments) {
-    final List<AnnotatedTypeMirror> paramTypes =
+    List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.expandVarArgsParametersFromTypes(methodType, argTypes);
 
     if (argTypes.size() != paramTypes.size()) {
@@ -488,8 +487,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               "argTypes=" + StringsPlume.join(",", argTypes)));
     }
 
-    final int numberOfParams = paramTypes.size();
-    final ArrayDeque<AFConstraint> afConstraints = new ArrayDeque<>(numberOfParams);
+    int numberOfParams = paramTypes.size();
+    ArrayDeque<AFConstraint> afConstraints = new ArrayDeque<>(numberOfParams);
     for (int i = 0; i < numberOfParams; i++) {
       if (!useNullArguments && argTypes.get(i).getKind() == TypeKind.NULL) {
         continue;
@@ -497,7 +496,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       afConstraints.add(new A2F(argTypes.get(i), paramTypes.get(i)));
     }
 
-    final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
+    Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
 
     reduceAfConstraints(typeFactory, reducedConstraints, afConstraints, targets);
     return reducedConstraints;
@@ -557,12 +556,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedTypeMirror boxedReturnType,
       AnnotatedTypeFactory typeFactory,
       Set<TypeVariable> targets) {
-    final Set<FIsA> result = new LinkedHashSet<>();
+    Set<FIsA> result = new LinkedHashSet<>();
 
     if (assignedTo != null) {
-      final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
+      Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
 
-      final Queue<AFConstraint> constraints = new ArrayDeque<>();
+      Queue<AFConstraint> constraints = new ArrayDeque<>();
       constraints.add(new F2A(boxedReturnType, assignedTo));
 
       reduceAfConstraints(typeFactory, reducedConstraints, constraints, targets);
@@ -597,11 +596,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       Set<TypeVariable> targets,
       AnnotatedTypeFactory typeFactory) {
 
-    final ArrayDeque<AFConstraint> assignmentAfs =
+    ArrayDeque<AFConstraint> assignmentAfs =
         new ArrayDeque<>(2 * methodType.getTypeVariables().size() + afArgumentConstraints.size());
     for (AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
-      final TypeVariable target = typeParam.getUnderlyingType();
-      final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
+      TypeVariable target = typeParam.getUnderlyingType();
+      AnnotatedTypeMirror inferredType = inferredArgs.get(target);
       // for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is
       // the lower bound for all uninferred types Tu: Tu >> Bi and Lu >> Tu
       if (inferredType != null) {
@@ -625,14 +624,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       substitutedAssignmentConstraints.add(afConstraint.substitute(inferredArgs));
     }
 
-    final AnnotatedTypeMirror substitutedReturnType =
+    AnnotatedTypeMirror substitutedReturnType =
         TypeArgInferenceUtil.substitute(inferredArgs, boxedReturnType);
     substitutedAssignmentConstraints.add(new F2A(substitutedReturnType, assignedTo));
 
-    final Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
+    Set<AFConstraint> reducedConstraints = new LinkedHashSet<>();
     reduceAfConstraints(typeFactory, reducedConstraints, substitutedAssignmentConstraints, targets);
-    final Set<TUConstraint> tuAssignmentConstraints =
-        afToTuConstraints(reducedConstraints, targets);
+    Set<TUConstraint> tuAssignmentConstraints = afToTuConstraints(reducedConstraints, targets);
     addConstraintsBetweenTargets(tuAssignmentConstraints, targets, true, typeFactory);
     return constraintMapBuilder.build(targets, tuAssignmentConstraints, typeFactory);
   }
@@ -676,14 +674,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedTypeFactory typeFactory,
       InferenceResult equalityResult,
       InferenceResult supertypeResult) {
-    final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
+    TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
 
-    final InferenceResult result = new InferenceResult();
+    InferenceResult result = new InferenceResult();
     for (TypeVariable target : targets) {
-      final InferredValue equalityInferred = equalityResult.get(target);
-      final InferredValue supertypeInferred = supertypeResult.get(target);
+      InferredValue equalityInferred = equalityResult.get(target);
+      InferredValue supertypeInferred = supertypeResult.get(target);
 
-      final InferredValue outputValue;
+      InferredValue outputValue;
       if (equalityInferred instanceof InferredType) {
 
         if (supertypeInferred instanceof InferredType) {
@@ -734,9 +732,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
 
     for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
-      final TypeVariable typeVar = atv.getUnderlyingType();
+      TypeVariable typeVar = atv.getUnderlyingType();
       if (targets.contains((TypeVariable) TypeAnnotationUtils.unannotatedType(typeVar))) {
-        final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
+        AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
         if (inferredType == null) {
           AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
           inferredArgs.put(atv.getUnderlyingType(), dummy);
@@ -757,7 +755,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       Queue<AFConstraint> toProcess,
       Set<TypeVariable> targets) {
 
-    final Set<AFConstraint> visited = new HashSet<>();
+    Set<AFConstraint> visited = new HashSet<>();
 
     List<AFReducer> reducers =
         Arrays.asList(
@@ -773,7 +771,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           outgoing.add(constraint);
         } else {
 
-          final Iterator<AFReducer> reducerIterator = reducers.iterator();
+          Iterator<AFReducer> reducerIterator = reducers.iterator();
           boolean handled = false;
           while (!handled && reducerIterator.hasNext()) {
             handled = reducerIterator.next().reduce(constraint, newConstraints);
@@ -793,7 +791,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /** Convert AFConstraints to TUConstraints. */
   protected Set<TUConstraint> afToTuConstraints(
       Set<? extends AFConstraint> afConstraints, Set<TypeVariable> targets) {
-    final Set<TUConstraint> outgoing = new LinkedHashSet<>();
+    Set<TUConstraint> outgoing = new LinkedHashSet<>();
     for (AFConstraint afConstraint : afConstraints) {
       if (!afConstraint.isIrreducible(targets)) {
         throw new BugInCF(
@@ -818,20 +816,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       Set<TypeVariable> targets,
       boolean asSubtype,
       AnnotatedTypeFactory typeFactory) {
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
-    final List<TypeVariable> targetList = new ArrayList<>(targets);
+    Types types = typeFactory.getProcessingEnv().getTypeUtils();
+    List<TypeVariable> targetList = new ArrayList<>(targets);
 
-    final Map<TypeVariable, AnnotatedTypeVariable> paramDeclarations = new HashMap<>();
+    Map<TypeVariable, AnnotatedTypeVariable> paramDeclarations = new HashMap<>();
 
     for (int i = 0; i < targetList.size(); i++) {
-      final TypeVariable earlierTarget = targetList.get(i);
+      TypeVariable earlierTarget = targetList.get(i);
 
       for (int j = i + 1; j < targetList.size(); j++) {
-        final TypeVariable laterTarget = targetList.get(j);
+        TypeVariable laterTarget = targetList.get(j);
         if (types.isSameType(earlierTarget.getUpperBound(), laterTarget)) {
-          final AnnotatedTypeVariable headDecl =
+          AnnotatedTypeVariable headDecl =
               addOrGetDeclarations(earlierTarget, typeFactory, paramDeclarations);
-          final AnnotatedTypeVariable nextDecl =
+          AnnotatedTypeVariable nextDecl =
               addOrGetDeclarations(laterTarget, typeFactory, paramDeclarations);
 
           if (asSubtype) {
@@ -841,9 +839,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             constraints.add(new TSuperU(nextDecl, headDecl));
           }
         } else if (types.isSameType(laterTarget.getUpperBound(), earlierTarget)) {
-          final AnnotatedTypeVariable headDecl =
+          AnnotatedTypeVariable headDecl =
               addOrGetDeclarations(earlierTarget, typeFactory, paramDeclarations);
-          final AnnotatedTypeVariable nextDecl =
+          AnnotatedTypeVariable nextDecl =
               addOrGetDeclarations(laterTarget, typeFactory, paramDeclarations);
 
           if (asSubtype) {

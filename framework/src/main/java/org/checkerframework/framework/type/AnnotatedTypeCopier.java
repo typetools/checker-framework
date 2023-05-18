@@ -109,7 +109,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedDeclaredType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedDeclaredType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.isUnderlyingTypeRaw()) {
       copy.setIsUnderlyingTypeRaw();
@@ -120,7 +120,7 @@ public class AnnotatedTypeCopier
     }
 
     if (original.typeArgs != null) {
-      final List<AnnotatedTypeMirror> copyTypeArgs =
+      List<AnnotatedTypeMirror> copyTypeArgs =
           CollectionsPlume.mapList(
               (AnnotatedTypeMirror typeArg) -> visit(typeArg, originalToCopy),
               original.getTypeArguments());
@@ -138,7 +138,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedIntersectionType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedIntersectionType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.bounds != null) {
       List<AnnotatedTypeMirror> copySupertypes =
@@ -158,10 +158,10 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedUnionType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedUnionType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.alternatives != null) {
-      final List<AnnotatedDeclaredType> copyAlternatives =
+      List<AnnotatedDeclaredType> copyAlternatives =
           CollectionsPlume.mapList(
               (AnnotatedDeclaredType supertype) ->
                   (AnnotatedDeclaredType) visit(supertype, originalToCopy),
@@ -180,7 +180,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedExecutableType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedExecutableType copy = makeOrReturnCopy(original, originalToCopy);
 
     copy.setElement(original.getElement());
 
@@ -231,7 +231,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedArrayType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedArrayType copy = makeOrReturnCopy(original, originalToCopy);
 
     copy.setComponentType(visit(original.getComponentType(), originalToCopy));
 
@@ -246,7 +246,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedTypeVariable copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedTypeVariable copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.getUpperBoundField() != null) {
       copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy));
@@ -288,7 +288,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedWildcardType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedWildcardType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.isUninferredTypeArgument()) {
       copy.setUninferredTypeArgument();
@@ -330,7 +330,7 @@ public class AnnotatedTypeCopier
       return (T) originalToCopy.get(original);
     }
 
-    final T copy = makeCopy(original);
+    T copy = makeCopy(original);
     originalToCopy.put(original, copy);
 
     return copy;
@@ -346,7 +346,7 @@ public class AnnotatedTypeCopier
   @SuppressWarnings("unchecked")
   protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
 
-    final T copy =
+    T copy =
         (T)
             AnnotatedTypeMirror.createType(
                 original.getUnderlyingType(), original.atypeFactory, original.isDeclaration());

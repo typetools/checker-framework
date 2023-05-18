@@ -285,7 +285,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return visitedNodes.get(type);
     }
 
-    final boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
+    boolean skipChecks = checker.shouldSkipUses(type.getUnderlyingType().asElement());
 
     if (checkTopLevelDeclaredOrPrimitiveType && !skipChecks) {
       // Ensure that type use is a subtype of the element type
@@ -538,7 +538,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return null;
     }
 
-    final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
+    TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
     if (checker.shouldSkipUses(element)) {
       return null;
     }
@@ -677,10 +677,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @return true if the effective annotations on the upperBound are above those on the lowerBound
    */
   public boolean areBoundsValid(AnnotatedTypeMirror upperBound, AnnotatedTypeMirror lowerBound) {
-    final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    final AnnotationMirrorSet upperBoundAnnos =
+    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet upperBoundAnnos =
         AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, upperBound);
-    final AnnotationMirrorSet lowerBoundAnnos =
+    AnnotationMirrorSet lowerBoundAnnos =
         AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {

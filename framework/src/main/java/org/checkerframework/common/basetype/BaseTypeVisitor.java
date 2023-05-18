@@ -2395,7 +2395,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
 
-    final TypeKind castTypeKind = castType.getKind();
+    TypeKind castTypeKind = castType.getKind();
     if (castTypeKind == TypeKind.DECLARED) {
       // Don't issue an error if the annotations are equivalent to the qualifier upper bound
       // of the type.
@@ -3503,11 +3503,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
-      final AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
-      final AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
+      AnnotatedTypeVariable innerAtv = (AnnotatedTypeVariable) inner;
+      AnnotatedTypeVariable outerAtv = (AnnotatedTypeVariable) outer;
 
       if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
-        final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+        TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
         return typeHierarchy.isSubtype(innerAtv.getUpperBound(), outerAtv.getUpperBound())
             && typeHierarchy.isSubtype(outerAtv.getLowerBound(), innerAtv.getLowerBound());
       }
@@ -3644,8 +3644,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // That is handled separately in method receiver check.
 
     // The type of the expression or type use, <expression>::method or <type use>::method.
-    final ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
-    final MemberReferenceKind memRefKind =
+    ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
+    MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
     if (memberReferenceTree.getMode() == ReferenceMode.NEW
@@ -4013,7 +4013,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           receiverDecl = overrider.getReceiverType();
           receiverArg = atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
-          final AnnotatedTypeMirror selfType = atypeFactory.getSelfType(memberTree);
+          AnnotatedTypeMirror selfType = atypeFactory.getSelfType(memberTree);
           receiverArg.replaceAnnotations(selfType.getAnnotations());
           break;
         case BOUND:
@@ -4206,7 +4206,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Nothing to check.
         return true;
       }
-      final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+      TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
       boolean success = typeHierarchy.isSubtype(overriderReturnType, overriddenReturnType);
       if (!success) {
         // If both the overridden method have type variables as return types and both

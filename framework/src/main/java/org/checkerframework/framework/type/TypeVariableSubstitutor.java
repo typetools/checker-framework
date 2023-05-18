@@ -61,7 +61,7 @@ public class TypeVariableSubstitutor {
    */
   protected AnnotatedTypeMirror substituteTypeVariable(
       AnnotatedTypeMirror argument, AnnotatedTypeVariable use) {
-    final AnnotatedTypeMirror substitute = argument.deepCopy(true);
+    AnnotatedTypeMirror substitute = argument.deepCopy(true);
     substitute.addAnnotations(argument.getAnnotationsField());
 
     if (!use.getAnnotationsField().isEmpty()) {
@@ -157,9 +157,9 @@ public class TypeVariableSubstitutor {
         return super.visitTypeVariable(original, originalToCopy);
 
       } else {
-        final Element typeVarElem = original.getUnderlyingType().asElement();
+        Element typeVarElem = original.getUnderlyingType().asElement();
         if (elementToArgMap.containsKey(typeVarElem)) {
-          final AnnotatedTypeMirror argument = elementToArgMap.get(typeVarElem);
+          AnnotatedTypeMirror argument = elementToArgMap.get(typeVarElem);
           if (copyArgument) {
             return substituteTypeVariable(argument, original);
           } else {

@@ -1996,7 +1996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return AnnotatedNullType qualified with {@code annotations}
    */
   public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
-    final AnnotatedTypeMirror.AnnotatedNullType nullType =
+    AnnotatedTypeMirror.AnnotatedNullType nullType =
         (AnnotatedNullType) toAnnotatedType(processingEnv.getTypeUtils().getNullType(), false);
     nullType.addAnnotations(annotations);
     return nullType;
@@ -3779,7 +3779,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
 
-    final TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
+    TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
     if (pathWithinSubtree != null) {
       treePathCache.addPath(tree, pathWithinSubtree);
       return pathWithinSubtree;
@@ -4736,9 +4736,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
-        final AnnotatedTypeMirror falseType =
+        AnnotatedTypeMirror falseType =
             getAnnotatedType(conditionalExpressionTree.getFalseExpression());
-        final AnnotatedTypeMirror trueType =
+        AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
 
         // Known cases where we must use LUB because falseType/trueType will not be equal:

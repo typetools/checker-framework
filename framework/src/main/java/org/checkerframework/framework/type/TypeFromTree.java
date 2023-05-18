@@ -60,7 +60,7 @@ class TypeFromTree {
   public static AnnotatedTypeMirror fromMember(AnnotatedTypeFactory typeFactory, Tree tree) {
     abortIfTreeIsNull(typeFactory, tree);
 
-    final AnnotatedTypeMirror type = memberVisitor.visit(tree, typeFactory);
+    AnnotatedTypeMirror type = memberVisitor.visit(tree, typeFactory);
     ifExecutableCheckElement(typeFactory, tree, type);
     return type;
   }
@@ -74,7 +74,7 @@ class TypeFromTree {
   public static AnnotatedTypeMirror fromTypeTree(AnnotatedTypeFactory typeFactory, Tree tree) {
     abortIfTreeIsNull(typeFactory, tree);
 
-    final AnnotatedTypeMirror type = typeTreeVisitor.visit(tree, typeFactory);
+    AnnotatedTypeMirror type = typeTreeVisitor.visit(tree, typeFactory);
     abortIfTypeIsExecutable(typeFactory, tree, type);
     return type;
   }
@@ -88,8 +88,7 @@ class TypeFromTree {
       AnnotatedTypeFactory typeFactory, ClassTree tree) {
     abortIfTreeIsNull(typeFactory, tree);
 
-    final AnnotatedDeclaredType type =
-        (AnnotatedDeclaredType) classVisitor.visit(tree, typeFactory);
+    AnnotatedDeclaredType type = (AnnotatedDeclaredType) classVisitor.visit(tree, typeFactory);
     abortIfTypeIsExecutable(typeFactory, tree, type);
     return type;
   }

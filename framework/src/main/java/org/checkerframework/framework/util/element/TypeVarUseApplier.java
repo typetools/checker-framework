@@ -129,9 +129,9 @@ public class TypeVarUseApplier {
     // apply declaration annotations
     ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
 
-    final List<Attribute.TypeCompound> annotations = getAnnotations(useElem, declarationElem);
+    List<Attribute.TypeCompound> annotations = getAnnotations(useElem, declarationElem);
 
-    final List<Attribute.TypeCompound> typeVarAnnotations;
+    List<Attribute.TypeCompound> typeVarAnnotations;
     if (arrayType != null) {
       // if the outer-most type is an array type then we want to ensure the outer annotations
       // are not applied as the type variables primary annotation
@@ -150,11 +150,11 @@ public class TypeVarUseApplier {
   private List<Attribute.TypeCompound> removeComponentAnnotations(
       AnnotatedArrayType arrayType, List<Attribute.TypeCompound> annotations) {
 
-    final List<Attribute.TypeCompound> componentAnnotations = new ArrayList<>();
+    List<Attribute.TypeCompound> componentAnnotations = new ArrayList<>();
 
     if (arrayType != null) {
       for (int i = 0; i < annotations.size(); ) {
-        final Attribute.TypeCompound anno = annotations.get(i);
+        Attribute.TypeCompound anno = annotations.get(i);
         if (isBaseComponent(arrayType, anno)) {
           componentAnnotations.add(anno);
           annotations.remove(anno);
@@ -223,8 +223,8 @@ public class TypeVarUseApplier {
    * @return annotations on an element that apply to variable declarations
    */
   private static List<Attribute.TypeCompound> getVariableAnnos(Element variableElem) {
-    final VarSymbol varSymbol = (VarSymbol) variableElem;
-    final List<Attribute.TypeCompound> annotations = new ArrayList<>();
+    VarSymbol varSymbol = (VarSymbol) variableElem;
+    List<Attribute.TypeCompound> annotations = new ArrayList<>();
 
     for (Attribute.TypeCompound anno : varSymbol.getRawTypeAttributes()) {
 
@@ -254,7 +254,7 @@ public class TypeVarUseApplier {
    *     parameter index of the input element in the parent methods formal parameter list
    */
   private static List<Attribute.TypeCompound> getParameterAnnos(Element paramElem) {
-    final Element enclosingElement = paramElem.getEnclosingElement();
+    Element enclosingElement = paramElem.getEnclosingElement();
     if (!(enclosingElement instanceof ExecutableElement)) {
       throw new BugInCF(
           "Bad element passed to TypeFromElement.getTypeParameterAnnotationAttributes: "
@@ -264,7 +264,7 @@ public class TypeVarUseApplier {
               + enclosingElement);
     }
 
-    final MethodSymbol enclosingMethod = (MethodSymbol) enclosingElement;
+    MethodSymbol enclosingMethod = (MethodSymbol) enclosingElement;
 
     if (enclosingMethod.getKind() != ElementKind.CONSTRUCTOR
         && enclosingMethod.getKind() != ElementKind.METHOD) {
@@ -275,10 +275,10 @@ public class TypeVarUseApplier {
     // TODO: for the parameter in a lambda expression, the enclosingMethod isn't
     // the lambda expression. Does this read the correct annotations?
 
-    final int paramIndex = enclosingMethod.getParameters().indexOf(paramElem);
-    final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
+    int paramIndex = enclosingMethod.getParameters().indexOf(paramElem);
+    List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
 
-    final List<Attribute.TypeCompound> result = new ArrayList<>();
+    List<Attribute.TypeCompound> result = new ArrayList<>();
     for (Attribute.TypeCompound typeAnno : annotations) {
       if (typeAnno.position.type == TargetType.METHOD_FORMAL_PARAMETER) {
         if (typeAnno.position.parameter_index == paramIndex) {
@@ -301,10 +301,10 @@ public class TypeVarUseApplier {
       throw new BugInCF("Bad element passed to TypeVarUseApplier.getReturnAnnos:" + methodElem);
     }
 
-    final MethodSymbol enclosingMethod = (MethodSymbol) methodElem;
+    MethodSymbol enclosingMethod = (MethodSymbol) methodElem;
 
-    final List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
-    final List<Attribute.TypeCompound> result = new ArrayList<>();
+    List<Attribute.TypeCompound> annotations = enclosingMethod.getRawTypeAttributes();
+    List<Attribute.TypeCompound> result = new ArrayList<>();
     for (Attribute.TypeCompound typeAnno : annotations) {
       if (typeAnno.position.type == TargetType.METHOD_RETURN) {
         result.add(typeAnno);

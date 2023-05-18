@@ -191,7 +191,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         sb.append(this.visit(type.getEnclosingType(), visiting));
         sb.append('.');
       }
-      final Element typeElt = type.getUnderlyingType().asElement();
+      Element typeElt = type.getUnderlyingType().asElement();
       String smpl = typeElt.getSimpleName().toString();
       if (smpl.isEmpty()) {
         // For anonymous classes smpl is empty - toString
@@ -205,7 +205,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
       if (type.typeArgs != null) {
         // getTypeArguments sets the field if it does not already exist.
-        final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
+        List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
         if (!typeArgs.isEmpty()) {
           StringJoiner sj = new StringJoiner(", ", "<", ">");
           for (AnnotatedTypeMirror typeArg : typeArgs) {

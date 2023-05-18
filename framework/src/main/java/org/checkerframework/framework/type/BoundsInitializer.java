@@ -56,16 +56,16 @@ public class BoundsInitializer {
    * @param declaredType type whose arguments are initialized
    */
   public static void initializeTypeArgs(AnnotatedDeclaredType declaredType) {
-    final DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
+    DeclaredType underlyingType = (DeclaredType) declaredType.underlyingType;
     if (underlyingType.getTypeArguments().isEmpty() && !declaredType.isUnderlyingTypeRaw()) {
       // No type arguments to initialize.
       return;
     }
 
-    final TypeElement typeElement =
+    TypeElement typeElement =
         (TypeElement) declaredType.atypeFactory.types.asElement(underlyingType);
     int numTypeParameters = typeElement.getTypeParameters().size();
-    final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(numTypeParameters);
+    List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(numTypeParameters);
 
     // Create AnnotatedTypeMirror for each type argument and store them in the typeArgsMap.
     // Take un-annotated type variables as the key for this map.
@@ -79,7 +79,7 @@ public class BoundsInitializer {
         javaTypeArg = declaredType.getUnderlyingType().getTypeArguments().get(i);
       }
 
-      final AnnotatedTypeMirror typeArg =
+      AnnotatedTypeMirror typeArg =
           AnnotatedTypeMirror.createType(
               javaTypeArg, declaredType.atypeFactory, declaredType.isDeclaration());
       if (typeArg.getKind() == TypeKind.WILDCARD) {
@@ -164,7 +164,7 @@ public class BoundsInitializer {
    */
   private static void initializeBounds(
       AnnotatedTypeVariable typeVar, Map<TypeVariable, AnnotatedTypeMirror> map) {
-    final AnnotationMirrorSet annos = saveAnnotations(typeVar);
+    AnnotationMirrorSet annos = saveAnnotations(typeVar);
 
     InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(typeVar), map);
     visitor.initializeLowerBound(typeVar);
@@ -196,7 +196,7 @@ public class BoundsInitializer {
    */
   private static @Nullable AnnotationMirrorSet saveAnnotations(AnnotatedTypeMirror type) {
     if (!type.getAnnotationsField().isEmpty()) {
-      final AnnotationMirrorSet annos = new AnnotationMirrorSet(type.getAnnotations());
+      AnnotationMirrorSet annos = new AnnotationMirrorSet(type.getAnnotations());
       type.clearPrimaryAnnotations();
       return annos;
     }
@@ -229,7 +229,7 @@ public class BoundsInitializer {
    */
   private static void initializeSuperBound(
       AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
-    final AnnotationMirrorSet annos = saveAnnotations(wildcard);
+    AnnotationMirrorSet annos = saveAnnotations(wildcard);
 
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
     visitor.initializeSuperBound(wildcard);
@@ -257,7 +257,7 @@ public class BoundsInitializer {
    */
   private static void initializeExtendsBound(
       AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
-    final AnnotationMirrorSet annos = saveAnnotations(wildcard);
+    AnnotationMirrorSet annos = saveAnnotations(wildcard);
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
     visitor.initializeExtendsBound(wildcard);
     visitor.resolveTypeVarReferences(wildcard);

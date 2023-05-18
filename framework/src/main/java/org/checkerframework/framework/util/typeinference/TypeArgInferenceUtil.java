@@ -121,8 +121,8 @@ public class TypeArgInferenceUtil {
    * type parameters of that method.
    */
   public static Set<TypeVariable> methodTypeToTargets(AnnotatedExecutableType methodType) {
-    final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
-    final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
+    List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+    Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
     for (AnnotatedTypeVariable atv : annotatedTypeVars) {
       targets.add((TypeVariable) TypeAnnotationUtils.unannotatedType(atv.getUnderlyingType()));
@@ -331,7 +331,7 @@ public class TypeArgInferenceUtil {
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
     if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
           ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
       return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
     } else {
@@ -346,8 +346,8 @@ public class TypeArgInferenceUtil {
    */
   private static boolean containsUninferredTypeParameter(
       AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
-    final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
-    final List<TypeVariable> typeVars =
+    List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+    List<TypeVariable> typeVars =
         CollectionsPlume.mapList(
             (AnnotatedTypeVariable annotatedTypeVar) ->
                 (TypeVariable)
@@ -367,7 +367,7 @@ public class TypeArgInferenceUtil {
   public static boolean containsTypeParameter(
       AnnotatedTypeMirror type, Collection<TypeVariable> typeVariables) {
     // note NULL values creep in because the underlying visitor uses them in various places
-    final Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
+    Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
     return result != null && result;
   }
 
@@ -447,7 +447,7 @@ public class TypeArgInferenceUtil {
     substituteMap.clear();
     substituteMap.put(typeVariable, substitution.deepCopy());
 
-    final AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
+    AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
     substitutor.substitute(substituteMap, toModifyCopy);
     return toModifyCopy;
   }
@@ -471,7 +471,7 @@ public class TypeArgInferenceUtil {
       return substitution.deepCopy();
     }
 
-    final AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
+    AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
     substitutor.substitute(substitutions, toModifyCopy);
     return toModifyCopy;
   }
@@ -482,7 +482,7 @@ public class TypeArgInferenceUtil {
    */
   public static AnnotatedTypeMirror leastUpperBound(
       AnnotatedTypeFactory typeFactory, Iterable<AnnotatedTypeMirror> types) {
-    final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
+    Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
     if (!typesIter.hasNext()) {
       throw new BugInCF("Calling LUB on empty list");
     }

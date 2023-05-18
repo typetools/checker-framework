@@ -72,8 +72,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       underlyingWildcard.withTypeVar(wildcardAttachedToNode.bound);
       // End of work-around
 
-      final AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
-      final ExpressionTree underlyingTree = tree.getUnderlyingType();
+      AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
+      ExpressionTree underlyingTree = tree.getUnderlyingType();
 
       if (underlyingTree.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
         // primary annotations on unbounded wildcard types apply to both bounds

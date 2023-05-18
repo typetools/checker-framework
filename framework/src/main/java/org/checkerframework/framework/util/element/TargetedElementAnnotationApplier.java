@@ -154,15 +154,15 @@ abstract class TargetedElementAnnotationApplier {
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
       Iterable<Attribute.TypeCompound> typeCompounds) {
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
         new EnumMap<>(TargetClass.class);
     for (TargetClass targetClass : TargetClass.values()) {
       targetClassToCompound.put(targetClass, new ArrayList<>());
     }
 
     for (Attribute.TypeCompound typeCompound : typeCompounds) {
-      final TargetType typeCompoundTarget = typeCompound.position.type;
-      final List<Attribute.TypeCompound> destList;
+      TargetType typeCompoundTarget = typeCompound.position.type;
+      List<Attribute.TypeCompound> destList;
 
       if (ElementAnnotationUtil.contains(typeCompoundTarget, annotatedTargets())) {
         destList = targetClassToCompound.get(TargetClass.TARGETED);
@@ -199,8 +199,7 @@ abstract class TargetedElementAnnotationApplier {
               + element);
     }
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno =
-        sift(getRawTypeAttributes());
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno = sift(getRawTypeAttributes());
 
     handleInvalid(targetClassToAnno.get(TargetClass.INVALID));
     handleValid(targetClassToAnno.get(TargetClass.VALID));

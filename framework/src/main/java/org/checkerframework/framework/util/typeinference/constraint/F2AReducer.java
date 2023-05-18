@@ -22,7 +22,7 @@ public class F2AReducer implements AFReducer {
   @Override
   public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints) {
     if (constraint instanceof F2A) {
-      final F2A f2A = (F2A) constraint;
+      F2A f2A = (F2A) constraint;
       visitor.visit(f2A.formalParameter, f2A.argument, newConstraints);
       return true;
 
