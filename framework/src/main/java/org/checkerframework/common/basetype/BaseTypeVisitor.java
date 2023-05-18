@@ -860,7 +860,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.getFieldInvariants(TypesUtils.getTypeElement(superClass));
     if (superInvar != null) {
       // Checks #3 (see method Javadoc)
-      DiagMessage superError = invariants.isSuperInvariant(superInvar, atypeFactory);
+      DiagMessage superError = invariants.isSuperInvariant(superInvar);
       if (superError != null) {
         checker.report(errorTree, superError);
       }
@@ -1992,8 +1992,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return false;
     }
     TypeMirror exprType = expr.getType();
-
-    atypeFactory
+    return atypeFactory
         .getQualifierHierarchy()
         .isSubtype(inferredAnnotation, exprType, necessaryAnnotation, exprType);
   }
@@ -4138,9 +4137,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
-      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
       TypeMirror overriderTM = overriderReceiver.getUnderlyingType();
-      TypeMirror overriddenTM = overriddenReceiver.getUnderlyingType();
 
       if (!qualifierHierarchy.isSubtype(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =

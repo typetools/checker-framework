@@ -112,7 +112,7 @@ public interface QualifierHierarchy {
 
   /**
    * Tests whether the qualifiers of {@code subtype} are equal to or subtypes of the qualifiiers of
-   * {@code supertype}. The Java basetypes of {@code subType} and {@code superType} are not
+   * {@code supertype}. The Java basetypes of {@code subtype} and {@code supertype} are not
    * necessarily in a Java subtyping relationship with one another and are only used by this method
    * for special cases when qualiifer subtyping depends on the Java basetype.
    *
@@ -163,8 +163,8 @@ public interface QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy. The Java basetypes of {@code subType} and {@code
-   * superType} are not necessarily in a Java subtyping relationship with one another and are only
+   * according to the type qualifier hierarchy. The Java basetypes of {@code subtype} and {@code
+   * supertype} are not necessarily in a Java subtyping relationship with one another and are only
    * used by this method for special cases when qualiifer subtyping depends on the Java basetype.
    * Their qualifiers are always ignored.
    *
