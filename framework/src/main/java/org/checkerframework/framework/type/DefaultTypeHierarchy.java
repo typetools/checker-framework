@@ -143,8 +143,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @param subtype expected subtype
    * @param supertype expected supertype
    * @param top the top of the hierarchy for which we want to make a comparison
-   * @return true if {@code subtype} is a subtype of, or equal to, {@code supertype} in the
-   *     qualifier hierarchy whose top is {@code top}
+   * @return true if {@code subtype} is a subtype of or equal to {@code supertype}, in the qualifier
+   *     hierarchy whose top is {@code top}
    */
   protected boolean isSubtype(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
