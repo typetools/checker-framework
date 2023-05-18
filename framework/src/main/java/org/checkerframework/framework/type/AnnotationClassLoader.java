@@ -675,14 +675,7 @@ public class AnnotationClassLoader implements Closeable {
     if (directoryContents == null) {
       throw new UserError("Directory does not exist: %s", currentDirectory);
     }
-    Arrays.sort(
-        directoryContents,
-        new Comparator<File>() {
-          @Override
-          public int compare(File o1, File o2) {
-            return o1.getName().compareTo(o2.getName());
-          }
-        });
+    Arrays.sort(directoryContents, Comparator.comparing(File::getName));
     for (File file : directoryContents) {
       if (file.isFile()) {
         // TODO: simplify all this string manipulation.
