@@ -2953,7 +2953,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /** Create a new AlwaysRelevantTypeMirror. */
     private AlwaysRelevantTypeMirror() {}
     /** The singleton AlwaysRelevantTypeMirror. */
-    public static AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();
+    public static @InternedDistinct AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();
 
     @Override
     public List<? extends AnnotationMirror> getAnnotationMirrors() {
