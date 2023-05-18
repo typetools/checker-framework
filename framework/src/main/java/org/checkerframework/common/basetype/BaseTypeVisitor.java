@@ -4143,9 +4143,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
+      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
       TypeMirror overriderTM = overriderReceiver.getUnderlyingType();
 
-      if (!qualifierHierarchy.isSubtype(overriddenReceiver, overriderReceiver)) {
+      if (!qualifierHierarchy.isSubtype(
+          overriddenAnnos, overriddenReceiver, overriderAnnos, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
         if (qualifierHierarchy.isSubtype(overriderAnnos, overriderTM, declaredAnnos, overriderTM)

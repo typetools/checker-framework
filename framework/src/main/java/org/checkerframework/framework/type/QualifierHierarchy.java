@@ -112,25 +112,6 @@ public interface QualifierHierarchy {
   // **********************************************************************
 
   /**
-   * Tests whether the qualifiers of {@code subtype} are equal to or subtypes of the qualifiiers of
-   * {@code supertype}. The Java basetypes of {@code subtype} and {@code supertype} are not
-   * necessarily in a Java subtyping relationship with one another and are only used by this method
-   * for special cases when qualiifer subtyping depends on the Java basetype.
-   *
-   * @param subtype possible subtype
-   * @param supertype possible supertype
-   * @return true iff {@code subtype} is a subtype of {@code supertype}, according to their
-   *     qualifiers only
-   */
-  default boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    return isSubtype(
-        subtype.getAnnotations(),
-        subtype.getUnderlyingType(),
-        supertype.getAnnotations(),
-        supertype.getUnderlyingType());
-  }
-
-  /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy.
    *
