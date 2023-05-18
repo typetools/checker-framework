@@ -1885,15 +1885,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the AnnotationTree which is a use of one of the field invariant annotations (as
-   * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
-   * returned.
+   * Returns the element of {@code annoTrees} that is a use of one of the field invariant
+   * annotations (as specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't
+   * found, null is returned.
    *
    * @param annoTrees list of trees to search; the result is one of the list elements, or null
    * @return the AnnotationTree that is a use of one of the field invariant annotations, or null if
    *     one isn't found
    */
-  public AnnotationTree getFieldInvariantAnnotationTree(List<? extends AnnotationTree> annoTrees) {
+  public @Nullable AnnotationTree getFieldInvariantAnnotationTree(
+      List<? extends AnnotationTree> annoTrees) {
     List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
     for (int i = 0; i < annos.size(); i++) {
       for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
