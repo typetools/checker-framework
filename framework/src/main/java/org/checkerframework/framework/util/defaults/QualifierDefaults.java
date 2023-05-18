@@ -354,6 +354,8 @@ public class QualifierDefaults {
     }
   }
 
+  private static TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -361,8 +363,7 @@ public class QualifierDefaults {
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
         AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-        TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
-        if (qualHierarchy.isSubtype(newAnno, relevantTM, previousTop, relevantTM)) {
+        if (qualHierarchy.isSubtype(newAnno, alwaysRelevantTM, previousTop, alwaysRelevantTM)) {
           return true;
         }
       }

@@ -1,5 +1,6 @@
 package org.checkerframework.common.subtyping;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -63,6 +64,9 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // load directories of qualifiers
     if (qualDirectories != null) {
       for (String dirName : qualDirectories.split(":")) {
+        if (!new File(dirName).exists()) {
+          throw new UserError("Directory specified in -AqualsDir does not exist: %s", dirName);
+        }
         Set<Class<? extends Annotation>> annos =
             loader.loadExternalAnnotationClassesFromDirectory(dirName);
         if (annos.isEmpty()) {
