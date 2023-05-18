@@ -127,6 +127,9 @@ public class GlbUtil {
    *
    * <p>E.g. the list: {@code ArrayList<String>, List<String>, AbstractList<String>} becomes: {@code
    * List<String>, AbstractList<String>, ArrayList<String>}
+   *
+   * @param typeMirrors the list to sort in place
+   * @param typeFactory the type factory
    */
   public static void sortForGlb(
       List<? extends AnnotatedTypeMirror> typeMirrors, AnnotatedTypeFactory typeFactory) {
@@ -141,7 +144,11 @@ public class GlbUtil {
     /** The type utiliites. */
     private final Types types;
 
-    /** Creates a new GlbSortComparator. */
+    /**
+     * Creates a new GlbSortComparator.
+     *
+     * @param typeFactory the type factory
+     */
     public GlbSortComparator(AnnotatedTypeFactory typeFactory) {
       qualifierHierarchy = typeFactory.getQualifierHierarchy();
       types = typeFactory.getProcessingEnv().getTypeUtils();
@@ -162,6 +169,14 @@ public class GlbUtil {
       }
     }
 
+    /**
+     * Returns -1, 0, or 1 depending on whether anno1 is a supertype, same as, or a subtype of
+     * annos2.
+     *
+     * @param type1 a type whose annotations to compare
+     * @param type2 a type whose annotations to compare
+     * @return the comparison of type1 and type2
+     */
     private int compareAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       AnnotationMirrorSet annos1 = type1.getAnnotations();
       AnnotationMirrorSet annos2 = type2.getAnnotations();
