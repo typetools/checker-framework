@@ -637,7 +637,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       }
     }
 
-    // Retrieve formal parameter types from the method definition
+    // Retrieve formal parameter types from the method definition.
 
     for (int i = 0; i < paramTypes.size(); i++) {
       guardSatisfiedIndex[i + 1] = -1;
@@ -649,7 +649,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       }
     }
 
-    // Combine all of the actual parameters into one list of AnnotationMirrors
+    // Combine all of the actual parameters into one list of AnnotationMirrors.
 
     ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
     passedArgAnnotations.add(
@@ -691,7 +691,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               if (bothAreGSwithNoIndex
                   || !(atypeFactory.getQualifierHierarchy().isSubtype(arg1Anno, arg2Anno)
                       || atypeFactory.getQualifierHierarchy().isSubtype(arg2Anno, arg1Anno))) {
-                // TODO: allow these strings to be localized
 
                 String formalParam1 = null;
 
