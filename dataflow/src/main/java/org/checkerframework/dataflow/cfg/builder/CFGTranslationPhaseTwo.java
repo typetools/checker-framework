@@ -85,7 +85,7 @@ public class CFGTranslationPhaseTwo {
             // block which is required for the insertion of missing edges.
             node.setBlock(block);
             assert block != null;
-            final ConditionalBlockImpl cb = new ConditionalBlockImpl();
+            ConditionalBlockImpl cb = new ConditionalBlockImpl();
             if (cj.getTrueFlowRule() != null) {
               cb.setThenFlowRule(cj.getTrueFlowRule());
             }
@@ -97,8 +97,8 @@ public class CFGTranslationPhaseTwo {
 
             // use two anonymous SingleSuccessorBlockImpl that set the
             // 'then' and 'else' successor of the conditional block
-            final Label thenLabel = cj.getThenLabel();
-            final Label elseLabel = cj.getElseLabel();
+            Label thenLabel = cj.getThenLabel();
+            Label elseLabel = cj.getElseLabel();
             Integer target = bindings.get(thenLabel);
             assert target != null;
             missingEdges.add(

@@ -51,8 +51,8 @@ public interface TypeArgumentInference {
    *     not .equals to each other.
    */
   public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
-      final AnnotatedTypeFactory typeFactory,
-      final ExpressionTree invocation,
-      final ExecutableElement methodElem,
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree invocation,
+      ExecutableElement methodElem,
       final AnnotatedExecutableType methodType);
 }

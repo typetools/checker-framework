@@ -23,8 +23,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @return the set of targets that still don't have an inferred argument
    */
   public Set<TypeVariable> getRemainingTargets(
-      final Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
-    final LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
+      Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
+    LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
 
     if (inferredTypesOnly) {
 
@@ -47,9 +47,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @param targets type variables to check
    * @return true if we have inferred a concrete type for all targets
    */
-  public boolean isComplete(final Set<TypeVariable> targets) {
-    for (final TypeVariable target : targets) {
-      final InferredValue inferred = this.get(target);
+  public boolean isComplete(Set<TypeVariable> targets) {
+    for (TypeVariable target : targets) {
+      InferredValue inferred = this.get(target);
 
       if (inferred == null || inferred instanceof InferredTarget) {
         return false;
@@ -67,30 +67,30 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * we have (the above constraints become T1 = String, T2 = String, T3 = String)
    */
   public void resolveChainedTargets() {
-    final Map<TypeVariable, InferredValue> inferredTypes = new LinkedHashMap<>(this.size());
+    Map<TypeVariable, InferredValue> inferredTypes = new LinkedHashMap<>(this.size());
 
     // TODO: we can probably make this a bit more efficient
     boolean grew = true;
     while (grew) {
       grew = false;
-      for (final Map.Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
-        final TypeVariable target = inferred.getKey();
-        final InferredValue value = inferred.getValue();
+      for (Map.Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
+        TypeVariable target = inferred.getKey();
+        InferredValue value = inferred.getValue();
 
         if (value instanceof InferredType) {
           inferredTypes.put(target, value);
 
         } else {
-          final InferredTarget currentTarget = (InferredTarget) value;
-          final InferredType equivalentType =
+          InferredTarget currentTarget = (InferredTarget) value;
+          InferredType equivalentType =
               (InferredType) inferredTypes.get(((InferredTarget) value).target);
 
           if (equivalentType != null) {
             grew = true;
-            final AnnotatedTypeMirror type = equivalentType.type.deepCopy();
+            AnnotatedTypeMirror type = equivalentType.type.deepCopy();
             type.replaceAnnotations(currentTarget.additionalAnnotations);
 
-            final InferredType newConstraint = new InferredType(type);
+            InferredType newConstraint = new InferredType(type);
             inferredTypes.put(currentTarget.target, newConstraint);
           }
         }
@@ -101,9 +101,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   public Map<TypeVariable, AnnotatedTypeMirror> toAtmMap() {
-    final Map<TypeVariable, AnnotatedTypeMirror> result = new LinkedHashMap<>(this.size());
-    for (final Map.Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
-      final InferredValue inferredValue = entry.getValue();
+    Map<TypeVariable, AnnotatedTypeMirror> result = new LinkedHashMap<>(this.size());
+    for (Map.Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
+      InferredValue inferredValue = entry.getValue();
       if (inferredValue instanceof InferredType) {
         result.put(entry.getKey(), ((InferredType) inferredValue).type);
       }
@@ -118,9 +118,9 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    *
    * @param subordinate a result which we wish to merge into this result
    */
-  public void mergeSubordinate(final InferenceResult subordinate) {
-    final LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
-    final LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
+  public void mergeSubordinate(InferenceResult subordinate) {
+    LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
+    LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
     remainingSubKeys.removeAll(keySet());
 
     for (TypeVariable target : previousKeySet) {
@@ -135,13 +135,13 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   /** Performs a merge for a specific target, we keep only results that lead to a concrete type. */
-  protected InferredType mergeTarget(final TypeVariable target, final InferenceResult subordinate) {
-    final InferredValue inferred = this.get(target);
+  protected InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
+    InferredValue inferred = this.get(target);
     if (inferred instanceof InferredTarget) {
       InferredType newType = mergeTarget(((InferredTarget) inferred).target, subordinate);
 
       if (newType == null) {
-        final InferredValue subValue = subordinate.get(target);
+        InferredValue subValue = subordinate.get(target);
         if (subValue instanceof InferredType) {
           this.put(target, subValue);
           return null;
@@ -150,7 +150,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
         if (newType.type.getKind() == TypeKind.NULL) {
           // If the newType is null, then use the subordinate type, but with the
           // primary annotations on null.
-          final InferredValue subValue = subordinate.get(target);
+          InferredValue subValue = subordinate.get(target);
           if (subValue instanceof InferredType) {
             AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
             copy.replaceAnnotations(newType.type.getAnnotations());

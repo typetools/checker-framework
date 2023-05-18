@@ -181,7 +181,7 @@ public class ReflectiveEvaluator {
    * @return the Method object corresponding to the method invocation tree
    */
   private Method getMethodObject(MethodInvocationTree tree) {
-    final ExecutableElement ele = TreeUtils.elementFromUse(tree);
+    ExecutableElement ele = TreeUtils.elementFromUse(tree);
     List<Class<?>> paramClasses = null;
     try {
       @CanonicalNameOrEmpty String className =

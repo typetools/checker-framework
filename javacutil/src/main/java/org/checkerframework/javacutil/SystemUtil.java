@@ -59,8 +59,8 @@ public class SystemUtil {
 
     // Since Java 9, from a version string like "11.0.1" or "11-ea" or "11u25", extract "11".
     // The format is described at http://openjdk.org/jeps/223 .
-    final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
-    final Matcher newVersionMatcher = newVersionPattern.matcher(version);
+    Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
+    Matcher newVersionMatcher = newVersionPattern.matcher(version);
     if (newVersionMatcher.matches()) {
       String v = newVersionMatcher.group(1);
       assert v != null : "@AssumeAssertion(nullness): inspection";
@@ -127,8 +127,8 @@ public class SystemUtil {
    * @deprecated use Files.readAllLines
    */
   @Deprecated // 2021-03-10
-  public static List<String> readFile(final File argFile) throws IOException {
-    try (final BufferedReader br = new BufferedReader(new FileReader(argFile))) {
+  public static List<String> readFile(File argFile) throws IOException {
+    try (BufferedReader br = new BufferedReader(new FileReader(argFile))) {
       String line;
       List<String> lines = new ArrayList<>();
       while ((line = br.readLine()) != null) {

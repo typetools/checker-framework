@@ -46,7 +46,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
   public final AnnotatedTypeFactory typeFactory;
 
   protected AFReducingVisitor(
-      final Class<? extends AFConstraint> reducerType, final AnnotatedTypeFactory typeFactory) {
+      Class<? extends AFConstraint> reducerType, AnnotatedTypeFactory typeFactory) {
     this.reducerType = reducerType;
     this.typeFactory = typeFactory;
   }
@@ -175,20 +175,20 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     AnnotatedDeclaredType subAsSuper =
         AnnotatedTypes.castedAsSuper(typeFactory, subtype, supertype);
 
-    final List<AnnotatedTypeMirror> subTypeArgs = subAsSuper.getTypeArguments();
-    final List<AnnotatedTypeMirror> superTypeArgs = supertype.getTypeArguments();
+    List<AnnotatedTypeMirror> subTypeArgs = subAsSuper.getTypeArguments();
+    List<AnnotatedTypeMirror> superTypeArgs = supertype.getTypeArguments();
     for (int i = 0; i < subTypeArgs.size(); i++) {
-      final AnnotatedTypeMirror subTypeArg = subTypeArgs.get(i);
-      final AnnotatedTypeMirror superTypeArg = superTypeArgs.get(i);
+      AnnotatedTypeMirror subTypeArg = subTypeArgs.get(i);
+      AnnotatedTypeMirror superTypeArg = superTypeArgs.get(i);
 
       // If F has the form G<..., Yk-1, ? extends U, Yk+1, ...>, where U involves Tj
       // If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
       // Since we always have both bounds in the checker framework we always compare both
       if (superTypeArg.getKind() == TypeKind.WILDCARD) {
-        final AnnotatedWildcardType superWc = (AnnotatedWildcardType) superTypeArg;
+        AnnotatedWildcardType superWc = (AnnotatedWildcardType) superTypeArg;
 
         if (subTypeArg.getKind() == TypeKind.WILDCARD) {
-          final AnnotatedWildcardType subWc = (AnnotatedWildcardType) subTypeArg;
+          AnnotatedWildcardType subWc = (AnnotatedWildcardType) subTypeArg;
           TypeArgInferenceUtil.checkForUninferredTypes(subWc);
           addConstraint(subWc.getExtendsBound(), superWc.getExtendsBound(), constraints);
           addInverseConstraint(superWc.getSuperBound(), subWc.getSuperBound(), constraints);
@@ -216,7 +216,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // Note: AnnotatedIntersectionTypes cannot have a type variable as one of the direct
     // parameters but a type variable may be the type subtype to an intersection bound <e.g.  <T
     // extends Serializable & Iterable<T>>
-    for (final AnnotatedTypeMirror intersectionBound : supertype.getBounds()) {
+    for (AnnotatedTypeMirror intersectionBound : supertype.getBounds()) {
       if (intersectionBound instanceof AnnotatedDeclaredType
           && !((AnnotatedDeclaredType) intersectionBound).getTypeArguments().isEmpty()) {
         addConstraint(subtype, supertype, constraints);
@@ -278,7 +278,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
       Set<AFConstraint> constraints) {
 
     // at least one of the intersection bound types must be convertible to the param type
-    final AnnotatedDeclaredType subtypeAsParam =
+    AnnotatedDeclaredType subtypeAsParam =
         AnnotatedTypes.castedAsSuper(typeFactory, subtype, supertype);
     if (subtypeAsParam != null && !subtypeAsParam.equals(supertype)) {
       addConstraint(subtypeAsParam, supertype, constraints);

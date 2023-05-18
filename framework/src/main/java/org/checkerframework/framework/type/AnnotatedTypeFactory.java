@@ -1555,7 +1555,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree MethodTree or VariableTree
    * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
    */
-  private final AnnotatedTypeMirror fromMember(Tree tree) {
+  private AnnotatedTypeMirror fromMember(Tree tree) {
     if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
       throw new BugInCF(
           "AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
@@ -1996,7 +1996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return AnnotatedNullType qualified with {@code annotations}
    */
   public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
-    final AnnotatedTypeMirror.AnnotatedNullType nullType =
+    AnnotatedTypeMirror.AnnotatedNullType nullType =
         (AnnotatedNullType) toAnnotatedType(processingEnv.getTypeUtils().getNullType(), false);
     nullType.addAnnotations(annotations);
     return nullType;
@@ -3779,7 +3779,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
 
-    final TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
+    TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
     if (pathWithinSubtree != null) {
       treePathCache.addPath(tree, pathWithinSubtree);
       return pathWithinSubtree;
@@ -3833,7 +3833,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param type an annotated type
    * @return true if the type is a valid annotated type, false otherwise
    */
-  static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
+  static boolean validAnnotatedType(AnnotatedTypeMirror type) {
     if (type == null) {
       return false;
     }
@@ -3845,7 +3845,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return true if {@code type} can be converted to an annotated type, false otherwise
    */
-  private static final boolean validType(TypeMirror type) {
+  private static boolean validType(TypeMirror type) {
     if (type == null) {
       return false;
     }
@@ -4490,7 +4490,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param from the annotated type mirror from which to take new annotations
    * @param to the annotated type mirror to which the annotations will be added
    */
-  public void replaceAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  public void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     annotatedTypeReplacer.visit(from, to);
   }
 
@@ -4504,7 +4504,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param top the top type of the hierarchy whose annotations will be added
    */
   public void replaceAnnotations(
-      final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+      AnnotatedTypeMirror from, AnnotatedTypeMirror to, AnnotationMirror top) {
     annotatedTypeReplacer.setTop(top);
     annotatedTypeReplacer.visit(from, to);
     annotatedTypeReplacer.setTop(null);
@@ -4736,9 +4736,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
-        final AnnotatedTypeMirror falseType =
+        AnnotatedTypeMirror falseType =
             getAnnotatedType(conditionalExpressionTree.getFalseExpression());
-        final AnnotatedTypeMirror trueType =
+        AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
 
         // Known cases where we must use LUB because falseType/trueType will not be equal:
