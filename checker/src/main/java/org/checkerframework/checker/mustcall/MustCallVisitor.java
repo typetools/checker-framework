@@ -293,8 +293,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    AnnotationMirror resultAnno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
