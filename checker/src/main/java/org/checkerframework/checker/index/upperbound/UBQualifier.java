@@ -1111,7 +1111,7 @@ public abstract class UBQualifier {
      * @param sequences access of the length of these sequences are removed
      * @return a copy of this qualifier with some offsets removed
      */
-    public UBQualifier removeSequenceLengthAccess(final List<String> sequences) {
+    public UBQualifier removeSequenceLengthAccess(List<String> sequences) {
       if (sequences.isEmpty()) {
         return UpperBoundUnknownQualifier.UNKNOWN;
       }
@@ -1126,7 +1126,7 @@ public abstract class UBQualifier {
      * @param sequences access of the length of these sequences are removed
      * @return a copy of this qualifier with some offsets removed
      */
-    public UBQualifier removeSequenceLengthAccessAndNeg1(final List<String> sequences) {
+    public UBQualifier removeSequenceLengthAccessAndNeg1(List<String> sequences) {
       if (sequences.isEmpty()) {
         return UpperBoundUnknownQualifier.UNKNOWN;
       }
@@ -1150,7 +1150,7 @@ public abstract class UBQualifier {
      * @param newOffset the offset to add to this
      * @return a new qualifier, which is this qualifier plus the given offset
      */
-    private UBQualifier addOffset(final OffsetEquation newOffset) {
+    private UBQualifier addOffset(OffsetEquation newOffset) {
       OffsetEquationFunction addOffsetFunc = eq -> eq.copyAdd('+', newOffset);
       return computeNewOffsets(addOffsetFunc);
     }

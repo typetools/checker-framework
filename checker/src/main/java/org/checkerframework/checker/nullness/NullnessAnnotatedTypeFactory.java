@@ -485,16 +485,14 @@ public class NullnessAnnotatedTypeFactory
 
   @Override
   public void adaptGetClassReturnTypeToReceiver(
-      final AnnotatedExecutableType getClassType,
-      final AnnotatedTypeMirror receiverType,
-      ExpressionTree tree) {
+      AnnotatedExecutableType getClassType, AnnotatedTypeMirror receiverType, ExpressionTree tree) {
 
     super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType, tree);
 
     // Make the captured wildcard always @NonNull, regardless of the declared type.
 
-    final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
-    final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+    AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
+    List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
     AnnotatedTypeVariable classWildcardArg = (AnnotatedTypeVariable) typeArgs.get(0);
     classWildcardArg.getUpperBound().replaceAnnotation(NONNULL);
   }

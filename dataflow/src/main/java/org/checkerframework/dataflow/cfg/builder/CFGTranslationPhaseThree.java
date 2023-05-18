@@ -201,7 +201,7 @@ public class CFGTranslationPhaseThree {
 
     RegularBlockImpl cur = start;
     emptyBlocks.add(cur);
-    for (final Block p : cur.getPredecessors()) {
+    for (Block p : cur.getPredecessors()) {
       BlockImpl pred = (BlockImpl) p;
       switch (pred.getType()) {
         case SPECIAL_BLOCK:
@@ -242,15 +242,14 @@ public class CFGTranslationPhaseThree {
    * @return a predecessor holder to set the successor of {@code pred}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparisons
-  protected static PredecessorHolder getPredecessorHolder(
-      final BlockImpl pred, final BlockImpl cur) {
+  protected static PredecessorHolder getPredecessorHolder(BlockImpl pred, BlockImpl cur) {
     switch (pred.getType()) {
       case SPECIAL_BLOCK:
         SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
         return singleSuccessorHolder(s, cur);
       case CONDITIONAL_BLOCK:
         // add pred correctly to predecessor list
-        final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+        ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
         if (c.getThenSuccessor() == cur) {
           return new PredecessorHolder() {
             @Override
@@ -281,13 +280,13 @@ public class CFGTranslationPhaseThree {
         }
       case EXCEPTION_BLOCK:
         // add pred correctly to predecessor list
-        final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+        ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
         if (e.getSuccessor() == cur) {
           return singleSuccessorHolder(e, cur);
         } else {
           @SuppressWarnings("keyfor:assignment") // ignore keyfor type
           Set<Map.Entry<TypeMirror, Set<Block>>> entrySet = e.getExceptionalSuccessors().entrySet();
-          for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
+          for (Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
             if (entry.getValue().contains(cur)) {
               return new PredecessorHolder() {
                 @Override
@@ -321,7 +320,7 @@ public class CFGTranslationPhaseThree {
    *     s}
    */
   protected static PredecessorHolder singleSuccessorHolder(
-      final SingleSuccessorBlockImpl s, final BlockImpl old) {
+      SingleSuccessorBlockImpl s, BlockImpl old) {
     return new PredecessorHolder() {
       @Override
       public void setSuccessor(BlockImpl b) {

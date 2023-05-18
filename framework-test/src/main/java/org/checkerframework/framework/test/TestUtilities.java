@@ -243,7 +243,7 @@ public class TestUtilities {
   }
 
   public static @Nullable String diagnosticToString(
-      final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
+      Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
 
     String result = diagnostic.toString().trim();
 
@@ -278,8 +278,7 @@ public class TestUtilities {
   }
 
   public static Set<String> diagnosticsToStrings(
-      final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics,
-      boolean usingAnomsgtxt) {
+      Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
     Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
       String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
@@ -310,7 +309,7 @@ public class TestUtilities {
   }
 
   public static File findComparisonFile(File testFile) {
-    final File comparisonFile =
+    File comparisonFile =
         new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
     return comparisonFile;
   }
@@ -342,7 +341,7 @@ public class TestUtilities {
    * @param lines what lines to write
    */
   public static void writeLines(File file, Iterable<?> lines) {
-    try (final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
       Iterator<?> iter = lines.iterator();
       while (iter.hasNext()) {
         Object next = iter.next();

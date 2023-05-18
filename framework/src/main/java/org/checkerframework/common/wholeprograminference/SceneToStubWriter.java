@@ -374,7 +374,7 @@ public final class SceneToStubWriter {
    * @param javacType the javac representation of the type
    * @return the type as it would appear in Java source code, followed by a trailing space
    */
-  private static String formatType(final @Nullable ATypeElement aType, final TypeMirror javacType) {
+  private static String formatType(@Nullable ATypeElement aType, TypeMirror javacType) {
     StringBuilder sb = new StringBuilder();
     formatType(sb, aType, javacType);
     return sb.toString();
@@ -389,7 +389,7 @@ public final class SceneToStubWriter {
    * @param javacType the javac representation of the type
    */
   private static void formatType(
-      StringBuilder sb, final @Nullable ATypeElement aType, final TypeMirror javacType) {
+      StringBuilder sb, @Nullable ATypeElement aType, TypeMirror javacType) {
     // TypeMirror#toString prints multiple annotations on a single type
     // separated by commas rather than by whitespace, as is required in source code.
     String basetypeToPrint = javacType.toString().replaceAll(",@", " @");
@@ -426,7 +426,7 @@ public final class SceneToStubWriter {
    */
   private static void formatType(
       StringBuilder sb,
-      final @Nullable ATypeElement aType,
+      @Nullable ATypeElement aType,
       @Nullable TypeMirror javacType,
       String basetypeToPrint) {
     // anonymous static classes shouldn't be printed with the "anonymous" tag that the AScene

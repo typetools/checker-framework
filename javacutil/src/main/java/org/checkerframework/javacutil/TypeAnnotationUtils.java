@@ -423,7 +423,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method return TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodReturnTAPosition(final int pos) {
+  public static TypeAnnotationPosition methodReturnTAPosition(int pos) {
     return TypeAnnotationPosition.methodReturn(pos);
   }
 
@@ -433,7 +433,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method receiver TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodReceiverTAPosition(final int pos) {
+  public static TypeAnnotationPosition methodReceiverTAPosition(int pos) {
     return TypeAnnotationPosition.methodReceiver(pos);
   }
 
@@ -444,7 +444,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodParameterTAPosition(final int pidx, final int pos) {
+  public static TypeAnnotationPosition methodParameterTAPosition(int pidx, int pos) {
     return TypeAnnotationPosition.methodParameter(pidx, pos);
   }
 
@@ -455,7 +455,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method throws TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodThrowsTAPosition(final int tidx, final int pos) {
+  public static TypeAnnotationPosition methodThrowsTAPosition(int tidx, int pos) {
     return TypeAnnotationPosition.methodThrows(TypeAnnotationPosition.emptyPath, null, tidx, pos);
   }
 
@@ -465,7 +465,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a field TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition fieldTAPosition(final int pos) {
+  public static TypeAnnotationPosition fieldTAPosition(int pos) {
     return TypeAnnotationPosition.field(pos);
   }
 
@@ -476,7 +476,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a class extends TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition classExtendsTAPosition(final int implidx, final int pos) {
+  public static TypeAnnotationPosition classExtendsTAPosition(int implidx, int pos) {
     return TypeAnnotationPosition.classExtends(implidx, pos);
   }
 
@@ -487,7 +487,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a type parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition typeParameterTAPosition(final int tpidx, final int pos) {
+  public static TypeAnnotationPosition typeParameterTAPosition(int tpidx, int pos) {
     return TypeAnnotationPosition.typeParameter(TypeAnnotationPosition.emptyPath, null, tpidx, pos);
   }
 
@@ -498,8 +498,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method type parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodTypeParameterTAPosition(
-      final int tpidx, final int pos) {
+  public static TypeAnnotationPosition methodTypeParameterTAPosition(int tpidx, int pos) {
     return TypeAnnotationPosition.methodTypeParameter(
         TypeAnnotationPosition.emptyPath, null, tpidx, pos);
   }
@@ -513,7 +512,7 @@ public class TypeAnnotationUtils {
    * @return a method parameter TypeAnnotationPosition
    */
   public static TypeAnnotationPosition typeParameterBoundTAPosition(
-      final int tpidx, final int bndidx, final int pos) {
+      int tpidx, int bndidx, int pos) {
     return TypeAnnotationPosition.typeParameterBound(
         TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
   }
@@ -527,7 +526,7 @@ public class TypeAnnotationUtils {
    * @return a method parameter TypeAnnotationPosition
    */
   public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(
-      final int tpidx, final int bndidx, final int pos) {
+      int tpidx, int bndidx, int pos) {
     return TypeAnnotationPosition.methodTypeParameterBound(
         TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
   }
@@ -538,7 +537,7 @@ public class TypeAnnotationUtils {
    * @param tapos the input TypeAnnotationPosition
    * @return a copied TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition copyTAPosition(final TypeAnnotationPosition tapos) {
+  public static TypeAnnotationPosition copyTAPosition(TypeAnnotationPosition tapos) {
     TypeAnnotationPosition res;
     switch (tapos.type) {
       case CAST:
@@ -652,8 +651,8 @@ public class TypeAnnotationUtils {
    * @param in the input type
    * @return the same underlying type, but without type annotations
    */
-  public static Type unannotatedType(final TypeMirror in) {
-    final Type impl = (Type) in;
+  public static Type unannotatedType(TypeMirror in) {
+    Type impl = (Type) in;
     if (impl.isPrimitive()) {
       // TODO: file an issue that stripMetadata doesn't work for primitives.
       // See eisop/checker-framework issue #21.

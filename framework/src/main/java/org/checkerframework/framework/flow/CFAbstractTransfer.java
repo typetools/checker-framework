@@ -423,7 +423,7 @@ public abstract class CFAbstractTransfer<
       // TODO: There is a design flaw where the values of final local values leaks
       // into other methods of the same class. For example, in
       // class a { void b() {...} void c() {...} }
-      // final local values from b() would be visible in the store for c(),
+      // local values from b() would be visible in the store for c(),
       // even though they should only be visible in b() and in classes
       // defined inside the method body of b().
       // This is partly because GenericAnnotatedTypeFactory.performFlowAnalysis does not call

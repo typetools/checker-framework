@@ -47,8 +47,8 @@ public class SubtypeVisitHistory {
    *     does nothing
    */
   public void put(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
       AnnotationMirror currentTop,
       boolean isSubtype) {
     if (!isSubtype) {
@@ -69,9 +69,7 @@ public class SubtypeVisitHistory {
 
   /** Remove {@code type1} and {@code type2}. */
   public void remove(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      AnnotationMirror currentTop) {
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
     if (hit != null) {
@@ -89,9 +87,7 @@ public class SubtypeVisitHistory {
    * @return true if an equivalent pair has already been added to the history
    */
   public boolean contains(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      AnnotationMirror currentTop) {
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
     return hit != null && hit.contains(currentTop);

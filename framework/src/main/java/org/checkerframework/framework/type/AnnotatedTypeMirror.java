@@ -791,7 +791,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @return a deep copy
    */
-  public abstract AnnotatedTypeMirror deepCopy(final boolean copyAnnotations);
+  public abstract AnnotatedTypeMirror deepCopy(boolean copyAnnotations);
 
   /**
    * Returns a deep copy of this type with annotations.

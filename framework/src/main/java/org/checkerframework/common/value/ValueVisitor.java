@@ -293,8 +293,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         && exprAnno != null
         && atypeFactory.isIntRange(castAnno)
         && atypeFactory.isIntRange(exprAnno)) {
-      final Range castRange = atypeFactory.getRange(castAnno);
-      final TypeKind castTypeKind = castType.getKind();
+      Range castRange = atypeFactory.getRange(castAnno);
+      TypeKind castTypeKind = castType.getKind();
       if (castTypeKind == TypeKind.BYTE && castRange.isByteEverything()) {
         return p;
       }

@@ -415,7 +415,7 @@ public class OptionalVisitor
    * @return the single enclosed statement, if it exists; otherwise, the same tree
    */
   // TODO: The Optional Checker should work over the CFG, then it would not need this any longer.
-  public static StatementTree skipBlocks(final StatementTree tree) {
+  public static StatementTree skipBlocks(StatementTree tree) {
     if (tree == null) {
       return tree;
     }
