@@ -1465,7 +1465,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
       result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
 
-      if (result.paramsDeclAnnos != null) {
+      if (this.paramsDeclAnnos != null) {
         result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
       }
       result.preconditions = deepCopyMapOfStringToPair(this.preconditions);
