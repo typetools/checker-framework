@@ -19,6 +19,10 @@ Methods that now return `AnnotationMirrorSet` instead of `Set<? extends Annotati
 
 Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements()`.
 
+Class `FieldInvariants`:
+ * constructor now takes an `AnnotatedTypeFactory`
+ * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
+
 **Closed issues:**
 
 

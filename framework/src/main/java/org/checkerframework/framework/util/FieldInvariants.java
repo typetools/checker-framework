@@ -12,24 +12,27 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
- * this as a set of (field, qualifier) pairs.
+ * this as a set of (field name, qualifier) pairs.
  *
- * <p>A FieldInvariants object may be malformed (inconsistent number of fields and qualifiers). In
- * this case, the BaseTypeVisitor will issue an error.
+ * <p>If a FieldInvariants object is malformed (inconsistent number of fields and qualifiers),
+ * BaseTypeVisitor will issue an error.
  */
 public class FieldInvariants {
 
   /**
    * A list of simple field names. A field may appear more than once in this list. This list has the
-   * same length as {@code qualifiers}.
+   * same length as {@link #qualifiers}.
    */
   private final List<String> fields;
 
   /**
-   * A list of qualifiers that apply to the field at the same index in {@code fields}. In a
-   * well-formed FieldInvariants, has the same length as {@code fields}.
+   * A list of qualifiers that apply to the field at the same index in {@link #fields}. In a
+   * well-formed FieldInvariants, has the same length as {@link #fields}.
    */
   private final List<AnnotationMirror> qualifiers;
+
+  /** The type factory associated with this. */
+  private final AnnotatedTypeFactory factory;
 
   /**
    * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
@@ -37,9 +40,11 @@ public class FieldInvariants {
    *
    * @param fields list of fields
    * @param qualifiers list of qualifiers
+   * @param factory the type factory
    */
-  public FieldInvariants(List<String> fields, List<AnnotationMirror> qualifiers) {
-    this(null, fields, qualifiers);
+  public FieldInvariants(
+      List<String> fields, List<AnnotationMirror> qualifiers, AnnotatedTypeFactory factory) {
+    this(null, fields, qualifiers, factory);
   }
 
   /**
@@ -50,9 +55,13 @@ public class FieldInvariants {
    * @param other other invariant object, may be null
    * @param fields list of fields
    * @param qualifiers list of qualifiers
+   * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
+      FieldInvariants other,
+      List<String> fields,
+      List<AnnotationMirror> qualifiers,
+      AnnotatedTypeFactory factory) {
     if (qualifiers.size() == 1) {
       while (fields.size() > qualifiers.size()) {
         qualifiers.add(qualifiers.get(0));
@@ -65,6 +74,7 @@ public class FieldInvariants {
 
     this.fields = Collections.unmodifiableList(fields);
     this.qualifiers = qualifiers;
+    this.factory = factory;
   }
 
   /** The simple names of the fields that have a qualifier. May contain duplicates. */
@@ -110,10 +120,9 @@ public class FieldInvariants {
    * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
    *
    * @param superInvar the value to check for being a super invariant
-   * @param factory the type factory
    * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
    */
-  public DiagMessage isSuperInvariant(FieldInvariants superInvar, AnnotatedTypeFactory factory) {
+  public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
     QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
