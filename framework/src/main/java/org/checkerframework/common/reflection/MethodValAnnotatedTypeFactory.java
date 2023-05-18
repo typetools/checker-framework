@@ -250,6 +250,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
 
+    @SuppressWarnings("deprecation") // for removal
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, superAnno)

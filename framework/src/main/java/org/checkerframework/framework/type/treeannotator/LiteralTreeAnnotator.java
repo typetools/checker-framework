@@ -252,7 +252,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         }
         // Verify that res is not a subtype of any type in nonMatches
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
-          if (qualHierarchy.isSubtype(res, sam)) {
+          if (qualHierarchy.isSubtype(res, type, sam, type)) {
             String matchesOnePerLine = "";
             for (Set<? extends AnnotationMirror> match : matches) {
               matchesOnePerLine += System.lineSeparator() + "     " + match;

@@ -407,6 +407,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    *
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
+  @SuppressWarnings("deprecation") // for removal
   @Override
   public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);

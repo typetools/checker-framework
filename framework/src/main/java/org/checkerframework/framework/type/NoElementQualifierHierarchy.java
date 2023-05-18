@@ -216,6 +216,7 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
     return getQualifierKind(qualifier).isPoly();
   }
 
+  @SuppressWarnings("deprecation") // for removal
   @Override
   public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     QualifierKind subKind = getQualifierKind(subAnno);

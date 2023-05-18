@@ -193,6 +193,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * structure unless both annotations are ClassVal. In this case, rhs is
      * a subtype of lhs iff lhs contains  every element of rhs.
      */
+    @SuppressWarnings("deprecation") // for removal
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, superAnno)

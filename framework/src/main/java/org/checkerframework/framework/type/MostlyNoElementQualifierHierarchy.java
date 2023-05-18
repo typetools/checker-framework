@@ -49,6 +49,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
     super(qualifierClasses, elements);
   }
 
+  @SuppressWarnings("deprecation") // for removal
   @Override
   public final boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     QualifierKind subKind = getQualifierKind(subAnno);

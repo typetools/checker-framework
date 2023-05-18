@@ -461,6 +461,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
       return createAccumulatorAnnotation(a1Val);
     }
 
+    @SuppressWarnings("deprecation") // for removal
     /** isSubtype in this type system is subset. */
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
