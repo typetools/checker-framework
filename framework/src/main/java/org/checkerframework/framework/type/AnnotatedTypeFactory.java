@@ -2519,13 +2519,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
     AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getExtendsBound().getAnnotations();
-    TypeMirror receiverUnderlying = receiverType.getUnderlyingType();
-    TypeMirror getClassUnderlying = getClassType.getUnderlyingType();
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
       if (qualHierarchy.isSubtype(
-          receiverTypeBoundAnno, receiverUnderlying, wildcardAnno, getClassUnderlying)) {
+          receiverTypeBoundAnno, receiverType, wildcardAnno, getClassType)) {
         newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);

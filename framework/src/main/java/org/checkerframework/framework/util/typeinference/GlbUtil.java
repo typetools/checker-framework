@@ -134,7 +134,7 @@ public class GlbUtil {
   }
 
   /** A comparator for {@link #sortForGlb}. */
-  private class GlbSortComparator extends Comparator<AnnotatedTypeMirror> {
+  private static final class GlbSortComparator implements Comparator<AnnotatedTypeMirror> {
 
     private final QualifierHierarchy qualifierHierarchy;
     private final Types types;
@@ -145,16 +145,13 @@ public class GlbUtil {
       types = typeFactory.getProcessingEnv().getTypeUtils();
     }
 
-    /** The singleton GlbSortComparator. */
-    public GlbSortComparator it = new GlbSortComparator();
-
     @Override
     public int compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       TypeMirror underlyingType1 = type1.getUnderlyingType();
       TypeMirror underlyingType2 = type2.getUnderlyingType();
 
       if (types.isSameType(underlyingType1, underlyingType2)) {
-        return compareAnnotations(qualifierHierarchy, type1, type2);
+        return compareAnnotations(type1, type2);
       }
 
       if (types.isSubtype(underlyingType1, underlyingType2)) {
@@ -170,7 +167,7 @@ public class GlbUtil {
         return 0;
       }
 
-      if (qualfierHierarchy.isSubtype(type1, type2)) {
+      if (qualifierHierarchy.isSubtype(type1, type2)) {
         return 1;
 
       } else {

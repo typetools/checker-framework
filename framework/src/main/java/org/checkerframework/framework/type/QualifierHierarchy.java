@@ -173,13 +173,15 @@ public interface QualifierHierarchy {
    * @param superQualifier possible superqualifier
    * @param supertype the Java type associated with {@code superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
    */
-  boolean isSubtype(
+  default boolean isSubtype(
       AnnotationMirror subQualifier,
       AnnotatedTypeMirror subtype,
       AnnotationMirror superQualifier,
-      AnnotatedTypeMirror supertype);
+      AnnotatedTypeMirror supertype) {
+    return isSubtype(
+        subQualifier, subtype.getUnderlyingType(), superQualifier, supertype.getUnderlyingType());
+  }
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the

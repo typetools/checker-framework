@@ -96,16 +96,16 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // if @N <: @L <: @U             then LUB(@N null, T) =    T
     AnnotationMirrorSet lowerBounds =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, otherAsLub);
-    TypeMirror otherUnderlying = otherAsLub.getUnderlyingType();
-    TypeMirror nullUnderlying = nullType.getUnderlyingType();
+    TypeMirror otherTM = otherAsLub.getUnderlyingType();
+    TypeMirror nullTM = nullType.getUnderlyingType();
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getAnnotationInHierarchy(lowerBound);
       AnnotationMirror upperBound = otherAsLub.getEffectiveAnnotationInHierarchy(lowerBound);
-      if (qualifierHierarchy.isSubtype(upperBound, otherUnderlying, nullAnno, nullUnderlying)) {
+      if (qualifierHierarchy.isSubtype(upperBound, otherTM, nullAnno, nullTM)) {
         // @L <: @U <: @N
         lub.replaceAnnotation(nullAnno);
-      } else if (qualifierHierarchy.isSubtype(lowerBound, otherUnderlying, nullAnno, nullUnderlying)
-          && !qualifierHierarchy.isSubtype(nullAnno, nullUnderlying, lowerBound, otherUnderlying)) {
+      } else if (qualifierHierarchy.isSubtype(lowerBound, otherTM, nullAnno, nullTM)
+          && !qualifierHierarchy.isSubtype(nullAnno, nullTM, lowerBound, otherTM)) {
         // @L <: @N <:@U && @N != @L
         lub.replaceAnnotation(upperBound);
       } // else @N <: @L <: @U
@@ -316,8 +316,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     AnnotationMirrorSet type2LowerBoundAnnos =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
 
-    TypeMirror underlying1 = type1.getUnderlyingType();
-    TypeMirror underlying2 = type2.getUnderlyingType();
+    TypeMirror typeMirror1 = type1.getUnderlyingType();
+    TypeMirror typeMirror2 = type2.getUnderlyingType();
 
     for (AnnotationMirror lower1 : type1LowerBoundAnnos) {
       AnnotationMirror top = qualifierHierarchy.getTopAnnotation(lower1);
@@ -329,15 +329,15 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror upper1 = type1.getEffectiveAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getEffectiveAnnotationInHierarchy(lower1);
 
-      if (qualifierHierarchy.isSubtype(upper2, underlying2, upper1, underlying1)
-          && qualifierHierarchy.isSubtype(upper1, underlying1, upper2, underlying2)
-          && qualifierHierarchy.isSubtype(lower1, underlying1, lower2, underlying2)
-          && qualifierHierarchy.isSubtype(lower2, underlying2, lower1, underlying1)) {
+      if (qualifierHierarchy.isSubtype(upper2, typeMirror2, upper1, typeMirror1)
+          && qualifierHierarchy.isSubtype(upper1, typeMirror1, upper2, typeMirror2)
+          && qualifierHierarchy.isSubtype(lower1, typeMirror1, lower2, typeMirror2)
+          && qualifierHierarchy.isSubtype(lower2, typeMirror2, lower1, typeMirror1)) {
         continue;
       }
 
-      if (!qualifierHierarchy.isSubtype(upper2, underlying2, lower1, underlying1)
-          && !qualifierHierarchy.isSubtype(upper1, underlying1, lower2, underlying2)) {
+      if (!qualifierHierarchy.isSubtype(upper2, typeMirror2, lower1, typeMirror1)
+          && !qualifierHierarchy.isSubtype(upper1, typeMirror1, lower2, typeMirror2)) {
         lub.replaceAnnotation(qualifierHierarchy.leastUpperBound(upper1, upper2));
       }
     }
