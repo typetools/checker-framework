@@ -136,29 +136,6 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (areSameByClass(superAnno, SubstringIndexUnknown.class)) {
-        return true;
-      }
-      if (areSameByClass(subAnno, SubstringIndexBottom.class)) {
-        return true;
-      }
-      if (areSameByClass(subAnno, SubstringIndexUnknown.class)) {
-        return false;
-      }
-      if (areSameByClass(superAnno, SubstringIndexBottom.class)) {
-        return false;
-      }
-
-      UBQualifier subtype =
-          UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker.getUltimateParentChecker());
-      UBQualifier supertype =
-          UBQualifier.createUBQualifier(
-              superAnno, (IndexChecker) checker.getUltimateParentChecker());
-      return subtype.isSubtype(supertype);
-    }
-
-    @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,
         TypeMirror subType,

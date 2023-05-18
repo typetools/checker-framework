@@ -441,35 +441,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
 
     /**
-     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+     * {@inheritDoc}
+     *
+     * <p>Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
      * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains every
      * element of lhs.
-     *
-     * @return true if rhs is a subtype of lhs, false otherwise
-     */
-    @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
-      UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
-      return subtype.isSubtype(supertype);
-    }
-
-    /**
-     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-     * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains every
-     * element of lhs.
-     *
-     * @return true if rhs is a subtype of lhs, false otherwise
      */
     @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,
-        TypeMirror subType,
+        TypeMirror subtype,
         AnnotationMirror superAnno,
-        TypeMirror superType) {
-      UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
-      UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
-      return subtype.isSubtype(supertype);
+        TypeMirror supertype) {
+      UBQualifier subtypeQual = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
+      UBQualifier supertypeQual = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
+      return subtypeQual.isSubtype(supertypeQual);
     }
   }
 

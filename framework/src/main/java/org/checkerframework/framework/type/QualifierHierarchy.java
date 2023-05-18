@@ -12,6 +12,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -139,7 +140,9 @@ public interface QualifierHierarchy {
    * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
    */
   @Deprecated // 2023-05-17
-  boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+  default boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+    throw new TypeSystemError("isSubtype is not implemented");
+  }
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},

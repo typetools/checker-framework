@@ -72,6 +72,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -2129,7 +2130,10 @@ class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
+    TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+    return typeFactory
+        .getQualifierHierarchy()
+        .isSubtype(cmAnno, relevantTM, cmAnnoForMustCallMethods, relevantTM);
   }
 
   /**

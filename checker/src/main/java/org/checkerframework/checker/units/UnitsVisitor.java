@@ -30,7 +30,11 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
     if ((kind == Tree.Kind.PLUS_ASSIGNMENT || kind == Tree.Kind.MINUS_ASSIGNMENT)) {
       if (!atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(exprType.getEffectiveAnnotations(), varType.getEffectiveAnnotations())) {
+          .isSubtype(
+              exprType.getEffectiveAnnotations(),
+              exprType,
+              varType.getEffectiveAnnotations(),
+              varType)) {
         checker.reportError(tree, "compound.assignment", varType, exprType);
       }
     } else if (!exprType.hasAnnotation(UnknownUnits.class)) {

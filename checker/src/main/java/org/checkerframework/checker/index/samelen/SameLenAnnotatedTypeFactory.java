@@ -266,33 +266,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (areSameByClass(subAnno, SameLenBottom.class)) {
-        return true;
-      } else if (areSameByClass(superAnno, SameLenUnknown.class)) {
-        return true;
-      } else if (areSameByClass(subAnno, PolySameLen.class)) {
-        return areSameByClass(superAnno, PolySameLen.class);
-      } else if (areSameByClass(subAnno, SameLen.class)
-          && areSameByClass(superAnno, SameLen.class)) {
-        List<String> subArrays =
-            AnnotationUtils.getElementValueArray(subAnno, sameLenValueElement, String.class);
-        List<String> superArrays =
-            AnnotationUtils.getElementValueArray(superAnno, sameLenValueElement, String.class);
-
-        if (subArrays.containsAll(superArrays)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,
-        TypeMirror subType,
+        TypeMirror subtype,
         AnnotationMirror superAnno,
-        TypeMirror superType) {
+        TypeMirror supertype) {
       if (areSameByClass(subAnno, SameLenBottom.class)) {
         return true;
       } else if (areSameByClass(superAnno, SameLenUnknown.class)) {

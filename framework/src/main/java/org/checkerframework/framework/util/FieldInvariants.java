@@ -8,9 +8,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
@@ -35,9 +35,6 @@ public class FieldInvariants {
 
   /** The type factory associated with this. */
   private final AnnotatedTypeFactory factory;
-
-  /** The type mirror for java.lang.Object. */
-  private final TypeMirror objectTM;
 
   /**
    * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
@@ -80,8 +77,6 @@ public class FieldInvariants {
     this.fields = Collections.unmodifiableList(fields);
     this.qualifiers = qualifiers;
     this.factory = factory;
-    this.objectTM =
-        TypesUtils.typeFromClass(Object.class, factory.types, factory.getElementUtils());
   }
 
   /** The simple names of the fields that have a qualifier. May contain duplicates. */
@@ -144,8 +139,8 @@ public class FieldInvariants {
       for (AnnotationMirror superA : superQualifiers) {
         AnnotationMirror sub =
             qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        // TODO: Use of objectTM here is not right because the Object class might not be relevant.
-        if (sub == null || !qualifierHierarchy.isSubtype(sub, objectTM, superA, objectTM)) {
+        TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+        if (sub == null || !qualifierHierarchy.isSubtype(sub, relevantTM, superA, relevantTM)) {
           return new DiagMessage(
               Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
         }

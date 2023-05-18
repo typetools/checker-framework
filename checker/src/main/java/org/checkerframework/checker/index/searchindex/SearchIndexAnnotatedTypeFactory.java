@@ -188,6 +188,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
     }
 
+    @SuppressWarnings("deprecation") // for removal
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (areSameByClass(superAnno, SearchIndexUnknown.class)) {

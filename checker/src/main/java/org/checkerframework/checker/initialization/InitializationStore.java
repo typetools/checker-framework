@@ -85,7 +85,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     super.insertValue(je, value, permitNondeterministic);
 
     for (AnnotationMirror a : value.getAnnotations()) {
-      if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
+      if (qualifierHierarchy.isSubtype(a, je.getType(), invariantAnno, je.getType())) {
         if (je instanceof FieldAccess) {
           FieldAccess fa = (FieldAccess) je;
           if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {

@@ -40,6 +40,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -681,7 +682,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
   @Override
-  public boolean isRelevant(TypeMirror tm) {
+  public boolean isRelevantImpl(TypeMirror tm) {
     if (TypesUtils.isFloatingPoint(tm)) {
       return false;
     }
@@ -717,15 +718,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected AnnotationMirror combine(
         AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
+      TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
       if (a1 == null) {
         return a2;
       } else if (a2 == null) {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else if (qualHierarchy.isSubtype(a1, a2)) {
+      } else if (qualHierarchy.isSubtype(a1, relevantTM, a2, relevantTM)) {
         return a2;
-      } else if (qualHierarchy.isSubtype(a2, a1)) {
+      } else if (qualHierarchy.isSubtype(a2, relevantTM, a1, relevantTM)) {
         return a1;
       } else
         // The two annotations are incomparable

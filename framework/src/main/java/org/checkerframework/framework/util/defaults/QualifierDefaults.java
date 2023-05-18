@@ -94,9 +94,6 @@ public class QualifierDefaults {
   /** AnnotatedTypeFactory to use. */
   private final AnnotatedTypeFactory atypeFactory;
 
-  /** The type mirror for java.lang.Object. */
-  private final TypeMirror objectTM;
-
   /** Defaults for checked code. */
   private final DefaultSet checkedCodeDefaults = new DefaultSet();
 
@@ -182,8 +179,6 @@ public class QualifierDefaults {
   public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
     this.elements = elements;
     this.atypeFactory = atypeFactory;
-    this.objectTM =
-        TypesUtils.typeFromClass(Object.class, atypeFactory.types, atypeFactory.getElementUtils());
     this.useConservativeDefaultsBytecode =
         atypeFactory.getChecker().useConservativeDefault("bytecode");
     this.useConservativeDefaultsSource = atypeFactory.getChecker().useConservativeDefault("source");
@@ -366,8 +361,8 @@ public class QualifierDefaults {
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
         AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-        // TODO: Use of objectTM here is not right because the Object class might not be relevant.
-        if (qualHierarchy.isSubtype(newAnno, objectTM, previousTop, objectTM)) {
+        TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+        if (qualHierarchy.isSubtype(newAnno, relevantTM, previousTop, relevantTM)) {
           return true;
         }
       }

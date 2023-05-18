@@ -161,7 +161,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       }
       return;
     }
-    if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+    if (qualHierarchy.isSubtype(
+        anm, valueType, type.getAnnotationInHierarchy(UNKNOWN), valueType)) {
       type.replaceAnnotation(anm);
     }
   }

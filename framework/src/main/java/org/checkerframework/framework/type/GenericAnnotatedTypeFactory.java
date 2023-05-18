@@ -44,6 +44,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -150,6 +151,12 @@ public abstract class GenericAnnotatedTypeFactory<
    * and {@link AnnotatedTypeFactory#debugGat}.
    */
   private static final boolean debug = false;
+
+  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
+  public static @InternedDistinct TypeMirror alwaysRelevantTM = null;
+
+  /** The type of {@link #alwaysRelevantTM}. */
+  private static class AlwaysRelevant {}
 
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -326,6 +333,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param checker the checker to which this type factory belongs
    * @param useFlow whether flow analysis should be performed
    */
+  @SuppressWarnings("StaticAssignmentInConstructor") // alwaysRelevantTM
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker);
 
@@ -384,6 +392,9 @@ public abstract class GenericAnnotatedTypeFactory<
     hasOrIsSubchecker =
         !this.getChecker().getSubcheckers().isEmpty()
             || this.getChecker().getParentChecker() != null;
+
+    GenericAnnotatedTypeFactory.alwaysRelevantTM =
+        TypesUtils.typeFromClass(AlwaysRelevant.class, types, getElementUtils());
 
     // Every subclass must call postInit, but it must be called after
     // all other initialization is finished.
@@ -2352,13 +2363,16 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  public boolean isRelevant(TypeMirror tm) {
+  public final boolean isRelevant(TypeMirror tm) {
+    if (tm == alwaysRelevantTM) {
+      return true;
+    }
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
-    boolean result = isRelevantHelper(tm);
+    boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
     return result;
   }
@@ -2380,7 +2394,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  private boolean isRelevantHelper(TypeMirror tm) {
+  protected boolean isRelevantImpl(TypeMirror tm) {
 
     if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;
@@ -2390,6 +2404,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Primitives have no subtyping relationships, but the lookup might have failed
         // because tm has metadata such as annotations.
+        // TODO: How can tm have annotations?  Is any other metadata relevant?
       case BOOLEAN:
       case BYTE:
       case CHAR:
