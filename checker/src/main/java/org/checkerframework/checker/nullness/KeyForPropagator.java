@@ -94,10 +94,10 @@ public class KeyForPropagator {
    * List<@KeyFor("c") String>>}
    */
   public void propagate(
-      final AnnotatedDeclaredType subtype,
-      final AnnotatedDeclaredType supertype,
+      AnnotatedDeclaredType subtype,
+      AnnotatedDeclaredType supertype,
       PropagationDirection direction,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeFactory typeFactory) {
     final TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
     final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
     final Types types = typeFactory.getProcessingEnv().getTypeUtils();
@@ -121,7 +121,7 @@ public class KeyForPropagator {
     final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
     final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (final Pair<Integer, Integer> path : typeParamMappings) {
+    for (Pair<Integer, Integer> path : typeParamMappings) {
       final AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
       final AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
 

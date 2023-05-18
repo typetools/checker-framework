@@ -40,7 +40,7 @@ public final class TreePathUtil {
    * @param kind the kind of the desired tree
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
+  public static @Nullable TreePath pathTillOfKind(TreePath path, Tree.Kind kind) {
     return pathTillOfKind(path, EnumSet.of(kind));
   }
 
@@ -52,7 +52,7 @@ public final class TreePathUtil {
    * @param kinds the set of kinds of the desired tree
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+  public static @Nullable TreePath pathTillOfKind(TreePath path, Set<Tree.Kind> kinds) {
     for (TreePath p = path; p != null; p = p.getParentPath()) {
       if (kinds.contains(p.getLeaf().getKind())) {
         return p;
@@ -68,7 +68,7 @@ public final class TreePathUtil {
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillClass(final TreePath path) {
+  public static @Nullable TreePath pathTillClass(TreePath path) {
     return pathTillOfKind(path, TreeUtils.classTreeKinds());
   }
 
@@ -78,7 +78,7 @@ public final class TreePathUtil {
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillMethod(final TreePath path) {
+  public static @Nullable TreePath pathTillMethod(TreePath path) {
     return pathTillOfKind(path, Tree.Kind.METHOD);
   }
 
@@ -94,7 +94,7 @@ public final class TreePathUtil {
    * @param kind the kind of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static @Nullable Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
+  public static @Nullable Tree enclosingOfKind(TreePath path, Tree.Kind kind) {
     return enclosingOfKind(path, EnumSet.of(kind));
   }
 
@@ -106,7 +106,7 @@ public final class TreePathUtil {
    * @param kinds the set of kinds of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static @Nullable Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+  public static @Nullable Tree enclosingOfKind(TreePath path, Set<Tree.Kind> kinds) {
     TreePath p = pathTillOfKind(path, kinds);
     return (p == null) ? null : p.getLeaf();
   }
@@ -120,8 +120,7 @@ public final class TreePathUtil {
    * @param treeClass the class of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static <T extends Tree> @Nullable T enclosingOfClass(
-      final TreePath path, final Class<T> treeClass) {
+  public static <T extends Tree> @Nullable T enclosingOfClass(TreePath path, Class<T> treeClass) {
     TreePath p = path;
 
     while (p != null) {
@@ -143,7 +142,7 @@ public final class TreePathUtil {
    * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
    *     does not exist
    */
-  public static @Nullable TreePath enclosingDeclarationPath(final TreePath path) {
+  public static @Nullable TreePath enclosingDeclarationPath(TreePath path) {
     return pathTillOfKind(path, TreeUtils.declarationTreeKinds());
   }
 
@@ -156,7 +155,7 @@ public final class TreePathUtil {
    * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
    *     not exist
    */
-  public static @Nullable ClassTree enclosingClass(final TreePath path) {
+  public static @Nullable ClassTree enclosingClass(TreePath path) {
     return (ClassTree) enclosingOfKind(path, TreeUtils.classTreeKinds());
   }
 
@@ -167,7 +166,7 @@ public final class TreePathUtil {
    * @param path the path defining the tree node
    * @return the enclosing variable as given by the path, or {@code null} if one does not exist
    */
-  public static @Nullable VariableTree enclosingVariable(final TreePath path) {
+  public static @Nullable VariableTree enclosingVariable(TreePath path) {
     return (VariableTree) enclosingOfKind(path, Tree.Kind.VARIABLE);
   }
 
@@ -182,7 +181,7 @@ public final class TreePathUtil {
    * @param path the path defining the tree node
    * @return the enclosing method as given by the path, or {@code null} if one does not exist
    */
-  public static @Nullable MethodTree enclosingMethod(final TreePath path) {
+  public static @Nullable MethodTree enclosingMethod(TreePath path) {
     return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
   }
 
@@ -195,7 +194,7 @@ public final class TreePathUtil {
    * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
    *     exist
    */
-  public static @Nullable Tree enclosingMethodOrLambda(final TreePath path) {
+  public static @Nullable Tree enclosingMethodOrLambda(TreePath path) {
     return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
   }
 
@@ -227,7 +226,7 @@ public final class TreePathUtil {
    * @return a pair of a non-parenthesis tree that contains the argument, and its child that is the
    *     argument or is a parenthesized version of it
    */
-  public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+  public static Pair<Tree, Tree> enclosingNonParen(TreePath path) {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
@@ -271,7 +270,7 @@ public final class TreePathUtil {
    * @param treePath a path
    * @return the assignment context as described, {@code null} otherwise
    */
-  public static @Nullable Tree getAssignmentContext(final TreePath treePath) {
+  public static @Nullable Tree getAssignmentContext(TreePath treePath) {
     TreePath parentPath = treePath.getParentPath();
 
     if (parentPath == null) {

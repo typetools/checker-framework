@@ -75,7 +75,7 @@ public class AnnotatedTypeCopier
    * This is useful for cases in which the user may want to copy the structure of a type exactly but
    * NOT its annotations.
    */
-  public AnnotatedTypeCopier(final boolean copyAnnotations) {
+  public AnnotatedTypeCopier(boolean copyAnnotations) {
     this.copyAnnotations = copyAnnotations;
   }
 
@@ -191,14 +191,14 @@ public class AnnotatedTypeCopier
 
     List<? extends AnnotatedTypeMirror> originalParameterTypes = original.getParameterTypes();
     List<AnnotatedTypeMirror> copyParamTypes = new ArrayList<>(originalParameterTypes.size());
-    for (final AnnotatedTypeMirror param : originalParameterTypes) {
+    for (AnnotatedTypeMirror param : originalParameterTypes) {
       copyParamTypes.add(visit(param, originalToCopy));
     }
     copy.setParameterTypes(copyParamTypes);
 
     List<? extends AnnotatedTypeMirror> originalThrownTypes = original.getThrownTypes();
     List<AnnotatedTypeMirror> copyThrownTypes = new ArrayList<>(originalThrownTypes.size());
-    for (final AnnotatedTypeMirror thrown : original.getThrownTypes()) {
+    for (AnnotatedTypeMirror thrown : original.getThrownTypes()) {
       copyThrownTypes.add(visit(thrown, originalToCopy));
     }
     copy.setThrownTypes(copyThrownTypes);
@@ -207,7 +207,7 @@ public class AnnotatedTypeCopier
 
     List<AnnotatedTypeVariable> originalTypeVariables = original.getTypeVariables();
     List<AnnotatedTypeVariable> copyTypeVarTypes = new ArrayList<>(originalTypeVariables.size());
-    for (final AnnotatedTypeVariable typeVariable : originalTypeVariables) {
+    for (AnnotatedTypeVariable typeVariable : originalTypeVariables) {
       // This field is needed to identify exactly when the declaration of an executable's
       // type parameter is visited.  When subtypes of this class visit the type
       // parameter's component types, they will likely set visitingExecutableTypeParam to
@@ -363,8 +363,7 @@ public class AnnotatedTypeCopier
    * @param source the type whose primary annotations are being copied
    * @param dest a copy of source that should receive its primary annotations
    */
-  protected void maybeCopyPrimaryAnnotations(
-      final AnnotatedTypeMirror source, final AnnotatedTypeMirror dest) {
+  protected void maybeCopyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror dest) {
     if (copyAnnotations) {
       dest.addAnnotations(source.getAnnotationsField());
     }

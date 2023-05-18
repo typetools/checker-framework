@@ -23,7 +23,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @return the set of targets that still don't have an inferred argument
    */
   public Set<TypeVariable> getRemainingTargets(
-      final Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
+      Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
     final LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
 
     if (inferredTypesOnly) {
@@ -47,8 +47,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @param targets type variables to check
    * @return true if we have inferred a concrete type for all targets
    */
-  public boolean isComplete(final Set<TypeVariable> targets) {
-    for (final TypeVariable target : targets) {
+  public boolean isComplete(Set<TypeVariable> targets) {
+    for (TypeVariable target : targets) {
       final InferredValue inferred = this.get(target);
 
       if (inferred == null || inferred instanceof InferredTarget) {
@@ -73,7 +73,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
     boolean grew = true;
     while (grew) {
       grew = false;
-      for (final Map.Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
+      for (Map.Entry<TypeVariable, InferredValue> inferred : this.entrySet()) {
         final TypeVariable target = inferred.getKey();
         final InferredValue value = inferred.getValue();
 
@@ -102,7 +102,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
 
   public Map<TypeVariable, AnnotatedTypeMirror> toAtmMap() {
     final Map<TypeVariable, AnnotatedTypeMirror> result = new LinkedHashMap<>(this.size());
-    for (final Map.Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
+    for (Map.Entry<TypeVariable, InferredValue> entry : this.entrySet()) {
       final InferredValue inferredValue = entry.getValue();
       if (inferredValue instanceof InferredType) {
         result.put(entry.getKey(), ((InferredType) inferredValue).type);
@@ -118,7 +118,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    *
    * @param subordinate a result which we wish to merge into this result
    */
-  public void mergeSubordinate(final InferenceResult subordinate) {
+  public void mergeSubordinate(InferenceResult subordinate) {
     final LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
     final LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
     remainingSubKeys.removeAll(keySet());
@@ -135,7 +135,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   /** Performs a merge for a specific target, we keep only results that lead to a concrete type. */
-  protected InferredType mergeTarget(final TypeVariable target, final InferenceResult subordinate) {
+  protected InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
     final InferredValue inferred = this.get(target);
     if (inferred instanceof InferredTarget) {
       InferredType newType = mergeTarget(((InferredTarget) inferred).target, subordinate);

@@ -77,13 +77,13 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
   }
 
   @Override
-  public String format(final AnnotatedTypeMirror type) {
+  public String format(AnnotatedTypeMirror type) {
     formattingVisitor.resetPrintVerboseSettings();
     return formattingVisitor.visit(type);
   }
 
   @Override
-  public String format(final AnnotatedTypeMirror type, final boolean printVerbose) {
+  public String format(AnnotatedTypeMirror type, boolean printVerbose) {
     formattingVisitor.setVerboseSettings(printVerbose);
     return formattingVisitor.visit(type);
   }
@@ -146,10 +146,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
      */
     @SideEffectFree
     protected void printBound(
-        final String keyWord,
-        final AnnotatedTypeMirror field,
-        final Set<AnnotatedTypeMirror> visiting,
-        final StringBuilder sb) {
+        String keyWord,
+        AnnotatedTypeMirror field,
+        Set<AnnotatedTypeMirror> visiting,
+        StringBuilder sb) {
       if (!currentPrintVerboseGenerics && (field == null || field.getKind() == TypeKind.NULL)) {
         return;
       }
@@ -420,7 +420,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     @SideEffectFree
-    protected String formatFlatType(final AnnotatedTypeMirror flatType) {
+    protected String formatFlatType(AnnotatedTypeMirror flatType) {
       return annoFormatter.formatAnnotationString(
               flatType.getAnnotations(), currentPrintInvisibleSetting)
           + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());

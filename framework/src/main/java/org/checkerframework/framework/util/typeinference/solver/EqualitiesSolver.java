@@ -93,17 +93,14 @@ public class EqualitiesSolver {
    * @param constraints the constraints that are side-effected by this method
    */
   private void rewriteWithInferredType(
-      final @FindDistinct TypeVariable target,
-      final AnnotatedTypeMirror type,
-      final ConstraintMap constraints) {
+      @FindDistinct TypeVariable target, AnnotatedTypeMirror type, ConstraintMap constraints) {
 
     final TargetConstraints targetRecord = constraints.getConstraints(target);
     final Map<TypeVariable, AnnotationMirrorSet> equivalentTargets =
         targetRecord.equalities.targets;
     // each target that was equivalent to this one needs to be equivalent in the same
     // hierarchies as the inferred type
-    for (final Map.Entry<TypeVariable, AnnotationMirrorSet> eqEntry :
-        equivalentTargets.entrySet()) {
+    for (Map.Entry<TypeVariable, AnnotationMirrorSet> eqEntry : equivalentTargets.entrySet()) {
       constraints.addTypeEqualities(eqEntry.getKey(), type, eqEntry.getValue());
     }
 
@@ -182,10 +179,10 @@ public class EqualitiesSolver {
    * @param typeFactory type factory
    */
   private void rewriteWithInferredTarget(
-      final @FindDistinct TypeVariable target,
-      final @FindDistinct TypeVariable inferredTarget,
-      final ConstraintMap constraints,
-      final AnnotatedTypeFactory typeFactory) {
+      @FindDistinct TypeVariable target,
+      @FindDistinct TypeVariable inferredTarget,
+      ConstraintMap constraints,
+      AnnotatedTypeFactory typeFactory) {
     final TargetConstraints targetRecord = constraints.getConstraints(target);
     final Map<AnnotatedTypeMirror, AnnotationMirrorSet> equivalentTypes =
         targetRecord.equalities.types;
@@ -193,13 +190,11 @@ public class EqualitiesSolver {
 
     // each type that was equivalent to this one needs to be equivalent in the same hierarchies
     // to the inferred target
-    for (final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry :
-        equivalentTypes.entrySet()) {
+    for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> eqEntry : equivalentTypes.entrySet()) {
       constraints.addTypeEqualities(inferredTarget, eqEntry.getKey(), eqEntry.getValue());
     }
 
-    for (final Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> superEntry :
-        supertypes.entrySet()) {
+    for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> superEntry : supertypes.entrySet()) {
       constraints.addTypeSupertype(inferredTarget, superEntry.getKey(), superEntry.getValue());
     }
 
@@ -261,7 +256,7 @@ public class EqualitiesSolver {
 
   /** Creates a declaration AnnotatedTypeVariable for TypeVariable. */
   private AnnotatedTypeVariable createAnnotatedTypeVar(
-      final TypeVariable typeVariable, final AnnotatedTypeFactory typeFactory) {
+      TypeVariable typeVariable, AnnotatedTypeFactory typeFactory) {
     return (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeVariable.asElement());
   }
 
@@ -278,7 +273,7 @@ public class EqualitiesSolver {
   private InferredType mergeTypesAndPrimaries(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typesToHierarchies,
       AnnotationMirrorMap<AnnotationMirror> primaries,
-      final AnnotationMirrorSet tops,
+      AnnotationMirrorSet tops,
       AnnotatedTypeFactory typeFactory) {
     final AnnotationMirrorSet missingAnnos = new AnnotationMirrorSet(tops);
 
@@ -336,7 +331,7 @@ public class EqualitiesSolver {
     }
 
     // add all the annotations from the primaries
-    for (final AnnotationMirror top : missingAnnos) {
+    for (AnnotationMirror top : missingAnnos) {
       final AnnotationMirror anno = primaries.get(top);
       if (anno != null) {
         mergedType.replaceAnnotation(anno);
@@ -359,9 +354,9 @@ public class EqualitiesSolver {
   }
 
   public InferredValue mergeConstraints(
-      final TypeVariable target,
-      final Equalities equalities,
-      final InferenceResult solution,
+      TypeVariable target,
+      Equalities equalities,
+      InferenceResult solution,
       ConstraintMap constraintMap,
       AnnotatedTypeFactory typeFactory) {
     final AnnotationMirrorSet tops =
@@ -402,7 +397,7 @@ public class EqualitiesSolver {
   //   then T2 == @A @B @C only in the @A hierarchy
   //
   public boolean updateTargetsWithPartiallyInferredType(
-      final Equalities equalities, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
+      Equalities equalities, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
 
     boolean updated = false;
 
@@ -452,7 +447,7 @@ public class EqualitiesSolver {
    *
    * @return a target equal to this target in all hierarchies, or null
    */
-  public InferredTarget findEqualTarget(final Equalities equalities, AnnotationMirrorSet tops) {
+  public InferredTarget findEqualTarget(Equalities equalities, AnnotationMirrorSet tops) {
     for (Map.Entry<TypeVariable, AnnotationMirrorSet> targetToHierarchies :
         equalities.targets.entrySet()) {
       final TypeVariable equalTarget = targetToHierarchies.getKey();

@@ -485,9 +485,7 @@ public class NullnessAnnotatedTypeFactory
 
   @Override
   public void adaptGetClassReturnTypeToReceiver(
-      final AnnotatedExecutableType getClassType,
-      final AnnotatedTypeMirror receiverType,
-      ExpressionTree tree) {
+      AnnotatedExecutableType getClassType, AnnotatedTypeMirror receiverType, ExpressionTree tree) {
 
     super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType, tree);
 

@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter;
 /** Utilities for executing external processes. */
 public class ExecUtil {
 
-  public static int execute(final String[] cmd, final OutputStream std, final OutputStream err) {
+  public static int execute(String[] cmd, OutputStream std, OutputStream err) {
 
     final Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
     final Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
@@ -49,12 +49,12 @@ public class ExecUtil {
     private Thread thread;
     private IOException exception;
 
-    public Redirection(final OutputStream out, final int bufferSize) {
+    public Redirection(OutputStream out, int bufferSize) {
       this.buffer = new char[bufferSize];
       this.out = new OutputStreamWriter(out);
     }
 
-    public void redirect(final InputStream inStream) {
+    public void redirect(InputStream inStream) {
 
       exception = null;
 

@@ -91,7 +91,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
    * @param keyFor a {@code @KeyFor} annotation
    * @return the elements/arguments of a {@code @KeyFor} annotation
    */
-  private Set<String> getKeys(final AnnotationMirror keyFor) {
+  private Set<String> getKeys(AnnotationMirror keyFor) {
     if (keyFor.getElementValues().isEmpty()) {
       return Collections.emptySet();
     }

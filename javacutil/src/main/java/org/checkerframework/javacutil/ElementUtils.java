@@ -64,7 +64,7 @@ public class ElementUtils {
    * @deprecated use {@link #enclosingTypeElement}
    */
   @Deprecated // 2021-01-16
-  public static @Nullable TypeElement enclosingClass(final Element elem) {
+  public static @Nullable TypeElement enclosingClass(Element elem) {
     return enclosingTypeElement(elem);
   }
 
@@ -85,7 +85,7 @@ public class ElementUtils {
    * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
    *     not, and is not enclosed by, a type element
    */
-  public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement enclosingTypeElement(Element elem) {
     Element result = elem;
     while (result != null && !isTypeElement(result)) {
       result = result.getEnclosingElement();
@@ -101,7 +101,7 @@ public class ElementUtils {
    * @param elem the enclosed element of a class
    * @return the innermost type element, or null if no type element encloses {@code elem}
    */
-  public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement strictEnclosingTypeElement(Element elem) {
     Element enclosingElement = elem.getEnclosingElement();
     if (enclosingElement == null) {
       return null;
@@ -210,7 +210,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns true if the element is a final element: a final field, final method, or final class.
+   * Returns true if the element is a final element: a final field, method, or final class.
    *
    * @return true if the element is final
    */

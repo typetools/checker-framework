@@ -189,7 +189,7 @@ public final class RegexUtil {
   }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
   @Pure
   @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
-  public static boolean isRegex(final char c) {
+  public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
   }
 
