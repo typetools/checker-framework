@@ -12,22 +12,22 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
- * this as a set of (field, qualifier) pairs.
+ * this as a set of (field name, qualifier) pairs.
  *
- * <p>A FieldInvariants object may be malformed (inconsistent number of fields and qualifiers). In
- * this case, the BaseTypeVisitor will issue an error.
+ * <p>If a FieldInvariants object is malformed (inconsistent number of fields and qualifiers),
+ * BaseTypeVisitor will issue an error.
  */
 public class FieldInvariants {
 
   /**
    * A list of simple field names. A field may appear more than once in this list. This list has the
-   * same length as {@code qualifiers}.
+   * same length as {@link #qualifiers}.
    */
   private final List<String> fields;
 
   /**
-   * A list of qualifiers that apply to the field at the same index in {@code fields}. In a
-   * well-formed FieldInvariants, has the same length as {@code fields}.
+   * A list of qualifiers that apply to the field at the same index in {@link #fields}. In a
+   * well-formed FieldInvariants, has the same length as {@link #fields}.
    */
   private final List<AnnotationMirror> qualifiers;
 
