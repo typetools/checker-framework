@@ -689,6 +689,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return true;
   }
 
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /**
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
    * arguments must have the same signedness type annotation.
@@ -718,16 +720,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected AnnotationMirror combine(
         AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
-      TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
       if (a1 == null) {
         return a2;
       } else if (a2 == null) {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else if (qualHierarchy.isSubtype(a1, relevantTM, a2, relevantTM)) {
+      } else if (qualHierarchy.isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (qualHierarchy.isSubtype(a2, relevantTM, a1, relevantTM)) {
+      } else if (qualHierarchy.isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       } else
         // The two annotations are incomparable

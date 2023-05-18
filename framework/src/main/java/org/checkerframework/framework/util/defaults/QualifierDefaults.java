@@ -354,7 +354,8 @@ public class QualifierDefaults {
     }
   }
 
-  private static TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {

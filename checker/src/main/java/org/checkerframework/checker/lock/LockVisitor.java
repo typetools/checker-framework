@@ -509,7 +509,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     return true;
   }
 
-  private static TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**
    * When visiting a method invocation, issue an error if the side effect annotation on the called

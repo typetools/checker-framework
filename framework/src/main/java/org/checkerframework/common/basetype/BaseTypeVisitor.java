@@ -873,7 +873,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         notFinal.add(fieldName);
       }
       AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(field);
-      TypeMirror underlyingType = type.getUnderlyingType();
 
       List<AnnotationMirror> annos = invariants.getQualifiersFor(field.getSimpleName());
       for (AnnotationMirror invariantAnno : annos) {
@@ -885,7 +884,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (!atypeFactory
             .getQualifierHierarchy()
-            .isSubtype(invariantAnno, underlyingType, declaredAnno, underlyingType)) {
+            .isSubtype(invariantAnno, type, declaredAnno, type)) {
           // Checks #3
           checker.reportError(
               errorTree, "field.invariant.not.subtype", fieldName, invariantAnno, declaredAnno);
@@ -2779,9 +2778,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       if (excParamType.getKind() == TypeKind.UNION) {
         AnnotatedUnionType aut = (AnnotatedUnionType) excParamType;
-        for (AnnotatedTypeMirror alternative : aut.getAlternatives()) {
-          AnnotationMirror alternativeAnno = alternative.getAnnotationInHierarchy(required);
-          TypeMirror alternativeTM = alternative.getUnderlyingType();
+        for (AnnotatedTypeMirror alternativeType : aut.getAlternatives()) {
+          AnnotationMirror alternativeAnno = alternativeType.getAnnotationInHierarchy(required);
+          TypeMirror alternativeTM = alternativeType.getUnderlyingType();
           if (!atypeFactory
               .getQualifierHierarchy()
               .isSubtype(required, alternativeTM, alternativeAnno, alternativeTM)) {

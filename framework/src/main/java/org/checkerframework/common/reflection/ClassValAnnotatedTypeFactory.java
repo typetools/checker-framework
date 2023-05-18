@@ -122,7 +122,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new ClassValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
 
-  private static TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The qualifier hierarchy for the ClassVal type system. */
   protected class ClassValQualifierHierarchy extends ElementQualifierHierarchy {

@@ -93,7 +93,8 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return atypeFactory.createStringAnnotation(values);
   }
 
-  private static TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   @Override
   public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {

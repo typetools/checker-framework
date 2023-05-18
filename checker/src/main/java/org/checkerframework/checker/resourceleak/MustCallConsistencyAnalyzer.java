@@ -2115,6 +2115,8 @@ class MustCallConsistencyAnalyzer {
     return qualifiedName.startsWith("java");
   }
 
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
@@ -2130,10 +2132,9 @@ class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
     return typeFactory
         .getQualifierHierarchy()
-        .isSubtype(cmAnno, relevantTM, cmAnnoForMustCallMethods, relevantTM);
+        .isSubtype(cmAnno, alwaysRelevantTM, cmAnnoForMustCallMethods, alwaysRelevantTM);
   }
 
   /**

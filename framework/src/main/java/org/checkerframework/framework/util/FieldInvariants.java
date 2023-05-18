@@ -118,6 +118,8 @@ public class FieldInvariants {
     return qualifiers.size() == fields.size();
   }
 
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /**
    * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
    *
@@ -139,8 +141,8 @@ public class FieldInvariants {
       for (AnnotationMirror superA : superQualifiers) {
         AnnotationMirror sub =
             qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        TypeMirror relevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
-        if (sub == null || !qualifierHierarchy.isSubtype(sub, relevantTM, superA, relevantTM)) {
+        if (sub == null
+            || !qualifierHierarchy.isSubtype(sub, alwaysRelevantTM, superA, alwaysRelevantTM)) {
           return new DiagMessage(
               Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
         }
