@@ -39,6 +39,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
@@ -153,10 +154,7 @@ public abstract class GenericAnnotatedTypeFactory<
   private static final boolean debug = false;
 
   /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
-  public static @InternedDistinct TypeMirror alwaysRelevantTM = null;
-
-  /** The type of {@link #alwaysRelevantTM}. */
-  private static class AlwaysRelevant {}
+  public static @InternedDistinct TypeMirror alwaysRelevantTM = AlwaysRelevantTypeMirror.it;
 
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -392,9 +390,6 @@ public abstract class GenericAnnotatedTypeFactory<
     hasOrIsSubchecker =
         !this.getChecker().getSubcheckers().isEmpty()
             || this.getChecker().getParentChecker() != null;
-
-    GenericAnnotatedTypeFactory.alwaysRelevantTM =
-        TypesUtils.typeFromClass(AlwaysRelevant.class, types, getElementUtils());
 
     // Every subclass must call postInit, but it must be called after
     // all other initialization is finished.
@@ -2951,5 +2946,48 @@ public abstract class GenericAnnotatedTypeFactory<
     List<String> result =
         AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
     return result;
+  }
+
+  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
+  private static final class AlwaysRelevantTypeMirror implements TypeMirror {
+    /** Create a new AlwaysRelevantTypeMirror. */
+    private AlwaysRelevantTypeMirror() {}
+    /** The singleton AlwaysRelevantTypeMirror. */
+    public static AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();
+
+    @Override
+    public List<? extends AnnotationMirror> getAnnotationMirrors() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public boolean equals(Object t) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public int hashCode() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public TypeKind getKind() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <R, P> R accept(TypeVisitor<R, P> v, P p) {
+      throw new Error("Do not call");
+    }
   }
 }
