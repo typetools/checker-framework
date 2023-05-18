@@ -672,6 +672,9 @@ public class AnnotationClassLoader implements Closeable {
 
     // check every file and directory within the current directory
     File[] directoryContents = currentDirectory.listFiles();
+    if (directoryContents == null) {
+      throw new UserError("Directory does not exist: %s", currentDirectory);
+    }
     Arrays.sort(directoryContents, Comparator.comparing(File::getName));
     for (File file : directoryContents) {
       if (file.isFile()) {
