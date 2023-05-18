@@ -213,6 +213,37 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               || areSameByClass(superAnno, SearchIndexFor.class))
           && subArrays.containsAll(superArrays));
     }
+
+    @Override
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
+      if (areSameByClass(superAnno, SearchIndexUnknown.class)) {
+        return true;
+      }
+      if (areSameByClass(subAnno, SearchIndexBottom.class)) {
+        return true;
+      }
+      if (areSameByClass(subAnno, SearchIndexUnknown.class)) {
+        return false;
+      }
+      if (areSameByClass(superAnno, SearchIndexBottom.class)) {
+        return false;
+      }
+
+      // Each annotation is either NegativeIndexFor or SearchIndexFor.
+      List<String> superArrays = getValueElement(superAnno);
+      List<String> subArrays = getValueElement(subAnno);
+
+      // Subtyping requires:
+      //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
+      //  * subtype's arrays are a superset of supertype's arrays
+      return ((areSameByClass(subAnno, NegativeIndexFor.class)
+              || areSameByClass(superAnno, SearchIndexFor.class))
+          && subArrays.containsAll(superArrays));
+    }
   }
 
   /** Create a new {@code @NegativeIndexFor} annotation with the given arrays as its arguments. */

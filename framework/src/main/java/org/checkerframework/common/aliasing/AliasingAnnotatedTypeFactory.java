@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
@@ -114,6 +115,23 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
+        // @LeakedToResult and @NonLeaked were supposed to be non-type-qualifiers
+        // annotations.
+        // Currently the stub parser does not support non-type-qualifier annotations on
+        // receiver parameters (Issue 383), therefore these annotations are implemented as
+        // type qualifiers but the warnings related to the hierarchy are ignored.
+        return true;
+      }
+      return super.isSubtype(subAnno, superAnno);
+    }
+
+    @Override
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
       if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
         // @LeakedToResult and @NonLeaked were supposed to be non-type-qualifiers
         // annotations.

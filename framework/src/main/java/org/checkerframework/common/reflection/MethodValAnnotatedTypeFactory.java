@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -251,6 +252,28 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      if (AnnotationUtils.areSame(subAnno, superAnno)
+          || areSameByClass(superAnno, UnknownMethod.class)
+          || areSameByClass(subAnno, MethodValBottom.class)) {
+        return true;
+      }
+      if (areSameByClass(subAnno, UnknownMethod.class)
+          || areSameByClass(superAnno, MethodValBottom.class)) {
+        return false;
+      }
+      assert areSameByClass(subAnno, MethodVal.class) && areSameByClass(superAnno, MethodVal.class)
+          : "Unexpected annotation in MethodVal";
+      List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
+      List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
+      return superSignatures.containsAll(subSignatures);
+    }
+
+    @Override
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
       if (AnnotationUtils.areSame(subAnno, superAnno)
           || areSameByClass(superAnno, UnknownMethod.class)
           || areSameByClass(subAnno, MethodValBottom.class)) {

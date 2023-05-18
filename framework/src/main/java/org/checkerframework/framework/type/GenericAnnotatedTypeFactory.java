@@ -996,7 +996,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
       throws JavaExpressionParseException {
-
     return StringToJavaExpression.atPath(expression, currentPath, checker);
   }
 

@@ -17,6 +17,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -194,6 +195,39 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      if (AnnotationUtils.areSame(subAnno, superAnno)
+          || areSameByClass(superAnno, UnknownClass.class)
+          || areSameByClass(subAnno, ClassValBottom.class)) {
+        return true;
+      }
+      if (areSameByClass(subAnno, UnknownClass.class)
+          || areSameByClass(superAnno, ClassValBottom.class)) {
+        return false;
+      }
+      if (areSameByClass(superAnno, ClassVal.class) && areSameByClass(subAnno, ClassBound.class)) {
+        return false;
+      }
+
+      // if super: ClassVal && sub is ClassVal
+      // if super: ClassBound && (sub is ClassBound or ClassVal)
+
+      List<String> supValues = getClassNamesFromAnnotation(superAnno);
+      List<String> subValues = getClassNamesFromAnnotation(subAnno);
+
+      return supValues.containsAll(subValues);
+    }
+
+    /*
+     * Computes subtyping as per the subtyping in the qualifier hierarchy
+     * structure unless both annotations are ClassVal. In this case, rhs is
+     * a subtype of lhs iff lhs contains  every element of rhs.
+     */
+    @Override
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
       if (AnnotationUtils.areSame(subAnno, superAnno)
           || areSameByClass(superAnno, UnknownClass.class)
           || areSameByClass(subAnno, ClassValBottom.class)) {

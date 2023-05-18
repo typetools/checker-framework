@@ -12,6 +12,9 @@ Signedness Checker:
 
 **Implementation details:**
 
+Methods `QualifierHierarchy.isSubtype(...)` have been deprecated in favor of new
+overloads that also take two additional `TypeMirror` formal parameters.
+
 Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
  * `getTopAnnotations()`
  * `getBottomAnnotations()`

@@ -452,6 +452,24 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
       return subtype.isSubtype(supertype);
     }
+
+    /**
+     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+     * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains every
+     * element of lhs.
+     *
+     * @return true if rhs is a subtype of lhs, false otherwise
+     */
+    @Override
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
+      UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
+      UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
+      return subtype.isSubtype(supertype);
+    }
   }
 
   @Override

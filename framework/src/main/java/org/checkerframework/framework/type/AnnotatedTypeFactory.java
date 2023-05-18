@@ -1885,15 +1885,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the AnnotationTree which is a use of one of the field invariant annotations (as
-   * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
-   * returned.
+   * Returns the element of {@code annoTrees} that is a use of one of the field invariant
+   * annotations (as specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't
+   * found, null is returned.
    *
    * @param annoTrees list of trees to search; the result is one of the list elements, or null
    * @return the AnnotationTree that is a use of one of the field invariant annotations, or null if
    *     one isn't found
    */
-  public AnnotationTree getFieldInvariantAnnotationTree(List<? extends AnnotationTree> annoTrees) {
+  public @Nullable AnnotationTree getFieldInvariantAnnotationTree(
+      List<? extends AnnotationTree> annoTrees) {
     List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
     for (int i = 0; i < annos.size(); i++) {
       for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
@@ -2515,14 +2516,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // arguments.  So, we just copy the annotations from the bound of the declared type to the
     // new bound.
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
-    AnnotationMirrorSet typeBoundAnnos =
+    AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
     AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getExtendsBound().getAnnotations();
-    for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
+    TypeMirror receiverUnderlying = receiverType.getUnderlyingType();
+    TypeMirror getClassUnderlying = getClassType.getUnderlyingType();
+    for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
-          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
-      if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
-        newAnnos.add(typeBoundAnno);
+          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
+      if (qualHierarchy.isSubtype(
+          receiverTypeBoundAnno, receiverUnderlying, wildcardAnno, getClassUnderlying)) {
+        newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);
       }
@@ -2795,7 +2799,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in
       // this location:
       //   new @HERE Class() {}
-      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+      // are not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annoTrees =
           newClassTree.getClassBody().getModifiers().getAnnotations();
       // Add the annotations to an AnnotatedTypeMirror removes the annotations that are not
