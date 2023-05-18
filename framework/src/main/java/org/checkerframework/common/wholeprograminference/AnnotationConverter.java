@@ -92,7 +92,7 @@ public class AnnotationConverter {
    */
   protected static AnnotationMirror annotationToAnnotationMirror(
       Annotation anno, ProcessingEnvironment processingEnv) {
-    final AnnotationBuilder builder =
+    AnnotationBuilder builder =
         new AnnotationBuilder(
             processingEnv, Signatures.binaryNameToFullyQualified(anno.def().name));
     for (String fieldKey : anno.fieldValues.keySet()) {

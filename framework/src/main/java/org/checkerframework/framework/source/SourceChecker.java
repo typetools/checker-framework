@@ -1112,7 +1112,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    final String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "(" + messageKey + ")";
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
         && this.processingEnv.getOptions().containsKey("nomsgtext")) {
@@ -2136,8 +2136,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return whether conservative defaults should be used
    */
   public boolean useConservativeDefault(String kindOfCode) {
-    final boolean useUncheckedDefaultsForSource = false;
-    final boolean useUncheckedDefaultsForByteCode = false;
+    boolean useUncheckedDefaultsForSource = false;
+    boolean useUncheckedDefaultsForByteCode = false;
     String option = this.getOption("useConservativeDefaultsForUncheckedCode");
     // Temporary, for backward compatibility.
     if (option == null) {

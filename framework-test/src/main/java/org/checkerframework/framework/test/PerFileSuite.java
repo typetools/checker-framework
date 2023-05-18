@@ -56,9 +56,9 @@ public class PerFileSuite extends Suite {
   @SuppressWarnings("nullness") // JUnit needs to be annotated
   public PerFileSuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
-    final TestClass testClass = getTestClass();
-    final Class<?> javaTestClass = testClass.getJavaClass();
-    final List<Object[]> parametersList = getParametersList(testClass);
+    TestClass testClass = getTestClass();
+    Class<?> javaTestClass = testClass.getJavaClass();
+    List<Object[]> parametersList = getParametersList(testClass);
 
     for (Object[] parameters : parametersList) {
       runners.add(new PerParameterSetTestRunner(javaTestClass, parameters));
@@ -94,7 +94,7 @@ public class PerFileSuite extends Suite {
 
   /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
   private FrameworkMethod getParametersMethod(TestClass testClass) {
-    final List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
+    List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
     if (parameterMethods.size() != 1) {
       // Construct error message
 

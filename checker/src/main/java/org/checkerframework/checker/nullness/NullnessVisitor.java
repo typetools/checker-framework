@@ -438,8 +438,8 @@ public class NullnessVisitor
    */
   protected void checkForRedundantTests(BinaryTree tree) {
 
-    final ExpressionTree leftOp = tree.getLeftOperand();
-    final ExpressionTree rightOp = tree.getRightOperand();
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
 
     // respect command-line option
     if (!checker.getLintOption(
@@ -464,8 +464,8 @@ public class NullnessVisitor
   /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations. */
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
-    final ExpressionTree leftOp = tree.getLeftOperand();
-    final ExpressionTree rightOp = tree.getRightOperand();
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
 
     if (isUnboxingOperation(tree)) {
       checkForNullability(leftOp, UNBOXING_OF_NULLABLE);

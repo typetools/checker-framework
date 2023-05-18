@@ -679,8 +679,8 @@ public class ElementUtils {
    * @return direct supertypes of {@code type}
    */
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
-    final TypeMirror superclass = type.getSuperclass();
-    final List<? extends TypeMirror> interfaces = type.getInterfaces();
+    TypeMirror superclass = type.getSuperclass();
+    List<? extends TypeMirror> interfaces = type.getInterfaces();
     List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.

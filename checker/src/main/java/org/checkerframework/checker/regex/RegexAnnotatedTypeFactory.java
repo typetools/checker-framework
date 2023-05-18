@@ -407,8 +407,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror rhs = getAnnotatedType(tree.getExpression());
         AnnotatedTypeMirror lhs = getAnnotatedType(tree.getVariable());
 
-        final Integer lhsRegexCount = getMinimumRegexCount(lhs);
-        final Integer rhsRegexCount = getMinimumRegexCount(rhs);
+        Integer lhsRegexCount = getMinimumRegexCount(lhs);
+        Integer rhsRegexCount = getMinimumRegexCount(rhs);
 
         if (lhsRegexCount != null && rhsRegexCount != null) {
           int lCount = getGroupCount(lhs.getAnnotation(Regex.class));
@@ -431,7 +431,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           || TreeUtils.isMethodInvocation(tree, patternCompile2, processingEnv)) {
         ExpressionTree arg0 = tree.getArguments().get(0);
 
-        final AnnotatedTypeMirror argType = getAnnotatedType(arg0);
+        AnnotatedTypeMirror argType = getAnnotatedType(arg0);
         Integer regexCount = getMinimumRegexCount(argType);
         AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
 
@@ -480,7 +480,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the Integer value of the Regex annotation (0 if no value exists)
      */
     private Integer getMinimumRegexCount(AnnotatedTypeMirror type) {
-      final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
+      AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {
           case TYPEVAR:

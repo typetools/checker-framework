@@ -134,8 +134,8 @@ public class AnnotationFileUtil {
       return findDeclaration(className, indexFile.getCompilationUnits().get(0));
     }
 
-    final String packageName = className.substring(0, indexOfDot);
-    final String simpleName = className.substring(indexOfDot + 1);
+    String packageName = className.substring(0, indexOfDot);
+    String simpleName = className.substring(indexOfDot + 1);
 
     for (CompilationUnit cu : indexFile.getCompilationUnits()) {
       if (cu.getPackageDeclaration().isPresent()
