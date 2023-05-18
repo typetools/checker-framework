@@ -1126,7 +1126,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-    AnnotationMirrorSet constructorAnnotations = constructorType.getReturnType().getAnnotations();
+    AnnotatedTypeMirror returnType = constructorType.getReturnType();
+    AnnotationMirrorSet constructorAnnotations = returnType.getAnnotations();
     AnnotationMirrorSet tops = qualifierHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
@@ -2733,21 +2734,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkExceptionParameter(CatchTree tree) {
 
     AnnotationMirrorSet requiredAnnotations = getExceptionParameterLowerBoundAnnotationsCached();
-    AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(tree.getParameter());
+    VariableTree excParamTree = tree.getParameter();
+    AnnotatedTypeMirror excParamType = atypeFactory.getAnnotatedType(excParamTree);
 
     for (AnnotationMirror required : requiredAnnotations) {
-      AnnotationMirror found = exPar.getAnnotationInHierarchy(required);
+      AnnotationMirror found = excParamType.getAnnotationInHierarchy(required);
       assert found != null;
       if (!atypeFactory.getQualifierHierarchy().isSubtype(required, found)) {
-        checker.reportError(tree.getParameter(), "exception.parameter", found, required);
+        checker.reportError(excParamTree, "exception.parameter", found, required);
       }
 
-      if (exPar.getKind() == TypeKind.UNION) {
-        AnnotatedUnionType aut = (AnnotatedUnionType) exPar;
-        for (AnnotatedTypeMirror alterntive : aut.getAlternatives()) {
-          AnnotationMirror foundAltern = alterntive.getAnnotationInHierarchy(required);
-          if (!atypeFactory.getQualifierHierarchy().isSubtype(required, foundAltern)) {
-            checker.reportError(tree.getParameter(), "exception.parameter", foundAltern, required);
+      if (excParamType.getKind() == TypeKind.UNION) {
+        AnnotatedUnionType aut = (AnnotatedUnionType) excParamType;
+        for (AnnotatedTypeMirror alternativeType : aut.getAlternatives()) {
+          AnnotationMirror alternativeAnno = alternativeType.getAnnotationInHierarchy(required);
+          if (!atypeFactory.getQualifierHierarchy().isSubtype(required, alternativeAnno)) {
+            checker.reportError(excParamTree, "exception.parameter", alternativeAnno, required);
           }
         }
       }
@@ -3420,12 +3422,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(resultAnnos, explicit);
       // The return type of the constructor (resultAnnos) must be comparable to the
       // annotations on the constructor invocation (explicitAnnos).
+      boolean resultIsSubtypeOfExplicit =
+          atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit);
       if (!(atypeFactory.getQualifierHierarchy().isSubtype(explicit, resultAnno)
-          || atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit))) {
+          || resultIsSubtypeOfExplicit)) {
         checker.reportError(
             newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
         return;
-      } else if (!atypeFactory.getQualifierHierarchy().isSubtype(resultAnno, explicit)) {
+      } else if (!resultIsSubtypeOfExplicit) {
         // Issue a warning if the annotations on the constructor invocation is a subtype of
         // the constructor result type. This is equivalent to down-casting.
         checker.reportWarning(
