@@ -136,7 +136,9 @@ public class GlbUtil {
   /** A comparator for {@link #sortForGlb}. */
   private static final class GlbSortComparator implements Comparator<AnnotatedTypeMirror> {
 
+    /** The qualifier hierarchy. */
     private final QualifierHierarchy qualifierHierarchy;
+    /** The type utiliites. */
     private final Types types;
 
     /** Creates a new GlbSortComparator. */
@@ -152,24 +154,19 @@ public class GlbUtil {
 
       if (types.isSameType(underlyingType1, underlyingType2)) {
         return compareAnnotations(type1, type2);
-      }
-
-      if (types.isSubtype(underlyingType1, underlyingType2)) {
+      } else if (types.isSubtype(underlyingType1, underlyingType2)) {
         return 1;
+      } else {
+        // if they're incomparable or type2 is a subtype of type1
+        return -1;
       }
-
-      // if they're incomparable or type2 is a subtype of type1
-      return -1;
     }
 
     private int compareAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       if (AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations())) {
         return 0;
-      }
-
-      if (qualifierHierarchy.isSubtype(type1, type2)) {
+      } else if (qualifierHierarchy.isSubtype(type1, type2)) {
         return 1;
-
       } else {
         return -1;
       }
