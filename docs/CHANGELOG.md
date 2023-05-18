@@ -11,6 +11,10 @@ Signedness Checker:
 
 **Implementation details:**
 
+Instead of overriding `isRelevant()`, a type factory implementation should
+override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
+never call `isRelevantImpl()`
+
 Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
  * `getTopAnnotations()`
  * `getBottomAnnotations()`
@@ -19,9 +23,9 @@ Methods that now return `AnnotationMirrorSet` instead of `Set<? extends Annotati
 
 Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements()`.
 
-Instead of overriding `isRelevant()`, a type factory implementation should
-override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
-never call `isRelevantImpl()`
+Class `FieldInvariants`:
+ * constructor now takes an `AnnotatedTypeFactory`
+ * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
 
 **Closed issues:**
 

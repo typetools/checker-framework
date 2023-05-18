@@ -31,15 +31,20 @@ public class FieldInvariants {
    */
   private final List<AnnotationMirror> qualifiers;
 
+  /** The type factory associated with this. */
+  private final AnnotatedTypeFactory factory;
+
   /**
    * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
    * either 1 or equal to length of {@code fields}.
    *
    * @param fields list of fields
    * @param qualifiers list of qualifiers
+   * @param factory the type factory
    */
-  public FieldInvariants(List<String> fields, List<AnnotationMirror> qualifiers) {
-    this(null, fields, qualifiers);
+  public FieldInvariants(
+      List<String> fields, List<AnnotationMirror> qualifiers, AnnotatedTypeFactory factory) {
+    this(null, fields, qualifiers, factory);
   }
 
   /**
@@ -50,9 +55,13 @@ public class FieldInvariants {
    * @param other other invariant object, may be null
    * @param fields list of fields
    * @param qualifiers list of qualifiers
+   * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
+      FieldInvariants other,
+      List<String> fields,
+      List<AnnotationMirror> qualifiers,
+      AnnotatedTypeFactory factory) {
     if (qualifiers.size() == 1) {
       while (fields.size() > qualifiers.size()) {
         qualifiers.add(qualifiers.get(0));
@@ -65,6 +74,7 @@ public class FieldInvariants {
 
     this.fields = Collections.unmodifiableList(fields);
     this.qualifiers = qualifiers;
+    this.factory = factory;
   }
 
   /** The simple names of the fields that have a qualifier. May contain duplicates. */
@@ -110,10 +120,9 @@ public class FieldInvariants {
    * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
    *
    * @param superInvar the value to check for being a super invariant
-   * @param factory the type factory
    * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
    */
-  public DiagMessage isSuperInvariant(FieldInvariants superInvar, AnnotatedTypeFactory factory) {
+  public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
     QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);

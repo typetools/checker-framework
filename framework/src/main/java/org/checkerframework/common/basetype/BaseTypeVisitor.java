@@ -856,7 +856,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.getFieldInvariants(TypesUtils.getTypeElement(superClass));
     if (superInvar != null) {
       // Checks #3 (see method Javadoc)
-      DiagMessage superError = invariants.isSuperInvariant(superInvar, atypeFactory);
+      DiagMessage superError = invariants.isSuperInvariant(superInvar);
       if (superError != null) {
         checker.report(errorTree, superError);
       }
