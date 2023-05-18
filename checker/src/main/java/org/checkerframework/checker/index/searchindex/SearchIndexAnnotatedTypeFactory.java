@@ -125,10 +125,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (AnnotationUtils.areSame(a2, BOTTOM)) {
         return a2;
       }
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
       }
-      if (isSubtype(a2, a1)) {
+      if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       }
       // If neither is a subtype of the other, then create an
@@ -164,10 +164,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (AnnotationUtils.areSame(a2, BOTTOM)) {
         return a1;
       }
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
       }
-      if (isSubtype(a2, a1)) {
+      if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       }
       // If neither is a subtype of the other, then create an

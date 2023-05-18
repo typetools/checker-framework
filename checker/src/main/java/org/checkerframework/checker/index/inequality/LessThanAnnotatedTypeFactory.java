@@ -123,9 +123,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       }
 
@@ -137,9 +137,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       }
 
