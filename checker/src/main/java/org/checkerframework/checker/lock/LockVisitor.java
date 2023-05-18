@@ -691,7 +691,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
               }
 
-              // TODO: Change alwaysRelevantTM.  (The code is confusing.)
+              // TODO: Change alwaysRelevantTM.  (I put it in because the code is confusing.)
               if (bothAreGSwithNoIndex
                   || !(atypeFactory
                           .getQualifierHierarchy()
