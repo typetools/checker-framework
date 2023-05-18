@@ -440,11 +440,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
 
     /**
-     * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+     * {@inheritDoc}
+     *
+     * <p>Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
      * annotations have the same class. In this case, rhs is a subtype of lhs iff rhs contains every
      * element of lhs.
-     *
-     * @return true if rhs is a subtype of lhs, false otherwise
      */
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
