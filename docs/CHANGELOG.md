@@ -19,6 +19,10 @@ Methods that now return `AnnotationMirrorSet` instead of `Set<? extends Annotati
 
 Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements()`.
 
+Instead of overriding `isRelevant()`, a type factory implementation should
+override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
+never call `isRelevantImpl()`
+
 **Closed issues:**
 
 
