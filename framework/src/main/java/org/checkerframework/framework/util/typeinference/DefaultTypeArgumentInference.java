@@ -442,7 +442,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
 
     for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
-      InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
+      TypeVariable targetDeclTM = targetDecl.getUnderlyingType();
+      InferredValue inferred = fromArgSupertypes.get(targetDeclTM);
       if (inferred instanceof InferredType) {
         final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
         for (AnnotationMirror top : tops) {
@@ -450,7 +451,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
           final AnnotationMirror argAnno =
               ((InferredType) inferred).type.getEffectiveAnnotationInHierarchy(top);
-          if (qualifierHierarchy.isSubtype(argAnno, lowerBoundAnno)) {
+          if (qualifierHierarchy.isSubtype(
+              argAnno, inferred, lowerBoundAnno, lowerBoundAsArgument)) {
             ((InferredType) inferred).type.replaceAnnotation(lowerBoundAnno);
           }
         }
