@@ -1,14 +1,16 @@
 package wildcards;
 
-abstract class GenericAnnotatedTypeFactoryCrash<
-    Value extends CFAbstractValue<Value>,
-    Store extends CFAbstractStore<Value, Store>,
-    TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
-    FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>> {
-  abstract Store getRegularExitStore();
-}
+import wildcards.Crash.GenericAnnotatedTypeFactoryCrash;
 
 public class Crash<Factory extends GenericAnnotatedTypeFactoryCrash<?, ?, ?, ?>> {
+  public abstract static class GenericAnnotatedTypeFactoryCrash<
+      Value extends CFAbstractValue<Value>,
+      Store extends CFAbstractStore<Value, Store>,
+      TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
+      FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>> {
+    abstract Store getRegularExitStore();
+  }
+
   static class CFAbstractValue<V extends CFAbstractValue<V>> {}
 
   static class CFAbstractStore<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>> {}
