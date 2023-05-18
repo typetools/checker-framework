@@ -113,8 +113,8 @@ public interface QualifierHierarchy {
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy.
    *
-   * @param subQualifier possible subqualifier of {@code superQualifier}
-   * @param superQualifier possible superqualifier of {@code subQualifier}
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
   boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier);
