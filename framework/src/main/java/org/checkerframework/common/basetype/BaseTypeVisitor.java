@@ -2526,11 +2526,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so just check the reverse to check that the qualifiers are equivalent.
       return atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(
-              castTypeAnno,
-              castType.getUnderlyingType(),
-              exprTypeAnno,
-              exprType.getUnderlyingType());
+          .isSubtype(castTypeAnno, castType, exprTypeAnno, exprType);
     }
     // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
     AnnotationMirror bottom = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
@@ -4148,8 +4144,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!qualifierHierarchy.isSubtype(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
-        if (qualifierHierarchy.isSubtype(overriderAnnos, declaredAnnos)
-            && qualifierHierarchy.isSubtype(declaredAnnos, overriderAnnos)) {
+        if (qualifierHierarchy.isSubtype(overriderAnnos, overriderTM, declaredAnnos, overriderTM)
+            && qualifierHierarchy.isSubtype(
+                declaredAnnos, overriderTM, overriderAnnos, overriderTM)) {
           // All the type of an object must be no higher than its upper bound. So if the
           // receiver is annotated with the upper bound qualifiers, then the override is
           // safe.
@@ -4403,15 +4400,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       Set<Pair<JavaExpression, AnnotationMirror>> mustSubset,
       Set<Pair<JavaExpression, AnnotationMirror>> set,
       @CompilerMessageKey String messageKey) {
+
+    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+
     for (Pair<JavaExpression, AnnotationMirror> weak : mustSubset) {
+      JavaExpression jexpr = weak.first;
       boolean found = false;
 
       for (Pair<JavaExpression, AnnotationMirror> strong : set) {
         // are we looking at a contract of the same receiver?
-        if (weak.first.equals(strong.first)) {
+        if (jexpr.equals(strong.first)) {
           // check subtyping relationship of annotations
-          QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-          if (qualifierHierarchy.isSubtype(strong.second, weak.second)) {
+          TypeMirror jexprTM = jexpr.getType();
+          if (qualifierHierarchy.isSubtype(strong.second, jexprTM, weak.second, jexprTM)) {
             found = true;
             break;
           }
@@ -4660,6 +4661,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
+    DeclaredType declarationTM = declarationType.getUnderlyingType();
+    DeclaredType useTM = useType.getUnderlyingType();
     AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     AnnotationMirrorSet upperBounds =
         atypeFactory
@@ -4669,7 +4672,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror upperBound =
           atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
-      if (!atypeFactory.getQualifierHierarchy().isSubtype(qualifier, upperBound)) {
+      if (!atypeFactory
+          .getQualifierHierarchy()
+          .isSubtype(qualifier, useTM, upperBound, declarationTM)) {
         return false;
       }
     }
@@ -4684,8 +4689,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is a valid use of the primitive type
    */
   public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
+    PrimitiveType primitiveTM = type.getUnderlyingType();
     AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
-    return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
+    return atypeFactory
+        .getQualifierHierarchy()
+        .isSubtype(type.getAnnotations(), primitiveTM, bounds, primitiveTM);
   }
 
   /**
@@ -4698,8 +4706,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is a valid array type
    */
   public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
+    ArrayType arrayTM = type.getUnderlyingType();
     AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
-    return atypeFactory.getQualifierHierarchy().isSubtype(type.getAnnotations(), bounds);
+    return atypeFactory
+        .getQualifierHierarchy()
+        .isSubtype(type.getAnnotations(), arrayTM, bounds, arrayTM);
   }
 
   /**
