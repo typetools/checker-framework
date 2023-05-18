@@ -118,6 +118,7 @@ public class FieldInvariants {
     return qualifiers.size() == fields.size();
   }
 
+  /** A type mirror that is always relevant. */
   private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**

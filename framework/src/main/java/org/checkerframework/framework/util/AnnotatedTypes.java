@@ -916,8 +916,8 @@ public class AnnotatedTypes {
     glb.clearPrimaryAnnotations();
 
     for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-      AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
       AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
+      AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
       if (subAnno != null && superAnno != null) {
         glb.addAnnotation(qualifierHierarchy.greatestLowerBound(subAnno, superAnno));
       } else if (subAnno == null && superAnno == null) {

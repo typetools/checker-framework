@@ -2115,6 +2115,7 @@ class MustCallConsistencyAnalyzer {
     return qualifiedName.startsWith("java");
   }
 
+  /** A type mirror that is always relevant. */
   private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**
