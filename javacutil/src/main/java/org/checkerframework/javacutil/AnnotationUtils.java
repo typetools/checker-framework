@@ -72,8 +72,8 @@ public class AnnotationUtils {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
       return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
     }
-    final DeclaredType annoType = annotation.getAnnotationType();
-    final TypeElement elm = (TypeElement) annoType.asElement();
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
     @SuppressWarnings("signature:assignment") // JDK needs annotations
     @CanonicalName String name = elm.getQualifiedName().toString();
     return name;
@@ -86,8 +86,8 @@ public class AnnotationUtils {
    * @return the binary name of an annotation as a String
    */
   public static final @BinaryName String annotationBinaryName(AnnotationMirror annotation) {
-    final DeclaredType annoType = annotation.getAnnotationType();
-    final TypeElement elm = (TypeElement) annoType.asElement();
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
     return ElementUtils.getBinaryName(elm);
   }
 

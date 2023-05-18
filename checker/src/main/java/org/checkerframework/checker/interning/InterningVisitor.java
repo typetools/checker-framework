@@ -459,7 +459,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    */
   // TODO: handle != comparisons too!
   // TODO: handle more methods, such as early return from addAll when this == arg
-  private boolean suppressInsideComparison(final BinaryTree binaryTree) {
+  private boolean suppressInsideComparison(BinaryTree binaryTree) {
     // Only handle == binary trees
     if (binaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;
@@ -522,8 +522,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     ExecutableElement enclosingMethod = TreeUtils.elementFromDeclaration(methodTree);
     assert enclosingMethod != null;
 
-    final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
-    final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
+    Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
+    Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
 
     // Matcher to check for if statement that returns zero
     Heuristics.Matcher matcherIfReturnsZero =
@@ -561,7 +561,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // "return 0" statement (for the Comparator.compare heuristic).
     if (overrides(enclosingMethod, Comparator.class, "compare")
         || (hasCompareToMethodAnno && params == 2)) {
-      final boolean returnsZero =
+      boolean returnsZero =
           new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
               .match(getCurrentPath());
 
@@ -591,7 +591,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     } else if (overrides(enclosingMethod, Comparable.class, "compareTo")
         || (hasCompareToMethodAnno && params == 1)) {
 
-      final boolean returnsZero =
+      boolean returnsZero =
           new Heuristics.Within(new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero))
               .match(getCurrentPath());
 
@@ -624,15 +624,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits a pattern such as (a == b || a.equals(b))
    */
-  private boolean suppressEarlyEquals(final BinaryTree topBinaryTree) {
+  private boolean suppressEarlyEquals(BinaryTree topBinaryTree) {
     // Only handle == binary trees
     if (topBinaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;
     }
 
     // should strip parens
-    final ExpressionTree left = TreeUtils.withoutParens(topBinaryTree.getLeftOperand());
-    final ExpressionTree right = TreeUtils.withoutParens(topBinaryTree.getRightOperand());
+    ExpressionTree left = TreeUtils.withoutParens(topBinaryTree.getLeftOperand());
+    ExpressionTree right = TreeUtils.withoutParens(topBinaryTree.getRightOperand());
 
     // looking for ((a == b || a.equals(b))
     Heuristics.Matcher matcherEqOrEquals =
@@ -747,7 +747,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param topBinaryTree the binary operation to check
    * @return true iff the tree fits the pattern (a == b || a.compareTo(b) == 0)
    */
-  private boolean suppressEarlyCompareTo(final BinaryTree topBinaryTree) {
+  private boolean suppressEarlyCompareTo(BinaryTree topBinaryTree) {
     // Only handle == binary trees
     if (topBinaryTree.getKind() != Tree.Kind.EQUAL_TO) {
       return false;
@@ -761,8 +761,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return false;
     }
 
-    final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
-    final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
+    Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
+    Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
 
     // looking for ((a == b || a.compareTo(b) == 0)
     Heuristics.Matcher matcherEqOrCompareTo =

@@ -347,17 +347,17 @@ public class RemoveAnnotationsForInference {
     // There are three JavaParser AST nodes that represent annotations
 
     @Override
-    public List<AnnotationExpr> visit(final MarkerAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(MarkerAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
 
     @Override
-    public List<AnnotationExpr> visit(final NormalAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(NormalAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
 
     @Override
-    public List<AnnotationExpr> visit(final SingleMemberAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(SingleMemberAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
   }

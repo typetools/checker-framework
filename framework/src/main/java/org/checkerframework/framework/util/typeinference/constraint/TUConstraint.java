@@ -52,9 +52,7 @@ public abstract class TUConstraint {
   public final boolean uIsArg;
 
   protected TUConstraint(
-      final AnnotatedTypeVariable typeVariable,
-      final AnnotatedTypeMirror relatedType,
-      boolean uIsArg) {
+      AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType, boolean uIsArg) {
     this.typeVariable = typeVariable;
     this.relatedType = relatedType;
     this.uIsArg = uIsArg;
@@ -72,7 +70,7 @@ public abstract class TUConstraint {
       return false;
     }
 
-    final TUConstraint that = (TUConstraint) thatObject;
+    TUConstraint that = (TUConstraint) thatObject;
 
     return this.typeVariable.equals(that.typeVariable) && this.relatedType.equals(that.relatedType);
   }

@@ -822,7 +822,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    *
    * @param lockExpressionTree the expression tree of a synchronized block
    */
-  private void ensureExpressionIsEffectivelyFinal(final ExpressionTree lockExpressionTree) {
+  private void ensureExpressionIsEffectivelyFinal(ExpressionTree lockExpressionTree) {
     // This functionality could be implemented using a visitor instead, however with this
     // design, it is easier to be certain that an error will always be issued if a tree kind is
     // not recognized.
@@ -872,9 +872,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   private void ensureExpressionIsEffectivelyFinal(
-      final JavaExpression lockExpr,
-      String expressionForErrorReporting,
-      Tree treeForErrorReporting) {
+      JavaExpression lockExpr, String expressionForErrorReporting, Tree treeForErrorReporting) {
     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpr)) {
       checker.reportError(
           treeForErrorReporting, "lock.expression.not.final", expressionForErrorReporting);
