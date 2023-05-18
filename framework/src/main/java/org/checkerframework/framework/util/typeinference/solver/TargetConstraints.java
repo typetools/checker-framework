@@ -90,6 +90,9 @@ public class TargetConstraints {
 
   /** Remember these are constraints in which the target is the subtype. */
   protected static class Subtypes {
+    /** Create a new Subtypes. */
+    public Subtypes() {}
+
     /** Map from hierarchy top to annotations that are supertypes to target in hierarchy. */
     public AnnotationMirrorMap<AnnotationMirrorSet> primaries = new AnnotationMirrorMap<>();
 
