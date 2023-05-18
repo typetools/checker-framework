@@ -188,34 +188,6 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
     }
 
-    @SuppressWarnings("deprecation") // for removal
-    @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (areSameByClass(superAnno, SearchIndexUnknown.class)) {
-        return true;
-      }
-      if (areSameByClass(subAnno, SearchIndexBottom.class)) {
-        return true;
-      }
-      if (areSameByClass(subAnno, SearchIndexUnknown.class)) {
-        return false;
-      }
-      if (areSameByClass(superAnno, SearchIndexBottom.class)) {
-        return false;
-      }
-
-      // Each annotation is either NegativeIndexFor or SearchIndexFor.
-      List<String> superArrays = getValueElement(superAnno);
-      List<String> subArrays = getValueElement(subAnno);
-
-      // Subtyping requires:
-      //  * subtype is NegativeIndexFor or supertype is SearchIndexFor
-      //  * subtype's arrays are a superset of supertype's arrays
-      return ((areSameByClass(subAnno, NegativeIndexFor.class)
-              || areSameByClass(superAnno, SearchIndexFor.class))
-          && subArrays.containsAll(superArrays));
-    }
-
     @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,

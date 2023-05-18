@@ -466,42 +466,6 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      *
      * <p>isSubtype in this type system is subset.
      */
-    @SuppressWarnings("deprecation") // for removal
-    @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (AnnotationUtils.areSame(subAnno, bottom)) {
-        return true;
-      } else if (AnnotationUtils.areSame(superAnno, bottom)) {
-        return false;
-      }
-
-      if (isPolymorphicQualifier(subAnno)) {
-        if (isPolymorphicQualifier(superAnno)) {
-          return true;
-        } else {
-          // Use this slightly more expensive conversion here because this is a rare code
-          // path and it's simpler to read than checking for both predicate and
-          // non-predicate forms of top.
-          return "".equals(convertToPredicate(superAnno));
-        }
-      } else if (isPolymorphicQualifier(superAnno)) {
-        // Polymorphic annotations are only a supertype of other polymorphic annotations and
-        // the bottom type, both of which have already been checked above.
-        return false;
-      }
-
-      if (isPredicate(subAnno)) {
-        return isPredicateSubtype(convertToPredicate(subAnno), convertToPredicate(superAnno));
-      } else if (isPredicate(superAnno)) {
-        return evaluatePredicate(subAnno, convertToPredicate(superAnno));
-      }
-
-      List<String> subVal = getAccumulatedValues(subAnno);
-      List<String> superVal = getAccumulatedValues(superAnno);
-      return subVal.containsAll(superVal);
-    }
-
-    /** isSubtype in this type system is subset. */
     @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,

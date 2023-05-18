@@ -250,25 +250,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
 
-    @SuppressWarnings("deprecation") // for removal
-    @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      if (AnnotationUtils.areSame(subAnno, superAnno)
-          || areSameByClass(superAnno, UnknownMethod.class)
-          || areSameByClass(subAnno, MethodValBottom.class)) {
-        return true;
-      }
-      if (areSameByClass(subAnno, UnknownMethod.class)
-          || areSameByClass(superAnno, MethodValBottom.class)) {
-        return false;
-      }
-      assert areSameByClass(subAnno, MethodVal.class) && areSameByClass(superAnno, MethodVal.class)
-          : "Unexpected annotation in MethodVal";
-      List<MethodSignature> subSignatures = getListOfMethodSignatures(subAnno);
-      List<MethodSignature> superSignatures = getListOfMethodSignatures(superAnno);
-      return superSignatures.containsAll(subSignatures);
-    }
-
     @Override
     public boolean isSubtype(
         AnnotationMirror subAnno,
