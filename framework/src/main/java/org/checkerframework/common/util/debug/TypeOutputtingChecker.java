@@ -236,17 +236,17 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
       // Not needed - raises error.
       @Override
       public boolean isSubtype(
-          AnnotationMirror subAnno,
-          TypeMirror subType,
-          AnnotationMirror superAnno,
-          TypeMirror superType) {
+          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
       public boolean isSubtype(
-          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
+          AnnotationMirror subAnno,
+          TypeMirror subType,
+          AnnotationMirror superAnno,
+          TypeMirror superType) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 

@@ -155,7 +155,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       for (AnnotationMirror am : prev) {
         if (contextComponentType.isAnnotatedInHierarchy(am)
             && !this.qualHierarchy.isSubtype(
-                am, contextComponentType.getAnnotationInHierarchy(am))) {
+                am, type, contextComponentType.getAnnotationInHierarchy(am), type)) {
           prevIsSubtype = false;
         }
       }
@@ -322,7 +322,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
     for (AnnotationMirror boundAnno : boundAnnos) {
       AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
-      if (anno != null && !qualHierarchy.isSubtype(anno, boundAnno)) {
+      if (anno != null && !qualHierarchy.isSubtype(anno, type, boundAnno, type)) {
         annosToAdd.add(boundAnno);
       }
     }

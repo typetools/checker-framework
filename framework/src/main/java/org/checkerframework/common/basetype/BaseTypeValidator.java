@@ -618,13 +618,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           if (!(atypeFactory
                   .getQualifierHierarchy()
                   .isSubtype(
-                      wildcard.getSuperBound().getEffectiveAnnotations(),
-                      wildcard.getExtendsBound().getAnnotations())
+                      wildcard.getSuperBound().getEffectiveAnnotations(), wildcard.getSuperBound(),
+                      wildcard.getExtendsBound().getAnnotations(), wildcard.getExtendsBound())
               && atypeFactory
                   .getQualifierHierarchy()
                   .isSubtype(
-                      wildcard.getExtendsBound().getAnnotations(),
-                      wildcard.getSuperBound().getEffectiveAnnotations()))) {
+                      wildcard.getExtendsBound().getAnnotations(), wildcard.getExtendsBound(),
+                      wildcard.getSuperBound().getEffectiveAnnotations(),
+                          wildcard.getSuperBound()))) {
             checker.reportError(
                 tree.getTypeArguments().get(i),
                 "super.wildcard",
@@ -684,12 +685,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
-    } // else
-    //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
-    //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
-    //  a bound
-
-    return true;
+      return qualifierHierarchy.isSubtype(lowerBoundAnnos, lowerBound, upperBoundAnnos, upperBound);
+    } else {
+      // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
+      // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
+      // a bound.
+      return true;
+    }
   }
 }
