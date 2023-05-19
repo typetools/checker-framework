@@ -162,7 +162,7 @@ public class InvocationTypeInference {
     ConstraintSet c = createC(invocationType, args, map);
 
     BoundSet b4 = getB4(b3, c);
-    List<Variable> thetaPrime = b4.resolve();
+    b4.resolve();
 
     if (b4.isUncheckedConversion()) {
       // If unchecked conversion was necessary for the method to be applicable during
@@ -173,7 +173,8 @@ public class InvocationTypeInference {
       // TODO: the erasure of the return type should happen were the inferred type arguments
       // are substituted into the method type.
     }
-    return new InferenceResult(thetaPrime, b4.isUncheckedConversion(), b4.annoFail, b4.errorMsg);
+    return new InferenceResult(
+        b4.getInstantiatedVariables(), b4.isUncheckedConversion(), b4.annoFail, b4.errorMsg);
   }
 
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
@@ -580,8 +581,8 @@ public class InvocationTypeInference {
       ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
-        BoundSet resolved = Resolution.resolve(alphas, b3, context);
-        c.applyInstantiations(resolved.getInstantiationsInAlphas(alphas));
+        Resolution.resolve(alphas, b3, context);
+        c.applyInstantiations();
       }
       c.remove(subset);
       BoundSet newBounds = subset.reduce(context);

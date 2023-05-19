@@ -105,8 +105,7 @@ public class ConstraintSet implements ReductionResult {
    */
   public Constraint pop() {
     assert !isEmpty();
-    // Pop from the bottom so that newer constraints are resolved first.
-    return list.remove(list.size() - 1);
+    return list.remove(0);
   }
 
   /** Remove all constraints in {@code subset} from this constraint set. */
@@ -223,10 +222,10 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /** Applies the instantiations to all the constraints in this set. */
-  public void applyInstantiations(List<Variable> instantiations) {
+  public void applyInstantiations() {
     for (Constraint constraint : list) {
       if (constraint instanceof TypeConstraint) {
-        ((TypeConstraint) constraint).applyInstantiations(instantiations);
+        ((TypeConstraint) constraint).applyInstantiations();
       }
     }
   }

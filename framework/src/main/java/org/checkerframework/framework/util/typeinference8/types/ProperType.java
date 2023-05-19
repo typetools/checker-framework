@@ -2,12 +2,10 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -240,7 +238,7 @@ public class ProperType extends AbstractType {
   }
 
   @Override
-  public AbstractType applyInstantiations(List<Variable> instantiations) {
+  public AbstractType applyInstantiations() {
     return this;
   }
 

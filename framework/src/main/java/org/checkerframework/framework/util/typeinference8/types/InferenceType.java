@@ -163,14 +163,16 @@ public class InferenceType extends AbstractType {
   }
 
   @Override
-  public AbstractType applyInstantiations(List<Variable> instantiations) {
-    List<TypeVariable> typeVariables = new ArrayList<>(instantiations.size());
-    List<TypeMirror> arguments = new ArrayList<>(instantiations.size());
+  public AbstractType applyInstantiations() {
+    List<TypeVariable> typeVariables = new ArrayList<>();
+    List<TypeMirror> arguments = new ArrayList<>();
+    List<Variable> instantiations = new ArrayList<>();
 
-    for (Variable alpha : instantiations) {
-      if (map.containsValue(alpha)) {
+    for (Variable alpha : map.values()) {
+      if (alpha.getInstantiation() != null) {
         typeVariables.add(alpha.getJavaType());
         arguments.add(alpha.getBounds().getInstantiation().getJavaType());
+        instantiations.add(alpha);
       }
     }
     if (typeVariables.isEmpty()) {
@@ -183,11 +185,9 @@ public class InferenceType extends AbstractType {
     Map<TypeVariable, AnnotatedTypeMirror> mapping = new LinkedHashMap<>();
 
     for (Variable alpha : instantiations) {
-      if (map.containsValue(alpha)) {
-        AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
-        context.typeFactory.initializeAtm(instantiation);
-        mapping.put(alpha.getJavaType(), instantiation);
-      }
+      AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
+      context.typeFactory.initializeAtm(instantiation);
+      mapping.put(alpha.getJavaType(), instantiation);
     }
     if (map.isEmpty()) {
       return this;

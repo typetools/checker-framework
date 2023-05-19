@@ -93,9 +93,9 @@ public class Typing extends TypeConstraint {
   }
 
   @Override
-  public void applyInstantiations(List<Variable> instantiations) {
-    super.applyInstantiations(instantiations);
-    S = S.applyInstantiations(instantiations);
+  public void applyInstantiations() {
+    super.applyInstantiations();
+    S = S.applyInstantiations();
   }
 
   @Override

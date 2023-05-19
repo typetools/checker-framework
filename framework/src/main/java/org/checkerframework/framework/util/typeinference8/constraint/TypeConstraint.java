@@ -141,11 +141,9 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Apply the given instantiations to any type mentioned in this constraint -- meaning replace any
    * mention of a variable in {@code instantiations} with its proper type.
-   *
-   * @param instantiations variables that have been instantiated
    */
-  public void applyInstantiations(List<Variable> instantiations) {
-    T = T.applyInstantiations(instantiations);
+  public void applyInstantiations() {
+    T = T.applyInstantiations();
   }
 
   @Override

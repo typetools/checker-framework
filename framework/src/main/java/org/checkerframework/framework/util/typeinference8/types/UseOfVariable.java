@@ -84,12 +84,11 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType applyInstantiations(List<Variable> instantiations) {
-    for (Variable inst : instantiations) {
-      if (inst == this.variable) {
-        return inst.getBounds().getInstantiation();
-      }
+  public AbstractType applyInstantiations() {
+    if (this.variable.getInstantiation() != null) {
+      return this.variable.getInstantiation();
     }
+
     return this;
   }
 

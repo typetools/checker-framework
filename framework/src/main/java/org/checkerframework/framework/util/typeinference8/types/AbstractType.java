@@ -148,7 +148,7 @@ public abstract class AbstractType {
    * @return a new type that is the same as this one except the variables in {@code instantiations}
    *     have been replaced by their instantiation
    */
-  public abstract AbstractType applyInstantiations(List<Variable> instantiations);
+  public abstract AbstractType applyInstantiations();
 
   /**
    * Return true if this type is java.lang.Object.

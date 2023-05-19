@@ -363,7 +363,7 @@ public class VariableBounds {
     for (Set<AbstractType> boundList : bounds.values()) {
       LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());
       for (AbstractType bound : boundList) {
-        AbstractType newBound = bound.applyInstantiations(instantiations);
+        AbstractType newBound = bound.applyInstantiations();
         if (newBound != bound && !boundList.contains(newBound)) {
           changed = true;
         }
@@ -372,7 +372,7 @@ public class VariableBounds {
       boundList.clear();
       boundList.addAll(newBounds);
     }
-    constraints.applyInstantiations(instantiations);
+    constraints.applyInstantiations();
 
     if (changed && instantiation == null) {
       for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
