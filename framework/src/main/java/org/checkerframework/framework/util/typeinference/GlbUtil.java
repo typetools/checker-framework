@@ -127,47 +127,66 @@ public class GlbUtil {
    *
    * <p>E.g. the list: {@code ArrayList<String>, List<String>, AbstractList<String>} becomes: {@code
    * List<String>, AbstractList<String>, ArrayList<String>}
+   *
+   * @param typeMirrors the list to sort in place
+   * @param typeFactory the type factory
    */
   public static void sortForGlb(
       List<? extends AnnotatedTypeMirror> typeMirrors, AnnotatedTypeFactory typeFactory) {
-    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-    Types types = typeFactory.getProcessingEnv().getTypeUtils();
+    Collections.sort(typeMirrors, new GlbSortComparator(typeFactory));
+  }
 
-    Collections.sort(
-        typeMirrors,
-        new Comparator<AnnotatedTypeMirror>() {
-          @Override
-          public int compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-            TypeMirror underlyingType1 = type1.getUnderlyingType();
-            TypeMirror underlyingType2 = type2.getUnderlyingType();
+  /** A comparator for {@link #sortForGlb}. */
+  private static final class GlbSortComparator implements Comparator<AnnotatedTypeMirror> {
 
-            if (types.isSameType(underlyingType1, underlyingType2)) {
-              return compareAnnotations(qualifierHierarchy, type1, type2);
-            }
+    /** The qualifier hierarchy. */
+    private final QualifierHierarchy qualifierHierarchy;
+    /** The type utiliites. */
+    private final Types types;
 
-            if (types.isSubtype(underlyingType1, underlyingType2)) {
-              return 1;
-            }
+    /**
+     * Creates a new GlbSortComparator.
+     *
+     * @param typeFactory the type factory
+     */
+    public GlbSortComparator(AnnotatedTypeFactory typeFactory) {
+      qualifierHierarchy = typeFactory.getQualifierHierarchy();
+      types = typeFactory.getProcessingEnv().getTypeUtils();
+    }
 
-            // if they're incomparable or type2 is a subtype of type1
-            return -1;
-          }
+    @Override
+    public int compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+      TypeMirror underlyingType1 = type1.getUnderlyingType();
+      TypeMirror underlyingType2 = type2.getUnderlyingType();
 
-          private int compareAnnotations(
-              QualifierHierarchy qualHierarchy,
-              AnnotatedTypeMirror type1,
-              AnnotatedTypeMirror type2) {
-            if (AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations())) {
-              return 0;
-            }
+      if (types.isSameType(underlyingType1, underlyingType2)) {
+        return compareAnnotations(type1, type2);
+      } else if (types.isSubtype(underlyingType1, underlyingType2)) {
+        return 1;
+      } else {
+        // if they're incomparable or type2 is a subtype of type1
+        return -1;
+      }
+    }
 
-            if (qualHierarchy.isSubtype(type1.getAnnotations(), type2.getAnnotations())) {
-              return 1;
-
-            } else {
-              return -1;
-            }
-          }
-        });
+    /**
+     * Returns -1, 0, or 1 depending on whether anno1 is a supertype, same as, or a subtype of
+     * annos2.
+     *
+     * @param type1 a type whose annotations to compare
+     * @param type2 a type whose annotations to compare
+     * @return the comparison of type1 and type2
+     */
+    private int compareAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+      AnnotationMirrorSet annos1 = type1.getAnnotations();
+      AnnotationMirrorSet annos2 = type2.getAnnotations();
+      if (AnnotationUtils.areSame(annos1, annos2)) {
+        return 0;
+      } else if (qualifierHierarchy.isSubtype(annos1, annos2)) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
   }
 }
