@@ -18,6 +18,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
@@ -3089,21 +3090,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns "filename:linenumber" for the given tree. For brevity, the filename is given as a
-   * simple name, without any directory components.
+   * Returns "filename:linenumber:columnnumber" for the given tree. For brevity, the filename is
+   * given as a simple name, without any directory components. If the line and column numbers are
+   * unknown, they are omitted.
    *
    * @param tree a tree
    * @return the location of the given tree in source code
    */
   private String fileAndLineNumber(Tree tree) {
+    StringBuilder result = new StringBuilder();
+    result.append(Paths.get(root.getSourceFile().getName()).getFileName().toString());
     long valuePos = positions.getStartPosition(root, tree);
-    return Paths.get(root.getSourceFile().getName()).getFileName().toString()
-        + (root.getLineMap() == null
-            ? ""
-            : (":"
-                + root.getLineMap().getLineNumber(valuePos)
-                + ":"
-                + root.getLineMap().getColumnNumber(valuePos)));
+    LineMap lineMap = root.getLineMap();
+    if (valuePos != -1 && lineMap != null) {
+      result.append(":");
+      result.append(lineMap.getLineNumber(valuePos));
+      result.append(":");
+      result.append(lineMap.getColumnNumber(valuePos));
+    }
+    return result.toString();
   }
 
   /**
