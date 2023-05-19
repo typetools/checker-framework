@@ -87,7 +87,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
    *
    * <p>This map holds onto type variables, which prevents them from being garbage collected. This
    * is unfortunate, but it is necessary for deterministic output and only occurs when the {@code
-   * -Ashowchecks} flag is passed.
+   * -Ashowchecks} flag is passed. In particular, javac might print two distinct capture-converted
+   * variables as "capture#222" if the second is created after the first is garbage-collected, and
+   * this makes the output misleading because it looks like the two printed representations refer to
+   * the same variable.
    */
   protected static final Map<TypeVariable, Integer> captureConversionIds = new HashMap<>();
 
@@ -361,10 +364,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       StringBuilder sb = new StringBuilder();
       if (TypesUtils.isCapturedTypeVariable(type.underlyingType)) {
         // underlyingType.toString() has this form: "capture#826 of ? extends java.lang.Object".
-        // assert underlyingType.startsWith("capture#");
-        // We output only the "capture#826" part.
-        // We output a deterministic number; we prefix it by "0" so we know whether a number is
-        // deterministic or from javac.
+        // assert underlyingType.toString().startsWith("capture#");
+        // We output only the "capture#826" part.  We output a deterministic number; we prefix it by
+        // "0" so we know whether a number is deterministic or from javac.
         sb.append("capture#0").append(getCaptureConversionId((TypeVariable) type.underlyingType));
       } else {
         sb.append(type.underlyingType);
