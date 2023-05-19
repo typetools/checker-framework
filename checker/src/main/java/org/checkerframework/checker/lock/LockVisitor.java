@@ -50,7 +50,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExe
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -509,9 +508,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     return true;
   }
 
-  /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /**
    * When visiting a method invocation, issue an error if the side effect annotation on the called
    * method causes the side effect guarantee of the enclosing method to be violated. For example, a
@@ -655,16 +651,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     // Combine all of the actual parameters into one list of AnnotationMirrors.
 
-    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
-    passedArgAnnotations.add(
-        methodCallReceiver == null
-            ? null
-            : methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+    ArrayList<AnnotatedTypeMirror> passedArgTypes = new ArrayList<>(guardSatisfiedIndex.length);
+    passedArgTypes.add(methodCallReceiver);
     for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
+      passedArgTypes.add(atypeFactory.getAnnotatedType(argTree));
+    }
+    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
+    for (AnnotatedTypeMirror atm : passedArgTypes) {
       passedArgAnnotations.add(
-          atypeFactory
-              .getAnnotatedType(argTree)
-              .getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+          atm == null ? null : atm.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
     }
 
     // Perform the validity check and issue an error if not valid.
@@ -692,17 +687,19 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
               }
 
+              AnnotatedTypeMirror arg1Type = passedArgTypes.get(i);
+              AnnotatedTypeMirror arg2Type = passedArgTypes.get(j);
+
               // TODO: Change alwaysRelevantTM.  (I put it in because the code is confusing.)
               if (bothAreGSwithNoIndex
                   || !(atypeFactory
                           .getQualifierHierarchy()
-                          .isSubtype(arg1Anno, alwaysRelevantTM, arg2Anno, alwaysRelevantTM)
+                          .isSubtype(arg1Anno, arg1Type, arg2Anno, arg2Type)
                       || atypeFactory
                           .getQualifierHierarchy()
-                          .isSubtype(arg2Anno, alwaysRelevantTM, arg1Anno, alwaysRelevantTM))) {
+                          .isSubtype(arg2Anno, arg2Type, arg1Anno, arg1Type))) {
 
-                String formalParam1 = null;
-
+                String formalParam1;
                 if (i == 0) {
                   formalParam1 = "The receiver type";
                 } else {
