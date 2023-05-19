@@ -1864,7 +1864,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (fields.size() != qualifiers.size()) {
       // The user wrote a malformed @FieldInvariant annotation, so just return a malformed
       // FieldInvariants object.  The BaseTypeVisitor will issue an error.
-      return new FieldInvariants(fields, qualifiers);
+      return new FieldInvariants(fields, qualifiers, this);
     }
 
     // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
@@ -1881,7 +1881,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
 
-    return new FieldInvariants(annotatedFields, supportedQualifiers);
+    return new FieldInvariants(annotatedFields, supportedQualifiers, this);
   }
 
   /**
@@ -2516,14 +2516,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // arguments.  So, we just copy the annotations from the bound of the declared type to the
     // new bound.
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
-    AnnotationMirrorSet typeBoundAnnos =
+    AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
     AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getExtendsBound().getAnnotations();
-    for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
+    for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
-          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
-      if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
-        newAnnos.add(typeBoundAnno);
+          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
+      if (qualHierarchy.isSubtype(receiverTypeBoundAnno, wildcardAnno)) {
+        newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);
       }
