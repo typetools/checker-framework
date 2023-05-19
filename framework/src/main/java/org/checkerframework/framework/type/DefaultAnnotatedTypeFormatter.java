@@ -84,6 +84,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
   /**
    * Maps from nondeterministic capture conversion numbers as output by javac to deterministic ones.
    * This is useful for comparing output across two runs of the Checker Framework.
+   *
+   * <p>This map holds onto type variables, which prevents them from being garbage collected. This
+   * is unfortunate, but it is necessary for deterministic output and only occurs when the {@code
+   * -Ashowchecks} flag is passed.
    */
   protected static final Map<TypeVariable, Integer> captureConversionIds = new HashMap<>();
 
