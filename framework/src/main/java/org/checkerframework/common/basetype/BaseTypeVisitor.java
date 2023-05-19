@@ -3100,7 +3100,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return Paths.get(root.getSourceFile().getName()).getFileName().toString()
         + (root.getLineMap() == null
             ? ""
-            : (root.getLineMap().getLineNumber(valuePos)
+            : (":"
+                + root.getLineMap().getLineNumber(valuePos)
                 + ":"
                 + root.getLineMap().getColumnNumber(valuePos)));
   }
