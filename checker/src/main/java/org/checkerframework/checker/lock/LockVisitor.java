@@ -690,7 +690,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               AnnotatedTypeMirror arg1Type = passedArgTypes.get(i);
               AnnotatedTypeMirror arg2Type = passedArgTypes.get(j);
 
-              // TODO: Change alwaysRelevantTM.  (I put it in because the code is confusing.)
               if (bothAreGSwithNoIndex
                   || !(atypeFactory
                           .getQualifierHierarchy()
