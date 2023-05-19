@@ -158,6 +158,7 @@ public interface QualifierHierarchy {
    * @param supertype the Java type associated with {@code superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
+  @SuppressWarnings("nullness:argument") // AnnotatedTypeMirror is not yet annotated for nullness
   default boolean isSubtype(
       AnnotationMirror subQualifier,
       AnnotatedTypeMirror subtype,
@@ -250,6 +251,7 @@ public interface QualifierHierarchy {
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
+  @SuppressWarnings("nullness:argument") // AnnotatedTypeMirror is not yet annotated for nullness
   default boolean isSubtype(
       Collection<? extends AnnotationMirror> subQualifiers,
       AnnotatedTypeMirror subType,
