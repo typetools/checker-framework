@@ -328,13 +328,25 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the type is either boolean (primitive type) or java.lang.Boolean.
+   * Returns true if the type is either {@code boolean} (primitive type) or {@code
+   * java.lang.Boolean}.
    *
    * @param type the type to test
    * @return true iff type represents a boolean type
    */
   public static boolean isBooleanType(TypeMirror type) {
     return type.getKind() == TypeKind.BOOLEAN || isDeclaredOfName(type, "java.lang.Boolean");
+  }
+
+  /**
+   * Returns true if the type is {@code char} or {@code Character}.
+   *
+   * @param type a type
+   * @return true if the type is {@code char} or {@code Character}
+   */
+  public static boolean isCharOrCharacter(TypeMirror type) {
+    return type.getKind() == TypeKind.CHAR
+        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
@@ -544,7 +556,7 @@ public final class TypesUtils {
       return false;
     }
 
-    final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
     switch (primitiveType.getKind()) {
       case BOOLEAN:
         return qualifiedName.equals("java.lang.Boolean");
@@ -684,7 +696,7 @@ public final class TypesUtils {
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
-  public static @Nullable TypeParameterElement wildcardToTypeParam(final WildcardType wildcard) {
+  public static @Nullable TypeParameterElement wildcardToTypeParam(WildcardType wildcard) {
     return wildcardToTypeParam((Type.WildcardType) wildcard);
   }
 
@@ -695,8 +707,7 @@ public final class TypesUtils {
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
-  public static @Nullable TypeParameterElement wildcardToTypeParam(
-      final Type.WildcardType wildcard) {
+  public static @Nullable TypeParameterElement wildcardToTypeParam(Type.WildcardType wildcard) {
 
     final Element typeParamElement;
     if (wildcard.bound != null) {
@@ -766,7 +777,7 @@ public final class TypesUtils {
    * @return a type that is not a wildcard or typevar, or {@code null} if this type is an unbounded
    *     wildcard
    */
-  public static @Nullable TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
+  public static @Nullable TypeMirror findConcreteUpperBound(TypeMirror boundedType) {
     TypeMirror effectiveUpper = boundedType;
     outerLoop:
     while (true) {

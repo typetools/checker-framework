@@ -116,7 +116,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
-  public MustCallAnnotatedTypeFactory(final BaseTypeChecker checker) {
+  public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);
     BOTTOM = createMustCall(Collections.emptyList());
@@ -323,7 +323,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param val the methods that should be called
    * @return an annotation indicating that the given methods should be called
    */
-  public AnnotationMirror createMustCall(final List<String> val) {
+  public AnnotationMirror createMustCall(List<String> val) {
     return mustCallAnnotations.computeIfAbsent(val, this::createMustCallImpl);
   }
 

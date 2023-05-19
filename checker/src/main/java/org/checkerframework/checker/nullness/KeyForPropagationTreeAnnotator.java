@@ -75,11 +75,11 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
 
     // This should only happen on Map.keySet();
     if (type.getKind() == TypeKind.DECLARED) {
-      final ExpressionTree initializer = variableTree.getInitializer();
+      ExpressionTree initializer = variableTree.getInitializer();
 
       if (isCallToKeyset(initializer)) {
-        final AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
-        final AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
+        AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
+        AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
 
         // Propagate just for declared (class) types, not for array types, boxed primitives,
         // etc.

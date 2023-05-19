@@ -153,7 +153,7 @@ public class BackwardAnalysisImpl<
           // Special basic blocks are empty and cannot throw exceptions,
           // thus there is no need to perform any analysis.
           SpecialBlock sb = (SpecialBlock) b;
-          final SpecialBlockType sType = sb.getSpecialType();
+          SpecialBlockType sType = sb.getSpecialType();
           if (sType == SpecialBlockType.ENTRY) {
             // storage the store at entry
             storeAtEntry = outStores.get(sb);

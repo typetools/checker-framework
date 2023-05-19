@@ -415,7 +415,7 @@ else
     mkdir -p "${SCRIPTDIR}/.scc"
     cd "${SCRIPTDIR}/.scc" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip" \
-      || (sleep 60 && wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip")
+      || (sleep 60s && wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip")
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046

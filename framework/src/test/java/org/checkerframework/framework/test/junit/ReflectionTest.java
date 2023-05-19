@@ -24,14 +24,14 @@ public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
   @Override
   public List<String> customizeOptions(List<String> previousOptions) {
-    final List<String> optionsWithStub = new ArrayList<>(checkerOptions);
+    List<String> optionsWithStub = new ArrayList<>(checkerOptions);
     optionsWithStub.add("-Astubs=" + getFullPath(testFiles.get(0), "reflection.astub"));
     optionsWithStub.add("-AresolveReflection");
     return optionsWithStub;
   }
 
-  protected String getFullPath(final File javaFile, final String filename) {
-    final String dirname = javaFile.getParentFile().getAbsolutePath();
+  protected String getFullPath(File javaFile, String filename) {
+    String dirname = javaFile.getParentFile().getAbsolutePath();
     return dirname + File.separator + filename;
   }
 }

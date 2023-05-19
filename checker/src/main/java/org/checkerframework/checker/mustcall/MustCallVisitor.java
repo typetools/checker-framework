@@ -262,10 +262,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
+          .isSubtype(atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
         return;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -293,8 +293,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    AnnotationMirror resultAnno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);

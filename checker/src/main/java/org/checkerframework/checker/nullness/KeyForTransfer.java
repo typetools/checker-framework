@@ -61,7 +61,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
       LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
       keyForMaps.add(mapName);
 
-      final KeyForValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
+      KeyForValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
       if (previousKeyValue != null) {
         for (AnnotationMirror prevAm : previousKeyValue.getAnnotations()) {
           if (prevAm != null && factory.areSameByClass(prevAm, KeyFor.class)) {
@@ -91,7 +91,7 @@ public class KeyForTransfer extends CFAbstractTransfer<KeyForValue, KeyForStore,
    * @param keyFor a {@code @KeyFor} annotation
    * @return the elements/arguments of a {@code @KeyFor} annotation
    */
-  private Set<String> getKeys(final AnnotationMirror keyFor) {
+  private Set<String> getKeys(AnnotationMirror keyFor) {
     if (keyFor.getElementValues().isEmpty()) {
       return Collections.emptySet();
     }
