@@ -2350,13 +2350,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  public boolean isRelevant(TypeMirror tm) {
+  public final boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
-    boolean result = isRelevantHelper(tm);
+    boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
     return result;
   }
@@ -2373,12 +2373,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
-   * Does not use a cache. Is a helper method for {@link #isRelevant}.
+   * Does not use a cache.
+   *
+   * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
+   * for {@link #isRelevant}.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  private boolean isRelevantHelper(TypeMirror tm) {
+  protected boolean isRelevantImpl(TypeMirror tm) {
 
     if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;
