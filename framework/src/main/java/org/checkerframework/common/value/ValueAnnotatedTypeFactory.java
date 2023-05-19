@@ -688,12 +688,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     if (TypesUtils.isString(resultType)) {
-      List<String> stringVals = CollectionsPlume.mapList((Object o) -> (String) o, values);
+      List<String> stringVals = CollectionsPlume.mapList(String.class::cast, values);
       return createStringAnnotation(stringVals);
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
       List<String> stringVals =
           CollectionsPlume.mapList(
-              (Object o) -> {
+              o -> {
                 if (o instanceof char[]) {
                   return new String((char[]) o);
                 } else {
@@ -715,7 +715,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     switch (primitiveKind) {
       case BOOLEAN:
-        List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
+        List<Boolean> boolVals = CollectionsPlume.mapList(Boolean.class::cast, values);
         return createBooleanAnnotation(boolVals);
       case DOUBLE:
       case FLOAT:
