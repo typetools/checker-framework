@@ -32,7 +32,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
    *
    * @param checker the type-checker associated with this visitor
    */
-  public CalledMethodsVisitor(final BaseTypeChecker checker) {
+  public CalledMethodsVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 
@@ -40,7 +40,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
    * Issue an error at every EnsuresCalledMethodsVarArgs annotation, because using it is unsound.
    */
   @Override
-  public Void visitAnnotation(final AnnotationTree tree, final Void p) {
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
     AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     if (AnnotationUtils.areSameByName(
         anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {

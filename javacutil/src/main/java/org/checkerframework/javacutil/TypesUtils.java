@@ -556,7 +556,7 @@ public final class TypesUtils {
       return false;
     }
 
-    final String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
     switch (primitiveType.getKind()) {
       case BOOLEAN:
         return qualifiedName.equals("java.lang.Boolean");
@@ -720,7 +720,7 @@ public final class TypesUtils {
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
-  public static @Nullable TypeParameterElement wildcardToTypeParam(final WildcardType wildcard) {
+  public static @Nullable TypeParameterElement wildcardToTypeParam(WildcardType wildcard) {
     return wildcardToTypeParam((Type.WildcardType) wildcard);
   }
 
@@ -731,8 +731,7 @@ public final class TypesUtils {
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
    */
-  public static @Nullable TypeParameterElement wildcardToTypeParam(
-      final Type.WildcardType wildcard) {
+  public static @Nullable TypeParameterElement wildcardToTypeParam(Type.WildcardType wildcard) {
 
     final Element typeParamElement;
     if (wildcard.bound != null) {
@@ -802,7 +801,7 @@ public final class TypesUtils {
    * @return a type that is not a wildcard or typevar, or {@code null} if this type is an unbounded
    *     wildcard
    */
-  public static @Nullable TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
+  public static @Nullable TypeMirror findConcreteUpperBound(TypeMirror boundedType) {
     TypeMirror effectiveUpper = boundedType;
     outerLoop:
     while (true) {
