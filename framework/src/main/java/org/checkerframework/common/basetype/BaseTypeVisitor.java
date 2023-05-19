@@ -3139,8 +3139,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private String fileAndLineNumber(Tree tree) {
     long valuePos = positions.getStartPosition(root, tree);
     return Paths.get(root.getSourceFile().getName()).getFileName().toString()
-        + ":"
-        + (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1);
+        + (root.getLineMap() == null
+            ? ""
+            : (root.getLineMap().getLineNumber(valuePos)
+                + ":"
+                + root.getLineMap().getColumnNumber(valuePos)));
   }
 
   /**
