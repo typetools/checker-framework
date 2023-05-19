@@ -16,6 +16,7 @@ jobs:
 
 - job: canary_jobs
   dependsOn:
+   - guava_jdk17
    - junit_tests_jdk17
    - nonjunit_tests_jdk17
    # - inference_tests_jdk17
@@ -247,8 +248,6 @@ jobs:
   - bash: ./checker/bin-devel/test-guava.sh
     displayName: test-guava.sh
 - job: guava_jdk17
-  dependsOn:
-   - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
