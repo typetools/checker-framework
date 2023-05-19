@@ -2398,7 +2398,6 @@ public abstract class GenericAnnotatedTypeFactory<
 
         // Primitives have no subtyping relationships, but the lookup might have failed
         // because tm has metadata such as annotations.
-        // TODO: How can tm have annotations?  Is any other metadata relevant?
       case BOOLEAN:
       case BYTE:
       case CHAR:
