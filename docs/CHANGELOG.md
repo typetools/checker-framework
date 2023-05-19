@@ -1,9 +1,21 @@
-Version 3.34.1 (June 1, 2023)
+Version 3.35.0 (June 1, 2023)
 ------------------------------
 
 **User-visible changes:**
 
+The Checker Framework no longer issues `type.checking.not.run` errors.
+This reduces clutter in the output.
+
+Signedness Checker:
+ * The receiver type of `Object.hashCode()` is now `@UnknownSignedness`.
+
 **Implementation details:**
+
+Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
+ * `getTopAnnotations()`
+ * `getBottomAnnotations()`
+ * `getDefaultTypeDeclarationBounds()`
+ * `getExceptionParameterLowerBoundAnnotations()`
 
 **Closed issues:**
 

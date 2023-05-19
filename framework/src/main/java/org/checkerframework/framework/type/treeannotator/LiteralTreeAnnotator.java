@@ -126,7 +126,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       }
       return this;
     }
-    Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
     if (tops.size() == defaultForNull.size()) {
       return this;

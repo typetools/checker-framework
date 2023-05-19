@@ -123,9 +123,10 @@ public class AnnotatedTypes {
   /**
    * Calls asSuper and casts the result to the same type as the input supertype.
    *
+   * @param <T> the type of supertype and return type
+   * @param atypeFactory the type factory
    * @param subtype subtype to be transformed to supertype
    * @param supertype supertype that subtype is transformed to
-   * @param <T> the type of supertype and return type
    * @return subtype as an instance of supertype
    */
   public static <T extends AnnotatedTypeMirror> T castedAsSuper(

@@ -589,14 +589,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // Substitute the captured type variables with their wildcards. Without
           // this, the isSubtype check crashes because wildcards aren't comparable
           // with type variables.
-          AnnotatedTypeMirror catpureTypeVarUB =
+          AnnotatedTypeMirror captureTypeVarUB =
               atypeFactory
                   .getTypeVarSubstitutor()
                   .substituteWithoutCopyingTypeArguments(
                       typeVarToWildcard, capturedTypeVar.getUpperBound());
           if (!atypeFactory
               .getTypeHierarchy()
-              .isSubtype(catpureTypeVarUB, wildcard.getExtendsBound())) {
+              .isSubtype(captureTypeVarUB, wildcard.getExtendsBound())) {
             checker.reportError(
                 tree.getTypeArguments().get(i),
                 "type.argument",

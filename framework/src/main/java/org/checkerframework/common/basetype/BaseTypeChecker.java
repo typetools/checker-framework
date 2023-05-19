@@ -404,7 +404,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * returns the only such checker, or null if none was found. The caller must know the exact
    * checker class to request.
    *
-   * @param checkerClass the class of the subchecker
+   * @param <T> the class of the subchecker to return
+   * @param checkerClass the class of the subchecker to return
    * @return the requested subchecker or null if not found
    */
   @SuppressWarnings("unchecked")
@@ -473,7 +474,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
       try {
         instance = subcheckerClass.getDeclaredConstructor().newInstance();
       } catch (Exception e) {
-        throw new BugInCF("Could not create an instance of " + subcheckerClass);
+        throw new BugInCF("Could not create an instance of " + subcheckerClass, e);
       }
 
       instance.setProcessingEnvironment(this.processingEnv);
@@ -519,14 +520,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
       treePathCacher = new TreePathCacher();
     }
     return treePathCacher;
-  }
-
-  @Override
-  protected void reportJavacError(TreePath p) {
-    if (parentChecker == null) {
-      // Only the parent checker should report the "type.checking.not.run" error.
-      super.reportJavacError(p);
-    }
   }
 
   // AbstractTypeProcessor delegation

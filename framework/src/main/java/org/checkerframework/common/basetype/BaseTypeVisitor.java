@@ -1118,7 +1118,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet constructorAnnotations = constructorType.getReturnType().getAnnotations();
-    Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = qualifierHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
       AnnotationMirror constructorAnno =
@@ -1850,8 +1850,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
     AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
     AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
-    Set<? extends AnnotationMirror> topAnnotations =
-        atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet topAnnotations = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superTypeMirror = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorTypeMirror =
@@ -2372,7 +2371,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the lint option "cast:redundant" is set, this methods issues a warning if the cast is
+   * If the lint option "cast:redundant" is set, this method issues a warning if the cast is
    * redundant.
    */
   protected void checkTypecastRedundancy(TypeCastTree typeCastTree) {
@@ -2403,7 +2402,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
     boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
-      if (!isInvariantTypeCastSafe(castType, exprType, top)) {
+      if (!isTypeCastSafeInvariant(castType, exprType, top)) {
         checker.reportError(
             typeCastTree,
             "invariant.cast.unsafe",
@@ -2412,8 +2411,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       reported = true; // don't issue cast unsafe warning.
     }
-    // We cannot do a simple test of casting, as isSubtypeOf requires
-    // the input types to be subtypes according to Java.
+
+    // Don't call TypeHierarchy#isSubtype(exprType, castType) because the underlying Java types will
+    // not be in the correct subtyping relationship if this is a downcast.
     if (!reported && !isTypeCastSafe(castType, exprType)) {
       checker.reportWarning(
           typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
@@ -2508,14 +2508,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return whether or not casting the exprType to castType is legal.
+   * Return whether casting the {@code exprType} to {@code castType}, a type with a qualifier
+   * parameter, is legal.
    *
-   * @param castType an invariant type
-   * @param exprType type of the expressions that is cast which may or may not be invariant
+   * <p>If {@code exprType} has qualifier parameter, the cast is legal if the qualifiers are
+   * invariant. Otherwise, the cast is legal is if the qualifier on both types is bottom.
+   *
+   * @param castType a type with a qualifier parameter
+   * @param exprType type of the expressions that is cast which may or may not have a qualifier
+   *     parameter
    * @param top the top qualifier of the hierarchy to check
-   * @return whether or not casting the exprType to castType is legal
+   * @return whether casting the {@code exprType} to {@code castType}, a type with a qualifier
+   *     parameter, is legal.
    */
-  private boolean isInvariantTypeCastSafe(
+  private boolean isTypeCastSafeInvariant(
       AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType, AnnotationMirror top) {
     if (!isTypeCastSafe(castType, exprType)) {
       return false;
@@ -2672,7 +2678,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t);
+            checker.reportError(
+                t, "anno.on.irrelevant", supportedAnnoTrees, t, atypeFactory.relevantJavaTypes);
           }
           return;
         case ANNOTATED_TYPE:
@@ -2680,7 +2687,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ExpressionTree underlying = at.getUnderlyingType();
           List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
           if (!annos.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
-            checker.reportError(t, "anno.on.irrelevant", annos, underlying);
+            checker.reportError(
+                t, "anno.on.irrelevant", annos, underlying, atypeFactory.relevantJavaTypes);
           }
           return;
 
@@ -2726,15 +2734,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // **********************************************************************
 
   /** Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once. */
-  private @MonotonicNonNull Set<? extends AnnotationMirror>
-      getExceptionParameterLowerBoundAnnotationsCache;
+  private @MonotonicNonNull AnnotationMirrorSet getExceptionParameterLowerBoundAnnotationsCache;
   /**
    * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. The same as
    * {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache.
    *
    * @return a set of AnnotationMirrors that is a lower bound for exception parameters
    */
-  private Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotationsCached() {
+  private AnnotationMirrorSet getExceptionParameterLowerBoundAnnotationsCached() {
     if (getExceptionParameterLowerBoundAnnotationsCache == null) {
       getExceptionParameterLowerBoundAnnotationsCache =
           getExceptionParameterLowerBoundAnnotations();
@@ -2754,8 +2761,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkExceptionParameter(CatchTree tree) {
 
-    Set<? extends AnnotationMirror> requiredAnnotations =
-        getExceptionParameterLowerBoundAnnotationsCached();
+    AnnotationMirrorSet requiredAnnotations = getExceptionParameterLowerBoundAnnotationsCached();
     AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(tree.getParameter());
 
     for (AnnotationMirror required : requiredAnnotations) {
@@ -2788,7 +2794,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return set of annotation mirrors, one per hierarchy, that form a lower bound of annotations
    *     that can be written on an exception parameter
    */
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
     return atypeFactory.getQualifierHierarchy().getTopAnnotations();
   }
 
@@ -2855,7 +2861,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return set of annotation mirrors, one per hierarchy, that form an upper bound of thrown
    *     expressions
    */
-  protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
+  protected AnnotationMirrorSet getThrowUpperBoundAnnotations() {
     return getExceptionParameterLowerBoundAnnotations();
   }
 
@@ -2971,6 +2977,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
+    atypeFactory.logGat(
+        "BTV: %s.getAnnotatedType(%s) => %s%n",
+        atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
     commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
   }
@@ -3010,12 +3019,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return;
         }
       }
-    }
-
-    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
-
-    // Use an error key only if it's overridden by a checker.
-    if (!success) {
+    } else {
+      // `success` is false.
+      // Use an error key only if it's overridden by a checker.
       FoundRequired pair = FoundRequired.of(valueType, varType);
       String valueTypeString = pair.found;
       String varTypeString = pair.required;
@@ -3024,6 +3030,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           errorKey,
           ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
+
+    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
   }
 
   /**
@@ -3461,7 +3469,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * A helper method to check that each passed argument is a subtype of the corresponding required
-   * argument, and issues "argument" error for each passed argument that not a subtype of the
+   * argument. Issues an "argument" error for each passed argument that not a subtype of the
    * required one.
    *
    * <p>Note this method requires the lists to have the same length, as it does not handle cases
@@ -4058,7 +4066,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
       // Check the receiver type.
       // isSubtype() requires its arguments to be actual subtypes with respect to JLS, but
-      // overrider receiver is not a subtype of the overridden receiver.  So, just check
+      // an overrider receiver is not a subtype of the overridden receiver.  So, just check
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
@@ -4578,7 +4586,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
-    Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     AnnotationMirrorSet upperBounds =
         atypeFactory
             .getQualifierUpperBounds()
