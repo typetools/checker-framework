@@ -746,7 +746,7 @@ public class InferenceFactory {
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
     TypeMirror lubResult = lub(context.env, aTypeMirror, bTypeMirror);
-    if (!TypesUtils.isParameterizedType(lubResult)) {
+    if (!TypesUtils.isParameterizedType(lubResult) || lubResult.getKind() == TypeKind.ARRAY) {
       return null;
     }
 
