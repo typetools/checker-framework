@@ -822,6 +822,12 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     return getLowerBoundAnnotation(value);
   }
 
+  /**
+   * Returns the lower bound annotation for the given value.
+   *
+   * @param cfValue a value
+   * @return the lower bound annotation for the given value
+   */
   private AnnotationMirror getLowerBoundAnnotation(CFValue cfValue) {
     return atypeFactory
         .getQualifierHierarchy()

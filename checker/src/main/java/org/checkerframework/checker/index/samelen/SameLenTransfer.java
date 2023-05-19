@@ -203,7 +203,7 @@ public class SameLenTransfer extends CFTransfer {
   }
 
   /**
-   * Return n's annotation from the SameLen hierarchy.
+   * Returns {@code n}'s annotation from the SameLen hierarchy.
    *
    * <p>analysis.getValue fails if called on an lvalue. However, this method needs to always
    * succeed, even when n is an lvalue. Consider this code:
@@ -213,6 +213,9 @@ public class SameLenTransfer extends CFTransfer {
    * where a, b, and c are all arrays, and a has type {@code @SameLen("d")}. Afterwards, all three
    * should have the type {@code @SameLen({"a", "b", "c", "d"})}, but in order to accomplish this,
    * this method must return the type of a, which is an lvalue.
+   *
+   * @param n a node whose SameLen annotation to return
+   * @return {@code n}'s annotation from the SameLen hierarchy
    */
   AnnotationMirror getAnno(Node n) {
     if (n.isLValue()) {
