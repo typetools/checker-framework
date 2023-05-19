@@ -13,6 +13,10 @@ class MustCallAliasPassthroughWrong2 extends FilterInputStream {
   // :: error: (mustcallalias.out.of.scope)
   @MustCallAlias MustCallAliasPassthroughWrong2(@MustCallAlias InputStream is) throws Exception {
     super(null);
+    // The following error isn't really desirable, but occurs because the special case
+    // in the Must Call Checker for assigning @MustCallAlias parameters to @Owning fields
+    // is not triggered, and @MustCallAlias is treated as @PolyMustCall otherwise.
+    // :: error: argument
     closeIS(is);
   }
 

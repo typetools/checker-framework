@@ -1,6 +1,7 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -21,6 +22,7 @@ import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -71,6 +73,35 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitReturn(tree, p);
+  }
+
+  @Override
+  public Void visitAssignment(AssignmentTree tree, Void p) {
+    // The following code implements the following rule:
+    //  * It is always safe to assign a MustCallAlias parameter of a constructor
+    //    to an owning field of the containing class.
+    // It is necessary to special case this because MustCallAlias is translated
+    // into @PolyMustCall.
+    ExpressionTree lhs = tree.getVariable();
+    ExpressionTree rhs = tree.getExpression();
+    Element lhsElt = TreeUtils.elementFromTree(lhs);
+    Element rhsElt = TreeUtils.elementFromTree(rhs);
+    if (lhsElt != null && rhsElt != null) {
+      boolean lhsIsOwningField =
+          lhs.getKind() == Tree.Kind.MEMBER_SELECT
+              && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
+      boolean rhsIsMCA =
+          AnnotationUtils.containsSameByClass(rhsElt.getAnnotationMirrors(), MustCallAlias.class);
+      boolean rhsIsConstructorParam =
+          rhsElt.getKind() == ElementKind.PARAMETER
+              && rhsElt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
+      if (lhsIsOwningField && rhsIsMCA && rhsIsConstructorParam) {
+        // Do not execute common assignment check.
+        return null;
+      }
+    }
+
+    return super.visitAssignment(tree, p);
   }
 
   /** An empty string list. */
