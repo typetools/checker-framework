@@ -9,6 +9,7 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
@@ -148,7 +149,7 @@ public class AnnotationMirrorSet
 
   @SuppressWarnings("nullness:toarray.nullable.elements.not.newarray") // delegation
   @Override
-  public <T> @Nullable T[] toArray(@PolyNull T[] a) {
+  public <@KeyForBottom T> @Nullable T[] toArray(@PolyNull T[] a) {
     return shadowSet.toArray(a);
   }
 
