@@ -1830,11 +1830,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
     AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
     AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
+    AnnotatedTypeMirror returnType = constructorType.getReturnType();
     AnnotationMirrorSet topAnnotations = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
-      AnnotationMirror constructorReturnAnno =
-          constructorType.getReturnType().getAnnotationInHierarchy(topAnno);
+      AnnotationMirror constructorReturnAnno = returnType.getAnnotationInHierarchy(topAnno);
 
       if (!atypeFactory.getQualifierHierarchy().isSubtype(superAnno, constructorReturnAnno)) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
@@ -4357,11 +4357,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       Set<Pair<JavaExpression, AnnotationMirror>> set,
       @CompilerMessageKey String messageKey) {
     for (Pair<JavaExpression, AnnotationMirror> weak : mustSubset) {
+      JavaExpression jexpr = weak.first;
       boolean found = false;
 
       for (Pair<JavaExpression, AnnotationMirror> strong : set) {
         // are we looking at a contract of the same receiver?
-        if (weak.first.equals(strong.first)) {
+        if (jexpr.equals(strong.first)) {
           // check subtyping relationship of annotations
           QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
           if (qualifierHierarchy.isSubtype(strong.second, weak.second)) {
@@ -4389,7 +4390,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // These are the annotations that are too weak.
         StringJoiner strongRelevantAnnos = new StringJoiner(" ").setEmptyValue("no information");
         for (Pair<JavaExpression, AnnotationMirror> strong : set) {
-          if (weak.first.equals(strong.first)) {
+          if (jexpr.equals(strong.first)) {
             strongRelevantAnnos.add(strong.second.toString());
           }
         }
@@ -4407,7 +4408,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.reportError(
             methodTree,
             messageKey,
-            weak.first,
+            jexpr,
             methodTree.getName(),
             overriddenTypeString,
             overriddenAnno,
