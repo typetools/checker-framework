@@ -681,7 +681,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
   @Override
-  public boolean isRelevant(TypeMirror tm) {
+  public boolean isRelevantImpl(TypeMirror tm) {
     if (TypesUtils.isFloatingPoint(tm)) {
       return false;
     }
