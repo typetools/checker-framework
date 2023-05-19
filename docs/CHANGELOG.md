@@ -11,8 +11,9 @@ Signedness Checker:
 
 **Implementation details:**
 
-Methods `QualifierHierarchy.isSubtype(...)` have been deprecated in favor of new
-overloads that also take two additional `TypeMirror` formal parameters.
+Methods `QualifierHierarchy.isSubtype(...)` have been deprecated in favor of
+new overloads that also take two additional `TypeMirror` formal parameters.
+The deprecated methods will be removed in a future release.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
