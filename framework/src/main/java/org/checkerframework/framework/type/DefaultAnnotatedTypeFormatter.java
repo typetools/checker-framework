@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -83,20 +84,24 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
   /**
    * Maps from nondeterministic capture conversion numbers as output by javac to deterministic ones.
    * This is useful for comparing output across two runs of the Checker Framework.
+   *
+   * <p>This map holds onto type variables, which prevents them from being garbage collected. This
+   * is unfortunate, but it is necessary for deterministic output and only occurs when the {@code
+   * -Ashowchecks} flag is passed.
    */
-  protected static final Map<Integer, Integer> captureConversionIds = new HashMap<>();
+  protected static final Map<TypeVariable, Integer> captureConversionIds = new HashMap<>();
 
   /** The last deterministic capture conversion ID that was used. */
   protected static int prevCaptureConversionId = 0;
 
   /**
-   * Returns a deterministic capture conversion ID for the given javac ID.
+   * Returns a deterministic capture conversion ID for the given javac captured type.
    *
-   * @param javacId the (nondeterministic) capture conversion number assigned by javac
+   * @param capturedType a type variable, which must be a capture-converted type variable
    * @return a deterministic capture conversion ID
    */
-  static int getCaptureConversionId(int javacId) {
-    return captureConversionIds.computeIfAbsent(javacId, key -> ++prevCaptureConversionId);
+  static int getCaptureConversionId(TypeVariable capturedType) {
+    return captureConversionIds.computeIfAbsent(capturedType, key -> ++prevCaptureConversionId);
   }
 
   @Override
@@ -355,15 +360,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
       if (TypesUtils.isCapturedTypeVariable(type.underlyingType)) {
-        String underlyingType = type.underlyingType.toString();
-        assert underlyingType.startsWith("capture#");
-        // underlyingType has this form: "capture#826 of ? extends java.lang.Object".
+        // underlyingType.toString() has this form: "capture#826 of ? extends java.lang.Object".
+        // assert underlyingType.startsWith("capture#");
         // We output only the "capture#826" part.
         // We output a deterministic number; we prefix it by "0" so we know whether a number is
         // deterministic or from javac.
-        int javacId =
-            Integer.parseInt(underlyingType, 8, underlyingType.indexOf(" of ", 9), /* radix= */ 10);
-        sb.append("capture#0").append(getCaptureConversionId(javacId));
+        sb.append("capture#0").append(getCaptureConversionId((TypeVariable) type.underlyingType));
       } else {
         sb.append(type.underlyingType);
       }
