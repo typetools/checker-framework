@@ -19,8 +19,10 @@ jobs:
   dependsOn:
    - junit_tests_jdk17
    - nonjunit_tests_jdk17
-   - inference_tests_jdk17
-   - typecheck_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
    - misc_jdk17
    - misc_jdk20
   pool:
@@ -102,7 +104,8 @@ jobs:
 - job: inference_tests_jdk11
   dependsOn:
    - canary_jobs
-   - inference_tests_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -136,7 +139,8 @@ jobs:
 - job: inference_tests_jdk20
   dependsOn:
    - canary_jobs
-   - inference_tests_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20:latest
@@ -180,7 +184,8 @@ jobs:
 - job: typecheck_jdk11
   dependsOn:
    - canary_jobs
-   - typecheck_jdk17
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11-plus:latest
@@ -211,6 +216,8 @@ jobs:
 - job: typecheck_jdk20
   dependsOn:
    - canary_jobs
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20-plus:latest
