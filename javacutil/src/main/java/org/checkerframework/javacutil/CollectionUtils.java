@@ -10,6 +10,11 @@ import org.plumelib.util.UtilPlume;
 /** Utility methods related to Java Collections. */
 public class CollectionUtils {
 
+  /** Do not instantiate. */
+  private CollectionUtils() {
+    throw new Error("Do not instantiate");
+  }
+
   ///
   /// Temporary utility methods
   ///
