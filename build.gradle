@@ -976,7 +976,7 @@ subprojects {
     tasks.create(name: 'inferenceTests', group: 'Verification') {
       description 'Run inference tests.'
       if (project.name.is('checker')) {
-        dependsOn('infernceTests-part1', 'infernceTests-part1')
+        dependsOn('inferenceTests-part1', 'inferenceTests-part1')
       }
     }
     tasks.create(name: 'inferenceTests-part1', group: 'Verification') {
