@@ -229,7 +229,8 @@ jobs:
 - job: daikon_jdk11
   dependsOn:
    - canary_jobs
-   - daikon_jdk17
+   - daikon_jdk17_part1
+   - daikon_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -239,7 +240,19 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-- job: daikon_jdk17
+- job: daikon_jdk17_part1
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk17:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon-part1.sh
+    displayName: test-daikon.sh
+- job: daikon_jdk17_part2
   dependsOn:
    - canary_jobs
   pool:
@@ -250,12 +263,12 @@ jobs:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
-    displayName: test-daikon.sh
+    displayName: test-daikon-part2.sh
 - job: daikon_jdk20
   dependsOn:
    - canary_jobs
-   # Could comment out the "daikon_jdk17" dependency to reduce latency.
-   - daikon_jdk17
+   - daikon_jdk17_part1
+   - daikon_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20:latest
