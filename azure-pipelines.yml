@@ -113,7 +113,7 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
-- job: inference_tests_jdk17
+- job: inference_tests_jdk17_part1
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -123,7 +123,7 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
     displayName: test-cftests-inference-part1.sh
-- job: inference_tests_jdk17
+- job: inference_tests_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -190,7 +190,7 @@ jobs:
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
 # Split into part1 and part2 only for the type-checking job that "canary_jobs" depends on.
-- job: typecheck_jdk17
+- job: typecheck_jdk17_part1
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17-plus:latest
@@ -199,7 +199,7 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck-part1.sh
-- job: typecheck_jdk17
+- job: typecheck_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17-plus:latest
