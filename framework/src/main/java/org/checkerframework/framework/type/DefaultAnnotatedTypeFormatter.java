@@ -373,6 +373,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         // TODO: If deterministic output is not needed, we could avoid the use of
         // getCaptureConversionId() by using this code instead:
         //   sb.append(underlyingType, 0, underlyingType.indexOf(" of "));
+        // The choice would be controlled by a command-line argument.
 
         // We output a deterministic number; we prefix it by "0"
         // so we know whether a number is deterministic or from javac.
