@@ -12,4 +12,4 @@ source "$SCRIPTDIR"/build.sh
 
 
 
-./gradlew inferenceTests-part2 --console=plain --warning-mode=all --stacktrace
+./gradlew inferenceTests-part2 --console=plain --warning-mode=all
