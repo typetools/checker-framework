@@ -1,7 +1,8 @@
 plugins {
   id 'java-library'
 
-  // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
+  // https://github.com/n0mer/gradle-git-properties
+  // Generates file build/resources/main/git.properties when the `classes` task runs.
   id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
 

@@ -14,13 +14,17 @@ jobs:
 #  * Everything depends on the canary jobs (the 4 main jdk17 jobs), except those jobs themselves.
 #  * Anything *_jdk11 or *_jdk20 depends on *_jdk17.
 
+# misc_jdk20 because JDK 20 adds more strict checking (e.g., Javadoc)
 - job: canary_jobs
   dependsOn:
    - junit_tests_jdk17
    - nonjunit_tests_jdk17
-   - inference_tests_jdk17
-   - typecheck_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
    - misc_jdk17
+   - misc_jdk20
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -100,7 +104,8 @@ jobs:
 - job: inference_tests_jdk11
   dependsOn:
    - canary_jobs
-   - inference_tests_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -110,7 +115,8 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
-- job: inference_tests_jdk17
+# Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
+- job: inference_tests_jdk17_part1
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -118,12 +124,23 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-inference.sh
-    displayName: test-cftests-inference.sh
+  - bash: ./checker/bin-devel/test-cftests-inference-part1.sh
+    displayName: test-cftests-inference-part1.sh
+- job: inference_tests_jdk17_part2
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk17:latest
+  timeoutInMinutes: 90
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-cftests-inference-part2.sh
+    displayName: test-cftests-inference-part2.sh
 - job: inference_tests_jdk20
   dependsOn:
    - canary_jobs
-   - inference_tests_jdk17
+   - inference_tests_jdk17_part1
+   - inference_tests_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20:latest
@@ -167,7 +184,8 @@ jobs:
 - job: typecheck_jdk11
   dependsOn:
    - canary_jobs
-   - typecheck_jdk17
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11-plus:latest
@@ -176,7 +194,8 @@ jobs:
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
     displayName: test-typecheck.sh
-- job: typecheck_jdk17
+# Split into part1 and part2 only for the type-checking job that "canary_jobs" depends on.
+- job: typecheck_jdk17_part1
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17-plus:latest
@@ -184,10 +203,21 @@ jobs:
   - checkout: self
     fetchDepth: 1000
   - bash: ./checker/bin-devel/test-typecheck.sh
-    displayName: test-typecheck.sh
+    displayName: test-typecheck-part1.sh
+- job: typecheck_jdk17_part2
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk17-plus:latest
+  steps:
+  - checkout: self
+    fetchDepth: 1000
+  - bash: ./checker/bin-devel/test-typecheck.sh
+    displayName: test-typecheck-part2.sh
 - job: typecheck_jdk20
   dependsOn:
    - canary_jobs
+   - typecheck_jdk17_part1
+   - typecheck_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20-plus:latest
@@ -199,7 +229,8 @@ jobs:
 - job: daikon_jdk11
   dependsOn:
    - canary_jobs
-   - daikon_jdk17
+   - daikon_jdk17_part1
+   - daikon_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -209,7 +240,19 @@ jobs:
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
     displayName: test-daikon.sh
-- job: daikon_jdk17
+- job: daikon_jdk17_part1
+  dependsOn:
+   - canary_jobs
+  pool:
+    vmImage: 'ubuntu-latest'
+  container: mdernst/cf-ubuntu-jdk17:latest
+  timeoutInMinutes: 70
+  steps:
+  - checkout: self
+    fetchDepth: 25
+  - bash: ./checker/bin-devel/test-daikon-part1.sh
+    displayName: test-daikon.sh
+- job: daikon_jdk17_part2
   dependsOn:
    - canary_jobs
   pool:
@@ -220,12 +263,12 @@ jobs:
   - checkout: self
     fetchDepth: 25
   - bash: ./checker/bin-devel/test-daikon.sh
-    displayName: test-daikon.sh
+    displayName: test-daikon-part2.sh
 - job: daikon_jdk20
   dependsOn:
    - canary_jobs
-   # Could comment out the "daikon_jdk17" dependency to reduce latency.
-   - daikon_jdk17
+   - daikon_jdk17_part1
+   - daikon_jdk17_part2
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20:latest
