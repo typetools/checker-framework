@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -22,11 +21,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -107,50 +104,9 @@ public class KeyForAnnotatedTypeFactory
   }
 
   @Override
-  protected TypeHierarchy createTypeHierarchy() {
-    return new KeyForTypeHierarchy(
-        checker,
-        getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
-        checker.hasOption("invariantArrays"));
-  }
-
-  @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(
         super.createTreeAnnotator(), new KeyForPropagationTreeAnnotator(this, keyForPropagator));
-  }
-
-  // TODO: work on removing this class
-  protected static class KeyForTypeHierarchy extends DefaultTypeHierarchy {
-
-    public KeyForTypeHierarchy(
-        BaseTypeChecker checker,
-        QualifierHierarchy qualifierHierarchy,
-        boolean ignoreRawTypes,
-        boolean invariantArrayComponents) {
-      super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
-    }
-
-    @Override
-    protected boolean isSubtype(
-        AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
-      // TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO
-      // THE RIGHT THING
-      if (supertype.getKind() == TypeKind.TYPEVAR && subtype.getKind() == TypeKind.TYPEVAR) {
-        // TODO: Investigate whether there is a nicer and more proper way to
-        // get assignments between two type variables working.
-        if (supertype.getAnnotations().isEmpty()) {
-          return true;
-        }
-      }
-
-      // Otherwise Covariant would cause trouble.
-      if (subtype.hasAnnotation(KeyForBottom.class)) {
-        return true;
-      }
-      return super.isSubtype(subtype, supertype, top);
-    }
   }
 
   @Override

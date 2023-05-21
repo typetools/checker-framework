@@ -18,7 +18,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -306,8 +305,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   @Override
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
+    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     AnnotationMirrorSet annotationSet = new AnnotationMirrorSet();
     for (AnnotationMirror anno : tops) {
       if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)) {
@@ -638,7 +637,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       }
     }
 
-    // Retrieve formal parameter types from the method definition
+    // Retrieve formal parameter types from the method definition.
 
     for (int i = 0; i < paramTypes.size(); i++) {
       guardSatisfiedIndex[i + 1] = -1;
@@ -650,7 +649,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       }
     }
 
-    // Combine all of the actual parameters into one list of AnnotationMirrors
+    // Combine all of the actual parameters into one list of AnnotationMirrors.
 
     ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
     passedArgAnnotations.add(
@@ -692,7 +691,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               if (bothAreGSwithNoIndex
                   || !(atypeFactory.getQualifierHierarchy().isSubtype(arg1Anno, arg2Anno)
                       || atypeFactory.getQualifierHierarchy().isSubtype(arg2Anno, arg1Anno))) {
-                // TODO: allow these strings to be localized
 
                 String formalParam1 = null;
 
@@ -823,7 +821,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    *
    * @param lockExpressionTree the expression tree of a synchronized block
    */
-  private void ensureExpressionIsEffectivelyFinal(final ExpressionTree lockExpressionTree) {
+  private void ensureExpressionIsEffectivelyFinal(ExpressionTree lockExpressionTree) {
     // This functionality could be implemented using a visitor instead, however with this
     // design, it is easier to be certain that an error will always be issued if a tree kind is
     // not recognized.
@@ -873,9 +871,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   }
 
   private void ensureExpressionIsEffectivelyFinal(
-      final JavaExpression lockExpr,
-      String expressionForErrorReporting,
-      Tree treeForErrorReporting) {
+      JavaExpression lockExpr, String expressionForErrorReporting, Tree treeForErrorReporting) {
     if (!atypeFactory.isExpressionEffectivelyFinal(lockExpr)) {
       checker.reportError(
           treeForErrorReporting, "lock.expression.not.final", expressionForErrorReporting);

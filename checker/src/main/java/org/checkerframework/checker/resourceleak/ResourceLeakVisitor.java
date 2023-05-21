@@ -55,7 +55,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param checker the type-checker associated with this visitor
    */
-  public ResourceLeakVisitor(final BaseTypeChecker checker) {
+  public ResourceLeakVisitor(BaseTypeChecker checker) {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");

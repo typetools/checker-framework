@@ -26,7 +26,7 @@ public class InferredValue {
   public static class InferredType extends InferredValue {
     public final AnnotatedTypeMirror type;
 
-    public InferredType(final AnnotatedTypeMirror type) {
+    public InferredType(AnnotatedTypeMirror type) {
       this.type = type;
     }
   }
@@ -45,8 +45,7 @@ public class InferredValue {
     public final AnnotationMirrorSet additionalAnnotations;
 
     public InferredTarget(
-        final TypeVariable target,
-        final Collection<? extends AnnotationMirror> additionalAnnotations) {
+        TypeVariable target, Collection<? extends AnnotationMirror> additionalAnnotations) {
       this.target = target;
       this.additionalAnnotations = new AnnotationMirrorSet(additionalAnnotations);
     }

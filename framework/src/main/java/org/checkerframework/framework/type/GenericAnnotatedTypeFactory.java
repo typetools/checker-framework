@@ -145,6 +145,12 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
+  /**
+   * Whether to output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug}
+   * and {@link AnnotatedTypeFactory#debugGat}.
+   */
+  private static final boolean debug = false;
+
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
@@ -625,14 +631,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the appropriate transfer function that is used for the org.checkerframework.dataflow
-   * analysis.
+   * Returns the appropriate transfer function that is used for the given
+   * org.checkerframework.dataflow analysis.
    *
    * <p>This implementation uses the checker naming convention to create the appropriate transfer
    * function. If no transfer function is found, it returns an instance of {@link CFTransfer}.
    *
    * <p>Subclasses have to override this method to create the appropriate transfer function if they
    * do not follow the checker naming convention.
+   *
+   * @param analysis a dataflow analysis
+   * @return a new transfer function
    */
   // A more precise type for the parameter would be FlowAnalysis, which
   // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
@@ -792,7 +801,7 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
       DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        final TypeUseLocation[] locations = defaultFor.value();
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
       }
 
@@ -1313,9 +1322,9 @@ public abstract class GenericAnnotatedTypeFactory<
     classQueue.add(Pair.of(classTree, null));
 
     while (!classQueue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = classQueue.remove();
-      final ClassTree ct = qel.first;
-      final Store capturedStore = qel.second;
+      Pair<ClassTree, Store> qel = classQueue.remove();
+      ClassTree ct = qel.first;
+      Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
       TreePath preTreePath = getVisitorTreePath();
@@ -1469,18 +1478,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
-      new Comparator<Tree>() {
-        @Override
-        public int compare(Tree t1, Tree t2) {
-          boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
-          boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
-          if (variable1 && !variable2) {
-            return -1;
-          } else if (!variable1 && variable2) {
-            return 1;
-          } else {
-            return 0;
-          }
+      (t1, t2) -> {
+        boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
+        boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
+        if (variable1 && !variable2) {
+          return -1;
+        } else if (!variable1 && variable2) {
+          return 1;
+        } else {
+          return 0;
         }
       };
 
@@ -1844,14 +1850,18 @@ public abstract class GenericAnnotatedTypeFactory<
     applyQualifierParameterDefaults(tree, type);
     log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
     treeAnnotator.visit(tree, type);
-    log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
+        thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
       // If a tree annotator, did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
     typeAnnotator.visit(type, null);
-    log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#6(%s, %s)%n  typeAnnotator=%s%n",
+        thisClass, treeString, type, typeAnnotator);
     defaults.annotate(tree, type);
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
@@ -2317,10 +2327,6 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
-  // You can change this temporarily to produce verbose logs.
-  /** Whether to output verbose, low-level debugging messages. */
-  private static final boolean debug = false;
-
   /**
    * Output a message, if logging is on.
    *
@@ -2344,13 +2350,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  public boolean isRelevant(TypeMirror tm) {
+  public final boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
-    boolean result = isRelevantHelper(tm);
+    boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
     return result;
   }
@@ -2367,12 +2373,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
-   * Does not use a cache. Is a helper method for {@link #isRelevant}.
+   * Does not use a cache.
+   *
+   * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
+   * for {@link #isRelevant}.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  private boolean isRelevantHelper(TypeMirror tm) {
+  protected boolean isRelevantImpl(TypeMirror tm) {
 
     if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;
@@ -2414,6 +2423,35 @@ public abstract class GenericAnnotatedTypeFactory<
 
       case TYPEVAR:
         return isRelevant(((TypeVariable) tm).getUpperBound());
+
+      case NULL:
+        for (TypeMirror relevantJavaType : relevantJavaTypes) {
+          switch (relevantJavaType.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+              continue;
+
+            case ERROR:
+            case NONE:
+            case VOID:
+              continue;
+
+            case MODULE:
+            case PACKAGE:
+              continue;
+
+            case NULL:
+            default:
+              return true;
+          }
+        }
+        return false;
 
       default:
         throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());

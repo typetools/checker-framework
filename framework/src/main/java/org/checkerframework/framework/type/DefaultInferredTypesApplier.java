@@ -42,9 +42,7 @@ public class DefaultInferredTypesApplier {
    * @param inferredTypeMirror underlying inferred type
    */
   public void applyInferredType(
-      final AnnotatedTypeMirror type,
-      final AnnotationMirrorSet inferredSet,
-      TypeMirror inferredTypeMirror) {
+      AnnotatedTypeMirror type, AnnotationMirrorSet inferredSet, TypeMirror inferredTypeMirror) {
     if (inferredSet == null) {
       return;
     }
@@ -56,7 +54,7 @@ public class DefaultInferredTypesApplier {
         inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
       }
     }
-    for (final AnnotationMirror top : hierarchy.getTopAnnotations()) {
+    for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
       AnnotationMirror inferred = hierarchy.findAnnotationInHierarchy(inferredSet, top);
 
       apply(type, inferred, inferredTypeMirror, top);

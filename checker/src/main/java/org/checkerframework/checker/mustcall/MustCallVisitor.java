@@ -10,7 +10,6 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -27,6 +26,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -262,10 +262,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
+          .isSubtype(atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
         return;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -293,8 +293,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    AnnotationMirror resultAnno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
@@ -313,8 +313,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return a set containing only the @MustCall({}) annotation
    */
   @Override
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    return Collections.singleton(atypeFactory.BOTTOM);
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
+    return new AnnotationMirrorSet(atypeFactory.BOTTOM);
   }
 
   /**

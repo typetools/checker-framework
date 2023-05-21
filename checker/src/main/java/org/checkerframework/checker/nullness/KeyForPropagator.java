@@ -1,6 +1,8 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -91,13 +94,13 @@ public class KeyForPropagator {
    * List<@KeyFor("c") String>>}
    */
   public void propagate(
-      final AnnotatedDeclaredType subtype,
-      final AnnotatedDeclaredType supertype,
+      AnnotatedDeclaredType subtype,
+      AnnotatedDeclaredType supertype,
       PropagationDirection direction,
-      final AnnotatedTypeFactory typeFactory) {
-    final TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
-    final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
+      AnnotatedTypeFactory typeFactory) {
+    TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
+    TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
+    Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
     // Note: The right hand side of this or expression will cover raw types
     if (subtype.getTypeArguments().isEmpty()) {
@@ -115,12 +118,12 @@ public class KeyForPropagator {
     Set<Pair<Integer, Integer>> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-    final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
-    final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
+    List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
+    List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (final Pair<Integer, Integer> path : typeParamMappings) {
-      final AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
-      final AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
+    for (Pair<Integer, Integer> path : typeParamMappings) {
+      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
+      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
 
       if (subtypeArg.getKind() == TypeKind.WILDCARD
           || supertypeArg.getKind() == TypeKind.WILDCARD) {
@@ -164,6 +167,13 @@ public class KeyForPropagator {
     if (path == null) {
       return;
     }
+    Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
+    if (assignmentContext != null && assignmentContext instanceof VariableTree) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
+        return;
+      }
+    }
+
     AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
     if (assignedTo == null) {
       return;

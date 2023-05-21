@@ -34,12 +34,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
+  jtreg6 \
+&& aptitude -y install \
   ant \
   cpp \
   git \
   gradle \
   jq \
-  jtreg6 \
   libcurl3-gnutls \
   make \
   maven \

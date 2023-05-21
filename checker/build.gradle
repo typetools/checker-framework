@@ -1,7 +1,8 @@
 plugins {
   id 'java-library'
 
-  // https://github.com/n0mer/gradle-git-properties ; target is: generateGitProperties
+  // https://github.com/n0mer/gradle-git-properties
+  // Generates file build/resources/main/git.properties when the `classes` task runs.
   id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
 
@@ -67,7 +68,7 @@ dependencies {
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.11.0'
+  testImplementation 'commons-io:commons-io:2.12.0'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')

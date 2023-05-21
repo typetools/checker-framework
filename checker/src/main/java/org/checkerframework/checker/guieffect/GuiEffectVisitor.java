@@ -12,10 +12,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -37,6 +35,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -196,8 +195,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   }
 
   @Override
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    return Collections.singleton(AnnotationBuilder.fromClass(elements, AlwaysSafe.class));
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
+    return new AnnotationMirrorSet(AnnotationBuilder.fromClass(elements, AlwaysSafe.class));
   }
 
   @Override
@@ -246,7 +245,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   }
 
   @Override
-  protected void checkExtendsImplements(ClassTree classTree) {
+  protected void checkExtendsAndImplements(ClassTree classTree) {
     // Skip this check
   }
 
@@ -296,9 +295,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       }
 
       callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-      final DeclaredType callerReceiverType = classType.getUnderlyingType();
+      DeclaredType callerReceiverType = classType.getUnderlyingType();
       assert callerReceiverType != null;
-      final TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
+      TypeElement callerReceiverElt = (TypeElement) callerReceiverType.asElement();
       // Note: All these checks should be fast in the common case, but happen for every method
       // call inside the anonymous class. Consider a cache here if profiling surfaces this as
       // taking too long.

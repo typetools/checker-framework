@@ -128,7 +128,14 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     lub.replaceAnnotations(lubSet);
   }
 
-  /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
+  /**
+   * Casts lub to the type of type, or issues an error if type and lub are not the same kind.
+   *
+   * @param <T> the type to cast to
+   * @param type a values of the type to cast to
+   * @param lub the value to cast to {@code T}
+   * @return {@code lub}, casted to {@code T}
+   */
   private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
     if (type.getKind() != lub.getKind()) {
       throw new BugInCF(
@@ -188,8 +195,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // In lub(), asSuper is called on type1 and type2, but asSuper does not recur into type
     // arguments, so call asSuper on the type arguments so that they have the same underlying
     // type.
-    final AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
-    final AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
+    AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
+    AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
 
     // If the type argument is a wildcard or captured type argument, then the lub computation is
     // slightly different.  The primary annotation on the lower bound is the glb of lower bounds

@@ -57,7 +57,7 @@ public interface QualifierHierarchy {
    *
    * @return the top (ultimate super) type qualifiers in the type system
    */
-  Set<? extends AnnotationMirror> getTopAnnotations();
+  AnnotationMirrorSet getTopAnnotations();
 
   /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
@@ -74,7 +74,7 @@ public interface QualifierHierarchy {
    *
    * @return the bottom type qualifiers in the hierarchy
    */
-  Set<? extends AnnotationMirror> getBottomAnnotations();
+  AnnotationMirrorSet getBottomAnnotations();
 
   /**
    * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
@@ -113,8 +113,8 @@ public interface QualifierHierarchy {
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy.
    *
-   * @param subQualifier possible subqualifier of {@code superQualifier}
-   * @param superQualifier possible superqualifier of {@code subQualifier}
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
   boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier);

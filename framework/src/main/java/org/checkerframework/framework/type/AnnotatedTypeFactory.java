@@ -72,6 +72,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -140,6 +141,7 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsPlume;
+import org.plumelib.util.SystemPlume;
 
 /**
  * The methods of this class take an element or AST node, and return the annotated type as an {@link
@@ -173,6 +175,9 @@ import org.plumelib.util.StringsPlume;
  * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
 public class AnnotatedTypeFactory implements AnnotationProvider {
+
+  /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
+  private static final boolean debugGat = false;
 
   /** Whether to print verbose debugging messages about stub files. */
   private final boolean debugStubParser;
@@ -1307,6 +1312,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the annotated type of {@code tree}
    */
   public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+    logGat("getAnnotatedType(%s)%n", TreeUtils.toStringTruncated(tree, 60));
 
     if (tree == null) {
       throw new BugInCF("AnnotatedTypeFactory.getAnnotatedType: null tree");
@@ -1323,13 +1329,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else if (TreeUtils.isExpressionTree(tree)) {
       tree = TreeUtils.withoutParens((ExpressionTree) tree);
       type = fromExpression((ExpressionTree) tree);
+      logGat(
+          "getAnnotatedType(%s): fromExpression=>%s%n",
+          TreeUtils.toStringTruncated(tree, 60), type);
     } else {
       throw new BugInCF(
           "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree "
               + tree.getKind());
     }
 
+    logGat(
+        "getAnnotatedType(%s): before addComputedTypeAnnotations, type=%s%n",
+        TreeUtils.toStringTruncated(tree, 60), type);
     addComputedTypeAnnotations(tree, type);
+    logGat(
+        "getAnnotatedType(%s): after addComputedTypeAnnotations, type=%s%n",
+        TreeUtils.toStringTruncated(tree, 60), type);
 
     if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
       // Don't cache VARIABLE
@@ -1416,7 +1431,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the set of qualifiers that are the upper bound for a type use if no other bound is
    *     specified for the type
    */
-  protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
+  protected AnnotationMirrorSet getDefaultTypeDeclarationBounds() {
     return qualHierarchy.getTopAnnotations();
   }
 
@@ -1540,7 +1555,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree MethodTree or VariableTree
    * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
    */
-  private final AnnotatedTypeMirror fromMember(Tree tree) {
+  private AnnotatedTypeMirror fromMember(Tree tree) {
     if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
       throw new BugInCF(
           "AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
@@ -1637,7 +1652,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @see TypeFromExpressionVisitor
    */
   private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
+    logGat("fromExpression(%s)%n", tree);
     if (shouldCache && fromExpressionTreeCache.containsKey(tree)) {
+      logGat("fromExpression(%s) => [cached] %s%n", tree, fromExpressionTreeCache.get(tree));
       return fromExpressionTreeCache.get(tree).deepCopy();
     }
 
@@ -1651,6 +1668,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // cached during dataflow analysis. See Issue #602.
       fromExpressionTreeCache.put(tree, result.deepCopy());
     }
+    logGat("fromExpression(%s) => %s%n", tree, result);
     return result;
   }
 
@@ -1846,7 +1864,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (fields.size() != qualifiers.size()) {
       // The user wrote a malformed @FieldInvariant annotation, so just return a malformed
       // FieldInvariants object.  The BaseTypeVisitor will issue an error.
-      return new FieldInvariants(fields, qualifiers);
+      return new FieldInvariants(fields, qualifiers, this);
     }
 
     // Only keep qualifiers that are supported by this checker.  (The other qualifiers cannot
@@ -1863,19 +1881,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return null;
     }
 
-    return new FieldInvariants(annotatedFields, supportedQualifiers);
+    return new FieldInvariants(annotatedFields, supportedQualifiers, this);
   }
 
   /**
-   * Returns the AnnotationTree which is a use of one of the field invariant annotations (as
-   * specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't found, null is
-   * returned.
+   * Returns the element of {@code annoTrees} that is a use of one of the field invariant
+   * annotations (as specified via {@link #getFieldInvariantDeclarationAnnotations()}. If one isn't
+   * found, null is returned.
    *
    * @param annoTrees list of trees to search; the result is one of the list elements, or null
    * @return the AnnotationTree that is a use of one of the field invariant annotations, or null if
    *     one isn't found
    */
-  public AnnotationTree getFieldInvariantAnnotationTree(List<? extends AnnotationTree> annoTrees) {
+  public @Nullable AnnotationTree getFieldInvariantAnnotationTree(
+      List<? extends AnnotationTree> annoTrees) {
     List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
     for (int i = 0; i < annos.size(); i++) {
       for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
@@ -1978,7 +1997,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return AnnotatedNullType qualified with {@code annotations}
    */
   public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
-    final AnnotatedTypeMirror.AnnotatedNullType nullType =
+    AnnotatedTypeMirror.AnnotatedNullType nullType =
         (AnnotatedNullType) toAnnotatedType(processingEnv.getTypeUtils().getNullType(), false);
     nullType.addAnnotations(annotations);
     return nullType;
@@ -2497,14 +2516,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // arguments.  So, we just copy the annotations from the bound of the declared type to the
     // new bound.
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
-    AnnotationMirrorSet typeBoundAnnos =
+    AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
     AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getExtendsBound().getAnnotations();
-    for (AnnotationMirror typeBoundAnno : typeBoundAnnos) {
+    for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
-          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, typeBoundAnno);
-      if (qualHierarchy.isSubtype(typeBoundAnno, wildcardAnno)) {
-        newAnnos.add(typeBoundAnno);
+          qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
+      if (qualHierarchy.isSubtype(receiverTypeBoundAnno, wildcardAnno)) {
+        newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);
       }
@@ -3761,7 +3780,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
 
-    final TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
+    TreePath pathWithinSubtree = TreePath.getPath(currentPath, tree);
     if (pathWithinSubtree != null) {
       treePathCache.addPath(tree, pathWithinSubtree);
       return pathWithinSubtree;
@@ -3815,7 +3834,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param type an annotated type
    * @return true if the type is a valid annotated type, false otherwise
    */
-  static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
+  static boolean validAnnotatedType(AnnotatedTypeMirror type) {
     if (type == null) {
       return false;
     }
@@ -3827,7 +3846,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return true if {@code type} can be converted to an annotated type, false otherwise
    */
-  private static final boolean validType(TypeMirror type) {
+  private static boolean validType(TypeMirror type) {
     if (type == null) {
       return false;
     }
@@ -4472,7 +4491,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param from the annotated type mirror from which to take new annotations
    * @param to the annotated type mirror to which the annotations will be added
    */
-  public void replaceAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  public void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     annotatedTypeReplacer.visit(from, to);
   }
 
@@ -4486,7 +4505,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param top the top type of the hierarchy whose annotations will be added
    */
   public void replaceAnnotations(
-      final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+      AnnotatedTypeMirror from, AnnotatedTypeMirror to, AnnotationMirror top) {
     annotatedTypeReplacer.setTop(top);
     annotatedTypeReplacer.visit(from, to);
     annotatedTypeReplacer.setTop(null);
@@ -4718,9 +4737,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
-        final AnnotatedTypeMirror falseType =
+        AnnotatedTypeMirror falseType =
             getAnnotatedType(conditionalExpressionTree.getFalseExpression());
-        final AnnotatedTypeMirror trueType =
+        AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
 
         // Known cases where we must use LUB because falseType/trueType will not be equal:
@@ -5777,5 +5796,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
     return false;
+  }
+
+  /**
+   * Output a message about {@link #getAnnotatedType}, if logging is on.
+   *
+   * @param format a format string
+   * @param args arguments to the format string
+   */
+  @FormatMethod
+  public void logGat(String format, Object... args) {
+    if (debugGat) {
+      SystemPlume.sleep(1); // logging can interleave with typechecker output
+      System.out.printf(format, args);
+    }
   }
 }

@@ -95,7 +95,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *
    * @param checker the checker associated with this type factory
    */
-  public ResourceLeakAnnotatedTypeFactory(final BaseTypeChecker checker) {
+  public ResourceLeakAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);
     this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
@@ -127,7 +127,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param val the methods that have been called
    * @return an annotation indicating that the given methods have been called
    */
-  public AnnotationMirror createCalledMethods(final String... val) {
+  public AnnotationMirror createCalledMethods(String... val) {
     return createAccumulatorAnnotation(Arrays.asList(val));
   }
 
