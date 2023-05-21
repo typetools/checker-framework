@@ -257,13 +257,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    boolean result =
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
     AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
@@ -282,7 +283,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
       if (rhsArgTypes.length < lhsArgTypes.length) {
         checker.reportWarning(
             valueTree, "format.missing.arguments", varType.toString(), valueType.toString());
+        result = false;
       }
     }
+    return result;
   }
 }

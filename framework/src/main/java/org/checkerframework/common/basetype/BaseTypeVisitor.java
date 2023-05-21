@@ -2850,8 +2850,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param valueExpTree the AST node for the rvalue (the new value)
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
    */
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
@@ -2872,10 +2873,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varType.getKind(),
             varType.toString());
       }
-      return;
+      return true;
     }
 
-    commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
+    return commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
   }
 
   /**
@@ -2886,8 +2887,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param valueExpTree the AST node for the rvalue (the new value)
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
    */
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
@@ -2905,7 +2907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varType.getKind(),
             varType.toString());
       }
-      return;
+      return true;
     }
     if (valueExpTree.getKind() == Tree.Kind.MEMBER_REFERENCE
         || valueExpTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
@@ -2923,8 +2925,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varType.getKind(),
             varType.toString());
       }
-      return;
+      return true;
     }
+    boolean result = true;
     if (varType.getKind() == TypeKind.ARRAY
         && valueExpTree instanceof NewArrayTree
         && ((NewArrayTree) valueExpTree).getType() == null) {
@@ -2932,7 +2935,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       NewArrayTree arrayTree = (NewArrayTree) valueExpTree;
       assert arrayTree.getInitializers() != null
           : "array initializers are not expected to be null in: " + valueExpTree;
-      checkArrayInitialization(compType, arrayTree.getInitializers());
+      result = result && checkArrayInitialization(compType, arrayTree.getInitializers());
     }
     if (!validateTypeOf(valueExpTree)) {
       if (showchecks) {
@@ -2947,14 +2950,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             varType.getKind(),
             varType.toString());
       }
-      return;
+      return result;
     }
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExpTree);
     atypeFactory.logGat(
         "BTV: %s.getAnnotatedType(%s) => %s%n",
         atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
-    commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
+    result = result && commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
+    return result;
   }
 
   /**
@@ -2966,8 +2970,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param valueExpTree the location to use when reporting the error message
    * @param errorKey the error message key to use if the check fails
    * @param extraArgs arguments to the error message key, before "found" and "expected" types
+   * @return true if the check succeeds, false if an error message was issued
    */
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueExpTree,
@@ -2977,10 +2982,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueExpTree);
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
-    boolean success = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
+    boolean result = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
     // TODO: integrate with subtype test.
-    if (success) {
+    if (result) {
       for (Class<? extends Annotation> mono : atypeFactory.getSupportedMonotonicTypeQualifiers()) {
         if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
           checker.reportError(
@@ -2989,11 +2994,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               mono.getSimpleName(),
               mono.getSimpleName(),
               valueType.toString());
-          return;
+          result = false;
         }
       }
     } else {
-      // `success` is false.
+      // `result` is false.
       // Use an error key only if it's overridden by a checker.
       FoundRequired pair = FoundRequired.of(valueType, varType);
       String valueTypeString = pair.found;
@@ -3004,7 +3009,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
     }
 
-    commonAssignmentCheckEndDiagnostic(success, null, varType, valueType, valueExpTree);
+    commonAssignmentCheckEndDiagnostic(result, null, varType, valueType, valueExpTree);
+
+    return result;
   }
 
   /**
@@ -3234,13 +3241,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return false;
   }
 
-  protected void checkArrayInitialization(
+  protected boolean checkArrayInitialization(
       AnnotatedTypeMirror type, List<? extends ExpressionTree> initializers) {
     // TODO: set assignment context like for method arguments?
     // Also in AbstractFlow.
+    boolean result = true;
     for (ExpressionTree init : initializers) {
-      commonAssignmentCheck(type, init, "array.initializer");
+      result = result && commonAssignmentCheck(type, init, "array.initializer");
     }
+    return result;
   }
 
   /**

@@ -194,11 +194,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+
+    boolean result = true;
 
     // check that when an assignment to a variable b declared as @HasSubsequence(a, from, to)
     // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
@@ -231,6 +233,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             subSeq.array,
             subSeq.array,
             subSeq.array);
+        result = false;
       } else {
         checker.reportWarning(
             valueTree,
@@ -245,28 +248,33 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       }
     }
 
-    super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
+    result = result && super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
+    return result;
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
+    boolean result = true;
+    String diagnosticMessage = "";
     if (!relaxedCommonAssignment(varType, valueTree)) {
       commonAssignmentCheckEndDiagnostic(
           "relaxedCommonAssignment did not succeed, now must call super",
           varType,
           valueType,
           valueTree);
-      super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
-    } else if (showchecks) {
-      commonAssignmentCheckEndDiagnostic(
-          true, "relaxedCommonAssignment", varType, valueType, valueTree);
+      result = super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
+      if (!result && showchecks) {
+        diagnosticMessage = "relaxedCommonAssignment()=>false and super()=>false";
+      }
     }
+    commonAssignmentCheckEndDiagnostic(result, diagnosticMessage, varType, valueType, valueTree);
+    return result;
   }
 
   /**

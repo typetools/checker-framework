@@ -15,6 +15,14 @@ Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
 never call `isRelevantImpl()`.
 
+Methods that now return a `boolean` rather than `void`:
+ * `commonAssignmentCheck()`
+ * `checkArrayInitialization()`
+ * `checkLock()`
+ * `checkLockOfThisOrTree()`
+ * `ensureExpressionIsEffectivelyFinal()`
+ * `isLockHeld()`
+
 Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
  * `getTopAnnotations()`
  * `getBottomAnnotations()`

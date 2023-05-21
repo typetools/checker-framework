@@ -120,12 +120,14 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    boolean result = true;
+
     AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
 
@@ -152,12 +154,15 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // specific error message to that effect than "assignment".
         checker.reportError(
             valueTree, "i18nformat.excess.arguments", varType.toString(), valueType.toString());
+        result = false;
       }
     }
 
     // By calling super.commonAssignmentCheck last, any "i18nformat.excess.arguments"
     // message issued for a given line of code will take precedence over the "assignment"
     // issued by super.commonAssignmentCheck.
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    result =
+        result && super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return result;
   }
 }
