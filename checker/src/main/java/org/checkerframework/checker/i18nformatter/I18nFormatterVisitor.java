@@ -157,9 +157,12 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
       }
     }
 
-    // By calling super.commonAssignmentCheck last, any "i18nformat.excess.arguments"
+    /// TODO: What does "take precedence over" mean?  Both are issued, but the
+    /// "i18nformat.excess.arguments" appears first in the output.  Is this meant to not call
+    /// super.commonAssignmentCheck() if `result` is already false?
+    // By calling super.commonAssignmentCheck() last, any "i18nformat.excess.arguments"
     // message issued for a given line of code will take precedence over the "assignment"
-    // issued by super.commonAssignmentCheck.
+    // issued by super.commonAssignmentCheck().
     result =
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
     return result;

@@ -1512,7 +1512,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (tree.getInitializer() != null) {
       commonAssignmentCheck(tree, tree.getInitializer(), "assignment");
     } else {
-      // commonAssignmentCheck validates the type of tree,
+      // commonAssignmentCheck validates the type of `tree`,
       // so only validate if commonAssignmentCheck wasn't called
       validateTypeOf(tree);
     }
@@ -1670,7 +1670,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Performs two checks: subtyping and assignability checks, using {@link
    * #commonAssignmentCheck(Tree, ExpressionTree, String, Object[])}.
    *
-   * <p>If the subtype check fails, it issues a "assignment" error.
+   * <p>If the subtype check fails, it issues an "assignment" error.
    */
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
@@ -3015,7 +3015,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Prints a diagnostic about entering commonAssignmentCheck, if the showchecks option was set.
+   * Prints a diagnostic about entering {@code commonAssignmentCheck()}, if the showchecks option
+   * was set.
    *
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -3039,7 +3040,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+   * Prints a diagnostic about exiting {@code commonAssignmentCheck()}, if the showchecks option was
+   * set.
    *
    * @param success whether the check succeeded or failed
    * @param extraMessage information about why the result is what it is; may be null
@@ -3066,7 +3068,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Prints a diagnostic about exiting commonAssignmentCheck, if the showchecks option was set.
+   * Helper method for printing a diagnostic about exiting {@code commonAssignmentCheck()}, if the
+   * showchecks option was set.
    *
    * <p>Most clients should call {@link #commonAssignmentCheckEndDiagnostic(boolean, String,
    * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit

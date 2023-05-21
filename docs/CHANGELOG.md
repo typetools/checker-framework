@@ -21,7 +21,6 @@ Methods that now return a `boolean` rather than `void`:
  * `checkLock()`
  * `checkLockOfThisOrTree()`
  * `ensureExpressionIsEffectivelyFinal()`
- * `isLockHeld()`
 
 Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
  * `getTopAnnotations()`
@@ -1065,7 +1064,7 @@ All CFGVisualizeLauncher command-line arguments now start with `--` instead of `
 
 **Implementation details:**
 
-commonAssignmentCheck() now takes an additional argument.  Type system
+`commonAssignmentCheck()` now takes an additional argument.  Type system
 authors must update their overriding implementations.
 
 Renamed methods:

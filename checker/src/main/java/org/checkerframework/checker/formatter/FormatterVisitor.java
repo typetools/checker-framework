@@ -81,7 +81,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             int formatl = formatCats.length;
             if (argl < formatl) {
               // For assignments, format.missing.arguments is issued from
-              // commonAssignmentCheck.
+              // commonAssignmentCheck().
               // II.1
               ftu.failure(invc, "format.missing.arguments", formatl, argl);
             } else {
