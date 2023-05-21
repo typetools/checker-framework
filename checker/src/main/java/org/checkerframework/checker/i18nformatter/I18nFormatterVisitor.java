@@ -66,9 +66,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             int paraml = paramTypes.length;
             int formatl = formatCats.length;
 
-            // For assignments, i18nformat.missing.arguments and
-            // i18nformat.excess.arguments are
-            // issued from commonAssignmentCheck.
+            // For assignments, "i18nformat.missing.arguments" and "i18nformat.excess.arguments" are
+            // issued from commonAssignmentCheck().
             if (paraml < formatl) {
               tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);
             }
@@ -131,9 +130,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
 
-    // i18nformat.missing.arguments and i18nformat.excess.arguments are issued here for
+    // "i18nformat.missing.arguments" and "i18nformat.excess.arguments" are issued here for
     // assignments.
-    // For method calls, they are issued in checkInvocationFormatFor.
+    // For method calls, they are issued in checkInvocationFormatFor().
     if (rhs != null
         && lhs != null
         && AnnotationUtils.areSameByName(rhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)
