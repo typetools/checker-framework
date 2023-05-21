@@ -2935,7 +2935,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       NewArrayTree arrayTree = (NewArrayTree) valueExpTree;
       assert arrayTree.getInitializers() != null
           : "array initializers are not expected to be null in: " + valueExpTree;
-      result = result && checkArrayInitialization(compType, arrayTree.getInitializers());
+      result = checkArrayInitialization(compType, arrayTree.getInitializers()) && result;
     }
     if (!validateTypeOf(valueExpTree)) {
       if (showchecks) {
@@ -2957,7 +2957,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         "BTV: %s.getAnnotatedType(%s) => %s%n",
         atypeFactory.getClass().getSimpleName(), valueExpTree, valueType);
     assert valueType != null : "null type for expression: " + valueExpTree;
-    result = result && commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
+    result = commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs) && result;
     return result;
   }
 
@@ -3254,7 +3254,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Also in AbstractFlow.
     boolean result = true;
     for (ExpressionTree init : initializers) {
-      result = result && commonAssignmentCheck(type, init, "array.initializer");
+      result = commonAssignmentCheck(type, init, "array.initializer") && result;
     }
     return result;
   }

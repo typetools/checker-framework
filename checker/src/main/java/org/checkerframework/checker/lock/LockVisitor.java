@@ -394,7 +394,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     result =
-        result && super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
     return result;
   }
 
@@ -864,7 +864,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
           MethodInvocationTree methodInvocationTree = (MethodInvocationTree) tree;
 
           for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
-            result = result && ensureExpressionIsEffectivelyFinal(argTree);
+            result = ensureExpressionIsEffectivelyFinal(argTree) && result;
           }
 
           tree = methodInvocationTree.getMethodSelect();
@@ -1172,9 +1172,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
       if (expression.error != null && expression.lockExpression != null) {
         result =
-            result
-                && ensureExpressionIsEffectivelyFinal(
-                    expression.lockExpression, expression.expressionString, tree);
+            ensureExpressionIsEffectivelyFinal(
+                    expression.lockExpression, expression.expressionString, tree)
+                && result;
       }
     }
     return result;

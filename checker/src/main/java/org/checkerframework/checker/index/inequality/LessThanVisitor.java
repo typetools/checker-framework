@@ -62,7 +62,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
       }
     }
 
-    result = result && super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
+    result = super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs) && result;
     return result;
   }
 
