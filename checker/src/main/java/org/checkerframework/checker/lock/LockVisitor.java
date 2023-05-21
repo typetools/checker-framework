@@ -876,6 +876,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
   }
 
+  /**
+   * Issues an error if the given expression is not effectively final. Returns true if the
+   * expression is effectively final, false if an error was issued.
+   *
+   * @param lockExpr an expression that might be effectively final
+   * @param expressionForErrorReporting how to print the expression in an error message
+   * @param treeForErrorReporting where to report the error
+   * @return true if the expression is effectively final, false if an error was issued
+   */
   private boolean ensureExpressionIsEffectivelyFinal(
       JavaExpression lockExpr, String expressionForErrorReporting, Tree treeForErrorReporting) {
     boolean result = atypeFactory.isExpressionEffectivelyFinal(lockExpr);
@@ -1111,16 +1120,23 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     checkLockOfThisOrTree(tree, true, gbAnno);
   }
 
+  /**
+   * Checks the lock of the given tree.
+   *
+   * @param tree a tree whose lock to check
+   * @param gbAnno a {@code @GuardedBy} annotation
+   * @return true if the check succeeds, false if an error message was issued
+   */
   private boolean checkLock(Tree tree, AnnotationMirror gbAnno) {
     return checkLockOfThisOrTree(tree, false, gbAnno);
   }
 
   /**
-   * Helper method tat checks the lock of either the implicit {@code this} or the given tree.
+   * Helper method that checks the lock of either the implicit {@code this} or the given tree.
    *
    * @param tree a tree whose lock to check
    * @param implicitThis true if checking the lock of the implicit {@code this}
-   * @param gbAnno a @GuardedBy annotation
+   * @param gbAnno a {@code @GuardedBy} annotation
    * @return true if the check succeeds, false if an error message was issued
    */
   private boolean checkLockOfThisOrTree(Tree tree, boolean implicitThis, AnnotationMirror gbAnno) {

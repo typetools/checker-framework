@@ -3241,6 +3241,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return false;
   }
 
+  /**
+   * Checks that the array initializers are consistent with the array type.
+   *
+   * @param type the array elemen type
+   * @param initializers the initializers
+   * @return true if the check succeeds, false if an error message was issued
+   */
   protected boolean checkArrayInitialization(
       AnnotatedTypeMirror type, List<? extends ExpressionTree> initializers) {
     // TODO: set assignment context like for method arguments?
