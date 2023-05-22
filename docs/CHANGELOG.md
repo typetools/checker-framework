@@ -27,6 +27,8 @@ Class `FieldInvariants`:
  * constructor now takes an `AnnotatedTypeFactory`
  * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
 
+Removed methods that have been deprecated for over two years.
+
 **Closed issues:**
 
 
