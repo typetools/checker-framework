@@ -142,6 +142,11 @@ public interface QualifierHierarchy {
       TypeMirror subType,
       AnnotationMirror superQualifier,
       TypeMirror superType) {
+    // This implementation calls the deprecated method because otherwise there would be no point in
+    // deprecation -- we might as well just force clients to rewrite their code.
+    // More specifically, the framework calls the 4-argument version, but a legacy type system
+    // implementation does not implement the 4-argument version.  This default implementation
+    // bridges that difference.
     return isSubtype(subQualifier, superQualifier);
   }
 
