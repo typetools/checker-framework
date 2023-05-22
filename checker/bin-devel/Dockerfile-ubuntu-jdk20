@@ -34,27 +34,27 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
-  jtreg6 \
-&& aptitude -y install \
   ant \
   cpp \
   git \
-  gradle \
   jq \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
+  python3-distutils \
   python3-requests \
   unzip \
-  wget
+  wget \
+&& aptitude -y install \
+  jtreg6
 
-# Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 20.
+# Maven 3.8.7 is the default on Ubuntu 23.04.
 # (Don't try to use a variable here for the Maven version.)
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.tar.gz \
-&& tar xzvf apache-maven-3.9.1-bin.tar.gz
-ENV PATH="/apache-maven-3.9.1/bin:$PATH"
+# RUN export DEBIAN_FRONTEND=noninteractive \
+# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz \
+# && tar xzvf apache-maven-3.9.2-bin.tar.gz
+# ENV PATH="/apache-maven-3.9.2/bin:$PATH"
 
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -63,5 +63,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

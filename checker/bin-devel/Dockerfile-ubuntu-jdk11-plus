@@ -27,13 +27,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ant \
   cpp \
   git \
-  gradle \
   jq \
   jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
+  python3-distutils \
   python3-requests \
   unzip \
   wget
@@ -60,12 +60,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-latex-extra \
   texlive-latex-recommended
 
-oRUN export DEBIAN_FRONTEND=noninteractive \
+RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
   pipx \
-&& pipx install black flake8 html5validator
+&& pipx install black \
+&& pipx install flake8 \
+&& pipx install html5validator \
+&& pipx ensurepath
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

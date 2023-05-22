@@ -27,13 +27,13 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ant \
   cpp \
   git \
-  gradle \
   jq \
   jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
+  python3-distutils \
   python3-requests \
   unzip \
   wget
@@ -41,10 +41,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 17.
 # (Don't try to use a variable here for the Maven version.)
 RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.tar.gz \
-&& tar xzvf apache-maven-3.9.1-bin.tar.gz
-ENV PATH="/apache-maven-3.9.1/bin:$PATH"
+&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz \
+&& tar xzvf apache-maven-3.9.2-bin.tar.gz
+ENV PATH="/apache-maven-3.9.2/bin:$PATH"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
