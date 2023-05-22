@@ -535,13 +535,13 @@ public class MustCallInferenceLogic {
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
       for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(i));
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
         for (ResourceAlias rl : argAliases) {
           Element argAliasElt = rl.reference.getElement();
           if (!argAliasElt.equals(paramElt)) {
             continue;
           }
-          JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(i));
+          JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(j));
           if (mustCallObligationSatisfied(mNode, paramElt, target)) {
             addOwningOnParams(i);
           }

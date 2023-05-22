@@ -62,14 +62,45 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
   }
 
+  /**
+   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When we
+   * enable -Ainfer for the Resource Leak Checker, whole-program inference (wpi) is performed for
+   * all the sub-checkers. However, our mechanism for inferring annotations for the resource leak
+   * checker is different. It relies on pattern matching instead. The wpi results for this inference
+   * are not useful and only end up slowing down the convergence of the algorithm for Resource Leak
+   * Inference.
+   *
+   * @param tree a tree
+   * @return false if Resource Leak Checker is running as one of the upstream checkers, otherwise
+   *     returns the result of the super call
+   */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    return false;
+    if (isResourceLeakCheckerEnabled()) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
   }
 
+  /**
+   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When we
+   * enable -Ainfer for the Resource Leak Checker, whole-program inference (wpi) is performed for
+   * all the sub-checkers. However, our mechanism for inferring annotations for the resource leak
+   * checker is different. It relies on pattern matching instead. The wpi results for this inference
+   * are not useful and only end up slowing down the convergence of the algorithm for Resource Leak
+   * Inference.
+   *
+   * @param expressionTree a tree
+   * @param lhsTree its element
+   * @return false if Resource Leak Checker is running as one of the upstream checkers, otherwise
+   *     returns the result of the super call
+   */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    return false;
+    if (isResourceLeakCheckerEnabled()) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override

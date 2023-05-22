@@ -761,24 +761,23 @@ public class WholeProgramInferenceJavaParserStorage
               className = classNameKey;
             } else {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-              if (classElt == null) {
-                className = null;
-              } else {
-                className = ElementUtils.getBinaryName(classElt);
+              //              if (classElt == null) {
+              //                className = null;
+              //              } else {
+              className = ElementUtils.getBinaryName(classElt);
 
-                for (TypeElement supertypeElement :
-                    ElementUtils.getSuperTypes(classElt, elements)) {
-                  String supertypeName = ElementUtils.getBinaryName(supertypeElement);
-                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                  Set<String> supertypeSet =
-                      supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
-                  supertypeSet.add(supertypeName);
-                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                  Set<String> subtypeSet =
-                      subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
-                  subtypeSet.add(className);
-                }
+              for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
+                String supertypeName = ElementUtils.getBinaryName(supertypeElement);
+                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                Set<String> supertypeSet =
+                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                supertypeSet.add(supertypeName);
+                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                Set<String> subtypeSet =
+                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                subtypeSet.add(className);
               }
+              //              }
             }
             ClassOrInterfaceAnnos typeWrapper =
                 new ClassOrInterfaceAnnos(className, javaParserNode);
@@ -1044,7 +1043,7 @@ public class WholeProgramInferenceJavaParserStorage
     for (String path : modifiedFiles) {
       // This calls deepCopy() because wpiPrepareCompilationUnitForWriting performs side effects
       // that we don't want to be persistent.
-      CompilationUnitAnnos root = sourceToAnnos.get(path);
+      CompilationUnitAnnos root = sourceToAnnos.get(path).deepCopy();
       wpiPrepareCompilationUnitForWriting(root);
       File packageDir;
       if (!root.compilationUnit.getPackageDeclaration().isPresent()) {
