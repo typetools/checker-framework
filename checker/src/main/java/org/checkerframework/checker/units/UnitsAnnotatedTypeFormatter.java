@@ -24,9 +24,9 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
    * @param checker the checker
    */
   public UnitsAnnotatedTypeFormatter(BaseTypeChecker checker) {
-    // Utilize the Default Type Formatter, but force it to print out Invisible Qualifiers
-    // keep super call in sync with implementation in DefaultAnnotatedTypeFormatter
-    // keep checker options in sync with implementation in AnnotatedTypeFactory
+    // Utilize the Default Type Formatter, but force it to print out Invisible Qualifiers.
+    // Keep super call in sync with implementation in DefaultAnnotatedTypeFormatter.
+    // Keep checker options in sync with implementation in AnnotatedTypeFactory.
     super(
         new UnitsFormattingVisitor(
             checker,

@@ -33,6 +33,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * @see org.checkerframework.framework.type.AnnotatedTypeMirror#toString
  */
 public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
+
+  /** The formatting visitor. */
   protected final FormattingVisitor formattingVisitor;
 
   /**

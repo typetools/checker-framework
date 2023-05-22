@@ -61,10 +61,10 @@ public class GlbUtil {
 
     // create a copy of all of the types and apply the glb primary annotation
     AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
-    for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
-      if (type.getKind() != TypeKind.TYPEVAR
-          || !qualifierHierarchy.isSubtype(type.getEffectiveAnnotations(), values)) {
-        AnnotatedTypeMirror copy = type.deepCopy();
+    for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
+      if (atm.getKind() != TypeKind.TYPEVAR
+          || !qualifierHierarchy.isSubtype(atm.getEffectiveAnnotations(), values)) {
+        AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);
 
@@ -72,7 +72,7 @@ public class GlbUtil {
         // if the annotations came from the upper bound of this typevar
         // we do NOT want to place them as primary annotations (and destroy the
         // type vars lower bound)
-        glbTypes.add(type);
+        glbTypes.add(atm);
       }
     }
 
