@@ -1995,10 +1995,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (inferredAnnotation == null) {
       return false;
     }
-    TypeMirror exprType = expr.getType();
+    TypeMirror exprTM = expr.getType();
     return atypeFactory
         .getQualifierHierarchy()
-        .isSubtype(inferredAnnotation, exprType, necessaryAnnotation, exprType);
+        .isSubtype(inferredAnnotation, exprTM, necessaryAnnotation, exprTM);
   }
 
   /**
@@ -4441,8 +4441,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       Set<Pair<JavaExpression, AnnotationMirror>> set,
       @CompilerMessageKey String messageKey) {
 
-    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-
     for (Pair<JavaExpression, AnnotationMirror> weak : mustSubset) {
       JavaExpression jexpr = weak.first;
       boolean found = false;
@@ -4452,7 +4450,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (jexpr.equals(strong.first)) {
           // check subtyping relationship of annotations
           TypeMirror jexprTM = jexpr.getType();
-          if (qualifierHierarchy.isSubtype(strong.second, jexprTM, weak.second, jexprTM)) {
+          if (atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(strong.second, jexprTM, weak.second, jexprTM)) {
             found = true;
             break;
           }

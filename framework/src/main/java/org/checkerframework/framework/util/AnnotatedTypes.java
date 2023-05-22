@@ -1503,14 +1503,13 @@ public class AnnotatedTypes {
       AnnotatedIntersectionType isect,
       AnnotationMirror top,
       QualifierHierarchy qualifierHierarchy) {
-    TypeMirror isectTM = isect.getUnderlyingType();
     AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
     for (AnnotatedTypeMirror bound : isect.getBounds()) {
       AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
       if (boundAnno != null
           && (anno == null
               || qualifierHierarchy.isSubtype(
-                  boundAnno, bound.getUnderlyingType(), anno, isectTM))) {
+                  boundAnno, bound.getUnderlyingType(), anno, isect.getUnderlyingType()))) {
         anno = boundAnno;
       }
     }
