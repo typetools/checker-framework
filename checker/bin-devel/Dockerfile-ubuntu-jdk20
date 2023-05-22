@@ -6,7 +6,7 @@
 # Checker Framework and Annotation Tools repositories) for: (java|jdk).?20
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-FROM ubuntu:22.10
+FROM ubuntu:rolling
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
@@ -14,48 +14,55 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& apt-get -y install aptitude \
+&& aptitude -y install \
+  apt-utils
+
 # ca-certificates-java is a dependency of openjdk-20-jdk, but the installation
 # process seems to fail sometimes when only openjdk-20-jdk is specified.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   ca-certificates-java \
-&& apt-get -qqy install \
+&& aptitude -y install \
   openjdk-20-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   ant \
   cpp \
   git \
-  gradle \
   jq \
-  jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
-  python3-pip \
+  python3-distutils \
   python3-requests \
   unzip \
-  wget
+  wget \
+&& aptitude -y install \
+  jtreg6
 
-# Maven 3.6.3 (the default on Ubuntu 22.10) does not run under JDK 20.
+# Maven 3.8.7 is the default on Ubuntu 23.04.
 # (Don't try to use a variable here for the Maven version.)
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.tar.gz \
-&& tar xzvf apache-maven-3.9.1-bin.tar.gz
-ENV PATH="/apache-maven-3.9.1/bin:$PATH"
+# RUN export DEBIAN_FRONTEND=noninteractive \
+# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz \
+# && tar xzvf apache-maven-3.9.2-bin.tar.gz
+# ENV PATH="/apache-maven-3.9.2/bin:$PATH"
 
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
