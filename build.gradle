@@ -978,7 +978,19 @@ subprojects {
     tasks.create(name: 'inferenceTests', group: 'Verification') {
       description 'Run inference tests.'
       if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
+        dependsOn('inferenceTests-part1', 'inferenceTests-part1')
+      }
+    }
+    tasks.create(name: 'inferenceTests-part1', group: 'Verification') {
+      description 'Run inference tests (part 1).'
+      if (project.name.is('checker')) {
+        dependsOn('ainferTest', 'wpiManyTest')
+      }
+    }
+    tasks.create(name: 'inferenceTests-part2', group: 'Verification') {
+      description 'Run inference tests (part 2).'
+      if (project.name.is('checker')) {
+        dependsOn('wpiPlumeLibTest')
       }
     }
 
@@ -987,7 +999,15 @@ subprojects {
     // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
     tasks.create(name: 'typecheck', group: 'Verification') {
       description 'Run the Checker Framework on itself'
-      dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkResourceLeak', 'checkSignature')
+      dependsOn('typecheck-part1', 'typecheck-part2')
+    }
+    tasks.create(name: 'typecheck-part1', group: 'Verification') {
+      description 'Run the Checker Framework on itself (part 1)'
+      dependsOn('checkFormatter', 'checkInterning', 'checkPurity')
+    }
+    tasks.create(name: 'typecheck-part2', group: 'Verification') {
+      description 'Run the Checker Framework on itself (part 2)'
+      dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
         dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
       } else {
