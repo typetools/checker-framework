@@ -11,7 +11,7 @@
 
 <img src="CFLogo.png" alt="Checker Framework logo" />
 
-<h1>New contributor ideas</h1> <!-- omit from toc -->
+<h1>Projects for new contributors</h1> <!-- omit from toc -->
 
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
@@ -106,10 +106,11 @@
 <p>
   Why should you join this project?  It's popular, so you will have an
   impact.  It makes code more robust and secure, which is a socially
-  important purpose.  Past undergraduate contributors have had great success.
-  (David Lazar became a graduate student at MIT; and many students
-  have published scientific papers, such
-  as
+  important purpose.
+  You will get to scratch your own itch by creating tools that solve
+  problems that frustrate you.
+  It is accessible even to junior software engineers and undergraduates.
+  (Many undergraduate students have published scientific papers, such as
   <a href="https://homes.cs.washington.edu/~mernst/pubs/determinism-icse2021-abstract.html">Jason Waataja</a>,
   <a href="https://homes.cs.washington.edu/~mernst/pubs/array-indexing-issta2018-abstract.html">Vlastimil Dort</a>
   <a href="https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html">Gene Kim</a>,
@@ -125,16 +126,15 @@
     href="https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html">mood</a>
     <a href="https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html">Ali</a>,
   and
-  <a href="https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html">Telmo Correa</a>.)
-  You will
-  get to scratch your own itch by creating tools that solve problems that
-  frustrate you.  And, we have a lot of fun on this project!
+  <a href="https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html">Telmo Correa</a>;
+  and even more have made significant contributions to the tool.)
+  Finally, we have a lot of fun on this project!
 </p>
 
 <p>
   <b>Prerequisites:</b> You should be very comfortable with the Java
   programming language and its type system.  You should know how a type
-  system helps you and where it can hinder you.  You should be willing to
+  system helps you and how it can hinder you.  You should be willing to
   dive into a moderately-sized codebase.
   You should understand fundamental object-oriented programming concepts,
   such as
@@ -151,11 +151,6 @@
 <b>Potential projects:</b>
 Most of this document lists potential projects.  The projects are
 grouped roughly from easiest to most challenging.
-<!--
-You can find more potential projects in the
-<a href="https://github.com/typetools/checker-framework/issues">issue
-  tracker</a>.
--->
 </p>
 
 
@@ -165,7 +160,8 @@ You can find more potential projects in the
 <p>
   To <b>get started</b>, first do a case study of using the Checker
   Framework:  that is, run the Checker Framework on some program.
-  A case study gives you experience in using the Checker
+  If you have already done so, you can skip this section.
+  Otherwise, a case study gives you experience in using the Checker
   Framework, and it may reveal bugs in either the Checker Framework or in
   the program it is analyzing.
 </p>
@@ -179,8 +175,8 @@ Framework?
 Before you can contribute to any project, you must
 understand the tool from a user point of view, including its strengths,
 weaknesses, and how to use it.
-A case study is the best way to
-learn about the Checker Framework and determine whether you would enjoy
+Using the Checker Framework is the best way to
+learn about it and determine whether you would enjoy
 contributing to it.
 </p>
 
@@ -188,8 +184,8 @@ contributing to it.
 <b>What is the purpose of a case study?</b>
 The primary result of your case study is that you will discover bugs in the
 subject program, or you will verify that it has no bugs (of some particular
-type).  If you find bugs in open-source code, report them to the program's
-maintainer, and let us know when they are resolved.<br/>
+type).  If you find bugs in open-source code,
+and let us know when they are resolved.<br/>
 Another outcome of your case study is that you may discover bugs, limitations,
 or usability problems in the Checker Framework.  Please
 <a href="https://checkerframework.org/manual/#reporting-bugs">report them</a>.
@@ -198,9 +194,8 @@ improvements you would like to make to the Checker Framework.
 </p>
 
 <p>
-  Do the case study before submitting your proposal.
-  You might want to start with a small program such as from your
-  coursework, then repeat the process with an open-source program or library.
+  You might want to start with a small program that you wrote,
+  then repeat the process with a larger open-source program or library.
 </p>
 <ol>
   <li>
@@ -211,9 +206,10 @@ improvements you would like to make to the Checker Framework.
     the Checker Framework documentation.</a>
   <li>
     Choose an existing library or program to type-check.
-    Choose a program that is at least 1000 lines long.
+    A program that is about 1000 lines long is a good size for your first
+    use of the Checker Framework, but you could use a smaller or larger one.
     The library or program should be under active maintenance; don't choose one
-    that has not had a commit in several years.
+    that has not had a commit in the past year.
     You will find the case study easier if you are already familiar with
     the program, or if it is written in good style.
   <li>
@@ -222,8 +218,8 @@ improvements you would like to make to the Checker Framework.
     distributed with the Checker Framework</a>, that is appropriate for the
     program.
   <li>
-    If the program is hosted on GitHub, fork it and create a branch for
-    your work.  (Leave the master branch unchanged
+    If the program is hosted on GitHub, fork it and create a new branch for
+    your work.  (Leave the master branch of your fork unchanged
     from upstream.)
   <li>
     Annotate the program, based on its documentation.
@@ -254,14 +250,9 @@ improvements you would like to make to the Checker Framework.
         the code is safe.
     </ul>
   <li>
-    Share it with us so that
-    we can evaluate it and give you feedback.
+    Share it with us; we would be happy to give you feedback.
 
     <p>
-    Share the case study as soon
-    as you finish it or as soon as you have a question that is not answered
-    in the <a href="https://checkerframework.org/manual/">manual</a>;
-    don't wait until you submit your proposal.
     The subject line should be descriptive (not just "Case study", but
     "Nullness case study of Apache Commons Exec library").
     You should give us access to
@@ -304,7 +295,7 @@ and also search in the
 for the answer.
 Don't send us a message
 that says nothing but &ldquo;please guide me&rdquo;
-or &ldquo;tell me how to fix this bug&rdquo;.
+or &ldquo;tell me how to fix this issue from the issue tracker&rdquo;.
 </p>
 
 <p>
@@ -1527,7 +1518,7 @@ currently of interest.
 <h1 id="apply">How to apply to GSoC (relevant to GSoC students only)</h1>
 
 <p>
-  (This section is relevant only to Google Summer of Code Students.)
+This section is relevant only to Google Summer of Code Students.
 </p>
 
 <p>
@@ -1615,16 +1606,25 @@ currently of interest.
     Examples of items in the list include:
     <ul>
       <li>A URL for code you have annotated as a case study.  Please indicate the
-    original unannotated code, the annotated code, and the exact command to
-    run the type-checker from the command line.  Ensure that the GSoC
-    mentors can compile your code.
-    (It is acceptable to use the same code, or different code, for this
-      item and the code sample above.)
+        original unannotated code, the annotated code, and the exact command to
+        run the type-checker from the command line.  Ensure that the GSoC
+        mentors can compile your code.
+        (It is acceptable to use the same code, or different code, for this
+        item and the code sample above.)
+
+        <p>
+        You should have shared the case study as soon as you finished it or
+        as soon as you had a question that is not answered in
+        the <a href="https://checkerframework.org/manual/">manual</a>;
+        don't wait until you submit your proposal, because that does not
+        give us a chance to help you with feedback.
+        </p>
       </li>
       <li>URLs for bugs or pull requests that you have filed.</li>
       <li>Information about other projects you have done, or classes you
         have taken, that prepare you for your proposed summer task.  This
-        is optional, because it might already appear in your resume.</li>
+        is optional.  If something already appears in your resume, don't
+        repeat it here; we will see it in your resume.</li>
     </ul>
   </li>
   <li>A resume.
