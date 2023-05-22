@@ -151,29 +151,6 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy. The Java basetypes of {@code subtype} and {@code
-   * supertype} are not necessarily in a Java subtyping relationship with one another and are only
-   * used by this method for special cases when qualiifer subtyping depends on the Java basetype.
-   * Their qualifiers are always ignored.
-   *
-   * @param subQualifier possible subqualifier
-   * @param subtype the Java type associated with {@code subQualifier}
-   * @param superQualifier possible superqualifier
-   * @param supertype the Java type associated with {@code superQualifier}
-   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   */
-  @SuppressWarnings("nullness:argument") // AnnotatedTypeMirror is not yet annotated for nullness
-  default boolean isSubtype(
-      AnnotationMirror subQualifier,
-      AnnotatedTypeMirror subtype,
-      AnnotationMirror superQualifier,
-      AnnotatedTypeMirror supertype) {
-    return isSubtype(
-        subQualifier, subtype.getUnderlyingType(), superQualifier, supertype.getUnderlyingType());
-  }
-
-  /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}.
    *
@@ -237,33 +214,6 @@ public interface QualifierHierarchy {
       }
     }
     return true;
-  }
-
-  /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
-   * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
-   * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
-   * only used by this method for special cases when qualiifer subtyping depends on the Java
-   * basetype. Their qualifiers are ignored.
-   *
-   * <p>Subtypes more often override {@link #isSubtype(AnnotationMirror, TypeMirror,
-   * AnnotationMirror, TypeMirror)} than this method.
-   *
-   * @param subQualifiers set of qualifiers; exactly one per hierarchy
-   * @param subType the type associated with {@code subQualifiers}
-   * @param superQualifiers set of qualifiers; exactly one per hierarchy
-   * @param superType the type associated with {@code superQualifiers}
-   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
-   *     qualifier in the same hierarchy in {@code superQualifiers}
-   */
-  @SuppressWarnings("nullness:argument") // AnnotatedTypeMirror is not yet annotated for nullness
-  default boolean isSubtype(
-      Collection<? extends AnnotationMirror> subQualifiers,
-      AnnotatedTypeMirror subType,
-      Collection<? extends AnnotationMirror> superQualifiers,
-      AnnotatedTypeMirror superType) {
-    return isSubtype(
-        subQualifiers, subType.getUnderlyingType(), superQualifiers, superType.getUnderlyingType());
   }
 
   /**

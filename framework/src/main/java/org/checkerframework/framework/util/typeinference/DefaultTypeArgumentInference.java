@@ -20,6 +20,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
@@ -444,13 +445,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
       if (inferred instanceof InferredType) {
         AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
+        TypeMirror lowerBoundAsArgumentTM = lowerBoundAsArgument.getUnderlyingType();
         for (AnnotationMirror top : tops) {
           AnnotationMirror lowerBoundAnno =
               lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
           AnnotatedTypeMirror inferredType = ((InferredType) inferred).type;
+          TypeMirror inferredTM = inferredType.getUnderlyingType();
           AnnotationMirror argAnno = inferredType.getEffectiveAnnotationInHierarchy(top);
           if (qualifierHierarchy.isSubtype(
-              argAnno, inferredType, lowerBoundAnno, lowerBoundAsArgument)) {
+              argAnno, inferredTM, lowerBoundAnno, lowerBoundAsArgumentTM)) {
             inferredType.replaceAnnotation(lowerBoundAnno);
           }
         }

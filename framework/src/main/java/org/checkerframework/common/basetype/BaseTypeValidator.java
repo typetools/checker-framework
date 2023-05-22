@@ -615,22 +615,22 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
+          AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+          TypeMirror superBoundTM = superBound.getUnderlyingType();
+          AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
+          TypeMirror extendsBoundTM = extendsBound.getUnderlyingType();
           if (!(atypeFactory
                   .getQualifierHierarchy()
                   .isSubtype(
-                      wildcard.getSuperBound().getEffectiveAnnotations(), wildcard.getSuperBound(),
-                      wildcard.getExtendsBound().getAnnotations(), wildcard.getExtendsBound())
+                      superBound.getEffectiveAnnotations(), superBoundTM,
+                      extendsBound.getAnnotations(), extendsBoundTM)
               && atypeFactory
                   .getQualifierHierarchy()
                   .isSubtype(
-                      wildcard.getExtendsBound().getAnnotations(), wildcard.getExtendsBound(),
-                      wildcard.getSuperBound().getEffectiveAnnotations(),
-                          wildcard.getSuperBound()))) {
+                      extendsBound.getAnnotations(), extendsBoundTM,
+                      superBound.getEffectiveAnnotations(), superBoundTM))) {
             checker.reportError(
-                tree.getTypeArguments().get(i),
-                "super.wildcard",
-                wildcard.getExtendsBound(),
-                wildcard.getSuperBound());
+                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
           }
         }
       }
@@ -685,7 +685,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualifierHierarchy.isSubtype(lowerBoundAnnos, lowerBound, upperBoundAnnos, upperBound);
+      return qualifierHierarchy.isSubtype(
+          lowerBoundAnnos,
+          lowerBound.getUnderlyingType(),
+          upperBoundAnnos,
+          upperBound.getUnderlyingType());
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report

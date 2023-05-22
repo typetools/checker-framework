@@ -166,10 +166,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           // Issue an error if there is an inconsistent, user-written @MustCall annotation
           // here.
           AnnotationMirror effectiveMCAnno = type.getAnnotation();
+          TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
               && !atypeFactory
                   .getQualifierHierarchy()
-                  .isSubtype(inheritedMCAnno, type, effectiveMCAnno, type)) {
+                  .isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
             checker.reportError(
                 tree,
@@ -205,9 +206,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             AnnotationMirror effectiveMCAnno = type.getAnnotation();
 
+            TypeMirror tm = type.getUnderlyingType();
+
             if (!atypeFactory
                 .getQualifierHierarchy()
-                .isSubtype(inheritedMCAnno, type, effectiveMCAnno, type)) {
+                .isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
               checker.reportError(
                   tree,
@@ -315,9 +318,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           .getQualifierHierarchy()
           .isSubtype(
               atypeFactory.withoutClose(valueAnno),
-              valueType,
+              valueType.getUnderlyingType(),
               atypeFactory.withoutClose(varAnno),
-              varType)) {
+              varType.getUnderlyingType())) {
         return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -349,7 +352,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory
         .getQualifierHierarchy()
-        .isSubtype(defaultAnno, defaultType, resultAnno, resultType)) {
+        .isSubtype(
+            defaultAnno,
+            defaultType.getUnderlyingType(),
+            resultAnno,
+            resultType.getUnderlyingType())) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
     }

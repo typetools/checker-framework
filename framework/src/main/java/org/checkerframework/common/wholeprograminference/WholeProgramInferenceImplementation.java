@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1001,10 +1002,12 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
+      TypeMirror rhsTM = rhsATM.getUnderlyingType();
+      TypeMirror declTM = decl.getUnderlyingType();
       for (AnnotationMirror anno : rhsATM.getAnnotations()) {
         AnnotationMirror upperAnno =
             atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(upperAnnos, anno);
-        if (atypeFactory.getQualifierHierarchy().isSubtype(anno, rhsATM, upperAnno, decl)) {
+        if (atypeFactory.getQualifierHierarchy().isSubtype(anno, rhsTM, upperAnno, declTM)) {
           rhsATM.removeAnnotation(anno);
         }
       }

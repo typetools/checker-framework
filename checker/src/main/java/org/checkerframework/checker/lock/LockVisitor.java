@@ -692,14 +692,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
               AnnotatedTypeMirror arg1Type = passedArgTypes.get(i);
               AnnotatedTypeMirror arg2Type = passedArgTypes.get(j);
+              TypeMirror arg1TM = arg1Type.getUnderlyingType();
+              TypeMirror arg2TM = arg2Type.getUnderlyingType();
 
               if (bothAreGSwithNoIndex
                   || !(atypeFactory
                           .getQualifierHierarchy()
-                          .isSubtype(arg1Anno, arg1Type, arg2Anno, arg2Type)
+                          .isSubtype(arg1Anno, arg1TM, arg2Anno, arg2TM)
                       || atypeFactory
                           .getQualifierHierarchy()
-                          .isSubtype(arg2Anno, arg2Type, arg1Anno, arg1Type))) {
+                          .isSubtype(arg2Anno, arg2TM, arg1Anno, arg1TM))) {
 
                 String formalParam1;
                 if (i == 0) {

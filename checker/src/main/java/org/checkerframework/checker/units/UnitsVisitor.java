@@ -32,9 +32,9 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
           .getQualifierHierarchy()
           .isSubtype(
               exprType.getEffectiveAnnotations(),
-              exprType,
+              exprType.getUnderlyingType(),
               varType.getEffectiveAnnotations(),
-              varType)) {
+              varType.getUnderlyingType())) {
         checker.reportError(tree, "compound.assignment", varType, exprType);
       }
     } else if (!exprType.hasAnnotation(UnknownUnits.class)) {

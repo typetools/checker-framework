@@ -61,10 +61,11 @@ public class GlbUtil {
 
     // create a copy of all of the types and apply the glb primary annotation
     AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
-    for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
-      if (type.getKind() != TypeKind.TYPEVAR
-          || !qualifierHierarchy.isSubtype(type.getEffectiveAnnotations(), type, values, type)) {
-        AnnotatedTypeMirror copy = type.deepCopy();
+    for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
+      TypeMirror tm = atm.getUnderlyingType();
+      if (atm.getKind() != TypeKind.TYPEVAR
+          || !qualifierHierarchy.isSubtype(atm.getEffectiveAnnotations(), tm, values, tm)) {
+        AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);
 
@@ -72,7 +73,7 @@ public class GlbUtil {
         // if the annotations came from the upper bound of this typevar
         // we do NOT want to place them as primary annotations (and destroy the
         // type vars lower bound)
-        glbTypes.add(type);
+        glbTypes.add(atm);
       }
     }
 
@@ -182,7 +183,10 @@ public class GlbUtil {
       AnnotationMirrorSet annos2 = type2.getAnnotations();
       if (AnnotationUtils.areSame(annos1, annos2)) {
         return 0;
-      } else if (qualifierHierarchy.isSubtype(annos1, type1, annos2, type2)) {
+      }
+      TypeMirror tm1 = type1.getUnderlyingType();
+      TypeMirror tm2 = type2.getUnderlyingType();
+      if (qualifierHierarchy.isSubtype(annos1, tm1, annos2, tm2)) {
         return 1;
       } else {
         return -1;

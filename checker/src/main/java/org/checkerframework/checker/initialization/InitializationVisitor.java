@@ -248,7 +248,10 @@ public class InitializationVisitor<
     } else {
       assert exprAnno != null && castAnno != null;
       isSubtype =
-          atypeFactory.getQualifierHierarchy().isSubtype(exprAnno, exprType, castAnno, castType);
+          atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(
+                  exprAnno, exprType.getUnderlyingType(), castAnno, castType.getUnderlyingType());
     }
 
     if (!isSubtype) {

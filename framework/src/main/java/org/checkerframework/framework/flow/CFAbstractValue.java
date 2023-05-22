@@ -369,10 +369,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotationMirrorSet lBSet =
           AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
       AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-      if (hierarchy.isSubtype(upperBound, typeVar, annotation, typeVar)) {
+      TypeMirror typeVarTM = typeVar.getUnderlyingType();
+      if (hierarchy.isSubtype(upperBound, typeVarTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (hierarchy.isSubtype(annotation, typeVar, lowerBound, typeVar)) {
+      } else if (hierarchy.isSubtype(annotation, typeVarTM, lowerBound, typeVarTM)) {
         return annotation;
       } else {
         return getBackUpAnnoIn(top);
@@ -507,7 +508,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirrorSet lBSet =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
         AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-        if (hierarchy.isSubtype(annotation, typeVar, lowerBound, typeVar)) {
+        TypeMirror typeVarTM = typeVar.getUnderlyingType();
+        if (hierarchy.isSubtype(annotation, typeVarTM, lowerBound, typeVarTM)) {
           return null;
         } else {
           return combineTwoAnnotations(
@@ -605,7 +607,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // glb is typeVar with a primary annotation of glb(anno, lowerBound), where
         // lowerBound is the annotation on the lower bound of typeVar.
         AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
-        if (hierarchy.isSubtype(upperBound, typeVar, annotation, typeVar)) {
+        TypeMirror typeVarTM = typeVar.getUnderlyingType();
+        if (hierarchy.isSubtype(upperBound, typeVarTM, annotation, typeVarTM)) {
           return null;
         } else {
           AnnotationMirrorSet lBSet =

@@ -874,19 +874,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!ElementUtils.isFinal(field)) {
         notFinal.add(fieldName);
       }
-      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(field);
+      AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
 
       List<AnnotationMirror> annos = invariants.getQualifiersFor(field.getSimpleName());
       for (AnnotationMirror invariantAnno : annos) {
-        AnnotationMirror declaredAnno = type.getEffectiveAnnotationInHierarchy(invariantAnno);
+        AnnotationMirror declaredAnno = fieldType.getEffectiveAnnotationInHierarchy(invariantAnno);
         if (declaredAnno == null) {
           // invariant anno isn't in this hierarchy
           continue;
         }
 
+        TypeMirror fieldTM = fieldType.getUnderlyingType();
         if (!atypeFactory
             .getQualifierHierarchy()
-            .isSubtype(invariantAnno, type, declaredAnno, type)) {
+            .isSubtype(invariantAnno, fieldTM, declaredAnno, fieldTM)) {
           // Checks #3
           checker.reportError(
               errorTree, "field.invariant.not.subtype", fieldName, invariantAnno, declaredAnno);
@@ -1838,8 +1839,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath path = atypeFactory.getPath(call);
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
     AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
+    TypeMirror superTM = superType.getUnderlyingType();
     AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
     AnnotatedTypeMirror returnType = constructorType.getReturnType();
+    TypeMirror returnTM = returnType.getUnderlyingType();
     AnnotationMirrorSet topAnnotations = atypeFactory.getQualifierHierarchy().getTopAnnotations();
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
@@ -1847,7 +1850,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       if (!atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(superAnno, superType, constructorReturnAnno, returnType)) {
+          .isSubtype(superAnno, superTM, constructorReturnAnno, returnTM)) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
       }
     }
@@ -2528,14 +2531,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return false;
     }
     AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
+    TypeMirror castTM = castType.getUnderlyingType();
     AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
+    TypeMirror exprTM = exprType.getUnderlyingType();
 
     if (atypeFactory.hasQualifierParameterInHierarchy(exprType, top)) {
       // The isTypeCastSafe call above checked that the exprType is a subtype of castType,
       // so just check the reverse to check that the qualifiers are equivalent.
       return atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(castTypeAnno, castType, exprTypeAnno, exprType);
+          .isSubtype(castTypeAnno, castTM, exprTypeAnno, exprTM);
     }
     // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
     AnnotationMirror bottom = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
@@ -4180,11 +4185,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
-      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
       TypeMirror overriderTM = overriderReceiver.getUnderlyingType();
+      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
+      TypeMirror overriddenTM = overriddenReceiver.getUnderlyingType();
 
       if (!qualifierHierarchy.isSubtype(
-          overriddenAnnos, overriddenReceiver, overriderAnnos, overriderReceiver)) {
+          overriddenAnnos, overriddenTM, overriderAnnos, overriderTM)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
         if (qualifierHierarchy.isSubtype(overriderAnnos, overriderTM, declaredAnnos, overriderTM)
@@ -4696,17 +4702,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
     AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    TypeMirror declarationTM = declarationType.getUnderlyingType();
     AnnotationMirrorSet upperBounds =
-        atypeFactory
-            .getQualifierUpperBounds()
-            .getBoundQualifiers(declarationType.getUnderlyingType());
+        atypeFactory.getQualifierUpperBounds().getBoundQualifiers(declarationTM);
     for (AnnotationMirror top : tops) {
       AnnotationMirror upperBound =
           atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
       if (!atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(qualifier, useType, upperBound, declarationType)) {
+          .isSubtype(qualifier, useType.getUnderlyingType(), upperBound, declarationTM)) {
         return false;
       }
     }
