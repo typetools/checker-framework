@@ -71,14 +71,14 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   texlive-latex-extra \
   texlive-latex-recommended
 
-# Setting path before `pipx install` avoids a warning message.  `pipx
-# ensurepath` doesn't work to add to the path after `pipx install` (one would
-# need to start a new shell).
+# Setting path before `pipx install` avoids a warning message.
+# `pipx ensurepath` only adds to the path in newly-started shells.
 ENV PATH="/root/.local/bin:$PATH"
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
   pipx \
+&& pipx ensurepath \
 && pipx install black \
 && pipx install flake8 \
 && pipx install html5validator
