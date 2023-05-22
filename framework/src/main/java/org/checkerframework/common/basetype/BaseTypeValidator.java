@@ -615,21 +615,17 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
+          AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+          AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
           if (!(atypeFactory
                   .getQualifierHierarchy()
-                  .isSubtype(
-                      wildcard.getSuperBound().getEffectiveAnnotations(),
-                      wildcard.getExtendsBound().getAnnotations())
+                  .isSubtype(superBound.getEffectiveAnnotations(), extendsBound.getAnnotations())
               && atypeFactory
                   .getQualifierHierarchy()
                   .isSubtype(
-                      wildcard.getExtendsBound().getAnnotations(),
-                      wildcard.getSuperBound().getEffectiveAnnotations()))) {
+                      extendsBound.getAnnotations(), superBound.getEffectiveAnnotations()))) {
             checker.reportError(
-                tree.getTypeArguments().get(i),
-                "super.wildcard",
-                wildcard.getExtendsBound(),
-                wildcard.getSuperBound());
+                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
           }
         }
       }
