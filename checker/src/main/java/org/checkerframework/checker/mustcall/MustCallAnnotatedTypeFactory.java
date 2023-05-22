@@ -413,7 +413,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       Element elt = TreeUtils.elementFromUse(tree);
       if (elt.getKind() == ElementKind.PARAMETER
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
-        type.replaceAnnotation(BOTTOM);
+        if (!type.hasAnnotation(POLY)) {
+          // Parameters that are not annotated with @Owning should be treated as bottom
+          // (to suppress warnings about them). An exception is polymorphic parameters, which
+          // might be @MustCallAlias (and so wouldn't be annotated with @Owning): these are not
+          // modified, to support verification of @MustCallAlias annotations.
+          type.replaceAnnotation(BOTTOM);
+        }
       }
       if (ElementUtils.isResourceVariable(elt)) {
         type.replaceAnnotation(withoutClose(type.getAnnotationInHierarchy(TOP)));
