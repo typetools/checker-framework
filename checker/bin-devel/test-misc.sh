@@ -11,6 +11,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 which black
+ls -al /root/.local/bin/
+whoami
 make -C docs/developer/release check-python-style
 
 PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
