@@ -933,7 +933,6 @@ public abstract class GenericAnnotatedTypeFactory<
   public AnnotationMirror getAnnotationFromJavaExpressionString(
       String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
       throws JavaExpressionParseException {
-
     JavaExpression expressionObj = parseJavaExpressionString(expression, path);
     return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
   }
