@@ -156,7 +156,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -172,9 +172,9 @@ public class NullnessVisitor
         && !checker.getLintOption(
             NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
             NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
-      return;
+      return true;
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
@@ -217,7 +217,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -226,12 +226,12 @@ public class NullnessVisitor
     // might not have a value for the var tree.  This is sound because if data flow has
     // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
     atypeFactory.replacePolyQualifier(varType, valueExp);
-    super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
   }
 
   @Override
   @FormatMethod
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -242,10 +242,10 @@ public class NullnessVisitor
       boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
       if (!succeed) {
         // Only issue the unboxing of nullable error.
-        return;
+        return false;
       }
     }
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /** Case 1: Check for null dereferencing. */

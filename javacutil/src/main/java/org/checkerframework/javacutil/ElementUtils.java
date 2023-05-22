@@ -56,19 +56,6 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the innermost type element enclosing the given element. Returns the element itself if
-   * it is a type element.
-   *
-   * @param elem the enclosed element of a class
-   * @return the innermost type element, or null if no type element encloses {@code elem}
-   * @deprecated use {@link #enclosingTypeElement}
-   */
-  @Deprecated // 2021-01-16
-  public static @Nullable TypeElement enclosingClass(Element elem) {
-    return enclosingTypeElement(elem);
-  }
-
-  /**
    * Returns the innermost type element that is, or encloses, the given element.
    *
    * <p>Note that in this code:
@@ -245,7 +232,7 @@ public class ElementUtils {
     if (element.getKind() == ElementKind.METHOD) {
       return ((ExecutableElement) element).getReturnType();
     } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-      return enclosingClass(element).asType();
+      return enclosingTypeElement(element).asType();
     } else {
       return element.asType();
     }
@@ -263,7 +250,7 @@ public class ElementUtils {
       return elem.getQualifiedName();
     }
 
-    TypeElement elem = enclosingClass(element);
+    TypeElement elem = enclosingTypeElement(element);
     if (elem == null) {
       return null;
     }
@@ -399,7 +386,7 @@ public class ElementUtils {
     if (element == null) {
       return false;
     }
-    TypeElement enclosingClass = enclosingClass(element);
+    TypeElement enclosingClass = enclosingTypeElement(element);
     if (enclosingClass == null) {
       throw new BugInCF("enclosingClass(%s) is null", element);
     }
@@ -774,17 +761,6 @@ public class ElementUtils {
         typeElementKinds.add(kind);
       }
     }
-  }
-
-  /**
-   * Return the set of kinds that represent classes.
-   *
-   * @return the set of kinds that represent classes
-   * @deprecated use {@link #typeElementKinds()}
-   */
-  @Deprecated // 2020-12-11
-  public static Set<ElementKind> classElementKinds() {
-    return typeElementKinds();
   }
 
   /**

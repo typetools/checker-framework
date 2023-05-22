@@ -4,9 +4,10 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.UtilPlume;
 
 /**
- * Simple immutable pair class for multiple returns.
+ * Immutable pair class.
  *
  * @param <V1> the type of the first element of the pair
  * @param <V2> the type of the second element of the pair
@@ -45,9 +46,9 @@ public class Pair<V1, V2> {
       Pair<V1, V2> orig) {
 
     V1 oldFirst = orig.first;
-    V1 newFirst = oldFirst == null ? oldFirst : CollectionUtils.clone(oldFirst);
+    V1 newFirst = oldFirst == null ? oldFirst : UtilPlume.clone(oldFirst);
     V2 oldSecond = orig.second;
-    V2 newSecond = oldSecond == null ? oldSecond : CollectionUtils.clone(oldSecond);
+    V2 newSecond = oldSecond == null ? oldSecond : UtilPlume.clone(oldSecond);
     return of(newFirst, newSecond);
   }
 
