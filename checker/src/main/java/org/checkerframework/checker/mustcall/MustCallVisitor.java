@@ -81,12 +81,24 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     //  * It is always safe to assign a MustCallAlias parameter of a constructor
     //    to an owning field of the containing class.
     // It is necessary to special case this because MustCallAlias is translated
-    // into @PolyMustCall.
+    // into @PolyMustCall, so the common assignment check will fail when assigning
+    // an @MustCallAlias parameter to an owning field: the parameter is polymorphic,
+    // but the field is not.
     ExpressionTree lhs = tree.getVariable();
     ExpressionTree rhs = tree.getExpression();
     Element lhsElt = TreeUtils.elementFromTree(lhs);
     Element rhsElt = TreeUtils.elementFromTree(rhs);
     if (lhsElt != null && rhsElt != null) {
+      // Note that it is not necessary to check that the assignment is to a field of this, because
+      // that is implied by the other conditions:
+      // * if the field is final, then the only place it can be assigned to is in the constructor
+      //   of the proper object (enforced by javac).
+      // * if the field is not final, then it cannot be assigned to in a constructor at all: the
+      //   @CreatesMustCallFor annotation cannot be written on a constructor (it has
+      //   @Target({ElementType.METHOD})), so this code relies on the standard rules for non-final
+      // owning
+      //   field reassignment, which prevent it without an @CreatesMustCallFor annotation except
+      //   in the constructor of the object containing the field.
       boolean lhsIsOwningField =
           lhs.getKind() == Tree.Kind.MEMBER_SELECT
               && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
