@@ -77,7 +77,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
-    // The following code implements the following rule:
+    // This code implements the following rule:
     //  * It is always safe to assign a MustCallAlias parameter of a constructor
     //    to an owning field of the containing class.
     // It is necessary to special case this because MustCallAlias is translated
@@ -96,9 +96,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // * if the field is not final, then it cannot be assigned to in a constructor at all: the
       //   @CreatesMustCallFor annotation cannot be written on a constructor (it has
       //   @Target({ElementType.METHOD})), so this code relies on the standard rules for non-final
-      // owning
-      //   field reassignment, which prevent it without an @CreatesMustCallFor annotation except
-      //   in the constructor of the object containing the field.
+      //   owning field reassignment, which prevent it without an @CreatesMustCallFor annotation
+      //   except in the constructor of the object containing the field.
       boolean lhsIsOwningField =
           lhs.getKind() == Tree.Kind.MEMBER_SELECT
               && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
