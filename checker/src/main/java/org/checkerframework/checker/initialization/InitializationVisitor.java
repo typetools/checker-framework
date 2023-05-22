@@ -97,7 +97,7 @@ public class InitializationVisitor<
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -126,11 +126,11 @@ public class InitializationVisitor<
             err = "initialization.field.write.unknown";
           }
           checker.reportError(varTree, err, varTree);
-          return; // prevent issuing another errow about subtyping
+          return false; // prevent issuing another error about subtyping
         }
       }
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   @Override
