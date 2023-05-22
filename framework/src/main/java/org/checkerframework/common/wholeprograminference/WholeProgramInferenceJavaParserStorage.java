@@ -94,6 +94,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.UtilPlume;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -1324,8 +1325,7 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
       result.callableDeclarations = CollectionUtils.deepCopyValues(callableDeclarations);
       result.fields = CollectionUtils.deepCopyValues(fields);
-      result.enumConstants =
-          CollectionUtils.clone(enumConstants); // no deep copy: elements are strings
+      result.enumConstants = UtilPlume.clone(enumConstants); // no deep copy: elements are strings
       if (classAnnotations != null) {
         result.classAnnotations = classAnnotations.deepCopy();
       }
