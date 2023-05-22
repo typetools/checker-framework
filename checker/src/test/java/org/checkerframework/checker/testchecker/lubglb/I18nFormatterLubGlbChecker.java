@@ -129,7 +129,7 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
     cc[0] = I18nConversionCategory.NUMBER;
     AnnotationMirror i18nFormatNumberAnno = treeUtil.categoriesToFormatAnnotation(cc);
 
-    QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = ((BaseTypeVisitor<?>) visitor).qualHierarchy;
 
     // ** GLB tests **
 

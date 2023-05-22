@@ -854,12 +854,12 @@ public class AnnotatedTypes {
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
-    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet set1 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
     AnnotationMirrorSet set2 =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
-    Set<? extends AnnotationMirror> glbAnno = qualifierHierarchy.greatestLowerBounds(set1, set2);
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
+    Set<? extends AnnotationMirror> glbAnno = qualHierarchy.greatestLowerBounds(set1, set2);
 
     AnnotatedIntersectionType glb =
         (AnnotatedIntersectionType) AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
@@ -903,23 +903,23 @@ public class AnnotatedTypes {
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    *
-   * @param qualifierHierarchy QualifierHierarchy
+   * @param qualHierarchy QualifierHierarchy
    * @param subtype annotated type whose underlying type is a subtype of {@code supertype}
    * @param supertype annotated type whose underlying type is a supertype of {@code subtype}
    * @return the annotated greatest lower bound of {@code subtype} and {@code supertype}
    */
   private static AnnotatedTypeMirror glbSubtype(
-      QualifierHierarchy qualifierHierarchy,
+      QualifierHierarchy qualHierarchy,
       AnnotatedTypeMirror subtype,
       AnnotatedTypeMirror supertype) {
     AnnotatedTypeMirror glb = subtype.deepCopy();
     glb.clearPrimaryAnnotations();
 
-    for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
       AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
       if (subAnno != null && superAnno != null) {
-        glb.addAnnotation(qualifierHierarchy.greatestLowerBound(subAnno, superAnno));
+        glb.addAnnotation(qualHierarchy.greatestLowerBound(subAnno, superAnno));
       } else if (subAnno == null && superAnno == null) {
         if (subtype.getKind() != TypeKind.TYPEVAR || supertype.getKind() != TypeKind.TYPEVAR) {
           throw new BugInCF(
@@ -929,9 +929,9 @@ public class AnnotatedTypes {
         if (subtype.getKind() != TypeKind.TYPEVAR) {
           throw new BugInCF("Missing primary annotations: subtype: %s", subtype);
         }
-        AnnotationMirrorSet lb = findEffectiveLowerBoundAnnotations(qualifierHierarchy, subtype);
-        AnnotationMirror lbAnno = qualifierHierarchy.findAnnotationInHierarchy(lb, top);
-        if (lbAnno != null && !qualifierHierarchy.isSubtype(lbAnno, superAnno)) {
+        AnnotationMirrorSet lb = findEffectiveLowerBoundAnnotations(qualHierarchy, subtype);
+        AnnotationMirror lbAnno = qualHierarchy.findAnnotationInHierarchy(lb, top);
+        if (lbAnno != null && !qualHierarchy.isSubtype(lbAnno, superAnno)) {
           // The superAnno is lower than the lower bound annotation, so add it.
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
@@ -1343,8 +1343,8 @@ public class AnnotatedTypes {
    * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
    */
   public static AnnotationMirror findEffectiveAnnotationInHierarchy(
-      QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror toSearch, AnnotationMirror top) {
-    return findEffectiveAnnotationInHierarchy(qualifierHierarchy, toSearch, top, false);
+      QualifierHierarchy qualHierarchy, AnnotatedTypeMirror toSearch, AnnotationMirror top) {
+    return findEffectiveAnnotationInHierarchy(qualHierarchy, toSearch, top, false);
   }
 
   /**
@@ -1359,7 +1359,7 @@ public class AnnotatedTypes {
    * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
    */
   public static AnnotationMirror findEffectiveAnnotationInHierarchy(
-      QualifierHierarchy qualifierHierarchy,
+      QualifierHierarchy qualHierarchy,
       AnnotatedTypeMirror toSearch,
       AnnotationMirror top,
       boolean canBeEmpty) {
@@ -1378,7 +1378,7 @@ public class AnnotatedTypes {
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
           AnnotationMirror glb =
-              glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualifierHierarchy);
+              glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualHierarchy);
 
           if (glb == null) {
             throw new BugInCF(
@@ -1411,12 +1411,12 @@ public class AnnotatedTypes {
    * This method returns the effective annotation on the lower bound of a type, or on the type
    * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
-   * @param qualifierHierarchy the qualifier hierarchy
+   * @param qualHierarchy the qualifier hierarchy
    * @param toSearch the type whose lower bound to examine
    * @return the set of effective annotation mirrors in all hierarchies
    */
   public static AnnotationMirrorSet findEffectiveLowerBoundAnnotations(
-      QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror toSearch) {
+      QualifierHierarchy qualHierarchy, AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
     while (kind == TypeKind.TYPEVAR || kind == TypeKind.WILDCARD || kind == TypeKind.INTERSECTION) {
@@ -1432,8 +1432,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          AnnotationMirrorSet glb =
-              glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
+          AnnotationMirrorSet glb = glbOfBounds((AnnotatedIntersectionType) source, qualHierarchy);
           return glb;
 
         default:
@@ -1457,12 +1456,12 @@ public class AnnotatedTypes {
    * it finds a concrete type from which it can pull an annotation. This occurs for every hierarchy
    * in QualifierHierarchy.
    *
-   * @param qualifierHierarchy the qualifier hierarchy
+   * @param qualHierarchy the qualifier hierarchy
    * @param toSearch the type whose effective annotations to determine
    * @return the set of effective annotation mirrors in all hierarchies
    */
   public static AnnotationMirrorSet findEffectiveAnnotations(
-      QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror toSearch) {
+      QualifierHierarchy qualHierarchy, AnnotatedTypeMirror toSearch) {
     AnnotatedTypeMirror source = toSearch;
     TypeKind kind = source.getKind();
     while (kind == TypeKind.TYPEVAR || kind == TypeKind.WILDCARD || kind == TypeKind.INTERSECTION) {
@@ -1478,8 +1477,7 @@ public class AnnotatedTypes {
 
         case INTERSECTION:
           // if there are multiple conflicting annotations, choose the lowest
-          AnnotationMirrorSet glb =
-              glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
+          AnnotationMirrorSet glb = glbOfBounds((AnnotatedIntersectionType) source, qualHierarchy);
           return glb;
 
         default:
@@ -1498,13 +1496,11 @@ public class AnnotatedTypes {
   }
 
   private static AnnotationMirror glbOfBoundsInHierarchy(
-      AnnotatedIntersectionType isect,
-      AnnotationMirror top,
-      QualifierHierarchy qualifierHierarchy) {
+      AnnotatedIntersectionType isect, AnnotationMirror top, QualifierHierarchy qualHierarchy) {
     AnnotationMirror anno = isect.getAnnotationInHierarchy(top);
     for (AnnotatedTypeMirror bound : isect.getBounds()) {
       AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
-      if (boundAnno != null && (anno == null || qualifierHierarchy.isSubtype(boundAnno, anno))) {
+      if (boundAnno != null && (anno == null || qualHierarchy.isSubtype(boundAnno, anno))) {
         anno = boundAnno;
       }
     }
@@ -1516,14 +1512,14 @@ public class AnnotatedTypes {
    * Gets the lowest primary annotation of all bounds in the intersection.
    *
    * @param isect the intersection for which we are glbing bounds
-   * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb
+   * @param qualHierarchy the qualifier used to get the hierarchies in which to glb
    * @return a set of annotations representing the glb of the intersection's bounds
    */
   public static AnnotationMirrorSet glbOfBounds(
-      AnnotatedIntersectionType isect, QualifierHierarchy qualifierHierarchy) {
+      AnnotatedIntersectionType isect, QualifierHierarchy qualHierarchy) {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
-    for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-      AnnotationMirror glbAnno = glbOfBoundsInHierarchy(isect, top, qualifierHierarchy);
+    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+      AnnotationMirror glbAnno = glbOfBoundsInHierarchy(isect, top, qualHierarchy);
       if (glbAnno != null) {
         result.add(glbAnno);
       }
