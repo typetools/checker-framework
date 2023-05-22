@@ -386,8 +386,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotatedExecutableType getClassType, AnnotatedTypeMirror receiverType, ExpressionTree tree) {
     super.adaptGetClassReturnTypeToReceiver(getClassType, receiverType, tree);
     // Make the captured wildcard always @Signed, regardless of the declared type.
-    final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
-    final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
+    AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
+    List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
     AnnotatedTypeVariable classWildcardArg = (AnnotatedTypeVariable) typeArgs.get(0);
     classWildcardArg.getUpperBound().replaceAnnotation(SIGNED);
   }
@@ -681,7 +681,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
   @Override
-  public boolean isRelevant(TypeMirror tm) {
+  public boolean isRelevantImpl(TypeMirror tm) {
     if (TypesUtils.isFloatingPoint(tm)) {
       return false;
     }

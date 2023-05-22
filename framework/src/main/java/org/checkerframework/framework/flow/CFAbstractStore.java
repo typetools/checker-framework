@@ -891,8 +891,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     abstract value is not known).
    */
   protected void removeConflicting(FieldAccess fieldAccess, @Nullable V val) {
-    final Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator =
-        fieldValues.entrySet().iterator();
+    Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
     while (fieldValuesIterator.hasNext()) {
       Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
       FieldAccess otherFieldAccess = entry.getKey();
@@ -917,8 +916,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    final Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator =
-        arrayValues.entrySet().iterator();
+    Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
     while (arrayValuesIterator.hasNext()) {
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
@@ -952,8 +950,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *     abstract value is not known).
    */
   protected void removeConflicting(ArrayAccess arrayAccess, @Nullable V val) {
-    final Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator =
-        arrayValues.entrySet().iterator();
+    Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
     while (arrayValuesIterator.hasNext()) {
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
@@ -968,8 +965,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // case 2:
-    final Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator =
-        fieldValues.entrySet().iterator();
+    Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
     while (fieldValuesIterator.hasNext()) {
       Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
       FieldAccess otherFieldAccess = entry.getKey();
@@ -999,8 +995,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * </ol>
    */
   protected void removeConflicting(LocalVariable var) {
-    final Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator =
-        fieldValues.entrySet().iterator();
+    Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
     while (fieldValuesIterator.hasNext()) {
       Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
       FieldAccess otherFieldAccess = entry.getKey();
@@ -1010,8 +1005,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    final Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator =
-        arrayValues.entrySet().iterator();
+    Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
     while (arrayValuesIterator.hasNext()) {
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
@@ -1021,8 +1015,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    final Iterator<Map.Entry<MethodCall, V>> methodValuesIterator =
-        methodValues.entrySet().iterator();
+    Iterator<Map.Entry<MethodCall, V>> methodValuesIterator = methodValues.entrySet().iterator();
     while (methodValuesIterator.hasNext()) {
       Map.Entry<MethodCall, V> entry = methodValuesIterator.next();
       MethodCall otherMethodAccess = entry.getKey();

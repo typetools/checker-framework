@@ -1,9 +1,9 @@
 package wildcards;
 
-import wildcards.Crash.GenericAnnotatedTypeFactory;
+import wildcards.Crash.GenericAnnotatedTypeFactoryCrash;
 
-public class Crash<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
-  public abstract static class GenericAnnotatedTypeFactory<
+public class Crash<Factory extends GenericAnnotatedTypeFactoryCrash<?, ?, ?, ?>> {
+  public abstract static class GenericAnnotatedTypeFactoryCrash<
       Value extends CFAbstractValue<Value>,
       Store extends CFAbstractStore<Value, Store>,
       TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,

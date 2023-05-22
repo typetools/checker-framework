@@ -932,7 +932,8 @@ Alternately, you can
 <h2 id="case-study-nullness-guava">Guava library</h2>
 
 <p>
-  Guava is already partially annotated with nullness annotations &mdash; in
+  Guava is already <a href="https://github.com/typetools/guava/">partially
+  annotated</a> with nullness annotations &mdash; in
   part by Guava's developers, and in part by the Checker Framework team.
   However, Guava does not yet type-check without errors.  Doing so could
   find more errors (the Checker Framework has found nullness and indexing
@@ -1368,6 +1369,14 @@ A naive solution would be to invalidate these types any time a method is called 
 Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
 the information in the type when a method like add or remove is called on <code>data_structure</code>.
 A more complete solution might involve some special annotations on List that permit the information to be persisted.
+</p>
+
+<p>
+Another approach would be to run a pointer analysis before type-checking,
+then use that information for precise information about what lists might be
+changed by each call to <code>add</code> or <code>remove</code>.  One
+possible pointer analysis would be that
+of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
 </p>
 
 <p>

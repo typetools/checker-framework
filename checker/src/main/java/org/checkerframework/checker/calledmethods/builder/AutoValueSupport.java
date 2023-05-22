@@ -207,7 +207,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    * @return a @CalledMethods annotation that indicates all the given properties have been set
    */
   private AnnotationMirror createCalledMethodsForAutoValueProperties(
-      final List<String> propertyNames, Set<String> avBuilderSetterNames) {
+      List<String> propertyNames, Set<String> avBuilderSetterNames) {
     List<String> calledMethodNames =
         propertyNames.stream()
             .map(prop -> autoValuePropToBuilderSetterName(prop, avBuilderSetterNames))
@@ -262,7 +262,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    * @return a list of required property names
    */
   private List<String> getAutoValueRequiredProperties(
-      final TypeElement autoValueClassElement, Set<String> avBuilderSetterNames) {
+      TypeElement autoValueClassElement, Set<String> avBuilderSetterNames) {
     return getAllAbstractMethods(autoValueClassElement).stream()
         .filter(member -> isAutoValueRequiredProperty(member, avBuilderSetterNames))
         .map(e -> e.getSimpleName().toString())

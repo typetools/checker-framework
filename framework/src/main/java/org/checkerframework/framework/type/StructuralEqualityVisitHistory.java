@@ -38,8 +38,8 @@ public class StructuralEqualityVisitHistory {
    * @param result whether {@code type1} is structurally equal to {@code type2}
    */
   public void put(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
       AnnotationMirror hierarchy,
       boolean result) {
     if (result) {
@@ -63,9 +63,7 @@ public class StructuralEqualityVisitHistory {
    *     null} if the types have not been visited for the given hierarchy
    */
   public @Nullable Boolean get(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      AnnotationMirror hierarchy) {
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror hierarchy) {
     if (falseHistory.contains(type1, type2, hierarchy)) {
       return false;
     } else if (trueHistory.contains(type1, type2, hierarchy)) {

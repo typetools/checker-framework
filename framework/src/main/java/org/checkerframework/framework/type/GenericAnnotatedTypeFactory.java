@@ -801,7 +801,7 @@ public abstract class GenericAnnotatedTypeFactory<
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
       DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        final TypeUseLocation[] locations = defaultFor.value();
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
       }
 
@@ -1322,9 +1322,9 @@ public abstract class GenericAnnotatedTypeFactory<
     classQueue.add(Pair.of(classTree, null));
 
     while (!classQueue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = classQueue.remove();
-      final ClassTree ct = qel.first;
-      final Store capturedStore = qel.second;
+      Pair<ClassTree, Store> qel = classQueue.remove();
+      ClassTree ct = qel.first;
+      Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
       TreePath preTreePath = getVisitorTreePath();
@@ -1478,18 +1478,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /** Sorts a list of trees with the variables first. */
   private final Comparator<Tree> sortVariablesFirst =
-      new Comparator<Tree>() {
-        @Override
-        public int compare(Tree t1, Tree t2) {
-          boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
-          boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
-          if (variable1 && !variable2) {
-            return -1;
-          } else if (!variable1 && variable2) {
-            return 1;
-          } else {
-            return 0;
-          }
+      (t1, t2) -> {
+        boolean variable1 = t1.getKind() == Tree.Kind.VARIABLE;
+        boolean variable2 = t2.getKind() == Tree.Kind.VARIABLE;
+        if (variable1 && !variable2) {
+          return -1;
+        } else if (!variable1 && variable2) {
+          return 1;
+        } else {
+          return 0;
         }
       };
 
@@ -2354,13 +2351,13 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  public boolean isRelevant(TypeMirror tm) {
+  public final boolean isRelevant(TypeMirror tm) {
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
-    boolean result = isRelevantHelper(tm);
+    boolean result = isRelevantImpl(tm);
     isRelevantCache.put(tm, result);
     return result;
   }
@@ -2377,12 +2374,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
-   * Does not use a cache. Is a helper method for {@link #isRelevant}.
+   * Does not use a cache.
+   *
+   * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
+   * for {@link #isRelevant}.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  private boolean isRelevantHelper(TypeMirror tm) {
+  protected boolean isRelevantImpl(TypeMirror tm) {
 
     if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
       return true;

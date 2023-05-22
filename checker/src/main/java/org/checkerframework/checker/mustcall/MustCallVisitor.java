@@ -222,13 +222,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   private boolean commonAssignmentCheckOnResourceVariable = false;
 
   /**
-   * Mark (using the {@code #commonAssignmentCheckOnResourceVariable} field of this class) any
+   * {@inheritDoc}
+   *
+   * <p>Mark (using the {@code #commonAssignmentCheckOnResourceVariable} field of this class) any
    * assignments where the LHS is a resource variable, so that close doesn't need to be considered.
    * See {@link #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String,
    * Object...)} for the code that uses and removes the mark.
    */
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -237,16 +239,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE) {
       commonAssignmentCheckOnResourceVariable = true;
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
-   * Iff the LHS is a resource variable, then {@code #commonAssignmentCheckOnResourceVariable} will
-   * be true. This method guarantees that {@code #commonAssignmentCheckOnResourceVariable} will be
-   * false when it returns.
+   * {@inheritDoc}
+   *
+   * <p>Iff the LHS is a resource variable, then {@code #commonAssignmentCheckOnResourceVariable}
+   * will be true. This method guarantees that {@code #commonAssignmentCheckOnResourceVariable} will
+   * be false when it returns.
    */
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -254,7 +258,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Object... extraArgs) {
 
     if (noMustCallObligation(varType) || noMustCallObligation(valueType)) {
-      return;
+      return true;
     }
 
     if (commonAssignmentCheckOnResourceVariable) {
@@ -262,17 +266,17 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
-        return;
+          .isSubtype(atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
+        return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
       // an exception).  Control falls through here to avoid duplicating error-issuing code.
     }
     // commonAssignmentCheckOnResourceVariable is already false, so no need to set it.
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /**
@@ -293,8 +297,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    AnnotationMirror resultAnno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);

@@ -77,7 +77,7 @@ public class TypeArgInferenceUtil {
    *     methodInvocation}.
    */
   public static List<AnnotatedTypeMirror> getArgumentTypes(
-      final ExpressionTree methodInvocation, final AnnotatedTypeFactory typeFactory) {
+      ExpressionTree methodInvocation, AnnotatedTypeFactory typeFactory) {
     final List<? extends ExpressionTree> argTrees;
 
     if (methodInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -111,8 +111,7 @@ public class TypeArgInferenceUtil {
    * Given a set of type variables for which we are inferring a type, returns true if type is a use
    * of a type variable in the list of targetTypeVars.
    */
-  public static boolean isATarget(
-      final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
+  public static boolean isATarget(AnnotatedTypeMirror type, Set<TypeVariable> targetTypeVars) {
     return type.getKind() == TypeKind.TYPEVAR
         && targetTypeVars.contains(
             (TypeVariable) TypeAnnotationUtils.unannotatedType(type.getUnderlyingType()));
@@ -122,11 +121,11 @@ public class TypeArgInferenceUtil {
    * Given an AnnotatedExecutableType return a set of type variables that represents the generic
    * type parameters of that method.
    */
-  public static Set<TypeVariable> methodTypeToTargets(final AnnotatedExecutableType methodType) {
-    final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
-    final Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
+  public static Set<TypeVariable> methodTypeToTargets(AnnotatedExecutableType methodType) {
+    List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+    Set<TypeVariable> targets = new LinkedHashSet<>(annotatedTypeVars.size());
 
-    for (final AnnotatedTypeVariable atv : annotatedTypeVars) {
+    for (AnnotatedTypeVariable atv : annotatedTypeVars) {
       targets.add((TypeVariable) TypeAnnotationUtils.unannotatedType(atv.getUnderlyingType()));
     }
 
@@ -339,7 +338,7 @@ public class TypeArgInferenceUtil {
   public static AnnotatedTypeMirror assignedToVariable(
       AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
     if (atypeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?>) {
-      final GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
           ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory);
       return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
     } else {
@@ -354,8 +353,8 @@ public class TypeArgInferenceUtil {
    */
   private static boolean containsUninferredTypeParameter(
       AnnotatedTypeMirror type, AnnotatedExecutableType methodType) {
-    final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
-    final List<TypeVariable> typeVars =
+    List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+    List<TypeVariable> typeVars =
         CollectionsPlume.mapList(
             (AnnotatedTypeVariable annotatedTypeVar) ->
                 (TypeVariable)
@@ -375,7 +374,7 @@ public class TypeArgInferenceUtil {
   public static boolean containsTypeParameter(
       AnnotatedTypeMirror type, Collection<TypeVariable> typeVariables) {
     // note NULL values creep in because the underlying visitor uses them in various places
-    final Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
+    Boolean result = type.accept(new TypeVariableFinder(), typeVariables);
     return result != null && result;
   }
 
@@ -384,7 +383,7 @@ public class TypeArgInferenceUtil {
    * annotations in hierarchy}.
    */
   public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
-      final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
+      AnnotationMirrorSet annos, QualifierHierarchy qualifierHierarchy) {
     AnnotationMirrorMap<AnnotationMirror> result = new AnnotationMirrorMap<>();
 
     for (AnnotationMirror anno : annos) {
@@ -451,13 +450,11 @@ public class TypeArgInferenceUtil {
    * @see TypeVariableSubstitutor
    */
   public static AnnotatedTypeMirror substitute(
-      final TypeVariable typeVariable,
-      final AnnotatedTypeMirror substitution,
-      final AnnotatedTypeMirror toModify) {
+      TypeVariable typeVariable, AnnotatedTypeMirror substitution, AnnotatedTypeMirror toModify) {
     substituteMap.clear();
     substituteMap.put(typeVariable, substitution.deepCopy());
 
-    final AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
+    AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
     substitutor.substitute(substituteMap, toModifyCopy);
     return toModifyCopy;
   }
@@ -468,7 +465,7 @@ public class TypeArgInferenceUtil {
    * rules (@see TypeVariableSubstitutor). Return the copy.
    */
   public static AnnotatedTypeMirror substitute(
-      Map<TypeVariable, AnnotatedTypeMirror> substitutions, final AnnotatedTypeMirror toModify) {
+      Map<TypeVariable, AnnotatedTypeMirror> substitutions, AnnotatedTypeMirror toModify) {
     final AnnotatedTypeMirror substitution;
     if (toModify.getKind() == TypeKind.TYPEVAR) {
       substitution =
@@ -481,7 +478,7 @@ public class TypeArgInferenceUtil {
       return substitution.deepCopy();
     }
 
-    final AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
+    AnnotatedTypeMirror toModifyCopy = toModify.deepCopy();
     substitutor.substitute(substitutions, toModifyCopy);
     return toModifyCopy;
   }
@@ -491,8 +488,8 @@ public class TypeArgInferenceUtil {
    * method will box primitives if necessary
    */
   public static AnnotatedTypeMirror leastUpperBound(
-      final AnnotatedTypeFactory typeFactory, final Iterable<AnnotatedTypeMirror> types) {
-    final Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
+      AnnotatedTypeFactory typeFactory, Iterable<AnnotatedTypeMirror> types) {
+    Iterator<AnnotatedTypeMirror> typesIter = types.iterator();
     if (!typesIter.hasNext()) {
       throw new BugInCF("Calling LUB on empty list");
     }

@@ -200,14 +200,7 @@ public class TestUtilities {
 
     @SuppressWarnings("nullness") // checked above that it's a directory
     File @NonNull [] in = directory.listFiles();
-    Arrays.sort(
-        in,
-        new Comparator<File>() {
-          @Override
-          public int compare(File o1, File o2) {
-            return o1.getName().compareTo(o2.getName());
-          }
-        });
+    Arrays.sort(in, Comparator.comparing(File::getName));
     for (File file : in) {
       if (file.isDirectory()) {
         javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
@@ -250,7 +243,7 @@ public class TestUtilities {
   }
 
   public static @Nullable String diagnosticToString(
-      final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
+      Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
 
     String result = diagnostic.toString().trim();
 
@@ -285,8 +278,7 @@ public class TestUtilities {
   }
 
   public static Set<String> diagnosticsToStrings(
-      final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics,
-      boolean usingAnomsgtxt) {
+      Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
     Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
       String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
@@ -317,7 +309,7 @@ public class TestUtilities {
   }
 
   public static File findComparisonFile(File testFile) {
-    final File comparisonFile =
+    File comparisonFile =
         new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
     return comparisonFile;
   }
@@ -349,7 +341,7 @@ public class TestUtilities {
    * @param lines what lines to write
    */
   public static void writeLines(File file, Iterable<?> lines) {
-    try (final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
       Iterator<?> iter = lines.iterator();
       while (iter.hasNext()) {
         Object next = iter.next();

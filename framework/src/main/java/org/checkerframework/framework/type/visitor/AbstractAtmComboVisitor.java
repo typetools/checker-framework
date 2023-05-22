@@ -60,8 +60,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
    * @param param a value passed to every visit method
    * @return the result of calling the more specific {@code visit*} method
    */
-  public RETURN_TYPE visit(
-      final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2, PARAM param) {
+  public RETURN_TYPE visit(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
     return AtmCombo.accept(type1, type2, param, this);
   }
 

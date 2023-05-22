@@ -590,10 +590,10 @@ public class Range {
           Arrays.asList(from * right.from, from * right.to, to * right.from, to * right.to);
       return create(possibleValues);
     } else {
-      final BigInteger bigLeftFrom = BigInteger.valueOf(from);
-      final BigInteger bigRightFrom = BigInteger.valueOf(right.from);
-      final BigInteger bigRightTo = BigInteger.valueOf(right.to);
-      final BigInteger bigLeftTo = BigInteger.valueOf(to);
+      BigInteger bigLeftFrom = BigInteger.valueOf(from);
+      BigInteger bigRightFrom = BigInteger.valueOf(right.from);
+      BigInteger bigRightTo = BigInteger.valueOf(right.to);
+      BigInteger bigLeftTo = BigInteger.valueOf(to);
       List<BigInteger> bigPossibleValues =
           Arrays.asList(
               bigLeftFrom.multiply(bigRightFrom),

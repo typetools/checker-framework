@@ -1112,7 +1112,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    final String defaultFormat = "(" + messageKey + ")";
+    String defaultFormat = "(" + messageKey + ")";
     String fmtString;
     if (this.processingEnv.getOptions() != null /*nnbug*/
         && this.processingEnv.getOptions().containsKey("nomsgtext")) {
@@ -2136,8 +2136,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return whether conservative defaults should be used
    */
   public boolean useConservativeDefault(String kindOfCode) {
-    final boolean useUncheckedDefaultsForSource = false;
-    final boolean useUncheckedDefaultsForByteCode = false;
+    boolean useUncheckedDefaultsForSource = false;
+    boolean useUncheckedDefaultsForByteCode = false;
     String option = this.getOption("useConservativeDefaultsForUncheckedCode");
     // Temporary, for backward compatibility.
     if (option == null) {
@@ -2709,8 +2709,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     String branch = gitProperties.getProperty("git.branch");
     if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
+      // Sometimes the branch is HEAD, which is not informative.
+      // How does that happen, and how can I fix it?
       version += ", branch " + branch;
-      version += ", commit " + gitProperties.getProperty("git.commit.id");
+      // For brevity, only date but not time of day.
+      version += ", " + gitProperties.getProperty("git.commit.time").substring(0, 10);
+      version += ", commit " + gitProperties.getProperty("git.commit.id.abbrev");
     }
     return version;
   }

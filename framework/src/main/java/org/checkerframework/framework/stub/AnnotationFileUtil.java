@@ -134,8 +134,8 @@ public class AnnotationFileUtil {
       return findDeclaration(className, indexFile.getCompilationUnits().get(0));
     }
 
-    final String packageName = className.substring(0, indexOfDot);
-    final String simpleName = className.substring(indexOfDot + 1);
+    String packageName = className.substring(0, indexOfDot);
+    String simpleName = className.substring(indexOfDot + 1);
 
     for (CompilationUnit cu : indexFile.getCompilationUnits()) {
       if (cu.getPackageDeclaration().isPresent()
@@ -461,14 +461,7 @@ public class AnnotationFileUtil {
       }
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
-      Arrays.sort(
-          directoryContents,
-          new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-              return o1.getName().compareTo(o2.getName());
-            }
-          });
+      Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
         addAnnotationFilesToList(enclosed, resources, fileType);
       }

@@ -802,7 +802,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         boolean old = shouldCache;
         shouldCache = false;
-        final AnnotatedTypeMirror t = getAnnotatedType(a);
+        AnnotatedTypeMirror t = getAnnotatedType(a);
         shouldCache = old;
         allInitialized &= (isInitialized(t) || isFbcBottom(t));
       }

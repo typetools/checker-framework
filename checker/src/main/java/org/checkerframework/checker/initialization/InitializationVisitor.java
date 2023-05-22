@@ -97,7 +97,7 @@ public class InitializationVisitor<
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -126,11 +126,11 @@ public class InitializationVisitor<
             err = "initialization.field.write.unknown";
           }
           checker.reportError(varTree, err, varTree);
-          return; // prevent issuing another errow about subtyping
+          return false; // prevent issuing another error about subtyping
         }
       }
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   @Override
@@ -162,7 +162,7 @@ public class InitializationVisitor<
       AnnotationMirror inferredAnnotation,
       CFAbstractStore<?, ?> store) {
     // also use the information about initialized fields to check contracts
-    final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+    AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)
         || !(expr instanceof FieldAccess)) {
@@ -279,7 +279,7 @@ public class InitializationVisitor<
             store.addInitializedField(fieldInitialValue.fieldDecl.getField());
           }
         }
-        final List<VariableTree> init =
+        List<VariableTree> init =
             atypeFactory.getInitializedInvariantFields(store, getCurrentPath());
         initializedFields.addAll(init);
       }
