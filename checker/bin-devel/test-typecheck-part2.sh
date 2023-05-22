@@ -11,5 +11,5 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$SCRIPTDIR"/build.sh
 
 
-
-./gradlew inferenceTests --console=plain --warning-mode=all
+# Pluggable type-checking:  run the Checker Framework on itself
+./gradlew typecheck-part2 --console=plain --warning-mode=all

@@ -30,12 +30,14 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.interning.qual.InternMethod;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -935,7 +937,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    *
    * @return the type to check
    */
-  DeclaredType typeToCheck() {
+  @Nullable DeclaredType typeToCheck(
+      @UnknownInitialization(BaseTypeVisitor.class) InterningVisitor this) {
     @SuppressWarnings("signature:assignment") // user input
     @CanonicalName String className = checker.getOption("checkclass");
     if (className == null) {

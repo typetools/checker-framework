@@ -25,46 +25,6 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
 
-  /**
-   * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code from}
-   * will be used everywhere they exist, but annotations in {@code to} will be kept anywhere that
-   * {@code from} is unannotated.
-   *
-   * @param from the annotated type mirror from which to take new annotations
-   * @param to the annotated type mirror to which the annotations will be added
-   * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
-   *     AnnotatedTypeMirror)} instead.
-   */
-  @Deprecated // 2021-03-25
-  @SuppressWarnings("interning:not.interned") // assertion
-  public static void replace(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-    if (from == to) {
-      throw new BugInCF("From == to");
-    }
-    new AnnotatedTypeReplacer().visit(from, to);
-  }
-
-  /**
-   * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
-   * Annotations from {@code from} will be used everywhere they exist, but annotations in {@code to}
-   * will be kept anywhere that {@code from} is unannotated.
-   *
-   * @param from the annotated type mirror from which to take new annotations
-   * @param to the annotated type mirror to which the annotations will be added
-   * @param top the top type of the hierarchy whose annotations will be added
-   * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
-   *     AnnotatedTypeMirror, AnnotationMirror)} instead.
-   */
-  @Deprecated // 2021-03-25
-  @SuppressWarnings("interning:not.interned") // assertion
-  public static void replace(
-      AnnotatedTypeMirror from, AnnotatedTypeMirror to, AnnotationMirror top) {
-    if (from == to) {
-      throw new BugInCF("from == to: %s", from);
-    }
-    new AnnotatedTypeReplacer(top).visit(from, to);
-  }
-
   /** If top != null we replace only the annotations in the hierarchy of top. */
   private AnnotationMirror top;
 

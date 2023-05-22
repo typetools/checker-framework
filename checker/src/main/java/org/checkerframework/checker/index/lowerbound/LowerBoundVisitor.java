@@ -59,7 +59,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
@@ -67,6 +67,8 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
 
     // check that when an assignment to a variable declared as @HasSubsequence(a, from, to)
     // occurs, from is non-negative.
+
+    boolean result = true;
 
     Subsequence subSeq = Subsequence.getSubsequenceFromTree(varTree, atypeFactory);
     if (subSeq != null) {
@@ -83,9 +85,11 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
               || atypeFactory.areSameByClass(anm, Positive.class))) {
         checker.reportError(
             valueTree, FROM_NOT_NN, subSeq.from, anm == null ? "@LowerBoundUnknown" : anm);
+        result = false;
       }
     }
 
-    super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
+    result = super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs) && result;
+    return result;
   }
 }
