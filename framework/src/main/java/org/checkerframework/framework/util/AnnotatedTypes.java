@@ -565,7 +565,7 @@ public class AnnotatedTypes {
         (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
     base = (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(base);
 
-    final List<AnnotatedTypeVariable> ownerParams =
+    List<AnnotatedTypeVariable> ownerParams =
         new ArrayList<>(enclosingType.getTypeArguments().size());
     for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
       if (typeParam.getKind() != TypeKind.TYPEVAR) {
@@ -609,7 +609,7 @@ public class AnnotatedTypes {
   private static AnnotatedTypeMirror substituteUninferredTypeArgs(
       AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
     TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
-    final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+    Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
     while (enclosingClassOfMember != null) {
       if (!enclosingClassOfMember.getTypeParameters().isEmpty()) {
@@ -675,9 +675,9 @@ public class AnnotatedTypes {
    */
   public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
       Elements elements, AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    final TypeElement elem = (TypeElement) method.getEnclosingElement();
-    final AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(elem);
-    final Collection<AnnotatedDeclaredType> supertypes = getSuperTypes(type);
+    TypeElement elem = (TypeElement) method.getEnclosingElement();
+    AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(elem);
+    Collection<AnnotatedDeclaredType> supertypes = getSuperTypes(type);
     return overriddenMethods(elements, method, supertypes);
   }
 
@@ -730,20 +730,20 @@ public class AnnotatedTypes {
    *     invocation
    */
   public static Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
-      final ProcessingEnvironment processingEnv,
-      final AnnotatedTypeFactory atypeFactory,
-      final ExpressionTree expr,
-      final ExecutableElement elt,
-      final AnnotatedExecutableType preType) {
+      ProcessingEnvironment processingEnv,
+      AnnotatedTypeFactory atypeFactory,
+      ExpressionTree expr,
+      ExecutableElement elt,
+      AnnotatedExecutableType preType) {
     return findTypeArguments(processingEnv, atypeFactory, expr, elt, preType, true);
   }
 
   public static Pair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
-      final ProcessingEnvironment processingEnv,
-      final AnnotatedTypeFactory atypeFactory,
-      final ExpressionTree expr,
-      final ExecutableElement elt,
-      final AnnotatedExecutableType preType,
+      ProcessingEnvironment processingEnv,
+      AnnotatedTypeFactory atypeFactory,
+      ExpressionTree expr,
+      ExecutableElement elt,
+      AnnotatedExecutableType preType,
       boolean inferTypeArgs) {
 
     if (expr.getKind() != Kind.MEMBER_REFERENCE
@@ -1138,11 +1138,11 @@ public class AnnotatedTypes {
     List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
     boolean hasVarArg = methodType.getElement().isVarArgs();
 
-    final int lastIndex = parameterTypes.size() - 1;
-    final AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
-    final boolean parameterBeforeVarargs = index < lastIndex;
+    int lastIndex = parameterTypes.size() - 1;
+    AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
+    boolean parameterBeforeVarargs = index < lastIndex;
     if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
-      final AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
+      AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
       if (hasVarArg) {
         return arrayType.getComponentType();
       }
@@ -1283,7 +1283,7 @@ public class AnnotatedTypes {
     if (atm.getKind() != TypeKind.DECLARED) {
       return false;
     }
-    final AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
+    AnnotatedTypeMirror.AnnotatedDeclaredType declaredType =
         (AnnotatedTypeMirror.AnnotatedDeclaredType) atm;
 
     Symbol.ClassSymbol classSymbol =
@@ -1299,7 +1299,7 @@ public class AnnotatedTypes {
 
   public static boolean isEnum(final AnnotatedTypeMirror typeMirror) {
     if (typeMirror.getKind() == TypeKind.DECLARED) {
-      final AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeMirror;
+      AnnotatedDeclaredType adt = (AnnotatedDeclaredType) typeMirror;
       return TypesUtils.isDeclaredOfName(adt.getUnderlyingType(), java.lang.Enum.class.getName());
     }
 
@@ -1307,7 +1307,7 @@ public class AnnotatedTypes {
   }
 
   public static boolean isDeclarationOfJavaLangEnum(
-      final Types types, final Elements elements, final AnnotatedTypeMirror typeMirror) {
+      Types types, Elements elements, AnnotatedTypeMirror typeMirror) {
     if (isEnum(typeMirror)) {
       return elements
           .getTypeElement(Enum.class.getCanonicalName())
@@ -1330,7 +1330,7 @@ public class AnnotatedTypes {
   // because this method has 3 arguments.
   )
   public static boolean haveSameDeclaration(
-      Types types, final AnnotatedTypeVariable typeVar1, final AnnotatedTypeVariable typeVar2) {
+      Types types, AnnotatedTypeVariable typeVar1, AnnotatedTypeVariable typeVar2) {
 
     if (typeVar1.getUnderlyingType() == typeVar2.getUnderlyingType()) {
       return true;
