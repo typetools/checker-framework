@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Checker Framework ideas for new contributors</title>
+  <title>Projects for new contributors</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- This link works on the web, but not from the file system. -->
@@ -408,7 +408,7 @@ some other library, properly handles signature strings.
 <h2 id="optional-case-study">Detecting errors in use of the Optional class</h2>
 
 <!-- This project is duplicated in the highlight section and in
-the Checker Framework's new-contributor-ideas.html.html . -->
+the Checker Framework's new-contributor-projects.html . -->
 
 <p>
 Java 8 introduced the
@@ -470,7 +470,7 @@ https://checkerframework.org/manual/#handling-warnings .
 <h2 id="case-study-signedness">Preventing mixed signed/unsigned computations</h2>
 
 <!-- This project is duplicated in the highlight section and in
-  the Checker Framework's new-contributor-ideas.html.html . -->
+  the Checker Framework's new-contributor-projects.html . -->
 
 <p>
 An unsigned integer's bits are interpreted differently than a signed
@@ -953,7 +953,7 @@ to the world, and a scientific paper can be written.
 <h2 id="custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</h2>
 
 <!-- This project is duplicated in the highlight section and in the Checker
-  Framework's new-contributor-ideas.html.html . -->
+  Framework's new-contributor-projects.html . -->
 
 <p>
 Many security vulnerabilities result from use of untrusted data without sanitizing it first.
@@ -1028,7 +1028,7 @@ For some microbenchmarks, see the Juliette test suite for Java from CWE.
 <h2 id="track-unsupported-operations">Warn about unsupported operations</h2>
 
 <!-- This project is duplicated in the highlight section and in the Checker
- Framework's new-contributor-ideas.html.html. -->
+ Framework's new-contributor-projects.html. -->
 
 <p>
 In Java, some objects do not fully implement their interface; they
@@ -1229,6 +1229,14 @@ A naive solution would be to invalidate these types any time a method is called 
 Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
 the information in the type when a method like add or remove is called on <code>data_structure</code>.
 A more complete solution might involve some special annotations on List that permit the information to be persisted.
+</p>
+
+<p>
+Another approach would be to run a pointer analysis before type-checking,
+then use that information for precise information about what lists might be
+changed by each call to <code>add</code> or <code>remove</code>.  One
+possible pointer analysis would be that
+of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
 </p>
 
 <p>
@@ -1457,7 +1465,7 @@ use it.
 <h2 id="Purity_analysis">Side effect analysis, also known as purity analysis</h2>
 
 <!-- This project is duplicated in the highlight section and in
-the Checker Framework's new-contributor-ideas.html.html . -->
+the Checker Framework's new-contributor-projects.html . -->
 
 <p>
 A side effect analysis reports what side effects a procedure may perform,
