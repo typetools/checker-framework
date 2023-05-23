@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -49,7 +50,11 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
   }
 
   @Override
-  public final boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+  public final boolean isSubtype(
+      AnnotationMirror subAnno,
+      TypeMirror subType,
+      AnnotationMirror superAnno,
+      TypeMirror superType) {
     QualifierKind subKind = getQualifierKind(subAnno);
     QualifierKind superKind = getQualifierKind(superAnno);
     if (subKind.isSubtypeOf(superKind)) {

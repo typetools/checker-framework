@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -103,7 +104,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subtype,
+        AnnotationMirror superAnno,
+        TypeMirror supertype) {
       List<String> subList = getLessThanExpressions(subAnno);
       if (subList == null) {
         return true;
@@ -118,9 +123,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
     @Override
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       }
 
@@ -132,9 +137,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-      if (isSubtype(a1, a2)) {
+      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       }
 

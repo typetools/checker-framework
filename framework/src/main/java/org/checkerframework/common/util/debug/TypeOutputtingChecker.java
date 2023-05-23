@@ -12,6 +12,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -228,14 +229,21 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      public boolean isSubtype(
+          AnnotationMirror subAnno,
+          TypeMirror subType,
+          AnnotationMirror superAnno,
+          TypeMirror superType) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
       public boolean isSubtype(
-          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
+          Collection<? extends AnnotationMirror> rhs,
+          TypeMirror rhsTM,
+          Collection<? extends AnnotationMirror> lhs,
+          TypeMirror lhsTM) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 

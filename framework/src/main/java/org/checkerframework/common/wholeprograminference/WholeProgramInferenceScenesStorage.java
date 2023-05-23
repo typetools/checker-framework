@@ -569,7 +569,8 @@ public class WholeProgramInferenceScenesStorage
     if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
       return;
     }
-    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsATM.getUnderlyingType(), type);
+    TypeMirror rhsTM = rhsATM.getUnderlyingType();
+    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
     if (lhsATM instanceof AnnotatedTypeVariable) {
       AnnotationMirrorSet upperAnnos =
@@ -577,7 +578,9 @@ public class WholeProgramInferenceScenesStorage
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getAnnotations().size()
-          && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+          && atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
         return;
       }
     }

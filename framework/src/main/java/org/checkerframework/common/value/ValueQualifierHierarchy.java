@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
@@ -91,11 +93,14 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return atypeFactory.createStringAnnotation(values);
   }
 
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   @Override
   public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-    if (isSubtype(a1, a2)) {
+    if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
       return a1;
-    } else if (isSubtype(a2, a1)) {
+    } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
       return a2;
     } else {
 
@@ -214,9 +219,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     a1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a1);
     a2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a2);
 
-    if (isSubtype(a1, a2)) {
+    if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
       return a2;
-    } else if (isSubtype(a2, a1)) {
+    } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
       return a1;
     }
     String qual1 = AnnotationUtils.annotationName(a1);
@@ -407,7 +412,11 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
-  public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+  public boolean isSubtype(
+      AnnotationMirror subAnno,
+      TypeMirror subType,
+      AnnotationMirror superAnno,
+      TypeMirror superType) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
     String subQualName = AnnotationUtils.annotationName(subAnno);

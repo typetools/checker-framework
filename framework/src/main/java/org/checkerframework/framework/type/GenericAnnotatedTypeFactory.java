@@ -39,11 +39,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -150,6 +152,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * and {@link AnnotatedTypeFactory#debugGat}.
    */
   private static final boolean debug = false;
+
+  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
+  public static @InternedDistinct TypeMirror alwaysRelevantTM = AlwaysRelevantTypeMirror.it;
 
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
@@ -936,7 +941,6 @@ public abstract class GenericAnnotatedTypeFactory<
   public AnnotationMirror getAnnotationFromJavaExpressionString(
       String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
       throws JavaExpressionParseException {
-
     JavaExpression expressionObj = parseJavaExpressionString(expression, path);
     return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
   }
@@ -1004,7 +1008,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
       throws JavaExpressionParseException {
-
     return StringToJavaExpression.atPath(expression, currentPath, checker);
   }
 
@@ -2366,6 +2369,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
+    if (tm == alwaysRelevantTM) {
+      return true;
+    }
     tm = types.erasure(tm);
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
@@ -2957,5 +2963,49 @@ public abstract class GenericAnnotatedTypeFactory<
     List<String> result =
         AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
     return result;
+  }
+
+  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
+  private static final class AlwaysRelevantTypeMirror implements TypeMirror {
+    /** Create a new AlwaysRelevantTypeMirror. */
+    private AlwaysRelevantTypeMirror() {}
+    /** The singleton AlwaysRelevantTypeMirror. */
+    @SuppressWarnings("interning:assignment") // singleton
+    public static @InternedDistinct AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();
+
+    @Override
+    public List<? extends AnnotationMirror> getAnnotationMirrors() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public boolean equals(Object t) {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public int hashCode() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public TypeKind getKind() {
+      throw new Error("Do not call");
+    }
+
+    @Override
+    public <R, P> R accept(TypeVisitor<R, P> v, P p) {
+      throw new Error("Do not call");
+    }
   }
 }

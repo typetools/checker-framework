@@ -13,6 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
@@ -161,7 +162,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       }
       return;
     }
-    if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+    TypeMirror valueTM = valueType.getUnderlyingType();
+    if (qualHierarchy.isSubtype(anm, valueTM, type.getAnnotationInHierarchy(UNKNOWN), valueTM)) {
       type.replaceAnnotation(anm);
     }
   }

@@ -306,7 +306,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
   @Override
   protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
-    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet annotationSet = new AnnotationMirrorSet();
     for (AnnotationMirror anno : tops) {
       if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)) {
@@ -654,16 +654,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     // Combine all of the actual parameters into one list of AnnotationMirrors.
 
-    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
-    passedArgAnnotations.add(
-        methodCallReceiver == null
-            ? null
-            : methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+    ArrayList<AnnotatedTypeMirror> passedArgTypes = new ArrayList<>(guardSatisfiedIndex.length);
+    passedArgTypes.add(methodCallReceiver);
     for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
+      passedArgTypes.add(atypeFactory.getAnnotatedType(argTree));
+    }
+    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
+    for (AnnotatedTypeMirror atm : passedArgTypes) {
       passedArgAnnotations.add(
-          atypeFactory
-              .getAnnotatedType(argTree)
-              .getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+          atm == null ? null : atm.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
     }
 
     // Perform the validity check and issue an error if not valid.
@@ -691,12 +690,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
               }
 
+              AnnotatedTypeMirror arg1Type = passedArgTypes.get(i);
+              AnnotatedTypeMirror arg2Type = passedArgTypes.get(j);
+              TypeMirror arg1TM = arg1Type.getUnderlyingType();
+              TypeMirror arg2TM = arg2Type.getUnderlyingType();
+
               if (bothAreGSwithNoIndex
-                  || !(atypeFactory.getQualifierHierarchy().isSubtype(arg1Anno, arg2Anno)
-                      || atypeFactory.getQualifierHierarchy().isSubtype(arg2Anno, arg1Anno))) {
+                  || !(qualHierarchy.isSubtype(arg1Anno, arg1TM, arg2Anno, arg2TM)
+                      || qualHierarchy.isSubtype(arg2Anno, arg2TM, arg1Anno, arg1TM))) {
 
-                String formalParam1 = null;
-
+                String formalParam1;
                 if (i == 0) {
                   formalParam1 = "The receiver type";
                 } else {
@@ -1189,7 +1192,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       return false;
     }
     AnnotationMirrorSet annos = value.getAnnotations();
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy hierarchy = qualHierarchy;
     AnnotationMirror lockAnno =
         hierarchy.findAnnotationInSameHierarchy(annos, atypeFactory.LOCKHELD);
     return lockAnno != null && atypeFactory.areSameByClass(lockAnno, LockHeld.class);

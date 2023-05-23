@@ -67,6 +67,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   protected final BaseTypeVisitor<?> visitor;
   /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory atypeFactory;
+  /** The qualifer hierarchy. */
+  protected final QualifierHierarchy qualHierarchy;
 
   // TODO: clean up coupling between components
   public BaseTypeValidator(
@@ -74,6 +76,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     this.checker = checker;
     this.visitor = visitor;
     this.atypeFactory = atypeFactory;
+    this.qualHierarchy = atypeFactory.getQualifierHierarchy();
   }
 
   /**
@@ -94,8 +97,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    */
   @Override
   public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
-    List<DiagMessage> diagMessages =
-        isValidStructurally(atypeFactory.getQualifierHierarchy(), type);
+    List<DiagMessage> diagMessages = isValidStructurally(qualHierarchy, type);
     if (!diagMessages.isEmpty()) {
       for (DiagMessage d : diagMessages) {
         checker.report(tree, d);
@@ -150,25 +152,25 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *       bounds of type variables and wildcards.
    * </ol>
    *
-   * @param qualifierHierarchy the QualifierHierarchy
+   * @param qualHierarchy the QualifierHierarchy
    * @param type the type to test
    * @return list of reasons the type is invalid, or empty list if the type is valid
    */
   protected List<DiagMessage> isValidStructurally(
-      QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+      QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy> scanner =
         new SimpleAnnotatedTypeScanner<>(
             (atm, q) -> isTopLevelValidType(q, atm),
             DiagMessage::mergeLists,
             Collections.emptyList());
-    return scanner.visit(type, qualifierHierarchy);
+    return scanner.visit(type, qualHierarchy);
   }
 
   /**
    * Checks every property listed in {@link #isValidStructurally}, but only for the top level type.
    * If successful, returns an empty list. If not successful, returns diagnostics.
    *
-   * @param qualifierHierarchy the QualifierHierarchy
+   * @param qualHierarchy the QualifierHierarchy
    * @param type the type to be checked
    * @return the diagnostics indicating failure, or an empty list if successful
    */
@@ -176,12 +178,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   // DiagMessage (with null indicting success) because its caller, isValidStructurally(), expects
   // a list.
   protected List<DiagMessage> isTopLevelValidType(
-      QualifierHierarchy qualifierHierarchy, AnnotatedTypeMirror type) {
+      QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     // multiple annotations from the same hierarchy
     AnnotationMirrorSet annotations = type.getAnnotations();
     AnnotationMirrorSet seenTops = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annotations) {
-      AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
+      AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
       if (AnnotationUtils.containsSame(seenTops, top)) {
         return Collections.singletonList(
             new DiagMessage(Kind.ERROR, "conflicting.annos", annotations, type));
@@ -192,7 +194,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     boolean canHaveEmptyAnnotationSet = QualifierHierarchy.canHaveEmptyAnnotationSet(type);
 
     // wrong number of annotations
-    if (!canHaveEmptyAnnotationSet && seenTops.size() < qualifierHierarchy.getWidth()) {
+    if (!canHaveEmptyAnnotationSet && seenTops.size() < qualHierarchy.getWidth()) {
       return Collections.singletonList(
           new DiagMessage(Kind.ERROR, "too.few.annotations", annotations, type));
     }
@@ -615,21 +617,22 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
-          if (!(atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(
-                      wildcard.getSuperBound().getEffectiveAnnotations(),
-                      wildcard.getExtendsBound().getAnnotations())
-              && atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(
-                      wildcard.getExtendsBound().getAnnotations(),
-                      wildcard.getSuperBound().getEffectiveAnnotations()))) {
+          AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+          TypeMirror superBoundTM = superBound.getUnderlyingType();
+          AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
+          TypeMirror extendsBoundTM = extendsBound.getUnderlyingType();
+          if (!(qualHierarchy.isSubtype(
+                  superBound.getEffectiveAnnotations(),
+                  superBoundTM,
+                  extendsBound.getAnnotations(),
+                  extendsBoundTM)
+              && qualHierarchy.isSubtype(
+                  extendsBound.getAnnotations(),
+                  extendsBoundTM,
+                  superBound.getEffectiveAnnotations(),
+                  superBoundTM))) {
             checker.reportError(
-                tree.getTypeArguments().get(i),
-                "super.wildcard",
-                wildcard.getExtendsBound(),
-                wildcard.getSuperBound());
+                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
           }
         }
       }
@@ -681,14 +684,17 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *     the lowerBound
    */
   public boolean areBoundsValid(AnnotatedTypeMirror upperBound, AnnotatedTypeMirror lowerBound) {
-    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet upperBoundAnnos =
-        AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, upperBound);
+        AnnotatedTypes.findEffectiveAnnotations(qualHierarchy, upperBound);
     AnnotationMirrorSet lowerBoundAnnos =
-        AnnotatedTypes.findEffectiveAnnotations(qualifierHierarchy, lowerBound);
+        AnnotatedTypes.findEffectiveAnnotations(qualHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
+      return qualHierarchy.isSubtype(
+          lowerBoundAnnos,
+          lowerBound.getUnderlyingType(),
+          upperBoundAnnos,
+          upperBound.getUnderlyingType());
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report

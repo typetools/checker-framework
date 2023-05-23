@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexChecker;
@@ -447,10 +448,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * element of lhs.
      */
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
-      UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
-      return subtype.isSubtype(supertype);
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subtype,
+        AnnotationMirror superAnno,
+        TypeMirror supertype) {
+      UBQualifier subtypeQual = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
+      UBQualifier supertypeQual = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
+      return subtypeQual.isSubtype(supertypeQual);
     }
   }
 

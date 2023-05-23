@@ -5,12 +5,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -116,8 +118,37 @@ public interface QualifierHierarchy {
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
    */
-  boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+  @Deprecated // 2023-05-17
+  default boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+    throw new TypeSystemError("isSubtype is not implemented");
+  }
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
+   * not necessarily in a Java subtyping relationship with one another and are only used by this
+   * method for special cases when qualiifer subtyping depends on the Java basetype.
+   *
+   * @param subQualifier possible subqualifier
+   * @param subType the Java basetype associated with {@code subQualifier}
+   * @param superQualifier possible superqualifier
+   * @param superType the Java basetype associated with {@code superQualifier}
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  default boolean isSubtype(
+      AnnotationMirror subQualifier,
+      TypeMirror subType,
+      AnnotationMirror superQualifier,
+      TypeMirror superType) {
+    // This implementation calls the deprecated method because otherwise there would be no point in
+    // deprecation -- we might as well just force clients to rewrite their code.
+    // More specifically, the framework calls the 4-argument version, but a legacy type system
+    // implementation does not implement the 4-argument version.  This default implementation
+    // bridges that difference.
+    return isSubtype(subQualifier, superQualifier);
+  }
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
@@ -127,7 +158,9 @@ public interface QualifierHierarchy {
    * @param superQualifiers set of qualifiers; exactly one per hierarchy
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
+   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror)}
    */
+  @Deprecated // 2023-05-17
   default boolean isSubtype(
       Collection<? extends AnnotationMirror> subQualifiers,
       Collection<? extends AnnotationMirror> superQualifiers) {
@@ -140,6 +173,43 @@ public interface QualifierHierarchy {
             subQual, StringsPlume.join(",", superQualifiers));
       }
       if (!isSubtype(subQual, superQual)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
+   * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
+   * only used by this method for special cases when qualiifer subtyping depends on the Java
+   * basetype.
+   *
+   * <p>Subtypes more often override {@link #isSubtype(AnnotationMirror, TypeMirror,
+   * AnnotationMirror, TypeMirror)} than this method.
+   *
+   * @param subQualifiers set of qualifiers; exactly one per hierarchy
+   * @param subType the type associated with {@code subQualifiers}
+   * @param superQualifiers set of qualifiers; exactly one per hierarchy
+   * @param superType the type associated with {@code superQualifiers}
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   *     qualifier in the same hierarchy in {@code superQualifiers}
+   */
+  default boolean isSubtype(
+      Collection<? extends AnnotationMirror> subQualifiers,
+      TypeMirror subType,
+      Collection<? extends AnnotationMirror> superQualifiers,
+      TypeMirror superType) {
+    assertSameSize(subQualifiers, superQualifiers);
+    for (AnnotationMirror subQual : subQualifiers) {
+      AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
+      if (superQual == null) {
+        throw new BugInCF(
+            "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
+            subQual, StringsPlume.join(",", superQualifiers));
+      }
+      if (!isSubtype(subQual, subType, superQual, superType)) {
         return false;
       }
     }

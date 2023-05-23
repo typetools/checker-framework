@@ -72,6 +72,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -2115,6 +2116,9 @@ class MustCallConsistencyAnalyzer {
     return qualifiedName.startsWith("java");
   }
 
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
@@ -2130,7 +2134,9 @@ class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
+    return typeFactory
+        .getQualifierHierarchy()
+        .isSubtype(cmAnno, alwaysRelevantTM, cmAnnoForMustCallMethods, alwaysRelevantTM);
   }
 
   /**

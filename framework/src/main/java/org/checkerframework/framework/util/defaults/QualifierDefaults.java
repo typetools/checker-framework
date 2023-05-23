@@ -25,6 +25,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -353,6 +354,9 @@ public class QualifierDefaults {
     }
   }
 
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -360,7 +364,7 @@ public class QualifierDefaults {
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
         AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-        if (qualHierarchy.isSubtype(newAnno, previousTop)) {
+        if (qualHierarchy.isSubtype(newAnno, alwaysRelevantTM, previousTop, alwaysRelevantTM)) {
           return true;
         }
       }

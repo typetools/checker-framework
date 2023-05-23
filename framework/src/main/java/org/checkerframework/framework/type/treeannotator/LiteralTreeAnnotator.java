@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -251,8 +252,9 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
           res = qualHierarchy.greatestLowerBounds(res, sam);
         }
         // Verify that res is not a subtype of any type in nonMatches
+        TypeMirror tm = type.getUnderlyingType();
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
-          if (qualHierarchy.isSubtype(res, sam)) {
+          if (qualHierarchy.isSubtype(res, tm, sam, tm)) {
             String matchesOnePerLine = "";
             for (Set<? extends AnnotationMirror> match : matches) {
               matchesOnePerLine += System.lineSeparator() + "     " + match;

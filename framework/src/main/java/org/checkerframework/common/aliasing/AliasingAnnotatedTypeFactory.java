@@ -5,6 +5,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
@@ -113,7 +114,11 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtype(
+        AnnotationMirror subAnno,
+        TypeMirror subType,
+        AnnotationMirror superAnno,
+        TypeMirror superType) {
       if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
         // @LeakedToResult and @NonLeaked were supposed to be non-type-qualifiers
         // annotations.
@@ -122,7 +127,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // type qualifiers but the warnings related to the hierarchy are ignored.
         return true;
       }
-      return super.isSubtype(subAnno, superAnno);
+      return super.isSubtype(subAnno, subType, superAnno, superType);
     }
   }
 }

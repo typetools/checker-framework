@@ -261,6 +261,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
 
   /** Represent the annotation relations. */
+  // This field cannot be final because it is set in `postInit()`.
   protected QualifierHierarchy qualHierarchy;
 
   /** Represent the type relations. */
@@ -2518,11 +2519,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotationMirrorSet newAnnos = new AnnotationMirrorSet();
     AnnotationMirrorSet receiverTypeBoundAnnos =
         getTypeDeclarationBounds(receiverType.getErased().getUnderlyingType());
+    TypeMirror receiverTM = receiverType.getUnderlyingType();
     AnnotationMirrorSet wildcardBoundAnnos = classWildcardArg.getExtendsBound().getAnnotations();
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
-      if (qualHierarchy.isSubtype(receiverTypeBoundAnno, wildcardAnno)) {
+      if (qualHierarchy.isSubtype(receiverTypeBoundAnno, receiverTM, wildcardAnno, receiverTM)) {
         newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);
@@ -2796,7 +2798,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in
       // this location:
       //   new @HERE Class() {}
-      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+      // are not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annoTrees =
           newClassTree.getClassBody().getModifiers().getAnnotations();
       // Add the annotations to an AnnotatedTypeMirror removes the annotations that are not

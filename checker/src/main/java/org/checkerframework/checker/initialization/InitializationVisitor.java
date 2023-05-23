@@ -164,7 +164,7 @@ public class InitializationVisitor<
     // also use the information about initialized fields to check contracts
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
-    if (!atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno, necessaryAnnotation)
+    if (!qualHierarchy.isSubtype(invariantAnno, expr.getType(), necessaryAnnotation, expr.getType())
         || !(expr instanceof FieldAccess)) {
       return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
     }
@@ -245,7 +245,9 @@ public class InitializationVisitor<
       isSubtype = true;
     } else {
       assert exprAnno != null && castAnno != null;
-      isSubtype = atypeFactory.getQualifierHierarchy().isSubtype(exprAnno, castAnno);
+      isSubtype =
+          qualHierarchy.isSubtype(
+              exprAnno, exprType.getUnderlyingType(), castAnno, castType.getUnderlyingType());
     }
 
     if (!isSubtype) {
