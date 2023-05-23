@@ -835,16 +835,17 @@ public class AnnotatedTypes {
         TypesUtils.greatestLowerBound(
             type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
     Types types = atypeFactory.types;
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
-      return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
+      return glbSubtype(qualHierarchy, type1, type2);
     } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
-      return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
+      return glbSubtype(qualHierarchy, type2, type1);
     }
 
     if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
-      return glbSubtype(atypeFactory.getQualifierHierarchy(), type1, type2);
+      return glbSubtype(qualHierarchy, type1, type2);
     } else if (types.isSameType(type2.getUnderlyingType(), glbJava)) {
-      return glbSubtype(atypeFactory.getQualifierHierarchy(), type2, type1);
+      return glbSubtype(qualHierarchy, type2, type1);
     }
 
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
@@ -854,7 +855,6 @@ public class AnnotatedTypes {
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
-    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet set1 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
     AnnotationMirrorSet set2 =
@@ -1631,24 +1631,25 @@ public class AnnotatedTypes {
       }
     }
 
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+
     // Collect all polymorphic qualifiers; we should substitute them.
     AnnotationMirrorSet polys = new AnnotationMirrorSet();
     for (AnnotationMirror anno : returnType.getAnnotations()) {
-      if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
+      if (qualHierarchy.isPolymorphicQualifier(anno)) {
         polys.add(anno);
       }
     }
 
     for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
-      AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
+      AnnotationMirror ctatop = qualHierarchy.getTopAnnotation(cta);
       if (returnType.isAnnotatedInHierarchy(cta)) {
         continue;
       }
       if (atypeFactory.isSupportedQualifier(cta) && !returnType.isAnnotatedInHierarchy(cta)) {
         for (AnnotationMirror fromDecl : decret) {
           if (atypeFactory.isSupportedQualifier(fromDecl)
-              && AnnotationUtils.areSame(
-                  ctatop, atypeFactory.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
+              && AnnotationUtils.areSame(ctatop, qualHierarchy.getTopAnnotation(fromDecl))) {
             returnType.addAnnotation(cta);
             break;
           }
@@ -1658,8 +1659,7 @@ public class AnnotatedTypes {
       // Go through the polymorphic qualifiers and see whether
       // there is anything left to replace.
       for (AnnotationMirror pa : polys) {
-        if (AnnotationUtils.areSame(
-            ctatop, atypeFactory.getQualifierHierarchy().getTopAnnotation(pa))) {
+        if (AnnotationUtils.areSame(ctatop, qualHierarchy.getTopAnnotation(pa))) {
           returnType.replaceAnnotation(cta);
           break;
         }
