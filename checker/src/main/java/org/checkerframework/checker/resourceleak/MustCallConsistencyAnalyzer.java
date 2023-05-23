@@ -2013,8 +2013,28 @@ class MustCallConsistencyAnalyzer {
       Obligation obligation, CFStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+
+    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
+    if (mustCallValue == null) {
+      // Report the error at the first alias' definition. This choice is arbitrary but
+      // consistent.
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.known",
+              firstAlias.reference.toString(),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
+        }
+      }
+      return;
+    }
     // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue == null || mustCallValue.isEmpty()) {
+    if (mustCallValue.isEmpty()) {
       return;
     }
 
