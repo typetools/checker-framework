@@ -284,7 +284,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHierarchy = this.qualHierarchy;
+      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
@@ -308,7 +308,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       canonical = atypeFactory.canonicalAnnotation(p);
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHierarchy = this.qualHierarchy;
+      QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
           qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
       if (anno != null) {
@@ -716,7 +716,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getAnnotationInHierarchy(a);
-    QualifierHierarchy qualHierarchy = this.qualHierarchy;
+    QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
     if (prev != null && !prev.equals(qualHierarchy.getTopAnnotation(a))) {
       return this.removeAnnotation(prev);
     }
@@ -2292,7 +2292,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       AnnotationMirrorSet annos = new AnnotationMirrorSet();
       for (AnnotatedTypeMirror bound : getBounds()) {
         for (AnnotationMirror a : bound.getAnnotations()) {
-          if (qualHierarchy.findAnnotationInSameHierarchy(annos, a) == null) {
+          if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)
+              == null) {
             annos.add(a);
           }
         }

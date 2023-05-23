@@ -87,7 +87,7 @@ public class ValueTransfer extends CFTransfer {
   public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     atypeFactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
-    qualhierarchy = atypeFactory.getQualifierHierarchy();
+    qualHierarchy = atypeFactory.getQualifierHierarchy();
     nonNullStringsConcatenation =
         atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
   }

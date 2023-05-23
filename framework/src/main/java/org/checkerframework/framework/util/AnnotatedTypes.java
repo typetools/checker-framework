@@ -835,6 +835,7 @@ public class AnnotatedTypes {
         TypesUtils.greatestLowerBound(
             type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
     Types types = atypeFactory.types;
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
       return glbSubtype(qualHierarchy, type1, type2);
     } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
@@ -854,7 +855,6 @@ public class AnnotatedTypes {
               + "type1: %s, type2: %s",
           glbJava.getKind(), glbJava, type1, type2);
     }
-    QualifierHierarchy qualHierarchy = qualHierarchy;
     AnnotationMirrorSet set1 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
     AnnotationMirrorSet set2 =
@@ -1639,20 +1639,21 @@ public class AnnotatedTypes {
     // Collect all polymorphic qualifiers; we should substitute them.
     AnnotationMirrorSet polys = new AnnotationMirrorSet();
     for (AnnotationMirror anno : returnType.getAnnotations()) {
-      if (qualHierarchy.isPolymorphicQualifier(anno)) {
+      if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(anno)) {
         polys.add(anno);
       }
     }
 
     for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
-      AnnotationMirror ctatop = qualHierarchy.getTopAnnotation(cta);
+      AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
       if (returnType.isAnnotatedInHierarchy(cta)) {
         continue;
       }
       if (atypeFactory.isSupportedQualifier(cta) && !returnType.isAnnotatedInHierarchy(cta)) {
         for (AnnotationMirror fromDecl : decret) {
           if (atypeFactory.isSupportedQualifier(fromDecl)
-              && AnnotationUtils.areSame(ctatop, qualHierarchy.getTopAnnotation(fromDecl))) {
+              && AnnotationUtils.areSame(
+                  ctatop, atypeFactory.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
             returnType.addAnnotation(cta);
             break;
           }
@@ -1662,7 +1663,8 @@ public class AnnotatedTypes {
       // Go through the polymorphic qualifiers and see whether
       // there is anything left to replace.
       for (AnnotationMirror pa : polys) {
-        if (AnnotationUtils.areSame(ctatop, qualHierarchy.getTopAnnotation(pa))) {
+        if (AnnotationUtils.areSame(
+            ctatop, atypeFactory.getQualifierHierarchy().getTopAnnotation(pa))) {
           returnType.replaceAnnotation(cta);
           break;
         }

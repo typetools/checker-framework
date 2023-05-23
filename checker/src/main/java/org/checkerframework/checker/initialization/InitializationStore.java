@@ -64,7 +64,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
         (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
-    QualifierHierarchy qualHierarchy = qualHierarchy;
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     // Remember fields that have the 'invariant' annotation in the store.

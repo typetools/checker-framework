@@ -578,8 +578,9 @@ public class WholeProgramInferenceScenesStorage
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
       if (upperAnnos.size() == rhsATM.getAnnotations().size()
-          && qualHierarchy.isSubtype(
-              rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
+          && atypeFactory
+              .getQualifierHierarchy()
+              .isSubtype(rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
         return;
       }
     }
@@ -637,7 +638,7 @@ public class WholeProgramInferenceScenesStorage
       // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
-        amSource = qualHierarchy.leastUpperBound(amSource, amJaif);
+        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
       }
       annosToReplace.add(amSource);
     }

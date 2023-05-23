@@ -79,7 +79,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert validateSet(this.getAnnotations(), this.getUnderlyingType(), qualHierarchy)
+    assert validateSet(
+            this.getAnnotations(), this.getUnderlyingType(), atypeFactory.getQualifierHierarchy())
         : "Encountered invalid type: "
             + underlyingType
             + " annotations: "

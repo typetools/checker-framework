@@ -108,7 +108,8 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
     AnnotationMirror explicitCalledMethodsAnno =
         builderBuildType
             .getReceiverType()
-            .getAnnotationInHierarchy(qualHierarchy.getTopAnnotation(newCalledMethodsAnno));
+            .getAnnotationInHierarchy(
+                atypeFactory.getQualifierHierarchy().getTopAnnotation(newCalledMethodsAnno));
     if (explicitCalledMethodsAnno == null) {
       builderBuildType.getReceiverType().addAnnotation(newCalledMethodsAnno);
     }

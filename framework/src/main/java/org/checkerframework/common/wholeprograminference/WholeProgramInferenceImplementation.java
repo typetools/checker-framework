@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -1004,6 +1005,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // current type in the source code, do nothing.
       TypeMirror rhsTM = rhsATM.getUnderlyingType();
       TypeMirror declTM = decl.getUnderlyingType();
+      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       for (AnnotationMirror anno : rhsATM.getAnnotations()) {
         AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
         if (qualHierarchy.isSubtype(anno, rhsTM, upperAnno, declTM)) {
@@ -1112,7 +1114,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
       if (amAjava != null) {
-        amSource = qualHierarchy.leastUpperBound(amSource, amAjava);
+        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
       }
       annosToReplace.add(amSource);
     }
