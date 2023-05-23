@@ -762,18 +762,23 @@ public class WholeProgramInferenceJavaParserStorage
               className = classNameKey;
             } else {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-              className = ElementUtils.getBinaryName(classElt);
+              if (classElt == null) {
+                className = null;
+              } else {
+                className = ElementUtils.getBinaryName(classElt);
 
-              for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
-                String supertypeName = ElementUtils.getBinaryName(supertypeElement);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> supertypeSet =
-                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
-                supertypeSet.add(supertypeName);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> subtypeSet =
-                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
-                subtypeSet.add(className);
+                for (TypeElement supertypeElement :
+                    ElementUtils.getSuperTypes(classElt, elements)) {
+                  String supertypeName = ElementUtils.getBinaryName(supertypeElement);
+                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                  Set<String> supertypeSet =
+                      supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                  supertypeSet.add(supertypeName);
+                  @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
+                  Set<String> subtypeSet =
+                      subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                  subtypeSet.add(className);
+                }
               }
             }
             ClassOrInterfaceAnnos typeWrapper =
