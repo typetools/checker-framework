@@ -2364,6 +2364,8 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
    *
+   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
    *     Java type
@@ -2390,6 +2392,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * elements of the type).
    *
    * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
+   *
+   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
