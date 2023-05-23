@@ -872,11 +872,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!ElementUtils.isFinal(field)) {
         notFinal.add(fieldName);
       }
-      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(field);
+      AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(field);
 
       List<AnnotationMirror> annos = invariants.getQualifiersFor(field.getSimpleName());
       for (AnnotationMirror invariantAnno : annos) {
-        AnnotationMirror declaredAnno = type.getEffectiveAnnotationInHierarchy(invariantAnno);
+        AnnotationMirror declaredAnno = fieldType.getEffectiveAnnotationInHierarchy(invariantAnno);
         if (declaredAnno == null) {
           // invariant anno isn't in this hierarchy
           continue;

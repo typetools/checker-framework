@@ -695,7 +695,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                   || !(qualHierarchy.isSubtype(arg1Anno, arg2Anno)
                       || qualHierarchy.isSubtype(arg2Anno, arg1Anno))) {
 
-                String formalParam1 = null;
+                String formalParam1;
 
                 if (i == 0) {
                   formalParam1 = "The receiver type";
