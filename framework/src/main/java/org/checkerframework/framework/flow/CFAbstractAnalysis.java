@@ -41,7 +41,7 @@ public abstract class CFAbstractAnalysis<
         T extends CFAbstractTransfer<V, S, T>>
     extends ForwardAnalysisImpl<V, S, T> {
   /** The qualifier hierarchy for which to track annotations. */
-  protected final QualifierHierarchy qualifierHierarchy;
+  protected final QualifierHierarchy qualHierarchy;
 
   /** The type hierarchy. */
   protected final TypeHierarchy typeHierarchy;
@@ -112,7 +112,7 @@ public abstract class CFAbstractAnalysis<
     super(maxCountBeforeWidening);
     env = checker.getProcessingEnvironment();
     types = env.getTypeUtils();
-    qualifierHierarchy = factory.getQualifierHierarchy();
+    qualHierarchy = factory.getQualifierHierarchy();
     typeHierarchy = factory.getTypeHierarchy();
     dependentTypesHelper = factory.getDependentTypesHelper();
     this.atypeFactory = factory;
@@ -214,7 +214,7 @@ public abstract class CFAbstractAnalysis<
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualHierarchy)) {
       return null;
     }
     return new CFValue(analysis, annotations, underlyingType);

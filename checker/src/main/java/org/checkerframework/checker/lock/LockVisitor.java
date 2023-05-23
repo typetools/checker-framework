@@ -306,7 +306,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
   @Override
   protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
-    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet annotationSet = new AnnotationMirrorSet();
     for (AnnotationMirror anno : tops) {
       if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)) {
@@ -692,8 +692,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               }
 
               if (bothAreGSwithNoIndex
-                  || !(atypeFactory.getQualifierHierarchy().isSubtype(arg1Anno, arg2Anno)
-                      || atypeFactory.getQualifierHierarchy().isSubtype(arg2Anno, arg1Anno))) {
+                  || !(qualHierarchy.isSubtype(arg1Anno, arg2Anno)
+                      || qualHierarchy.isSubtype(arg2Anno, arg1Anno))) {
 
                 String formalParam1;
 
@@ -1189,7 +1189,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       return false;
     }
     AnnotationMirrorSet annos = value.getAnnotations();
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy hierarchy = qualHierarchy;
     AnnotationMirror lockAnno =
         hierarchy.findAnnotationInSameHierarchy(annos, atypeFactory.LOCKHELD);
     return lockAnno != null && atypeFactory.areSameByClass(lockAnno, LockHeld.class);

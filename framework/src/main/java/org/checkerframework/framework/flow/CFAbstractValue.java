@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -51,6 +52,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;
+  /** The type factory. */
+  protected final AnnotatedTypeFactory atypeFactory;
+  /** The qualifier hierarchy. */
+  protected final QualifierHierarchy qualHierarchy;
 
   /** The underlying (Java) type in this abstract value. */
   protected final TypeMirror underlyingType;
@@ -69,13 +74,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     this.analysis = analysis;
+    this.atypeFactory = analysis.getTypeFactory();
+    this.qualHierarchy = atypeFactory.getQualifierHierarchy();
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
     assert validateSet(
-            this.getAnnotations(),
-            this.getUnderlyingType(),
-            analysis.getTypeFactory().getQualifierHierarchy())
+            this.getAnnotations(), this.getUnderlyingType(), atypeFactory.getQualifierHierarchy())
         : "Encountered invalid type: "
             + underlyingType
             + " annotations: "
@@ -88,19 +93,19 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * @param annos set of annotations
    * @param typeMirror where the annotations are written
-   * @param hierarchy the qualifier hierarchy
+   * @param qualHierarchy the qualifier hierarchy
    * @return true if no annotations are missing
    */
   public static boolean validateSet(
-      AnnotationMirrorSet annos, TypeMirror typeMirror, QualifierHierarchy hierarchy) {
+      AnnotationMirrorSet annos, TypeMirror typeMirror, QualifierHierarchy qualHierarchy) {
 
     if (canBeMissingAnnotations(typeMirror)) {
       return true;
     }
 
     AnnotationMirrorSet missingHierarchy = null;
-    for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
-      AnnotationMirror anno = hierarchy.findAnnotationInHierarchy(annos, top);
+    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+      AnnotationMirror anno = qualHierarchy.findAnnotationInHierarchy(annos, top);
       if (anno == null) {
         if (missingHierarchy == null) {
           missingHierarchy = new AnnotationMirrorSet();
@@ -310,14 +315,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         error = true;
         return null;
       }
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      return hierarchy.findAnnotationInHierarchy(backupSet, top);
+      return qualHierarchy.findAnnotationInHierarchy(backupSet, top);
     }
 
     @Override
     protected @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (analysis
               .getTypeFactory()
               .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
@@ -326,12 +329,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
               .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
         // Both types have qualifier parameters, so they are related by invariance rather
         // than subtyping.
-        if (hierarchy.isSubtype(a, b) && hierarchy.isSubtype(b, a)) {
+        if (qualHierarchy.isSubtype(a, b) && qualHierarchy.isSubtype(b, a)) {
           return b;
         }
-      } else if (hierarchy.isSubtype(a, b)) {
+      } else if (qualHierarchy.isSubtype(a, b)) {
         return a;
-      } else if (hierarchy.isSubtype(b, a)) {
+      } else if (qualHierarchy.isSubtype(b, a)) {
         return b;
       }
       return getBackUpAnnoIn(top);
@@ -359,19 +362,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
 
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
 
       if (!canCombinedSetBeMissingAnnos) {
         return combineTwoAnnotations(annotation, upperBound, top);
       }
       AnnotationMirrorSet lBSet =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
-      AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-      if (hierarchy.isSubtype(upperBound, annotation)) {
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+      AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+      if (qualHierarchy.isSubtype(upperBound, annotation)) {
         // no anno is more specific than anno
         return null;
-      } else if (hierarchy.isSubtype(annotation, lowerBound)) {
+      } else if (qualHierarchy.isSubtype(annotation, lowerBound)) {
         return annotation;
       } else {
         return getBackUpAnnoIn(top);
@@ -423,7 +425,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       V v = (V) this;
       return v;
     }
-    ProcessingEnvironment processingEnv = analysis.getTypeFactory().getProcessingEnv();
+    ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
     TypeMirror lubTypeMirror =
         TypesUtils.leastUpperBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
@@ -463,11 +465,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Override
     protected @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (widen) {
-        return hierarchy.widenedUpperBound(a, b);
+        return qualHierarchy.widenedUpperBound(a, b);
       } else {
-        return hierarchy.leastUpperBound(a, b);
+        return qualHierarchy.leastUpperBound(a, b);
       }
     }
 
@@ -493,7 +494,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (canCombinedSetBeMissingAnnos) {
         // anno is the primary annotation on the use of a type variable. typeVar is a use of
         // the same type variable that does not have a primary annotation. The lub of the
@@ -504,9 +504,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // lub is typeVar with a primary annotation of lub(anno, upperBound), where
         // upperBound is the annotation on the upper bound of typeVar.
         AnnotationMirrorSet lBSet =
-            AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
-        AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
-        if (hierarchy.isSubtype(annotation, lowerBound)) {
+            AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+        AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+        if (qualHierarchy.isSubtype(annotation, lowerBound)) {
           return null;
         } else {
           return combineTwoAnnotations(
@@ -542,7 +542,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       V v = (V) this;
       return v;
     }
-    ProcessingEnvironment processingEnv = analysis.getTypeFactory().getProcessingEnv();
+    ProcessingEnvironment processingEnv = atypeFactory.getProcessingEnv();
     TypeMirror glbTypeMirror =
         TypesUtils.greatestLowerBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
@@ -567,8 +567,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Override
     protected @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      return hierarchy.greatestLowerBound(a, b);
+      return qualHierarchy.greatestLowerBound(a, b);
     }
 
     @Override
@@ -593,7 +592,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
         boolean canCombinedSetBeMissingAnnos) {
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
       if (canCombinedSetBeMissingAnnos) {
         // anno is the primary annotation on the use of a type variable. typeVar is a use of
         // the same type variable that does not have a primary annotation. The glb of the
@@ -604,12 +602,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // glb is typeVar with a primary annotation of glb(anno, lowerBound), where
         // lowerBound is the annotation on the lower bound of typeVar.
         AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
-        if (hierarchy.isSubtype(upperBound, annotation)) {
+        if (qualHierarchy.isSubtype(upperBound, annotation)) {
           return null;
         } else {
           AnnotationMirrorSet lBSet =
-              AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, typeVar);
-          AnnotationMirror lowerBound = hierarchy.findAnnotationInHierarchy(lBSet, top);
+              AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
+          AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
           return combineTwoAnnotations(annotation, lowerBound, top);
         }
       } else {
@@ -658,12 +656,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
       AnnotatedTypeVariable aAtv = getEffectTypeVar(aTypeMirror);
       AnnotatedTypeVariable bAtv = getEffectTypeVar(bTypeMirror);
-      QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-      AnnotationMirrorSet tops = hierarchy.getTopAnnotations();
+      AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
-        AnnotationMirror a = hierarchy.findAnnotationInHierarchy(aSet, top);
-        AnnotationMirror b = hierarchy.findAnnotationInHierarchy(bSet, top);
+        AnnotationMirror a = qualHierarchy.findAnnotationInHierarchy(aSet, top);
+        AnnotationMirror b = qualHierarchy.findAnnotationInHierarchy(bSet, top);
         AnnotationMirror result;
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, b, top);
@@ -748,7 +745,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     } else if (typeMirror.getKind() == TypeKind.TYPEVAR) {
       TypeVariable typevar = ((TypeVariable) typeMirror);
-      AnnotatedTypeMirror atm = analysis.getTypeFactory().getAnnotatedType(typevar.asElement());
+      AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(typevar.asElement());
       return (AnnotatedTypeVariable) atm;
     } else {
       return null;
