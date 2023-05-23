@@ -2348,12 +2348,17 @@ public abstract class GenericAnnotatedTypeFactory<
   private final Map<TypeMirror, Boolean> isRelevantCache = CollectionUtils.createLRUCache(300);
 
   /**
-   * Returns true if users can write type annotations from this type system on the given Java type.
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
    *
-   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
+   *
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given Java type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
     if (tm == alwaysRelevantTM) {
@@ -2370,12 +2375,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if users can write type annotations from this type system on the given type.
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
    *
-   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
+   *
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
    */
   public final boolean isRelevant(AnnotatedTypeMirror tm) {
     return isRelevant(tm.getUnderlyingType());
