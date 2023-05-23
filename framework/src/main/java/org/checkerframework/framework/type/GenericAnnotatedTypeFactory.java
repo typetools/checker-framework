@@ -2350,6 +2350,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    *
+   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
@@ -2369,6 +2371,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if users can write type annotations from this type system on the given type.
+   *
+   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given type
