@@ -769,7 +769,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
-    //  isRelevantOrCompound(supertype) is always true because supertype is compound.
+    // `isRelevantOrCompound(supertype)` is always true because `supertype` is compound.
     if (!checker.getTypeFactory().isRelevant(subtype)) {
       return true;
     }

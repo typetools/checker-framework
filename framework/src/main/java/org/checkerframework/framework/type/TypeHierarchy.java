@@ -6,13 +6,13 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 public interface TypeHierarchy {
 
   // This can be used if:
-  //  * type is fully annotated
-  //  * basetypes are Java subtypes
-  //  * want to check the full type
+  //  * the type is fully annotated,
+  //  * the basetypes are Java subtypes, and
+  //  * you want to check the full type
   // Otherwise, call QualifierHierarchy.
 
-  // Use an interface because the only implementation, DefaultTypeHierarchy, has public visitor
-  // methods that clients should never call.
+  // `TypeHierarchy` is an interface because the only implementation, DefaultTypeHierarchy, has
+  // public visitor methods that clients should never call.
 
   /**
    * Returns true if {@code subtype} is a subtype of or convertible to {@code supertype} for all

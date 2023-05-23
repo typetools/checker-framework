@@ -4182,10 +4182,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-      // Todo: this should be isRelevantOrCompound.  Restore it, and fix the compilation failures in
-      // plume-util.
-      // if (!atypeFactory.isRelevantOrCompound(overriderReceiver)) {
-      if (!atypeFactory.isRelevant(overriderReceiver)) {
+      if (!atypeFactory.isRelevantOrCompound(overriderReceiver)) {
         // The receiver has the only annotation it possibly can; don't issue a warning.
         return true;
       }
