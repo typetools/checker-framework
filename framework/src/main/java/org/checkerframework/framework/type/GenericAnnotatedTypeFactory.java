@@ -995,7 +995,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
       throws JavaExpressionParseException {
-
     return StringToJavaExpression.atPath(expression, currentPath, checker);
   }
 
@@ -2350,7 +2349,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>May return false for a compound type (for which it it possible to write type qualifiers on
    * elements of the type).
    *
-   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
@@ -2374,7 +2373,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>May return false for a compound type (for which it it possible to write type qualifiers on
    * elements of the type).
    *
-   * <p>Subclasses should override {@code #isrelevantImpl} instead of this method.
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given

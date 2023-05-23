@@ -2797,7 +2797,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in
       // this location:
       //   new @HERE Class() {}
-      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+      // are not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annoTrees =
           newClassTree.getClassBody().getModifiers().getAnnotations();
       // Add the annotations to an AnnotatedTypeMirror removes the annotations that are not
