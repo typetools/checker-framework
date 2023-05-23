@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -69,20 +70,20 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       CollectionUtils.createLRUCache(300);
 
   @Override
-  public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-    assert type.getKind() == TypeKind.ARRAY
+  public Void visitNewArray(NewArrayTree arrayTree, AnnotatedTypeMirror arrayType) {
+    assert arrayType.getKind() == TypeKind.ARRAY
         : "PropagationTreeAnnotator.visitNewArray: should be an array type";
 
-    AnnotatedTypeMirror componentType = ((AnnotatedArrayType) type).getComponentType();
+    AnnotatedTypeMirror componentType = ((AnnotatedArrayType) arrayType).getComponentType();
 
     // prev is the lub of the initializers if they exist, otherwise the current component type.
     Set<? extends AnnotationMirror> prev = null;
-    if (tree.getInitializers() != null && !tree.getInitializers().isEmpty()) {
+    if (arrayTree.getInitializers() != null && !arrayTree.getInitializers().isEmpty()) {
       // We have initializers, either with or without an array type.
 
       // TODO (issue #599): This only works at the top level.  It should work at all levels of
       // the array.
-      for (ExpressionTree init : tree.getInitializers()) {
+      for (ExpressionTree init : arrayTree.getInitializers()) {
         AnnotatedTypeMirror initType = atypeFactory.getAnnotatedType(init);
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getEffectiveAnnotations();
@@ -96,7 +97,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     assert prev != null
         : "PropagationTreeAnnotator.visitNewArray: violated assumption about qualifiers";
 
-    TreePath path = atypeFactory.getPath(tree);
+    TreePath path = atypeFactory.getPath(arrayTree);
     AnnotatedTypeMirror contextType = null;
     if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
@@ -134,7 +135,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         }
         for (int i = 0; i < m.getParameterTypes().size(); i++) {
           @SuppressWarnings("interning") // Tree must be exactly the same.
-          boolean foundArgument = methodInvocationTree.getArguments().get(i) == tree;
+          boolean foundArgument = methodInvocationTree.getArguments().get(i) == arrayTree;
           if (foundArgument) {
             contextType = m.getParameterTypes().get(i);
             break;
@@ -317,8 +318,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    */
   private void addAnnoOrBound(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> annos) {
     log("addAnnoOrBound(%s, %s)%n", type, annos);
-    AnnotationMirrorSet boundAnnos =
-        atypeFactory.getQualifierUpperBounds().getBoundQualifiers(type.getUnderlyingType());
+    TypeMirror tm = type.getUnderlyingType();
+    AnnotationMirrorSet boundAnnos = atypeFactory.getQualifierUpperBounds().getBoundQualifiers(tm);
     AnnotationMirrorSet annosToAdd = new AnnotationMirrorSet();
     for (AnnotationMirror boundAnno : boundAnnos) {
       AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annos, boundAnno);
