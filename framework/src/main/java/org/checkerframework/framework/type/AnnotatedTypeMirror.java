@@ -284,7 +284,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
