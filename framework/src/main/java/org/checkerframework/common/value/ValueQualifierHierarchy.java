@@ -431,7 +431,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
-  public boolean isSubtype(
+  public boolean isSubtypeImpl(
       AnnotationMirror subAnno,
       TypeMirror subType,
       AnnotationMirror superAnno,

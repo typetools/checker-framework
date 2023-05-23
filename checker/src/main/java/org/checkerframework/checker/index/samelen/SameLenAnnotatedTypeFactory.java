@@ -266,7 +266,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subtype,
         AnnotationMirror superAnno,

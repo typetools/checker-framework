@@ -13,9 +13,9 @@ Signedness Checker:
 
 `QualifierHierarchy`:
  * The constructor takes an `AnnotatedTypeFactory`.
- * Methods `isSubtype(...)` have been deprecated in favor of
-   new overloads that also take two additional `TypeMirror` formal parameters.
-   The deprecated methods will be removed in a future release.
+ * Subclasses should override `isSubtypeImpl(...)` rather than `isSubtype()`.
+   Clients should continue to call `isSubtype()`; never call `isSubtypeImpl()`.
+   Note that `isSubtypeImpl()` takes two additional `TypeMirror` formal parameters.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;

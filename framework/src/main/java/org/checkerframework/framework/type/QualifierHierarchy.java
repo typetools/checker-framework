@@ -12,7 +12,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -30,6 +29,9 @@ import org.plumelib.util.StringsPlume;
  */
 @AnnotatedFor("nullness")
 public abstract class QualifierHierarchy {
+
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The associated type factory. This is used only for checking whether types are relevant. */
   protected GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
@@ -125,23 +127,12 @@ public abstract class QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy.
-   *
-   * @param subQualifier possible subqualifier
-   * @param superQualifier possible superqualifier
-   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
-   */
-  @Deprecated // 2023-05-17
-  public boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
-    throw new TypeSystemError("isSubtype is not implemented");
-  }
-
-  /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualiifer subtyping depends on the Java basetype.
+   *
+   * <p>Subtypes should generally override {@link #isSubtypeImpl} (if needed) but call {@code
+   * isSubtype()}.
    *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}
@@ -160,42 +151,30 @@ public abstract class QualifierHierarchy {
       // At least one of the types is not relevant.
       return true;
     }
-    // This implementation calls the deprecated method because otherwise there would be no point in
-    // deprecation -- we might as well just force clients to rewrite their code.
-    // More specifically, the framework calls the 4-argument version, but a legacy type system
-    // implementation does not implement the 4-argument version.  This default implementation
-    // bridges that difference.
-    return isSubtype(subQualifier, superQualifier);
+    return isSubtypeImpl(subQualifier, subType, superQualifier, superType);
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
-   * qualifier in the same hierarchy in {@code superQualifiers}.
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
+   * not necessarily in a Java subtyping relationship with one another and are only used by this
+   * method for special cases when qualiifer subtyping depends on the Java basetype.
    *
-   * @param subQualifiers set of qualifiers; exactly one per hierarchy
-   * @param superQualifiers set of qualifiers; exactly one per hierarchy
-   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
-   *     qualifier in the same hierarchy in {@code superQualifiers}
-   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror)}
+   * <p>Subtypes should generally override {@link #isSubtypeImpl} (if needed) but call {@code
+   * isSubtype()}.
+   *
+   * @param subQualifier possible subqualifier
+   * @param subType the Java basetype associated with {@code subQualifier}
+   * @param superQualifier possible superqualifier
+   * @param superType the Java basetype associated with {@code superQualifier}
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  @Deprecated // 2023-05-17
-  public boolean isSubtype(
-      Collection<? extends AnnotationMirror> subQualifiers,
-      Collection<? extends AnnotationMirror> superQualifiers) {
-    assertSameSize(subQualifiers, superQualifiers);
-    for (AnnotationMirror subQual : subQualifiers) {
-      AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
-      if (superQual == null) {
-        throw new BugInCF(
-            "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-            subQual, StringsPlume.join(",", superQualifiers));
-      }
-      if (!isSubtype(subQual, superQual)) {
-        return false;
-      }
-    }
-    return true;
-  }
+  @SuppressWarnings({"keyfor:argument", "nullness:argument"}) // should not be needed
+  public abstract boolean isSubtypeImpl(
+      AnnotationMirror subQualifier,
+      TypeMirror subType,
+      AnnotationMirror superQualifier,
+      TypeMirror superType);
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
@@ -227,7 +206,7 @@ public abstract class QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtype(subQual, subType, superQual, superType)) {
+      if (!isSubtypeImpl(subQual, subType, superQual, superType)) {
         return false;
       }
     }
@@ -421,7 +400,7 @@ public abstract class QualifierHierarchy {
   public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
     for (AnnotationMirror anno : qualifiers) {
-      if (isSubtype(anno, top)) {
+      if (isSubtype(anno, alwaysRelevantTM, top, alwaysRelevantTM)) {
         return anno;
       }
     }

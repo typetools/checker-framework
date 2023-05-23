@@ -448,7 +448,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * element of lhs.
      */
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subtype,
         AnnotationMirror superAnno,

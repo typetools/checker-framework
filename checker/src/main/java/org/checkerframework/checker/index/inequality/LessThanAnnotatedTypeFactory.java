@@ -104,7 +104,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     }
 
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subtype,
         AnnotationMirror superAnno,

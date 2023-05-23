@@ -222,7 +222,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   @Override
-  public boolean isSubtype(
+  public boolean isSubtypeImpl(
       AnnotationMirror subAnno,
       TypeMirror subType,
       AnnotationMirror superAnno,

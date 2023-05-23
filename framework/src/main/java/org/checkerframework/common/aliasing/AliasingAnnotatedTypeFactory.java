@@ -114,7 +114,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subType,
         AnnotationMirror superAnno,

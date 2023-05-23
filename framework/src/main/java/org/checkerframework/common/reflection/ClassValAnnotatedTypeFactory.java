@@ -198,7 +198,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * a subtype of lhs iff lhs contains  every element of rhs.
      */
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subType,
         AnnotationMirror superAnno,

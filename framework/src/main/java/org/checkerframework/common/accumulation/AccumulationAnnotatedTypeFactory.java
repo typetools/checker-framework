@@ -467,7 +467,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * <p>isSubtype in this type system is subset.
      */
     @Override
-    public boolean isSubtype(
+    public boolean isSubtypeImpl(
         AnnotationMirror subAnno,
         TypeMirror subType,
         AnnotationMirror superAnno,

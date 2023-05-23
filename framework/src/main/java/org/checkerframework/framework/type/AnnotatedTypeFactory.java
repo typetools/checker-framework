@@ -2167,22 +2167,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}.
+   * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}
+   * @return true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}
    */
   private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
     return types.isSubtype(types.erasure(type1), types.erasure(type2));
   }
 
   /**
-   * Returns true if the erasure of {@code type1} is the same type as the erasure of {@code type2}.
+   * Returns true if the erasure of {@code type1} is the same Java type as the erasure of {@code
+   * type2}.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if the erasure of {@code type1} is the same type as the erasure of {@code type2}
+   * @return true if the erasure of {@code type1} is the same Java type as the erasure of {@code
+   *     type2}
    */
   private boolean isSameType(TypeMirror type1, TypeMirror type2) {
     return types.isSameType(types.erasure(type1), types.erasure(type2));
