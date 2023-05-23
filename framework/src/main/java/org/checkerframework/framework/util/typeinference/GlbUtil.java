@@ -32,7 +32,7 @@ public class GlbUtil {
    */
   public static AnnotatedTypeMirror glbAll(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {
-    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
     if (typeMirrors.isEmpty()) {
       return null;
     }
@@ -50,7 +50,7 @@ public class GlbUtil {
         AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
         AnnotationMirror currentAnno = glbPrimaries.get(top);
         if (typeAnno != null && currentAnno != null) {
-          glbPrimaries.put(top, qualifierHierarchy.greatestLowerBound(currentAnno, typeAnno));
+          glbPrimaries.put(top, qualHierarchy.greatestLowerBound(currentAnno, typeAnno));
         } else if (typeAnno != null) {
           glbPrimaries.put(top, typeAnno);
         }
@@ -63,7 +63,7 @@ public class GlbUtil {
     AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
     for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
       if (atm.getKind() != TypeKind.TYPEVAR
-          || !qualifierHierarchy.isSubtype(atm.getEffectiveAnnotations(), values)) {
+          || !qualHierarchy.isSubtype(atm.getEffectiveAnnotations(), values)) {
         AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);
@@ -140,7 +140,7 @@ public class GlbUtil {
   private static final class GlbSortComparator implements Comparator<AnnotatedTypeMirror> {
 
     /** The qualifier hierarchy. */
-    private final QualifierHierarchy qualifierHierarchy;
+    private final QualifierHierarchy qualHierarchy;
     /** The type utiliites. */
     private final Types types;
 
@@ -150,7 +150,7 @@ public class GlbUtil {
      * @param typeFactory the type factory
      */
     public GlbSortComparator(AnnotatedTypeFactory typeFactory) {
-      qualifierHierarchy = typeFactory.getQualifierHierarchy();
+      qualHierarchy = typeFactory.getQualifierHierarchy();
       types = typeFactory.getProcessingEnv().getTypeUtils();
     }
 
@@ -182,7 +182,7 @@ public class GlbUtil {
       AnnotationMirrorSet annos2 = type2.getAnnotations();
       if (AnnotationUtils.areSame(annos1, annos2)) {
         return 0;
-      } else if (qualifierHierarchy.isSubtype(annos1, annos2)) {
+      } else if (qualHierarchy.isSubtype(annos1, annos2)) {
         return 1;
       } else {
         return -1;
