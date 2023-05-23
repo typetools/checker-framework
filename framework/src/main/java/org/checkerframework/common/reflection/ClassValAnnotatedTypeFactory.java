@@ -136,7 +136,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ClassValQualifierHierarchy(
         Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, ClassValAnnotatedTypeFactory.this);
     }
 
     /*

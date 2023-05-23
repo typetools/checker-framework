@@ -29,14 +29,26 @@ import org.plumelib.util.StringsPlume;
  * from each hierarchy.
  */
 @AnnotatedFor("nullness")
-public interface QualifierHierarchy {
+public abstract class QualifierHierarchy {
+
+  /** The associated type factory. This is used only for checking whether types are relevant. */
+  protected GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
+
+  /**
+   * Creates a new QualifierHierarchy.
+   *
+   * @param atypeFactory the associated type factory
+   */
+  public QualifierHierarchy(GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    this.atypeFactory = atypeFactory;
+  }
 
   /**
    * Determine whether this is valid.
    *
    * @return whether this is valid
    */
-  default boolean isValid() {
+  public boolean isValid() {
     return true;
   }
 
@@ -49,7 +61,7 @@ public interface QualifierHierarchy {
    *
    * @return the width of this QualifierHierarchy
    */
-  default int getWidth() {
+  public int getWidth() {
     return getTopAnnotations().size();
   }
 
@@ -59,7 +71,7 @@ public interface QualifierHierarchy {
    *
    * @return the top (ultimate super) type qualifiers in the type system
    */
-  AnnotationMirrorSet getTopAnnotations();
+  public abstract AnnotationMirrorSet getTopAnnotations();
 
   /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
@@ -68,7 +80,7 @@ public interface QualifierHierarchy {
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the top qualifier of {@code qualifier}'s hierarchy
    */
-  AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
+  public abstract AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns the bottom type qualifiers in the hierarchy. The size of this set is equal to {@link
@@ -76,7 +88,7 @@ public interface QualifierHierarchy {
    *
    * @return the bottom type qualifiers in the hierarchy
    */
-  AnnotationMirrorSet getBottomAnnotations();
+  public abstract AnnotationMirrorSet getBottomAnnotations();
 
   /**
    * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
@@ -85,7 +97,7 @@ public interface QualifierHierarchy {
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the bottom qualifier of {@code qualifier}'s hierarchy
    */
-  AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
+  public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
@@ -95,7 +107,7 @@ public interface QualifierHierarchy {
    * @return the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
    *     null} if there is no polymorphic qualifier in that hierarchy
    */
-  @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
+  public abstract @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
@@ -105,7 +117,7 @@ public interface QualifierHierarchy {
    * @return {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
    *     false}.
    */
-  boolean isPolymorphicQualifier(AnnotationMirror qualifier);
+  public abstract boolean isPolymorphicQualifier(AnnotationMirror qualifier);
 
   // **********************************************************************
   // Qualifier Hierarchy Queries
@@ -118,11 +130,10 @@ public interface QualifierHierarchy {
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror,
-   *     AnnotatedTypeFactory)}
+   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
    */
   @Deprecated // 2023-05-17
-  default boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+  public boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
     throw new TypeSystemError("isSubtype is not implemented");
   }
 
@@ -138,14 +149,13 @@ public interface QualifierHierarchy {
    * @param superType the Java basetype associated with {@code superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  default boolean isSubtype(
+  public boolean isSubtype(
       AnnotationMirror subQualifier,
       TypeMirror subType,
       AnnotationMirror superQualifier,
-      TypeMirror superType,
-      AnnotatedTypeFactory atypeFactory) {
-    if (!atypeFactory.getQualifierHierarchy().isRelevantOrCompound(subType)
-        || !atypeFactory.getQualifierHierarchy().isRelevantOrCompound(superType)) {
+      TypeMirror superType) {
+    if (!atypeFactory.isRelevantOrCompound(subType)
+        || !atypeFactory.isRelevantOrCompound(superType)) {
       // At least one of the types is not relevant.
       return true;
     }
@@ -165,11 +175,10 @@ public interface QualifierHierarchy {
    * @param superQualifiers set of qualifiers; exactly one per hierarchy
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
-   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror,
-   *     AnnotatedTypeFactory)}
+   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror)}
    */
   @Deprecated // 2023-05-17
-  default boolean isSubtype(
+  public boolean isSubtype(
       Collection<? extends AnnotationMirror> subQualifiers,
       Collection<? extends AnnotationMirror> superQualifiers) {
     assertSameSize(subQualifiers, superQualifiers);
@@ -204,12 +213,11 @@ public interface QualifierHierarchy {
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
-  default boolean isSubtype(
+  public boolean isSubtype(
       Collection<? extends AnnotationMirror> subQualifiers,
       TypeMirror subType,
       Collection<? extends AnnotationMirror> superQualifiers,
-      TypeMirror superType,
-      AnnotatedTypeFactory atypeFactory) {
+      TypeMirror superType) {
     assertSameSize(subQualifiers, superQualifiers);
     for (AnnotationMirror subQual : subQualifiers) {
       AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
@@ -218,7 +226,7 @@ public interface QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtype(subQual, subType, superQual, superType, atypeFactory)) {
+      if (!isSubtype(subQual, subType, superQual, superType)) {
         return false;
       }
     }
@@ -242,7 +250,7 @@ public interface QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  @Nullable AnnotationMirror leastUpperBound(
+  public abstract @Nullable AnnotationMirror leastUpperBound(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
@@ -253,7 +261,7 @@ public interface QualifierHierarchy {
    * @param qualifiers2 set of qualifiers; exactly one per hierarchy
    * @return the least upper bound of the two sets of qualifiers
    */
-  default Set<? extends AnnotationMirror> leastUpperBounds(
+  public Set<? extends AnnotationMirror> leastUpperBounds(
       Collection<? extends AnnotationMirror> qualifiers1,
       Collection<? extends AnnotationMirror> qualifiers2) {
     assertSameSize(qualifiers1, qualifiers2);
@@ -285,7 +293,7 @@ public interface QualifierHierarchy {
    *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never
    *     be called.
    */
-  default int numberOfIterationsBeforeWidening() {
+  public int numberOfIterationsBeforeWidening() {
     return -1;
   }
 
@@ -309,7 +317,7 @@ public interface QualifierHierarchy {
    * @return an upper bound that is higher than the least upper bound of newQualifier and
    *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
    */
-  default AnnotationMirror widenedUpperBound(
+  public AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
     AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
     if (widenUpperBound == null) {
@@ -331,7 +339,7 @@ public interface QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  @Nullable AnnotationMirror greatestLowerBound(
+  public abstract @Nullable AnnotationMirror greatestLowerBound(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
@@ -342,7 +350,7 @@ public interface QualifierHierarchy {
    * @param qualifiers2 set of qualifiers; exactly one per hierarchy
    * @return the greatest lower bound of the two sets of qualifiers
    */
-  default Set<? extends AnnotationMirror> greatestLowerBounds(
+  public Set<? extends AnnotationMirror> greatestLowerBounds(
       Collection<? extends AnnotationMirror> qualifiers1,
       Collection<? extends AnnotationMirror> qualifiers2) {
     assertSameSize(qualifiers1, qualifiers2);
@@ -373,7 +381,7 @@ public interface QualifierHierarchy {
    * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
    *     fewer qualifiers than the width of the QualifierHierarchy
    */
-  static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
+  public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
     return type.getKind() == TypeKind.TYPEVAR
         || type.getKind() == TypeKind.WILDCARD
         ||
@@ -395,7 +403,7 @@ public interface QualifierHierarchy {
    * @param qualifier annotation that is in the same hierarchy as the returned annotation
    * @return annotation in the same hierarchy as qualifier, or null if one is not found
    */
-  default @Nullable AnnotationMirror findAnnotationInSameHierarchy(
+  public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror qualifier) {
     AnnotationMirror top = this.getTopAnnotation(qualifier);
     return findAnnotationInHierarchy(qualifiers, top);
@@ -409,7 +417,7 @@ public interface QualifierHierarchy {
    * @param top the top annotation in the hierarchy to which the returned annotation belongs
    * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
    */
-  default @Nullable AnnotationMirror findAnnotationInHierarchy(
+  public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
     for (AnnotationMirror anno : qualifiers) {
       if (isSubtype(anno, top)) {
@@ -432,7 +440,7 @@ public interface QualifierHierarchy {
    * @param <T> type of the map's keys
    * @return true if the update was done; false if there was a qualifier hierarchy collision
    */
-  default <T> boolean updateMappingToMutableSet(
+  public <T> boolean updateMappingToMutableSet(
       Map<T, AnnotationMirrorSet> map, T key, AnnotationMirror qualifier) {
     // https://github.com/typetools/checker-framework/issues/2000
     @SuppressWarnings("nullness:argument")
@@ -460,7 +468,7 @@ public interface QualifierHierarchy {
    * @param c1 the first collection
    * @param c2 the second collection
    */
-  static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+  public static void assertSameSize(Collection<?> c1, Collection<?> c2) {
     if (c1.size() != c2.size()) {
       throw new BugInCF(
           "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
@@ -475,7 +483,7 @@ public interface QualifierHierarchy {
    * @param c2 the second collection
    * @param result the result collection
    */
-  static void assertSameSize(
+  public static void assertSameSize(
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c1,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c2,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> result) {

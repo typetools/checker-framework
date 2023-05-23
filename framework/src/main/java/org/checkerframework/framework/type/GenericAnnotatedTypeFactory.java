@@ -2396,7 +2396,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(AnnotatedTypeMirror tm) {
-    return isRelevant(tm);
+    return isRelevant(tm.getUnderlyingType());
   }
 
   /**
@@ -2419,7 +2419,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>If this returns false, the qualifiers are not checked.
    *
-   * @param tm a type
+   * @param atm a type
    * @return true if users can write type annotations from this type system on or within the given
    *     type
    */

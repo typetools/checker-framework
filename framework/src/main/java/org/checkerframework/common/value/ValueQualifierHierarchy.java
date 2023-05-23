@@ -18,7 +18,9 @@ import org.plumelib.util.RegexUtil;
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
+  // This shadows the same-named field in GenericAnnotatedTypeFactory, but has a more specific type.
   /** The type factory to use. */
+  @SuppressWarnings("HidingField")
   private final ValueAnnotatedTypeFactory atypeFactory;
 
   /**
@@ -26,11 +28,28 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    *
    * @param atypeFactory ValueAnnotatedTypeFactory
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+   * @param atypeFactory the associated type factory
+   * @deprecated use {@link #ValueQualifierHierarchy(Collection, ValueAnnotatedTypeFactory)} which
+   *     has the arguments in the other order
    */
+  @Deprecated // 2023-05-23
   ValueQualifierHierarchy(
       ValueAnnotatedTypeFactory atypeFactory,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    super(qualifierClasses, atypeFactory.getElementUtils());
+    this(qualifierClasses, atypeFactory);
+  }
+
+  /**
+   * Creates a ValueQualifierHierarchy from the given classes.
+   *
+   * @param atypeFactory ValueAnnotatedTypeFactory
+   * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+   * @param atypeFactory the associated type factory
+   */
+  ValueQualifierHierarchy(
+      Collection<Class<? extends Annotation>> qualifierClasses,
+      ValueAnnotatedTypeFactory atypeFactory) {
+    super(qualifierClasses, atypeFactory.getElementUtils(), atypeFactory);
     this.atypeFactory = atypeFactory;
   }
 

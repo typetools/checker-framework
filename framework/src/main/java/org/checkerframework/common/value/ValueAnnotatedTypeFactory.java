@@ -313,7 +313,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
-    return new ValueQualifierHierarchy(this, this.getSupportedTypeQualifiers());
+    return new ValueQualifierHierarchy(this.getSupportedTypeQualifiers(), this);
   }
 
   @Override

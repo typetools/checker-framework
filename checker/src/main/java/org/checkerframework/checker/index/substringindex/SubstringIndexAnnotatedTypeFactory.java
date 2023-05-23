@@ -88,7 +88,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      */
     public SubstringIndexQualifierHierarchy(
         Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, SubstringIndexAnnotatedTypeFactory.this);
     }
 
     @Override
