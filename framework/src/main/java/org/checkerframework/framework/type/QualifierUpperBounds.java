@@ -151,7 +151,7 @@ public class QualifierUpperBounds {
   private void addMissingAnnotations(
       AnnotationMirrorSet annos, Set<? extends AnnotationMirror> missing) {
     for (AnnotationMirror miss : missing) {
-      if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, miss) == null) {
+      if (qualHierarchy.findAnnotationInSameHierarchy(annos, miss) == null) {
         annos.add(miss);
       }
     }

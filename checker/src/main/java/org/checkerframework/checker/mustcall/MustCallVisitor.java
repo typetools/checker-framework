@@ -168,9 +168,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           AnnotationMirror effectiveMCAnno = type.getAnnotation();
           TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
-              && !atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+              && !qualHierarchy.isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
             checker.reportError(
                 tree,
@@ -208,9 +206,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             TypeMirror tm = type.getUnderlyingType();
 
-            if (!atypeFactory
-                .getQualifierHierarchy()
-                .isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+            if (!qualHierarchy.isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
               checker.reportError(
                   tree,
@@ -314,13 +310,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
       AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
-      if (atypeFactory
-          .getQualifierHierarchy()
-          .isSubtype(
-              atypeFactory.withoutClose(valueAnno),
-              valueType.getUnderlyingType(),
-              atypeFactory.withoutClose(varAnno),
-              varType.getUnderlyingType())) {
+      if (qualHierarchy.isSubtype(
+          atypeFactory.withoutClose(valueAnno),
+          valueType.getUnderlyingType(),
+          atypeFactory.withoutClose(varAnno),
+          varType.getUnderlyingType())) {
         return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -350,13 +344,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
     AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    if (!atypeFactory
-        .getQualifierHierarchy()
-        .isSubtype(
-            defaultAnno,
-            defaultType.getUnderlyingType(),
-            resultAnno,
-            resultType.getUnderlyingType())) {
+    if (!qualHierarchy.isSubtype(
+        defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
     }

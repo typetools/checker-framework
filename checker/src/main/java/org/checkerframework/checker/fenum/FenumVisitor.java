@@ -14,7 +14,6 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -37,7 +36,6 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
       AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
       TypeMirror lhsTM = lhsAtm.getUnderlyingType();
       TypeMirror rhsTM = rhsAtm.getUnderlyingType();
-      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
       if (!(qualHierarchy.isSubtype(lhs, lhsTM, rhs, rhsTM)
           || qualHierarchy.isSubtype(rhs, rhsTM, lhs, lhsTM))) {
         checker.reportError(tree, "binary", lhsAtm, rhsAtm);

@@ -225,9 +225,7 @@ public class SameLenTransfer extends CFTransfer {
     if (cfValue == null) {
       return UNKNOWN;
     }
-    return atypeFactory
-        .getQualifierHierarchy()
-        .findAnnotationInHierarchy(cfValue.getAnnotations(), UNKNOWN);
+    return qualHierarchy.findAnnotationInHierarchy(cfValue.getAnnotations(), UNKNOWN);
   }
 
   /** Implements the transfer rules for both equal nodes and not-equals nodes. */

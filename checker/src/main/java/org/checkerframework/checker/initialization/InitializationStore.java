@@ -64,7 +64,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
         (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
-    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = qualHierarchy;
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     // Remember fields that have the 'invariant' annotation in the store.
@@ -85,7 +85,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     super.insertValue(je, value, permitNondeterministic);
 
     for (AnnotationMirror a : value.getAnnotations()) {
-      if (qualifierHierarchy.isSubtype(a, je.getType(), invariantAnno, je.getType())) {
+      if (qualHierarchy.isSubtype(a, je.getType(), invariantAnno, je.getType())) {
         if (je instanceof FieldAccess) {
           FieldAccess fa = (FieldAccess) je;
           if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {

@@ -284,8 +284,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-      AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, canonical);
+      QualifierHierarchy qualHierarchy = this.qualHierarchy;
+      AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
       }
@@ -308,9 +308,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       canonical = atypeFactory.canonicalAnnotation(p);
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+      QualifierHierarchy qualHierarchy = this.qualHierarchy;
       AnnotationMirror anno =
-          qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
+          qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
       if (anno != null) {
         return anno;
       }
@@ -716,8 +716,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getAnnotationInHierarchy(a);
-    QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-    if (prev != null && !prev.equals(qualHier.getTopAnnotation(a))) {
+    QualifierHierarchy qualHierarchy = this.qualHierarchy;
+    if (prev != null && !prev.equals(qualHierarchy.getTopAnnotation(a))) {
       return this.removeAnnotation(prev);
     }
     return false;
@@ -2292,8 +2292,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       AnnotationMirrorSet annos = new AnnotationMirrorSet();
       for (AnnotatedTypeMirror bound : getBounds()) {
         for (AnnotationMirror a : bound.getAnnotations()) {
-          if (atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(annos, a)
-              == null) {
+          if (qualHierarchy.findAnnotationInSameHierarchy(annos, a) == null) {
             annos.add(a);
           }
         }

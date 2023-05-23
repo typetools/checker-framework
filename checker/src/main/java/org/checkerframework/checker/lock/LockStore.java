@@ -124,7 +124,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       return analysis.createAbstractValue(set, je.getType());
     }
 
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy hierarchy = qualHierarchy;
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
         hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);

@@ -1005,9 +1005,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       TypeMirror rhsTM = rhsATM.getUnderlyingType();
       TypeMirror declTM = decl.getUnderlyingType();
       for (AnnotationMirror anno : rhsATM.getAnnotations()) {
-        AnnotationMirror upperAnno =
-            atypeFactory.getQualifierHierarchy().findAnnotationInSameHierarchy(upperAnnos, anno);
-        if (atypeFactory.getQualifierHierarchy().isSubtype(anno, rhsTM, upperAnno, declTM)) {
+        AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
+        if (qualHierarchy.isSubtype(anno, rhsTM, upperAnno, declTM)) {
           rhsATM.removeAnnotation(anno);
         }
       }
@@ -1113,7 +1112,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
       if (amAjava != null) {
-        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
+        amSource = qualHierarchy.leastUpperBound(amSource, amAjava);
       }
       annosToReplace.add(amSource);
     }

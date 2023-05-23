@@ -219,7 +219,7 @@ public class QualifierDefaults {
 
   /** Add standard unchecked defaults that do not conflict with previously added defaults. */
   public void addUncheckedStandardDefaults() {
-    QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = this.qualHierarchy;
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet bottoms = qualHierarchy.getBottomAnnotations();
 
@@ -244,7 +244,7 @@ public class QualifierDefaults {
 
   /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
   public void addClimbStandardDefaults() {
-    QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = this.qualHierarchy;
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet bottoms = qualHierarchy.getBottomAnnotations();
 
@@ -359,7 +359,7 @@ public class QualifierDefaults {
 
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
-    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = qualHierarchy;
 
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {

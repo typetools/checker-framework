@@ -47,7 +47,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
   /** Creates a {@link PropagationTreeAnnotator} for the given {@code atypeFactory}. */
   public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
-    this.qualHierarchy = atypeFactory.getQualifierHierarchy();
+    this.qualHierarchy = qualHierarchy;
   }
 
   /**
