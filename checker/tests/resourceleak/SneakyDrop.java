@@ -46,7 +46,7 @@ public class SneakyDrop {
   }
 
   // It's quite undesirable that this error isn't required.method.not.called.
-  // :: required.method.not.known
+  // :: error: required.method.not.known
   public static <T extends java.io.Closeable> void sneakyDrop5(@Owning T value) {}
 
   public static void main5(String[] args) throws Exception {
