@@ -48,6 +48,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         // go on
     }
 
+    // TODO: should this be just isRelevant()?
     if (!((GenericAnnotatedTypeFactory) typeFactory).isRelevantOrCompound(type)) {
       type.addMissingAnnotations(annotations);
     }

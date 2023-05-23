@@ -2381,11 +2381,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-    if (!atypeFactory.isRelevantOrCompound(castType)) {
+    boolean castTypeIsRelevant =
+        checkCastElementType
+            ? atypeFactory.isRelevantOrCompound(castType)
+            : atypeFactory.isRelevant(castType);
+    if (!castTypeIsRelevant) {
       return;
     }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-    if (!atypeFactory.isRelevantOrCompound(exprType)) {
+    boolean exprTypeIsRelevant =
+        checkExprElementType
+            ? atypeFactory.isRelevantOrCompound(exprType)
+            : atypeFactory.isRelevant(exprType);
+    if (!exprTypeIsRelevant) {
       return;
     }
     boolean reported = false;
@@ -2433,8 +2441,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    if (!atypeFactory.isRelevantOrCompound(castType)
-        || !atypeFactory.isRelevantOrCompound(exprType)) {
+    boolean castTypeIsRelevant =
+        checkCastElementType
+            ? atypeFactory.isRelevantOrCompound(castType)
+            : atypeFactory.isRelevant(castType);
+    boolean exprTypeIsRelevant =
+        checkExprElementType
+            ? atypeFactory.isRelevantOrCompound(exprType)
+            : atypeFactory.isRelevant(exprType);
+    if (!castTypeIsRelevant || !exprTypeIsRelevant) {
       return true;
     }
 
@@ -3016,9 +3031,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueExpTree);
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
-    boolean result =
-        !atypeFactory.isRelevantOrCompound(widenedValueType)
-            || atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
+    if (!atypeFactory.isRelevantOrCompound(widenedValueType)) {
+      boolean result = true;
+      commonAssignmentCheckEndDiagnostic(result, null, varType, valueType, valueExpTree);
+      return result;
+    }
+
+    boolean result = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
     // TODO: integrate with subtype test.
     if (result) {
