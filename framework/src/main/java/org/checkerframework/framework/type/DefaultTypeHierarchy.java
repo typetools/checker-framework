@@ -196,15 +196,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     for the current top.
    */
   protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    if (!checker.getTypeFactory().isRelevant(subtype)
-        || !checker.getTypeFactory().isRelevant(supertype)) {
+    TypeMirror subTM = subtype.getUnderlyingType();
+    TypeMirror superTM = supertype.getUnderlyingType();
+    if (!checker.getTypeFactory().isRelevant(subTM)
+        || !checker.getTypeFactory().isRelevant(superTM)) {
       return true;
     }
 
     AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
-    TypeMirror subTM = subtype.getUnderlyingType();
     AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
-    TypeMirror superTM = supertype.getUnderlyingType();
     if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
         && checker.getTypeFactory().hasQualifierParameterInHierarchy(subtype, currentTop)) {
       // If the types have a class qualifier parameter, the qualifiers must be equivalent.
@@ -769,7 +769,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
     //  isRelevantOrCompound(supertype) is always true because supertype is compound.
-    if (!checker.getTypeFactory().isRelevant(subtype)) {
+    if (!checker.getTypeFactory().isRelevant(subtype.getUnderlyingType())) {
       return true;
     }
 

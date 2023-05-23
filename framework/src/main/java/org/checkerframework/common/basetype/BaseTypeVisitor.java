@@ -2384,15 +2384,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean castTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType);
+            : atypeFactory.isRelevant(castType.getUnderlyingType());
     if (!castTypeIsRelevant) {
       return;
     }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
     boolean exprTypeIsRelevant =
-        checkExprElementType
+        checkCastElementType
             ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType);
+            : atypeFactory.isRelevant(exprType.getUnderlyingType());
     if (!exprTypeIsRelevant) {
       return;
     }
@@ -2444,11 +2444,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean castTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType);
+            : atypeFactory.isRelevant(castType.getUnderlyingType());
     boolean exprTypeIsRelevant =
-        checkExprElementType
+        checkCastElementType
             ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType);
+            : atypeFactory.isRelevant(exprType.getUnderlyingType());
     if (!castTypeIsRelevant || !exprTypeIsRelevant) {
       return true;
     }
