@@ -118,7 +118,8 @@ public interface QualifierHierarchy {
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)}
+   * @deprecated use {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror,
+   *     AnnotatedTypeFactory)}
    */
   @Deprecated // 2023-05-17
   default boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
@@ -141,7 +142,13 @@ public interface QualifierHierarchy {
       AnnotationMirror subQualifier,
       TypeMirror subType,
       AnnotationMirror superQualifier,
-      TypeMirror superType) {
+      TypeMirror superType,
+      AnnotatedTypeFactory atypeFactory) {
+    if (!atypeFactory.getQualifierHierarchy().isRelevantOrCompound(subType)
+        || !atypeFactory.getQualifierHierarchy().isRelevantOrCompound(superType)) {
+      // At least one of the types is not relevant.
+      return true;
+    }
     // This implementation calls the deprecated method because otherwise there would be no point in
     // deprecation -- we might as well just force clients to rewrite their code.
     // More specifically, the framework calls the 4-argument version, but a legacy type system
@@ -158,7 +165,8 @@ public interface QualifierHierarchy {
    * @param superQualifiers set of qualifiers; exactly one per hierarchy
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
-   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror)}
+   * @deprecated use {@link #isSubtype(Collection, TypeMirror, Collection, TypeMirror,
+   *     AnnotatedTypeFactory)}
    */
   @Deprecated // 2023-05-17
   default boolean isSubtype(
@@ -200,7 +208,8 @@ public interface QualifierHierarchy {
       Collection<? extends AnnotationMirror> subQualifiers,
       TypeMirror subType,
       Collection<? extends AnnotationMirror> superQualifiers,
-      TypeMirror superType) {
+      TypeMirror superType,
+      AnnotatedTypeFactory atypeFactory) {
     assertSameSize(subQualifiers, superQualifiers);
     for (AnnotationMirror subQual : subQualifiers) {
       AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
@@ -209,7 +218,7 @@ public interface QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtype(subQual, subType, superQual, superType)) {
+      if (!isSubtype(subQual, subType, superQual, superType, atypeFactory)) {
         return false;
       }
     }

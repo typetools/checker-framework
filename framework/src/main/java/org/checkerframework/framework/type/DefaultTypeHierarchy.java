@@ -161,9 +161,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
 
     // This implementation does not check isRelevantOrCompound; it assumes that clients have already
-    // done so.  (As of 2023-05-16, the only client is isSubtype(AnnotatedTypeMirror,
-    // AnnotatedTypeMirror), defined just above.  I verified that by marking this method as
-    // deprecated and then building the Checker Framework.
+    // done so.
+    // As of 2023-05-16, the only client is isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror),
+    // defined just above.  I verified that by marking this method as deprecated and then building
+    // the Checker Framework.
 
     assert top != null;
     currentTop = top;
@@ -769,7 +770,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
     //  isRelevantOrCompound(supertype) is always true because supertype is compound.
-    if (!checker.getTypeFactory().isRelevant(subtype.getUnderlyingType())) {
+    if (!checker.getTypeFactory().isRelevant(subtype)) {
       return true;
     }
 

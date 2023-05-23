@@ -2383,6 +2383,23 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
+   *
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
+   *
+   * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
+   */
+  public final boolean isRelevant(AnnotatedTypeMirror tm) {
+    return isRelevant(tm);
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given type OR
    * within it (i.e., on an element of a compound type).
    *
@@ -2392,8 +2409,22 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if users can write type annotations from this type system on or within the given
    *     type
    */
-  public final boolean isRelevantOrCompound(AnnotatedTypeMirror tm) {
-    TypeMirror underlying = tm.getUnderlyingType();
+  public final boolean isRelevantOrCompound(TypeMirror tm) {
+    return isRelevant(tm) || TypesUtils.isCompoundType(tm);
+  }
+
+  /**
+   * Returns true if users can write type annotations from this type system on the given type OR
+   * within it (i.e., on an element of a compound type).
+   *
+   * <p>If this returns false, the qualifiers are not checked.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system on or within the given
+   *     type
+   */
+  public final boolean isRelevantOrCompound(AnnotatedTypeMirror atm) {
+    TypeMirror underlying = atm.getUnderlyingType();
     return isRelevant(underlying) || TypesUtils.isCompoundType(underlying);
   }
 

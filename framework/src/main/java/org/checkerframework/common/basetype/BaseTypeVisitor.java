@@ -2384,7 +2384,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean castTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType.getUnderlyingType());
+            : atypeFactory.isRelevant(castType);
     if (!castTypeIsRelevant) {
       return;
     }
@@ -2392,7 +2392,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean exprTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType.getUnderlyingType());
+            : atypeFactory.isRelevant(exprType);
     if (!exprTypeIsRelevant) {
       return;
     }
@@ -2444,11 +2444,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     boolean castTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType.getUnderlyingType());
+            : atypeFactory.isRelevant(castType);
     boolean exprTypeIsRelevant =
         checkCastElementType
             ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType.getUnderlyingType());
+            : atypeFactory.isRelevant(exprType);
     if (!castTypeIsRelevant || !exprTypeIsRelevant) {
       return true;
     }
@@ -4185,7 +4185,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // Todo: this should be isRelevantOrCompound.  Restore it, and fix the compilation failures in
       // plume-util.
       // if (!atypeFactory.isRelevantOrCompound(overriderReceiver)) {
-      if (!atypeFactory.isRelevant(overriderReceiver.getUnderlyingType())) {
+      if (!atypeFactory.isRelevant(overriderReceiver)) {
         // The receiver has the only annotation it possibly can; don't issue a warning.
         return true;
       }
