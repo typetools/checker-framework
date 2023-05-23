@@ -862,8 +862,8 @@ class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
-          || !typeFactory.getMustCallValue(typeElt).isEmpty()
-          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
+          || !typeFactory.hasEmptyMustCallValue(typeElt)
+          || !typeFactory.hasEmptyMustCallValue(newClassTree);
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -1647,8 +1647,8 @@ class MustCallConsistencyAnalyzer {
     TypeElement typeElt = TypesUtils.getTypeElement(type);
     // no need to track if type has no possible @MustCall obligation
     if (typeElt != null
-        && typeFactory.getMustCallValue(typeElt).isEmpty()
-        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+        && typeFactory.hasEmptyMustCallValue(typeElt)
+        && typeFactory.hasEmptyMustCallValue(methodInvocationTree)) {
       return false;
     }
     // check for absence of @NotOwning annotation
