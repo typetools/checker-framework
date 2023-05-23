@@ -81,8 +81,8 @@ import org.plumelib.util.CollectionsPlume;
  *             standardizes both strings to "this.f". All dependent type annotations must be
  *             standardized so that the implementation of {@link
  *             org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
- *             AnnotationMirror)} can assume that two expressions are equivalent if their string
- *             representations are {@code equals()}.
+ *             TypeMirror, AnnotationMirror, TypeMirror)} can assume that two expressions are
+ *             equivalent if their string representations are {@code equals()}.
  *         <li>Viewpoint-adaption: converts an expression to some use site. For example, in method
  *             bodies, formal parameter references such as "#2" are converted to the name of the
  *             formal parameter. Another example, is at method call site, "this" is converted to the
