@@ -67,7 +67,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   })
   public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
     if (type == null || superType == null) {
-      throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+      throw new BugInCF(
+          "AsSuperVisitor.asSuper(%s, %s): arguments cannot be null", type, superType);
     }
 
     if (type == superType) {

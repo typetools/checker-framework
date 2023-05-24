@@ -667,9 +667,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Returns true if the effective annotations on the upperBound are above those on the lowerBound.
+   * Returns true if the effective annotations on the upperBound are above (or equal to) those on
+   * the lowerBound.
    *
-   * @return true if the effective annotations on the upperBound are above those on the lowerBound
+   * @param upperBound the upper bound to check
+   * @param lowerBound the lower bound to check
+   * @return true if the effective annotations on the upperBound are above (or equal to) those on
+   *     the lowerBound
    */
   public boolean areBoundsValid(AnnotatedTypeMirror upperBound, AnnotatedTypeMirror lowerBound) {
     AnnotationMirrorSet upperBoundAnnos =
