@@ -53,13 +53,16 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;
+
   /** The type factory. */
   protected final AnnotatedTypeFactory atypeFactory;
+
   /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   /** The underlying (Java) type in this abstract value. */
   protected final TypeMirror underlyingType;
+
   /** The annotations in this abstract value. */
   protected final AnnotationMirrorSet annotations;
 
