@@ -2384,9 +2384,6 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
-   * elements of the type).
-   *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
    *     Java type
@@ -2482,6 +2479,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
+  /** The cached message about relevant types. */
+  private @MonotonicNonNull String irrelevantExtraMessage = null;
+
   /**
    * Returns a string that can be passed to the "anno.on.irrelevant" error, giving information about
    * which types are relevant.
@@ -2490,8 +2490,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     string
    */
   public String irrelevantExtraMessage() {
+    if (irrelevantExtraMessage == null) {}
     if (relevantJavaTypes == null) {
-      return "";
+      irrelevantExtraMessage = "";
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append("; only applicable to ");
@@ -2499,8 +2500,9 @@ public abstract class GenericAnnotatedTypeFactory<
       if (arraysAreRelevant) {
         sb.append(" and arrays");
       }
-      return sb.toString();
+      irrelevantExtraMessage = sb.toString();
     }
+    return irrelevantExtraMessage;
   }
 
   /**
