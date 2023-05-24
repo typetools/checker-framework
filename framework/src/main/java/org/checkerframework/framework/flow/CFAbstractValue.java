@@ -52,13 +52,16 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;
+
   /** The type factory. */
   protected final AnnotatedTypeFactory atypeFactory;
+
   /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   /** The underlying (Java) type in this abstract value. */
   protected final TypeMirror underlyingType;
+
   /** The annotations in this abstract value. */
   protected final AnnotationMirrorSet annotations;
 
@@ -79,8 +82,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert validateSet(
-            this.getAnnotations(), this.getUnderlyingType(), atypeFactory.getQualifierHierarchy())
+    assert validateSet(this.getAnnotations(), this.getUnderlyingType(), atypeFactory)
         : "Encountered invalid type: "
             + underlyingType
             + " annotations: "
@@ -93,16 +95,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * @param annos set of annotations
    * @param typeMirror where the annotations are written
-   * @param qualHierarchy the qualifier hierarchy
+   * @param atypeFactory the type factory
    * @return true if no annotations are missing
    */
   public static boolean validateSet(
-      AnnotationMirrorSet annos, TypeMirror typeMirror, QualifierHierarchy qualHierarchy) {
+      AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
 
     if (canBeMissingAnnotations(typeMirror)) {
       return true;
     }
 
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet missingHierarchy = null;
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       AnnotationMirror anno = qualHierarchy.findAnnotationInHierarchy(annos, top);
