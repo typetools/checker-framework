@@ -30,7 +30,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
     GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
 
     TypeMirror tm = type.getUnderlyingType();
-    if (isAnnotatableType(tm) && !gatf.isRelevant(tm)) {
+    if (shouldAddPrimaryAnnotation(tm) && !gatf.isRelevant(tm)) {
       type.addMissingAnnotations(gatf.annotationsForIrrelevantJavaType(type.getUnderlyingType()));
     }
 
@@ -38,12 +38,12 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Returns true if the given type accepts a primary annotation.
+   * Returns true if IrrelevantTypeAnnotator should add a primary annotation.
    *
    * @param tm a type mirror
-   * @return true if the given type accepts a primary annotation
+   * @return true if IrrelevantTypeAnnotator should add a primary annotation.
    */
-  boolean isAnnotatableType(TypeMirror tm) {
+  boolean shouldAddPrimaryAnnotation(TypeMirror tm) {
     switch (tm.getKind()) {
       case BOOLEAN:
       case BYTE:

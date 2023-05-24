@@ -2532,6 +2532,9 @@ public abstract class GenericAnnotatedTypeFactory<
     }
   }
 
+  /** The cached message about relevant types. */
+  private @MonotonicNonNull String irrelevantExtraMessage = null;
+
   /**
    * Returns a string that can be passed to the "anno.on.irrelevant" error, giving information about
    * which types are relevant.
@@ -2540,8 +2543,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     string
    */
   public String irrelevantExtraMessage() {
+    if (irrelevantExtraMessage == null) {}
     if (relevantJavaTypes == null) {
-      return "";
+      irrelevantExtraMessage = "";
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append("; only applicable to ");
@@ -2549,8 +2553,9 @@ public abstract class GenericAnnotatedTypeFactory<
       if (arraysAreRelevant) {
         sb.append(" and arrays");
       }
-      return sb.toString();
+      irrelevantExtraMessage = sb.toString();
     }
+    return irrelevantExtraMessage;
   }
 
   /**
