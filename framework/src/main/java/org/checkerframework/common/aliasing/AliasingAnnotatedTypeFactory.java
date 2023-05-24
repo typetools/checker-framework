@@ -127,7 +127,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // type qualifiers but the warnings related to the hierarchy are ignored.
         return true;
       }
-      return super.isSubtype(subAnno, subType, superAnno, superType);
+      return super.isSubtypeImpl(subAnno, subType, superAnno, superType);
     }
   }
 }
