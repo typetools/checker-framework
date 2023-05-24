@@ -569,7 +569,8 @@ public class WholeProgramInferenceScenesStorage
     if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
       return;
     }
-    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsATM.getUnderlyingType(), type);
+    TypeMirror rhsTM = rhsATM.getUnderlyingType();
+    AnnotatedTypeMirror atmFromScene = atmFromStorageLocation(rhsTM, type);
     updateAtmWithLub(rhsATM, atmFromScene);
     if (lhsATM instanceof AnnotatedTypeVariable) {
       AnnotationMirrorSet upperAnnos =

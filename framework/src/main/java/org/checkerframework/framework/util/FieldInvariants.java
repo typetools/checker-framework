@@ -123,7 +123,7 @@ public class FieldInvariants {
    * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
    */
   public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
-    QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
@@ -135,9 +135,8 @@ public class FieldInvariants {
       List<AnnotationMirror> superQualifiers = superInvar.getQualifiersFor(field);
       List<AnnotationMirror> subQualifiers = this.getQualifiersFor(field);
       for (AnnotationMirror superA : superQualifiers) {
-        AnnotationMirror sub =
-            qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        if (sub == null || !qualifierHierarchy.isSubtype(sub, superA)) {
+        AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
+        if (sub == null || !qualHierarchy.isSubtype(sub, superA)) {
           return new DiagMessage(
               Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
         }
