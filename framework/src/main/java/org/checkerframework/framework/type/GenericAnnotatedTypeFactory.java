@@ -3013,7 +3013,10 @@ public abstract class GenericAnnotatedTypeFactory<
     return result;
   }
 
-  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
+  /**
+   * A TypeMirror for which isRelevant returns true. It is never used for anything else. Its use
+   * should be rare; if you use it, document why there is no real TypeMirror to use.
+   */
   private static final class AlwaysRelevantTypeMirror implements TypeMirror {
     /** Create a new AlwaysRelevantTypeMirror. */
     private AlwaysRelevantTypeMirror() {}
