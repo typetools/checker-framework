@@ -2687,28 +2687,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public void warnAboutIrrelevantJavaTypes(
       @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
-    List<DiagMessage> dms = messagesAboutIrrelevantJavaTypes(annoTrees, typeTree);
-    for (DiagMessage dm : dms) {
-      checker.report(null, dm);
-    }
-  }
-
-  /**
-   * Warns if a type annotation is written on a Java type that is not listed in
-   * the @RelevantJavaTypes annotation.
-   *
-   * @param annoTrees annotations written before a variable/method declaration, if this type is from
-   *     one; null otherwise. This might contain type annotations that the Java parser attached to
-   *     the declaration rather than to the type.
-   * @param typeTree the type that any type annotations in annoTrees apply to
-   */
-  public List<DiagMessage> messagesAboutIrrelevantJavaTypes(
-      @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
     if (!shouldWarnAboutIrrelevantJavaTypes()) {
-      return Collections.emptyList();
+      return;
     }
 
-    List<DiagMessage> result = new ArrayList<>(4);
     Tree t = typeTree;
     while (true) {
       switch (t.getKind()) {
@@ -2732,7 +2714,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String extraInfo = atypeFactory.irrelevantExtraMessage();
             checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t, extraInfo);
           }
-          return result;
+          return;
         case ANNOTATED_TYPE:
           AnnotatedTypeTree at = (AnnotatedTypeTree) t;
           ExpressionTree underlying = at.getUnderlyingType();
@@ -2741,10 +2723,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String extraInfo = atypeFactory.irrelevantExtraMessage();
             checker.reportError(t, "anno.on.irrelevant", annos, underlying, extraInfo);
           }
-          return result;
+          return;
 
         default:
-          return result;
+          return;
       }
     }
   }
