@@ -34,7 +34,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) & 0x1FFFFFF;
     testRes = (signed >> 8) & 0x1FFFFFF;
 
-    // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
+    // Use mask that doesn't render the MSB irrelevant, but does render the next 7 MSB_s
     // irrelevant.
 
     // Now the left-most introduced bit matters
@@ -47,7 +47,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) & 0x90FFFFFF;
     testRes = (signed >> 8) & 0x90FFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = (unsigned >>> 8) & 0xFFFFFFFF;
 
@@ -68,7 +68,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 & 0xFFFFFF;
     testRes = signed >> 8 & 0xFFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & 0xFFFFFFFF;
 
@@ -89,7 +89,7 @@ public class MaskedShifts {
     testRes = ((signed >>> 8)) & 0xFFFFFF;
     testRes = ((signed >> 8)) & 0xFFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = ((unsigned >>> 8)) & 0xFFFFFFFF;
 
@@ -110,7 +110,7 @@ public class MaskedShifts {
     testRes = 0xFFFFFF & (signed >>> 8);
     testRes = 0xFFFFFF & (signed >> 8);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0xFFFFFFFF & (unsigned >>> 8);
 
@@ -131,7 +131,7 @@ public class MaskedShifts {
     testRes = 0xFFFFFF & signed >>> 8;
     testRes = 0xFFFFFF & signed >> 8;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0xFFFFFFFF & unsigned >>> 8;
 
@@ -152,7 +152,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 & (0xFFFFFF);
     testRes = signed >> 8 & (0xFFFFFF);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & (0xFFFFFFFF);
 
@@ -173,7 +173,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 & ((0xFFFFFF));
     testRes = signed >> 8 & ((0xFFFFFF));
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & ((0xFFFFFFFF));
 
@@ -217,7 +217,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) | 0xFE000000;
     testRes = (signed >> 8) | 0xFE000000;
 
-    // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
+    // Use mask that doesn't render the MSB irrelevant, but does render the next 7 MSB_s
     // irrelevant.
 
     // Now the left-most introduced bit matters
@@ -230,7 +230,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) | 0x8F000000;
     testRes = (signed >> 8) | 0x8F000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = (unsigned >>> 8) | 0x0;
 
@@ -251,7 +251,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 | 0xFF000000;
     testRes = signed >> 8 | 0xFF000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | 0x0;
 
@@ -272,7 +272,7 @@ public class MaskedShifts {
     testRes = ((signed >>> 8)) | 0xFF000000;
     testRes = ((signed >> 8)) | 0xFF000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = ((unsigned >>> 8)) | 0x0;
 
@@ -293,7 +293,7 @@ public class MaskedShifts {
     testRes = 0xFF000000 | (signed >>> 8);
     testRes = 0xFF000000 | (signed >> 8);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0x0 | (unsigned >>> 8);
 
@@ -314,7 +314,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 | (0xFF000000);
     testRes = signed >> 8 | (0xFF000000);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | (0x0);
 
@@ -335,7 +335,7 @@ public class MaskedShifts {
     testRes = signed >>> 8 | ((0xFF000000));
     testRes = signed >> 8 | ((0xFF000000));
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | ((0x0));
 
