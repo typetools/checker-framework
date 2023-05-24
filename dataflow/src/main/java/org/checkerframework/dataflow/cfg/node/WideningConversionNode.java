@@ -45,7 +45,7 @@ public class WideningConversionNode extends Node {
 
   @Override
   public String toString() {
-    return "WideningConversion(" + getOperand() + ", " + type + ")";
+    return "WideningConversion{" + getOperand() + ", " + type + "}";
   }
 
   @Override

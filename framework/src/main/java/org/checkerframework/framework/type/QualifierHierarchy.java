@@ -163,6 +163,8 @@ public abstract class QualifierHierarchy {
    * <p>Subtypes should generally override {@link #isSubtypeImpl} (if needed) but call {@code
    * isSubtype()}.
    *
+   * <p>"Impl" is short for "Implementation".
+   *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}
    * @param superQualifier possible superqualifier
