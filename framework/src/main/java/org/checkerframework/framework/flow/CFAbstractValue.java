@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -79,8 +80,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     this.annotations = annotations;
     this.underlyingType = underlyingType;
 
-    assert validateSet(
-            this.getAnnotations(), this.getUnderlyingType(), atypeFactory.getQualifierHierarchy())
+    assert validateSet(this.getAnnotations(), this.getUnderlyingType(), atypeFactory)
         : "Encountered invalid type: "
             + underlyingType
             + " annotations: "
@@ -93,16 +93,24 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * @param annos set of annotations
    * @param typeMirror where the annotations are written
-   * @param qualHierarchy the qualifier hierarchy
+   * @param atypeFactory the type factory
    * @return true if no annotations are missing
    */
   public static boolean validateSet(
-      AnnotationMirrorSet annos, TypeMirror typeMirror, QualifierHierarchy qualHierarchy) {
+      AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
 
-    if (canBeMissingAnnotations(typeMirror)) {
-      return true;
+    boolean canBeMissing = canBeMissingAnnotations(typeMirror);
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
+    if (!gatf.isRelevant(typeMirror)) {
+      AnnotationMirrorSet annosForIrrelevant = gatf.annotationsForIrrelevantJavaType(typeMirror);
+      if (!(canBeMissing
+          ? annosForIrrelevant.containsAll(annos)
+          : annos.equals(annosForIrrelevant))) {
+        return false;
+      }
     }
 
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet missingHierarchy = null;
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       AnnotationMirror anno = qualHierarchy.findAnnotationInHierarchy(annos, top);
@@ -114,7 +122,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    return missingHierarchy == null;
+    return canBeMissing || missingHierarchy == null;
   }
 
   /**

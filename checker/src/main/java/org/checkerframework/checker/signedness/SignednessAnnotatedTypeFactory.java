@@ -99,6 +99,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** A set containing just {@code @Signed}. */
   private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+  /** A set containing just {@code @Unsigned}. */
+  private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
 
   /**
    * Create a SignednessAnnotatedTypeFactory.
@@ -254,8 +256,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  protected AnnotationMirrorSet annotationsForIrrelevantJavaTypes() {
-    return SIGNED_SINGLETON;
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    if (TypesUtils.isCharOrCharacter(tm)) {
+      return UNSIGNED_SINGLETON;
+    } else {
+      return SIGNED_SINGLETON;
+    }
   }
 
   /**

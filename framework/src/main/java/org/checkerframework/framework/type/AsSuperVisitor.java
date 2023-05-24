@@ -67,7 +67,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   })
   public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
     if (type == null || superType == null) {
-      throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+      throw new BugInCF("AsSuperVisitor args cannot be null.");
     }
 
     if (type == superType) {
@@ -78,6 +78,18 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // parameters to asSuper are not changed and a copy is returned.
     AnnotatedTypeMirror copyType = type.deepCopy();
     AnnotatedTypeMirror copySuperType = superType.deepCopy();
+    boolean typeIsRelevant =
+        !((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory).isRelevant(copyType);
+    boolean superTypeIsRelevant =
+        !((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory).isRelevant(copySuperType);
+    // TODO: Is this too aggressive?
+    if (typeIsRelevant && !superTypeIsRelevant) {
+      // give superType its default qualifier
+      setDefaultForType(superType);
+    } else if (!typeIsRelevant && superTypeIsRelevant) {
+      // give type its default qualifier
+      setDefaultForType(type);
+    }
     reset();
     AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
@@ -87,6 +99,27 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     return (T) result;
+  }
+
+  /**
+   * Replaces the type's annotations with the default for the given type. If the given type has no
+   * default annotations, does nothing.
+   *
+   * @param atm a type; is side-effected by this method
+   */
+  private void setDefaultForType(AnnotatedTypeMirror atm) {
+    // Shallow copies because we only want to see if the primary annotation changed.
+    AnnotatedTypeMirror withoutAnnotations = atm.shallowCopy();
+    withoutAnnotations.removeAnnotations(withoutAnnotations.getAnnotations());
+    AnnotatedTypeMirror withDefaultAnnotations = withoutAnnotations.shallowCopy();
+    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+        .addAnnotationsFromDefaultForType(null, withDefaultAnnotations);
+    // Only have to check the primary annotations.
+    if (!withDefaultAnnotations.equals(withoutAnnotations)) {
+      // Adding the default annotations had an effect.
+      ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+          .replaceAnnotations(withDefaultAnnotations, atm);
+    }
   }
 
   private void reset() {

@@ -2943,6 +2943,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    // System.out.printf(
+    //     "commonAssignmentCheck(varType=%s, valueExpTree=%s)%n", varType, valueExpTree);
     if (shouldSkipUses(valueExpTree)) {
       if (showchecks) {
         System.out.printf(
@@ -3091,6 +3093,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           valueType.toString(),
           varType.getKind(),
           varType.toString());
+      // new Error(String.format("commonAssignmentCheck(%s, %s)", varType, valueType))
+      //     .printStackTrace(System.out);
     }
   }
 

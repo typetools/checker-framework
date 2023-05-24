@@ -566,18 +566,20 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(new IrrelevantTypeAnnotator(this, annotationsForIrrelevantJavaTypes()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
   }
 
   /**
-   * Returns the annotations that should appear on irrelevant Java types.
+   * Returns the annotations that should appear on the given irrelevant Java type. If the type is
+   * relevant, this method's behavior is undefined.
    *
-   * @return the annotations that should appear on irrelevant Java types
+   * @param tm an irrelevant Java type
+   * @return the annotations that should appear on the given irrelevant Java type
    */
-  protected AnnotationMirrorSet annotationsForIrrelevantJavaTypes() {
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
     return getQualifierHierarchy().getTopAnnotations();
   }
 
@@ -1865,7 +1867,7 @@ public abstract class GenericAnnotatedTypeFactory<
         "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
         thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
-      // If a tree annotator, did not add a type, add the DefaultForUse default.
+      // If a tree annotator did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
@@ -1953,9 +1955,13 @@ public abstract class GenericAnnotatedTypeFactory<
     Value as = null;
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
+      // System.out.printf(
+      //     "getInferredValueFor#1(%s): as=%s%n", TreeUtils.toStringTruncated(tree, 60), as);
     }
     if (as == null) {
       as = flowResult.getValue(tree);
+      // System.out.printf(
+      //     "getInferredValueFor#2(%s): as=%s%n", TreeUtils.toStringTruncated(tree, 60), as);
     }
     return as;
   }
@@ -2303,7 +2309,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
-   * element} is a local variable, then the defaults are not added.
+   * element} is a local variable, or if the type already has an annotation from the relevant type
+   * hierarchy, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
    * DefaultForTypeAnnotator}.)
@@ -2314,6 +2321,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
     if (element != null && ElementUtils.isLocalVariable(element)) {
+      // It's a local variable.
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary
         // location.
@@ -2327,12 +2335,14 @@ public abstract class GenericAnnotatedTypeFactory<
           defaultForTypeAnnotator.visit(typeArg);
         }
       } else if (type.getKind().isPrimitive()) {
-        // Don't apply the default for local variables with primitive types.
+        // Don't apply the default for local variables with primitive types. (The primary location
+        // is the only location, so this is a special case of the above.)
       } else {
         defaultQualifierForUseTypeAnnotator.visit(type);
         defaultForTypeAnnotator.visit(type);
       }
     } else {
+      // It's not a local variable.
       defaultQualifierForUseTypeAnnotator.visit(type);
       defaultForTypeAnnotator.visit(type);
     }
@@ -2377,7 +2387,9 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tm == alwaysRelevantTM) {
       return true;
     }
-    tm = types.erasure(tm);
+    if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
+      tm = types.erasure(tm);
+    }
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
@@ -2521,7 +2533,8 @@ public abstract class GenericAnnotatedTypeFactory<
         return false;
 
       default:
-        throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+        // throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+        return false;
     }
   }
 

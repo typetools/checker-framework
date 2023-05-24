@@ -16,10 +16,10 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  */
 public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
-  protected final AnnotatedTypeFactory typeFactory;
+  protected final AnnotatedTypeFactory atypeFactory;
 
-  protected TypeAnnotator(AnnotatedTypeFactory typeFactory) {
-    this.typeFactory = typeFactory;
+  protected TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+    this.atypeFactory = atypeFactory;
   }
 
   /**
