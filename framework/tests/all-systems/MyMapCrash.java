@@ -1,7 +1,7 @@
 import java.util.Set;
 
 @SuppressWarnings("all") // Just check for crashes
-public class Map<K, V> {
+public class MyMapCrash<K, V> {
   public static class ImmutableSetMultimap<S, T> {
     public ImmutableSetMultimap(Map<S, Set<T>> map) {}
   }

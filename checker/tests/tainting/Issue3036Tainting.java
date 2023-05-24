@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.tainting.qual.Tainted;
 
-public class Issue3036 {
+public class Issue3036Tainting {
 
   public Set<MyInnerClass> getDsData() {
     throw new RuntimeException();
