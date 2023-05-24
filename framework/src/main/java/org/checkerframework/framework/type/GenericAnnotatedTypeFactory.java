@@ -2369,7 +2369,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
    * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
@@ -2400,7 +2400,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
    * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
@@ -2547,13 +2547,10 @@ public abstract class GenericAnnotatedTypeFactory<
     if (relevantJavaTypes == null) {
       irrelevantExtraMessage = "";
     } else {
-      StringBuilder sb = new StringBuilder();
-      sb.append("; only applicable to ");
-      sb.append(relevantJavaTypes);
+      irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
       if (arraysAreRelevant) {
-        sb.append(" and arrays");
+        irrelevantExtraMessage += " and arrays";
       }
-      irrelevantExtraMessage = sb.toString();
     }
     return irrelevantExtraMessage;
   }
