@@ -131,8 +131,8 @@ public abstract class QualifierHierarchy {
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualiifer subtyping depends on the Java basetype.
    *
-   * <p>Subtypes should generally override {@link #isSubtypeImpl} (if needed) but call {@code
-   * isSubtype()}.
+   * <p>Clients should call {@code isSubtypeShallow()}. However, subtypes should generally override
+   * {@link #isSubtypeQualifiers} (if needed).x
    *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}
@@ -141,7 +141,7 @@ public abstract class QualifierHierarchy {
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
   @SuppressWarnings({"keyfor:argument", "nullness:argument"}) // should not be needed
-  public boolean isSubtype(
+  public boolean isSubtypeShallow(
       AnnotationMirror subQualifier,
       TypeMirror subType,
       AnnotationMirror superQualifier,
@@ -151,32 +151,25 @@ public abstract class QualifierHierarchy {
       // At least one of the types is not relevant.
       return true;
     }
-    return isSubtypeImpl(subQualifier, subType, superQualifier, superType);
+    return isSubtypeQualifiers(subQualifier, superQualifier);
   }
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
-   * not necessarily in a Java subtyping relationship with one another and are only used by this
-   * method for special cases when qualiifer subtyping depends on the Java basetype.
+   * according to the type qualifier hierarchy.
    *
-   * <p>Subtypes should generally override {@link #isSubtypeImpl} (if needed) but call {@code
-   * isSubtype()}.
+   * <p>Clients should call {@link #isSubtypeShallow}. However, subtypes should generally override
+   * this method (if needed).
    *
    * <p>"Impl" is short for "Implementation".
    *
    * @param subQualifier possible subqualifier
-   * @param subType the Java basetype associated with {@code subQualifier}
    * @param superQualifier possible superqualifier
-   * @param superType the Java basetype associated with {@code superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
   @SuppressWarnings({"keyfor:argument", "nullness:argument"}) // should not be needed
-  public abstract boolean isSubtypeImpl(
-      AnnotationMirror subQualifier,
-      TypeMirror subType,
-      AnnotationMirror superQualifier,
-      TypeMirror superType);
+  protected abstract boolean isSubtypeQualifiers(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier);
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
@@ -185,7 +178,7 @@ public abstract class QualifierHierarchy {
    * only used by this method for special cases when qualiifer subtyping depends on the Java
    * basetype.
    *
-   * <p>Subtypes more often override {@link #isSubtype(AnnotationMirror, TypeMirror,
+   * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
    * AnnotationMirror, TypeMirror)} than this method.
    *
    * @param subQualifiers set of qualifiers; exactly one per hierarchy
@@ -195,7 +188,7 @@ public abstract class QualifierHierarchy {
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
-  public boolean isSubtype(
+  public boolean isSubtypeShallow(
       Collection<? extends AnnotationMirror> subQualifiers,
       TypeMirror subType,
       Collection<? extends AnnotationMirror> superQualifiers,
@@ -208,7 +201,7 @@ public abstract class QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtypeImpl(subQual, subType, superQual, superType)) {
+      if (!isSubtypeQualifiers(subQual, superQual)) {
         return false;
       }
     }
@@ -402,7 +395,7 @@ public abstract class QualifierHierarchy {
   public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
     for (AnnotationMirror anno : qualifiers) {
-      if (isSubtype(anno, alwaysRelevantTM, top, alwaysRelevantTM)) {
+      if (isSubtypeShallow(anno, alwaysRelevantTM, top, alwaysRelevantTM)) {
         return anno;
       }
     }

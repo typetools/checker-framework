@@ -168,7 +168,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           AnnotationMirror effectiveMCAnno = type.getAnnotation();
           TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
-              && !qualHierarchy.isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+              && !qualHierarchy.isSubtypeShallow(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
             checker.reportError(
                 tree,
@@ -206,7 +206,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             TypeMirror tm = type.getUnderlyingType();
 
-            if (!qualHierarchy.isSubtype(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+            if (!qualHierarchy.isSubtypeShallow(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
 
               checker.reportError(
                   tree,
@@ -310,7 +310,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
       AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
-      if (qualHierarchy.isSubtype(
+      if (qualHierarchy.isSubtypeShallow(
           atypeFactory.withoutClose(valueAnno),
           valueType.getUnderlyingType(),
           atypeFactory.withoutClose(varAnno),
@@ -344,7 +344,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
     AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    if (!qualHierarchy.isSubtype(
+    if (!qualHierarchy.isSubtypeShallow(
         defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);

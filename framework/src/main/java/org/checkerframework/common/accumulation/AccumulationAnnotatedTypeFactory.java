@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -467,11 +466,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * <p>isSubtype in this type system is subset.
      */
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, bottom)) {
         return true;
       } else if (AnnotationUtils.areSame(superAnno, bottom)) {

@@ -4,6 +4,7 @@ public class AnnotatedTypeParams4 {
 
   class Test1<CONTENT extends @Nullable Object> {
     CONTENT a;
+
     // To prevent the warning about un-initialized fields.
     Test1(CONTENT p1) {
       a = p1;
@@ -21,6 +22,7 @@ public class AnnotatedTypeParams4 {
 
   class Test2<CONTENT extends @Nullable Object> {
     @NonNull CONTENT a;
+
     // To prevent the warning about un-initialized fields.
     Test2(@NonNull CONTENT p1) {
       a = p1;

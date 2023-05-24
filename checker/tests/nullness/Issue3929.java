@@ -22,6 +22,7 @@ class MyClass3929<K extends Comparable<K>> {
     return new ArrayList<>();
   }
 }
+
 // TODO: This is a false positive.
 // See https://github.com/typetools/checker-framework/issues/2174
 // :: error: (type.argument)

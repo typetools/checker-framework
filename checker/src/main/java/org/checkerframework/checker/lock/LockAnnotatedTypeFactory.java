@@ -85,24 +85,31 @@ public class LockAnnotatedTypeFactory
 
   /** The @{@link LockHeld} annotation. */
   protected final AnnotationMirror LOCKHELD = AnnotationBuilder.fromClass(elements, LockHeld.class);
+
   /** The @{@link LockPossiblyHeld} annotation. */
   protected final AnnotationMirror LOCKPOSSIBLYHELD =
       AnnotationBuilder.fromClass(elements, LockPossiblyHeld.class);
+
   /** The @{@link SideEffectFree} annotation. */
   protected final AnnotationMirror SIDEEFFECTFREE =
       AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+
   /** The @{@link GuardedByUnknown} annotation. */
   protected final AnnotationMirror GUARDEDBYUNKNOWN =
       AnnotationBuilder.fromClass(elements, GuardedByUnknown.class);
+
   /** The @{@link GuardedBy} annotation. */
   protected final AnnotationMirror GUARDEDBY =
       createGuardedByAnnotationMirror(new ArrayList<String>());
+
   /** The @{@link NewObject} annotation. */
   protected final AnnotationMirror NEWOBJECT =
       AnnotationBuilder.fromClass(elements, NewObject.class);
+
   /** The @{@link GuardedByBottom} annotation. */
   protected final AnnotationMirror GUARDEDBYBOTTOM =
       AnnotationBuilder.fromClass(elements, GuardedByBottom.class);
+
   /** The @{@link GuardSatisfied} annotation. */
   protected final AnnotationMirror GUARDSATISFIED =
       AnnotationBuilder.fromClass(elements, GuardSatisfied.class);
@@ -110,12 +117,15 @@ public class LockAnnotatedTypeFactory
   /** The value() element/field of a @GuardedBy annotation. */
   protected final ExecutableElement guardedByValueElement =
       TreeUtils.getMethod(GuardedBy.class, "value", 0, processingEnv);
+
   /** The value() element/field of a @GuardSatisfied annotation. */
   protected final ExecutableElement guardSatisfiedValueElement =
       TreeUtils.getMethod(GuardSatisfied.class, "value", 0, processingEnv);
+
   /** The EnsuresLockHeld.value element/field. */
   protected final ExecutableElement ensuresLockHeldValueElement =
       TreeUtils.getMethod(EnsuresLockHeld.class, "value", 0, processingEnv);
+
   /** The EnsuresLockHeldIf.expression element/field. */
   protected final ExecutableElement ensuresLockHeldIfExpressionElement =
       TreeUtils.getMethod(EnsuresLockHeldIf.class, "expression", 0, processingEnv);
@@ -269,12 +279,16 @@ public class LockAnnotatedTypeFactory
 
     /** Qualifier kind for the @{@link GuardedByUnknown} annotation. */
     private final QualifierKind GUARDEDBYUNKNOWN_KIND;
+
     /** Qualifier kind for the @{@link GuardedBy} annotation. */
     private final QualifierKind GUARDEDBY_KIND;
+
     /** Qualifier kind for the @{@link GuardSatisfied} annotation. */
     private final QualifierKind GUARDSATISFIED_KIND;
+
     /** Qualifier kind for the @{@link NewObject} annotation. */
     private final QualifierKind NEWOBJECT_KIND;
+
     /** Qualifier kind for the @{@link GuardedByBottom} annotation. */
     private final QualifierKind GUARDEDBYBOTTOM_KIND;
 

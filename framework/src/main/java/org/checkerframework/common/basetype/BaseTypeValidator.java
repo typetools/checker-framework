@@ -63,10 +63,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   /** BaseTypeChecker. */
   protected final BaseTypeChecker checker;
+
   /** BaseTypeVisitor. */
   protected final BaseTypeVisitor<?> visitor;
+
   /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory atypeFactory;
+
   /** The qualifer hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
@@ -621,12 +624,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           TypeMirror superBoundTM = superBound.getUnderlyingType();
           AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
           TypeMirror extendsBoundTM = extendsBound.getUnderlyingType();
-          if (!(qualHierarchy.isSubtype(
+          if (!(qualHierarchy.isSubtypeShallow(
                   superBound.getEffectiveAnnotations(),
                   superBoundTM,
                   extendsBound.getAnnotations(),
                   extendsBoundTM)
-              && qualHierarchy.isSubtype(
+              && qualHierarchy.isSubtypeShallow(
                   extendsBound.getAnnotations(),
                   extendsBoundTM,
                   superBound.getEffectiveAnnotations(),
@@ -690,7 +693,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         AnnotatedTypes.findEffectiveAnnotations(qualHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualHierarchy.isSubtype(
+      return qualHierarchy.isSubtypeShallow(
           lowerBoundAnnos,
           lowerBound.getUnderlyingType(),
           upperBoundAnnos,

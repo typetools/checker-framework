@@ -210,45 +210,64 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // These variables cannot be static because they depend on the ProcessingEnvironment.
   /** The AnnotatedFor.value argument/element. */
   protected final ExecutableElement annotatedForValueElement;
+
   /** The EnsuresQualifier.expression field/element. */
   protected final ExecutableElement ensuresQualifierExpressionElement;
+
   /** The EnsuresQualifier.List.value field/element. */
   protected final ExecutableElement ensuresQualifierListValueElement;
+
   /** The EnsuresQualifierIf.expression field/element. */
   protected final ExecutableElement ensuresQualifierIfExpressionElement;
+
   /** The EnsuresQualifierIf.result argument/element. */
   protected final ExecutableElement ensuresQualifierIfResultElement;
+
   /** The EnsuresQualifierIf.List.value field/element. */
   protected final ExecutableElement ensuresQualifierIfListValueElement;
+
   /** The FieldInvariant.field argument/element. */
   protected final ExecutableElement fieldInvariantFieldElement;
+
   /** The FieldInvariant.qualifier argument/element. */
   protected final ExecutableElement fieldInvariantQualifierElement;
+
   /** The HasQualifierParameter.value field/element. */
   protected final ExecutableElement hasQualifierParameterValueElement;
+
   /** The MethodVal.className argument/element. */
   public final ExecutableElement methodValClassNameElement;
+
   /** The MethodVal.methodName argument/element. */
   public final ExecutableElement methodValMethodNameElement;
+
   /** The MethodVal.params argument/element. */
   public final ExecutableElement methodValParamsElement;
+
   /** The NoQualifierParameter.value field/element. */
   protected final ExecutableElement noQualifierParameterValueElement;
+
   /** The RequiresQualifier.expression field/element. */
   protected final ExecutableElement requiresQualifierExpressionElement;
+
   /** The RequiresQualifier.List.value field/element. */
   protected final ExecutableElement requiresQualifierListValueElement;
 
   /** The RequiresQualifier type. */
   protected final TypeMirror requiresQualifierTM;
+
   /** The RequiresQualifier.List type. */
   protected final TypeMirror requiresQualifierListTM;
+
   /** The EnsuresQualifier type. */
   protected final TypeMirror ensuresQualifierTM;
+
   /** The EnsuresQualifier.List type. */
   protected final TypeMirror ensuresQualifierListTM;
+
   /** The EnsuresQualifierIf type. */
   protected final TypeMirror ensuresQualifierIfTM;
+
   /** The EnsuresQualifierIf.List type. */
   protected final TypeMirror ensuresQualifierIfListTM;
 
@@ -338,6 +357,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Map keys are canonical names of aliased annotations. */
   private final Map<@FullyQualifiedName String, Alias> aliases = new HashMap<>();
+
   /**
    * Scans all parts of the {@link AnnotatedTypeMirror} so that all of its fields are initialized.
    */
@@ -371,10 +391,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private static class Alias {
     /** The canonical annotation (or null if copyElements == true). */
     final AnnotationMirror canonical;
+
     /** Whether elements should be copied over when translating to the canonical annotation. */
     final boolean copyElements;
+
     /** The canonical annotation name (or null if copyElements == false). */
     final @CanonicalName String canonicalName;
+
     /** Which elements should not be copied over (or null if copyElements == false). */
     final String[] ignorableElements;
 
@@ -2218,8 +2241,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public static class ParameterizedExecutableType {
     /** The method's/constructor's type. */
     public final AnnotatedExecutableType executableType;
+
     /** The types of the generic type arguments. */
     public final List<AnnotatedTypeMirror> typeArgs;
+
     /** Create a ParameterizedExecutableType. */
     public ParameterizedExecutableType(
         AnnotatedExecutableType executableType, List<AnnotatedTypeMirror> typeArgs) {
@@ -2529,7 +2554,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
-      if (qualHierarchy.isSubtype(receiverTypeBoundAnno, receiverTM, wildcardAnno, receiverTM)) {
+      if (qualHierarchy.isSubtypeShallow(
+          receiverTypeBoundAnno, receiverTM, wildcardAnno, receiverTM)) {
         newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);
@@ -5353,6 +5379,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Matches addition of a constant. */
   private static final Pattern plusConstant = Pattern.compile(" *\\+ *(-?[0-9]+)$");
+
   /** Matches subtraction of a constant. */
   private static final Pattern minusConstant = Pattern.compile(" *- *(-?[0-9]+)$");
 

@@ -14,7 +14,7 @@ import org.checkerframework.framework.util.QualifierKindHierarchy;
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where qualifiers may be
  * represented by annotations with elements, but most of the qualifiers do not have elements. In
  * contrast to {@link org.checkerframework.framework.type.ElementQualifierHierarchy}, this class
- * partially implements {@link #isSubtype(AnnotationMirror, TypeMirror, AnnotationMirror,
+ * partially implements {@link #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror,
  * TypeMirror)}, {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)}, and {@link
  * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls *WithElements when the result
  * cannot be computed from the meta-annotations {@link
@@ -53,11 +53,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
   }
 
   @Override
-  public final boolean isSubtypeImpl(
-      AnnotationMirror subAnno,
-      TypeMirror subType,
-      AnnotationMirror superAnno,
-      TypeMirror superType) {
+  public final boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     QualifierKind subKind = getQualifierKind(subAnno);
     QualifierKind superKind = getQualifierKind(superAnno);
     if (subKind.isSubtypeOf(superKind)) {

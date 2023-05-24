@@ -46,8 +46,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    */
   /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Tree.Kind, AnnotationMirrorSet> treeKinds;
+
   /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Class<?>, AnnotationMirrorSet> treeClasses;
+
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
   private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 
@@ -254,7 +256,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         // Verify that res is not a subtype of any type in nonMatches
         TypeMirror tm = type.getUnderlyingType();
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
-          if (qualHierarchy.isSubtype(res, tm, sam, tm)) {
+          if (qualHierarchy.isSubtypeShallow(res, tm, sam, tm)) {
             String matchesOnePerLine = "";
             for (Set<? extends AnnotationMirror> match : matches) {
               matchesOnePerLine += System.lineSeparator() + "     " + match;

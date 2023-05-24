@@ -115,9 +115,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
   @Override
   public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-    if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+    if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
       return a1;
-    } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+    } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
       return a2;
     } else {
 
@@ -236,9 +236,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     a1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a1);
     a2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a2);
 
-    if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+    if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
       return a2;
-    } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+    } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
       return a1;
     }
     String qual1 = AnnotationUtils.annotationName(a1);
@@ -429,11 +429,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return true if subAnno is a subtype of superAnno, false otherwise
    */
   @Override
-  public boolean isSubtypeImpl(
-      AnnotationMirror subAnno,
-      TypeMirror subType,
-      AnnotationMirror superAnno,
-      TypeMirror superType) {
+  public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     subAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(subAnno);
     superAnno = atypeFactory.convertSpecialIntRangeToStandardIntRange(superAnno);
     String subQualName = AnnotationUtils.annotationName(subAnno);

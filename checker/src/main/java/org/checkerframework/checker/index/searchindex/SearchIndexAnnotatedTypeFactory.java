@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.qual.NegativeIndexFor;
 import org.checkerframework.checker.index.qual.SearchIndexBottom;
@@ -36,6 +35,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link SearchIndexUnknown} annotation. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+
   /** The @{@link SearchIndexBottom} annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
@@ -43,6 +43,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The NegativeIndexFor.value field/element. */
   protected final ExecutableElement negativeIndexForValueElement =
       TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
+
   /** The SearchIndexFor.value field/element. */
   protected final ExecutableElement searchIndexForValueElement =
       TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);
@@ -125,10 +126,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (AnnotationUtils.areSame(a2, BOTTOM)) {
         return a2;
       }
-      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
       }
-      if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       }
       // If neither is a subtype of the other, then create an
@@ -164,10 +165,10 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (AnnotationUtils.areSame(a2, BOTTOM)) {
         return a1;
       }
-      if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
       }
-      if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       }
       // If neither is a subtype of the other, then create an
@@ -189,11 +190,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (areSameByClass(superAnno, SearchIndexUnknown.class)) {
         return true;
       }

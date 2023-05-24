@@ -22,6 +22,7 @@ public class DeepOverrideBug {
     public String interfaceMethod() { // should emit error
       return null;
     }
+
     // :: error: (override.return)
     public String abstractMethod() { // should emit error
       return null;

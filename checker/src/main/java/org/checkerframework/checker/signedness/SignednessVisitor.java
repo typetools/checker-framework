@@ -142,10 +142,12 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           TypeMirror leftOpTM = leftOpType.getUnderlyingType();
           TypeMirror rightOpTM = rightOpType.getUnderlyingType();
           if (!TypesUtils.isCharOrCharacter(leftOpTM)
-              && !qualHierarchy.isSubtype(leftAnno, leftOpTM, atypeFactory.SIGNED, leftOpTM)) {
+              && !qualHierarchy.isSubtypeShallow(
+                  leftAnno, leftOpTM, atypeFactory.SIGNED, leftOpTM)) {
             checker.reportError(leftOp, "unsigned.concat");
           } else if (!TypesUtils.isCharOrCharacter(rightOpTM)
-              && !qualHierarchy.isSubtype(rightAnno, rightOpTM, atypeFactory.SIGNED, rightOpTM)) {
+              && !qualHierarchy.isSubtypeShallow(
+                  rightAnno, rightOpTM, atypeFactory.SIGNED, rightOpTM)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -312,7 +314,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
             break;
           }
           AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
-          if (!qualHierarchy.isSubtype(anno, exprTM, atypeFactory.SIGNED, exprTM)) {
+          if (!qualHierarchy.isSubtypeShallow(anno, exprTM, atypeFactory.SIGNED, exprTM)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
           }
           break;

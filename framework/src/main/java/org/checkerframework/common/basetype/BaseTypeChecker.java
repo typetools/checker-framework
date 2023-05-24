@@ -685,10 +685,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
   private static class CheckerMessage {
     /** The severity of the message. */
     final Diagnostic.Kind kind;
+
     /** The message itself. */
     final String message;
+
     /** The source code that the message is about. */
     final @InternedDistinct Tree source;
+
     /** Stores the stack trace when the message is created. */
     final StackTraceElement[] trace;
 

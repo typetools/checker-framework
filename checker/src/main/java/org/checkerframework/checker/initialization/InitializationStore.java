@@ -35,6 +35,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
   /** The set of fields that are initialized. */
   protected final Set<VariableElement> initializedFields;
+
   /** The set of fields that have the 'invariant' annotation, and their value. */
   protected final Map<FieldAccess, V> invariantFields;
 
@@ -85,7 +86,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     super.insertValue(je, value, permitNondeterministic);
 
     for (AnnotationMirror a : value.getAnnotations()) {
-      if (qualHierarchy.isSubtype(a, je.getType(), invariantAnno, je.getType())) {
+      if (qualHierarchy.isSubtypeShallow(a, je.getType(), invariantAnno, je.getType())) {
         if (je instanceof FieldAccess) {
           FieldAccess fa = (FieldAccess) je;
           if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {

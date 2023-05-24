@@ -340,13 +340,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
               .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
         // Both types have qualifier parameters, so they are related by invariance rather
         // than subtyping.
-        if (qualHierarchy.isSubtype(a, aTypeMirror, b, bTypeMirror)
-            && qualHierarchy.isSubtype(b, bTypeMirror, a, aTypeMirror)) {
+        if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)
+            && qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
           return b;
         }
-      } else if (qualHierarchy.isSubtype(a, aTypeMirror, b, bTypeMirror)) {
+      } else if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)) {
         return a;
-      } else if (qualHierarchy.isSubtype(b, bTypeMirror, a, aTypeMirror)) {
+      } else if (qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
         return b;
       }
       return getBackUpAnnoIn(top);
@@ -383,10 +383,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
       AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
-      if (qualHierarchy.isSubtype(upperBound, typeVarTM, annotation, typeVarTM)) {
+      if (qualHierarchy.isSubtypeShallow(upperBound, typeVarTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (qualHierarchy.isSubtype(annotation, typeVarTM, lowerBound, typeVarTM)) {
+      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, typeVarTM)) {
         return annotation;
       } else {
         return getBackUpAnnoIn(top);
@@ -520,7 +520,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
         AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
         TypeMirror typeVarTM = typeVar.getUnderlyingType();
-        if (qualHierarchy.isSubtype(annotation, typeVarTM, lowerBound, typeVarTM)) {
+        if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, typeVarTM)) {
           return null;
         } else {
           return combineTwoAnnotations(
@@ -617,7 +617,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // lowerBound is the annotation on the lower bound of typeVar.
         AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
         TypeMirror typeVarTM = typeVar.getUnderlyingType();
-        if (qualHierarchy.isSubtype(upperBound, typeVarTM, annotation, typeVarTM)) {
+        if (qualHierarchy.isSubtypeShallow(upperBound, typeVarTM, annotation, typeVarTM)) {
           return null;
         } else {
           AnnotationMirrorSet lBSet =

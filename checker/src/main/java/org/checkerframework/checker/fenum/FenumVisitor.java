@@ -36,8 +36,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
       AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
       TypeMirror lhsTM = lhsAtm.getUnderlyingType();
       TypeMirror rhsTM = rhsAtm.getUnderlyingType();
-      if (!(qualHierarchy.isSubtype(lhs, lhsTM, rhs, rhsTM)
-          || qualHierarchy.isSubtype(rhs, rhsTM, lhs, lhsTM))) {
+      if (!(qualHierarchy.isSubtypeShallow(lhs, lhsTM, rhs, rhsTM)
+          || qualHierarchy.isSubtypeShallow(rhs, rhsTM, lhs, lhsTM))) {
         checker.reportError(tree, "binary", lhsAtm, rhsAtm);
       }
     }

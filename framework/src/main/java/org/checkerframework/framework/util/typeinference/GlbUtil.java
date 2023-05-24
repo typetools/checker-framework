@@ -64,7 +64,7 @@ public class GlbUtil {
     for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
       TypeMirror tm = atm.getUnderlyingType();
       if (atm.getKind() != TypeKind.TYPEVAR
-          || !qualHierarchy.isSubtype(atm.getEffectiveAnnotations(), tm, values, tm)) {
+          || !qualHierarchy.isSubtypeShallow(atm.getEffectiveAnnotations(), tm, values, tm)) {
         AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);
@@ -142,6 +142,7 @@ public class GlbUtil {
 
     /** The qualifier hierarchy. */
     private final QualifierHierarchy qualHierarchy;
+
     /** The type utiliites. */
     private final Types types;
 
@@ -186,7 +187,7 @@ public class GlbUtil {
       }
       TypeMirror tm1 = type1.getUnderlyingType();
       TypeMirror tm2 = type2.getUnderlyingType();
-      if (qualHierarchy.isSubtype(annos1, tm1, annos2, tm2)) {
+      if (qualHierarchy.isSubtypeShallow(annos1, tm1, annos2, tm2)) {
         return 1;
       } else {
         return -1;

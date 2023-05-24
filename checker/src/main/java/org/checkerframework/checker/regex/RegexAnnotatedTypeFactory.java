@@ -78,15 +78,19 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @{@link Regex} annotation. */
   protected final AnnotationMirror REGEX = AnnotationBuilder.fromClass(elements, Regex.class);
+
   /** The @{@link RegexBottom} annotation. */
   protected final AnnotationMirror REGEXBOTTOM =
       AnnotationBuilder.fromClass(elements, RegexBottom.class);
+
   /** The @{@link PartialRegex} annotation. */
   protected final AnnotationMirror PARTIALREGEX =
       AnnotationBuilder.fromClass(elements, PartialRegex.class);
+
   /** The @{@link PolyRegex} annotation. */
   protected final AnnotationMirror POLYREGEX =
       AnnotationBuilder.fromClass(elements, PolyRegex.class);
+
   /** The @{@link UnknownRegex} annotation. */
   protected final AnnotationMirror UNKNOWNREGEX =
       AnnotationBuilder.fromClass(elements, UnknownRegex.class);
@@ -171,8 +175,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Qualifier kind for the @{@link Regex} annotation. */
     private final QualifierKind REGEX_KIND;
+
     /** Qualifier kind for the @{@link PartialRegex} annotation. */
     private final QualifierKind PARTIALREGEX_KIND;
+
     /**
      * Creates a RegexQualifierHierarchy from the given classes.
      *

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -222,11 +221,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   @Override
-  public boolean isSubtypeImpl(
-      AnnotationMirror subAnno,
-      TypeMirror subType,
-      AnnotationMirror superAnno,
-      TypeMirror superType) {
+  public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
     QualifierKind subKind = getQualifierKind(subAnno);
     QualifierKind superKind = getQualifierKind(superAnno);
     return subKind.isSubtypeOf(superKind);

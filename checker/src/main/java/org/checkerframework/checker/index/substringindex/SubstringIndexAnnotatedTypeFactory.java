@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexChecker;
 import org.checkerframework.checker.index.OffsetDependentTypesHelper;
@@ -31,6 +30,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** The top qualifier of the Substring Index hierarchy. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
+
   /** The bottom qualifier of the Substring Index hierarchy. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);
@@ -136,11 +136,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (areSameByClass(superAnno, SubstringIndexUnknown.class)) {
         return true;
       }

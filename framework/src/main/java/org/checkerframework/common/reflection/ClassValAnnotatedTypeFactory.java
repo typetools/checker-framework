@@ -53,6 +53,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The ClassBound.value argument/element. */
   private final ExecutableElement classBoundValueElement =
       TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
+
   /** The ClassVal.value argument/element. */
   private final ExecutableElement classValValueElement =
       TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
@@ -148,9 +149,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
@@ -171,9 +172,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
-      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
@@ -198,11 +199,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * a subtype of lhs iff lhs contains  every element of rhs.
      */
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, superAnno)
           || areSameByClass(superAnno, UnknownClass.class)
           || areSameByClass(subAnno, ClassValBottom.class)) {

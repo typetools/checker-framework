@@ -5,7 +5,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.MaybeAliased;
@@ -32,11 +31,14 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link MaybeAliased} annotation. */
   protected final AnnotationMirror MAYBE_ALIASED =
       AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+
   /** The @{@link NonLeaked} annotation. */
   protected final AnnotationMirror NON_LEAKED =
       AnnotationBuilder.fromClass(elements, NonLeaked.class);
+
   /** The @{@link Unique} annotation. */
   protected final AnnotationMirror UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+
   /** The @{@link MaybeLeaked} annotation. */
   protected final AnnotationMirror MAYBE_LEAKED =
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
@@ -114,11 +116,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (isLeakedQualifier(superAnno) && isLeakedQualifier(subAnno)) {
         // @LeakedToResult and @NonLeaked were supposed to be non-type-qualifiers
         // annotations.
@@ -127,7 +125,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // type qualifiers but the warnings related to the hierarchy are ignored.
         return true;
       }
-      return super.isSubtypeImpl(subAnno, subType, superAnno, superType);
+      return super.isSubtypeQualifiers(subAnno, superAnno);
     }
   }
 }

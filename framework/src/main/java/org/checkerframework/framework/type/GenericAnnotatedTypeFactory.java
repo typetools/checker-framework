@@ -3017,6 +3017,7 @@ public abstract class GenericAnnotatedTypeFactory<
   private static final class AlwaysRelevantTypeMirror implements TypeMirror {
     /** Create a new AlwaysRelevantTypeMirror. */
     private AlwaysRelevantTypeMirror() {}
+
     /** The singleton AlwaysRelevantTypeMirror. */
     @SuppressWarnings("interning:assignment") // singleton
     public static @InternedDistinct AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();

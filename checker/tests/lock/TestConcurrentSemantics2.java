@@ -23,6 +23,7 @@ public class TestConcurrentSemantics2 {
 
   // Test that field assignments do not cause their type to be refined:
   @GuardedBy("a") Object myObject1 = null;
+
   // :: error: (assignment)
   @GuardedBy("b") Object myObject2 = myObject1;
 }

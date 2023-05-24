@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.IndexUtil;
@@ -74,9 +73,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link SameLenUnknown} annotation. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, SameLenUnknown.class);
+
   /** The @{@link SameLenBottom} annotation. */
   private final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, SameLenBottom.class);
+
   /** The @{@link PolySameLen} annotation. */
   private final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolySameLen.class);
 
@@ -266,11 +267,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subtype,
-        AnnotationMirror superAnno,
-        TypeMirror supertype) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (areSameByClass(subAnno, SameLenBottom.class)) {
         return true;
       } else if (areSameByClass(superAnno, SameLenUnknown.class)) {

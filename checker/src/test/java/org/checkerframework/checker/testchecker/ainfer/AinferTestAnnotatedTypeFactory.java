@@ -67,6 +67,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The AinferSiblingWithFields.value field/element. */
   private final ExecutableElement siblingWithFieldsValueElement =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value", 0, processingEnv);
+
   /** The AinferSiblingWithFields.value2 field/element. */
   private final ExecutableElement siblingWithFieldsValue2Element =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value2", 0, processingEnv);

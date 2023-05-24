@@ -65,17 +65,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @Signed annotation. */
   protected final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+
   /** The @Unsigned annotation. */
   private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+
   /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
   private final AnnotationMirror SIGNEDNESS_GLB =
       AnnotationBuilder.fromClass(elements, SignednessGlb.class);
+
   /** The @SignedPositiveFromUnsigned annotation. */
   protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
       AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+
   /** The @SignednessBottom annotation. */
   protected final AnnotationMirror SIGNEDNESS_BOTTOM =
       AnnotationBuilder.fromClass(elements, SignednessBottom.class);
+
   /** The @PolySigned annotation. */
   protected final AnnotationMirror POLY_SIGNED =
       AnnotationBuilder.fromClass(elements, PolySigned.class);
@@ -83,6 +88,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
   private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
       AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+
   /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
   private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
       AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
@@ -90,15 +96,18 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The Serializable type mirror. */
   private final TypeMirror serializableTM =
       elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
+
   /** The Comparable type mirror. */
   private final TypeMirror comparableTM =
       elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
+
   /** The Number type mirror. */
   private final TypeMirror numberTM =
       elements.getTypeElement(Number.class.getCanonicalName()).asType();
 
   /** A set containing just {@code @Signed}. */
   private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+
   /** A set containing just {@code @Unsigned}. */
   private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
 
@@ -707,9 +716,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else if (qualHierarchy.isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (qualHierarchy.isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (qualHierarchy.isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (qualHierarchy.isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       } else
         // The two annotations are incomparable

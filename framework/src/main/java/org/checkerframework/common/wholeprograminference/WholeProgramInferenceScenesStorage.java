@@ -580,7 +580,8 @@ public class WholeProgramInferenceScenesStorage
       if (upperAnnos.size() == rhsATM.getAnnotations().size()
           && atypeFactory
               .getQualifierHierarchy()
-              .isSubtype(rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
+              .isSubtypeShallow(
+                  rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
         return;
       }
     }

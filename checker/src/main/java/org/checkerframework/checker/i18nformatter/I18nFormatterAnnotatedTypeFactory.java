@@ -52,6 +52,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** The @{@link I18nUnknownFormat} annotation. */
   protected final AnnotationMirror I18NUNKNOWNFORMAT =
       AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+
   /** The @{@link I18nFormatBottom} annotation. */
   protected final AnnotationMirror I18NFORMATBOTTOM =
       AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
@@ -59,9 +60,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** The fully-qualified name of {@link I18nFormat}. */
   protected static final @CanonicalName String I18NFORMAT_NAME =
       I18nFormat.class.getCanonicalName();
+
   /** The fully-qualified name of {@link I18nInvalidFormat}. */
   protected static final @CanonicalName String I18NINVALIDFORMAT_NAME =
       I18nInvalidFormat.class.getCanonicalName();
+
   /** The fully-qualified name of {@link I18nFormatFor}. */
   protected static final @CanonicalName String I18NFORMATFOR_NAME =
       I18nFormatFor.class.getCanonicalName();
@@ -221,8 +224,10 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     /** Qualifier kind for the @{@link I18nFormat} annotation. */
     private final QualifierKind I18NFORMAT_KIND;
+
     /** Qualifier kind for the @{@link I18nFormatFor} annotation. */
     private final QualifierKind I18NFORMATFOR_KIND;
+
     /** Qualifier kind for the @{@link I18nInvalidFormat} annotation. */
     private final QualifierKind I18NINVALIDFORMAT_KIND;
 

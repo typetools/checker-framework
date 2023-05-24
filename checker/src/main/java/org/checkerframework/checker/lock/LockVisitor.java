@@ -73,6 +73,7 @@ import org.plumelib.util.CollectionsPlume;
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   /** The class of GuardedBy */
   private static final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
+
   /** The class of GuardSatisfied */
   private static final Class<? extends Annotation> checkerGuardSatisfiedClass =
       GuardSatisfied.class;
@@ -696,8 +697,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               TypeMirror arg2TM = arg2Type.getUnderlyingType();
 
               if (bothAreGSwithNoIndex
-                  || !(qualHierarchy.isSubtype(arg1Anno, arg1TM, arg2Anno, arg2TM)
-                      || qualHierarchy.isSubtype(arg2Anno, arg2TM, arg1Anno, arg1TM))) {
+                  || !(qualHierarchy.isSubtypeShallow(arg1Anno, arg1TM, arg2Anno, arg2TM)
+                      || qualHierarchy.isSubtypeShallow(arg2Anno, arg2TM, arg1Anno, arg1TM))) {
 
                 String formalParam1;
                 if (i == 0) {

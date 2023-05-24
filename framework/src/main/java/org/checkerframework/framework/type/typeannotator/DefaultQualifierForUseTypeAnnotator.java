@@ -27,6 +27,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
   /** The DefaultQualifierForUse.value field/element. */
   private final ExecutableElement defaultQualifierForUseValueElement;
+
   /** The NoDefaultQualifierForUse.value field/element. */
   private final ExecutableElement noDefaultQualifierForUseValueElement;
 

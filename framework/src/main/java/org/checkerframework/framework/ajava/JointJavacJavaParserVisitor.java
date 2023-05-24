@@ -1917,6 +1917,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    */
   public abstract void processMemberSelect(
       MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode);
+
   /**
    * Process a {@code MemberSelectTree} for a field access expression like {@code myObj.myField}.
    *

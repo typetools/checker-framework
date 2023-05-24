@@ -11,16 +11,22 @@ class ValueMethodIdentifier {
 
   /** String.length() method. */
   private final ExecutableElement lengthMethod;
+
   /** Array.getLength() method. */
   private final ExecutableElement getLengthMethod;
+
   /** String.startsWith(String) method. */
   private final ExecutableElement startsWithMethod;
+
   /** String.endsWith(String) method. */
   private final ExecutableElement endsWithMethod;
+
   /** The {@code java.lang.Math#min()} methods. */
   private final List<ExecutableElement> mathMinMethods;
+
   /** The {@code java.lang.Math#max()} methods. */
   private final List<ExecutableElement> mathMaxMethods;
+
   /** Arrays.copyOf() methods. */
   private final List<ExecutableElement> copyOfMethods;
 
@@ -110,6 +116,7 @@ class ValueMethodIdentifier {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
     return method.equals(startsWithMethod);
   }
+
   /** Determines whether a method is the {@code String.endsWith(String)} method. */
   public boolean isEndsWithMethod(ExecutableElement method) {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden

@@ -2136,7 +2136,7 @@ class MustCallConsistencyAnalyzer {
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
     return typeFactory
         .getQualifierHierarchy()
-        .isSubtype(cmAnno, alwaysRelevantTM, cmAnnoForMustCallMethods, alwaysRelevantTM);
+        .isSubtypeShallow(cmAnno, alwaysRelevantTM, cmAnnoForMustCallMethods, alwaysRelevantTM);
   }
 
   /**

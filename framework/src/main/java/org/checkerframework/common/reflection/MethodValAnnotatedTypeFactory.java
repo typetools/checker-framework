@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -66,12 +65,15 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The ArrayLen.value argument/element. */
   public final ExecutableElement arrayLenValueElement =
       TreeUtils.getMethod(ArrayLen.class, "value", 0, processingEnv);
+
   /** The ClassBound.value argument/element. */
   public final ExecutableElement classBoundValueElement =
       TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
+
   /** The ClassVal.value argument/element. */
   public final ExecutableElement classValValueElement =
       TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
+
   /** The StringVal.value argument/element. */
   public final ExecutableElement stringValValueElement =
       TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
@@ -172,6 +174,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return Collections.emptyList();
     }
   }
+
   /**
    * Returns the string values for the argument passed. The String Values are estimated using the
    * Value Checker.
@@ -218,9 +221,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a2;
-      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a1;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
@@ -236,9 +239,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
         return a1;
-      } else if (isSubtype(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
         return a2;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
@@ -251,11 +254,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtypeImpl(
-        AnnotationMirror subAnno,
-        TypeMirror subType,
-        AnnotationMirror superAnno,
-        TypeMirror superType) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, superAnno)
           || areSameByClass(superAnno, UnknownMethod.class)
           || areSameByClass(subAnno, MethodValBottom.class)) {

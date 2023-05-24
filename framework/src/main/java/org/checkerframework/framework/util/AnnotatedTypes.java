@@ -933,7 +933,7 @@ public class AnnotatedTypes {
         }
         AnnotationMirrorSet lb = findEffectiveLowerBoundAnnotations(qualHierarchy, subtype);
         AnnotationMirror lbAnno = qualHierarchy.findAnnotationInHierarchy(lb, top);
-        if (lbAnno != null && !qualHierarchy.isSubtype(lbAnno, subTM, superAnno, superTM)) {
+        if (lbAnno != null && !qualHierarchy.isSubtypeShallow(lbAnno, subTM, superAnno, superTM)) {
           // The superAnno is lower than the lower bound annotation, so add it.
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
@@ -1504,7 +1504,7 @@ public class AnnotatedTypes {
       AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
       if (boundAnno != null
           && (anno == null
-              || qualHierarchy.isSubtype(
+              || qualHierarchy.isSubtypeShallow(
                   boundAnno, bound.getUnderlyingType(), anno, isect.getUnderlyingType()))) {
         anno = boundAnno;
       }

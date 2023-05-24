@@ -13,10 +13,10 @@ Signedness Checker:
 
 `QualifierHierarchy`:
  * The constructor takes an `AnnotatedTypeFactory`.
- * Subclasses should override `isSubtypeImpl(...)` rather than `isSubtype()`.
-   Clients should continue to call `isSubtype()`; never call `isSubtypeImpl()`
-   except as `super.isSubtypeImpl()`.  Note that `isSubtypeImpl()` takes two
-   additional `TypeMirror` formal parameters, compared to `isSubtype()`.
+ * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+   Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`.
+ * New public method `isSubtypeShallow()' that takes two more arguments than
+   `isSubypeQualifiers()`.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
