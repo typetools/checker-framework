@@ -217,7 +217,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     // TODO: Check whether the annotation is applicable to this Java type?
     AnnotationMirror defaultAnno = listOfNameRegexes.getDefaultAnno(name);
     if (defaultAnno != null) {
-      if (typeFactory
+      if (atypeFactory
               .getQualifierHierarchy()
               .findAnnotationInHierarchy(type.getAnnotations(), defaultAnno)
           == null) {

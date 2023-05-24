@@ -68,7 +68,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * @return the set of qualifiers that should be applied to unannotated uses of {@code element}
    */
   protected AnnotationMirrorSet getDefaultAnnosForUses(Element element) {
-    if (typeFactory.shouldCache && elementToDefaults.containsKey(element)) {
+    if (atypeFactory.shouldCache && elementToDefaults.containsKey(element)) {
       return elementToDefaults.get(element);
     }
     AnnotationMirrorSet explictAnnos = getExplicitAnnos(element);
@@ -76,26 +76,26 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     AnnotationMirrorSet noDefaultAnnos = getHierarchiesNoDefault(element);
     AnnotationMirrorSet annosToApply = new AnnotationMirrorSet();
 
-    for (AnnotationMirror top : typeFactory.getQualifierHierarchy().getTopAnnotations()) {
+    for (AnnotationMirror top : atypeFactory.getQualifierHierarchy().getTopAnnotations()) {
       if (AnnotationUtils.containsSame(noDefaultAnnos, top)) {
         continue;
       }
       AnnotationMirror defaultAnno =
-          typeFactory.getQualifierHierarchy().findAnnotationInHierarchy(defaultAnnos, top);
+          atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(defaultAnnos, top);
       if (defaultAnno != null) {
         annosToApply.add(defaultAnno);
       } else {
         AnnotationMirror explict =
-            typeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explictAnnos, top);
+            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explictAnnos, top);
         if (explict != null) {
           annosToApply.add(explict);
         }
       }
     }
     // If parsing stub files, then the annosToApply is incomplete, so don't cache them.
-    if (typeFactory.shouldCache
-        && !typeFactory.stubTypes.isParsing()
-        && !typeFactory.ajavaTypes.isParsing()) {
+    if (atypeFactory.shouldCache
+        && !atypeFactory.stubTypes.isParsing()
+        && !atypeFactory.ajavaTypes.isParsing()) {
       elementToDefaults.put(element, annosToApply);
     }
     return annosToApply;
@@ -108,7 +108,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * @return the annotations explicitly written on the element
    */
   protected AnnotationMirrorSet getExplicitAnnos(Element element) {
-    AnnotatedTypeMirror explicitAnnoOnDecl = typeFactory.fromElement(element);
+    AnnotatedTypeMirror explicitAnnoOnDecl = atypeFactory.fromElement(element);
     return explicitAnnoOnDecl.getAnnotations();
   }
 
@@ -123,7 +123,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    */
   protected AnnotationMirrorSet getDefaultQualifierForUses(Element element) {
     AnnotationMirror defaultQualifier =
-        typeFactory.getDeclAnnotation(element, DefaultQualifierForUse.class);
+        atypeFactory.getDeclAnnotation(element, DefaultQualifierForUse.class);
     if (defaultQualifier == null) {
       return AnnotationMirrorSet.emptySet();
     }
@@ -140,7 +140,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    */
   protected AnnotationMirrorSet getHierarchiesNoDefault(Element element) {
     AnnotationMirror noDefaultQualifier =
-        typeFactory.getDeclAnnotation(element, NoDefaultQualifierForUse.class);
+        atypeFactory.getDeclAnnotation(element, NoDefaultQualifierForUse.class);
     if (noDefaultQualifier == null) {
       return AnnotationMirrorSet.emptySet();
     }
@@ -161,8 +161,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       List<@CanonicalName Name> annoClassNames) {
     AnnotationMirrorSet supportAnnos = new AnnotationMirrorSet();
     for (Name annoName : annoClassNames) {
-      AnnotationMirror anno = AnnotationBuilder.fromName(typeFactory.getElementUtils(), annoName);
-      if (typeFactory.isSupportedQualifier(anno)) {
+      AnnotationMirror anno = AnnotationBuilder.fromName(atypeFactory.getElementUtils(), annoName);
+      if (atypeFactory.isSupportedQualifier(anno)) {
         supportAnnos.add(anno);
       }
     }
