@@ -1852,7 +1852,7 @@ public abstract class GenericAnnotatedTypeFactory<
         "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
         thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
-      // If a tree annotator, did not add a type, add the DefaultForUse default.
+      // If a tree annotator did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
@@ -2290,7 +2290,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
-   * element} is a local variable, then the defaults are not added.
+   * element} is a local variable, or if the type already has an annotation from the relevant type
+   * hierarchy, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
    * DefaultForTypeAnnotator}.)
@@ -2301,6 +2302,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
     if (element != null && ElementUtils.isLocalVariable(element)) {
+      // It's a local variable.
       if (type.getKind() == TypeKind.DECLARED) {
         // If this is a type for a local variable, don't apply the default to the primary
         // location.
@@ -2314,12 +2316,14 @@ public abstract class GenericAnnotatedTypeFactory<
           defaultForTypeAnnotator.visit(typeArg);
         }
       } else if (type.getKind().isPrimitive()) {
-        // Don't apply the default for local variables with primitive types.
+        // Don't apply the default for local variables with primitive types. (The primary location
+        // is the only location, so this is a special case of the above.)
       } else {
         defaultQualifierForUseTypeAnnotator.visit(type);
         defaultForTypeAnnotator.visit(type);
       }
     } else {
+      // It's not a local variable.
       defaultQualifierForUseTypeAnnotator.visit(type);
       defaultForTypeAnnotator.visit(type);
     }
@@ -2349,6 +2353,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>May return false for a compound type (for which it it possible to write type qualifiers on
    * elements of the type).
    *
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
+   *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
@@ -2374,6 +2381,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * elements of the type).
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
+   *
+   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * elements of the type).
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
