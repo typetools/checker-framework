@@ -2363,7 +2363,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
-    tm = types.erasure(tm);
+    if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
+      tm = types.erasure(tm);
+    }
     Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
