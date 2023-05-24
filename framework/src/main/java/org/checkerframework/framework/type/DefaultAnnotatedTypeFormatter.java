@@ -366,8 +366,6 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     @Override
     public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
-      sb.append(
-          "[[captured type: " + TypesUtils.isCapturedTypeVariable(type.underlyingType) + "]]");
       if (TypesUtils.isCapturedTypeVariable(type.underlyingType)) {
         // underlyingType.toString() has this form: "capture#826 of ? extends java.lang.Object".
         //   assert underlyingType.toString().startsWith("capture#");

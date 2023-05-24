@@ -649,18 +649,7 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitTernaryExpression(
       TernaryExpressionNode n, TransferInput<V, S> p) {
-    // System.out.printf("visitTernaryExpression(%s) type=%s%n", n, n.getType());
-    // System.out.printf(
-    //     "  condition=%s type=%s, then=%s type=%s, else=%s type=%s%n",
-    //     n.getConditionOperand(),
-    //     n.getConditionOperand().getType(),
-    //     n.getThenOperand(),
-    //     n.getThenOperand().getType(),
-    //     n.getElseOperand(),
-    //     n.getElseOperand().getType());
-    LocalVariableNode tv = n.getTernaryExpressionVar();
-    // System.out.printf("  visitTernaryExpression(%s) tv=%s type=%s%n", n, tv, tv.getType());
-    return visitLocalVariable(tv, p);
+    return visitLocalVariable(n.getTernaryExpressionVar(), p);
   }
 
   @Override
