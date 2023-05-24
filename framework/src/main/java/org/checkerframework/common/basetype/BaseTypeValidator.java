@@ -30,6 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -184,11 +185,19 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   protected List<DiagMessage> isTopLevelValidType(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     AnnotationMirrorSet annotations = type.getAnnotations();
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
 
     // wrong annotation on irrelevant Java type
-    List<DiagMessage> irrelevantWarnings = visitor.messagesAboutIrrelevantJavaTypes(null, type);
-    if (!irrelevantWarnings.isEmpty()) {
-      return irrelevantWarnings;
+    if (!gatf.isRelevant(type)) {
+      AnnotationMirrorSet expected =
+          gatf.annotationsForIrrelevantJavaType(type.getUnderlyingType());
+      AnnotationMirrorSet actual = type.getAnnotations();
+      if (!expected.equals(actual)) {
+        String extraInfo = gatf.irrelevantExtraMessage();
+        return Collections.singletonList(
+            DiagMessage.error("anno.on.irrelevant", type, actual, extraInfo));
+      }
     }
 
     // multiple annotations from the same hierarchy
