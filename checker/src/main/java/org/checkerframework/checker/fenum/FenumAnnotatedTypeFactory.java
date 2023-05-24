@@ -29,8 +29,10 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** AnnotationMirror for {@link FenumUnqualified}. */
   protected final AnnotationMirror FENUM_UNQUALIFIED;
+
   /** AnnotationMirror for {@link FenumBottom}. */
   protected final AnnotationMirror FENUM_BOTTOM;
+
   /** AnnotationMirror for {@link FenumTop}. */
   protected final AnnotationMirror FENUM_TOP;
 

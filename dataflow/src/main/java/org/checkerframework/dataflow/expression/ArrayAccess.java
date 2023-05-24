@@ -11,6 +11,7 @@ public class ArrayAccess extends JavaExpression {
 
   /** The array being accessed. */
   protected final JavaExpression array;
+
   /** The index; an expression of type int. */
   protected final JavaExpression index;
 

@@ -73,6 +73,7 @@ import org.plumelib.util.CollectionsPlume;
 public class ValueTransfer extends CFTransfer {
   /** The Value type factory. */
   protected final ValueAnnotatedTypeFactory atypeFactory;
+
   /** The Value qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 

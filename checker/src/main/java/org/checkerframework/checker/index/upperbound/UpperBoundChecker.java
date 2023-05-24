@@ -42,17 +42,22 @@ import org.checkerframework.javacutil.TreeUtils;
 public class UpperBoundChecker extends BaseTypeChecker {
   /** The SubstringIndexFor.value argument/element. */
   public @MonotonicNonNull ExecutableElement substringIndexForValueElement;
+
   /** The SubstringIndexFor.offset argument/element. */
   public @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
 
   /** The LTLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
+
   /** The LTLengthOf.offset argument/element. */
   public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
+
   /** The LTEqLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
+
   /** The LTOMLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltOMLengthOfValueElement;
+
   /** The UpperBoundLiteral.value element/field. */
   public @MonotonicNonNull ExecutableElement upperBoundLiteralValueElement;
 

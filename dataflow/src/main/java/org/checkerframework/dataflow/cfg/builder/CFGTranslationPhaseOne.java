@@ -205,14 +205,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** The javac element utilities. */
   protected final Elements elements;
+
   /** The javac type utilities. */
   protected final Types types;
+
   /** The javac tree utilities. */
   protected final Trees trees;
+
   /** The tree builder. */
   protected final TreeBuilder treeBuilder;
+
   /** The annotation provider, e.g., a type factory. */
   protected final AnnotationProvider annotationProvider;
+
   /** Can assertions be assumed to be disabled? */
   protected final boolean assumeAssertionsDisabled;
 
