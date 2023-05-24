@@ -1136,8 +1136,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issue a warning if the result type of the constructor is not top. If it is a supertype of the
-   * class, then a conflicting.annos error will also be issued by {@link
+   * Issue a warning if the result type of the constructor declaration is not top. If it is a
+   * supertype of the class, then a conflicting.annos error will also be issued by {@link
    * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
    *
    * @param constructorType AnnotatedExecutableType for the constructor
@@ -1153,6 +1153,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror top : tops) {
       AnnotationMirror constructorAnno =
           qualHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
+      // TODO: Why doesn't this just check `AnnotationUtils.areSame(top, constructorAnno)`?
       if (!qualHierarchy.isSubtypeShallow(top, constructedType, constructorAnno, constructedType)) {
         checker.reportWarning(
             constructorElement, "inconsistent.constructor.type", constructorAnno, top);

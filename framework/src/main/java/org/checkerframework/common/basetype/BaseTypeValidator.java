@@ -149,6 +149,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * <ol>
    *   <li>There should not be multiple annotations from the same qualifier hierarchy.
    *   <li>There should not be more annotations than the width of the QualifierHierarchy.
+   *   <li>If the Java type is not relevant, its annotation is the one returned by {@link
+   *       GenericAnnotatedTypeFactory#annotationsForIrrelevantJavaType}.
    *   <li>If the type is not a type variable, then the number of annotations should be the same as
    *       the width of the QualifierHierarchy.
    *   <li>These properties should also hold recursively for component types of arrays and for
@@ -182,8 +184,15 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   // a list.
   protected List<DiagMessage> isTopLevelValidType(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
-    // multiple annotations from the same hierarchy
     AnnotationMirrorSet annotations = type.getAnnotations();
+
+    // wrong annotation on irrelevant Java type
+    if (!atypeFactory.isRelevant(type)) {
+      AnnotationMirrorSet expected = atypeFactory.annotationsForIrrelevantJavaType(type);
+      if (!expected.equals(annotations)) {
+        
+
+    // multiple annotations from the same hierarchy
     AnnotationMirrorSet seenTops = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annotations) {
       AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
@@ -201,6 +210,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return Collections.singletonList(
           new DiagMessage(Kind.ERROR, "too.few.annotations", annotations, type));
     }
+
 
     // success
     return Collections.emptyList();

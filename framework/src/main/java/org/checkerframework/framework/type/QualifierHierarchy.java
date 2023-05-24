@@ -48,7 +48,7 @@ public abstract class QualifierHierarchy {
   /**
    * Determine whether this is valid.
    *
-   * @return whether this is valid
+   * @return true if this is valid
    */
   public boolean isValid() {
     return true;
