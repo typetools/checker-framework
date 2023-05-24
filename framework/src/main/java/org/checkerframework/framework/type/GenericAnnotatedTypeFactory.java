@@ -2533,6 +2533,27 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns a string that can be passed to the "anno.on.irrelevant" error, giving information about
+   * which types are relevant.
+   *
+   * @return a string that can be passed to the "anno.on.irrelevant" error, possibly the empty
+   *     string
+   */
+  public String irrelevantExtraMessage() {
+    if (relevantJavaTypes == null) {
+      return "";
+    } else {
+      StringBuilder sb = new StringBuilder();
+      sb.append("; only applicable to ");
+      sb.append(relevantJavaTypes);
+      if (arraysAreRelevant) {
+        sb.append(" and arrays");
+      }
+      return sb.toString();
+    }
+  }
+
+  /**
    * Return the type of the default value of the given type. The default value is 0, false, or null.
    *
    * @param typeMirror a type

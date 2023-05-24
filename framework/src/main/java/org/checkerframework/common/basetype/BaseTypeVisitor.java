@@ -2729,13 +2729,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            result.add(
-                DiagMessage.error(
-                    t,
-                    "anno.on.irrelevant",
-                    supportedAnnoTrees,
-                    t,
-                    atypeFactory.relevantJavaTypes));
+            String extraInfo = atypeFactory.irrelevantExtraMessage();
+            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t, extraInfo);
           }
           return result;
         case ANNOTATED_TYPE:
@@ -2743,9 +2738,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ExpressionTree underlying = at.getUnderlyingType();
           List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
           if (!annos.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
-            result.add(
-                DiagMessage.error(
-                    t, "anno.on.irrelevant", annos, underlying, atypeFactory.relevantJavaTypes));
+            String extraInfo = atypeFactory.irrelevantExtraMessage();
+            checker.reportError(t, "anno.on.irrelevant", annos, underlying, extraInfo);
           }
           return result;
 
