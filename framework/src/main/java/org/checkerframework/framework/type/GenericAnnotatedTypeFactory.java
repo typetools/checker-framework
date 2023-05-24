@@ -2494,13 +2494,10 @@ public abstract class GenericAnnotatedTypeFactory<
     if (relevantJavaTypes == null) {
       irrelevantExtraMessage = "";
     } else {
-      StringBuilder sb = new StringBuilder();
-      sb.append("; only applicable to ");
-      sb.append(relevantJavaTypes);
+      irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
       if (arraysAreRelevant) {
-        sb.append(" and arrays");
+        irrelevantExtraMessage += " and arrays";
       }
-      irrelevantExtraMessage = sb.toString();
     }
     return irrelevantExtraMessage;
   }
