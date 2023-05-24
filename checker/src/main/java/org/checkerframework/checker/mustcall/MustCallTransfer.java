@@ -177,12 +177,18 @@ public class MustCallTransfer extends CFTransfer {
 
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    return false;
+    if (isResourceLeakCheckerEnabled()) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
   }
 
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    return false;
+    if (isResourceLeakCheckerEnabled()) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override
