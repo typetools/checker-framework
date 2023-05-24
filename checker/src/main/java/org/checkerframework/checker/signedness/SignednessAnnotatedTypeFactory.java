@@ -96,6 +96,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final TypeMirror numberTM =
       elements.getTypeElement(Number.class.getCanonicalName()).asType();
 
+  /** A set containing just {@code @Signed}. */
+  private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+  /** A set containing just {@code @Unsigned}. */
+  private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
+
   /**
    * Create a SignednessAnnotatedTypeFactory.
    *
@@ -247,6 +252,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(new SignednessTreeAnnotator(this), super.createTreeAnnotator());
+  }
+
+  @Override
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    if (TypesUtils.isCharOrCharacter(tm)) {
+      return UNSIGNED_SINGLETON;
+    } else {
+      return SIGNED_SINGLETON;
+    }
   }
 
   /**
@@ -593,7 +607,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Determines if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
    * operation of the form {@code shiftExpr & maskLit} or {@code shiftExpr | maskLit} such that the
-   * mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by destroying the bits
+   * mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by destroying the bits
    * duplicated into the shift result. For example, the following pairs of right shifts on {@code
    * byte b} both produce the same results under any input, because of their masks:
    *
@@ -643,7 +657,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Determines if a right shift operation, {@code >>} or {@code >>>}, is type casted such that the
-   * cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by discarding the bits
+   * cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by discarding the bits
    * duplicated into the shift result. For example, the following pair of right shifts on {@code
    * short s} both produce the same results under any input, because of type casting:
    *
