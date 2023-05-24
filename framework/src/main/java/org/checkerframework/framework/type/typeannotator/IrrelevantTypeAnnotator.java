@@ -27,8 +27,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
 
   @Override
   protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
-    // TODO: This variable name will change to `atypeFactory`, after #5919.
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) typeFactory;
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
 
     TypeMirror tm = type.getUnderlyingType();
     if (shouldAddPrimaryAnnotation(tm) && !gatf.isRelevant(tm)) {
