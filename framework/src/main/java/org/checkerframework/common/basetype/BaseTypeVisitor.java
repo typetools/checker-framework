@@ -75,7 +75,6 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -749,7 +748,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (AnnotationMirror poly : polys) {
         if (type.hasAnnotationRelaxed(poly)) {
           return Collections.singletonList(
-              new DiagMessage(Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
+              DiagMessage.error("invalid.polymorphic.qualifier.use", poly));
         }
       }
       return Collections.emptyList();
@@ -2688,10 +2687,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public void warnAboutIrrelevantJavaTypes(
       @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+    List<DiagMessage> dms = messagesAboutIrrelevantJavaTypes(annoTrees, typeTree);
+    for (DiagMessage dm : dms) {
+      checker.report(null, dm);
+    }
+  }
+
+  /**
+   * Warns if a type annotation is written on a Java type that is not listed in
+   * the @RelevantJavaTypes annotation.
+   *
+   * @param annoTrees annotations written before a variable/method declaration, if this type is from
+   *     one; null otherwise. This might contain type annotations that the Java parser attached to
+   *     the declaration rather than to the type.
+   * @param typeTree the type that any type annotations in annoTrees apply to
+   */
+  public List<DiagMessage> messagesAboutIrrelevantJavaTypes(
+      @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
     if (!shouldWarnAboutIrrelevantJavaTypes()) {
-      return;
+      return Collections.emptyList();
     }
 
+    List<DiagMessage> result = new ArrayList<>(4);
     Tree t = typeTree;
     while (true) {
       switch (t.getKind()) {
@@ -2712,22 +2729,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            checker.reportError(
-                t, "anno.on.irrelevant", supportedAnnoTrees, t, atypeFactory.relevantJavaTypes);
+            result.add(
+                DiagMessage.error(
+                    t,
+                    "anno.on.irrelevant",
+                    supportedAnnoTrees,
+                    t,
+                    atypeFactory.relevantJavaTypes));
           }
-          return;
+          return result;
         case ANNOTATED_TYPE:
           AnnotatedTypeTree at = (AnnotatedTypeTree) t;
           ExpressionTree underlying = at.getUnderlyingType();
           List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
           if (!annos.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
-            checker.reportError(
-                t, "anno.on.irrelevant", annos, underlying, atypeFactory.relevantJavaTypes);
+            result.add(
+                DiagMessage.error(
+                    t, "anno.on.irrelevant", annos, underlying, atypeFactory.relevantJavaTypes));
           }
-          return;
+          return result;
 
         default:
-          return;
+          return result;
       }
     }
   }

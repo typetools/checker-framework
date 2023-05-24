@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -127,13 +127,13 @@ public class FieldInvariants {
    * @param superInvar the value to check for being a super invariant
    * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
    */
-  public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
+  public @Nullable DiagMessage isSuperInvariant(FieldInvariants superInvar) {
     QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
-      return new DiagMessage(
-          Kind.ERROR, "field.invariant.not.found.superclass", String.join(", ", missingFields));
+      return DiagMessage.error(
+          "field.invariant.not.found.superclass", String.join(", ", missingFields));
     }
 
     for (String field : superInvar.fields) {
@@ -143,8 +143,7 @@ public class FieldInvariants {
         AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
         if (sub == null
             || !qualHierarchy.isSubtypeShallow(sub, alwaysRelevantTM, superA, alwaysRelevantTM)) {
-          return new DiagMessage(
-              Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+          return DiagMessage.error("field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }
     }

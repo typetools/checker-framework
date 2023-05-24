@@ -1,10 +1,11 @@
 package org.checkerframework.framework.source;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
@@ -19,8 +20,12 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  */
 @AnnotatedFor("nullness")
 public class DiagMessage {
+
+  /** Where to report the diagnostic. */
+  private @Nullable Object source;
+
   /** The kind of message. */
-  private final Kind kind;
+  private final Diagnostic.Kind kind;
 
   /** The message key. */
   private final @CompilerMessageKey String messageKey;
@@ -35,7 +40,24 @@ public class DiagMessage {
    * @param messageKey the message key
    * @param args the arguments that will be interpolated into the localized message
    */
-  public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+  public DiagMessage(Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+    this(null, kind, messageKey, args);
+  }
+
+  /**
+   * Create a DiagMessage.
+   *
+   * @param source where to report the diagnostic
+   * @param kind the kind of message
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   */
+  public DiagMessage(
+      @Nullable Object source,
+      Diagnostic.Kind kind,
+      @CompilerMessageKey String messageKey,
+      Object... args) {
+    this.source = source;
     this.kind = kind;
     this.messageKey = messageKey;
     if (args == null) {
@@ -46,11 +68,44 @@ public class DiagMessage {
   }
 
   /**
+   * Create a DiagMessage with kind ERROR.
+   *
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   * @return a new DiagMessage
+   */
+  public static DiagMessage error(@CompilerMessageKey String messageKey, Object... args) {
+    return DiagMessage.error(null, messageKey, args);
+  }
+
+  /**
+   * Create a DiagMessage with kind ERROR.
+   *
+   * @param source where to report the diagnostic
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   * @return a new DiagMessage
+   */
+  public static DiagMessage error(
+      @Nullable Tree source, @CompilerMessageKey String messageKey, Object... args) {
+    return new DiagMessage(source, Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
+   * Returns the source of this DiagMessage.
+   *
+   * @return the source of this DiagMessage
+   */
+  public @Nullable Object getSource() {
+    return this.source;
+  }
+
+  /**
    * Returns the kind of this DiagMessage.
    *
    * @return the kind of this DiagMessage
    */
-  public Kind getKind() {
+  public Diagnostic.Kind getKind() {
     return this.kind;
   }
 

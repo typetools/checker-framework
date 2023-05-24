@@ -16,7 +16,6 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -45,7 +44,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     if (AnnotationUtils.areSameByName(
         anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
       // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
-      checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
+      checker.report(tree, Diagnostic.Kind.ERROR, "ensuresvarargs.unverified");
     }
     return super.visitAnnotation(tree, p);
   }
@@ -56,7 +55,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
     AnnotationMirror ecmva = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
     if (ecmva != null) {
       if (!elt.isVarArgs()) {
-        checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
+        checker.report(tree, Diagnostic.Kind.ERROR, "ensuresvarargs.invalid");
       }
     }
     return super.visitMethod(tree, p);
