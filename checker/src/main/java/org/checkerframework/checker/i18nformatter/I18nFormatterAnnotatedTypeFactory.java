@@ -198,8 +198,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
         String format = null;
         if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
           format = (String) tree.getValue();
-        } else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-          format = Character.toString((Character) tree.getValue());
         }
         if (format != null) {
           AnnotationMirror anno;
