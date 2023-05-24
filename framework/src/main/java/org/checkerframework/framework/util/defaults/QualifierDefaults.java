@@ -86,8 +86,10 @@ public class QualifierDefaults {
 
   /** The value() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierValueElement;
+
   /** The locations() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierLocationsElement;
+
   /** The value() element/field of a @DefaultQualifier.List annotation. */
   protected final ExecutableElement defaultQualifierListValueElement;
 
@@ -357,6 +359,14 @@ public class QualifierDefaults {
   /** A type mirror that is always relevant. */
   private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
+  /**
+   * Returns true if there are conflicts with existing defaults.
+   *
+   * @param previousDefaults the previous defaults
+   * @param newAnno the new annotation
+   * @param newLoc the location of the type use
+   * @return true if there are conflicts with existing defaults
+   */
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();

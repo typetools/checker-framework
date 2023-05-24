@@ -16,8 +16,14 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  */
 public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
+  /** The type factory. */
   protected final AnnotatedTypeFactory atypeFactory;
 
+  /**
+   * Creates a new TypeAnnotator.
+   *
+   * @param atypeFactory the type factory
+   */
   protected TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
   }
