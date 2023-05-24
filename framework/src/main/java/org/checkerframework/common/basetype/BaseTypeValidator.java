@@ -185,10 +185,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   protected List<DiagMessage> isTopLevelValidType(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     AnnotationMirrorSet annotations = type.getAnnotations();
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
 
     // wrong annotation on irrelevant Java type
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
     if (!gatf.isRelevant(type)) {
       AnnotationMirrorSet expected =
           gatf.annotationsForIrrelevantJavaType(type.getUnderlyingType());

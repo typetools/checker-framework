@@ -1955,13 +1955,9 @@ public abstract class GenericAnnotatedTypeFactory<
     Value as = null;
     if (analysis.isRunning()) {
       as = analysis.getValue(tree);
-      // System.out.printf(
-      //     "getInferredValueFor#1(%s): as=%s%n", TreeUtils.toStringTruncated(tree, 60), as);
     }
     if (as == null) {
       as = flowResult.getValue(tree);
-      // System.out.printf(
-      //     "getInferredValueFor#2(%s): as=%s%n", TreeUtils.toStringTruncated(tree, 60), as);
     }
     return as;
   }
