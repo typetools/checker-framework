@@ -96,6 +96,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final TypeMirror numberTM =
       elements.getTypeElement(Number.class.getCanonicalName()).asType();
 
+  /** A set containing just {@code @Signed}. */
+  private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+  /** A set containing just {@code @Unsigned}. */
+  private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
+
   /**
    * Create a SignednessAnnotatedTypeFactory.
    *
@@ -247,6 +252,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(new SignednessTreeAnnotator(this), super.createTreeAnnotator());
+  }
+
+  @Override
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    if (TypesUtils.isCharOrCharacter(tm)) {
+      return UNSIGNED_SINGLETON;
+    } else {
+      return SIGNED_SINGLETON;
+    }
   }
 
   /**
