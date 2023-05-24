@@ -140,7 +140,6 @@ public abstract class QualifierHierarchy {
    * @param superType the Java basetype associated with {@code superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  @SuppressWarnings({"keyfor:argument", "nullness:argument"}) // should not be needed
   public boolean isSubtypeShallow(
       AnnotationMirror subQualifier,
       TypeMirror subType,
@@ -167,7 +166,6 @@ public abstract class QualifierHierarchy {
    * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  @SuppressWarnings({"keyfor:argument", "nullness:argument"}) // should not be needed
   protected abstract boolean isSubtypeQualifiers(
       AnnotationMirror subQualifier, AnnotationMirror superQualifier);
 
