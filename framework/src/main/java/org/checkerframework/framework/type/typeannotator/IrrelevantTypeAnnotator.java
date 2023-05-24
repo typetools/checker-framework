@@ -48,7 +48,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         // go on
     }
 
-    if (!((GenericAnnotatedTypeFactory) typeFactory).isRelevant(type)) {
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
       type.addMissingAnnotations(annotations);
     }
     return super.scan(type, aVoid);
