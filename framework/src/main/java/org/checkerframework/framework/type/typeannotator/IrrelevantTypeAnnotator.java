@@ -38,6 +38,12 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
     return super.scan(type, aVoid);
   }
 
+  /**
+   * Returns true if the given type accepts a primary annotation.
+   *
+   * @param tm a type mirror
+   * @return true if the given type accepts a primary annotation
+   */
   boolean isAnnotatableType(TypeMirror tm) {
     switch (tm.getKind()) {
       case BOOLEAN:
