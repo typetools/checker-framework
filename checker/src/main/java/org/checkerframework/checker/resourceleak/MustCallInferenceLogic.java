@@ -76,7 +76,6 @@ public class MustCallInferenceLogic {
   /** The control flow graph. */
   private final ControlFlowGraph cfg;
 
-  /** TODO */
   private final MustCallConsistencyAnalyzer mcca;
 
   /** The MethodTree of the cfg. */
@@ -91,7 +90,7 @@ public class MustCallInferenceLogic {
    * then call {@link #runInference()}.
    *
    * @param typeFactory the type factory
-   * @param cfg the ControlFlowGraph
+   * @param cfg the control flow graph of the method to check
    */
   /*package-private*/ MustCallInferenceLogic(
       ResourceLeakAnnotatedTypeFactory typeFactory,
@@ -690,10 +689,10 @@ public class MustCallInferenceLogic {
 
     List<Block> successors = getNormalSuccessors(curBlock);
 
-    for (Block successor : successors) {
+    for (Block b : successors) {
       // If b is a special block, it must be the regular exit, since we do not propagate to
       // exceptional successors.
-      if (successor.getType() == Block.BlockType.SPECIAL_BLOCK) {
+      if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
 
         assert wpi != null : "MustCallInference is running without WPI.";
@@ -706,7 +705,7 @@ public class MustCallInferenceLogic {
 
         addOrUpdateMustCall();
       }
-      BlockWithObligations state = new BlockWithObligations(successor, obligations);
+      BlockWithObligations state = new BlockWithObligations(b, obligations);
       if (visited.add(state)) {
         worklist.add(state);
       }
