@@ -47,7 +47,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1145,7 +1145,7 @@ public class JavaExpressionParseUtil {
      * @return a DiagMessage that can be used for error reporting
      */
     public DiagMessage getDiagMessage() {
-      return new DiagMessage(Kind.ERROR, errorKey, args);
+      return new DiagMessage(Diagnostic.Kind.ERROR, errorKey, args);
     }
 
     public boolean isFlowParseError() {

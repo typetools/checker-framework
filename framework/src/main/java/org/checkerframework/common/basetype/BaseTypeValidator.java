@@ -18,7 +18,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
@@ -186,7 +186,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
       if (AnnotationUtils.containsSame(seenTops, top)) {
         return Collections.singletonList(
-            new DiagMessage(Kind.ERROR, "conflicting.annos", annotations, type));
+            new DiagMessage(Diagnostic.Kind.ERROR, "conflicting.annos", annotations, type));
       }
       seenTops.add(top);
     }
@@ -196,7 +196,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     // wrong number of annotations
     if (!canHaveEmptyAnnotationSet && seenTops.size() < qualHierarchy.getWidth()) {
       return Collections.singletonList(
-          new DiagMessage(Kind.ERROR, "too.few.annotations", annotations, type));
+          new DiagMessage(Diagnostic.Kind.ERROR, "too.few.annotations", annotations, type));
     }
 
     // success

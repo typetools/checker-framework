@@ -29,7 +29,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.CompareToMethod;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
@@ -874,12 +874,15 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     if (tm.getKind() != TypeKind.DECLARED) {
       checker.message(
-          Kind.WARNING, "InterningVisitor.classIsAnnotated: tm = %s (%s)", tm, tm.getClass());
+          Diagnostic.Kind.WARNING,
+          "InterningVisitor.classIsAnnotated: tm = %s (%s)",
+          tm,
+          tm.getClass());
     }
     Element classElt = ((DeclaredType) tm).asElement();
     if (classElt == null) {
       checker.message(
-          Kind.WARNING,
+          Diagnostic.Kind.WARNING,
           "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)",
           tm,
           tm.getClass());

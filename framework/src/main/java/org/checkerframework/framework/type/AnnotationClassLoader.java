@@ -29,7 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
@@ -187,7 +187,7 @@ public class AnnotationClassLoader implements Closeable {
     try {
       classLoader.close();
     } catch (IOException e) {
-      checker.message(Kind.NOTE, "Failed to close AnnotationClassLoader");
+      checker.message(Diagnostic.Kind.NOTE, "Failed to close AnnotationClassLoader");
     }
   }
 
@@ -382,7 +382,8 @@ public class AnnotationClassLoader implements Closeable {
     } catch (MalformedURLException e) {
       processingEnv
           .getMessager()
-          .printMessage(Kind.NOTE, "Directory URL " + absolutePathToDirectory + " is malformed");
+          .printMessage(
+              Diagnostic.Kind.NOTE, "Directory URL " + absolutePathToDirectory + " is malformed");
     }
 
     return directoryURL;
@@ -402,7 +403,7 @@ public class AnnotationClassLoader implements Closeable {
     } catch (URISyntaxException | MalformedURLException e) {
       processingEnv
           .getMessager()
-          .printMessage(Kind.NOTE, "Jar URL " + absolutePathToJarFile + " is malformed");
+          .printMessage(Diagnostic.Kind.NOTE, "Jar URL " + absolutePathToJarFile + " is malformed");
     }
 
     return jarURL;
@@ -470,33 +471,33 @@ public class AnnotationClassLoader implements Closeable {
   protected final void printPaths() {
     // all paths in Xbootclasspath
     String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(File.pathSeparator);
-    processingEnv.getMessager().printMessage(Kind.NOTE, "bootclass path:");
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "bootclass path:");
     for (String path : bootclassPaths) {
-      processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+      processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 
     // all extension paths
     String[] extensionDirs = System.getProperty("java.ext.dirs").split(File.pathSeparator);
-    processingEnv.getMessager().printMessage(Kind.NOTE, "extension dirs:");
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "extension dirs:");
     for (String path : extensionDirs) {
-      processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+      processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 
     // all paths in CLASSPATH, -cp, and -classpath
-    processingEnv.getMessager().printMessage(Kind.NOTE, "java.class.path property:");
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "java.class.path property:");
     for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
-      processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + path);
+      processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 
     // add all paths that are examined by the classloader
-    processingEnv.getMessager().printMessage(Kind.NOTE, "classloader examined paths:");
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "classloader examined paths:");
     if (classLoader != null) {
       URL[] urls = classLoader.getURLs();
       for (int i = 0; i < urls.length; i++) {
-        processingEnv.getMessager().printMessage(Kind.NOTE, "\t" + urls[i].getFile());
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + urls[i].getFile());
       }
     } else {
-      processingEnv.getMessager().printMessage(Kind.NOTE, "classloader unavailable");
+      processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "classloader unavailable");
     }
   }
 

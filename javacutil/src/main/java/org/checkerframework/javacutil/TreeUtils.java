@@ -26,7 +26,6 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -1071,7 +1070,7 @@ public final class TreeUtils {
 
   static {
     classAndMethodTreeKinds = EnumSet.copyOf(classTreeKinds());
-    classAndMethodTreeKinds.add(Kind.METHOD);
+    classAndMethodTreeKinds.add(Tree.Kind.METHOD);
   }
 
   /**

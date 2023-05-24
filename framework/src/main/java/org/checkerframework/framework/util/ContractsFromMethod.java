@@ -19,7 +19,6 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.Contract.Kind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
@@ -77,7 +76,7 @@ public class ContractsFromMethod {
    * @return the precondition contracts on {@code executableElement}
    */
   public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
-    return getContracts(executableElement, Kind.PRECONDITION, Contract.Precondition.class);
+    return getContracts(executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class);
   }
 
   /**
@@ -87,7 +86,8 @@ public class ContractsFromMethod {
    * @return the postcondition contracts on {@code executableElement}
    */
   public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-    return getContracts(executableElement, Kind.POSTCONDITION, Contract.Postcondition.class);
+    return getContracts(
+        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class);
   }
 
   /**
@@ -99,7 +99,9 @@ public class ContractsFromMethod {
   public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
       ExecutableElement methodElement) {
     return getContracts(
-        methodElement, Kind.CONDITIONALPOSTCONDITION, Contract.ConditionalPostcondition.class);
+        methodElement,
+        Contract.Kind.CONDITIONALPOSTCONDITION,
+        Contract.ConditionalPostcondition.class);
   }
 
   /// Helper methods
@@ -115,7 +117,7 @@ public class ContractsFromMethod {
    * @return the contracts on {@code executableElement}
    */
   private <T extends Contract> Set<T> getContracts(
-      ExecutableElement executableElement, Kind kind, Class<T> clazz) {
+      ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
     // Check for a single framework-defined contract annotation.
     AnnotationMirror frameworkContractAnno =

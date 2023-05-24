@@ -57,7 +57,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -799,7 +798,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       pattern = options.get(patternName);
       if (pattern == null) {
         message(
-            Kind.WARNING,
+            Diagnostic.Kind.WARNING,
             "The " + patternName + " property is empty; please fix your command line");
         pattern = "";
       }
@@ -811,7 +810,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     if (pattern.indexOf("/") != -1) {
       message(
-          Kind.WARNING,
+          Diagnostic.Kind.WARNING,
           "The "
               + patternName
               + " property contains \"/\", which will never match a class name: "
@@ -863,7 +862,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (this.messager == null) {
         messager = processingEnv.getMessager();
         messager.printMessage(
-            Kind.WARNING,
+            Diagnostic.Kind.WARNING,
             "You have forgotten to call super.initChecker in your "
                 + "subclass of SourceChecker, "
                 + this.getClass()
@@ -880,7 +879,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 });
       }
       if (!printedVersion && hasOption("version")) {
-        messager.printMessage(Kind.NOTE, "Checker Framework " + getCheckerVersion());
+        messager.printMessage(Diagnostic.Kind.NOTE, "Checker Framework " + getCheckerVersion());
         printedVersion = true;
       }
     } catch (UserError ce) {
@@ -957,11 +956,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     // Cannot use BugInCF here because it is outside of the try/catch for BugInCF.
     if (e == null) {
-      messager.printMessage(Kind.ERROR, "Refusing to process empty TypeElement");
+      messager.printMessage(Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
       return;
     }
     if (p == null) {
-      messager.printMessage(Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
+      messager.printMessage(
+          Diagnostic.Kind.ERROR, "Refusing to process empty TreePath in TypeElement: " + e);
       return;
     }
 
@@ -972,7 +972,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             (processingEnv != null
                 && processingEnv.getOptions() != null
                 && processingEnv.getOptions().containsKey("noWarnMemoryConstraints"));
-        Kind kind = noWarnMemoryConstraints ? Kind.NOTE : Kind.WARNING;
+        Diagnostic.Kind kind =
+            noWarnMemoryConstraints ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
         messager.printMessage(kind, gcUsageMessage);
         warnedAboutGarbageCollection = true;
       }
@@ -984,7 +985,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Also the enum constant Source.JDK1_8 was renamed at some point...
     if (!warnedAboutSourceLevel && source.compareTo(Source.lookup("8")) < 0) {
       messager.printMessage(
-          Kind.WARNING, "-source " + source.name + " does not support type annotations");
+          Diagnostic.Kind.WARNING, "-source " + source.name + " does not support type annotations");
       warnedAboutSourceLevel = true;
     }
 
@@ -1010,9 +1011,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Add timestamp to indicate how long operations are taking.
         // Duplicate messages are suppressed, so this might not appear in front of every
         // " is type-checking " message (when a file takes less than a second to type-check).
-        message(Kind.NOTE, Instant.now().toString());
+        message(Diagnostic.Kind.NOTE, Instant.now().toString());
         message(
-            Kind.NOTE,
+            Diagnostic.Kind.NOTE,
             "%s is type-checking %s",
             (Object) this.getClass().getSimpleName(),
             currentRoot.getSourceFile().getName());
@@ -1050,7 +1051,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
   public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
-    report(source, Kind.ERROR, messageKey, args);
+    report(source, Diagnostic.Kind.ERROR, messageKey, args);
   }
 
   /**
@@ -1061,7 +1062,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
   public void reportWarning(Object source, @CompilerMessageKey String messageKey, Object... args) {
-    report(source, Kind.MANDATORY_WARNING, messageKey, args);
+    report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
   }
 
   /**
@@ -1091,10 +1092,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
-      Object source,
-      javax.tools.Diagnostic.Kind kind,
-      @CompilerMessageKey String messageKey,
-      Object... args) {
+      Object source, Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
     assert messagesProperties != null : "null messagesProperties";
 
     if (shouldSuppressWarnings(source, messageKey)) {
@@ -1107,7 +1105,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    if (kind == Kind.NOTE) {
+    if (kind == Diagnostic.Kind.NOTE) {
       System.err.println("(NOTE) " + String.format(messageKey, args));
       return;
     }
@@ -1139,8 +1137,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args), e);
     }
 
-    if (kind == Kind.ERROR && warns) {
-      kind = Kind.MANDATORY_WARNING;
+    if (kind == Diagnostic.Kind.ERROR && warns) {
+      kind = Diagnostic.Kind.MANDATORY_WARNING;
     }
 
     if (source instanceof Element) {
@@ -1164,7 +1162,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see SourceChecker#report(Object, DiagMessage)
    */
   @FormatMethod
-  public void message(javax.tools.Diagnostic.Kind kind, String msg, Object... args) {
+  public void message(Diagnostic.Kind kind, String msg, Object... args) {
     message(kind, String.format(msg, args));
   }
 
@@ -1196,7 +1194,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // If this method is called before initChecker() sets the field
       messager = processingEnv.getMessager();
     }
-    messager.printMessage(Kind.ERROR, msg);
+    messager.printMessage(Diagnostic.Kind.ERROR, msg);
   }
 
   /**
@@ -1454,7 +1452,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           && !s.equals("all")
           && !s.equals("none")) {
         this.messager.printMessage(
-            Kind.WARNING,
+            Diagnostic.Kind.WARNING,
             "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions());
       }
 
@@ -1974,7 +1972,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     Tree swTree = findSuppressWarningsAnnotationTree(tree);
     report(
         swTree,
-        Kind.MANDATORY_WARNING,
+        Diagnostic.Kind.MANDATORY_WARNING,
         SourceChecker.UNNEEDED_SUPPRESSION_KEY,
         "\"" + suppressWarningsString + "\"",
         getClass().getSimpleName());

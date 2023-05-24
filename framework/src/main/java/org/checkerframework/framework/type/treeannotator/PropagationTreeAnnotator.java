@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
@@ -101,22 +100,22 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror contextType = null;
     if (path != null && path.getParentPath() != null) {
       Tree parentTree = path.getParentPath().getLeaf();
-      if (parentTree.getKind() == Kind.ASSIGNMENT) {
+      if (parentTree.getKind() == Tree.Kind.ASSIGNMENT) {
         Tree var = ((AssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Kind.VARIABLE) {
+      } else if (parentTree.getKind() == Tree.Kind.VARIABLE) {
         contextType = atypeFactory.getAnnotatedType(parentTree);
       } else if (parentTree instanceof CompoundAssignmentTree) {
         Tree var = ((CompoundAssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
-      } else if (parentTree.getKind() == Kind.RETURN) {
+      } else if (parentTree.getKind() == Tree.Kind.RETURN) {
         Tree methodTree = TreePathUtil.enclosingMethodOrLambda(path.getParentPath());
-        if (methodTree.getKind() == Kind.METHOD) {
+        if (methodTree.getKind() == Tree.Kind.METHOD) {
           AnnotatedExecutableType methodType =
               atypeFactory.getAnnotatedType((MethodTree) methodTree);
           contextType = methodType.getReturnType();
         }
-      } else if (parentTree.getKind() == Kind.METHOD_INVOCATION && useAssignmentContext) {
+      } else if (parentTree.getKind() == Tree.Kind.METHOD_INVOCATION && useAssignmentContext) {
         MethodInvocationTree methodInvocationTree = (MethodInvocationTree) parentTree;
         useAssignmentContext = false;
         AnnotatedExecutableType m;
