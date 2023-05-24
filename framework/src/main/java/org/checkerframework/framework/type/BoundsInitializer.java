@@ -152,7 +152,7 @@ public class BoundsInitializer {
    * @param typeVar the type variable whose lower bound is being initialized
    */
   public static void initializeBounds(AnnotatedTypeVariable typeVar) {
-    initializeBounds(typeVar, null);
+    initializeBounds(typeVar, Collections.singletonMap(typeVar.getUnderlyingType(), typeVar));
   }
 
   /**
