@@ -36,7 +36,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * @param analysis the analysis. Its type factory must be a {@link
    *     ResourceLeakAnnotatedTypeFactory}.
    */
-  public ResourceLeakTransfer(final ResourceLeakAnalysis analysis) {
+  public ResourceLeakTransfer(ResourceLeakAnalysis analysis) {
     super(analysis);
     this.rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) analysis.getTypeFactory();
   }
@@ -67,7 +67,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
+      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
 
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
 

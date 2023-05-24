@@ -3,20 +3,38 @@ Version 3.35.0 (June 1, 2023)
 
 **User-visible changes:**
 
-
 The Checker Framework no longer issues `type.checking.not.run` errors.
-This reduces clutter.
+This reduces clutter in the output.
 
 Signedness Checker:
  * The receiver type of `Object.hashCode()` is now `@UnknownSignedness`.
 
 **Implementation details:**
 
+Instead of overriding `isRelevant()`, a type factory implementation should
+override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
+never call `isRelevantImpl()`.
+
+Methods that now return a `boolean` rather than `void`:
+ * `commonAssignmentCheck()`
+ * `checkArrayInitialization()`
+ * `checkLock()`
+ * `checkLockOfThisOrTree()`
+ * `ensureExpressionIsEffectivelyFinal()`
+
 Methods that now return `AnnotationMirrorSet` instead of `Set<? extends AnnotationMirror>`:
  * `getTopAnnotations()`
  * `getBottomAnnotations()`
  * `getDefaultTypeDeclarationBounds()`
  * `getExceptionParameterLowerBoundAnnotations()`
+
+Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements()`.
+
+Class `FieldInvariants`:
+ * constructor now takes an `AnnotatedTypeFactory`
+ * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
+
+Removed methods that have been deprecated for over two years.
 
 **Closed issues:**
 
@@ -1048,7 +1066,7 @@ All CFGVisualizeLauncher command-line arguments now start with `--` instead of `
 
 **Implementation details:**
 
-commonAssignmentCheck() now takes an additional argument.  Type system
+`commonAssignmentCheck()` now takes an additional argument.  Type system
 authors must update their overriding implementations.
 
 Renamed methods:

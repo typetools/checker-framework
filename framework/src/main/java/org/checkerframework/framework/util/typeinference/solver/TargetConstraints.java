@@ -36,7 +36,7 @@ public class TargetConstraints {
    */
   public final Subtypes subtypes;
 
-  public TargetConstraints(final TypeVariable target) {
+  public TargetConstraints(TypeVariable target) {
     this.target = target;
     this.equalities = new Equalities();
     this.supertypes = new Supertypes();
@@ -88,21 +88,30 @@ public class TargetConstraints {
     }
   }
 
-  // remember these are constraint in which target is the subtype
+  /** Remember these are constraints in which the target is the subtype. */
   protected static class Subtypes {
-    // Map( hierarchy top -> annotations that are supertypes to target in hierarchy)
+    /** Create a new Subtypes. */
+    public Subtypes() {}
+
+    /** Map from hierarchy top to annotations that are supertypes to target in hierarchy. */
     public AnnotationMirrorMap<AnnotationMirrorSet> primaries = new AnnotationMirrorMap<>();
 
-    // Map( type -> hierarchy tops for which the primary annotations of type are supertypes of
-    // the primary annotations of the target)
-    // note all components and underlying types must uphold the supertype relationship in all
-    // hierarchies
+    /**
+     * Map from type to hierarchy tops for which the primary annotations of type are supertypes of
+     * the primary annotations of the target.
+     *
+     * <p>Note all components and underlying types must uphold the supertype relationship in all
+     * hierarchies.
+     */
     public final Map<AnnotatedTypeMirror, AnnotationMirrorSet> types = new LinkedHashMap<>();
 
-    // Map( otherTarget -> hierarchy tops for which the primary annotations of otherTarget are
-    // supertypes of the primary annotations of the target)
-    // note all components and underlying types must uphold the subtype relationship in all
-    // hierarchies
+    /**
+     * Map from otherTarget to hierarchy tops for which the primary annotations of otherTarget are
+     * supertypes of the primary annotations of the target.
+     *
+     * <p>Note all components and underlying types must uphold the subtype relationship in all
+     * hierarchies.
+     */
     public final Map<TypeVariable, AnnotationMirrorSet> targets = new LinkedHashMap<>();
 
     public void clear() {

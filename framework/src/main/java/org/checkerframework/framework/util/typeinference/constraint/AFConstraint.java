@@ -38,8 +38,7 @@ public abstract class AFConstraint {
   public final AnnotatedTypeMirror formalParameter;
 
   /** Create a constraint for type arguments for a methodd invocation or new class invocation. */
-  protected AFConstraint(
-      final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter) {
+  protected AFConstraint(AnnotatedTypeMirror argument, AnnotatedTypeMirror formalParameter) {
     this.argument = argument;
     this.formalParameter = formalParameter;
     TypeArgInferenceUtil.checkForUninferredTypes(argument);
@@ -53,7 +52,7 @@ public abstract class AFConstraint {
    * @param targets the type parameters whose arguments we are trying to solve for
    * @return true if this constraint can't be broken up into other constraints or further simplified
    */
-  public boolean isIrreducible(final Set<TypeVariable> targets) {
+  public boolean isIrreducible(Set<TypeVariable> targets) {
     return TypeArgInferenceUtil.isATarget(argument, targets)
         || TypeArgInferenceUtil.isATarget(formalParameter, targets);
   }
@@ -68,7 +67,7 @@ public abstract class AFConstraint {
       return false;
     }
 
-    final AFConstraint that = (AFConstraint) thatObject;
+    AFConstraint that = (AFConstraint) thatObject;
 
     return this.argument.equals(that.argument) && this.formalParameter.equals(that.formalParameter);
   }
@@ -107,10 +106,9 @@ public abstract class AFConstraint {
    * @param substitutions a mapping of target type parameter to the type argument to
    * @return a new constraint that contains no use of the keys in substitutions
    */
-  public AFConstraint substitute(final Map<TypeVariable, AnnotatedTypeMirror> substitutions) {
-    final AnnotatedTypeMirror newArgument =
-        TypeArgInferenceUtil.substitute(substitutions, argument);
-    final AnnotatedTypeMirror newFormalParameter =
+  public AFConstraint substitute(Map<TypeVariable, AnnotatedTypeMirror> substitutions) {
+    AnnotatedTypeMirror newArgument = TypeArgInferenceUtil.substitute(substitutions, argument);
+    AnnotatedTypeMirror newFormalParameter =
         TypeArgInferenceUtil.substitute(substitutions, formalParameter);
     return construct(newArgument, newFormalParameter);
   }

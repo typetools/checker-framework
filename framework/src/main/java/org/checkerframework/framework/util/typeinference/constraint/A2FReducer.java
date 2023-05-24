@@ -15,14 +15,14 @@ public class A2FReducer implements AFReducer {
 
   protected final A2FReducingVisitor visitor;
 
-  public A2FReducer(final AnnotatedTypeFactory typeFactory) {
+  public A2FReducer(AnnotatedTypeFactory typeFactory) {
     this.visitor = new A2FReducingVisitor(typeFactory);
   }
 
   @Override
   public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints) {
     if (constraint instanceof A2F) {
-      final A2F a2f = (A2F) constraint;
+      A2F a2f = (A2F) constraint;
       visitor.visit(a2f.argument, a2f.formalParameter, newConstraints);
       return true;
 

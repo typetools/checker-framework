@@ -1,6 +1,7 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -21,6 +22,7 @@ import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -72,6 +74,46 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitReturn(tree, p);
+  }
+
+  @Override
+  public Void visitAssignment(AssignmentTree tree, Void p) {
+    // This code implements the following rule:
+    //  * It is always safe to assign a MustCallAlias parameter of a constructor
+    //    to an owning field of the containing class.
+    // It is necessary to special case this because MustCallAlias is translated
+    // into @PolyMustCall, so the common assignment check will fail when assigning
+    // an @MustCallAlias parameter to an owning field: the parameter is polymorphic,
+    // but the field is not.
+    ExpressionTree lhs = tree.getVariable();
+    ExpressionTree rhs = tree.getExpression();
+    Element lhsElt = TreeUtils.elementFromTree(lhs);
+    Element rhsElt = TreeUtils.elementFromTree(rhs);
+    if (lhsElt != null && rhsElt != null) {
+      // Note that it is not necessary to check that the assignment is to a field of this, because
+      // that is implied by the other conditions:
+      // * if the field is final, then the only place it can be assigned to is in the constructor
+      //   of the proper object (enforced by javac).
+      // * if the field is not final, then it cannot be assigned to in a constructor at all: the
+      //   @CreatesMustCallFor annotation cannot be written on a constructor (it has
+      //   @Target({ElementType.METHOD})), so this code relies on the standard rules for non-final
+      //   owning field reassignment, which prevent it without an @CreatesMustCallFor annotation
+      //   except in the constructor of the object containing the field.
+      boolean lhsIsOwningField =
+          lhs.getKind() == Tree.Kind.MEMBER_SELECT
+              && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
+      boolean rhsIsMCA =
+          AnnotationUtils.containsSameByClass(rhsElt.getAnnotationMirrors(), MustCallAlias.class);
+      boolean rhsIsConstructorParam =
+          rhsElt.getKind() == ElementKind.PARAMETER
+              && rhsElt.getEnclosingElement().getKind() == ElementKind.CONSTRUCTOR;
+      if (lhsIsOwningField && rhsIsMCA && rhsIsConstructorParam) {
+        // Do not execute common assignment check.
+        return null;
+      }
+    }
+
+    return super.visitAssignment(tree, p);
   }
 
   /** An empty string list. */
@@ -236,13 +278,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   private boolean commonAssignmentCheckOnResourceVariable = false;
 
   /**
-   * Mark (using the {@code #commonAssignmentCheckOnResourceVariable} field of this class) any
+   * {@inheritDoc}
+   *
+   * <p>Mark (using the {@code #commonAssignmentCheckOnResourceVariable} field of this class) any
    * assignments where the LHS is a resource variable, so that close doesn't need to be considered.
    * See {@link #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String,
    * Object...)} for the code that uses and removes the mark.
    */
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -251,16 +295,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE) {
       commonAssignmentCheckOnResourceVariable = true;
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
-   * Iff the LHS is a resource variable, then {@code #commonAssignmentCheckOnResourceVariable} will
-   * be true. This method guarantees that {@code #commonAssignmentCheckOnResourceVariable} will be
-   * false when it returns.
+   * {@inheritDoc}
+   *
+   * <p>Iff the LHS is a resource variable, then {@code #commonAssignmentCheckOnResourceVariable}
+   * will be true. This method guarantees that {@code #commonAssignmentCheckOnResourceVariable} will
+   * be false when it returns.
    */
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -268,7 +314,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       Object... extraArgs) {
 
     if (noMustCallObligation(varType) || noMustCallObligation(valueType)) {
-      return;
+      return true;
     }
 
     if (commonAssignmentCheckOnResourceVariable) {
@@ -276,17 +322,17 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
       if (atypeFactory
           .getQualifierHierarchy()
-          .isSubtype(atypeFactory.withoutClose(valAnno), atypeFactory.withoutClose(varAnno))) {
-        return;
+          .isSubtype(atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
+        return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
       // an exception).  Control falls through here to avoid duplicating error-issuing code.
     }
     // commonAssignmentCheckOnResourceVariable is already false, so no need to set it.
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /**
@@ -307,8 +353,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    AnnotationMirror resultAnno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotatedTypeMirror resultType = constructorType.getReturnType();
+    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);

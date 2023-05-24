@@ -71,7 +71,7 @@ public class InitializationTransfer<
     if (super.isNotFullyInitializedReceiver(methodTree)) {
       return true;
     }
-    final AnnotatedDeclaredType receiverType =
+    AnnotatedDeclaredType receiverType =
         analysis.getTypeFactory().getAnnotatedType(methodTree).getReceiverType();
     if (receiverType != null) {
       return atypeFactory.isUnknownInitialization(receiverType)

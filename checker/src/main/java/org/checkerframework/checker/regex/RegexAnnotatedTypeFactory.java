@@ -407,8 +407,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror rhs = getAnnotatedType(tree.getExpression());
         AnnotatedTypeMirror lhs = getAnnotatedType(tree.getVariable());
 
-        final Integer lhsRegexCount = getMinimumRegexCount(lhs);
-        final Integer rhsRegexCount = getMinimumRegexCount(rhs);
+        Integer lhsRegexCount = getMinimumRegexCount(lhs);
+        Integer rhsRegexCount = getMinimumRegexCount(rhs);
 
         if (lhsRegexCount != null && rhsRegexCount != null) {
           int lCount = getGroupCount(lhs.getAnnotation(Regex.class));
@@ -431,7 +431,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           || TreeUtils.isMethodInvocation(tree, patternCompile2, processingEnv)) {
         ExpressionTree arg0 = tree.getArguments().get(0);
 
-        final AnnotatedTypeMirror argType = getAnnotatedType(arg0);
+        AnnotatedTypeMirror argType = getAnnotatedType(arg0);
         Integer regexCount = getMinimumRegexCount(argType);
         AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
 
@@ -479,8 +479,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param type type that may carry a Regex annotation
      * @return the Integer value of the Regex annotation (0 if no value exists)
      */
-    private Integer getMinimumRegexCount(final AnnotatedTypeMirror type) {
-      final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
+    private Integer getMinimumRegexCount(AnnotatedTypeMirror type) {
+      AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {
           case TYPEVAR:
@@ -491,7 +491,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
           case INTERSECTION:
             Integer maxBound = null;
-            for (final AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
+            for (AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).getBounds()) {
               Integer boundRegexNum = getMinimumRegexCount(bound);
               if (boundRegexNum != null) {
                 if (maxBound == null || boundRegexNum > maxBound) {

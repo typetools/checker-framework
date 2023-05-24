@@ -118,7 +118,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
       ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
 
       if (methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)) {
-        final ClassTree classTree = method.getClassTree();
+        ClassTree classTree = method.getClassTree();
         TypeMirror classType = TreeUtils.typeOf(classTree);
 
         if (methodElement.getModifiers().contains(Modifier.STATIC)) {

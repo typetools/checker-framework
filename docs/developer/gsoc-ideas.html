@@ -42,6 +42,7 @@
     <ul>
       <li><a href="#ownership-type-system">Ownership type system</a></li>
       <li><a href="#non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</a></li>
+      <li><a href="#iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></a></li>
       <li><a href="#custom-tainting-checking">Preventing injection vulnerabilities via specialized taint analysis</a></li>
       <li><a href="#track-unsupported-operations">Warn about unsupported operations</a></li>
       <li><a href="#overflow">Overflow checking</a></li>
@@ -931,7 +932,8 @@ Alternately, you can
 <h2 id="case-study-nullness-guava">Guava library</h2>
 
 <p>
-  Guava is already partially annotated with nullness annotations &mdash; in
+  Guava is already <a href="https://github.com/typetools/guava/">partially
+  annotated</a> with nullness annotations &mdash; in
   part by Guava's developers, and in part by the Checker Framework team.
   However, Guava does not yet type-check without errors.  Doing so could
   find more errors (the Checker Framework has found nullness and indexing
@@ -969,6 +971,12 @@ so that non-<code>@Owning</code> formal parameters do not have
 their <a href="https://checkerframework.org/manual/#resource-leak-owning-fields"><code>@MustCall</code>
 annotation erased</a>.
 </p>
+
+<!-- See https://docs.google.com/document/d/14Q0iIH_3cfKvGnoLtYDck64MEKkvvPKaW5t7nvaNuVA -->
+<p>
+  We have some notes on possible implementation strategies.
+</p>
+
 
 
 <h2 id="non-empty-checker">Non-Empty Checker for precise handling of Queue.peek() and poll()</h2>
@@ -1030,6 +1038,55 @@ For information about what needs to be done, see <a href="https://github.com/typ
 <p>
 When you are done, the Nullness Checker should issue only the <code>// ::</code> diagnostics from <code>checker/tests/nullness/IsEmptyPoll.java</code> &mdash; no more and no fewer.
 You can test that by running the Nullness Checker on the file, and when you are done you should delete the <code>// @skip-test</code> line so that the file is run as part of the Checker Framework test suite.
+</p>
+
+
+<h2 id="iteration-checker">Iteration Checker to prevent <code>NoSuchElementException</code></h2>
+
+<!--
+There is a draft implementation in branch "iteration-checker" of
+https://github.com/t-rasmud .
+There is a draft paper at $t/iteration-checking-paper/
+-->
+
+<p>
+A Java program that uses an <code>Iterator</code> can
+throw <code>NoSuchElementException</code> if the program
+calls <code>next()</code> on the <code>Iterator</code> but
+the <code>Iterator</code> has no more elements to iterate over. Such
+exceptions even occur in production code (for example,
+in <a href="https://github.com/eclipse/rdf4j/issues/3090">Eclipse's
+rdf4j</a>).
+</p>
+
+<p>
+We would like a compile-time guarantee that this run-time error will never
+happen.  Our analysis will statically determine whether
+the <code>hasNext()</code> method would return true.  The basic type system
+has two type qualifiers:  <code>@HasNext</code> is a subtype
+of <code>@UnknownHasNext</code>.
+</p>
+
+<p>
+A variable's type is <code>@HasNext</code> if the program
+calls <code>hasNext()</code> and it returns true.  Implementing this is
+easy (see
+the <a href="https://checkerframework.org/manual/#creating-dataflow">dataflow
+section</a> in
+the <a href="https://checkerframework.org/manual/#creating-a-checker">"How
+to create a new checker" chapter</a>).  The analysis can also permit some
+calls to <code>next()</code> even if the programmer has <em>not</em>
+called <code>hasNext()</code>.  For example, a call to <code>next()</code>
+is permitted on a newly-constructed iterator that is made from a non-empty
+collection.  (This special case could build upon
+the <a href="#non-empty-checker">Non-Empty Checker</a> mentioned above.)
+There are probably other special cases, which experimentation will reveal.
+</p>
+
+<p>
+Parts of this are already implemented, but it needs to be enhanced.  Once
+case studies have demonstrated its effectiveness, then it can be released
+to the world, and a scientific paper can be written.
 </p>
 
 
@@ -1312,6 +1369,14 @@ A naive solution would be to invalidate these types any time a method is called 
 Unfortunately, aliasing makes this still unsound. Even more, a great solution to this problem would keep
 the information in the type when a method like add or remove is called on <code>data_structure</code>.
 A more complete solution might involve some special annotations on List that permit the information to be persisted.
+</p>
+
+<p>
+Another approach would be to run a pointer analysis before type-checking,
+then use that information for precise information about what lists might be
+changed by each call to <code>add</code> or <code>remove</code>.  One
+possible pointer analysis would be that
+of <a href="https://github.com/plast-lab/doop-mirror">Doop</a>.
 </p>
 
 <p>

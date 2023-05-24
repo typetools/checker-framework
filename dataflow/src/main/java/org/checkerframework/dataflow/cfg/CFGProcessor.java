@@ -129,7 +129,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param cfg control flow graph
      */
-    CFGProcessResult(final ControlFlowGraph cfg) {
+    CFGProcessResult(ControlFlowGraph cfg) {
       this(cfg, true, null);
     }
 
@@ -138,7 +138,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param errMsg the error message
      */
-    CFGProcessResult(final String errMsg) {
+    CFGProcessResult(String errMsg) {
       this(null, false, errMsg);
     }
 

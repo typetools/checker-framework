@@ -1391,12 +1391,13 @@ class MustCallConsistencyAnalyzer {
     // that. Otherwise, use the declared type of the field
     CFStore mcStore = mcTypeFactory.getStoreBefore(lhs);
     CFValue mcValue = mcStore.getValue(lhs);
-    AnnotationMirror mcAnno;
-    if (mcValue == null) {
-      // No store value, so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
-    } else {
+    AnnotationMirror mcAnno = null;
+    if (mcValue != null) {
       mcAnno = AnnotationUtils.getAnnotationByClass(mcValue.getAnnotations(), MustCall.class);
+    }
+    if (mcAnno == null) {
+      // No stored value (or the stored value is Poly/top), so use the declared type.
+      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(

@@ -55,7 +55,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param checker the type-checker associated with this visitor
    */
-  public ResourceLeakVisitor(final BaseTypeChecker checker) {
+  public ResourceLeakVisitor(BaseTypeChecker checker) {
     super(checker);
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");
@@ -142,12 +142,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             neededCmcfValueString);
       }
     }
-  }
-
-  @Override
-  protected boolean shouldPerformContractInference() {
-    // TODO: should be "false whenever running MustCallInferenceLogic", probably
-    return false;
   }
 
   /**
@@ -387,7 +381,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         if (siblingElement.getKind() == ElementKind.METHOD
             && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
           AnnotationMirror ensuresCalledMethodsAnno =
-              getEnsuresCalledMethodsForField(siblingElement, field);
+              rlTypeFactory.getDeclAnnotation(siblingElement, EnsuresCalledMethods.class);
 
           if (ensuresCalledMethodsAnno != null) {
             List<String> values =
@@ -432,22 +426,5 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           field.asType().toString(),
           error);
     }
-  }
-
-  private AnnotationMirror getEnsuresCalledMethodsForField(Element methodElt, Element field) {
-    AnnotationMirrorSet declAnnos = rlTypeFactory.getDeclAnnotations(methodElt);
-    for (AnnotationMirror am : declAnnos) {
-      if (rlTypeFactory.areSameByClass(am, EnsuresCalledMethods.class)) {
-        List<String> values =
-            AnnotationUtils.getElementValueArray(
-                am, rlTypeFactory.ensuresCalledMethodsValueElement, String.class);
-        for (String value : values) {
-          if (value.contains(field.getSimpleName().toString())) {
-            return am;
-          }
-        }
-      }
-    }
-    return null;
   }
 }

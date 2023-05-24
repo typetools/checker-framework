@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.index.qual.HasSubsequence;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
@@ -81,7 +82,7 @@ public class Subsequence {
    * @param factory an AnnotatedTypeFactory
    * @return null or a new Subsequence from the declaration of {@code varTree}
    */
-  public static Subsequence getSubsequenceFromReceiver(
+  public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
     if (!(expr instanceof FieldAccess)) {
       return null;

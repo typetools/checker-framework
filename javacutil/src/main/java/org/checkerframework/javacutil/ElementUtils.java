@@ -56,19 +56,6 @@ public class ElementUtils {
   }
 
   /**
-   * Returns the innermost type element enclosing the given element. Returns the element itself if
-   * it is a type element.
-   *
-   * @param elem the enclosed element of a class
-   * @return the innermost type element, or null if no type element encloses {@code elem}
-   * @deprecated use {@link #enclosingTypeElement}
-   */
-  @Deprecated // 2021-01-16
-  public static @Nullable TypeElement enclosingClass(final Element elem) {
-    return enclosingTypeElement(elem);
-  }
-
-  /**
    * Returns the innermost type element that is, or encloses, the given element.
    *
    * <p>Note that in this code:
@@ -85,7 +72,7 @@ public class ElementUtils {
    * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
    *     not, and is not enclosed by, a type element
    */
-  public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement enclosingTypeElement(Element elem) {
     Element result = elem;
     while (result != null && !isTypeElement(result)) {
       result = result.getEnclosingElement();
@@ -101,7 +88,7 @@ public class ElementUtils {
    * @param elem the enclosed element of a class
    * @return the innermost type element, or null if no type element encloses {@code elem}
    */
-  public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement strictEnclosingTypeElement(Element elem) {
     Element enclosingElement = elem.getEnclosingElement();
     if (enclosingElement == null) {
       return null;
@@ -210,7 +197,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns true if the element is a final element: a final field, final method, or final class.
+   * Returns true if the element is a final element: a final field, method, or final class.
    *
    * @return true if the element is final
    */
@@ -245,7 +232,7 @@ public class ElementUtils {
     if (element.getKind() == ElementKind.METHOD) {
       return ((ExecutableElement) element).getReturnType();
     } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-      return enclosingClass(element).asType();
+      return enclosingTypeElement(element).asType();
     } else {
       return element.asType();
     }
@@ -263,7 +250,7 @@ public class ElementUtils {
       return elem.getQualifiedName();
     }
 
-    TypeElement elem = enclosingClass(element);
+    TypeElement elem = enclosingTypeElement(element);
     if (elem == null) {
       return null;
     }
@@ -399,7 +386,7 @@ public class ElementUtils {
     if (element == null) {
       return false;
     }
-    TypeElement enclosingClass = enclosingClass(element);
+    TypeElement enclosingClass = enclosingTypeElement(element);
     if (enclosingClass == null) {
       throw new BugInCF("enclosingClass(%s) is null", element);
     }
@@ -679,8 +666,8 @@ public class ElementUtils {
    * @return direct supertypes of {@code type}
    */
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
-    final TypeMirror superclass = type.getSuperclass();
-    final List<? extends TypeMirror> interfaces = type.getInterfaces();
+    TypeMirror superclass = type.getSuperclass();
+    List<? extends TypeMirror> interfaces = type.getInterfaces();
     List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
@@ -774,17 +761,6 @@ public class ElementUtils {
         typeElementKinds.add(kind);
       }
     }
-  }
-
-  /**
-   * Return the set of kinds that represent classes.
-   *
-   * @return the set of kinds that represent classes
-   * @deprecated use {@link #typeElementKinds()}
-   */
-  @Deprecated // 2020-12-11
-  public static Set<ElementKind> classElementKinds() {
-    return typeElementKinds();
   }
 
   /**

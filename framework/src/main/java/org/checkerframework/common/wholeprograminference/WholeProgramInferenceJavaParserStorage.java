@@ -94,6 +94,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.UtilPlume;
 
 /**
  * This is an implementation of {@link WholeProgramInferenceStorage} that stores annotations
@@ -761,9 +762,6 @@ public class WholeProgramInferenceJavaParserStorage
               className = classNameKey;
             } else {
               TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
-              //              if (classElt == null) {
-              //                className = null;
-              //              } else {
               className = ElementUtils.getBinaryName(classElt);
 
               for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
@@ -777,7 +775,6 @@ public class WholeProgramInferenceJavaParserStorage
                     subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
                 subtypeSet.add(className);
               }
-              //              }
             }
             ClassOrInterfaceAnnos typeWrapper =
                 new ClassOrInterfaceAnnos(className, javaParserNode);
@@ -1109,7 +1106,7 @@ public class WholeProgramInferenceJavaParserStorage
               VoidVisitor<Void> visitor =
                   new DefaultPrettyPrinterVisitor(getConfiguration()) {
                     @Override
-                    public void visit(final MarkerAnnotationExpr n, final Void arg) {
+                    public void visit(MarkerAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
@@ -1117,7 +1114,7 @@ public class WholeProgramInferenceJavaParserStorage
                     }
 
                     @Override
-                    public void visit(final SingleMemberAnnotationExpr n, final Void arg) {
+                    public void visit(SingleMemberAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
@@ -1125,7 +1122,7 @@ public class WholeProgramInferenceJavaParserStorage
                     }
 
                     @Override
-                    public void visit(final NormalAnnotationExpr n, final Void arg) {
+                    public void visit(NormalAnnotationExpr n, Void arg) {
                       if (invisibleQualifierNames.contains(n.getName().toString())) {
                         return;
                       }
@@ -1328,8 +1325,7 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
       result.callableDeclarations = CollectionUtils.deepCopyValues(callableDeclarations);
       result.fields = CollectionUtils.deepCopyValues(fields);
-      result.enumConstants =
-          CollectionUtils.clone(enumConstants); // no deep copy: elements are strings
+      result.enumConstants = UtilPlume.clone(enumConstants); // no deep copy: elements are strings
       if (classAnnotations != null) {
         result.classAnnotations = classAnnotations.deepCopy();
       }
@@ -1469,7 +1465,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
       result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
 
-      if (result.paramsDeclAnnos != null) {
+      if (this.paramsDeclAnnos != null) {
         result.paramsDeclAnnos = new ArraySet<>(this.paramsDeclAnnos);
       }
       result.preconditions = deepCopyMapOfStringToPair(this.preconditions);

@@ -49,22 +49,21 @@ public class ConstraintMapBuilder {
   public ConstraintMap build(
       Set<TypeVariable> targets, Set<TUConstraint> constraints, AnnotatedTypeFactory typeFactory) {
 
-    final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-    final AnnotationMirrorSet tops =
-        new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
-    final ConstraintMap result = new ConstraintMap(targets);
+    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
+    ConstraintMap result = new ConstraintMap(targets);
 
-    final AnnotationMirrorSet tAnnos = new AnnotationMirrorSet();
-    final AnnotationMirrorSet uAnnos = new AnnotationMirrorSet();
-    final AnnotationMirrorSet hierarchiesInRelation = new AnnotationMirrorSet();
+    AnnotationMirrorSet tAnnos = new AnnotationMirrorSet();
+    AnnotationMirrorSet uAnnos = new AnnotationMirrorSet();
+    AnnotationMirrorSet hierarchiesInRelation = new AnnotationMirrorSet();
 
     for (TUConstraint constraint : constraints) {
       tAnnos.clear();
       uAnnos.clear();
       hierarchiesInRelation.clear();
 
-      final AnnotatedTypeVariable typeT = constraint.typeVariable;
-      final AnnotatedTypeMirror typeU = constraint.relatedType;
+      AnnotatedTypeVariable typeT = constraint.typeVariable;
+      AnnotatedTypeMirror typeU = constraint.relatedType;
 
       // If typeU is from an argument to the method, then treat typeU as an ordinary type even
       // if it is a target type variable.  This is for the case where the inferred type is the
@@ -83,8 +82,8 @@ public class ConstraintMapBuilder {
         } else {
 
           for (AnnotationMirror top : tops) {
-            final AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
-            final AnnotationMirror uAnno = typeU.getAnnotationInHierarchy(top);
+            AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
+            AnnotationMirror uAnno = typeU.getAnnotationInHierarchy(top);
 
             if (tAnno == null) {
               if (uAnno == null) {
@@ -142,7 +141,7 @@ public class ConstraintMapBuilder {
         }
       } else {
         for (AnnotationMirror top : tops) {
-          final AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
+          AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
 
           if (tAnno == null) {
             hierarchiesInRelation.add(top);

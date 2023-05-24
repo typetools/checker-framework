@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
  * method to add a string to the estimate at a particular program point.
  */
-public abstract class AccumulationTransfer extends CFTransfer {
+public class AccumulationTransfer extends CFTransfer {
 
   /** The type factory. */
   protected final AccumulationAnnotatedTypeFactory atypeFactory;
