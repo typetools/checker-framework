@@ -5,6 +5,7 @@ import org.checkerframework.checker.guieffect.qual.UI;
 
 public class AssignmentTests {
   public static @PolyUIType class P {}
+
   // We must separate these tests, otherwise the flow sensitivity kicks in and confounds the test
   // results
   public void testBody1(@UI P ui, @AlwaysSafe P safe, @PolyUI P poly) {

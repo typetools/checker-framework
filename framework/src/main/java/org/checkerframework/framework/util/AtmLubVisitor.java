@@ -34,6 +34,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
   private final AnnotatedTypeFactory atypeFactory;
   private final QualifierHierarchy qualHierarchy;
+
   /**
    * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
    * Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been visited, so that

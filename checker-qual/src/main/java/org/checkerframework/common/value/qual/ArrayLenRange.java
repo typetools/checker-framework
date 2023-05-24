@@ -21,6 +21,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 public @interface ArrayLenRange {
   /** Smallest value in the range, inclusive. */
   int from() default 0;
+
   /** Largest value in the range, inclusive. */
   int to() default Integer.MAX_VALUE;
 }

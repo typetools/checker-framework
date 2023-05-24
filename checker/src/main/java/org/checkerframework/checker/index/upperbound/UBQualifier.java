@@ -491,8 +491,10 @@ public abstract class UBQualifier {
     private static class SequencesOffsetsAndClass {
       /** List of sequences. */
       public final List<String> sequences;
+
       /** List of offsets. */
       public final List<String> offsets;
+
       /** The class of the annotation to be built. */
       public final Class<? extends Annotation> annoClass;
 
@@ -623,6 +625,7 @@ public abstract class UBQualifier {
       }
       return false;
     }
+
     /**
      * Is a value with this type less than the length of the sequence?
      *
@@ -1118,6 +1121,7 @@ public abstract class UBQualifier {
       OffsetEquationFunction removeSequenceLengthsFunc = eq -> eq.removeSequenceLengths(sequences);
       return computeNewOffsets(removeSequenceLengthsFunc);
     }
+
     /**
      * Returns a copy of this qualifier with sequence-offset pairs where in the original the offset
      * contains an access of an sequence length in {@code sequences}. The sequence length access has
@@ -1292,8 +1296,10 @@ public abstract class UBQualifier {
 
     /** Represents the value -1. */
     public static final UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
+
     /** Represents the value 0. */
     public static final UpperBoundLiteralQualifier ZERO = new UpperBoundLiteralQualifier(0);
+
     /** Represents the value 1. */
     public static final UpperBoundLiteralQualifier ONE = new UpperBoundLiteralQualifier(1);
 

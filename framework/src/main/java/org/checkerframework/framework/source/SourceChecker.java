@@ -556,14 +556,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** True if the -Afilenames command-line argument was passed. */
   private boolean printFilenames;
+
   /** True if the -Awarns command-line argument was passed. */
   private boolean warns;
+
   /** True if the -AshowSuppressWarningsStrings command-line argument was passed. */
   private boolean showSuppressWarningsStrings;
+
   /** True if the -ArequirePrefixInWarningSuppressions command-line argument was passed. */
   private boolean requirePrefixInWarningSuppressions;
+
   /** True if the -AshowPrefixInWarningMessages command-line argument was passed. */
   private boolean showPrefixInWarningMessages;
+
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
 
@@ -1983,6 +1988,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** The name of the @SuppressWarnings annotation. */
   private static final @CanonicalName String suppressWarningsClassName =
       SuppressWarnings.class.getCanonicalName();
+
   /**
    * Finds the tree that is a {@code @SuppressWarnings} annotation.
    *

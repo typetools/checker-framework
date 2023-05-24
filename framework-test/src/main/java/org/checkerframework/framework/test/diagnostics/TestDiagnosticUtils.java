@@ -21,6 +21,7 @@ public class TestDiagnosticUtils {
   /** How the diagnostics appear in Java source files. */
   public static final String DIAGNOSTIC_IN_JAVA_REGEX =
       "\\s*(error|fixable-error|warning|fixable-warning|other):\\s*(\\(?.*\\)?)\\s*";
+
   /** How the diagnostics appear in Java source files. */
   public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
       Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
@@ -81,6 +82,7 @@ public class TestDiagnosticUtils {
         lineNumber,
         stringFromJavaFile);
   }
+
   /**
    * Instantiate a diagnostic from output produced by the Java compiler. The resulting diagnostic is
    * never fixable and always has parentheses.
