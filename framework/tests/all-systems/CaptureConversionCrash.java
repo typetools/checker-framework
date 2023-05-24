@@ -1,8 +1,8 @@
 package wildcards;
 
-import wildcards.Crash.GenericAnnotatedTypeFactoryCrash;
+import wildcards.CaptureConversionCrash.GenericAnnotatedTypeFactoryCrash;
 
-public class Crash<Factory extends GenericAnnotatedTypeFactoryCrash<?, ?, ?, ?>> {
+public class CaptureConversionCrash<Factory extends GenericAnnotatedTypeFactoryCrash<?, ?, ?, ?>> {
   public abstract static class GenericAnnotatedTypeFactoryCrash<
       Value extends CFAbstractValue<Value>,
       Store extends CFAbstractStore<Value, Store>,
