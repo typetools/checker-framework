@@ -17,8 +17,10 @@ public class MethodCall extends JavaExpression {
 
   /** The method being called. */
   protected final ExecutableElement method;
+
   /** The receiver argument. */
   protected final JavaExpression receiver;
+
   /** The arguments. */
   protected final List<JavaExpression> arguments;
 

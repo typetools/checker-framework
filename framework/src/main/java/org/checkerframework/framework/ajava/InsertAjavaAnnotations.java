@@ -111,8 +111,10 @@ public class InsertAjavaAnnotations {
   private static class Insertion {
     /** Offset of the insertion in the file, measured in characters from the beginning. */
     public final int position;
+
     /** The contents of the insertion. */
     public final String contents;
+
     /** Whether the insertion should be on its own separate line. */
     public final boolean ownLine;
 
@@ -167,12 +169,16 @@ public class InsertAjavaAnnotations {
 
     /** The annotation insertions seen so far. */
     public final List<Insertion> insertions = new ArrayList<>();
+
     /** A printer for annotations. */
     private final DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+
     /** The lines of the String representation of the second AST. */
     private final List<String> lines;
+
     /** The line separator used in the text the second AST was parsed from */
     private final String lineSeparator;
+
     /**
      * Stores the offsets of the lines in the string representation of the second AST. At index i,
      * stores the number of characters from the start of the file to the beginning of the ith line.

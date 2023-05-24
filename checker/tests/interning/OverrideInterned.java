@@ -42,6 +42,7 @@ public class OverrideInterned {
     public Object check_modified1(String @Interned [] a1) {
       return new Object();
     }
+
     // :: error: (override.param)
     public Object check_modified2(@Interned String @Interned [] a1) {
       return new Object();

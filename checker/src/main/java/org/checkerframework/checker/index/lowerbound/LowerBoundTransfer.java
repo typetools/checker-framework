@@ -161,10 +161,13 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
   /** The canonical {@link GTENegativeOne} annotation. */
   public final AnnotationMirror GTEN1;
+
   /** The canonical {@link NonNegative} annotation. */
   public final AnnotationMirror NN;
+
   /** The canonical {@link Positive} annotation. */
   public final AnnotationMirror POS;
+
   /** The canonical {@link LowerBoundUnknown} annotation. */
   public final AnnotationMirror UNKNOWN;
 

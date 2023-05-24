@@ -15,6 +15,7 @@ import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
   /** The checker. */
   protected final BaseTypeChecker checker;
+
   /** Javac element utilities. */
   protected final Elements elements;
 

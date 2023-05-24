@@ -85,8 +85,10 @@ public class QualifierDefaults {
 
   /** The value() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierValueElement;
+
   /** The locations() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierLocationsElement;
+
   /** The value() element/field of a @DefaultQualifier.List annotation. */
   protected final ExecutableElement defaultQualifierListValueElement;
 

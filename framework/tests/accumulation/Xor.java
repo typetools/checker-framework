@@ -8,6 +8,7 @@ public class Xor {
     void b() {}
 
     void c() {}
+
     // use a standard gate encoding for xor
     void aXorB(@TestAccumulationPredicate("(a || b) && !(a && b)") Foo this) {}
   }

@@ -44,6 +44,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
   /** The @LessThanBottom annotation. */
   private final AnnotationMirror LESS_THAN_BOTTOM =
       AnnotationBuilder.fromClass(elements, LessThanBottom.class);
+
   /** The @LessThanUnknown annotation. */
   public final AnnotationMirror LESS_THAN_UNKNOWN =
       AnnotationBuilder.fromClass(elements, LessThanUnknown.class);

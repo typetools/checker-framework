@@ -93,6 +93,7 @@ public class MethodTest {
   }
 
   @TestReflectBottom SubClass subClass;
+
   // Test resolution of methods declared in super class
   public void pass5() {
     try {
@@ -194,6 +195,7 @@ public class MethodTest {
   }
 
   boolean flag = false;
+
   // Test lub of return types
   public void testLubReturnPass() {
     try {

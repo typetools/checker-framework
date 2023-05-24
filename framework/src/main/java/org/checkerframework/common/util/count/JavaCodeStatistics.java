@@ -45,14 +45,17 @@ public class JavaCodeStatistics extends SourceChecker {
 
   /** The number of type parameter declarations and uses. */
   int generics = 0;
+
   /** The number of array accesses and dimensions in array creations. */
   int arrayAccesses = 0;
+
   /** The number of type casts. */
   int typecasts = 0;
 
   String[] warningKeys = {
     "index", "lowerbound", "samelen", "searchindex", "substringindex", "upperbound"
   };
+
   /**
    * The number of warning suppressions with at least one key that matches one of the Index Checker
    * subcheckers.

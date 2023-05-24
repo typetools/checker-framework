@@ -59,21 +59,27 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@literal @}{@link SignatureUnknown} annotation. */
   protected final AnnotationMirror SIGNATURE_UNKNOWN =
       AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
+
   /** The {@literal @}{@link BinaryName} annotation. */
   protected final AnnotationMirror BINARY_NAME =
       AnnotationBuilder.fromClass(elements, BinaryName.class);
+
   /** The {@literal @}{@link InternalForm} annotation. */
   protected final AnnotationMirror INTERNAL_FORM =
       AnnotationBuilder.fromClass(elements, InternalForm.class);
+
   /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
   protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
       AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
+
   /** The {@literal @}{@link CanonicalName} annotation. */
   protected final AnnotationMirror CANONICAL_NAME =
       AnnotationBuilder.fromClass(elements, CanonicalName.class);
+
   /** The {@literal @}{@link CanonicalNameAndBinaryName} annotation. */
   protected final AnnotationMirror CANONICAL_NAME_AND_BINARY_NAME =
       AnnotationBuilder.fromClass(elements, CanonicalNameAndBinaryName.class);
+
   /** The {@literal @}{@link PrimitiveType} annotation. */
   protected final AnnotationMirror PRIMITIVE_TYPE =
       AnnotationBuilder.fromClass(elements, PrimitiveType.class);

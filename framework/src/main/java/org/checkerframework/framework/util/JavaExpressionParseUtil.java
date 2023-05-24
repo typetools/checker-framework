@@ -220,6 +220,7 @@ public class JavaExpressionParseUtil {
      * appears in the expression.
      */
     private final @Nullable ThisReference thisReference;
+
     /**
      * For each formal parameter, the expression to which to parse it. For example, the second
      * (index 1) element of the list is what "#2" parses to. If this field is {@code null}, a parse
@@ -1104,8 +1105,10 @@ public class JavaExpressionParseUtil {
   public static class JavaExpressionParseException extends Exception {
     /** The serial version identifier. */
     private static final long serialVersionUID = 2L;
+
     /** The error message key. */
     private final @CompilerMessageKey String errorKey;
+
     /** The arguments to the error message key. */
     @SuppressWarnings("serial") // I do not intend to serialize JavaExpressionParseException objects
     public final Object[] args;
