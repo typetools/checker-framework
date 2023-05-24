@@ -2652,7 +2652,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String extraInfo =
                 atypeFactory.relevantJavaTypes == null
                     ? ""
-                    : atypeFactory.relevantJavaTypes.toString();
+                    : "; only applicable to " + atypeFactory.relevantJavaTypes.toString();
             checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t, extraInfo);
           }
           return;
@@ -2664,7 +2664,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             String extraInfo =
                 atypeFactory.relevantJavaTypes == null
                     ? ""
-                    : atypeFactory.relevantJavaTypes.toString();
+                    : "; only applicable to " + atypeFactory.relevantJavaTypes.toString();
             checker.reportError(t, "anno.on.irrelevant", annos, underlying, extraInfo);
           }
           return;
