@@ -117,7 +117,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (receiverType != null
           // Intern method may be called on UnknownInterned object, so its receiver should
           // not be annotated as @Interned.
-          && typeFactory.getDeclAnnotation(methodElt, InternMethod.class) == null) {
+          && atypeFactory.getDeclAnnotation(methodElt, InternMethod.class) == null) {
         scanAndReduce(receiverType, p, null);
       }
       scanAndReduce(type.getParameterTypes(), p, null);
