@@ -261,6 +261,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
 
   /** Represent the annotation relations. */
+  // This field cannot be final because it is set in `postInit()`.
   protected QualifierHierarchy qualHierarchy;
 
   /** Represent the type relations. */
@@ -2163,22 +2164,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}.
+   * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if the erasure of {@code type1} is a subtype of the erasure of {@code type2}
+   * @return true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}
    */
   private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
     return types.isSubtype(types.erasure(type1), types.erasure(type2));
   }
 
   /**
-   * Returns true if the erasure of {@code type1} is the same type as the erasure of {@code type2}.
+   * Returns true if the erasure of {@code type1} is the same Java type as the erasure of {@code
+   * type2}.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if the erasure of {@code type1} is the same type as the erasure of {@code type2}
+   * @return true if the erasure of {@code type1} is the same Java type as the erasure of {@code
+   *     type2}
    */
   private boolean isSameType(TypeMirror type1, TypeMirror type2) {
     return types.isSameType(types.erasure(type1), types.erasure(type2));
@@ -2796,7 +2799,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // In Java 11 and lower, if newClassTree creates an anonymous class, then annotations in
       // this location:
       //   new @HERE Class() {}
-      // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+      // are not on the identifier newClassTree, but rather on the modifier newClassTree.
       List<? extends AnnotationTree> annoTrees =
           newClassTree.getClassBody().getModifiers().getAnnotations();
       // Add the annotations to an AnnotatedTypeMirror removes the annotations that are not

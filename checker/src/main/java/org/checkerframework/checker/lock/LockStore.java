@@ -124,10 +124,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       return analysis.createAbstractValue(set, je.getType());
     }
 
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
-        hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
+        qualHierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
     if (gb != null) {
