@@ -176,14 +176,23 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-      return new GeneralQualifierHierarchy();
+      return new GeneralQualifierHierarchy(/*TODO*/ null);
     }
 
     /**
      * A very limited QualifierHierarchy that is used for access to qualifiers from different type
      * systems.
      */
-    static class GeneralQualifierHierarchy implements QualifierHierarchy {
+    static class GeneralQualifierHierarchy extends QualifierHierarchy {
+
+      /**
+       * Creates a new GeneralQualifierHierarchy.
+       *
+       * @param atypeFactory the associated type factory
+       */
+      public GeneralQualifierHierarchy(GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+        super(atypeFactory);
+      }
 
       // Always return true
       @Override

@@ -42,10 +42,13 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
    *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param elements element utils
+   * @param atypeFactory the associated type factory
    */
   protected MostlyNoElementQualifierHierarchy(
-      Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-    super(qualifierClasses, elements);
+      Collection<Class<? extends Annotation>> qualifierClasses,
+      Elements elements,
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    super(qualifierClasses, elements, atypeFactory);
   }
 
   @Override

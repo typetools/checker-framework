@@ -205,7 +205,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected MethodValQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, MethodValAnnotatedTypeFactory.this);
     }
 
     /*

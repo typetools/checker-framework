@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * QualifierKindHierarchy.
  */
 @AnnotatedFor("nullness")
-public class NoElementQualifierHierarchy implements QualifierHierarchy {
+public class NoElementQualifierHierarchy extends QualifierHierarchy {
 
   /** {@link QualifierKindHierarchy}. */
   protected final QualifierKindHierarchy qualifierKindHierarchy;
@@ -54,9 +54,14 @@ public class NoElementQualifierHierarchy implements QualifierHierarchy {
    *
    * @param qualifierClasses classes of annotations that are the qualifiers
    * @param elements element utils
+   * @param atypeFactory the associated type factory
    */
   public NoElementQualifierHierarchy(
-      Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
+      Collection<Class<? extends Annotation>> qualifierClasses,
+      Elements elements,
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    super(atypeFactory);
+
     this.qualifierKindHierarchy = createQualifierKindHierarchy(qualifierClasses);
 
     this.kindToAnnotationMirror = createAnnotationMirrors(elements);
