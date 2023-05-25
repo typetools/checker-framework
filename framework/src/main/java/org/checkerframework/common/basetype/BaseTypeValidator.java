@@ -43,6 +43,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
+import org.plumelib.util.SystemPlume;
 
 /**
  * A visitor to validate the types in a tree.
@@ -55,6 +56,10 @@ import org.plumelib.util.ArrayMap;
  * BaseTypeVisitor#visitVariable}.
  */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
+
+  /** Whether to output diagnostic logging. */
+  private static final boolean debug = true;
+
   /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
   protected boolean isValid = true;
 
@@ -282,6 +287,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    */
   protected void reportInvalidAnnotationsOnUse(AnnotatedTypeMirror type, Tree p) {
     reportValidityResultOnUnannotatedType("annotations.on.use", type, p);
+    new Error("reportInvalidAnnotationsOnUse").printStackTrace();
+    SystemPlume.sleep(1);
   }
 
   @Override
@@ -302,7 +309,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       elemType.clearPrimaryAnnotations();
       elemType.addAnnotations(bounds);
 
-      if (!visitor.isValidUse(elemType, type, tree)) {
+      boolean isValidUse = visitor.isValidUse(elemType, type, tree);
+      log(
+          "isValidUse(%s, %s, %s) => %s%n",
+          elemType, type, TreeUtils.toStringTruncated(tree, 60), isValidUse);
+      if (!isValidUse) {
         reportInvalidAnnotationsOnUse(type, tree);
       }
     }
@@ -691,6 +702,30 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
       // a bound.
       return true;
+    }
+  }
+
+  /**
+   * Log a message, if the {@link #debug} variable is true.
+   *
+   * @param msg a message
+   */
+  @SuppressWarnings("UnusedMethod")
+  private void log(String msg) {
+    if (debug) {
+      System.out.println(String.format(msg));
+    }
+  }
+
+  /**
+   * Log a message, if the {@link #debug} variable is true.
+   *
+   * @param fmt a format string
+   * @param args the arguments to the format string
+   */
+  private void log(String fmt, Object... args) {
+    if (debug) {
+      System.out.println(String.format(fmt, args));
     }
   }
 }
