@@ -240,8 +240,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * and {@code other} are taken.
    *
    * <p>If neither of the two is more specific for one of the hierarchies (i.e., if the two are
-   * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror, TypeMirror,
-   * AnnotationMirror, TypeMirror)}, then the respective value from {@code backup} is used.
+   * incomparable as determined by {@link QualifierHierarchy#isSubtypeShallow(AnnotationMirror,
+   * TypeMirror, AnnotationMirror, TypeMirror)}, then the respective value from {@code backup} is
+   * used.
    *
    * @param other the other value to obtain information from
    * @param backup the value to use if {@code this} and {@code other} are incomparable

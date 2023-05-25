@@ -913,15 +913,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check the defaultc constructor.
+   * Check the default constructor.
    *
    * @param tree a class declaration
    */
   protected void checkDefaultConstructor(ClassTree tree) {}
 
   /**
-   * Checks that the method obeys override and subtype rules to all overridden methods. (Uses the
-   * pseudo-assignment logic to do so.)
+   * Checks that the method or constructor obeys override and subtype rules to all overridden
+   * methods. (Uses the pseudo-assignment logic to do so.)
    *
    * <p>The override rule specifies that a method, m1, may override a method m2 only if:
    *
