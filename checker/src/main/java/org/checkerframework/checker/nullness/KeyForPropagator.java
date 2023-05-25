@@ -167,9 +167,6 @@ public class KeyForPropagator {
       return;
     }
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext == null) {
-      return;
-    }
     AnnotatedTypeMirror assignedTo;
     if (assignmentContext instanceof VariableTree) {
       if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
