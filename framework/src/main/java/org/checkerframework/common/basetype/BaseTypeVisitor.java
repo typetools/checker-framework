@@ -73,7 +73,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -747,7 +747,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (AnnotationMirror poly : polys) {
         if (type.hasAnnotationRelaxed(poly)) {
           return Collections.singletonList(
-              new DiagMessage(Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
+              new DiagMessage(Diagnostic.Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
         }
       }
       return Collections.emptyList();
