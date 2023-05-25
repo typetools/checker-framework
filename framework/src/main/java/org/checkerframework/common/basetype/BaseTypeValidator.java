@@ -30,7 +30,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
@@ -149,13 +148,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * <ol>
    *   <li>There should not be multiple annotations from the same qualifier hierarchy.
    *   <li>There should not be more annotations than the width of the QualifierHierarchy.
-   *   <li>If the Java type is not relevant, its annotation is the one returned by {@link
-   *       GenericAnnotatedTypeFactory#annotationsForIrrelevantJavaType}.
    *   <li>If the type is not a type variable, then the number of annotations should be the same as
    *       the width of the QualifierHierarchy.
    *   <li>These properties should also hold recursively for component types of arrays and for
    *       bounds of type variables and wildcards.
    * </ol>
+   *
+   * This does not test whether the Java type is relevant, because by the time this method is
+   * called, the type includes some non-programmer-written annotations.
    *
    * @param qualHierarchy the QualifierHierarchy
    * @param type the type to test
@@ -184,23 +184,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   // a list.
   protected List<DiagMessage> isTopLevelValidType(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
-    AnnotationMirrorSet annotations = type.getAnnotations();
-
-    // wrong annotation on irrelevant Java type
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
-    if (!gatf.isRelevant(type)) {
-      AnnotationMirrorSet expected =
-          gatf.annotationsForIrrelevantJavaType(type.getUnderlyingType());
-      AnnotationMirrorSet actual = type.getAnnotations();
-      if (!expected.equals(actual)) {
-        String extraInfo = gatf.irrelevantExtraMessage();
-        return Collections.singletonList(
-            DiagMessage.error("anno.on.irrelevant", type, actual, extraInfo));
-      }
-    }
-
     // multiple annotations from the same hierarchy
+    AnnotationMirrorSet annotations = type.getAnnotations();
     AnnotationMirrorSet seenTops = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annotations) {
       AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
