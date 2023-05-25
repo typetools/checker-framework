@@ -999,6 +999,11 @@ public abstract class CFAbstractTransfer<
     return result;
   }
 
+  /**
+   * Checks if Resource Leak Checker is running.
+   *
+   * @return returns true if the Resource Leak Checker is running
+   */
   protected boolean isResourceLeakCheckerEnabled() {
     return resourceLeakChecker;
   }

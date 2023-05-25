@@ -76,6 +76,7 @@ public class MustCallInferenceLogic {
   /** The control flow graph. */
   private final ControlFlowGraph cfg;
 
+  /** The MustCallConsistencyAnalyzer. */
   private final MustCallConsistencyAnalyzer mcca;
 
   /** The MethodTree of the cfg. */
@@ -91,6 +92,7 @@ public class MustCallInferenceLogic {
    *
    * @param typeFactory the type factory
    * @param cfg the control flow graph of the method to check
+   * @param mcca the MustCallConsistencyAnalyzer
    */
   /*package-private*/ MustCallInferenceLogic(
       ResourceLeakAnnotatedTypeFactory typeFactory,
@@ -577,6 +579,7 @@ public class MustCallInferenceLogic {
    * satisfies the field's must-call obligation, then adds that field to the {@link
    * #owningFieldToECM} set.
    *
+   * @param obligations the set of obligations to search in
    * @param mNode the MethodInvocationNode
    */
   private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode mNode) {
@@ -677,6 +680,7 @@ public class MustCallInferenceLogic {
    * next block is a regular exit point, adds an {@literal @}Owning annotation for fields in {@link
    * #owningFieldToECM}.
    *
+   * @param obligations the set of obligations to update
    * @param curBlock the current block
    * @param visited set of blocks already on the worklist
    * @param worklist current worklist
