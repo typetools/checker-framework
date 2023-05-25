@@ -80,7 +80,7 @@ import org.plumelib.util.CollectionsPlume;
  *             field f may appear in an expression string as "f" or "this.f"; this class
  *             standardizes both strings to "this.f". All dependent type annotations must be
  *             standardized so that the implementation of {@link
- *             org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
+ *             org.checkerframework.framework.type.QualifierHierarchy#isSubtypeShallow(AnnotationMirror,
  *             TypeMirror, AnnotationMirror, TypeMirror)} can assume that two expressions are
  *             equivalent if their string representations are {@code equals()}.
  *         <li>Viewpoint-adaption: converts an expression to some use site. For example, in method

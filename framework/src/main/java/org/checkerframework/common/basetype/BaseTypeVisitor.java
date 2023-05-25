@@ -385,10 +385,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void scan(@Nullable Tree tree, Void p) {
-    if (tree != null && getCurrentPath() != null) {
+    if (tree == null) {
+      return null;
+    }
+    System.out.printf("scan(%s)%n", TreeUtils.toStringTruncated(tree, 80));
+    if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
-    if (tree != null && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+    if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
       visitSwitchExpression17(tree);
       return null;
     }
@@ -1145,15 +1149,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     AnnotatedTypeMirror returnType = constructorType.getReturnType();
-    TypeMirror constructedType = returnType.getUnderlyingType();
     AnnotationMirrorSet constructorAnnotations = returnType.getAnnotations();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
       AnnotationMirror constructorAnno =
           qualHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
-      // TODO: Why doesn't this just check `AnnotationUtils.areSame(top, constructorAnno)`?
-      if (!qualHierarchy.isSubtypeShallow(top, constructedType, constructorAnno, constructedType)) {
+      if (!AnnotationUtils.areSame(top, constructorAnno)) {
         checker.reportWarning(
             constructorElement, "inconsistent.constructor.type", constructorAnno, top);
       }

@@ -30,9 +30,6 @@ import org.plumelib.util.StringsPlume;
 @AnnotatedFor("nullness")
 public abstract class QualifierHierarchy {
 
-  /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /** The associated type factory. This is used only for checking whether types are relevant. */
   protected GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
 
@@ -129,7 +126,7 @@ public abstract class QualifierHierarchy {
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
    * not necessarily in a Java subtyping relationship with one another and are only used by this
-   * method for special cases when qualiifer subtyping depends on the Java basetype.
+   * method for special cases when qualifier subtyping depends on the Java basetype.
    *
    * <p>Clients should call {@code isSubtypeShallow()}. However, subtypes should generally override
    * {@link #isSubtypeQualifiers} (if needed).x
@@ -173,7 +170,7 @@ public abstract class QualifierHierarchy {
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
-   * only used by this method for special cases when qualiifer subtyping depends on the Java
+   * only used by this method for special cases when qualifier subtyping depends on the Java
    * basetype.
    *
    * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
@@ -393,7 +390,7 @@ public abstract class QualifierHierarchy {
   public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
     for (AnnotationMirror anno : qualifiers) {
-      if (isSubtypeShallow(anno, alwaysRelevantTM, top, alwaysRelevantTM)) {
+      if (isSubtypeQualifiers(anno, top)) {
         return anno;
       }
     }
