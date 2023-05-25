@@ -38,6 +38,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * TypeAnnotatorUtil.eraseBoundsThenAnnotate. This flag prevents infinite recursion.
    */
   private boolean pause = false;
+
   /** The parents. */
   private final ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
 
@@ -88,7 +89,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       // Copy annotations from the declaration to the wildcards.
       AnnotatedDeclaredType declaration =
           (AnnotatedDeclaredType)
-              typeFactory.fromElement(declaredType.getUnderlyingType().asElement());
+              atypeFactory.fromElement(declaredType.getUnderlyingType().asElement());
       List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
       for (int i = 0; i < typeArgs.size(); i++) {
         if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
@@ -132,10 +133,10 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     if (typeParamElement != null) {
       pause = true;
       AnnotatedTypeVariable typeParam =
-          (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeParamElement);
+          (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(typeParamElement);
       pause = false;
 
-      AnnotationMirrorSet tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
+      AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
 
       if (AnnotatedTypes.hasNoExplicitBound(wildcard)) {
         propagateExtendsBound(wildcard, typeParam, tops);

@@ -112,6 +112,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /** The unique ID for the next-created object. */
   static final AtomicLong nextUid = new AtomicLong(0);
+
   /** The unique ID of this object. */
   final transient long uid = nextUid.getAndIncrement();
 
@@ -143,6 +144,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
   }
+
   /**
    * Copy constructor.
    *
@@ -448,6 +450,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public final void insertValue(JavaExpression expr, @Nullable V value) {
     insertValue(expr, value, false);
   }
+
   /**
    * Like {@link #insertValue(JavaExpression, CFAbstractValue)}, but updates the store even if
    * {@code expr} is nondeterministic.

@@ -111,21 +111,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The @{@link UpperBoundUnknown} annotation. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, UpperBoundUnknown.class);
+
   /** The @{@link UpperBoundBottom} annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, UpperBoundBottom.class);
+
   /** The @{@link PolyUpperBound} annotation. */
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyUpperBound.class);
+
   /** The @{@link UpperBoundLiteral}(-1) annotation. */
   public final AnnotationMirror NEGATIVEONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", -1)
           .build();
+
   /** The @{@link UpperBoundLiteral}(0) annotation. */
   public final AnnotationMirror ZERO =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
           .setValue("value", 0)
           .build();
+
   /** The @{@link UpperBoundLiteral}(1) annotation. */
   public final AnnotationMirror ONE =
       new AnnotationBuilder(getProcessingEnv(), UpperBoundLiteral.class)
@@ -135,12 +140,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   /** The NegativeIndexFor.value element/field. */
   public final ExecutableElement negativeIndexForValueElement =
       TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
+
   /** The SameLen.value element/field. */
   public final ExecutableElement sameLenValueElement =
       TreeUtils.getMethod(SameLen.class, "value", 0, processingEnv);
+
   /** The LTLengthOf.value element/field. */
   public final ExecutableElement ltLengthOfValueElement =
       TreeUtils.getMethod(LTLengthOf.class, "value", 0, processingEnv);
+
   /** The LTLengthOf.offset element/field. */
   public final ExecutableElement ltLengthOfOffsetElement =
       TreeUtils.getMethod(LTLengthOf.class, "offset", 0, processingEnv);
@@ -448,9 +456,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     @Override
     public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
-      UBQualifier subtype = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
-      UBQualifier supertype = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
-      return subtype.isSubtype(supertype);
+      UBQualifier subtypeQual = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
+      UBQualifier supertypeQual = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
+      return subtypeQual.isSubtype(supertypeQual);
     }
   }
 

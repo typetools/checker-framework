@@ -47,28 +47,36 @@ public class KeyForValidation {
 
   // :: error: (expression.unparsable)
   void foo2(@KeyFor("ALSOBAD") Object o) {}
+
   // :: error: (expression.unparsable)
   void foo3(@KeyFor("ALSOBAD") Object[] o) {}
+
   // :: error: (expression.unparsable)
   void foo4(Map<@KeyFor("ALSOBAD") Object, Object> o) {}
+
   // :: error: (expression.unparsable)
   @KeyFor("ALSOBAD") Object[] foo5() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   @KeyFor("ALSOBAD") Object foo6() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   Map<@KeyFor("ALSOBAD") Object, Object> foo7() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   <@KeyFor("ALSOBAD") T> void foo8() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   <@KeyForBottom T extends @KeyFor("ALSOBAD") Object> void foo9() {}
+
   // :: error: (expression.unparsable)
   void foo10(@KeyFor("ALSOBAD") KeyForValidation this) {}
 
@@ -89,26 +97,33 @@ public class KeyForValidation {
 
   // :: error: (expression.unparsable)
   static void bar2(@KeyFor("this.instanceField") Object o) {}
+
   // :: error: (expression.unparsable)
   static void bar3(@KeyFor("this.instanceField") Object[] o) {}
+
   // :: error: (expression.unparsable)
   static void bar4(Map<@KeyFor("this.instanceField") Object, Object> o) {}
+
   // :: error: (expression.unparsable)
   static @KeyFor("this.instanceField") Object[] bar5() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   static @KeyFor("this.instanceField") Object bar6() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   static Map<@KeyFor("this.instanceField") Object, Object> bar7() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   static <@KeyFor("this.instanceField") T> void bar8() {
     throw new RuntimeException();
   }
+
   // :: error: (expression.unparsable)
   static <@KeyForBottom T extends @KeyFor("this.instanceField") Object> void bar9() {}
 

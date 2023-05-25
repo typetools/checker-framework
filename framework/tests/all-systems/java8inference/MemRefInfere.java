@@ -7,6 +7,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
 // @skip-test #979
 
 public abstract class MemRefInfere<K, V> implements Map<K, V>, Serializable {

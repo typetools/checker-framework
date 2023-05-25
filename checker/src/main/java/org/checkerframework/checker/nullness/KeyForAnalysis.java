@@ -33,7 +33,7 @@ public class KeyForAnalysis extends CFAbstractAnalysis<KeyForValue, KeyForStore,
   public KeyForValue createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType) {
 
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, atypeFactory)) {
       return null;
     }
     return new KeyForValue(this, annotations, underlyingType);

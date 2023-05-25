@@ -74,6 +74,7 @@ public class InferenceFactory {
 
   /** AnnotatedTypeFactory used to get annotated types. */
   private final AnnotatedTypeFactory typeFactory;
+
   /** Stores information about the current inference problem being solved. */
   private Java8InferenceContext context;
 

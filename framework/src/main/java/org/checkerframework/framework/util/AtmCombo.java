@@ -192,6 +192,7 @@ public enum AtmCombo {
 
   /** First AtmKind. */
   public final AtmKind type1Kind;
+
   /** Second AtmKind. */
   public final AtmKind type2Kind;
 

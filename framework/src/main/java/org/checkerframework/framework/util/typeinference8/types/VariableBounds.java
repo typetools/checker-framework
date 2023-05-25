@@ -276,6 +276,7 @@ public class VariableBounds {
       }
     }
   }
+
   /**
    * Returns the constraints between the type arguments to {@code s} and {@code t}.
    *

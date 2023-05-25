@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -206,14 +205,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** The javac element utilities. */
   protected final Elements elements;
+
   /** The javac type utilities. */
   protected final Types types;
+
   /** The javac tree utilities. */
   protected final Trees trees;
+
   /** The tree builder. */
   protected final TreeBuilder treeBuilder;
+
   /** The annotation provider, e.g., a type factory. */
   protected final AnnotationProvider annotationProvider;
+
   /** Can assertions be assumed to be disabled? */
   protected final boolean assumeAssertionsDisabled;
 
@@ -1548,7 +1552,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private Element findOwner() {
     Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
     if (enclosingMethodOrLambda != null) {
-      if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
+      if (enclosingMethodOrLambda.getKind() == Tree.Kind.METHOD) {
         return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
       } else {
         // The current path is in a lambda tree.  In this case the owner is either a method

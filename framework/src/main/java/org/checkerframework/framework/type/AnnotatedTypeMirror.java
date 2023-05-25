@@ -58,6 +58,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
+
   /** A HashcodeAtmVisitor. */
   protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
 
@@ -284,8 +285,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-      AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, canonical);
+      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+      AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
       }
@@ -308,9 +309,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       canonical = atypeFactory.canonicalAnnotation(p);
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+      QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
-          qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
+          qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
       if (anno != null) {
         return anno;
       }
@@ -716,8 +717,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getAnnotationInHierarchy(a);
-    QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-    if (prev != null && !prev.equals(qualHier.getTopAnnotation(a))) {
+    QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+    if (prev != null && !prev.equals(qualHierarchy.getTopAnnotation(a))) {
       return this.removeAnnotation(prev);
     }
     return false;
@@ -1147,22 +1148,31 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /** The parameter types; an unmodifiable list. */
     private List<AnnotatedTypeMirror> paramTypes;
+
     /** Whether {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
+
     /** The receiver type. */
     private AnnotatedDeclaredType receiverType;
+
     /** Whether {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
+
     /** The return type. */
     private AnnotatedTypeMirror returnType;
+
     /** Whether {@link returnType} has been computed. */
     private boolean returnTypeComputed = false;
+
     /** The thrown types; an unmodifiable list. */
     private List<AnnotatedTypeMirror> thrownTypes;
+
     /** Whether {@link thrownTypes} has been computed. */
     private boolean thrownTypesComputed = false;
+
     /** The type variables; an unmodifiable list. */
     private List<AnnotatedTypeVariable> typeVarTypes;
+
     /** Whether {@link typeVarTypes} has been computed. */
     private boolean typeVarTypesComputed = false;
 

@@ -29,8 +29,13 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
   /** Type utilities. */
   private final Types types;
+
   /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
+
+  /** The qualifier hierarchy. */
+  private final QualifierHierarchy qualHierarchy;
+
   /**
    * Whether or not the type being visited is an uninferred type argument. If true, then the
    * underlying type may not have the correct relationship with the supertype.
@@ -44,7 +49,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    */
   public AsSuperVisitor(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
-    types = atypeFactory.types;
+    this.types = atypeFactory.types;
+    this.qualHierarchy = atypeFactory.getQualifierHierarchy();
   }
 
   /**
@@ -64,7 +70,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   })
   public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
     if (type == null || superType == null) {
-      throw new BugInCF("AsSuperVisitor type and supertype cannot be null.");
+      throw new BugInCF(
+          "AsSuperVisitor.asSuper(%s, %s): arguments cannot be null", type, superType);
     }
 
     if (type == superType) {
@@ -114,7 +121,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
           AnnotationMirrorSet newLubs = new AnnotationMirrorSet();
           for (AnnotationMirror lub : lubs) {
             AnnotationMirror anno = altern.getAnnotationInHierarchy(lub);
-            newLubs.add(atypeFactory.getQualifierHierarchy().leastUpperBound(anno, lub));
+            newLubs.add(qualHierarchy.leastUpperBound(anno, lub));
           }
           lubs = newLubs;
         }
@@ -195,8 +202,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotatedTypeMirror type, Void p, AnnotatedTypeMirror lowerBound) {
     if (lowerBound.getKind() == TypeKind.NULL) {
       AnnotationMirrorSet typeLowerBound =
-          AnnotatedTypes.findEffectiveLowerBoundAnnotations(
-              atypeFactory.getQualifierHierarchy(), type);
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type);
       lowerBound.replaceAnnotations(typeLowerBound);
       return lowerBound;
     }
@@ -307,6 +313,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     return copyPrimaryAnnos(type, superType);
   }
+
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc="visitDeclared_Other methods">
@@ -580,6 +587,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotatedPrimitiveType type, AnnotatedWildcardType superType, Void p) {
     return visitPrimitive_Other(type, superType, p);
   }
+
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc="visitTypevar_Other methods">
@@ -658,6 +666,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     return copyPrimaryAnnos(type, superType);
   }
+
   // </editor-fold>
 
   /* The primary annotation on a union type is the LUB of the primary annotations on its alternatives. #ensurePrimaryIsCorrectForUnions ensures that this is the case.
@@ -712,6 +721,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotatedUnionType type, AnnotatedWildcardType superType, Void p) {
     return visitUnion_Other(type, superType, p);
   }
+
   // </editor-fold>
 
   // <editor-fold defaultstate="collapsed" desc="visitWildCard_Other methods">

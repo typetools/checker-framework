@@ -86,10 +86,13 @@ public class NullnessAnnotatedTypeFactory
 
   /** The @{@link NonNull} annotation. */
   protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+
   /** The @{@link Nullable} annotation. */
   protected final AnnotationMirror NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+
   /** The @{@link PolyNull} annotation. */
   protected final AnnotationMirror POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
+
   /** The @{@link MonotonicNonNull} annotation. */
   protected final AnnotationMirror MONOTONIC_NONNULL =
       AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
@@ -102,6 +105,7 @@ public class NullnessAnnotatedTypeFactory
 
   /** The Class.getCanonicalName() method. */
   protected final ExecutableElement classGetCanonicalName;
+
   /** The Arrays.copyOf() methods that operate on arrays of references. */
   private final List<ExecutableElement> copyOfMethods;
 

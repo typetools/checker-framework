@@ -29,6 +29,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** Current inference problem that is being solved. */
   private InvocationTypeInference java8Inference = null;
+
   /** Stack of all inference problems currently being solved. */
   private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
 

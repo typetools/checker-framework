@@ -83,7 +83,7 @@ public final class TypesUtils {
       assert name != null : "@AssumeAssertion(nullness): assumption";
       TypeElement element = elements.getTypeElement(name);
       if (element == null) {
-        throw new BugInCF("Unrecognized class: " + clazz);
+        throw new BugInCF("No element for: " + clazz);
       }
       return element.asType();
     }

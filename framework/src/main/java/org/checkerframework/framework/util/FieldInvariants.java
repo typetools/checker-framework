@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -123,23 +123,24 @@ public class FieldInvariants {
    * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
    */
   public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
-    QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
       return new DiagMessage(
-          Kind.ERROR, "field.invariant.not.found.superclass", String.join(", ", missingFields));
+          Diagnostic.Kind.ERROR,
+          "field.invariant.not.found.superclass",
+          String.join(", ", missingFields));
     }
 
     for (String field : superInvar.fields) {
       List<AnnotationMirror> superQualifiers = superInvar.getQualifiersFor(field);
       List<AnnotationMirror> subQualifiers = this.getQualifiersFor(field);
       for (AnnotationMirror superA : superQualifiers) {
-        AnnotationMirror sub =
-            qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        if (sub == null || !qualifierHierarchy.isSubtype(sub, superA)) {
+        AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
+        if (sub == null || !qualHierarchy.isSubtype(sub, superA)) {
           return new DiagMessage(
-              Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+              Diagnostic.Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }
     }

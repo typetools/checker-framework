@@ -36,7 +36,7 @@ public class NullnessAnalysis
   @Override
   public NullnessValue createAbstractValue(
       AnnotationMirrorSet annotations, TypeMirror underlyingType) {
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, atypeFactory)) {
       return null;
     }
     return new NullnessValue(this, annotations, underlyingType);

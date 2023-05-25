@@ -29,7 +29,6 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -125,20 +124,28 @@ public final class TreeUtils {
   // immediately below.
   /** The {@code CaseTree.getKind()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetCaseKind = null;
+
   /** The {@code CaseTree.CaseKind.RULE} enum value. Null on JDK 11 and lower. */
   private static @Nullable Enum<?> caseKindRule = null;
+
   /** The {@code CaseTree.getExpressions()} method. Null on JDK 11 and lower. */
   private static @Nullable Method caseGetExpressions = null;
+
   /** The {@code CaseTree.getBody()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method caseGetBody = null;
+
   /** The {@code BindingPatternTree.getVariable()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method bindingPatternGetVariable = null;
+
   /** The {@code InstanceOfTree.getPattern()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method instanceOfTreeGetPattern = null;
+
   /** The {@code SwitchExpressionTree.getExpression()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method switchExpressionGetExpression = null;
+
   /** The {@code SwitchExpressionTree.getCases()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method switchExpressionGetCases = null;
+
   /** The {@code YieldTree.getValue()} method. Null on JDK 11 and lower. */
   private static @MonotonicNonNull Method yieldGetValue = null;
 
@@ -828,6 +835,7 @@ public final class TreeUtils {
     }
     return false;
   }
+
   /**
    * Returns the name of the invoked method.
    *
@@ -1091,7 +1099,7 @@ public final class TreeUtils {
 
   static {
     classAndMethodTreeKinds = EnumSet.copyOf(classTreeKinds());
-    classAndMethodTreeKinds.add(Kind.METHOD);
+    classAndMethodTreeKinds.add(Tree.Kind.METHOD);
   }
 
   /**
@@ -1912,6 +1920,7 @@ public final class TreeUtils {
       }
     }
   }
+
   /**
    * Determine whether an expression {@link ExpressionTree} has the constant value true, according
    * to the compiler logic.

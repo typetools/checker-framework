@@ -106,6 +106,7 @@ public class Resolution {
   }
 
   private final Java8InferenceContext context;
+
   /** The set of dependencies between the variables. */
   private final Dependencies dependencies;
 

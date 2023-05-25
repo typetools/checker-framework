@@ -45,6 +45,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   /** The type of the class currently being visited. */
   private @Nullable AnnotatedDeclaredType classType = null;
+
   /** The receiver type of the enclosing method tree. */
   private @Nullable AnnotatedDeclaredType receiverType = null;
 
