@@ -82,6 +82,7 @@ public class AnnotationFileElementTypes {
 
   /** Which version number of the annotated JDK should be used? */
   private final String annotatedJdkVersion;
+
   /** Should the JDK be parsed? */
   private final boolean shouldParseJdk;
 

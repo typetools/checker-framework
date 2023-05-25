@@ -21,6 +21,7 @@ public class GenericArgs2 {
   static void test3(Cell<@Nullable Object> collection) {
     collection.add(null); // valid
   }
+
   // No "<F super Object>" version of the above, as that is illegal in Java.
 
   static class InvariantFilter {}

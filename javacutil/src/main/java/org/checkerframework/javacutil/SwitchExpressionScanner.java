@@ -145,6 +145,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
 
     /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
     private final BiFunction<ExpressionTree, P1, R1> switchValueExpressionFunction;
+
     /** The function to use for {@link #visitSwitchResultExpression(ExpressionTree, Object)}. */
     private final BiFunction<@Nullable R1, @Nullable R1, R1> combineResultFunc;
 

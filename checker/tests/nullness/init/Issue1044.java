@@ -17,12 +17,14 @@ public class Issue1044 {
 
   static class Inner3<V> {
     V f;
+
     // :: error: (initialization.fields.uninitialized)
     Inner3() {}
   }
 
   static class Inner4<@Nullable T extends @Nullable Object> {
     @NonNull T f;
+
     // :: error: (initialization.fields.uninitialized)
     Inner4() {}
   }
@@ -54,6 +56,7 @@ public class Issue1044 {
 
   static class Inner10<V extends Object> {
     V f;
+
     // :: error: (initialization.fields.uninitialized)
     Inner10() {}
   }

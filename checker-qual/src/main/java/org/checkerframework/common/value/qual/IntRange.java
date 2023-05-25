@@ -28,6 +28,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 public @interface IntRange {
   /** Smallest value in the range, inclusive. */
   long from() default Long.MIN_VALUE;
+
   /** Largest value in the range, inclusive. */
   long to() default Long.MAX_VALUE;
 }
