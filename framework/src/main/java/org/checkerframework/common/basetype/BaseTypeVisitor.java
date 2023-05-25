@@ -73,7 +73,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -747,7 +747,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (AnnotationMirror poly : polys) {
         if (type.hasAnnotationRelaxed(poly)) {
           return Collections.singletonList(
-              new DiagMessage(Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
+              new DiagMessage(Diagnostic.Kind.ERROR, "invalid.polymorphic.qualifier.use", poly));
         }
       }
       return Collections.emptyList();
@@ -2661,8 +2661,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case IDENTIFIER:
           List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
           if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            checker.reportError(
-                t, "anno.on.irrelevant", supportedAnnoTrees, t, atypeFactory.relevantJavaTypes);
+            String extraInfo = atypeFactory.irrelevantExtraMessage();
+            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t, extraInfo);
           }
           return;
         case ANNOTATED_TYPE:
@@ -2670,8 +2670,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ExpressionTree underlying = at.getUnderlyingType();
           List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
           if (!annos.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
-            checker.reportError(
-                t, "anno.on.irrelevant", annos, underlying, atypeFactory.relevantJavaTypes);
+            String extraInfo = atypeFactory.irrelevantExtraMessage();
+            checker.reportError(t, "anno.on.irrelevant", annos, underlying, extraInfo);
           }
           return;
 
