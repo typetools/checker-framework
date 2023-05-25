@@ -1147,7 +1147,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror top : tops) {
       AnnotationMirror constructorAnno =
           qualHierarchy.findAnnotationInHierarchy(constructorAnnotations, top);
-      if (!qualHierarchy.isSubtype(top, constructorAnno)) {
+      if (!AnnotationUtils.areSame(top, constructorAnno)) {
         checker.reportWarning(
             constructorElement, "inconsistent.constructor.type", constructorAnno, top);
       }
