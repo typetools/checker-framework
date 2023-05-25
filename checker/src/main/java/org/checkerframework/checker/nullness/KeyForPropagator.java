@@ -16,7 +16,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -168,16 +167,19 @@ public class KeyForPropagator {
       return;
     }
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext != null && assignmentContext instanceof VariableTree) {
+    if (assignmentContext == null) {
+      return;
+    }
+    AnnotatedTypeMirror assignedTo;
+    if (assignmentContext instanceof VariableTree) {
       if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
         return;
       }
-    }
-
-    AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
-    if (assignedTo == null) {
+      assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);
+    } else {
       return;
     }
+
     // array types and boxed primitives etc don't require propagation
     if (assignedTo.getKind() == TypeKind.DECLARED) {
       propagate(
