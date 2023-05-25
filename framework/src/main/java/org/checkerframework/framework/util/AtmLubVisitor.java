@@ -32,7 +32,10 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
+  /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
+
+  /** The qualifier hierarchy. */
   private final QualifierHierarchy qualHierarchy;
 
   /**
