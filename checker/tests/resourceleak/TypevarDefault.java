@@ -1,10 +1,12 @@
 // Minimized test case from InitializationVisitor.
 
+import org.checkerframework.checker.mustcall.qual.*;
+
 class IATF<
-    Value extends CFAV<Value>,
-    Store extends IS<Value, Store>,
-    Transfer extends IT<Value, Transfer, Store>,
-    Flow extends CFAA<Value, Store, Transfer>>
+        Value extends CFAV<Value>,
+        Store extends IS<Value, Store>,
+        Transfer extends IT<Value, Transfer, Store>,
+        Flow extends CFAA<Value, Store, Transfer>>
     extends GATF<Value, Store, Transfer, Flow> {}
 
 class CFAV<V extends CFAV<V>> {}
@@ -25,16 +27,17 @@ class GATF<
     TransferFunction extends CFAT<Value, Store, TransferFunction>,
     FlowAnalysis extends CFAA<Value, Store, TransferFunction>> {
 
-  public Store getRegularExitStore() { return null; }
-
+  public @MustCall({}) Store getRegularExitStore() {
+    return null;
   }
+}
 
 class BTV<Factory extends GATF<?, ?, ?, ?>> {}
 
 class IV<
-    Factory extends IATF<Value, Store, ?, ?>,
-    Value extends CFAV<Value>,
-    Store extends IS<Value, Store>>
+        Factory extends IATF<Value, Store, ?, ?>,
+        Value extends CFAV<Value>,
+        Store extends IS<Value, Store>>
     extends BTV<Factory> {
 
   Factory atypefactory;

@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
@@ -237,7 +238,8 @@ public abstract class CFAbstractAnalysis<
    * @param underlyingType the unannotated type for the result annotated type
    * @return an abstract value with {@code anno} and {@code underlyingType}
    */
-  public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
+  public @MustCall({}) V createSingleAnnotationValue(
+      AnnotationMirror anno, TypeMirror underlyingType) {
     QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
     AnnotationMirrorSet annos = new AnnotationMirrorSet();
     annos.addAll(hierarchy.getTopAnnotations());

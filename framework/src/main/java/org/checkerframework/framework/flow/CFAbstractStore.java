@@ -14,6 +14,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -72,7 +73,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected V thisValue;
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
-  protected Map<FieldAccess, V> fieldValues;
+  protected Map<FieldAccess, @MustCall({}) V> fieldValues;
 
   /**
    * Returns information about fields. Clients should not side-effect the returned value, which is
