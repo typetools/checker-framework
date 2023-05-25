@@ -486,6 +486,32 @@ checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 
+\sectionAndLabel{Errors about unknown must call obligations of generic types}{resource-leak-generic-unknown}
+
+% Arguably, this is working around a bug in the Must Call checker, which could
+% use a different defaulting scheme for generic type uses.
+
+The Resource Leak Checker issues a \<required.method.not.known> error
+when an unannotated variable with a generic type has a must call obligation.
+For example, consider the following code:
+\begin{verbatim}
+public <T extends java.io.Closeable> void foo(
+      @Owning @MustCall("close") T value) {
+    ...
+  }
+\end{verbatim}
+
+Without the \<@MustCall("close")> annotation, the checker is unable to determine
+\<value>'s must call obligation, and so conservatively issues an error. If you
+encounter such an error, you can almost always resolve it by adding a
+new \<@MustCall> annotation. Another common, similar situation is a local
+variable whose type is a type variable, and whose initializer also has a generic type:
+local variables are owning by default, so it might be necessary to write \<@MustCall({})>
+on the initializer. For example, in the Checker Framework itself this annotation is necessary
+to avoid a false positive error at a call site:
+\begin{verbatim}
+  public abstract @MustCall({}) S getRegularStore();
+\end{verbatim}
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
