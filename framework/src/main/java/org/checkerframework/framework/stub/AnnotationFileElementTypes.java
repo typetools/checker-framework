@@ -32,7 +32,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -213,7 +213,7 @@ public class AnnotationFileElementTypes {
       }
     } catch (IOException e) {
       checker.message(
-          Kind.NOTE,
+          Diagnostic.Kind.NOTE,
           "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
     }
   }
@@ -253,7 +253,7 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+      checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
     } finally {
       parsing = false;
     }
@@ -293,7 +293,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Kind.NOTE, "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.NOTE,
+                "Could not read annotation resource: " + resource.getDescription());
             continue;
           }
         }
@@ -322,7 +323,7 @@ public class AnnotationFileElementTypes {
               URL topLevelResource = currentChecker.getClass().getResource("/" + path);
               if (topLevelResource != null) {
                 currentChecker.message(
-                    Kind.WARNING,
+                    Diagnostic.Kind.WARNING,
                     path
                         + " should be in the same directory as "
                         + currentChecker.getClass().getSimpleName()
@@ -355,11 +356,11 @@ public class AnnotationFileElementTypes {
               for (URI uri : new ClassGraph().getClasspathURIs()) {
                 sj.add(uri.toString());
               }
-              checker.message(Kind.WARNING, sj.toString());
+              checker.message(Diagnostic.Kind.WARNING, sj.toString());
             }
           }
         } catch (IOException e) {
-          checker.message(Kind.NOTE, "Could not read annotation resource: " + path);
+          checker.message(Diagnostic.Kind.NOTE, "Could not read annotation resource: " + path);
         }
       }
     }

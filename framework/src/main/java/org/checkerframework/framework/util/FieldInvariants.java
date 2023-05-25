@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -128,7 +128,9 @@ public class FieldInvariants {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
       return new DiagMessage(
-          Kind.ERROR, "field.invariant.not.found.superclass", String.join(", ", missingFields));
+          Diagnostic.Kind.ERROR,
+          "field.invariant.not.found.superclass",
+          String.join(", ", missingFields));
     }
 
     for (String field : superInvar.fields) {
@@ -138,7 +140,7 @@ public class FieldInvariants {
         AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
         if (sub == null || !qualHierarchy.isSubtype(sub, superA)) {
           return new DiagMessage(
-              Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+              Diagnostic.Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }
     }
