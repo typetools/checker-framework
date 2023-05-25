@@ -2614,7 +2614,7 @@ public final class TreeUtils {
       if (((JCTree.JCExpression) expression).isStandalone()) {
         return true;
       }
-      if (expression.getKind() == Kind.METHOD_INVOCATION) {
+      if (expression.getKind() == Tree.Kind.METHOD_INVOCATION) {
         // This seems to be a bug in at least Java 11.  If a method has type arguments, then it is
         // a standalone expression.
         return !((MethodInvocationTree) expression).getTypeArguments().isEmpty();
