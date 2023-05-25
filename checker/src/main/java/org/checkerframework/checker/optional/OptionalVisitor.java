@@ -45,20 +45,28 @@ public class OptionalVisitor
 
   /** The element for java.util.Optional.get(). */
   private final ExecutableElement optionalGet;
+
   /** The element for java.util.Optional.isPresent(). */
   private final ExecutableElement optionalIsPresent;
+
   /** The element for java.util.Optional.isEmpty(), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalIsEmpty;
+
   /** The element for java.util.Optional.of(). */
   private final ExecutableElement optionalOf;
+
   /** The element for java.util.Optional.ofNullable(). */
   private final ExecutableElement optionalOfNullable;
+
   /** The element for java.util.Optional.orElse(). */
   private final ExecutableElement optionalOrElse;
+
   /** The element for java.util.Optional.orElseGet(). */
   private final ExecutableElement optionalOrElseGet;
+
   /** The element for java.util.Optional.orElseThrow(). */
   private final @Nullable ExecutableElement optionalOrElseThrow;
+
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
   private final ExecutableElement optionalOrElseThrowSupplier;
 

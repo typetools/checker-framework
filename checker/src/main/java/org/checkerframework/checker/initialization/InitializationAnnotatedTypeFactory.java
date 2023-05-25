@@ -94,8 +94,10 @@ public abstract class InitializationAnnotatedTypeFactory<
 
   /** The Unused.when field/element. */
   protected final ExecutableElement unusedWhenElement;
+
   /** The UnderInitialization.value field/element. */
   protected final ExecutableElement underInitializationValueElement;
+
   /** The UnknownInitialization.value field/element. */
   protected final ExecutableElement unknownInitializationValueElement;
 
@@ -836,6 +838,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /** Qualifier kind for the @{@link UnknownInitialization} annotation. */
     private final QualifierKind UNKNOWN_INIT;
+
     /** Qualifier kind for the @{@link UnderInitialization} annotation. */
     private final QualifierKind UNDER_INIT;
 

@@ -111,6 +111,7 @@ public class I18nFormatUtil {
   private static class I18nConversion {
     /** The index into the string. */
     public final int index;
+
     /** The conversion category. */
     public final I18nConversionCategory category;
 

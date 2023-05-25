@@ -77,9 +77,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The UnitsMultiple.prefix argument/element. */
   private final ExecutableElement unitsMultiplePrefixElement =
       TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
+
   /** The UnitsMultiple.quantity argument/element. */
   private final ExecutableElement unitsMultipleQuantityElement =
       TreeUtils.getMethod(UnitsMultiple.class, "quantity", 0, processingEnv);
+
   /** The UnitsRelations.value argument/element. */
   private final ExecutableElement unitsRelationsValueElement =
       TreeUtils.getMethod(

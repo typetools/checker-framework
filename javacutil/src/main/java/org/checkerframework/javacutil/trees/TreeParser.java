@@ -35,11 +35,13 @@ import org.checkerframework.javacutil.Pair;
 public class TreeParser {
   /** Valid delimiters. */
   private static final String DELIMS = ".[](),";
+
   /** A sentinel value. */
   private static final String SENTINEL = "";
 
   /** The TreeMaker instance. */
   private final TreeMaker maker;
+
   /** The names instance. */
   private final Names names;
 

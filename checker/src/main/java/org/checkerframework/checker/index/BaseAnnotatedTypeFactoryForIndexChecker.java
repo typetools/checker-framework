@@ -16,9 +16,11 @@ public abstract class BaseAnnotatedTypeFactoryForIndexChecker extends BaseAnnota
   /** The from() element/field of a @HasSubsequence annotation. */
   protected final ExecutableElement hasSubsequenceFromElement =
       TreeUtils.getMethod(HasSubsequence.class, "from", 0, processingEnv);
+
   /** The to() element/field of a @HasSubsequence annotation. */
   protected final ExecutableElement hasSubsequenceToElement =
       TreeUtils.getMethod(HasSubsequence.class, "to", 0, processingEnv);
+
   /** The subsequence() element/field of a @HasSubsequence annotation. */
   protected final ExecutableElement hasSubsequenceSubsequenceElement =
       TreeUtils.getMethod(HasSubsequence.class, "subsequence", 0, processingEnv);

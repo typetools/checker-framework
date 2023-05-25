@@ -32,8 +32,12 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
+  /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
+
+  /** The qualifier hierarchy. */
   private final QualifierHierarchy qualHierarchy;
+
   /**
    * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
    * Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been visited, so that

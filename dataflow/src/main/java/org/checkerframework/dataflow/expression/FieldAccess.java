@@ -19,6 +19,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FieldAccess extends JavaExpression {
   /** The receiver of the field access. */
   protected final JavaExpression receiver;
+
   /** The field being accessed. */
   protected final VariableElement field;
 

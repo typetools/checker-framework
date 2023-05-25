@@ -35,6 +35,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link SearchIndexUnknown} annotation. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, SearchIndexUnknown.class);
+
   /** The @{@link SearchIndexBottom} annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, SearchIndexBottom.class);
@@ -42,6 +43,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The NegativeIndexFor.value field/element. */
   protected final ExecutableElement negativeIndexForValueElement =
       TreeUtils.getMethod(NegativeIndexFor.class, "value", 0, processingEnv);
+
   /** The SearchIndexFor.value field/element. */
   protected final ExecutableElement searchIndexForValueElement =
       TreeUtils.getMethod(SearchIndexFor.class, "value", 0, processingEnv);

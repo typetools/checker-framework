@@ -78,22 +78,27 @@ public class AnnotationClassLoader implements Closeable {
   // For loading from a source package directory
   /** The package name. */
   private final @DotSeparatedIdentifiers String packageName;
+
   /** The package name, with periods replaced by slashes. */
   private final String packageNameWithSlashes;
+
   /** The atomic package names (the package name split at dots). */
   private final List<@Identifier String> fullyQualifiedPackageNameSegments;
+
   /** The name of a Checker's qualifier package. */
   private static final String QUAL_PACKAGE = "qual";
 
   // For loading from a Jar file
   /** The suffix for a .jar file. */
   private static final String JAR_SUFFIX = ".jar";
+
   /** The suffix for a .class file. */
   private static final String CLASS_SUFFIX = ".class";
 
   // Constants
   /** The package separator. */
   private static final char DOT = '.';
+
   /** The path separator, in .jar files, binary names, etc. */
   private static final char SLASH = '/';
 
