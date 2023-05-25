@@ -2500,13 +2500,14 @@ public abstract class GenericAnnotatedTypeFactory<
    *     string
    */
   public String irrelevantExtraMessage() {
-    if (irrelevantExtraMessage == null) {}
-    if (relevantJavaTypes == null) {
-      irrelevantExtraMessage = "";
-    } else {
-      irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
-      if (arraysAreRelevant) {
-        irrelevantExtraMessage += " and arrays";
+    if (irrelevantExtraMessage == null) {
+      if (relevantJavaTypes == null) {
+        irrelevantExtraMessage = "";
+      } else {
+        irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
+        if (arraysAreRelevant) {
+          irrelevantExtraMessage += " and arrays";
+        }
       }
     }
     return irrelevantExtraMessage;
