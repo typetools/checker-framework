@@ -70,8 +70,10 @@ public abstract class CFAbstractAnalysis<
 
     /** A field access that corresponds to the declaration of a field. */
     public final FieldAccess fieldDecl;
+
     /** The value corresponding to the annotations on the declared type of the field. */
     public final V declared;
+
     /** The value of the initializer of the field, or null if no initializer exists. */
     public final @Nullable V initializer;
 
@@ -215,7 +217,7 @@ public abstract class CFAbstractAnalysis<
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
-    if (!CFAbstractValue.validateSet(annotations, underlyingType, qualHierarchy)) {
+    if (!CFAbstractValue.validateSet(annotations, underlyingType, atypeFactory)) {
       return null;
     }
     return new CFValue(analysis, annotations, underlyingType);

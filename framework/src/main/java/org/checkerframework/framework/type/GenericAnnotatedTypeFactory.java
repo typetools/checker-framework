@@ -562,11 +562,21 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(
-          new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
+  }
+
+  /**
+   * Returns the annotations that should appear on the given irrelevant Java type. If the type is
+   * relevant, this method's behavior is undefined.
+   *
+   * @param tm an irrelevant Java type
+   * @return the annotations that should appear on the given irrelevant Java type
+   */
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    return getQualifierHierarchy().getTopAnnotations();
   }
 
   /**

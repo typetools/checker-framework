@@ -36,6 +36,7 @@ public class KeyForAnnotatedTypeFactory
   /** The @{@link UnknownKeyFor} annotation. */
   protected final AnnotationMirror UNKNOWNKEYFOR =
       AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+
   /** The @{@link KeyForBottom} annotation. */
   protected final AnnotationMirror KEYFORBOTTOM =
       AnnotationBuilder.fromClass(elements, KeyForBottom.class);
@@ -46,12 +47,15 @@ public class KeyForAnnotatedTypeFactory
   /** The Map.containsKey method. */
   private final ExecutableElement mapContainsKey =
       TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
+
   /** The Map.get method. */
   private final ExecutableElement mapGet =
       TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+
   /** The Map.put method. */
   private final ExecutableElement mapPut =
       TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
+
   /** The KeyFor.value field/element. */
   protected final ExecutableElement keyForValueElement =
       TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);

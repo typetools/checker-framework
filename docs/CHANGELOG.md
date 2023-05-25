@@ -34,6 +34,8 @@ Class `FieldInvariants`:
  * constructor now takes an `AnnotatedTypeFactory`
  * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
 
+`CFAbstractValue.validateSet()` takes a type factory rather than a `QualifierHierarchy`.
+
 Removed methods that have been deprecated for over two years.
 
 **Closed issues:**

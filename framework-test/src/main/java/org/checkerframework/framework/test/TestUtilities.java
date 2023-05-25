@@ -39,16 +39,22 @@ public class TestUtilities {
 
   /** True if the JVM is version 9 or above. */
   public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.jreVersion >= 9;
+
   /** True if the JVM is version 11 or above. */
   public static final boolean IS_AT_LEAST_11_JVM = SystemUtil.jreVersion >= 11;
+
   /** True if the JVM is version 11 or lower. */
   public static final boolean IS_AT_MOST_11_JVM = SystemUtil.jreVersion <= 11;
+
   /** True if the JVM is version 17 or above. */
   public static final boolean IS_AT_LEAST_17_JVM = SystemUtil.jreVersion >= 17;
+
   /** True if the JVM is version 17 or lower. */
   public static final boolean IS_AT_MOST_17_JVM = SystemUtil.jreVersion <= 17;
+
   /** True if the JVM is version 18 or above. */
   public static final boolean IS_AT_LEAST_18_JVM = SystemUtil.jreVersion >= 18;
+
   /** True if the JVM is version 18 or lower. */
   public static final boolean IS_AT_MOST_18_JVM = SystemUtil.jreVersion <= 18;
 

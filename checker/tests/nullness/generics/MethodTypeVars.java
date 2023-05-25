@@ -27,6 +27,7 @@ class A {
 
 class B {
   public <T> void indexOf1(T[] a, @Nullable Object elt) {}
+
   // This is not valid Java syntax.
   // public void indexOf2(?[] a, @Nullable Object elt) {}
 
