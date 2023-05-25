@@ -347,6 +347,7 @@ import org.plumelib.util.UtilPlume;
 
   // Output information about intermediate steps in method type argument inference
   // org.checkerframework.framework.util.typeinference.OldDefaultTypeArgumentInference
+  // TODO: reimplement this for new inference.
   "showInferenceSteps",
 
   // Output a stack trace when reporting errors or warnings
