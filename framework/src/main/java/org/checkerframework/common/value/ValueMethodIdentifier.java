@@ -117,7 +117,12 @@ class ValueMethodIdentifier {
     return method.equals(startsWithMethod);
   }
 
-  /** Determines whether a method is the {@code String.endsWith(String)} method. */
+  /**
+   * Determines whether a method is the {@code String.endsWith(String)} method.
+   *
+   * @param method a method
+   * @return true if the method is {@code String.endsWith(String)}
+   */
   public boolean isEndsWithMethod(ExecutableElement method) {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
     return method.equals(endsWithMethod);
