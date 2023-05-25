@@ -111,7 +111,6 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1639,8 +1638,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * this default is too conservative. So this method is used instead of {@link
    * GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
    *
-   * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains why a
-   * different type is used.
+   * <p>{@link
+   * org.checkerframework.framework.util.typeinference8.types.InferenceFactory#assignedToVariable(AnnotatedTypeFactory,
+   * Tree)} explains why a different type is used.
    *
    * @param lhsTree left-hand side of an assignment
    * @return AnnotatedTypeMirror of {@code lhsTree}

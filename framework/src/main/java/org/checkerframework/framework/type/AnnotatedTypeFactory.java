@@ -118,9 +118,8 @@ import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.TypeInformationPresenter;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-import org.checkerframework.framework.util.typeinference.TypeArgumentInference;
 import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference8.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -2785,61 +2784,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Creates an AnnotatedDeclaredType for a NewClassTree. Only adds explicit annotations, unless
-   * newClassTree has a diamond operator. In that case, the annotations on the type arguments are
-   * inferred using the assignment context and contain defaults.
-   *
-   * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
-   *
-   * @param newClassTree NewClassTree
-   * @return AnnotatedDeclaredType
-   * @deprecated Use {@link #getExplicitNewClassAnnos(NewClassTree)}, {@link
-   *     #getExplicitNewClassClassTypeArgs(NewClassTree)}, or {@link #getAnnotatedType(ClassTree)}
-   *     instead.
-   */
-  @Deprecated // This should be removed when the #979 is fixed and the remaining use is removed.
-  public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-    AnnotatedDeclaredType type =
-        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-    if (!TreeUtils.isDiamondTree(newClassTree)) {
-      if (newClassTree.getClassBody() == null) {
-        type.setTypeArguments(getExplicitNewClassClassTypeArgs(newClassTree));
-      }
-    } else {
-      assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
-      TreePath p = getPath(newClassTree);
-      AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-      if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
-        AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-        if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
-          // Try to simply take the type arguments from LHS.
-          List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
-          List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-          for (int i = 0; i < type.getTypeArguments().size(); ++i) {
-            if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-              // One of the underlying types doesn't match. Give up.
-              newArgs = oldArgs;
-              break;
-            }
-          }
-          type.setTypeArguments(newArgs);
-        }
-      }
-    }
-
-    AnnotationMirrorSet explicitAnnos = getExplicitNewClassAnnos(newClassTree);
-    // Type may already have explicit dependent type annotations that have not yet been vpa.
-    type.clearPrimaryAnnotations();
-    type.addAnnotations(explicitAnnos);
-    // Use the receiver type as enclosing type, if present.
-    AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
-    if (enclosingType != null) {
-      type.setEnclosingType(enclosingType);
-    }
-    return type;
-  }
-
-  /**
    * Returns the annotations explicitly written on a NewClassTree.
    *
    * <p>{@code new @HERE Class()}
@@ -2882,47 +2826,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return ((AnnotatedDeclaredType) fromTypeTree(newClass.getIdentifier())).getTypeArguments();
     }
     return Collections.emptyList();
-  }
-
-  /**
-   * Infer the class type arguments for the diamond operator.
-   *
-   * <p>If {@code newClassTree} is assigned to the same type (not a supertype), then the type
-   * arguments are inferred to be the same as the assignment. Otherwise, the type arguments are
-   * annotated by {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
-   *
-   * @param newClassTree a diamond new class tree
-   * @return the class type arguments for {@code newClassTree}
-   */
-  @Deprecated
-  public List<AnnotatedTypeMirror> inferDiamondType(NewClassTree newClassTree) {
-    assert TreeUtils.isDiamondTree(newClassTree) : "Expected diamond new class tree";
-    AnnotatedDeclaredType diamondType =
-        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
-
-    TreePath p = getPath(newClassTree);
-    AnnotatedTypeMirror ctxtype = TypeArgInferenceUtil.assignedTo(this, p);
-    if (ctxtype != null && ctxtype.getKind() == TypeKind.DECLARED) {
-      AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-      if (diamondType.getTypeArguments().size() == adctx.getTypeArguments().size()) {
-        // Try to simply take the type arguments from LHS.
-        List<AnnotatedTypeMirror> oldArgs = diamondType.getTypeArguments();
-        List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
-        boolean useLhs = true;
-        for (int i = 0; i < diamondType.getTypeArguments().size(); ++i) {
-          if (!types.isSubtype(newArgs.get(i).underlyingType, oldArgs.get(i).underlyingType)) {
-            // One of the underlying types doesn't match. Give up.
-            useLhs = false;
-            break;
-          }
-        }
-        if (useLhs) {
-          return newArgs;
-        }
-      }
-    }
-    addComputedTypeAnnotations(newClassTree, diamondType);
-    return diamondType.getTypeArguments();
   }
 
   /**

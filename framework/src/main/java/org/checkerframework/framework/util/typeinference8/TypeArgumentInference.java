@@ -1,9 +1,8 @@
-package org.checkerframework.framework.util.typeinference;
+package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.typeinference8.InferenceResult;
 
 /**
  * Instances of TypeArgumentInference are used to infer the types of method type arguments when no
