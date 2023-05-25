@@ -10,9 +10,11 @@ public class Wellformed {
   class Gen1b {
     // :: error: (conflicting.annos)
     <T extends @NonNull @Nullable Object> void m(T p) {}
+
     // :: error: (conflicting.annos)
     <@NonNull @Nullable T> void m2(T p) {}
   }
+
   // :: error: (conflicting.annos)
   class Gen1c<@NonNull @Nullable TTT> {}
 
@@ -58,8 +60,10 @@ public class Wellformed {
   class Gen5c<S> extends Gen5a<@Nullable S> {}
 
   class Gen6a<T extends Object> {}
+
   // :: error: (type.argument)
   class Gen6b<S> extends Gen6a<@Nullable Object> {}
+
   // :: error: (type.argument)
   class Gen6c<S> extends Gen6a<@Nullable S> {}
 }

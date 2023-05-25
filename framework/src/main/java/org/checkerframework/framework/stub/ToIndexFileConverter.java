@@ -95,8 +95,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * declarations are encountered.
    */
   private final @DotSeparatedIdentifiers String pkgName;
+
   /** Imports that appear in the stub file. */
   private final List<String> imports;
+
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
 

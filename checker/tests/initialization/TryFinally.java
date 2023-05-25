@@ -250,6 +250,7 @@ class TestCtnoactionFabsentNonfinal {
   }
 
   private String foo;
+
   // :: error: (initialization.fields.uninitialized)
   public TestCtnoactionFabsentNonfinal() {
     try {
@@ -266,6 +267,7 @@ class TestCtnoactionFnoactionNonfinal {
   }
 
   private String foo;
+
   // :: error: (initialization.fields.uninitialized)
   public TestCtnoactionFnoactionNonfinal() {
     try {
@@ -352,6 +354,7 @@ class TestCenoactionFabsentNonfinal {
   }
 
   private String foo;
+
   // :: error: (initialization.fields.uninitialized)
   public TestCenoactionFabsentNonfinal() {
     try {
@@ -368,6 +371,7 @@ class TestCenoactionFnoactionNonfinal {
   }
 
   private String foo;
+
   // :: error: (initialization.fields.uninitialized)
   public TestCenoactionFnoactionNonfinal() {
     try {

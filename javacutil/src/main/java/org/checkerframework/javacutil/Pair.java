@@ -16,6 +16,7 @@ import org.plumelib.util.UtilPlume;
 public class Pair<V1, V2> {
   /** The first element in the pair. */
   public final V1 first;
+
   /** The second element in the pair. */
   public final V2 second;
 

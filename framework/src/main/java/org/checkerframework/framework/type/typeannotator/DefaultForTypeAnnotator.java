@@ -45,10 +45,13 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
   /** Map from {@link TypeKind} to annotations. */
   private final Map<TypeKind, AnnotationMirrorSet> typeKinds;
+
   /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
   private final Map<Class<? extends AnnotatedTypeMirror>, AnnotationMirrorSet> atmClasses;
+
   /** Map from fully qualified class name strings to annotations. */
   private final Map<String, AnnotationMirrorSet> types;
+
   /**
    * A list where each element associates an annotation with name regexes and name exception
    * regexes.
@@ -217,7 +220,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     // TODO: Check whether the annotation is applicable to this Java type?
     AnnotationMirror defaultAnno = listOfNameRegexes.getDefaultAnno(name);
     if (defaultAnno != null) {
-      if (typeFactory
+      if (atypeFactory
               .getQualifierHierarchy()
               .findAnnotationInHierarchy(type.getAnnotations(), defaultAnno)
           == null) {
@@ -324,8 +327,10 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
   private static class NameRegexes {
     /** The annotation. */
     final AnnotationMirror anno;
+
     /** The name regexes. */
     final List<Pattern> names = new ArrayList<>(0);
+
     /** The name exception regexes. */
     final List<Pattern> namesExceptions = new ArrayList<>(0);
 

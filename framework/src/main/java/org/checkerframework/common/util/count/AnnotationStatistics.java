@@ -24,7 +24,7 @@ import java.util.TreeSet;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -100,7 +100,7 @@ public class AnnotationStatistics extends SourceChecker {
     if (hasOption("annotationserror")) {
       // Issue annotation details a compiler warning rather than printed. This may be useful, for
       // example, when Maven swallows non-warning output from the annotation processor.
-      getProcessingEnvironment().getMessager().printMessage(Kind.WARNING, output);
+      getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING, output);
     } else {
       System.out.println(output);
     }

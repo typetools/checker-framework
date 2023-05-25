@@ -13,6 +13,7 @@ public class Issue4890Interfaces {
 
   BigClass2<SubInterface1, ? extends SubInterface2<?>> t;
   SubInterface2<?> s3 = t.getI2();
+
   // Interface2<SubInterface1> s4 = t.getI2(); // javac error here, but no error with IntelliJ and
   // Eclipse.
 

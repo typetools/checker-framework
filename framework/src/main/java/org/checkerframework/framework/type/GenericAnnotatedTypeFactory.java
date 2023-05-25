@@ -561,11 +561,21 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(
-          new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
+  }
+
+  /**
+   * Returns the annotations that should appear on the given irrelevant Java type. If the type is
+   * relevant, this method's behavior is undefined.
+   *
+   * @param tm an irrelevant Java type
+   * @return the annotations that should appear on the given irrelevant Java type
+   */
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    return getQualifierHierarchy().getTopAnnotations();
   }
 
   /**
@@ -2384,9 +2394,6 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
-   * elements of the type).
-   *
    * @param tm a type
    * @return true if users can write type annotations from this type system directly on the given
    *     Java type
@@ -2480,6 +2487,29 @@ public abstract class GenericAnnotatedTypeFactory<
       default:
         throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
+  }
+
+  /** The cached message about relevant types. */
+  private @MonotonicNonNull String irrelevantExtraMessage = null;
+
+  /**
+   * Returns a string that can be passed to the "anno.on.irrelevant" error, giving information about
+   * which types are relevant.
+   *
+   * @return a string that can be passed to the "anno.on.irrelevant" error, possibly the empty
+   *     string
+   */
+  public String irrelevantExtraMessage() {
+    if (irrelevantExtraMessage == null) {}
+    if (relevantJavaTypes == null) {
+      irrelevantExtraMessage = "";
+    } else {
+      irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
+      if (arraysAreRelevant) {
+        irrelevantExtraMessage += " and arrays";
+      }
+    }
+    return irrelevantExtraMessage;
   }
 
   /**
