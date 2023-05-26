@@ -84,7 +84,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
       QualifierKind superKind);
 
   @Override
-  public final @Nullable AnnotationMirror leastUpperBound(
+  public final @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror a1, AnnotationMirror a2) {
     QualifierKind qual1 = getQualifierKind(a1);
     QualifierKind qual2 = getQualifierKind(a2);
@@ -121,7 +121,7 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
       QualifierKind lubKind);
 
   @Override
-  public final @Nullable AnnotationMirror greatestLowerBound(
+  public final @Nullable AnnotationMirror greatestLowerBoundQualifiers(
       AnnotationMirror a1, AnnotationMirror a2) {
     QualifierKind qual1 = getQualifierKind(a1);
     QualifierKind qual2 = getQualifierKind(a2);

@@ -1374,7 +1374,7 @@ public class ValueTransfer extends CFTransfer {
               : getValueAnnotation(currentValueFromStore));
       // Combine the new annotations based on the results of the comparison with the existing
       // type.
-      AnnotationMirror newAnno = qualHierarchy.greatestLowerBound(anno, currentAnno);
+      AnnotationMirror newAnno = qualHierarchy.greatestLowerBoundQualifiersOnly(anno, currentAnno);
       store.insertValue(je, newAnno);
 
       if (node instanceof FieldAccessNode) {

@@ -249,12 +249,12 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         }
       }
       if (!matches.isEmpty()) {
+        TypeMirror tm = type.getUnderlyingType();
         Set<? extends AnnotationMirror> res = matches.get(0);
         for (Set<? extends AnnotationMirror> sam : matches) {
-          res = qualHierarchy.greatestLowerBounds(res, sam);
+          res = qualHierarchy.greatestLowerBoundsShallow(res, tm, sam, tm);
         }
         // Verify that res is not a subtype of any type in nonMatches
-        TypeMirror tm = type.getUnderlyingType();
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
           if (qualHierarchy.isSubtypeShallow(res, tm, sam, tm)) {
             String matchesOnePerLine = "";

@@ -24,11 +24,13 @@ import org.checkerframework.javacutil.TypesUtils;
 public class GlbUtil {
 
   /**
-   * Note: This method can be improved for wildcards and type variables.
+   * Returns the greatest lower bound of the given {@code TypeMirror}s. If any of the type mirrors
+   * are incomparable, Returns an AnnotatedNullType that contains the greatest lower bounds of the
+   * primary annotations of typeMirrors.
    *
-   * @return the greatest lower bound of typeMirrors. If any of the type mirrors are incomparable,
-   *     use an AnnotatedNullType that will contain the greatest lower bounds of the primary
-   *     annotations of typeMirrors.
+   * <p>Note: This method can be improved for wildcards and type variables.
+   *
+   * @return the greatest lower bound of typeMirrors.
    */
   public static AnnotatedTypeMirror glbAll(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {
@@ -42,6 +44,7 @@ public class GlbUtil {
     for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> tmEntry : typeMirrors.entrySet()) {
       AnnotationMirrorSet typeAnnoHierarchies = tmEntry.getValue();
       AnnotatedTypeMirror type = tmEntry.getKey();
+      TypeMirror typeMirror = type.getUnderlyingType();
 
       for (AnnotationMirror top : typeAnnoHierarchies) {
         // TODO: When all of the typeMirrors are either wildcards or type variables than the
@@ -50,7 +53,10 @@ public class GlbUtil {
         AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
         AnnotationMirror currentAnno = glbPrimaries.get(top);
         if (typeAnno != null && currentAnno != null) {
-          glbPrimaries.put(top, qualHierarchy.greatestLowerBound(currentAnno, typeAnno));
+          glbPrimaries.put(
+              top,
+              qualHierarchy.greatestLowerBoundShallow(
+                  currentAnno, typeMirror, typeAnno, typeMirror));
         } else if (typeAnno != null) {
           glbPrimaries.put(top, typeAnno);
         }

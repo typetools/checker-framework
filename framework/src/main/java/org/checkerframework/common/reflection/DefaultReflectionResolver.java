@@ -48,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -64,6 +65,10 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
+
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   // Message prefix added to verbose reflection messages
   public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";
 
@@ -137,24 +142,31 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       }
       ParameterizedExecutableType resolvedResult = factory.methodFromUse(resolvedTree);
 
+      AnnotatedTypeMirror returnType = resolvedResult.executableType.getReturnType();
+      TypeMirror returnTM = returnType.getUnderlyingType();
+
       // Lub return types
-      returnLub =
-          lub(returnLub, resolvedResult.executableType.getReturnType().getAnnotations(), factory);
+      // TODO: The first use of returnTM is questionable.
+      returnLub = lub(returnLub, returnTM, returnType.getAnnotations(), returnTM, factory);
 
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
-      if (resolvedResult.executableType.getReceiverType() == null) {
+      AnnotatedTypeMirror receiverType = resolvedResult.executableType.getReceiverType();
+      if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
         receiverGlb =
-            glb(receiverGlb, factory.getQualifierHierarchy().getTopAnnotations(), factory);
-      } else {
-        receiverGlb =
             glb(
                 receiverGlb,
-                resolvedResult.executableType.getReceiverType().getAnnotations(),
+                alwaysRelevantTM,
+                factory.getQualifierHierarchy().getTopAnnotations(),
+                alwaysRelevantTM,
                 factory);
+      } else {
+        TypeMirror receiverTM = receiverType.getUnderlyingType();
+        receiverGlb =
+            glb(receiverGlb, receiverTM, receiverType.getAnnotations(), receiverTM, factory);
       }
 
       // Glb parameter types.  All formal parameter types get combined together because
@@ -599,12 +611,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    */
   private Set<? extends AnnotationMirror> lub(
       Set<? extends AnnotationMirror> set1,
+      TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
+      TypeMirror tm2,
       AnnotatedTypeFactory factory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return factory.getQualifierHierarchy().leastUpperBounds(set1, set2);
+      return factory.getQualifierHierarchy().leastUpperBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 
@@ -616,12 +630,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    */
   private Set<? extends AnnotationMirror> glb(
       Set<? extends AnnotationMirror> set1,
+      TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
+      TypeMirror tm2,
       AnnotatedTypeFactory factory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return factory.getQualifierHierarchy().greatestLowerBounds(set1, set2);
+      return factory.getQualifierHierarchy().greatestLowerBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 

@@ -407,7 +407,7 @@ public class SupertypesSolver {
     AnnotationMirror lub = annoIter.next();
 
     while (annoIter.hasNext()) {
-      lub = qualHierarchy.leastUpperBound(lub, annoIter.next());
+      lub = qualHierarchy.leastUpperBoundQualifiers(lub, annoIter.next());
     }
 
     return lub;

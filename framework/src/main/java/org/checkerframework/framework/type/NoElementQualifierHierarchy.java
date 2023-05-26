@@ -228,7 +228,8 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   @Override
-  public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+  public @Nullable AnnotationMirror leastUpperBoundQualifiers(
+      AnnotationMirror a1, AnnotationMirror a2) {
     QualifierKind qual1 = getQualifierKind(a1);
     QualifierKind qual2 = getQualifierKind(a2);
 
@@ -240,7 +241,8 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   @Override
-  public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+  public @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+      AnnotationMirror a1, AnnotationMirror a2) {
     QualifierKind qual1 = getQualifierKind(a1);
     QualifierKind qual2 = getQualifierKind(a2);
     QualifierKind glb = qualifierKindHierarchy.greatestLowerBound(qual1, qual2);

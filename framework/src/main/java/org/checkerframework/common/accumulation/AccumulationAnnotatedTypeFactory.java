@@ -295,7 +295,19 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
             receiverType == null ? top : receiverType.getAnnotationInHierarchy(top);
 
         AnnotationMirror returnAnno = type.getAnnotationInHierarchy(top);
-        type.replaceAnnotation(qualHierarchy.greatestLowerBound(returnAnno, receiverAnno));
+        AnnotationMirror glbAnno;
+        if (receiverType == null) {
+          glbAnno = qualHierarchy.greatestLowerBoundQualifiersOnly(returnAnno, receiverAnno);
+        } else {
+          glbAnno =
+              qualHierarchy.greatestLowerBoundShallow(
+                  returnAnno,
+                  type.getUnderlyingType(),
+                  receiverAnno,
+                  receiverType.getUnderlyingType());
+        }
+
+        type.replaceAnnotation(glbAnno);
       }
       return super.visitMethodInvocation(tree, type);
     }
@@ -377,7 +389,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * them is bottom, in which case the result is also bottom.
      */
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, bottom) || AnnotationUtils.areSame(a2, bottom)) {
         return bottom;
       }
@@ -420,7 +432,7 @@ public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedType
      * one of them is bottom, in which case the result is the other annotation.
      */
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, bottom)) {
         return a2;
       } else if (AnnotationUtils.areSame(a2, bottom)) {

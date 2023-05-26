@@ -639,7 +639,14 @@ public class WholeProgramInferenceScenesStorage
       // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
-        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
+        amSource =
+            atypeFactory
+                .getQualifierHierarchy()
+                .leastUpperBound(
+                    amSource,
+                    sourceCodeATM.getUnderlyingType(),
+                    amJaif,
+                    jaifATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }

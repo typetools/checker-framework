@@ -75,6 +75,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         : "PropagationTreeAnnotator.visitNewArray: should be an array type";
 
     AnnotatedTypeMirror componentType = ((AnnotatedArrayType) arrayType).getComponentType();
+    TypeMirror componentTM = componentType.getUnderlyingType();
 
     // prev is the lub of the initializers if they exist, otherwise the current component type.
     Set<? extends AnnotationMirror> prev = null;
@@ -88,7 +89,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         // initType might be a typeVariable, so use effectiveAnnotations.
         AnnotationMirrorSet annos = initType.getEffectiveAnnotations();
 
-        prev = (prev == null) ? annos : qualHierarchy.leastUpperBounds(prev, annos);
+        prev =
+            (prev == null)
+                ? annos
+                : qualHierarchy.leastUpperBoundsShallow(
+                    prev, componentTM, annos, initType.getUnderlyingType());
       }
     } else {
       prev = componentType.getAnnotations();
@@ -193,8 +198,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(tree.getExpression());
     AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getVariable());
     Set<? extends AnnotationMirror> lubs =
-        qualHierarchy.leastUpperBounds(
-            rhs.getEffectiveAnnotations(), lhs.getEffectiveAnnotations());
+        qualHierarchy.leastUpperBoundsShallow(
+            rhs.getEffectiveAnnotations(),
+            rhs.getUnderlyingType(),
+            lhs.getEffectiveAnnotations(),
+            lhs.getUnderlyingType());
     type.addMissingAnnotations(lubs);
     return null;
   }
@@ -214,9 +222,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     }
 
     Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    AnnotatedTypeMirror type1 = argTypes.first;
+    AnnotatedTypeMirror type2 = argTypes.second;
     Set<? extends AnnotationMirror> lubs =
-        qualHierarchy.leastUpperBounds(
-            argTypes.first.getEffectiveAnnotations(), argTypes.second.getEffectiveAnnotations());
+        qualHierarchy.leastUpperBoundsShallow(
+            type1.getEffectiveAnnotations(),
+            type1.getUnderlyingType(),
+            type2.getEffectiveAnnotations(),
+            type2.getUnderlyingType());
     log(
         "%s PTA.visitBinary(%s, %s)%n  argTypes=%s%n  lubs=%s%n",
         atypeFactory.getClass().getSimpleName(), tree, type, argTypes, lubs);

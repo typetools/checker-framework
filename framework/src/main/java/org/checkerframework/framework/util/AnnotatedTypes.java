@@ -831,20 +831,20 @@ public class AnnotatedTypes {
    */
   public static AnnotatedTypeMirror annotatedGLB(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-    TypeMirror glbJava =
-        TypesUtils.greatestLowerBound(
-            type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
+    TypeMirror tm1 = type1.getUnderlyingType();
+    TypeMirror tm2 = type2.getUnderlyingType();
+    TypeMirror glbJava = TypesUtils.greatestLowerBound(tm1, tm2, atypeFactory.getProcessingEnv());
     Types types = atypeFactory.types;
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
-    if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+    if (types.isSubtype(tm1, tm2)) {
       return glbSubtype(qualHierarchy, type1, type2);
-    } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+    } else if (types.isSubtype(tm2, tm1)) {
       return glbSubtype(qualHierarchy, type2, type1);
     }
 
-    if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
+    if (types.isSameType(tm1, glbJava)) {
       return glbSubtype(qualHierarchy, type1, type2);
-    } else if (types.isSameType(type2.getUnderlyingType(), glbJava)) {
+    } else if (types.isSameType(tm2, glbJava)) {
       return glbSubtype(qualHierarchy, type2, type1);
     }
 
@@ -859,16 +859,17 @@ public class AnnotatedTypes {
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
     AnnotationMirrorSet set2 =
         AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
-    Set<? extends AnnotationMirror> glbAnno = qualHierarchy.greatestLowerBounds(set1, set2);
+    Set<? extends AnnotationMirror> glbAnno =
+        qualHierarchy.greatestLowerBoundsShallow(set1, tm1, set2, tm2);
 
     AnnotatedIntersectionType glb =
         (AnnotatedIntersectionType) AnnotatedTypeMirror.createType(glbJava, atypeFactory, false);
 
     List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
-      if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
+      if (types.isSameType(bound.getUnderlyingType(), tm1)) {
         newBounds.add(type1.deepCopy());
-      } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
+      } else if (types.isSameType(bound.getUnderlyingType(), tm2)) {
         newBounds.add(type2.deepCopy());
       } else if (type1.getKind() == TypeKind.INTERSECTION) {
         AnnotatedIntersectionType intertype1 = (AnnotatedIntersectionType) type1;
@@ -921,7 +922,8 @@ public class AnnotatedTypes {
       AnnotationMirror subAnno = subtype.getAnnotationInHierarchy(top);
       AnnotationMirror superAnno = supertype.getAnnotationInHierarchy(top);
       if (subAnno != null && superAnno != null) {
-        glb.addAnnotation(qualHierarchy.greatestLowerBound(subAnno, superAnno));
+        glb.addAnnotation(
+            qualHierarchy.greatestLowerBoundShallow(subAnno, subTM, superAnno, superTM));
       } else if (subAnno == null && superAnno == null) {
         if (subtype.getKind() != TypeKind.TYPEVAR || supertype.getKind() != TypeKind.TYPEVAR) {
           throw new BugInCF(

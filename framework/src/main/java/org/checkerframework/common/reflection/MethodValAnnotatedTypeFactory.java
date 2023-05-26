@@ -218,7 +218,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * concatenating all value lists of a1 and a2.
      */
     @Override
-    public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
@@ -236,7 +237,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {

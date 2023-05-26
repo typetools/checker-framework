@@ -62,7 +62,9 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
       AnnotationMirror aFrom = from.getAnnotationInHierarchy(top);
       AnnotationMirror aTo = to.getAnnotationInHierarchy(top);
       if (aFrom != null && aTo != null) {
-        combinedAnnotations.add(hierarchy.greatestLowerBound(aFrom, aTo));
+        combinedAnnotations.add(
+            hierarchy.greatestLowerBoundShallow(
+                aFrom, from.getUnderlyingType(), aTo, to.getUnderlyingType()));
       } else if (aFrom != null) {
         combinedAnnotations.add(aFrom);
       } else if (aTo != null) {

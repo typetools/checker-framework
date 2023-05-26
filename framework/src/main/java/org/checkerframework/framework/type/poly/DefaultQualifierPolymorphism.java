@@ -50,7 +50,11 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     }
   }
 
-  /** Combines the two annotations using the least upper bound. */
+  /**
+   * This implementation combines the two annotations using the least upper bound.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   protected AnnotationMirror combine(
       AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
@@ -59,6 +63,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     } else if (a2 == null) {
       return a1;
     }
-    return qualHierarchy.leastUpperBound(a1, a2);
+    return qualHierarchy.leastUpperBoundQualifiers(a1, a2);
   }
 }

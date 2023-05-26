@@ -114,7 +114,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   @Override
-  public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+  public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
     if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
       return a1;
     } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
@@ -144,7 +144,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   @Override
   public AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-    AnnotationMirror lub = leastUpperBound(newQualifier, previousQualifier);
+    AnnotationMirror lub = leastUpperBoundQualifiers(newQualifier, previousQualifier);
     if (AnnotationUtils.areSameByName(lub, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
       Range lubRange = atypeFactory.getRange(lub);
       Range newRange = atypeFactory.getRange(newQualifier);
@@ -227,7 +227,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
    * @return the least upper bound of a1 and a2
    */
   @Override
-  public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+  public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
     if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
       // The annotations are in different hierarchies
       return null;
@@ -367,15 +367,16 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     // a StringVal with one of them, or a StringVal and a MatchesRegex.
     // Each of these converts one annotation to the other, then makes a recursive call.
     if (arrayLenAnno != null && arrayLenRangeAnno != null) {
-      return leastUpperBound(
+      return leastUpperBoundQualifiers(
           arrayLenRangeAnno, atypeFactory.convertArrayLenToArrayLenRange(arrayLenAnno));
     } else if (stringValAnno != null && arrayLenAnno != null) {
-      return leastUpperBound(arrayLenAnno, atypeFactory.convertStringValToArrayLen(stringValAnno));
+      return leastUpperBoundQualifiers(
+          arrayLenAnno, atypeFactory.convertStringValToArrayLen(stringValAnno));
     } else if (stringValAnno != null && arrayLenRangeAnno != null) {
-      return leastUpperBound(
+      return leastUpperBoundQualifiers(
           arrayLenRangeAnno, atypeFactory.convertStringValToArrayLenRange(stringValAnno));
     } else if (stringValAnno != null && matchesRegexAnno != null) {
-      return leastUpperBound(
+      return leastUpperBoundQualifiers(
           matchesRegexAnno, atypeFactory.convertStringValToMatchesRegex(stringValAnno));
     }
 
@@ -407,14 +408,14 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       if (intValAnno != null) {
         // Convert intValAnno to a @DoubleVal AnnotationMirror
         AnnotationMirror doubleValAnno2 = atypeFactory.convertIntValToDoubleVal(intValAnno);
-        return leastUpperBound(doubleValAnno, doubleValAnno2);
+        return leastUpperBoundQualifiers(doubleValAnno, doubleValAnno2);
       }
       return atypeFactory.UNKNOWNVAL;
     }
     if (intRangeAnno != null && intValAnno != null) {
       // Convert intValAnno to an @IntRange AnnotationMirror
       AnnotationMirror intRangeAnno2 = atypeFactory.convertIntValToIntRange(intValAnno);
-      return leastUpperBound(intRangeAnno, intRangeAnno2);
+      return leastUpperBoundQualifiers(intRangeAnno, intRangeAnno2);
     }
 
     // In all other cases, the LUB is UnknownVal.

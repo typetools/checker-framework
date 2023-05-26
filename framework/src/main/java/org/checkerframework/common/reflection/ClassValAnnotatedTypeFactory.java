@@ -146,7 +146,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * obtained by combining the values of both annotations.
      */
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
@@ -169,7 +169,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {

@@ -1117,7 +1117,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
       if (amAjava != null) {
-        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
+        amSource =
+            atypeFactory
+                .getQualifierHierarchy()
+                .leastUpperBoundShallow(
+                    amSource,
+                    sourceCodeATM.getUnderlyingType(),
+                    amAjava,
+                    ajavaATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }

@@ -223,6 +223,7 @@ public abstract class QualifierHierarchy {
   /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
    *
    * <p>Examples:
    *
@@ -237,20 +238,71 @@ public abstract class QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  public abstract @Nullable AnnotationMirror leastUpperBound(
+  public abstract @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+  /**
+   * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+   * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
+   *
+   * <p>Examples:
+   *
+   * <ul>
+   *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+   * </ul>
+   *
+   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
+   *     different hierarchies
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  public final @Nullable AnnotationMirror leastUpperBoundQualifiersOnly(
+      AnnotationMirror qualifier1, AnnotationMirror qualifier2) {
+    return leastUpperBoundQualifiers(qualifier1, qualifier2);
+  }
+
+  /**
+   * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+   * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   *
+   * <p>Examples:
+   *
+   * <ul>
+   *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+   * </ul>
+   *
+   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+   * @param tm1 the type on which qualifier1 appears
+   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @param tm2 the type on which qualifier2 appears
+   * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
+   *     different hierarchies
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  public @Nullable AnnotationMirror leastUpperBoundShallow(
+      AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+    return leastUpperBoundQualifiers(qualifier1, qualifier2);
+  }
 
   /**
    * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+   * @param tm1 the type on which qualifiers1 appear
    * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param tm2 the type on which qualifiers2 appear
    * @return the least upper bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> leastUpperBounds(
+  public Set<? extends AnnotationMirror> leastUpperBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
-      Collection<? extends AnnotationMirror> qualifiers2) {
+      TypeMirror tm1,
+      Collection<? extends AnnotationMirror> qualifiers2,
+      TypeMirror tm2) {
     assertSameSize(qualifiers1, qualifiers2);
     if (qualifiers1.isEmpty()) {
       throw new BugInCF(
@@ -260,7 +312,7 @@ public abstract class QualifierHierarchy {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
-        AnnotationMirror lub = leastUpperBound(a1, a2);
+        AnnotationMirror lub = leastUpperBoundShallow(a1, tm1, a2, tm2);
         if (lub != null) {
           result.add(lub);
         }
@@ -306,13 +358,12 @@ public abstract class QualifierHierarchy {
    */
   public AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-    AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
-    if (widenUpperBound == null) {
+    AnnotationMirror widenedUpperBound = leastUpperBoundQualifiers(newQualifier, previousQualifier);
+    if (widenedUpperBound == null) {
       throw new BugInCF(
-          "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
-          newQualifier, previousQualifier);
+          "widenedUpperBound(%s, %s): unrelated qualifiers", newQualifier, previousQualifier);
     }
-    return widenUpperBound;
+    return widenedUpperBound;
   }
 
   /**
@@ -321,13 +372,43 @@ public abstract class QualifierHierarchy {
    *
    * @param qualifier1 first qualifier
    * @param qualifier2 second qualifier
-   * @return greatest lower bound of the two annotations or null if the two annotations are not from
-   *     the same hierarchy
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  public abstract @Nullable AnnotationMirror greatestLowerBound(
+  protected abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+  /**
+   * Returns the greatest lower bound for the qualifiers qualifier1 and qualifier2. Returns null if
+   * the qualifiers are not from the same qualifier hierarchy.
+   *
+   * @param qualifier1 first qualifier
+   * @param qualifier2 second qualifier
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  public final @Nullable AnnotationMirror greatestLowerBoundQualifiersOnly(
+      AnnotationMirror qualifier1, AnnotationMirror qualifier2) {
+    return greatestLowerBoundQualifiers(qualifier1, qualifier2);
+  }
+
+  /**
+   * Returns the greatest lower bound for the qualifiers qualifier1 and qualifier2. Returns null if
+   * the qualifiers are not from the same qualifier hierarchy.
+   *
+   * @param qualifier1 first qualifier
+   * @param qualifier2 second qualifier
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
+   */
+  public @Nullable AnnotationMirror greatestLowerBoundShallow(
+      AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+    return greatestLowerBoundQualifiers(qualifier1, qualifier2);
+  }
 
   /**
    * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
@@ -337,9 +418,11 @@ public abstract class QualifierHierarchy {
    * @param qualifiers2 set of qualifiers; exactly one per hierarchy
    * @return the greatest lower bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> greatestLowerBounds(
+  public Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
-      Collection<? extends AnnotationMirror> qualifiers2) {
+      TypeMirror tm1,
+      Collection<? extends AnnotationMirror> qualifiers2,
+      TypeMirror tm2) {
     assertSameSize(qualifiers1, qualifiers2);
     if (qualifiers1.isEmpty()) {
       throw new BugInCF(
@@ -349,7 +432,7 @@ public abstract class QualifierHierarchy {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
-        AnnotationMirror glb = greatestLowerBound(a1, a2);
+        AnnotationMirror glb = greatestLowerBoundShallow(a1, tm1, a2, tm2);
         if (glb != null) {
           result.add(glb);
         }
