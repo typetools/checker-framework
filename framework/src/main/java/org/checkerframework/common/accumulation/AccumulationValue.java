@@ -1,0 +1,118 @@
+package org.checkerframework.common.accumulation;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+
+public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
+
+  /**
+   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
+   * values. Otherwise, it is null.
+   */
+  private @Nullable List<String> accumulatedValues = null;
+
+  /**
+   * Creates a new CFAbstractValue.
+   *
+   * @param analysis the analysis class this value belongs to
+   * @param annotations the annotations in this abstract value
+   * @param underlyingType the underlying (Java) type in this abstract value
+   */
+  protected AccumulationValue(
+      CFAbstractAnalysis<AccumulationValue, ?, ?> analysis,
+      AnnotationMirrorSet annotations,
+      TypeMirror underlyingType) {
+    super(analysis, annotations, underlyingType);
+    if (underlyingType.getKind() == TypeKind.TYPEVAR
+        || underlyingType.getKind() == TypeKind.WILDCARD) {
+      AccumulationAnnotatedTypeFactory typeFactory =
+          (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
+      AnnotationMirror accumulator = null;
+      for (AnnotationMirror anm : annotations) {
+        if (typeFactory.isAccumulatorAnnotation(anm)) {
+          accumulator = anm;
+          break;
+        }
+      }
+      if (accumulator != null) {
+        accumulatedValues = typeFactory.getAccumulatedValues(accumulator);
+      }
+    }
+  }
+
+  /**
+   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
+   * values. Otherwise, it is null.
+   *
+   * @return the list (this is not a copy of the list, but an alias)
+   */
+  public List<String> getAccumulatedValues() {
+    return accumulatedValues;
+  }
+
+  @Override
+  public AccumulationValue leastUpperBound(AccumulationValue other) {
+    AccumulationValue lub = super.leastUpperBound(other);
+    if (other == null || other.accumulatedValues == null || this.accumulatedValues == null) {
+      return lub;
+    }
+    // Lub the accumulatedValues by intersecting the lists as if they were sets.
+    lub.accumulatedValues = new ArrayList<>(this.accumulatedValues.size());
+    lub.accumulatedValues.addAll(this.accumulatedValues);
+    lub.accumulatedValues.retainAll(other.accumulatedValues);
+    if (lub.accumulatedValues.isEmpty()) {
+      lub.accumulatedValues = null;
+    }
+    return lub;
+  }
+
+  @Override
+  public AccumulationValue mostSpecific(AccumulationValue other, AccumulationValue backup) {
+    AccumulationValue mostSpecific = super.mostSpecific(other, backup);
+    if (mostSpecific == null) {
+      if (other == null) {
+        return this;
+      }
+      // mostSpecific is null if the two types are not comparable.  This is normally
+      // because one of this or other is a type variable and annotations is empty, but the
+      // other annotations are not empty.  In this case, copy the accumulatedValues to the
+      // value with no annotations and return it as most specific.
+      if (other.getAnnotations().isEmpty()) {
+        other.addAccumulatedValues(this.accumulatedValues);
+        return other;
+      } else if (this.getAnnotations().isEmpty()) {
+        this.addAccumulatedValues(other.accumulatedValues);
+        return this;
+      }
+      return null;
+    }
+
+    mostSpecific.addAccumulatedValues(this.accumulatedValues);
+    if (other != null) {
+      mostSpecific.addAccumulatedValues(other.accumulatedValues);
+    }
+    return mostSpecific;
+  }
+
+  /**
+   * Merges its argument into the {@link #accumulatedValues} field of this.
+   *
+   * @param newAccumulatedValues a new list of accumulated values
+   */
+  private void addAccumulatedValues(List<String> newAccumulatedValues) {
+    if (newAccumulatedValues == null || newAccumulatedValues.isEmpty()) {
+      return;
+    }
+    if (accumulatedValues == null) {
+      accumulatedValues = new ArrayList<>(newAccumulatedValues.size());
+    }
+    accumulatedValues.addAll(newAccumulatedValues);
+  }
+}
