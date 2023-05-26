@@ -28,6 +28,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -357,7 +358,8 @@ public class QualifierDefaults {
   }
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**
    * Returns true if there are conflicts with existing defaults.

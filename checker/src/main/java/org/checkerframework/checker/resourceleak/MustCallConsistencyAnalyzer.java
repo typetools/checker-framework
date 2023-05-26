@@ -35,6 +35,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -2120,7 +2121,8 @@ class MustCallConsistencyAnalyzer {
   }
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all

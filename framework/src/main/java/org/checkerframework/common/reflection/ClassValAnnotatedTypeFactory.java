@@ -19,6 +19,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -124,7 +125,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The qualifier hierarchy for the ClassVal type system. */
   protected class ClassValQualifierHierarchy extends ElementQualifierHierarchy {

@@ -39,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.Invoke;
 import org.checkerframework.common.reflection.qual.MethodVal;
@@ -68,7 +69,8 @@ import org.checkerframework.javacutil.TreeUtils;
 public class DefaultReflectionResolver implements ReflectionResolver {
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** Message prefix added to verbose reflection messages. */
   public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";

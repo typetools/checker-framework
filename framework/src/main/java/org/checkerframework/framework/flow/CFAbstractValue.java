@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -52,7 +53,8 @@ import org.plumelib.util.StringsPlume;
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;

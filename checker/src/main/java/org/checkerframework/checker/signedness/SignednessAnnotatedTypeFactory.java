@@ -679,7 +679,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
   /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
+      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /**
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
