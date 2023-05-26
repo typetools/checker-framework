@@ -177,9 +177,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     AnnotatedTypeMirror trueType = f.getAnnotatedType(tree.getTrueExpression());
     AnnotatedTypeMirror falseType = f.getAnnotatedType(tree.getFalseExpression());
 
-    // System.out.printf(
-    //     "TFEV.visitConditionalExpression(%s): trueType=%s, falseType=%s, result=%s%n",
-    //     tree, trueType, falseType, result);
     return AnnotatedTypes.leastUpperBound(f, trueType, falseType, alub);
   }
 
