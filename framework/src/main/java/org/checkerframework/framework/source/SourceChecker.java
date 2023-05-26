@@ -1081,6 +1081,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param d the diagnostic message
    */
   public void report(Object source, DiagMessage d) {
+    if (source == null) {
+      source = d.getSource();
+    }
+    if (source == null) {
+      throw new TypeSystemError("no source to report " + d);
+    }
     report(source, d.getKind(), d.getMessageKey(), d.getArgs());
   }
 
