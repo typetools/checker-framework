@@ -388,7 +388,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (tree == null) {
       return null;
     }
-    System.out.printf("scan(%s)%n", TreeUtils.toStringTruncated(tree, 80));
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
@@ -4728,6 +4727,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
+    System.out.printf(
+        "entering isValidUse(%s, %s, %s)%n",
+        declarationType, useType, TreeUtils.toStringTruncated(tree, 60));
+
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -4781,6 +4784,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree the AST type supplied by the user
    */
   public boolean validateTypeOf(Tree tree) {
+    System.out.printf(
+        "validateTypeOf(%s), kind=%s%n", TreeUtils.toStringTruncated(tree, 80), tree.getKind());
     AnnotatedTypeMirror type;
     // It's quite annoying that there is no TypeTree.
     switch (tree.getKind()) {
@@ -4796,6 +4801,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         break;
       case METHOD:
         type = atypeFactory.getMethodReturnType((MethodTree) tree);
+        System.out.printf("return type = %s%n", type);
         if (type == null || type.getKind() == TypeKind.VOID) {
           // Nothing to do for void methods.
           // Note that for a constructor the AnnotatedExecutableType does
@@ -4806,6 +4812,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       default:
         type = atypeFactory.getAnnotatedType(tree);
     }
+    System.out.printf(
+        "validateTypeOf(%s) calling validateType(..., %s)%n",
+        TreeUtils.toStringTruncated(tree, 80), type);
     return validateType(tree, type);
   }
 
@@ -4819,6 +4828,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is valid
    */
   protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+    System.out.printf(
+        "validateType(%s, %s); typeValidator=%s%n",
+        TreeUtils.toStringTruncated(tree, 80), type, typeValidator.getClass().getSimpleName());
     return typeValidator.isValid(type, tree);
   }
 
