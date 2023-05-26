@@ -845,6 +845,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitTypevar_Typevar(
       AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, Void p) {
 
+    TypeMirror subTM = subtype.getUnderlyingType();
+    TypeMirror superTM = supertype.getUnderlyingType();
+
     if (AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
       // The underlying types of subtype and supertype are uses of the same type parameter,
       // but they
@@ -881,8 +884,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     }
 
-    if (TypesUtils.isCapturedTypeVariable(subtype.getUnderlyingType())
-        && TypesUtils.isCapturedTypeVariable(supertype.getUnderlyingType())) {
+    if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
       // This should be removed when 979 is fixed.
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.

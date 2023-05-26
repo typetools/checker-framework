@@ -1192,9 +1192,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * It never makes sense to add annotations to an executable type - instead, they should be added
-     * to the right component.
+     * It never makes sense to add annotations to an executable type. Instead, they should be added
+     * to the appropriate component.
+     *
+     * @deprecated add to the appropriate component
      */
+    @Deprecated // not for removal
     @Override
     public void addAnnotation(AnnotationMirror a) {
       assert false : "AnnotatedExecutableType.addAnnotation should never be called";
@@ -1236,7 +1239,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Sets the return type of this executable type.
      *
-     * @param returnType the return type
+     * @param returnType the new return type
      */
     /*package-private*/ void setReturnType(AnnotatedTypeMirror returnType) {
       this.returnType = returnType;

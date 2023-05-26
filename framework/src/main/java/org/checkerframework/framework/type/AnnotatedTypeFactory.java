@@ -4692,10 +4692,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
-        AnnotatedTypeMirror falseType =
-            getAnnotatedType(conditionalExpressionTree.getFalseExpression());
         AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
+        AnnotatedTypeMirror falseType =
+            getAnnotatedType(conditionalExpressionTree.getFalseExpression());
 
         // Known cases where we must use LUB because falseType/trueType will not be equal:
         // a) when one of the types is a type variable that extends a functional interface
