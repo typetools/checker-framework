@@ -233,13 +233,12 @@ public interface QualifierHierarchy {
    */
   default AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-    AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
-    if (widenUpperBound == null) {
+    AnnotationMirror widenedUpperBound = leastUpperBound(newQualifier, previousQualifier);
+    if (widenedUpperBound == null) {
       throw new BugInCF(
-          "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
-          newQualifier, previousQualifier);
+          "widenedUpperBound(%s, %s): unrelated qualifiers", newQualifier, previousQualifier);
     }
-    return widenUpperBound;
+    return widenedUpperBound;
   }
 
   /**
