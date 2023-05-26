@@ -6,10 +6,31 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
+/**
+ * AccumulationValue holds additional information about accumulated facts ("values", not to be
+ * confused with "Value" in the name of this class) that cannot be stored in the accumulation type,
+ * because they are not a refinement of that type. This situation occurs for type variables and
+ * wildcards, for which calling {@link AccumulationTransfer#accumulate(Node, TransferResult,
+ * String...)} would otherwise have no effect (since the types are invariant: Accumulator(a) T is
+ * not a supertype of Accumulator(a,b) T, for any Accumulator annotation). This enables an
+ * accumulation checker (or, typically, a client of that accumulation checker) to resolve
+ * accumulated facts even on types that are type variables. For example, the Resource Leak Checker
+ * uses this facility to check that calls to close() on variables whose type is a type variable have
+ * actually occurred, such as in this example:
+ *
+ * <pre><code>
+ *   public static <T extends java.io.Closeable> void close(
+ *       @Owning @MustCall("close") T value) throws Exception {
+ *     value.close();
+ *   }
+ * </code></pre>
+ */
 public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**

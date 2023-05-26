@@ -8,8 +8,20 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
+/**
+ * This class only contains boilerplate code to permit AccumulationValue's accumulatedValues
+ * functionality to interact with the rest of an accumulation type system.
+ */
 public class AccumulationAnalysis
     extends CFAbstractAnalysis<AccumulationValue, AccumulationStore, AccumulationTransfer> {
+
+  /**
+   * Constructs an AccumulationAnalysis.
+   *
+   * @param checker the checker
+   * @param factory the type factory
+   * @param maxCountBeforeWidening number of times a block can be analyzed before widening
+   */
   protected AccumulationAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<
@@ -23,6 +35,12 @@ public class AccumulationAnalysis
     super(checker, factory, maxCountBeforeWidening);
   }
 
+  /**
+   * Constructs an AccumulationAnalysis.
+   *
+   * @param checker the checker
+   * @param factory the type factory
+   */
   protected AccumulationAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<
