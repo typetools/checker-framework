@@ -802,12 +802,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkExtendsOrImplements(
       Tree superClause, AnnotationMirrorSet classBounds, TypeMirror classType, boolean isExtends) {
     AnnotatedTypeMirror superType = atypeFactory.getTypeOfExtendsImplements(superClause);
-    TypeMirror superUnderlying = superType.getUnderlyingType();
+    TypeMirror superTM = superType.getUnderlyingType();
     AnnotationMirrorSet superAnnos = superType.getAnnotations();
     for (AnnotationMirror classAnno : classBounds) {
       AnnotationMirror superAnno =
           qualHierarchy.findAnnotationInSameHierarchy(superAnnos, classAnno);
-      if (!qualHierarchy.isSubtypeShallow(classAnno, classType, superAnno, superUnderlying)) {
+      if (!qualHierarchy.isSubtypeShallow(classAnno, classType, superAnno, superTM)) {
         checker.reportError(
             superClause,
             (isExtends

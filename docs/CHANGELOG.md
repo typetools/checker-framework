@@ -13,10 +13,13 @@ Signedness Checker:
 
 `QualifierHierarchy`:
  * The constructor takes an `AnnotatedTypeFactory`.
- * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
-   Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`.
- * New public method `isSubtypeShallow()' that takes two more arguments than
-   `isSubypeQualifiers()`.
+ * Changes to `isSubtype()`:
+    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
+      or, rarely, new method `isSubtypeQualifiersOnly()`.
+    * New public method `isSubtypeShallow()' that takes two more arguments than
+      `isSubypeQualifiers()`.
+ * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
