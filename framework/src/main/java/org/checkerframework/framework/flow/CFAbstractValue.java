@@ -51,6 +51,9 @@ import org.plumelib.util.StringsPlume;
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
@@ -329,12 +332,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror b,
         TypeMirror bTypeMirror,
         AnnotationMirror top) {
-      if (analysis
-              .getTypeFactory()
-              .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
-          && analysis
-              .getTypeFactory()
-              .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
+      if (aTypeMirror == null) {
+        throw new NullPointerException("aTypeMirror");
+      }
+      if (bTypeMirror == null) {
+        throw new NullPointerException("bTypeMirror");
+      }
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = analysis.getTypeFactory();
+      if (aTypeMirror != alwaysRelevantTM
+          && gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
+          && bTypeMirror != alwaysRelevantTM
+          && gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
         // Both types have qualifier parameters, so they are related by invariance rather
         // than subtyping.
         if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)
@@ -681,11 +689,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         TypeMirror bTypeMirror,
         AnnotationMirrorSet bSet,
         boolean canCombinedSetBeMissingAnnos) {
+      if (aTypeMirror == null) {
+        throw new NullPointerException("aTypeMirror");
+      }
+      if (bTypeMirror == null) {
+        throw new NullPointerException("bTypeMirror");
+      }
 
       AnnotatedTypeVariable aAtv = getEffectiveTypeVar(aTypeMirror);
       AnnotatedTypeVariable bAtv = getEffectiveTypeVar(bTypeMirror);
-      TypeMirror aTM = aAtv.getUnderlyingType();
-      TypeMirror bTM = bAtv.getUnderlyingType();
       AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
       AnnotationMirrorSet combinedSets = new AnnotationMirrorSet();
       for (AnnotationMirror top : tops) {
@@ -693,6 +705,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror b = qualHierarchy.findAnnotationInHierarchy(bSet, top);
         AnnotationMirror result;
         if (a != null && b != null) {
+          TypeMirror aTM = aAtv == null ? alwaysRelevantTM : aAtv.getUnderlyingType();
+          TypeMirror bTM = bAtv == null ? alwaysRelevantTM : bAtv.getUnderlyingType();
           result = combineTwoAnnotations(a, aTM, b, bTM, top);
         } else if (a != null) {
           result = combineOneAnnotation(a, bAtv, top, canCombinedSetBeMissingAnnos);
