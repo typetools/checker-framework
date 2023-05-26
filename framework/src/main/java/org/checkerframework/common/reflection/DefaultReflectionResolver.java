@@ -614,19 +614,23 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
+   * @param set1 the first type
    * @param tm1 the type that is annotated by qualifier1
+   * @param set2 the second type
    * @param tm2 the type that is annotated by qualifier2
+   * @param atypeFactory the type factory
+   * @return the lub of the two types
    */
   private Set<? extends AnnotationMirror> lub(
       Set<? extends AnnotationMirror> set1,
       TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
       TypeMirror tm2,
-      AnnotatedTypeFactory factory) {
+      AnnotatedTypeFactory atypeFactory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return factory.getQualifierHierarchy().leastUpperBoundsShallow(set1, tm1, set2, tm2);
+      return atypeFactory.getQualifierHierarchy().leastUpperBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 
@@ -636,8 +640,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
+   * @param set1 the first type
    * @param tm1 the type that is annotated by qualifier1
+   * @param set2 the second type
    * @param tm2 the type that is annotated by qualifier2
+   * @param atypeFactory the type factory
+   * @return the glb of the two types
    */
   private Set<? extends AnnotationMirror> glb(
       Set<? extends AnnotationMirror> set1,
