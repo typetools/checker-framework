@@ -8,7 +8,6 @@ public class Issue3443 {
 
   public static void main(String[] args) {
     Supplier3443<@Nullable String> s1 = () -> null;
-    // TODO: passThrough(s1) should cause an error. #979.
     Supplier3443<String> s2 = passThrough(s1);
     s2.get().toString();
   }

@@ -9,9 +9,17 @@ public class Issue1630 {
     return null;
   }
 
-  @SuppressWarnings("nullness") // Issue 979
-  public static List<String> f(List<Integer> xs) {
+  public static List<@Nullable String> f(@Nullable List<Integer> xs) {
     return xs != null
+        ? xs.stream().map(Issue1630::toString).filter(Objects::nonNull).collect(Collectors.toList())
+        : Collections.emptyList();
+  }
+
+  public static List<String> f2(@Nullable List<Integer> xs) {
+    return xs != null
+        // TODO: we could refine the type of filter is the postconditions of the predicate is
+        // @EnsuresNonNull("#1").
+        // :: error: (type.arguments.not.inferred)
         ? xs.stream().map(Issue1630::toString).filter(Objects::nonNull).collect(Collectors.toList())
         : Collections.emptyList();
   }
