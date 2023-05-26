@@ -654,6 +654,7 @@ public final class TypesUtils {
   public static boolean isCompoundType(TypeMirror type) {
     switch (type.getKind()) {
       case ARRAY:
+      case EXECUTABLE:
       case INTERSECTION:
       case UNION:
       case TYPEVAR:
