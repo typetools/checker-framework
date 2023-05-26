@@ -1852,16 +1852,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TreePath path = atypeFactory.getPath(call);
     MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
     AnnotatedTypeMirror superType = atypeFactory.getAnnotatedType(call);
-    TypeMirror superTM = superType.getUnderlyingType();
     AnnotatedExecutableType constructorType = atypeFactory.getAnnotatedType(enclosingMethod);
     AnnotatedTypeMirror returnType = constructorType.getReturnType();
-    TypeMirror returnTM = returnType.getUnderlyingType();
     AnnotationMirrorSet topAnnotations = qualHierarchy.getTopAnnotations();
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorReturnAnno = returnType.getAnnotationInHierarchy(topAnno);
 
-      if (!qualHierarchy.isSubtypeShallow(superAnno, superTM, constructorReturnAnno, returnTM)) {
+      if (!qualHierarchy.isSubtypeShallow(
+          superAnno, alwaysRelevantTM, constructorReturnAnno, alwaysRelevantTM)) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
       }
     }
@@ -3530,15 +3529,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotationMirrorSet resultAnnos = constructor.getReturnType().getAnnotations();
-    TypeMirror newClassTM = TreeUtils.typeOf(newClassTree);
     for (AnnotationMirror explicit : explicitAnnos) {
       AnnotationMirror resultAnno =
           qualHierarchy.findAnnotationInSameHierarchy(resultAnnos, explicit);
       // The return type of the constructor (resultAnnos) must be comparable to the
       // annotations on the constructor invocation (explicitAnnos).
       boolean resultIsSubtypeOfExplicit =
-          qualHierarchy.isSubtypeShallow(resultAnno, newClassTM, explicit, newClassTM);
-      if (!(qualHierarchy.isSubtypeShallow(explicit, newClassTM, resultAnno, newClassTM)
+          qualHierarchy.isSubtypeShallow(resultAnno, alwaysRelevantTM, explicit, alwaysRelevantTM);
+      if (!(qualHierarchy.isSubtypeShallow(explicit, alwaysRelevantTM, resultAnno, alwaysRelevantTM)
           || resultIsSubtypeOfExplicit)) {
         checker.reportError(
             newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
@@ -4730,10 +4728,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-    System.out.printf(
-        "entering isValidUse(%s, %s, %s)%n",
-        declarationType, useType, TreeUtils.toStringTruncated(tree, 60));
-
     // Don't use isSubtype(ATM, ATM) because it will return false if the types have qualifier
     // parameters.
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -4743,12 +4737,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror top : tops) {
       AnnotationMirror upperBound = qualHierarchy.findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
-      boolean isSubtype =
-          qualHierarchy.isSubtypeShallow(qualifier, alwaysRelevantTM, upperBound, alwaysRelevantTM);
-      System.out.printf(
-          "issubTypeShallow(%s, %s, %s, %s) => %s; top=%s%n",
-          qualifier, useType.getUnderlyingType(), upperBound, declarationTM, isSubtype, top);
-      if (!isSubtype) {
+      if (!qualHierarchy.isSubtypeShallow(
+          qualifier, alwaysRelevantTM, upperBound, alwaysRelevantTM)) {
         return false;
       }
     }
@@ -4792,8 +4782,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the tree is a valid type
    */
   public boolean validateTypeOf(Tree tree) {
-    System.out.printf(
-        "validateTypeOf(%s), kind=%s%n", TreeUtils.toStringTruncated(tree, 80), tree.getKind());
     AnnotatedTypeMirror type;
     // It's quite annoying that there is no TypeTree.
     switch (tree.getKind()) {
@@ -4809,7 +4797,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         break;
       case METHOD:
         type = atypeFactory.getMethodReturnType((MethodTree) tree);
-        System.out.printf("return type = %s%n", type);
         if (type == null || type.getKind() == TypeKind.VOID) {
           // Nothing to do for void methods.
           // Note that for a constructor the AnnotatedExecutableType does
@@ -4820,9 +4807,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       default:
         type = atypeFactory.getAnnotatedType(tree);
     }
-    System.out.printf(
-        "validateTypeOf(%s) calling validateType(..., %s)%n",
-        TreeUtils.toStringTruncated(tree, 80), type);
     return validateType(tree, type);
   }
 
@@ -4836,9 +4820,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return true if the type is valid
    */
   protected boolean validateType(Tree tree, AnnotatedTypeMirror type) {
-    System.out.printf(
-        "validateType(%s, %s); typeValidator=%s%n",
-        TreeUtils.toStringTruncated(tree, 80), type, typeValidator.getClass().getSimpleName());
     return typeValidator.isValid(type, tree);
   }
 

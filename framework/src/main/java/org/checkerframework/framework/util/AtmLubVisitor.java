@@ -66,10 +66,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       return lubWithNull((AnnotatedNullType) type2, type1, lub);
     }
 
-    // System.out.printf("AtmLubVisitor.lub(%s, %s, %s) lub=%s%n", type1, type2, lubJavaType, lub);
     AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
     AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
-    // System.out.printf("  type1AsLub=%s, type2AsLub=%s%n", type1AsLub, type2AsLub);
 
     visit(type1AsLub, type2AsLub, lub);
     visited.clear();

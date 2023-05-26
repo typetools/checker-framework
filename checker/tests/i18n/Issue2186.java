@@ -4,10 +4,12 @@
 import java.util.ArrayList;
 import org.checkerframework.checker.i18n.qual.*;
 
-@SuppressWarnings("anno.on.irrelevant")
+@SuppressWarnings({"anno.on.irrelevant", "inconsistent.constructor.type"})
 @LocalizableKey class Issue2186 {
+  @SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
   Issue2186() {}
 
+  // :: error: (super.invocation)
   @LocalizableKeyBottom Issue2186(int x) {}
 
   void test() {

@@ -4714,13 +4714,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //          }
         //   SubConsumer s = ...;
         //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
-        // System.out.printf(
-        //     "parentTree=%s, trueType=%s, falseType=%s%n", parentTree, trueType, falseType);
         AnnotatedTypeMirror conditionalType =
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
-        // System.out.printf(
-        //     "  conditionalType=%s, underlying=%s%n",
-        //     conditionalType, conditionalType.getUnderlyingType());
         assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
 

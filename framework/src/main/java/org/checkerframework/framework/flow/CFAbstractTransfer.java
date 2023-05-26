@@ -621,7 +621,6 @@ public abstract class CFAbstractTransfer<
     V valueFromStore = store.getValue(n);
     V valueFromFactory = getValueFromFactory(n.getTree(), n);
     V value = moreSpecificValue(valueFromFactory, valueFromStore);
-    // System.out.printf("%s.visitLocalVariable(%s): value=%s%n", this.getClass(), n, value);
     return new RegularTransferResult<>(finishValue(value, store), store);
   }
 

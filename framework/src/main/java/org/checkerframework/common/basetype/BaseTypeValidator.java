@@ -42,7 +42,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.SystemPlume;
 
 /**
  * A visitor to validate the types in a tree.
@@ -57,7 +56,7 @@ import org.plumelib.util.SystemPlume;
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
 
   /** Whether to output diagnostic logging. */
-  private static final boolean debug = true;
+  private static final boolean debug = false;
 
   /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
   protected boolean isValid = true;
@@ -287,8 +286,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    */
   protected void reportInvalidAnnotationsOnUse(AnnotatedTypeMirror type, Tree p) {
     reportValidityResultOnUnannotatedType("annotations.on.use", type, p);
-    new Error("reportInvalidAnnotationsOnUse").printStackTrace();
-    SystemPlume.sleep(1);
   }
 
   @Override
