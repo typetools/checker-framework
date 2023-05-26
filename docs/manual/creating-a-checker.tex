@@ -479,7 +479,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 The qualifiers should be in a \<qual> subpackage of the type checker package ---
 by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
 As mentioned in {creating-parts-of-a-checker}, the files for that \<qual> package can be
-either in a subdirectory or in a separate gradle module, depending on whether
+either in a subdirectory or in a separate Gradle module, depending on whether
 they should be distributable separately.
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
@@ -737,6 +737,20 @@ The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
 written on those types and no others.  All irrelevant types are defaulted to
 the top annotation.
+
+Every annotation that is applicable to a non-primitive type is also
+applicable to all supertypes including \<Object>.  That ensures that in
+code like this:
+
+\begin{Verbatim}
+@SomeAnn MyClass x = ...;
+Object y = x;
+MyClass z = (MyClass) y;
+\end{Verbatim}
+
+\noindent
+variables \<x> and \<z> have the same type qualifiers, without them being
+lost via the assignment to \<Object>.
 
 
 \subsectionAndLabel{Do not re-use type qualifiers}{creating-do-not-re-use-type-qualifiers}
@@ -2566,9 +2580,9 @@ without warnings or errors.
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics pdf
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
-%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
+%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals pos
 %%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
-%%  LocalWords:  getTypeFactoryOfSubchecker checkername inference''
+%%  LocalWords:  getTypeFactoryOfSubchecker checkername inference'' Werror
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
@@ -2577,7 +2591,9 @@ without warnings or errors.
 % LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
 % LocalWords:  Signedness UnknownSignedness signedness PolySigned fromTree
 % LocalWords:  DefaultQualifierPolymorphism createQualifierPolymorphism
-% LocalWords:  representation'' stubfilename commonAssignmentCheck
+% LocalWords:  representation'' stubfilename commonAssignmentCheck foreach
 % LocalWords:  AshowWpiFailedInferences CheckerMain wrapper'' typechecker
 % LocalWords:  AatfDoNotCache AatfCacheSize PolyPresent Subinterface
-% LocalWords:  UnionType
+% LocalWords:  UnionType subpackage distributable DefaultFor FormatMethod
+% LocalWords:  AnoWarnMemoryConstraints JCDiagnostic DiagnosticPosition
+% LocalWords:  LineMap
