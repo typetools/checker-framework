@@ -1246,6 +1246,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       returnTypeComputed = true;
     }
 
+    /** Replaces the return type by a shallow copy of itself. */
+    public void shallowCopyReturnType() {
+      setReturnType(returnType.shallowCopy());
+    }
+
     /**
      * The return type of a method or constructor. For constructors, the return type is not VOID,
      * but the type of the enclosing class.
