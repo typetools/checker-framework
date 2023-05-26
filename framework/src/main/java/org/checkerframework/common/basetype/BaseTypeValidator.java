@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -722,7 +723,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   @SuppressWarnings("UnusedMethod")
   private void log(String msg) {
     if (debug) {
-      System.out.println(String.format(msg));
+      System.out.println(msg);
     }
   }
 
@@ -732,6 +733,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @param fmt a format string
    * @param args the arguments to the format string
    */
+  @FormatMethod
   private void log(String fmt, Object... args) {
     if (debug) {
       System.out.println(String.format(fmt, args));

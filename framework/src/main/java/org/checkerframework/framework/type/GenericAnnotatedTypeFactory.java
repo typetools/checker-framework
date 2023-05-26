@@ -45,9 +45,11 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
@@ -2421,7 +2423,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if users can write type annotations from this type system on or within the given
    *     type
    */
-  public final boolean isRelevantOrCompound(TypeMirror tm) {
+  // TODO: I don't know why these annotations are required to make a call site type-check.
+  public final boolean isRelevantOrCompound(@UnknownKeyFor @Initialized TypeMirror tm) {
     return isRelevant(tm) || TypesUtils.isCompoundType(tm);
   }
 
