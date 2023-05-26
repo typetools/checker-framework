@@ -185,6 +185,9 @@ import org.plumelib.util.CollectionsPlume;
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
     extends SourceVisitor<Void, Void> {
 
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /** The {@link BaseTypeChecker} for error reporting. */
   protected final BaseTypeChecker checker;
 
@@ -4741,8 +4744,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror upperBound = qualHierarchy.findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
       boolean isSubtype =
-          qualHierarchy.isSubtypeShallow(
-              qualifier, useType.getUnderlyingType(), upperBound, declarationTM);
+          qualHierarchy.isSubtypeShallow(qualifier, alwaysRelevantTM, upperBound, alwaysRelevantTM);
       System.out.printf(
           "issubTypeShallow(%s, %s, %s, %s) => %s; top=%s%n",
           qualifier, useType.getUnderlyingType(), upperBound, declarationTM, isSubtype, top);
