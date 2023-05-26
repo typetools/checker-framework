@@ -185,9 +185,6 @@ import org.plumelib.util.CollectionsPlume;
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
     extends SourceVisitor<Void, Void> {
 
-  /** A type mirror that is always relevant. */
-  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /** The {@link BaseTypeChecker} for error reporting. */
   protected final BaseTypeChecker checker;
 
@@ -1859,8 +1856,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorReturnAnno = returnType.getAnnotationInHierarchy(topAnno);
 
-      if (!qualHierarchy.isSubtypeShallow(
-          superAnno, alwaysRelevantTM, constructorReturnAnno, alwaysRelevantTM)) {
+      if (!qualHierarchy.isSubtypeQualifiersOnly(superAnno, constructorReturnAnno)) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
       }
     }
@@ -3535,8 +3531,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // The return type of the constructor (resultAnnos) must be comparable to the
       // annotations on the constructor invocation (explicitAnnos).
       boolean resultIsSubtypeOfExplicit =
-          qualHierarchy.isSubtypeShallow(resultAnno, alwaysRelevantTM, explicit, alwaysRelevantTM);
-      if (!(qualHierarchy.isSubtypeShallow(explicit, alwaysRelevantTM, resultAnno, alwaysRelevantTM)
+          qualHierarchy.isSubtypeQualifiersOnly(resultAnno, explicit);
+      if (!(qualHierarchy.isSubtypeQualifiersOnly(explicit, resultAnno)
           || resultIsSubtypeOfExplicit)) {
         checker.reportError(
             newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
@@ -4737,8 +4733,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror top : tops) {
       AnnotationMirror upperBound = qualHierarchy.findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
-      if (!qualHierarchy.isSubtypeShallow(
-          qualifier, alwaysRelevantTM, upperBound, alwaysRelevantTM)) {
+      if (!qualHierarchy.isSubtypeQualifiersOnly(qualifier, upperBound)) {
         return false;
       }
     }

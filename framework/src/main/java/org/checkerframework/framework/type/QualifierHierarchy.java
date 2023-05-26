@@ -129,12 +129,8 @@ public abstract class QualifierHierarchy {
    * method for special cases when qualifier subtyping depends on the Java basetype.
    *
    * <p>Clients should call {@code isSubtypeShallow()}. However, subtypes should generally override
-   * {@link #isSubtypeQualifiers} (if needed).
-   *
-   * <p>{@link #isSubtypeQualifiers} is not public. A client that wishes to call {@link
-   * #isSubtypeQualifiers} should instead do {@code isSubtypeShallow(subQual, alwaysRelevantTM,
-   * superQual, alwaysRelevantTM)}. This makes it obvious where code outside QualifierHierarchy is
-   * ignoring Java basetypes.
+   * {@link #isSubtypeQualifiers} (if needed). Also see {@link #isSubtypeQualifiersOnly}, for
+   * clients who want to ignore the Java basetype.
    *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}
@@ -157,12 +153,10 @@ public abstract class QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy.
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
-   * <p>Clients should call {@link #isSubtypeShallow}. However, subtypes should generally override
-   * this method (if needed).
-   *
-   * <p>"Impl" is short for "Implementation".
+   * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
+   * override this method (if needed).
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
@@ -170,6 +164,24 @@ public abstract class QualifierHierarchy {
    */
   protected abstract boolean isSubtypeQualifiers(
       AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
+   *
+   * <p>This method just calls {@code isSubtypeQualifiers()}. However, {@code isSubtypeQualifiers()}
+   * is not public. A client that wishes to call {@code isSubtypeQualifiers()} should instead call
+   * this method. This makes it obvious where code outside QualifierHierarchy is ignoring Java
+   * basetypes.
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  public final boolean isSubtypeQualifiersOnly(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+    return isSubtypeQualifiers(subQualifier, superQualifier);
+  }
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
