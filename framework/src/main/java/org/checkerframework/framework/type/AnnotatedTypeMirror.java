@@ -1757,9 +1757,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return new AnnotatedTypeParameterBounds(getUpperBoundField(), getLowerBoundField());
     }
 
-    /** Used to terminate recursion into upper bounds. */
-    private boolean inUpperBounds = false;
-
     @Override
     public AnnotatedTypeVariable deepCopy(boolean copyAnnotations) {
       return (AnnotatedTypeVariable) new AnnotatedTypeCopier(copyAnnotations).visit(this);
@@ -1772,23 +1769,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedTypeVariable shallowCopy(boolean copyAnnotations) {
-      AnnotatedTypeVariable type =
-          new AnnotatedTypeVariable(((TypeVariable) underlyingType), atypeFactory, declaration);
-
-      if (copyAnnotations) {
-        type.addAnnotations(this.getAnnotationsField());
+      // Because type variables can refer to themselves, they can't be shallow copied, so return a
+      // deep copy instead.
+      AnnotatedTypeVariable type = deepCopy(true);
+      if (!copyAnnotations) {
+        type.getAnnotationsField().clear();
       }
-
-      if (!inUpperBounds) {
-        inUpperBounds = true;
-        type.inUpperBounds = true;
-        type.setUpperBound(getUpperBound().shallowCopy());
-        inUpperBounds = false;
-        type.inUpperBounds = false;
-      }
-
-      type.setLowerBound(getLowerBound().shallowCopy());
-
       return type;
     }
 
@@ -2113,17 +2099,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedWildcardType shallowCopy(boolean copyAnnotations) {
-      AnnotatedWildcardType type =
-          new AnnotatedWildcardType((WildcardType) underlyingType, atypeFactory);
-      type.setExtendsBound(getExtendsBound().shallowCopy());
-      type.setSuperBound(getSuperBound().shallowCopy());
-      if (copyAnnotations) {
-        type.addAnnotations(this.getAnnotationsField());
+      // Because wildcards can refer to themselves, they can't be shallow copied, so return a deep
+      // copy instead.
+      AnnotatedWildcardType type = deepCopy(true);
+      if (!copyAnnotations) {
+        type.getAnnotationsField().clear();
       }
-
-      type.uninferredTypeArgument = uninferredTypeArgument;
-      type.typeVariable = typeVariable;
-
       return type;
     }
 
