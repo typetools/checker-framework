@@ -646,6 +646,30 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if the given type is a compound type.
+   *
+   * @param type a type
+   * @return true if the given type is a compound type
+   */
+  public static boolean isCompoundType(TypeMirror type) {
+    switch (type.getKind()) {
+      case ARRAY:
+      case INTERSECTION:
+      case UNION:
+      case TYPEVAR:
+      case WILDCARD:
+        return true;
+
+      case DECLARED:
+        DeclaredType declaredType = (DeclaredType) type;
+        return !declaredType.getTypeArguments().isEmpty();
+
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Returns true if {@code type} has an enclosing type.
    *
    * @param type type to checker
