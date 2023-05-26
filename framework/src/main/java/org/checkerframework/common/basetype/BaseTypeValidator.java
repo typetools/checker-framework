@@ -19,7 +19,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -55,10 +54,6 @@ import org.plumelib.util.ArrayMap;
  * BaseTypeVisitor#visitVariable}.
  */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
-
-  /** Whether to output diagnostic logging. */
-  private static final boolean debug = false;
-
   /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
   protected boolean isValid = true;
 
@@ -307,11 +302,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       elemType.clearPrimaryAnnotations();
       elemType.addAnnotations(bounds);
 
-      boolean isValidUse = visitor.isValidUse(elemType, type, tree);
-      log(
-          "isValidUse(%s, %s, %s) => %s%n",
-          elemType, type, TreeUtils.toStringTruncated(tree, 60), isValidUse);
-      if (!isValidUse) {
+      if (!visitor.isValidUse(elemType, type, tree)) {
         reportInvalidAnnotationsOnUse(type, tree);
       }
     }
@@ -712,31 +703,6 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
       // a bound.
       return true;
-    }
-  }
-
-  /**
-   * Log a message, if the {@link #debug} variable is true.
-   *
-   * @param msg a message
-   */
-  @SuppressWarnings("UnusedMethod")
-  private void log(String msg) {
-    if (debug) {
-      System.out.println(msg);
-    }
-  }
-
-  /**
-   * Log a message, if the {@link #debug} variable is true.
-   *
-   * @param fmt a format string
-   * @param args the arguments to the format string
-   */
-  @FormatMethod
-  private void log(String fmt, Object... args) {
-    if (debug) {
-      System.out.println(String.format(fmt, args));
     }
   }
 }
