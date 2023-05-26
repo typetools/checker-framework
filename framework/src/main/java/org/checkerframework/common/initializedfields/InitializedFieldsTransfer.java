@@ -9,9 +9,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 
 /** Accumulates the names of fields that are initialized. */
 public class InitializedFieldsTransfer extends AccumulationTransfer {
@@ -28,7 +25,8 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitAssignment(
       AssignmentNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitAssignment(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitAssignment(node, input);
     Node lhs = node.getTarget();
     if (lhs instanceof FieldAccessNode) {
       FieldAccessNode fieldAccess = (FieldAccessNode) lhs;

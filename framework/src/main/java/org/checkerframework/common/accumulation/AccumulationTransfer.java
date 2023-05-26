@@ -11,11 +11,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -23,7 +20,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
  * method to add a string to the estimate at a particular program point.
  */
-public class AccumulationTransfer extends CFAbstractTransfer<AccumulationValue, AccumulationStore, AccumulationTransfer> {
+public class AccumulationTransfer
+    extends CFAbstractTransfer<AccumulationValue, AccumulationStore, AccumulationTransfer> {
 
   /** The type factory. */
   protected final AccumulationAnnotatedTypeFactory atypeFactory;
@@ -69,7 +67,8 @@ public class AccumulationTransfer extends CFAbstractTransfer<AccumulationValue, 
    * @param result the transfer result containing the store to be modified
    * @param values the new accumulation values
    */
-  public void accumulate(Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     List<String> valuesAsList = Arrays.asList(values);
     // If dataflow has already recorded information about the target, fetch it and integrate
     // it into the list of values in the new annotation.
@@ -77,17 +76,22 @@ public class AccumulationTransfer extends CFAbstractTransfer<AccumulationValue, 
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       AccumulationValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
-        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-        assert flowAnnos.size() <= 1;
-        for (AnnotationMirror anno : flowAnnos) {
-          if (atypeFactory.isAccumulatorAnnotation(anno)) {
-            List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
-            if (!oldFlowValues.isEmpty()) {
-              // valuesAsList cannot have its length changed -- it is backed by an
-              // array -- but if oldFlowValues is not empty, it is a new, modifiable
-              // list.
-              oldFlowValues.addAll(valuesAsList);
-              valuesAsList = oldFlowValues;
+        List<String> accumulatedValues = flowValue.getAccumulatedValues();
+        if (accumulatedValues != null) {
+          valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
+        } else {
+          AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+          assert flowAnnos.size() <= 1;
+          for (AnnotationMirror anno : flowAnnos) {
+            if (atypeFactory.isAccumulatorAnnotation(anno)) {
+              List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
+              if (!oldFlowValues.isEmpty()) {
+                // valuesAsList cannot have its length changed -- it is backed by an
+                // array -- but if oldFlowValues is not empty, it is a new, modifiable
+                // list.
+                oldFlowValues.addAll(valuesAsList);
+                valuesAsList = oldFlowValues;
+              }
             }
           }
         }

@@ -23,8 +23,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -67,7 +65,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     exceptionalStores = makeExceptionalStores(node, input);
-    TransferResult<AccumulationValue, AccumulationStore> superResult = super.visitMethodInvocation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> superResult =
+        super.visitMethodInvocation(node, input);
     handleEnsuresCalledMethodsVarArgs(node, superResult);
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
@@ -88,7 +87,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   @Override
-  public void accumulate(Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
     if (exceptionalStores == null) {
       return;

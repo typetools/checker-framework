@@ -7,7 +7,6 @@ import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.flow.CFAnalysis;
 
 /**
  * The analysis for the Called Methods Checker. The analysis is specialized to ignore certain

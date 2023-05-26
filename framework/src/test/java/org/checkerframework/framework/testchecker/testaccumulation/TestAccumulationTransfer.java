@@ -24,7 +24,8 @@ public class TestAccumulationTransfer extends AccumulationTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitMethodInvocation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitMethodInvocation(node, input);
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();

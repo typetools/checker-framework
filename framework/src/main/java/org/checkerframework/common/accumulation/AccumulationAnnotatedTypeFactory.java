@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -19,7 +20,6 @@ import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationChecker.AliasAnalysis;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverAnnotatedTypeFactory;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
@@ -46,7 +46,9 @@ import org.plumelib.util.CollectionsPlume;
  * take a {@link BaseTypeChecker} and call both the constructor defined in this class and {@link
  * #postInit()}.
  */
-public abstract class AccumulationAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<AccumulationValue, AccumulationStore, AccumulationTransfer, AccumulationAnalysis> {
+public abstract class AccumulationAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<
+        AccumulationValue, AccumulationStore, AccumulationTransfer, AccumulationAnalysis> {
 
   /** The typechecker associated with this factory. */
   public final AccumulationChecker accumulationChecker;
@@ -325,6 +327,35 @@ public abstract class AccumulationAnnotatedTypeFactory extends GenericAnnotatedT
     } else {
       return values;
     }
+  }
+
+  /**
+   * Returns the list of accumulated values on the given (expression, usually) tree. This differs
+   * from calling {@link #getAnnotatedType(Tree)}, because this version takes into account
+   * accumulated methods that are stored on the value. This is useful when dealing with accumulated
+   * facts on variables whose types are type variables (because type variable types cannot be
+   * refined directly, due to the quirks of subtyping between type variables and its interactions
+   * with the qualified type system).
+   *
+   * @param tree a tree
+   * @return the list of accumulated values for the given tree, including those stored on the value
+   */
+  public List<String> getAccumulatedValues(Tree tree) {
+    AnnotatedTypeMirror type = getAnnotatedType(tree);
+    AnnotationMirror anno = type.getAnnotationInHierarchy(top);
+    if (anno != null && isAccumulatorAnnotation(anno)) {
+      return getAccumulatedValues(anno);
+    } else if (anno == null) {
+      // Handle type variables and wildcards.
+      AccumulationValue inferredValue = getInferredValueFor(tree);
+      if (inferredValue != null) {
+        List<String> accumulatedValues = inferredValue.getAccumulatedValues();
+        if (accumulatedValues != null) {
+          return accumulatedValues;
+        }
+      }
+    }
+    return Collections.emptyList();
   }
 
   /**

@@ -44,7 +44,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitTernaryExpression(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitTernaryExpression(node, input);
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
@@ -56,7 +57,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitSwitchExpressionNode(
       SwitchExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitSwitchExpressionNode(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitSwitchExpressionNode(node, input);
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
@@ -69,7 +71,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
 
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitMethodInvocation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitMethodInvocation(node, input);
 
     handleCreatesMustCallFor(node, result);
     updateStoreWithTempVar(result, node);
@@ -134,7 +137,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitObjectCreation(
       ObjectCreationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result = super.visitObjectCreation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
     return result;
   }
@@ -148,7 +152,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
    */
-  public void updateStoreWithTempVar(TransferResult<AccumulationValue, AccumulationStore> result, Node node) {
+  public void updateStoreWithTempVar(
+      TransferResult<AccumulationValue, AccumulationStore> result, Node node) {
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       MustCallAnnotatedTypeFactory mcAtf =
