@@ -652,11 +652,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
       TypeMirror tm2,
-      AnnotatedTypeFactory factory) {
+      AnnotatedTypeFactory atypeFactory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return factory.getQualifierHierarchy().greatestLowerBoundsShallow(set1, tm1, set2, tm2);
+      return atypeFactory.getQualifierHierarchy().greatestLowerBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 
