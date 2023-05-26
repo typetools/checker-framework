@@ -4740,8 +4740,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror top : tops) {
       AnnotationMirror upperBound = qualHierarchy.findAnnotationInHierarchy(upperBounds, top);
       AnnotationMirror qualifier = useType.getAnnotationInHierarchy(top);
-      boolean isSubtype = qualHierarchy.isSubtypeQualifiers(qualifier, upperBound);
-      System.out.printf("issubType(%s, %s) => %s; top=%s%n", qualifier, upperBound, isSubtype, top);
+      boolean isSubtype =
+          qualHierarchy.isSubtypeShallow(
+              qualifier, useType.getUnderlyingType(), upperBound, declarationTM);
+      System.out.printf(
+          "issubTypeShallow(%s, %s, %s, %s) => %s; top=%s%n",
+          qualifier, useType.getUnderlyingType(), upperBound, declarationTM, isSubtype, top);
       if (!isSubtype) {
         return false;
       }
