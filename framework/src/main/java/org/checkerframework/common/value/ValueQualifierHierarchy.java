@@ -45,7 +45,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
   ValueQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       ValueAnnotatedTypeFactory atypeFactory) {
-    super(qualifierClasses, atypeFactory.getElementUtils(), atypeFactory);
+    super(qualifierClasses, atypeFactory.getElementUtils());
     this.atypeFactory = atypeFactory;
   }
 
