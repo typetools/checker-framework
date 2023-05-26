@@ -642,7 +642,7 @@ public class WholeProgramInferenceScenesStorage
         amSource =
             atypeFactory
                 .getQualifierHierarchy()
-                .leastUpperBound(
+                .leastUpperBoundShallow(
                     amSource,
                     sourceCodeATM.getUnderlyingType(),
                     amJaif,

@@ -15,10 +15,10 @@ import org.checkerframework.framework.util.QualifierKindHierarchy;
  * represented by annotations with elements, but most of the qualifiers do not have elements. In
  * contrast to {@link org.checkerframework.framework.type.ElementQualifierHierarchy}, this class
  * partially implements {@link #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror,
- * TypeMirror)}, {@link #leastUpperBound(AnnotationMirror, AnnotationMirror)}, and {@link
- * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} and calls *WithElements when the result
- * cannot be computed from the meta-annotations {@link
- * org.checkerframework.framework.qual.SubtypeOf}.
+ * TypeMirror)}, {@link #leastUpperBoundShallow(AnnotationMirror, TypeMirror, AnnotationMirror,
+ * TypeMirror)}, and {@link #greatestLowerBoundShallow(AnnotationMirror, TypeMirror,
+ * AnnotationMirror, TypeMirror)} and calls *WithElements when the result cannot be computed from
+ * the meta-annotations {@link org.checkerframework.framework.qual.SubtypeOf}.
  *
  * <p>Subclasses must implement the following methods when annotations have elements:
  *
@@ -103,8 +103,8 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
    * Returns the least upper bound of {@code a1} and {@code a2} in cases where the lub of {@code
    * qualifierKind1} and {@code qualifierKind2} is a qualifier kind that has elements. If the lub of
    * {@code qualifierKind1} and {@code qualifierKind2} does not have elements, then {@link
-   * #leastUpperBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
-   * AnnotationMirror} without calling this method.
+   * #leastUpperBoundShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} returns
+   * the correct {@code AnnotationMirror} without calling this method.
    *
    * @param a1 first annotation
    * @param qualifierKind1 QualifierKind for {@code a1}
@@ -140,8 +140,8 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
    * Returns the greatest lower bound of {@code a1} and {@code a2} in cases where the glb of {@code
    * qualifierKind1} and {@code qualifierKind2} is a qualifier kind that has elements. If the glb of
    * {@code qualifierKind1} and {@code qualifierKind2} does not have elements, then {@link
-   * #greatestLowerBound(AnnotationMirror, AnnotationMirror)} returns the correct {@code
-   * AnnotationMirror} without calling this method.
+   * #greatestLowerBoundShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} returns
+   * the correct {@code AnnotationMirror} without calling this method.
    *
    * @param a1 first annotation
    * @param qualifierKind1 QualifierKind for {@code a1}

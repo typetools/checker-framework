@@ -113,7 +113,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, UNKNOWN)) {
         return a2;
       }
@@ -152,7 +152,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, UNKNOWN)) {
         return a1;
       }

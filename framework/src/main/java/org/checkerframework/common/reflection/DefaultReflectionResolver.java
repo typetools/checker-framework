@@ -48,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -173,7 +174,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // Method#invoke takes as argument an array of parameter types, so there is no way to
       // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
+        TypeMirror mirrorTM = mirror.getUnderlyingType();
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getAnnotations(), mirrorTM, factory);
       }
     }
 
@@ -293,14 +295,17 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         continue;
       }
       ParameterizedExecutableType resolvedResult = factory.constructorFromUse(resolvedTree);
+      AnnotatedExecutableType executableType = resolvedResult.executableType;
+      AnnotatedTypeMirror returnType = executableType.getReturnType();
+      TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      returnLub =
-          lub(returnLub, resolvedResult.executableType.getReturnType().getAnnotations(), factory);
+      returnLub = lub(returnLub, returnTM, returnType.getAnnotations(), returnTM, factory);
 
       // Glb parameter types
-      for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
+      for (AnnotatedTypeMirror mirror : executableType.getParameterTypes()) {
+        TypeMirror mirrorTM = mirror.getUnderlyingType();
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getAnnotations(), mirrorTM, factory);
       }
     }
     if (returnLub == null) {

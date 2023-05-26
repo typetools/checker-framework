@@ -294,11 +294,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
       // Accumulate a method call, by adding the method being invoked to the return type.
       if (returnsThis(tree)) {
+        TypeMirror typeMirror = type.getUnderlyingType();
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
         methodName = adjustMethodNameUsingValueChecker(methodName, tree);
         AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
         AnnotationMirror newAnno =
-            qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName));
+            qualHierarchy.greatestLowerBoundShallow(
+                oldAnno, typeMirror, createAccumulatorAnnotation(methodName), typeMirror);
         type.replaceAnnotation(newAnno);
       }
 

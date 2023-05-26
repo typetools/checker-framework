@@ -353,10 +353,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (imf.isMathMax(tree)) {
         ExpressionTree left = tree.getArguments().get(0);
         ExpressionTree right = tree.getArguments().get(1);
+        AnnotatedTypeMirror leftType = getAnnotatedType(left);
+        AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(
-                getAnnotatedType(left).getAnnotationInHierarchy(POS),
-                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
+            qualHierarchy.greatestLowerBoundShallow(
+                leftType.getAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
+                rightType.getAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
       }
       return super.visitMethodInvocation(tree, type);
     }

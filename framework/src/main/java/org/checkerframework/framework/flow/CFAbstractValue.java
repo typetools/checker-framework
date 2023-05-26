@@ -293,12 +293,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /** Set of annotations to use if a most specific value cannot be found. */
     final AnnotationMirrorSet backupSet;
 
-    /** TypeMirror for the "a" value. */
-    final TypeMirror aTypeMirror;
-
-    /** TypeMirror for the "b" value. */
-    final TypeMirror bTypeMirror;
-
     /**
      * Create a {@link MostSpecificVisitor}.
      *
@@ -307,8 +301,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param backup value to use if no most specific value is found
      */
     public MostSpecificVisitor(TypeMirror aTypeMirror, TypeMirror bTypeMirror, V backup) {
-      this.aTypeMirror = aTypeMirror;
-      this.bTypeMirror = bTypeMirror;
       if (backup != null) {
         this.backupSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();

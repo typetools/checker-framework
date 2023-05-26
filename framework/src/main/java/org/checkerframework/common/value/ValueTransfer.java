@@ -61,6 +61,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -71,6 +72,10 @@ import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+
+  /** A type mirror that is always relevant. */
+  private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
+
   /** The Value type factory. */
   protected final ValueAnnotatedTypeFactory atypeFactory;
 
@@ -586,7 +591,9 @@ public class ValueTransfer extends CFTransfer {
     if (oldRecAnno == null) {
       combinedRecAnno = newRecAnno;
     } else {
-      combinedRecAnno = qualHierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
+      combinedRecAnno =
+          qualHierarchy.greatestLowerBoundShallow(
+              oldRecAnno, alwaysRelevantTM, newRecAnno, alwaysRelevantTM);
     }
     JavaExpression receiver = JavaExpression.fromNode(receiverNode);
     store.insertValue(receiver, combinedRecAnno);

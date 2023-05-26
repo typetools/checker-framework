@@ -73,6 +73,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -300,10 +301,12 @@ class MustCallConsistencyAnalyzer {
       // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
       // method was called on just one of the aliases then they all need to be treated as if
       // they need to call the relevant methods.
+      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = mustCallAnnotatedTypeFactory.getQualifierHierarchy().leastUpperBound(mcLub, mcAnno);
+        mcLub =
+            qualHierarchy.leastUpperBoundShallow(mcLub, alwaysRelevantTM, mcAnno, alwaysRelevantTM);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {

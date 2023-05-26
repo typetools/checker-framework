@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -113,8 +114,9 @@ public class SubtypesSolver {
               if (currentAnno == null) {
                 glbType.addAnnotation(glb);
               } else if (glb != null) {
+                TypeMirror glbTM = glbType.getUnderlyingType();
                 glbType.replaceAnnotation(
-                    qualHierarchy.greatestLowerBound /*TODO*/(glb, currentAnno));
+                    qualHierarchy.greatestLowerBoundShallow(glb, glbTM, currentAnno, glbTM));
               }
             }
           }
