@@ -27,6 +27,7 @@ import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -45,7 +46,7 @@ import org.plumelib.util.CollectionsPlume;
  * take a {@link BaseTypeChecker} and call both the constructor defined in this class and {@link
  * #postInit()}.
  */
-public abstract class AccumulationAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public abstract class AccumulationAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<AccumulationValue, AccumulationStore, AccumulationTransfer, AccumulationAnalysis> {
 
   /** The typechecker associated with this factory. */
   public final AccumulationChecker accumulationChecker;

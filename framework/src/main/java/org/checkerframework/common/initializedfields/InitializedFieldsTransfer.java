@@ -1,6 +1,9 @@
 package org.checkerframework.common.initializedfields;
 
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
+import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -18,14 +21,14 @@ public class InitializedFieldsTransfer extends AccumulationTransfer {
    *
    * @param analysis the analysis
    */
-  public InitializedFieldsTransfer(CFAnalysis analysis) {
+  public InitializedFieldsTransfer(AccumulationAnalysis analysis) {
     super(analysis);
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitAssignment(
-      AssignmentNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitAssignment(node, input);
+  public TransferResult<AccumulationValue, AccumulationStore> visitAssignment(
+      AssignmentNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+    TransferResult<AccumulationValue, AccumulationStore> result = super.visitAssignment(node, input);
     Node lhs = node.getTarget();
     if (lhs instanceof FieldAccessNode) {
       FieldAccessNode fieldAccess = (FieldAccessNode) lhs;

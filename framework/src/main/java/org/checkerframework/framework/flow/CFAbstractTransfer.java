@@ -1310,7 +1310,7 @@ public abstract class CFAbstractTransfer<
    * @param newAnno the new value
    */
   public static void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+      TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
       result.getThenStore().insertValue(target, newAnno);
       result.getElseStore().insertValue(target, newAnno);

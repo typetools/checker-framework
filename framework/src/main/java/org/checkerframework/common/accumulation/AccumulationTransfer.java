@@ -10,6 +10,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -22,7 +23,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * <p>Subclasses should call the {@link #accumulate(Node, TransferResult, String...)} accumulate}
  * method to add a string to the estimate at a particular program point.
  */
-public class AccumulationTransfer extends CFTransfer {
+public class AccumulationTransfer extends CFAbstractTransfer<AccumulationValue, AccumulationStore, AccumulationTransfer> {
 
   /** The type factory. */
   protected final AccumulationAnnotatedTypeFactory atypeFactory;
@@ -32,7 +33,7 @@ public class AccumulationTransfer extends CFTransfer {
    *
    * @param analysis the analysis
    */
-  public AccumulationTransfer(CFAnalysis analysis) {
+  public AccumulationTransfer(AccumulationAnalysis analysis) {
     super(analysis);
     atypeFactory = (AccumulationAnnotatedTypeFactory) analysis.getTypeFactory();
   }
@@ -68,13 +69,13 @@ public class AccumulationTransfer extends CFTransfer {
    * @param result the transfer result containing the store to be modified
    * @param values the new accumulation values
    */
-  public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
+  public void accumulate(Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     List<String> valuesAsList = Arrays.asList(values);
     // If dataflow has already recorded information about the target, fetch it and integrate
     // it into the list of values in the new annotation.
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
-      CFValue flowValue = result.getRegularStore().getValue(target);
+      AccumulationValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
         AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;
