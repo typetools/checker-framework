@@ -47,6 +47,8 @@ import org.plumelib.util.StringsPlume;
  * upper bound is ever used. So, the set of annotations represents the primary annotation on the
  * wildcard's upper bound. If that upper bound is a type variable, then the set of annotations could
  * be missing an annotation in a hierarchy.
+ *
+ * @param <V> the values that this CFAbstractValue wraps
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
