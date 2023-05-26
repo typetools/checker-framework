@@ -53,20 +53,7 @@ public class DiagMessage {
    * @return a new DiagMessage
    */
   public static DiagMessage error(@CompilerMessageKey String messageKey, Object... args) {
-    return DiagMessage.error(null, messageKey, args);
-  }
-
-  /**
-   * Create a DiagMessage with kind ERROR.
-   *
-   * @param source where to report the diagnostic
-   * @param messageKey the message key
-   * @param args the arguments that will be interpolated into the localized message
-   * @return a new DiagMessage
-   */
-  public static DiagMessage error(
-      @Nullable Tree source, @CompilerMessageKey String messageKey, Object... args) {
-    return new DiagMessage(source, Diagnostic.Kind.ERROR, messageKey, args);
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
   }
 
   /**
