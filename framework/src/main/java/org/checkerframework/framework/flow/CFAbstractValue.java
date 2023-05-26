@@ -714,7 +714,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Returns the result of combining {@code annotation} with {@code typeVar}.
      *
-     * <p>This is called when an annotation exists for the hierarchy in on set, but not the other.
+     * <p>This is called when an annotation exists for the hierarchy in one set, but not the other.
      *
      * @param annotation an annotation
      * @param typeVar a type variable that does not have a primary annotation in the hierarchy
