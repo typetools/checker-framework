@@ -4782,6 +4782,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * the return type.
    *
    * @param tree the AST type supplied by the user
+   * @return true if the tree is a valid type
    */
   public boolean validateTypeOf(Tree tree) {
     System.out.printf(
