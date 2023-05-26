@@ -149,6 +149,7 @@ public interface QualifierHierarchy {
   /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
    *
    * <p>Examples:
    *
@@ -247,8 +248,8 @@ public interface QualifierHierarchy {
    *
    * @param qualifier1 first qualifier
    * @param qualifier2 second qualifier
-   * @return greatest lower bound of the two annotations or null if the two annotations are not from
-   *     the same hierarchy
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.

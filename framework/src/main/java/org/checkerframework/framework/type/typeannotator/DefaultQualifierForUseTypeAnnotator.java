@@ -19,7 +19,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. */
+/**
+ * Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. Adds
+ * default annotations on types that have no annotation.
+ */
 public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
 
   /** The DefaultQualifierForUse.value field/element. */
@@ -41,6 +44,8 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     noDefaultQualifierForUseValueElement =
         TreeUtils.getMethod(NoDefaultQualifierForUse.class, "value", 0, processingEnv);
   }
+
+  // TODO: Why isn't there a visitPrimitive()?  There can be default types for primitives.
 
   @Override
   public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
