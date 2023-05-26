@@ -2030,10 +2030,15 @@ class MustCallConsistencyAnalyzer {
       AnnotationMirror cmAnno = null;
 
       if (aliasCFValue != null) { // When store contains the lhs
-        for (AnnotationMirror anno : aliasCFValue.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-            cmAnno = anno;
+        List<String> accumulatedValues = aliasCFValue.getAccumulatedValues();
+        if (accumulatedValues != null) {
+          cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+        } else {
+          for (AnnotationMirror anno : aliasCFValue.getAnnotations()) {
+            if (AnnotationUtils.areSameByName(
+                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+              cmAnno = anno;
+            }
           }
         }
       }
