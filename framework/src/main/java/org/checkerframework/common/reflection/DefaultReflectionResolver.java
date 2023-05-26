@@ -70,7 +70,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
   /** A type mirror that is always relevant. */
   private static final TypeMirror alwaysRelevantTM = GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
-  // Message prefix added to verbose reflection messages
+  /** Message prefix added to verbose reflection messages. */
   public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";
 
   private final BaseTypeChecker checker;
@@ -613,6 +613,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * provided AnnotatedTypeFactory.
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
+   *
+   * @param tm1 the type that is annotated by qualifier1
+   * @param tm2 the type that is annotated by qualifier2
    */
   private Set<? extends AnnotationMirror> lub(
       Set<? extends AnnotationMirror> set1,
@@ -632,6 +635,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * provided AnnotatedTypeFactory.
    *
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
+   *
+   * @param tm1 the type that is annotated by qualifier1
+   * @param tm2 the type that is annotated by qualifier2
    */
   private Set<? extends AnnotationMirror> glb(
       Set<? extends AnnotationMirror> set1,

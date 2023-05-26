@@ -727,7 +727,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * exists in both sets for the hierarchy whose top is {@code top}.
      *
      * @param a an annotation in the hierarchy
+     * @param aTypeMirror the type that is annotated by {@code a}
      * @param b an annotation in the hierarchy
+     * @param bTypeMirror the type that is annotated by {@code b}
      * @param top the top annotation in the hierarchy
      * @return the result of combining the two annotations or null if no combination exists
      */

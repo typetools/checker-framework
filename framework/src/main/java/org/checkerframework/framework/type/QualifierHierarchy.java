@@ -401,7 +401,9 @@ public abstract class QualifierHierarchy {
    * the qualifiers are not from the same qualifier hierarchy.
    *
    * @param qualifier1 first qualifier
+   * @param tm1 the type that is annotated by qualifier1
    * @param qualifier2 second qualifier
+   * @param tm2 the type that is annotated by qualifier2
    * @return greatest lower bound of the two annotations, or null if the two annotations are not
    *     from the same hierarchy
    */
@@ -415,7 +417,9 @@ public abstract class QualifierHierarchy {
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+   * @param tm1 the type that is annotated by qualifier1
    * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param tm2 the type that is annotated by qualifier2
    * @return the greatest lower bound of the two sets of qualifiers
    */
   public Set<? extends AnnotationMirror> greatestLowerBoundsShallow(

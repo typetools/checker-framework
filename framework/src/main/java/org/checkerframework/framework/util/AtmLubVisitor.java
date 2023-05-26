@@ -74,6 +74,14 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     return lub;
   }
 
+  /**
+   * Lub a type with the nulltype.
+   *
+   * @param nullType an annotated null type
+   * @param otherType the other type to lub
+   * @param lub a type mirror that will be copied, side-effected, and returned
+   * @return the lub
+   */
   private AnnotatedTypeMirror lubWithNull(
       AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
     TypeMirror nullTM = nullType.getUnderlyingType();

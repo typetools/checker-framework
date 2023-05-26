@@ -30,6 +30,7 @@ public class GlbUtil {
    *
    * <p>Note: This method can be improved for wildcards and type variables.
    *
+   * @param typeMirrors the types to glb typeFactory the type factory
    * @return the greatest lower bound of typeMirrors.
    */
   public static AnnotatedTypeMirror glbAll(
