@@ -9,10 +9,10 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Represents a kind of qualifier, which is an annotation class, without any annotation elements. If
- * two qualifiers use the same annotation class, then they have the same qualifier kind. Two
- * qualifiers can have the same "kind" of qualifier but not be the same qualifier; an example is
- * {@code @IndexFor("a")} and {@code @IndexFor("b")}.
+ * Represents a kind of qualifier, which is an annotation class. Does not represent annotation
+ * elements. If two qualifiers use the same annotation class, then they have the same qualifier
+ * kind. Two qualifiers can have the same "kind" of qualifier but not be the same qualifier; an
+ * example is {@code @IndexFor("a")} and {@code @IndexFor("b")}.
  *
  * <p>A {@code QualifierKind} holds information about the relationship between itself and other
  * {@link QualifierKind}s.
