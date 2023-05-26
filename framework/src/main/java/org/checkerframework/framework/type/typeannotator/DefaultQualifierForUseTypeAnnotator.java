@@ -45,7 +45,9 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
         TreeUtils.getMethod(NoDefaultQualifierForUse.class, "value", 0, processingEnv);
   }
 
-  // TODO: Why isn't there a visitPrimitive()?  There can be default types for primitives.
+  // There is no `visitPrimitive()` because `@DefaultQualifierForUse` is an annotation the goes on
+  // a type declaration. Defaults for primitives are add via the meta-annotation @DefaultFor, which
+  // is handled elsewhere.
 
   @Override
   public Void visitDeclared(AnnotatedDeclaredType type, Void aVoid) {
