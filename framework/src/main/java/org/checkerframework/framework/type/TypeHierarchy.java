@@ -5,6 +5,15 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 /** Compares AnnotatedTypeMirrors for subtype relationships. See also {@link QualifierHierarchy}. */
 public interface TypeHierarchy {
 
+  // This can be used if:
+  //  * the type is fully annotated,
+  //  * the basetypes are Java subtypes, and
+  //  * you want to check the full type
+  // Otherwise, call QualifierHierarchy.
+
+  // `TypeHierarchy` is an interface because the only implementation, DefaultTypeHierarchy, has
+  // public visitor methods that clients should never call.
+
   /**
    * Returns true if {@code subtype} is a subtype of or convertible to {@code supertype} for all
    * hierarchies present. If the underlying Java type of {@code subtype} is not a subtype of or

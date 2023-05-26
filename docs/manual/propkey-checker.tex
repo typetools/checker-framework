@@ -133,13 +133,15 @@ does not fail at run time.
 
 \subsectionAndLabel{Internationalization annotations}{i18n-annotations}
 
-The Internationalization Checker supports two annotations:
+The Internationalization Checker supports two type systems:
 
 \begin{description}
 \item[\refqualclass{checker/i18n/qual}{Localized}]
 indicates that the qualified
 \code{CharSequence} is a message that has been localized and/or formatted with
 respect to the used locale.
+It is a subtype of \refqualclass{checker/i18n/qual}{UnknownLocalized},
+which is the default and which programmers do not need to write.
 
 \item[\refqualclass{checker/i18n/qual}{LocalizableKey}]
 indicates that the
@@ -147,6 +149,8 @@ qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
 gets checked by the general Property Key Checker.
+It is a subtype of \refqualclass{checker/i18n/qual}{UnknownLocalizableKey},
+which is the default and which programmers do not need to write.
 \end{description}
 
 You may need to add the \code{@Localized} annotation to more methods in the

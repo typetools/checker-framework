@@ -1074,7 +1074,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
    * messager.
    *
-   * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+   * <p>It is rare to use this method. Most clients should use {@link #reportError} or {@link
+   * #reportWarning}.
    *
    * @param source the source position information; may be an Element, a Tree, or null
    * @param d the diagnostic message
