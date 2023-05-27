@@ -9,19 +9,19 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Represents a kind of qualifier, which is an annotation class. If two qualifiers use the same
- * annotation class, then they have the same qualifier kind. Two qualifiers can have the same "kind"
- * of qualifier but not be the same qualifier; an example is {@code @IndexFor("a")} and
- * {@code @IndexFor("b")}.
+ * Represents a kind of qualifier, which is an annotation class. Does not represent annotation
+ * elements. If two qualifiers use the same annotation class, then they have the same qualifier
+ * kind. Two qualifiers can have the same "kind" of qualifier but not be the same qualifier; an
+ * example is {@code @IndexFor("a")} and {@code @IndexFor("b")}.
  *
  * <p>A {@code QualifierKind} holds information about the relationship between itself and other
  * {@link QualifierKind}s.
  *
  * <p>Exactly one qualifier kind is created for each annotation class.
  *
- * <p>The set of all QualifierKinds for a checker is like an enum. One QualifierKind is like an enum
- * constant in that they are immutable after initialization and only a finite number exist per type
- * system.
+ * <p>The set of all {@code QualifierKind}s for a checker is like an enum. One {@code QualifierKind}
+ * is like an enum constant in that they are immutable after initialization and only a finite number
+ * exist per type system.
  */
 @AnnotatedFor("nullness")
 public @Interned interface QualifierKind extends Comparable<QualifierKind> {
