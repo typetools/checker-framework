@@ -40,7 +40,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
 import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -678,10 +677,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /**
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
    * arguments must have the same signedness type annotation.
@@ -717,9 +712,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else if (qualHierarchy.isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (qualHierarchy.isSubtypeQualifiersOnly(a1, a2)) {
         return a2;
-      } else if (qualHierarchy.isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (qualHierarchy.isSubtypeQualifiersOnly(a2, a1)) {
         return a1;
       } else
         // The two annotations are incomparable

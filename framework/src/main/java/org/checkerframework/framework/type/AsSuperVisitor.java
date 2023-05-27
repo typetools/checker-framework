@@ -82,7 +82,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // parameters to asSuper are not changed and a copy is returned.
     AnnotatedTypeMirror copyType = type.deepCopy();
     AnnotatedTypeMirror copySuperType = superType.deepCopy();
-    GenericAnnotatedTypeFactory gatf = (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
     boolean typeIsRelevant = !gatf.isRelevant(copyType);
     boolean superTypeIsRelevant = !gatf.isRelevant(copySuperType);
     // TODO: Is this too aggressive?

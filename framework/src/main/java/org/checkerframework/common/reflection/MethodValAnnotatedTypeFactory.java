@@ -222,9 +222,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a2;
-      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a1;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
@@ -241,9 +241,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a1;
-      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a2;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);

@@ -35,7 +35,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -73,7 +72,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
@@ -306,8 +304,8 @@ class MustCallConsistencyAnalyzer {
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub =
-            qualHierarchy.leastUpperBoundShallow(mcLub, alwaysRelevantTM, mcAnno, alwaysRelevantTM);
+        TypeMirror aliasTm = alias.reference.getType();
+        mcLub = qualHierarchy.leastUpperBoundShallow(mcLub, aliasTm, mcAnno, aliasTm);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
@@ -2120,10 +2118,6 @@ class MustCallConsistencyAnalyzer {
     return qualifiedName.startsWith("java");
   }
 
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /**
    * Do the called methods represented by the {@link CalledMethods} type {@code cmAnno} include all
    * the methods in {@code mustCallValues}?
@@ -2141,7 +2135,7 @@ class MustCallConsistencyAnalyzer {
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
     return typeFactory
         .getQualifierHierarchy()
-        .isSubtypeShallow(cmAnno, alwaysRelevantTM, cmAnnoForMustCallMethods, alwaysRelevantTM);
+        .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
 
   /**

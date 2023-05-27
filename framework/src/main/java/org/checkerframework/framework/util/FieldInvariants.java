@@ -4,12 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -42,7 +39,7 @@ public class FieldInvariants {
    * either 1 or equal to length of {@code fields}.
    *
    * @param fields list of fields
-   * @param qualifiers list of qualifiers
+   * @param qualifiers list of qualifiers, or a single qualifier that applies to all fields
    * @param factory the type factory
    */
   public FieldInvariants(
@@ -119,10 +116,6 @@ public class FieldInvariants {
     return qualifiers.size() == fields.size();
   }
 
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /**
    * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
    *
@@ -143,8 +136,7 @@ public class FieldInvariants {
       List<AnnotationMirror> subQualifiers = this.getQualifiersFor(field);
       for (AnnotationMirror superA : superQualifiers) {
         AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        if (sub == null
-            || !qualHierarchy.isSubtypeShallow(sub, alwaysRelevantTM, superA, alwaysRelevantTM)) {
+        if (sub == null || !qualHierarchy.isSubtypeQualifiersOnly(sub, superA)) {
           return DiagMessage.error("field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }

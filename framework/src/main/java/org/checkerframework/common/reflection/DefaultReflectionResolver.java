@@ -156,18 +156,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
       AnnotatedTypeMirror receiverType = resolvedResult.executableType.getReceiverType();
+      TypeMirror receiverTM =
+          receiverType == null ? alwaysRelevantTM : receiverType.getUnderlyingType();
       if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
         receiverGlb =
             glb(
                 receiverGlb,
-                alwaysRelevantTM,
+                receiverTM,
                 factory.getQualifierHierarchy().getTopAnnotations(),
-                alwaysRelevantTM,
+                receiverTM,
                 factory);
       } else {
-        TypeMirror receiverTM = receiverType.getUnderlyingType();
         receiverGlb =
             glb(receiverGlb, receiverTM, receiverType.getAnnotations(), receiverTM, factory);
       }

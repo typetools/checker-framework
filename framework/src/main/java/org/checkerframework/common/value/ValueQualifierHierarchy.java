@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
@@ -111,15 +108,11 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return atypeFactory.createStringAnnotation(values);
   }
 
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   @Override
   public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
-    if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+    if (isSubtypeQualifiers(a1, a2)) {
       return a1;
-    } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+    } else if (isSubtypeQualifiers(a2, a1)) {
       return a2;
     } else {
 
@@ -238,9 +231,9 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     a1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a1);
     a2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(a2);
 
-    if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+    if (isSubtypeQualifiers(a1, a2)) {
       return a2;
-    } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+    } else if (isSubtypeQualifiers(a2, a1)) {
       return a1;
     }
     String qual1 = AnnotationUtils.annotationName(a1);

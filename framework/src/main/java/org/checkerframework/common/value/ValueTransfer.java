@@ -10,7 +10,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.StringVal;
@@ -62,7 +61,6 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -73,10 +71,6 @@ import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
-
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The Value type factory. */
   protected final ValueAnnotatedTypeFactory atypeFactory;
@@ -540,7 +534,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
+   * Transform @IntVal or @IntRange annotations of an array or string length into an @ArrayLen
    * or @ArrayLenRange annotation for the array or string.
    *
    * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
@@ -566,11 +560,11 @@ public class ValueTransfer extends CFTransfer {
     if (lengthAnno == null) {
       return;
     }
+    JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
     if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       // If the length is bottom, then this is dead code, so the receiver type
       // should also be bottom.
-      JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-      store.insertValue(receiver, lengthAnno);
+      store.insertValue(receiverJE, lengthAnno);
       return;
     }
 
@@ -593,12 +587,11 @@ public class ValueTransfer extends CFTransfer {
     if (oldRecAnno == null) {
       combinedRecAnno = newRecAnno;
     } else {
+      TypeMirror receiverTM = receiverJE.getType();
       combinedRecAnno =
-          qualHierarchy.greatestLowerBoundShallow(
-              oldRecAnno, alwaysRelevantTM, newRecAnno, alwaysRelevantTM);
+          qualHierarchy.greatestLowerBoundShallow(oldRecAnno, receiverTM, newRecAnno, receiverTM);
     }
-    JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-    store.insertValue(receiver, combinedRecAnno);
+    store.insertValue(receiverJE, combinedRecAnno);
   }
 
   @Override

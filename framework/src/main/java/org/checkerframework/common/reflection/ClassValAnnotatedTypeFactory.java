@@ -17,9 +17,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -33,7 +31,6 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -124,10 +121,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new ClassValQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
 
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
-
   /** The qualifier hierarchy for the ClassVal type system. */
   protected class ClassValQualifierHierarchy extends ElementQualifierHierarchy {
 
@@ -151,9 +144,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a2;
-      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a1;
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
@@ -174,9 +167,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtypeShallow(a1, alwaysRelevantTM, a2, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a1;
-      } else if (isSubtypeShallow(a2, alwaysRelevantTM, a1, alwaysRelevantTM)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a2;
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
