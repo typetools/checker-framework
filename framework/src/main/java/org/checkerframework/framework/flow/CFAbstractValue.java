@@ -103,7 +103,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   public static boolean validateSet(
       AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
 
-    if (canBeMissingAnnotations(typeMirror)) {
+    boolean canBeMissing = canBeMissingAnnotations(typeMirror);
+    if (canBeMissing) {
       return true;
     }
 

@@ -144,17 +144,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
-      if (resolvedResult.executableType.getReceiverType() == null) {
+      AnnotatedTypeMirror receiverType = resolvedResult.executableType.getReceiverType();
+      if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
         receiverGlb =
             glb(receiverGlb, factory.getQualifierHierarchy().getTopAnnotations(), factory);
       } else {
-        receiverGlb =
-            glb(
-                receiverGlb,
-                resolvedResult.executableType.getReceiverType().getAnnotations(),
-                factory);
+        receiverGlb = glb(receiverGlb, receiverType.getAnnotations(), factory);
       }
 
       // Glb parameter types.  All formal parameter types get combined together because
