@@ -176,7 +176,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-      return new GeneralQualifierHierarchy(/*TODO*/ null);
+      return new GeneralQualifierHierarchy(null);
     }
 
     /**

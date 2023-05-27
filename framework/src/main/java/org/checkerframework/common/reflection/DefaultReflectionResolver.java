@@ -149,7 +149,6 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      // TODO: The first use of returnTM is questionable.
       returnLub = lub(returnLub, returnTM, returnType.getAnnotations(), returnTM, factory);
 
       // Glb receiver types (actual method receiver is passed as first

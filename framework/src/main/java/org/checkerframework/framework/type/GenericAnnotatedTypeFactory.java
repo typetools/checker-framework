@@ -2423,7 +2423,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if users can write type annotations from this type system on or within the given
    *     type
    */
-  // TODO: I don't know why these annotations are required to make a call site type-check.
+  // TODO: These receiver annotations are required to make a call site type-check.  Why?
   public final boolean isRelevantOrCompound(@UnknownKeyFor @Initialized TypeMirror tm) {
     return isRelevant(tm) || TypesUtils.isCompoundType(tm);
   }
