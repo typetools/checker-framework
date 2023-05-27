@@ -117,12 +117,14 @@ public class FieldInvariants {
   }
 
   /**
-   * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
+   * Returns null if this is stronger than the given FieldInvariants, otherwise returns the error
+   * message. This is stronger if each of its qualifiers is a subtype of (or equal to) the
+   * respective qualfier in the given FieldInvariants.
    *
-   * @param superInvar the value to check for being a super invariant
-   * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
+   * @param superInvar the value to check for being a weaker invariant
+   * @return null if this is stronger, otherwise returns an error message
    */
-  public @Nullable DiagMessage isSuperInvariant(FieldInvariants superInvar) {
+  public @Nullable DiagMessage isStrongerThan(FieldInvariants superInvar) {
     QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
