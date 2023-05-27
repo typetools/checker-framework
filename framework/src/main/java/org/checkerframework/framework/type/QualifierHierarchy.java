@@ -130,7 +130,8 @@ public abstract class QualifierHierarchy {
    *
    * <p>Clients should call {@code isSubtypeShallow()} (this method), or, rarely, {@link
    * #isSubtypeQualifiersOnly}, for clients who want to ignore the Java basetype. Subtypes should
-   * generally override {@link #isSubtypeQualifiers} (if needed).
+   * override {@link #isSubtypeQualifiers} (not this method), unless qualifier subtyping depends on
+   * Java basetypes.
    *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}

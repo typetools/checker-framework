@@ -179,7 +179,7 @@ import org.plumelib.util.CollectionsPlume;
  * </ol>
  *
  * @see "JLS $4"
- * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
+ * @see TypeHierarchy#isSubtype
  * @see AnnotatedTypeFactory
  */
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>

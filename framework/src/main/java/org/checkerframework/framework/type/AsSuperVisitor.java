@@ -86,7 +86,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
     boolean typeIsRelevant = !gatf.isRelevant(copyType);
     boolean superTypeIsRelevant = !gatf.isRelevant(copySuperType);
-    // TODO: Is this too aggressive?
     if (typeIsRelevant && !superTypeIsRelevant) {
       // give superType its default qualifier
       setDefaultForType(superType);
@@ -114,14 +113,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private void setDefaultForType(AnnotatedTypeMirror atm) {
     GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
-    // Shallow copies because we only want to see if the primary annotation changed.
+    // Make a shallow copy and then see if the primary annotation changed.
     AnnotatedTypeMirror withoutAnnotations = atm.shallowCopy();
     withoutAnnotations.removeAnnotations(withoutAnnotations.getAnnotations());
     AnnotatedTypeMirror withDefaultAnnotations = withoutAnnotations.shallowCopy();
     gatf.addAnnotationsFromDefaultForType(null, withDefaultAnnotations);
-    // Only have to check the primary annotations.
-    if (!withDefaultAnnotations.equals(withoutAnnotations)) {
-      // Adding the default annotations had an effect.
+    if (!withoutAnnotations.getAnnotations().equals(withDefaultAnnotations.getAnnotations())) {
+      // Adding the default annotations had an effect on the temporary variable,
+      // so make the change to the argument.
       gatf.replaceAnnotations(withDefaultAnnotations, atm);
     }
   }
