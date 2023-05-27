@@ -398,7 +398,7 @@ class MustCallConsistencyAnalyzer {
     /** A local variable defined in the source code or a temporary variable for an expression. */
     public final LocalVariable reference;
 
-    /** The tree at which {@code reference} was assigned, for the purpose of error reporting */
+    /** The tree at which {@code reference} was assigned, for the purpose of error reporting. */
     public final Tree tree;
 
     /**
