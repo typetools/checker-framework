@@ -35,7 +35,7 @@ public class FieldInvariants {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
+   * Creates a new FieldInvariants object. The result is well-formed if the length of qualifiers is
    * either 1 or equal to length of {@code fields}.
    *
    * @param fields list of fields
@@ -49,8 +49,8 @@ public class FieldInvariants {
 
   /**
    * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
-   * fields} and {@code qualifiers}. The result is well-formed if length of qualifiers is either 1
-   * or equal to length of {@code fields}.
+   * fields} and {@code qualifiers}. The result is well-formed if the length of qualifiers is either
+   * 1 or equal to length of {@code fields}.
    *
    * @param other other invariant object, may be null
    * @param fields list of fields
