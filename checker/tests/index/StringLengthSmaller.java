@@ -1,4 +1,4 @@
-// Tests that String.length() is supported in the same situations as array length
+// A subset of StringLength.java.
 
 import java.util.Random;
 import org.checkerframework.checker.index.qual.LTLengthOf;

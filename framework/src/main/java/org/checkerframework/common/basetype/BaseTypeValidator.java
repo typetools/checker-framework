@@ -622,18 +622,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // same as the annotations on the super bound.
           AnnotatedTypeMirror superBound = wildcard.getSuperBound();
           TypeMirror superBoundTM = superBound.getUnderlyingType();
+          AnnotationMirrorSet superBoundAnnos = superBound.getEffectiveAnnotations();
           AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
           TypeMirror extendsBoundTM = extendsBound.getUnderlyingType();
+          AnnotationMirrorSet extendsBoundAnnos = extendsBound.getAnnotations();
           if (!(qualHierarchy.isSubtypeShallow(
-                  superBound.getEffectiveAnnotations(),
-                  superBoundTM,
-                  extendsBound.getAnnotations(),
-                  extendsBoundTM)
+                  superBoundAnnos, superBoundTM, extendsBoundAnnos, extendsBoundTM)
               && qualHierarchy.isSubtypeShallow(
-                  extendsBound.getAnnotations(),
-                  extendsBoundTM,
-                  superBound.getEffectiveAnnotations(),
-                  superBoundTM))) {
+                  extendsBoundAnnos, extendsBoundTM, superBoundAnnos, superBoundTM))) {
             checker.reportError(
                 tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
           }

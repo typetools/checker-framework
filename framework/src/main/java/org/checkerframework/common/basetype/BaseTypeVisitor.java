@@ -4212,17 +4212,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // primary annotations.
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
-      TypeMirror overriderTM = overriderReceiver.getUnderlyingType();
+      TypeMirror overriderReceiverTM = overriderReceiver.getUnderlyingType();
       AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
-      TypeMirror overriddenTM = overriddenReceiver.getUnderlyingType();
+      TypeMirror overriddenReceiverTM = overriddenReceiver.getUnderlyingType();
 
       if (!qualHierarchy.isSubtypeShallow(
-          overriddenAnnos, overriddenTM, overriderAnnos, overriderTM)) {
+          overriddenAnnos, overriddenReceiverTM, overriderAnnos, overriderReceiverTM)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
-        if (qualHierarchy.isSubtypeShallow(overriderAnnos, overriderTM, declaredAnnos, overriderTM)
+        if (qualHierarchy.isSubtypeShallow(
+                overriderAnnos, overriderReceiverTM, declaredAnnos, overriderReceiverTM)
             && qualHierarchy.isSubtypeShallow(
-                declaredAnnos, overriderTM, overriderAnnos, overriderTM)) {
+                declaredAnnos, overriderReceiverTM, overriderAnnos, overriderReceiverTM)) {
           // All the type of an object must be no higher than its upper bound. So if the
           // receiver is annotated with the upper bound qualifiers, then the override is
           // safe.

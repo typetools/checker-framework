@@ -691,10 +691,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
               }
 
-              AnnotatedTypeMirror arg1Type = passedArgTypes.get(i);
-              AnnotatedTypeMirror arg2Type = passedArgTypes.get(j);
-              TypeMirror arg1TM = arg1Type.getUnderlyingType();
-              TypeMirror arg2TM = arg2Type.getUnderlyingType();
+              TypeMirror arg1TM = passedArgTypes.get(i).getUnderlyingType();
+              TypeMirror arg2TM = passedArgTypes.get(j).getUnderlyingType();
 
               if (bothAreGSwithNoIndex
                   || !(qualHierarchy.isSubtypeShallow(arg1Anno, arg1TM, arg2Anno, arg2TM)

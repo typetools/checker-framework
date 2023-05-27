@@ -337,10 +337,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         TypeMirror bTypeMirror,
         AnnotationMirror top) {
       if (aTypeMirror == null) {
-        throw new NullPointerException("aTypeMirror");
+        throw new NullPointerException("combineTwoAnnotations: aTypeMirror==null");
       }
       if (bTypeMirror == null) {
-        throw new NullPointerException("bTypeMirror");
+        throw new NullPointerException("combineTwoAnnotations: bTypeMirror==null");
       }
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = analysis.getTypeFactory();
       if (aTypeMirror != alwaysRelevantTM
@@ -694,10 +694,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirrorSet bSet,
         boolean canCombinedSetBeMissingAnnos) {
       if (aTypeMirror == null) {
-        throw new NullPointerException("aTypeMirror");
+        throw new NullPointerException("combineSets: aTypeMirror==null");
       }
       if (bTypeMirror == null) {
-        throw new NullPointerException("bTypeMirror");
+        throw new NullPointerException("combineSets: bTypeMirror==null");
       }
 
       AnnotatedTypeVariable aAtv = getEffectiveTypeVar(aTypeMirror);

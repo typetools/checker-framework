@@ -82,10 +82,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // parameters to asSuper are not changed and a copy is returned.
     AnnotatedTypeMirror copyType = type.deepCopy();
     AnnotatedTypeMirror copySuperType = superType.deepCopy();
-    boolean typeIsRelevant =
-        !((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory).isRelevant(copyType);
-    boolean superTypeIsRelevant =
-        !((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory).isRelevant(copySuperType);
+    GenericAnnotatedTypeFactory gatf = (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
+    boolean typeIsRelevant = !gatf.isRelevant(copyType);
+    boolean superTypeIsRelevant = !gatf.isRelevant(copySuperType);
     // TODO: Is this too aggressive?
     if (typeIsRelevant && !superTypeIsRelevant) {
       // give superType its default qualifier
@@ -112,17 +111,17 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * @param atm a type; is side-effected by this method
    */
   private void setDefaultForType(AnnotatedTypeMirror atm) {
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
+        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
     // Shallow copies because we only want to see if the primary annotation changed.
     AnnotatedTypeMirror withoutAnnotations = atm.shallowCopy();
     withoutAnnotations.removeAnnotations(withoutAnnotations.getAnnotations());
     AnnotatedTypeMirror withDefaultAnnotations = withoutAnnotations.shallowCopy();
-    ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-        .addAnnotationsFromDefaultForType(null, withDefaultAnnotations);
+    gatf.addAnnotationsFromDefaultForType(null, withDefaultAnnotations);
     // Only have to check the primary annotations.
     if (!withDefaultAnnotations.equals(withoutAnnotations)) {
       // Adding the default annotations had an effect.
-      ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
-          .replaceAnnotations(withDefaultAnnotations, atm);
+      gatf.replaceAnnotations(withDefaultAnnotations, atm);
     }
   }
 

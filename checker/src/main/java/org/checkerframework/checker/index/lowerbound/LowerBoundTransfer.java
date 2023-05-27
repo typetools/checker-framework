@@ -36,7 +36,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -837,10 +836,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    * @return the lower bound annotation for the given value
    */
   private AnnotationMirror getLowerBoundAnnotation(CFValue cfValue) {
-    AnnotationMirrorSet annos = cfValue.getAnnotations();
     return atypeFactory
         .getQualifierHierarchy()
-        .findAnnotationInHierarchy(annos, atypeFactory.UNKNOWN);
+        .findAnnotationInHierarchy(cfValue.getAnnotations(), atypeFactory.UNKNOWN);
   }
 
   @Override

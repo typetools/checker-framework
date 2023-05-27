@@ -6,7 +6,7 @@ import org.checkerframework.checker.i18n.qual.*;
 
 @SuppressWarnings({"anno.on.irrelevant", "inconsistent.constructor.type"})
 @LocalizableKey class Issue2186 {
-  @SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   Issue2186() {}
 
   // :: error: (super.invocation)

@@ -13,7 +13,7 @@ public class Issue2264 extends SuperClass {
 }
 
 class ImplicitSuperCall {
-  @SuppressWarnings({"inconsistent.constructor.type", "super.invocation"})
+  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKey ImplicitSuperCall() {}
 }
 
