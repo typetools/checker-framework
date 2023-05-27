@@ -37,6 +37,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -822,6 +823,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
   private AnnotationMirror getLowerBoundAnnotation(
       Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
+    if (value == null) {
+      throw new BugInCF("value==null for getLowerBoundAnnotation(%s, %s)%n", subNode, p);
+    }
     return getLowerBoundAnnotation(value);
   }
 
