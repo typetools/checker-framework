@@ -533,7 +533,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
+   * Transform @IntVal or @IntRange annotations of an array or string length into an @ArrayLen
    * or @ArrayLenRange annotation for the array or string.
    *
    * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
@@ -559,11 +559,11 @@ public class ValueTransfer extends CFTransfer {
     if (lengthAnno == null) {
       return;
     }
+    JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
     if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       // If the length is bottom, then this is dead code, so the receiver type
       // should also be bottom.
-      JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-      store.insertValue(receiver, lengthAnno);
+      store.insertValue(receiverJE, lengthAnno);
       return;
     }
 
@@ -588,8 +588,7 @@ public class ValueTransfer extends CFTransfer {
     } else {
       combinedRecAnno = qualHierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
     }
-    JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-    store.insertValue(receiver, combinedRecAnno);
+    store.insertValue(receiverJE, combinedRecAnno);
   }
 
   @Override

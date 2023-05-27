@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -327,12 +328,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Override
     protected @Nullable AnnotationMirror combineTwoAnnotations(
         AnnotationMirror a, AnnotationMirror b, AnnotationMirror top) {
-      if (analysis
-              .getTypeFactory()
-              .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
-          && analysis
-              .getTypeFactory()
-              .hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
+      if (aTypeMirror == null) {
+        throw new NullPointerException("combineTwoAnnotations: aTypeMirror==null");
+      }
+      if (bTypeMirror == null) {
+        throw new NullPointerException("combineTwoAnnotations: bTypeMirror==null");
+      }
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = analysis.getTypeFactory();
+      if (gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
+          && gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
         // Both types have qualifier parameters, so they are related by invariance rather
         // than subtyping.
         if (qualHierarchy.isSubtype(a, b) && qualHierarchy.isSubtype(b, a)) {
@@ -629,11 +633,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <p>Subclasses must define how to combine sets by implementing the following methods:
    *
    * <ol>
-   *   <li>{@code #combineTwoAnnotations(AnnotationMirror, AnnotationMirror, AnnotationMirror)}
-   *   <li>{@code #combineOneAnnotation(AnnotationMirror, AnnotatedTypeVariable, AnnotationMirror,
-   *       boolean)}
-   *   <li>{@code #combineNoAnnotations(AnnotatedTypeVariable, AnnotatedTypeVariable,
-   *       AnnotationMirror, boolean)}
+   *   <li>{@link #combineTwoAnnotations}
+   *   <li>{@link #combineOneAnnotation}
+   *   <li>{@link #combineNoAnnotations}
    * </ol>
    *
    * If a set is missing an annotation in a hierarchy, and if the combined set can be missing an
@@ -659,6 +661,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         TypeMirror bTypeMirror,
         AnnotationMirrorSet bSet,
         boolean canCombinedSetBeMissingAnnos) {
+      if (aTypeMirror == null) {
+        throw new NullPointerException("combineSets: aTypeMirror==null");
+      }
+      if (bTypeMirror == null) {
+        throw new NullPointerException("combineSets: bTypeMirror==null");
+      }
 
       AnnotatedTypeVariable aAtv = getEffectiveTypeVar(aTypeMirror);
       AnnotatedTypeVariable bAtv = getEffectiveTypeVar(bTypeMirror);
