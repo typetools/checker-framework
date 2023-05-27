@@ -22,11 +22,6 @@ public abstract class BlockImpl implements Block {
   /** The unique ID of this object. */
   final long uid = nextUid.getAndIncrement();
 
-  /**
-   * Returns the unique ID of this object.
-   *
-   * @return the unique ID of this object
-   */
   @Override
   public long getUid(@UnknownInitialization BlockImpl this) {
     return uid;

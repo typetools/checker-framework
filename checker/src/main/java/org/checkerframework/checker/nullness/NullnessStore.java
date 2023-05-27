@@ -29,11 +29,6 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   /** The unique ID of this object. */
   final long uid = nextUid.getAndIncrement();
 
-  /**
-   * Returns the unique ID of this object.
-   *
-   * @return the unique ID of this object
-   */
   @Override
   public long getUid() {
     return uid;
