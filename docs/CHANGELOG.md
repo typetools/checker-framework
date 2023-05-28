@@ -38,8 +38,12 @@ Class `FieldInvariants`:
 
 Removed methods that have been deprecated for over two years.
 
+Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
+used as a statement.
+
 **Closed issues:**
 
+typetools #3281
 
 Version 3.34.0 (May 2, 2023)
 ------------------------------
@@ -397,6 +401,7 @@ was added.
 
 **Closed issues:**
 #2373, #4934, #4977, #4979, #4987.
+
 
 Version 3.20.0 (December 6, 2021)
 ---------------------------------
