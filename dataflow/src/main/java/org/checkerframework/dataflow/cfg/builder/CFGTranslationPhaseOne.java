@@ -579,8 +579,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the switch expression tree
    */
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
-    SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
-    return switchBuilder.build();
+    SwitchBuilder oldSwitchBuilder = switchBuilder;
+    switchBuilder = new SwitchBuilder(switchExpressionTree);
+    Node res = switchBuilder.build();
+    switchBuilder = oldSwitchBuilder;
+    return res;
   }
 
   /**
@@ -2314,8 +2317,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *     null
      */
     public @Nullable SwitchExpressionNode build() {
-      SwitchBuilder oldSwitchBuilder = switchBuilder;
-      switchBuilder = this;
       LabelCell oldBreakTargetLC = breakTargetLC;
       breakTargetLC = new LabelCell(new Label());
       int numCases = caseTrees.size();
@@ -2377,7 +2378,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 env.getTypeUtils()));
       }
 
-      switchBuilder = oldSwitchBuilder;
       if (!TreeUtils.isSwitchStatement(switchTree)) {
         // It's a switch expression, not a switch statement.
         IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
