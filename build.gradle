@@ -1079,7 +1079,7 @@ jar.onlyIf {false}
 
 /**
  * Adds the shared pom information to the given publication.
- * @param publication MavenPublication
+ * @param publication the MavenPublication
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {

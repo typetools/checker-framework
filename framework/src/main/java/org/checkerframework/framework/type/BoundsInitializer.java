@@ -775,7 +775,7 @@ public class BoundsInitializer {
      * Add a type variable found at the current path while visiting the type variable or wildcard
      * associated with this structure.
      *
-     * @param typeVariable TypeVariable
+     * @param typeVariable a type variable
      */
     public void addTypeVar(TypeVariable typeVariable) {
       typeVarsInType.add(Pair.of(this.currentPath.copy(), typeVariable));
@@ -1031,10 +1031,10 @@ public class BoundsInitializer {
     /**
      * Throws a {@link BugInCF} if {@code parent} is {@code typeKind}.
      *
-     * @param typeKind TypeKind
+     * @param typeKind the desired TypeKind
      * @param replacement for debugging
      * @param parent possible parent type of this node
-     * @throws BugInCF if {@code parent} is {@code typeKind}
+     * @throws BugInCF if {@code parent.getKind()} is not {@code typeKind}
      */
     private void abortIfNotKind(
         TypeKind typeKind, AnnotatedTypeVariable replacement, AnnotatedTypeMirror parent) {
