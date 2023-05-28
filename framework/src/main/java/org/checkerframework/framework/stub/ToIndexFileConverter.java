@@ -103,6 +103,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final AScene scene;
 
   /**
+   * Creates a new ToIndexFileConverter.
+   *
    * @param pkgDecl the AST node for package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
