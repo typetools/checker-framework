@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -13,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -316,23 +316,15 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       case FORWARD:
         return transferInput.getRegularStore();
       case BACKWARD:
-        Node firstNode;
-        switch (block.getType()) {
-          case REGULAR_BLOCK:
-            firstNode = block.getNodes().get(0);
-            break;
-          case EXCEPTION_BLOCK:
-            firstNode = ((ExceptionBlock) block).getNode();
-            break;
-          default:
-            firstNode = null;
-        }
-        if (firstNode == null) {
-          // This block doesn't contains any node, return the store in the transfer input
+        List<Node> nodes = block.getNodes();
+        if (nodes.isEmpty()) {
+          // This block doesn't contain any node, return the store in the transfer input.
           return transferInput.getRegularStore();
+        } else {
+          Node firstNode = nodes.get(0);
+          return analysis.runAnalysisFor(
+              firstNode, Analysis.BeforeOrAfter.BEFORE, transferInput, nodeValues, analysisCaches);
         }
-        return analysis.runAnalysisFor(
-            firstNode, Analysis.BeforeOrAfter.BEFORE, transferInput, nodeValues, analysisCaches);
       default:
         throw new BugInCF("Unknown direction: " + analysis.getDirection());
     }
@@ -352,7 +344,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       case FORWARD:
         Node lastNode = block.getLastNode();
         if (lastNode == null) {
-          // This block doesn't contain any node, return the store in the transfer input
+          // This block doesn't contain any node, return the store in the transfer input.
           return transferInput.getRegularStore();
         } else {
           return analysis.runAnalysisFor(

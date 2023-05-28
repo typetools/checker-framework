@@ -283,11 +283,9 @@ public class ControlFlowGraph implements UniqueId {
    * the CFG or null otherwise.
    */
   public @Nullable MethodTree getContainingMethod(Tree t) {
-    if (treeLookup.containsKey(t)) {
-      if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-        UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
-        return cfgMethod.getMethod();
-      }
+    if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+      UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+      return cfgMethod.getMethod();
     }
     return null;
   }
