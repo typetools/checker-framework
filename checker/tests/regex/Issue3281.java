@@ -43,7 +43,7 @@ public class Issue3281 {
   void m4(String s, String s2) {
     RegexUtil.isRegex(s);
     if (RegexUtil.isRegex(s2)) {
-      // :: error: (argument.type.incompatible)
+      // :: error: (argument)
       Pattern.compile(s);
     }
   }
@@ -67,12 +67,12 @@ public class Issue3281 {
   void foo(String s1, String s2) {
     bar(
         RegexUtil.isRegex(s1),
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         Pattern.compile(s1));
     boolean b;
     bar(
         b = RegexUtil.isRegex(s2),
-        // :: error: (argument.type.incompatible)
+        // :: error: (argument)
         Pattern.compile(s2));
   }
 
