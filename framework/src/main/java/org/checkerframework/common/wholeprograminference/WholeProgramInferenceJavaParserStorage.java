@@ -663,7 +663,7 @@ public class WholeProgramInferenceJavaParserStorage
    * stores those wrappers in {@code sourceAnnos}.
    *
    * @param javacClass javac tree for class
-   * @param javaParserClass JavaParser node corresponding to the same class as {@code javacClass}
+   * @param javaParserClass a JavaParser node corresponding to the same class as {@code javacClass}
    * @param sourceAnnos compilation unit wrapper to add new wrappers to
    */
   private void createWrappersForClass(
@@ -815,7 +815,7 @@ public class WholeProgramInferenceJavaParserStorage
            * javaParserNode} and stores it in {@code sourceAnnos}.
            *
            * @param javacTree javac tree for declaration to add
-           * @param javaParserNode JavaParser node for the same class as {@code javacTree}
+           * @param javaParserNode a JavaParser node for the same class as {@code javacTree}
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {

@@ -402,8 +402,8 @@ public class AnnotationFileParser {
    * given file.
    *
    * @param filename name of annotation file, used only for diagnostic messages
-   * @param atypeFactory AnnotatedTypeFactory to use
-   * @param processingEnv ProcessingEnvironment to use
+   * @param atypeFactory the type factory
+   * @param processingEnv the processing environment
    * @param fileType the type of file being parsed (stub file or ajava file) and its source
    */
   private AnnotationFileParser(
@@ -640,8 +640,8 @@ public class AnnotationFileParser {
    *
    * @param filename name of stub file, used only for diagnostic messages
    * @param inputStream of stub file to parse
-   * @param atypeFactory AnnotatedTypeFactory to use
-   * @param processingEnv ProcessingEnvironment to use
+   * @param atypeFactory the type factory
+   * @param processingEnv the processing environment
    * @param annotationFileAnnos annotations from the annotation file; side-effected by this method
    * @param fileType the annotation file type and source
    */
@@ -671,8 +671,8 @@ public class AnnotationFileParser {
    * @param filename name of ajava file, used only for diagnostic messages
    * @param inputStream of ajava file to parse
    * @param root javac tree for the file to be parsed
-   * @param atypeFactory AnnotatedTypeFactory to use
-   * @param processingEnv ProcessingEnvironment to use
+   * @param atypeFactory the type factory
+   * @param processingEnv the processing environment
    * @param ajavaAnnos annotations from the ajava file; side-effected by this method
    */
   public static void parseAjavaFile(
@@ -702,8 +702,8 @@ public class AnnotationFileParser {
    *
    * @param filename name of stub file, used only for diagnostic messages
    * @param inputStream of stub file to parse
-   * @param atypeFactory AnnotatedTypeFactory to use
-   * @param processingEnv ProcessingEnvironment to use
+   * @param atypeFactory the type factory
+   * @param processingEnv the processing environment
    * @param stubAnnos annotations from the stub file; side-effected by this method
    */
   public static void parseJdkFileAsStub(
@@ -1346,9 +1346,9 @@ public class AnnotationFileParser {
    * Process the parameters of a method or constructor declaration: copy their annotations to {@code
    * #annotationFileAnnos}.
    *
-   * @param method a Method or Constructor declaration
-   * @param elt ExecutableElement of {@code method}
-   * @param methodType annotated type of {@code method}
+   * @param method a method or constructor declaration
+   * @param elt the element for {@code method}
+   * @param methodType the annotated type of {@code method}
    */
   private void processParameters(
       CallableDeclaration<?> method, ExecutableElement elt, AnnotatedExecutableType methodType) {

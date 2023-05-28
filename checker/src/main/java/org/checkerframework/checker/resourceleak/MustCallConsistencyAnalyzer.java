@@ -1707,7 +1707,7 @@ class MustCallConsistencyAnalyzer {
    * then the Obligation is passed forward to the successor ("propagated") with any definitely
    * out-of-scope aliases removed from its resource alias set.
    *
-   * @param obligations Obligations for the current block
+   * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
