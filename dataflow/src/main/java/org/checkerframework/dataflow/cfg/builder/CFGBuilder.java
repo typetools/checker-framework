@@ -46,6 +46,9 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public abstract class CFGBuilder {
 
+  /** Creates a CFGBuilder. */
+  public CFGBuilder() {}
+
   /**
    * Build the control flow graph of some code.
    *
