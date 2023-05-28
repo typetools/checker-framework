@@ -2641,7 +2641,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
 
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(falseStart);
     ExpressionTree falseExprTree = tree.getFalseExpression();
@@ -2650,7 +2650,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
 
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
     Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
