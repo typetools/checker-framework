@@ -581,9 +581,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
     SwitchBuilder oldSwitchBuilder = switchBuilder;
     switchBuilder = new SwitchBuilder(switchExpressionTree);
-    Node res = switchBuilder.build();
+    Node result = switchBuilder.build();
     switchBuilder = oldSwitchBuilder;
-    return res;
+    return result;
   }
 
   /**
