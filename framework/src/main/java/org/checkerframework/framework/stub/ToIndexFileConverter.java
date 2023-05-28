@@ -103,8 +103,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final AScene scene;
 
   /**
-   * @param pkgDecl AST node for package declaration
-   * @param importDecls AST nodes for import declarations
+   * @param pkgDecl the AST node for package declaration
+   * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
@@ -176,7 +176,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param scene the initial scene
    * @param in stubfile contents
-   * @param out JAIF representing augmented scene
+   * @param out the output stream for the JAIF file that holds the augmented scene
    * @throws ParseException if the stub file cannot be parsed
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
@@ -462,7 +462,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Copies information from an AST type node's inner type nodes to an {@link ATypeElement}.
    *
-   * @param type AST Type node to inspect
+   * @param type the AST Type node to inspect
    * @param elem destination type element
    */
   private static Void visitInnerTypes(Type type, ATypeElement elem) {

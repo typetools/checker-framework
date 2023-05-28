@@ -98,7 +98,7 @@ public class AnnotationFileElementTypes {
   /**
    * Creates an empty annotation source.
    *
-   * @param factory AnnotatedTypeFactory
+   * @param factory a type factory
    */
   public AnnotationFileElementTypes(AnnotatedTypeFactory factory) {
     this.factory = factory;
