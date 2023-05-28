@@ -66,7 +66,7 @@ public class Issue3622 {
   public class ImmutableIntList7 {
     @Override
     public boolean equals(@Nullable Object obj) {
-      // :: error:  (contracts.conditional.postcondition.not.satisfied)
+      // :: error:  (contracts.conditional.postcondition)
       return (obj instanceof ImmutableIntList7) ? true : !(obj instanceof List);
     }
   }
