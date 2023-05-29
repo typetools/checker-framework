@@ -730,13 +730,37 @@ describes other meta-annotations used to specify default annotations.
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
-Sometimes, a checker only processes certain Java types.  For example, the
-\ahrefloc{formatter-checker}{Format String Checker} is relevant only to
-\<CharSequence> and its subtypes such as \<String>.
+Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
 written on those types and no others.  All irrelevant types are defaulted to
-the top annotation.
+the top annotation and this annotation cannot be changed.
+
+If a type is relevant, so are all its supertypes including Object.
+The reason for this is to prevent qualifiers from being lost via an
+assignment to a supertype.  For example, in this code, \<x> and \<z> have
+the same type qualifiers if \<@SomeAnn> is relevant to \<MyClass>:
+
+\begin{Verbatim}
+@SomeAnn MyClass x = ...;
+Object y = x;
+MyClass z = (MyClass) y;
+\end{Verbatim}
+
+As an example of relevant types, the \ahrefloc{formatter-checker}{Format
+String Checker} is relevant only to \<CharSequence> and its subtypes such
+as \<String>.  You cannot write \refqualclass{checker/formatter/qual}{Format}
+on a \<List> or a \<Number>.
+%
+As another example, the Index Checker and the Signedness Checker are only
+relevant to integral numeric types.  You cannot write
+\refqualclass{checker/index/qual}{Positive} on a \<List> or a \<float>.
+
+A checker may change the default, and it may differ from type to type.  For
+example, the Signedness Checker treats all types that are not numeric
+integral types as \refqualclass{checker/signedness/qual}{Signed}, but
+treats the \<char> and \<Character> types as
+\refqualclass{checker/signedness/qual}{Unsigned}.
 
 
 \subsectionAndLabel{Do not re-use type qualifiers}{creating-do-not-re-use-type-qualifiers}
