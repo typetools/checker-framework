@@ -5291,6 +5291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new IdentityHashMap<>();
       visit(type.getLowerBound(), mapping);
       visit(type.getUpperBound(), mapping);
+      this.capturedTypeVarToAnnotatedTypeVar = null;
     }
 
     @Override
