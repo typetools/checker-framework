@@ -232,7 +232,7 @@ public class JavaExpressionParseUtil {
      * Create a new ExpressionToJavaExpressionVisitor.
      *
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
      *     as "#2", or null if parameters should not appear in the expression
@@ -263,7 +263,7 @@ public class JavaExpressionParseUtil {
      *
      * @param expr the JavaParser {@link Expression} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
