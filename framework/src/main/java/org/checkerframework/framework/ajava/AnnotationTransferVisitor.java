@@ -68,7 +68,7 @@ public class AnnotationTransferVisitor extends VoidVisitorAdapter<AnnotatedTypeM
    * annotatedType} is null.
    *
    * @param annotatedType type with annotations to transfer
-   * @param target JavaParser node representing the type to transfer annotations to
+   * @param target a JavaParser node representing the type to transfer annotations to
    */
   private void transferAnnotations(
       @Nullable AnnotatedTypeMirror annotatedType, NodeWithAnnotations<?> target) {

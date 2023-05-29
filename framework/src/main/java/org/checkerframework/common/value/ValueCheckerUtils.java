@@ -324,7 +324,7 @@ public class ValueCheckerUtils {
    * null if the exact value is not known.
    *
    * @param element the element to get the exact value from
-   * @param factory ValueAnnotatedTypeFactory used for annotation accessing
+   * @param factory a ValueAnnotatedTypeFactory used for annotation accessing
    * @return the exact value of the element if it is constant, or null otherwise
    */
   public static Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {

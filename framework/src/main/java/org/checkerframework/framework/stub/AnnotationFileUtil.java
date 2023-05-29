@@ -119,7 +119,7 @@ public class AnnotationFileUtil {
    * Finds the type declaration with the given class name in a StubUnit.
    *
    * @param className fully qualified name of the type declaration to find
-   * @param indexFile StubUnit to search
+   * @param indexFile a StubUnit to search
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
    *     otherwise.
    */
