@@ -1802,7 +1802,7 @@ public final class TreeUtils {
    * method is referred to as the function type.)
    *
    * @param tree lambda or member reference tree
-   * @param env ProcessingEnvironment
+   * @param env the processing environment
    * @return the single abstract method declared by the type of the tree
    */
   public static ExecutableElement findFunction(Tree tree, ProcessingEnvironment env) {

@@ -328,7 +328,7 @@ public final class TreePathUtil {
   /**
    * Returns true if the leaf of the tree path is in a static scope.
    *
-   * @param path TreePath whose leaf may or may not be in static scope
+   * @param path a TreePath whose leaf may or may not be in static scope
    * @return true if the leaf of the tree path is in a static scope
    */
   public static boolean isTreeInStaticScope(TreePath path) {

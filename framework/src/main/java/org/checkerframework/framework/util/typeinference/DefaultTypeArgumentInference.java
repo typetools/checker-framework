@@ -463,7 +463,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * remaining constraints so that Fi = Tj where Tj is a type parameter with an argument to be
    * inferred. Return the resulting constraint set.
    *
-   * @param typeFactory AnnotatedTypeFactory
+   * @param typeFactory the type factory
    * @param argTypes list of annotated types corresponding to the arguments to the method
    * @param methodType annotated type of the method
    * @param targets type variables to be inferred
