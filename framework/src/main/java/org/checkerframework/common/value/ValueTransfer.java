@@ -117,7 +117,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns a range of possible lengths for {@code subNode}, as casted to a String.
    *
    * @param subNode some subnode of {@code p}
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return a range of possible lengths for {@code subNode}, as casted to a String
    */
   private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -202,7 +202,7 @@ public class ValueTransfer extends CFTransfer {
    * bottom.
    *
    * @param subNode a subNode of p
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return a list of possible values for {@code subNode} or null
    */
   private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -401,7 +401,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns true if subNode is annotated with {@code @IntRange}.
    *
    * @param subNode subNode of {@code p}
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return true if this subNode is annotated with {@code @IntRange}
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {

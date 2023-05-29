@@ -636,7 +636,7 @@ public final class TypesUtils {
    * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
-   * @param env ProcessingEnvironment
+   * @param env the processing environment
    * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {

@@ -192,7 +192,7 @@ public class DependentTypesHelper {
   /**
    * Returns the elements of the annotation that are Java expressions.
    *
-   * @param am AnnotationMirror
+   * @param am an annotation
    * @return the elements of the annotation that are Java expressions
    */
   private List<ExecutableElement> getListOfExpressionElements(AnnotationMirror am) {

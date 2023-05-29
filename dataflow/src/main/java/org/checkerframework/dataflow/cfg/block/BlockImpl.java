@@ -17,10 +17,10 @@ public abstract class BlockImpl implements Block {
   protected final Set<BlockImpl> predecessors;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
 
   /** The unique ID of this object. */
-  final long uid = nextUid.getAndIncrement();
+  private final transient long uid = nextUid.getAndIncrement();
 
   @Override
   public long getUid(@UnknownInitialization BlockImpl this) {

@@ -447,7 +447,7 @@ public class ElementUtils {
   /**
    * Returns the field of the class or {@code null} if not found.
    *
-   * @param type TypeElement to search
+   * @param type the TypeElement to search
    * @param name name of a field
    * @return the VariableElement for the field if it was found, null otherwise
    */
