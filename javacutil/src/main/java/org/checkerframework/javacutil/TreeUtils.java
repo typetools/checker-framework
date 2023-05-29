@@ -104,9 +104,6 @@ public final class TreeUtils {
   /** Unique IDs for trees. Used instead of hash codes, so output is deterministic. */
   public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
 
-  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-  /*package-private*/ static final long Flags_GENERATED_MEMBER = 16777216;
-
   /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
   private static final long Flags_RECORD = 2305843009213693952L;
 
