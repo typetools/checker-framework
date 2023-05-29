@@ -436,7 +436,7 @@ public abstract class UBQualifier {
      * @param i an integer
      * @return true if the given integer literal is a subtype of this
      */
-    /*package-protected*/ boolean literalIsSubtype(int i) {
+    /*package-private*/ boolean literalIsSubtype(int i) {
       for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
         for (OffsetEquation equation : entry.getValue()) {
           if (!equation.isInt()) {
