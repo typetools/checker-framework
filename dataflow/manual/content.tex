@@ -1015,6 +1015,10 @@ because they cannot maintain the distinction between them.  Merging
 just means taking the least upper bound of the two stores and it
 happens automatically by calling \code{TransferInput.getRegularStore}.
 
+Assignments usually merge conditional stores. For the translation of
+conditional operator expressions, a special non-merging assignment
+node is used (see \autoref{sec:cond-exp} below).
+
 
 \subsubsection{Branches}
 
@@ -1081,6 +1085,19 @@ containing \code{b1 || (b2 || b3)}.
 
 \flow{CFGConditionalOr}{.33}{1.33}{Example of a conditional or expression
   (\code{||}) with short-circuiting and more precise flow rules.}
+
+Conditional operator expressions (using the ternary conditional operator
+\code{? :}, cf. \jlsref{15.25}) use an additional synthetic local
+variable in the CFG. The second (then) and third (else) expressions are
+assigned to this local variable. In contrast to other assignments, this
+assignment does not merge the stores, to allow the propagation of
+conditional stores from these sub-expressions.
+The \code{TernaryExpressionNode} at the merge of the two branches can
+then either be treated like a local variable read or return a
+conditional store.
+
+\flow{CFGConditionalOpExpr}{.33}{.33}{Example of a conditional operator
+  expression (\code{? :}).}
 
 
 \subsubsection{Implicit \code{this} access}
