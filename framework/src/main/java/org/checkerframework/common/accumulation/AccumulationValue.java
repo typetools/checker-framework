@@ -25,8 +25,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * actually occurred, such as in this example:
  *
  * <pre><code>
- *   public static <T extends java.io.Closeable> void close(
- *       @Owning @MustCall("close") T value) throws Exception {
+ *   public static &lt;T extends java.io.Closeable&gt; void close(
+ *       &#064;Owning @MustCall("close") T value) throws Exception {
  *     value.close();
  *   }
  * </code></pre>
