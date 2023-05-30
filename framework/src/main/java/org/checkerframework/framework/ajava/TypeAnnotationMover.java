@@ -98,7 +98,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * Given a declaration, returns a List of annotations currently in declaration position that can't
    * possibly be declaration annotations for that type of declaration.
    *
-   * @param node JavaParser node for declaration
+   * @param node a JavaParser node for declaration
    * @param declarationType the type of declaration {@code node} represents; always FIELD or METHOD
    * @return a list of annotations in declaration position that should be on the declaration's type
    */

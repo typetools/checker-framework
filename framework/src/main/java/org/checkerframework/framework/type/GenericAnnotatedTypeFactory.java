@@ -804,7 +804,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * defaults that cannot be specified with a {@link DefaultFor} or {@link
    * DefaultQualifierInHierarchy} meta-annotations.
    *
-   * @param defs QualifierDefault object to which defaults are added
+   * @param defs the QualifierDefault object to which defaults are added
    */
   protected void addCheckedCodeDefaults(QualifierDefaults defs) {
     // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
@@ -2360,10 +2360,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
-   * elements of the type).
-   *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
@@ -2389,7 +2386,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it it possible to write type qualifiers on
+   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
@@ -2500,13 +2497,14 @@ public abstract class GenericAnnotatedTypeFactory<
    *     string
    */
   public String irrelevantExtraMessage() {
-    if (irrelevantExtraMessage == null) {}
-    if (relevantJavaTypes == null) {
-      irrelevantExtraMessage = "";
-    } else {
-      irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
-      if (arraysAreRelevant) {
-        irrelevantExtraMessage += " and arrays";
+    if (irrelevantExtraMessage == null) {
+      if (relevantJavaTypes == null) {
+        irrelevantExtraMessage = "";
+      } else {
+        irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
+        if (arraysAreRelevant) {
+          irrelevantExtraMessage += " and arrays";
+        }
       }
     }
     return irrelevantExtraMessage;
@@ -2534,8 +2532,8 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
-   * @param m AFU representation of a method
-   * @return contract annotations for the method
+   * @param m the AFU representation of a method
+   * @return the contract annotations for the method
    */
   public List<AnnotationMirror> getContractAnnotations(AMethod m) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
@@ -2551,8 +2549,8 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
-   * @param m AFU representation of a method
-   * @return precondition annotations for the method
+   * @param m the AFU representation of a method
+   * @return the precondition annotations for the method
    */
   public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
     int size = m.getPreconditions().size();
@@ -2588,10 +2586,10 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This overload must only be called when using WholeProgramInferenceScenes.
    *
-   * @param m AFU representation of a method
+   * @param m the AFU representation of a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions
-   * @return postcondition annotations for the method
+   * @return the postcondition annotations for the method
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
       AMethod m, List<AnnotationMirror> preconds) {

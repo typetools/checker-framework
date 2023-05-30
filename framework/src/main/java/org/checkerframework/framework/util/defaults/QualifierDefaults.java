@@ -355,6 +355,14 @@ public class QualifierDefaults {
     }
   }
 
+  /**
+   * Returns true if there are conflicts with existing defaults.
+   *
+   * @param previousDefaults the previous defaults
+   * @param newAnno the new annotation
+   * @param newLoc the location of the type use
+   * @return true if there are conflicts with existing defaults
+   */
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();

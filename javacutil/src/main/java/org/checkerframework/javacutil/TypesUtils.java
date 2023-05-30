@@ -636,13 +636,38 @@ public final class TypesUtils {
    * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
-   * @param env ProcessingEnvironment
+   * @param env the processing environment
    * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     return javacTypes.isFunctionalInterface((Type) type);
+  }
+
+  /**
+   * Returns true if the given type is a compound type.
+   *
+   * @param type a type
+   * @return true if the given type is a compound type
+   */
+  public static boolean isCompoundType(TypeMirror type) {
+    switch (type.getKind()) {
+      case ARRAY:
+      case EXECUTABLE:
+      case INTERSECTION:
+      case UNION:
+      case TYPEVAR:
+      case WILDCARD:
+        return true;
+
+      case DECLARED:
+        DeclaredType declaredType = (DeclaredType) type;
+        return !declaredType.getTypeArguments().isEmpty();
+
+      default:
+        return false;
+    }
   }
 
   /**

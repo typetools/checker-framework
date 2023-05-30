@@ -54,7 +54,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    * the AutoValue toBuilder method, and has no effect if {@code tree} is a call to any other
    * constructor.
    *
-   * @param tree AST for a constructor call
+   * @param tree an AST for a constructor call
    * @param type type of the call expression
    */
   @Override
@@ -170,7 +170,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
    *
    * @param type type to update
    * @param builderType type of abstract @AutoValue.Builder class
-   * @param classElement AutoValue class corresponding to {@code type}
+   * @param classElement an AutoValue class corresponding to {@code type}
    */
   private void handleToBuilderType(
       AnnotatedTypeMirror type, TypeMirror builderType, TypeElement classElement) {
