@@ -110,14 +110,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotationMirrorSet annos, TypeMirror typeMirror, AnnotatedTypeFactory atypeFactory) {
 
     boolean canBeMissing = canBeMissingAnnotations(typeMirror);
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
-    if (!gatf.isRelevant(typeMirror)) {
-      AnnotationMirrorSet annosForIrrelevant = gatf.annotationsForIrrelevantJavaType(typeMirror);
-      if (!(canBeMissing
-          ? annosForIrrelevant.containsAll(annos)
-          : annos.equals(annosForIrrelevant))) {
-        return false;
-      }
+    if (canBeMissing) {
+      return true;
     }
 
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
@@ -132,7 +126,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    return canBeMissing || missingHierarchy == null;
+    return missingHierarchy == null;
   }
 
   /**
