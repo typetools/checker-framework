@@ -1708,7 +1708,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree the type tree
    * @return the (partially) annotated type of the type in the AST
    */
-  /* package private */ final AnnotatedTypeMirror fromTypeTree(Tree tree) {
+  /*package-private*/ final AnnotatedTypeMirror fromTypeTree(Tree tree) {
     if (shouldCache && fromTypeTreeCache.containsKey(tree)) {
       return fromTypeTreeCache.get(tree).deepCopy();
     }
@@ -5291,6 +5291,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new IdentityHashMap<>();
       visit(type.getLowerBound(), mapping);
       visit(type.getUpperBound(), mapping);
+      this.capturedTypeVarToAnnotatedTypeVar = null;
     }
 
     @Override

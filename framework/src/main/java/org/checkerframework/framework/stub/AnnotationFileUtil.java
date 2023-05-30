@@ -123,7 +123,7 @@ public class AnnotationFileUtil {
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
    *     otherwise.
    */
-  /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
     int indexOfDot = className.lastIndexOf('.');
 
@@ -151,12 +151,12 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static TypeDeclaration<?> findDeclaration(
       TypeElement type, StubUnit indexFile) {
     return findDeclaration(type.getQualifiedName().toString(), indexFile);
   }
 
-  /*package-scope*/ static FieldDeclaration findDeclaration(
+  /*package-private*/ static FieldDeclaration findDeclaration(
       VariableElement field, StubUnit indexFile) {
     TypeDeclaration<?> type = findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
     if (type == null) {
@@ -177,7 +177,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-scope*/ static BodyDeclaration<?> findDeclaration(
+  /*package-private*/ static BodyDeclaration<?> findDeclaration(
       ExecutableElement method, StubUnit indexFile) {
     TypeDeclaration<?> type =
         findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
@@ -201,7 +201,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-scope*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static TypeDeclaration<?> findDeclaration(
       String simpleName, CompilationUnit cu) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       if (simpleName.equals(type.getNameAsString())) {
@@ -212,29 +212,29 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-scope*/ static String toString(MethodDeclaration method) {
+  /*package-private*/ static String toString(MethodDeclaration method) {
     return ElementPrinter.toString(method);
   }
 
-  /*package-scope*/ static String toString(ConstructorDeclaration constructor) {
+  /*package-private*/ static String toString(ConstructorDeclaration constructor) {
     return ElementPrinter.toString(constructor);
   }
 
-  /*package-scope*/ static String toString(VariableDeclarator field) {
+  /*package-private*/ static String toString(VariableDeclarator field) {
     return field.getNameAsString();
   }
 
-  /*package-scope*/ static String toString(FieldDeclaration field) {
+  /*package-private*/ static String toString(FieldDeclaration field) {
     assert field.getVariables().size() == 1;
     return toString(field.getVariables().get(0));
   }
 
-  /*package-scope*/ static String toString(VariableElement element) {
+  /*package-private*/ static String toString(VariableElement element) {
     assert element.getKind().isField();
     return element.getSimpleName().toString();
   }
 
-  /*package-scope*/ static String toString(Element element) {
+  /*package-private*/ static String toString(Element element) {
     if (element instanceof ExecutableElement) {
       return toString((ExecutableElement) element);
     } else if (element instanceof VariableElement) {
