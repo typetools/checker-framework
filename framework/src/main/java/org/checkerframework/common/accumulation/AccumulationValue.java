@@ -17,8 +17,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * confused with "Value" in the name of this class) that cannot be stored in the accumulation type,
  * because they are not a refinement of that type. This situation occurs for type variables and
  * wildcards, for which calling {@link AccumulationTransfer#accumulate(Node, TransferResult,
- * String...)} would otherwise have no effect (since the types are invariant: Accumulator(a) T is
- * not a supertype of Accumulator(a,b) T, for any Accumulator annotation). This enables an
+ * String...)} would otherwise have no effect (since the types are invariant: T is not a supertype
+ * of Accumulator(a) T unless both bounds of T are supertypes of Accumulator(a)). This enables an
  * accumulation checker (or, typically, a client of that accumulation checker) to resolve
  * accumulated facts even on types that are type variables. For example, the Resource Leak Checker
  * uses this facility to check that calls to close() on variables whose type is a type variable have
