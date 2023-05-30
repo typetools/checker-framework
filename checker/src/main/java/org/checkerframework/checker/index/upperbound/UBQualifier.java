@@ -436,7 +436,7 @@ public abstract class UBQualifier {
      * @param i an integer
      * @return true if the given integer literal is a subtype of this
      */
-    /*package-protected*/ boolean literalIsSubtype(int i) {
+    /*package-private*/ boolean literalIsSubtype(int i) {
       for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
         for (OffsetEquation equation : entry.getValue()) {
           if (!equation.isInt()) {
@@ -1426,7 +1426,7 @@ public abstract class UBQualifier {
   /** The bottom qualifier for the upperbound type system. */
   private static class UpperBoundBottomQualifier extends UBQualifier {
     /** The canonical bottom qualifier for the upperbound type system. */
-    static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+    public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
     /** This class is a singleton. */
     private UpperBoundBottomQualifier() {}
