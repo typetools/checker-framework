@@ -25,9 +25,15 @@ public class AccumulationValueTest {
   }
 
   // :: error: required.method.not.called
-  <T extends MCAB> void simple1(@MustCall({"a", "b"}) T mcab, boolean b) {
+  <T extends MCAB> void simple3(@MustCall({"a", "b"}) T mcab, boolean b) {
     // tests lubbing two AccumulationValue at a join
     if (b) mcab.a();
     mcab.b();
+  }
+
+  // :: error: ? but there definitely should be one
+  <T extends MCAB> void simple4(@MustCall({"a"}) T mcab) {
+    // test that incompatible bounds leads to a warning
+    mcab.a();
   }
 }
