@@ -1,7 +1,7 @@
 package org.checkerframework.common.accumulation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -37,7 +37,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
    * values. Otherwise, it is null.
    */
-  private @Nullable List<String> accumulatedValues = null;
+  private @Nullable Set<String> accumulatedValues = null;
 
   /**
    * Creates a new CFAbstractValue.
@@ -63,7 +63,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
         }
       }
       if (accumulator != null) {
-        accumulatedValues = typeFactory.getAccumulatedValues(accumulator);
+        accumulatedValues = new HashSet<>(typeFactory.getAccumulatedValues(accumulator));
       }
     }
   }
@@ -72,9 +72,9 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
    * values. Otherwise, it is null.
    *
-   * @return the list (this is not a copy of the list, but an alias)
+   * @return the set (this is not a copy of the set, but an alias)
    */
-  public List<String> getAccumulatedValues() {
+  public Set<String> getAccumulatedValues() {
     return accumulatedValues;
   }
 
@@ -85,7 +85,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
       return lub;
     }
     // Lub the accumulatedValues by intersecting the lists as if they were sets.
-    lub.accumulatedValues = new ArrayList<>(this.accumulatedValues.size());
+    lub.accumulatedValues = new HashSet<>(this.accumulatedValues.size());
     lub.accumulatedValues.addAll(this.accumulatedValues);
     lub.accumulatedValues.retainAll(other.accumulatedValues);
     if (lub.accumulatedValues.isEmpty()) {
@@ -127,13 +127,27 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    *
    * @param newAccumulatedValues a new list of accumulated values
    */
-  private void addAccumulatedValues(List<String> newAccumulatedValues) {
+  private void addAccumulatedValues(Set<String> newAccumulatedValues) {
     if (newAccumulatedValues == null || newAccumulatedValues.isEmpty()) {
       return;
     }
     if (accumulatedValues == null) {
-      accumulatedValues = new ArrayList<>(newAccumulatedValues.size());
+      accumulatedValues = new HashSet<>(newAccumulatedValues.size());
     }
     accumulatedValues.addAll(newAccumulatedValues);
+  }
+
+  @Override
+  public String toString() {
+    String superToString = super.toString();
+    // remove last '}'
+    superToString = superToString.substring(0, superToString.length() - 1);
+    return superToString
+        + ", "
+        + "["
+        + (accumulatedValues == null
+            ? "null"
+            : String.join(", ", accumulatedValues.toArray(new String[0])))
+        + "] }";
   }
 }

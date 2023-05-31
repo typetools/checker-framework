@@ -2,8 +2,10 @@ package org.checkerframework.common.accumulation;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -70,36 +72,15 @@ public class AccumulationTransfer
   public void accumulate(
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     List<String> valuesAsList = Arrays.asList(values);
-    // If dataflow has already recorded information about the target, fetch it and integrate
-    // it into the list of values in the new annotation.
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
-      AccumulationValue flowValue = result.getRegularStore().getValue(target);
-      if (flowValue != null) {
-        List<String> accumulatedValues = flowValue.getAccumulatedValues();
-        if (accumulatedValues != null) {
-          valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
-        } else {
-          AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-          assert flowAnnos.size() <= 1;
-          for (AnnotationMirror anno : flowAnnos) {
-            if (atypeFactory.isAccumulatorAnnotation(anno)) {
-              List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
-              if (!oldFlowValues.isEmpty()) {
-                // valuesAsList cannot have its length changed -- it is backed by an
-                // array -- but if oldFlowValues is not empty, it is a new, modifiable
-                // list.
-                oldFlowValues.addAll(valuesAsList);
-                valuesAsList = oldFlowValues;
-              }
-            }
-          }
-        }
+      if (result.containsTwoStores()) {
+        updateValueAndInsertIntoStore(result.getThenStore(), target, valuesAsList);
+        updateValueAndInsertIntoStore(result.getElseStore(), target, valuesAsList);
+      } else {
+        updateValueAndInsertIntoStore(result.getRegularStore(), target, valuesAsList);
       }
     }
-
-    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-    insertIntoStores(result, target, newAnno);
 
     Tree tree = node.getTree();
     if (tree != null && tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
@@ -108,5 +89,46 @@ public class AccumulationTransfer
         accumulate(receiver, result, values);
       }
     }
+  }
+
+  /**
+   * Updates {@code target} in {@code store} so that {@code store}'s estimate includes the
+   * newly-accumulated values in {@code values}. If dataflow has already recorded information about
+   * the target, this method fetches it and integrates it into the list of values in the new
+   * annotation.
+   *
+   * @param store a store
+   * @param target an insertable JavaExpression ({@code canInsertJavaExpression(target)} should have
+   *     returned true)
+   * @param values a list of newly-accumulated values
+   */
+  private void updateValueAndInsertIntoStore(
+      AccumulationStore store, JavaExpression target, List<String> values) {
+    // Make a modifiable copy of the list.
+    List<String> valuesAsList = new ArrayList<>(values);
+    AccumulationValue flowValue = store.getValue(target);
+    if (flowValue != null) {
+      Set<String> accumulatedValues = flowValue.getAccumulatedValues();
+      if (accumulatedValues != null) {
+        valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
+      } else {
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+        assert flowAnnos.size() <= 1;
+        for (AnnotationMirror anno : flowAnnos) {
+          if (atypeFactory.isAccumulatorAnnotation(anno)) {
+            List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
+            if (!oldFlowValues.isEmpty()) {
+              // valuesAsList cannot have its length changed -- it is backed by an
+              // array -- but if oldFlowValues is not empty, it is a new, modifiable
+              // list.
+              oldFlowValues.addAll(valuesAsList);
+              valuesAsList = oldFlowValues;
+            }
+          }
+        }
+      }
+    }
+    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+    store.insertValue(target, newAnno);
   }
 }

@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -330,17 +331,19 @@ public abstract class AccumulationAnnotatedTypeFactory
   }
 
   /**
-   * Returns the list of accumulated values on the given (expression, usually) tree. This differs
-   * from calling {@link #getAnnotatedType(Tree)}, because this version takes into account
-   * accumulated methods that are stored on the value. This is useful when dealing with accumulated
-   * facts on variables whose types are type variables (because type variable types cannot be
-   * refined directly, due to the quirks of subtyping between type variables and its interactions
-   * with the qualified type system).
+   * Returns the accumulated values on the given (expression, usually) tree. This differs from
+   * calling {@link #getAnnotatedType(Tree)}, because this version takes into account accumulated
+   * methods that are stored on the value. This is useful when dealing with accumulated facts on
+   * variables whose types are type variables (because type variable types cannot be refined
+   * directly, due to the quirks of subtyping between type variables and its interactions with the
+   * qualified type system).
+   *
+   * <p>The returned collection may be either a list or a set.
    *
    * @param tree a tree
-   * @return the list of accumulated values for the given tree, including those stored on the value
+   * @return the accumulated values for the given tree, including those stored on the value
    */
-  public List<String> getAccumulatedValues(Tree tree) {
+  public Collection<String> getAccumulatedValues(Tree tree) {
     AnnotatedTypeMirror type = getAnnotatedType(tree);
     AnnotationMirror anno = type.getAnnotationInHierarchy(top);
     if (anno != null && isAccumulatorAnnotation(anno)) {
@@ -349,7 +352,7 @@ public abstract class AccumulationAnnotatedTypeFactory
       // Handle type variables and wildcards.
       AccumulationValue inferredValue = getInferredValueFor(tree);
       if (inferredValue != null) {
-        List<String> accumulatedValues = inferredValue.getAccumulatedValues();
+        Set<String> accumulatedValues = inferredValue.getAccumulatedValues();
         if (accumulatedValues != null) {
           return accumulatedValues;
         }

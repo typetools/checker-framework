@@ -2032,7 +2032,7 @@ class MustCallConsistencyAnalyzer {
       AnnotationMirror cmAnno = null;
 
       if (aliasCFValue != null) { // When store contains the lhs
-        List<String> accumulatedValues = aliasCFValue.getAccumulatedValues();
+        Set<String> accumulatedValues = aliasCFValue.getAccumulatedValues();
         if (accumulatedValues != null) {
           cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
         } else {
