@@ -177,7 +177,7 @@ import org.plumelib.util.CollectionsPlume;
  * </ol>
  *
  * @see "JLS $4"
- * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
+ * @see TypeHierarchy#isSubtype
  * @see AnnotatedTypeFactory
  */
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
@@ -873,7 +873,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.getFieldInvariants(TypesUtils.getTypeElement(superClass));
     if (superInvar != null) {
       // Checks #3 (see method Javadoc)
-      DiagMessage superError = invariants.isSuperInvariant(superInvar);
+      DiagMessage superError = invariants.isStrongerThan(superInvar);
       if (superError != null) {
         checker.report(errorTree, superError);
       }
@@ -1137,8 +1137,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * supertype of the class, then a conflicting.annos error will also be issued by {@link
    * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
    *
-   * @param constructorType AnnotatedExecutableType for the constructor
-   * @param constructorElement element that declares the constructor
+   * @param constructorType the AnnotatedExecutableType for the constructor
+   * @param constructorElement the element that declares the constructor
    */
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
@@ -2743,7 +2743,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * to enforce that exception parameter be annotated with other annotations can just override
    * {@link #getExceptionParameterLowerBoundAnnotations()}.
    *
-   * @param tree CatchTree to check
+   * @param tree a CatchTree to check
    */
   protected void checkExceptionParameter(CatchTree tree) {
 
@@ -2799,7 +2799,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * #getExceptionParameterLowerBoundAnnotations}, should override {@link
    * #getThrowUpperBoundAnnotations()}.
    *
-   * @param tree ThrowTree to check
+   * @param tree a ThrowTree to check
    */
   protected void checkThrownExpression(ThrowTree tree) {
     AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(tree.getExpression());

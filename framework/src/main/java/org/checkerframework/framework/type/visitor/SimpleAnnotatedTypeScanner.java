@@ -39,7 +39,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * The action to perform on every type.
      *
-     * @param type AnnotatedTypeMirror on which to perform some action
+     * @param type a type on which to perform some action
      * @param p argument to pass to the action
      * @return result of the action
      */

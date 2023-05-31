@@ -164,6 +164,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
@@ -1804,9 +1805,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           }
           extendWithNode(operNode);
 
-          TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+          TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+          TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
           handleArtificialTree(castTree);
-          TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+          TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
           castNode.setInSource(false);
           extendWithNode(castNode);
 
@@ -1854,9 +1856,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             }
             extendWithNode(operNode);
 
-            TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+            TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+            TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
             handleArtificialTree(castTree);
-            TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+            TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
             castNode.setInSource(false);
             extendWithNode(castNode);
 
@@ -1896,9 +1899,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           }
           extendWithNode(operNode);
 
-          TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+          TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+          TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
           handleArtificialTree(castTree);
-          TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+          TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
           castNode.setInSource(false);
           extendWithNode(castNode);
 
@@ -1944,9 +1948,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         extendWithNode(operNode);
 
-        TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+        TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+        TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
         handleArtificialTree(castTree);
-        TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+        TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
         castNode.setInSource(false);
         extendWithNode(castNode);
 

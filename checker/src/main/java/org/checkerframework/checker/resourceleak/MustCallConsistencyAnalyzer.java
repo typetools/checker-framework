@@ -72,6 +72,7 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -299,10 +300,11 @@ class MustCallConsistencyAnalyzer {
       // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
       // method was called on just one of the aliases then they all need to be treated as if
       // they need to call the relevant methods.
+      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = mustCallAnnotatedTypeFactory.getQualifierHierarchy().leastUpperBound(mcLub, mcAnno);
+        mcLub = qualHierarchy.leastUpperBound(mcLub, mcAnno);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
@@ -396,7 +398,7 @@ class MustCallConsistencyAnalyzer {
     /** A local variable defined in the source code or a temporary variable for an expression. */
     public final LocalVariable reference;
 
-    /** The tree at which {@code reference} was assigned, for the purpose of error reporting */
+    /** The tree at which {@code reference} was assigned, for the purpose of error reporting. */
     public final Tree tree;
 
     /**
@@ -1707,7 +1709,7 @@ class MustCallConsistencyAnalyzer {
    * then the Obligation is passed forward to the successor ("propagated") with any definitely
    * out-of-scope aliases removed from its resource alias set.
    *
-   * @param obligations Obligations for the current block
+   * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
