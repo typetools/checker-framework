@@ -1,3 +1,22 @@
+Version 3.36.0 (July 5, 2023)
+------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+`QualifierHierarchy`:
+ * The constructor takes an `AnnotatedTypeFactory`.
+ * Changes to `isSubtype()`:
+    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
+      or, rarely, new method `isSubtypeQualifiersOnly()`.
+    * New public method `isSubtypeShallow()' that takes two more arguments than
+      `isSubypeQualifiers()`.
+
+**Closed issues:**
+
+
 Version 3.35.0 (June 1, 2023)
 ------------------------------
 
@@ -11,14 +30,6 @@ Signedness Checker:
 
 **Implementation details:**
 
-`QualifierHierarchy`:
- * The constructor takes an `AnnotatedTypeFactory`.
- * Changes to `isSubtype()`:
-    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
-      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
-      or, rarely, new method `isSubtypeQualifiersOnly()`.
-    * New public method `isSubtypeShallow()' that takes two more arguments than
-      `isSubypeQualifiers()`.
  * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
