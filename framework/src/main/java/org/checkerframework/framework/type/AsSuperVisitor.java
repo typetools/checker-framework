@@ -93,6 +93,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return (T) result;
   }
 
+  /** Resets this. */
   private void reset() {
     isUninferredTypeArgument = false;
   }

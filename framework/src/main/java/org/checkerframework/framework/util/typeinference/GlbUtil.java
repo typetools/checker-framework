@@ -32,7 +32,7 @@ public class GlbUtil {
    *
    * @param typeMirrors the types to glb
    * @param typeFactory the type factory
-   * @return the greatest lower bound of typeMirrors.
+   * @return the greatest lower bound of typeMirrors
    */
   public static AnnotatedTypeMirror glbAll(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {
