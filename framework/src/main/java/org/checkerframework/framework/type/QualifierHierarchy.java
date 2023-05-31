@@ -214,7 +214,7 @@ public abstract class QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtypeQualifiers(subQual, superQual)) {
+      if (!isSubtypeShallow(subQual, subType, superQual, superType)) {
         return false;
       }
     }
