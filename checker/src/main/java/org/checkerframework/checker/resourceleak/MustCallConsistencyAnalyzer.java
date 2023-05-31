@@ -1385,6 +1385,41 @@ class MustCallConsistencyAnalyzer {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
+    // Special case: re-assigning a field to a value in an owning position on the RHS is
+    // permitted. For example, if the field is a class whose constructor takes another instance
+    // of itself (such as a node in a linked list) in an owning position, re-assigning the field
+    // to a new instance that takes the field's value as an owning parameter is safe (the new value
+    // has taken responsibility for closing the old value). In that case, it is safe to skip the
+    // must call vs called methods check below (but an @CreatesMustCallFor annotation is still
+    // required, so this special case must be here).
+    Node rhs = node.getExpression();
+    if (!noLightweightOwnership
+        && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
+
+      List<Node> arguments = getArgumentsOfInvocation(rhs);
+      List<? extends VariableElement> parameters = getParametersOfInvocation(rhs);
+
+      if (arguments.size() == parameters.size()) {
+        for (int i = 0; i < arguments.size(); i++) {
+          VariableElement param = parameters.get(i);
+          if (typeFactory.hasOwning(param)) {
+            Node argument = arguments.get(i);
+            if (argument.equals(lhs)) {
+              return;
+            }
+          }
+        }
+      } else {
+        // This could happen, e.g., with varargs, or with strange cases like generated Enum
+        // constructors. In the varargs case (i.e. if the varargs parameter is owning),
+        // only the first of the varargs arguments will actually get transferred: the second
+        // and later varargs arguments will continue to be tracked at the call-site.
+        // For now, just skip this case - the worst that will happen is a false positive in
+        // cases like the varargs one described above.
+        // TODO allow for ownership transfer here if needed in future, but for now do nothing
+      }
+    }
+
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
@@ -1411,7 +1446,6 @@ class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    Node rhs = node.getExpression();
     CFStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     CFValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
