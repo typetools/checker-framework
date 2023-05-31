@@ -131,11 +131,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
 
-    if (!checker.getTypeFactory().isRelevantOrCompound(subtype)
-        || !checker.getTypeFactory().isRelevantOrCompound(supertype)) {
-      return true;
-    }
-
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       if (!isSubtype(subtype, supertype, top)) {
         return false;
@@ -771,11 +766,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
-    // `isRelevantOrCompound(supertype)` is always true because `supertype` is compound.
-    if (!checker.getTypeFactory().isRelevant(subtype)) {
-      return true;
-    }
-
     if (supertype.atypeFactory.ignoreUninferredTypeArguments
         && supertype.isUninferredTypeArgument()) {
       return true;
@@ -956,11 +946,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitWildcard_Declared(
       AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, Void p) {
-
-    // `isRelevantOrCompound(subtype)` is always true because `subtype` is compound.
-    if (!checker.getTypeFactory().isRelevantOrCompound(supertype)) {
-      return true;
-    }
 
     if (subtype.isUninferredTypeArgument()) {
       if (subtype.atypeFactory.ignoreUninferredTypeArguments) {

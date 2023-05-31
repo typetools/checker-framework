@@ -491,7 +491,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       if (widen) {
         return qualHierarchy.widenedUpperBound(a, b);
       } else {
-        return qualHierarchy.leastUpperBoundQualifiers(a, b);
+        return qualHierarchy.leastUpperBoundShallow(a, aTypeMirror, b, bTypeMirror);
       }
     }
 

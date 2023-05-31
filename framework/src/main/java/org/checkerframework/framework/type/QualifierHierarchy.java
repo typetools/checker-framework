@@ -214,7 +214,7 @@ public abstract class QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtypeQualifiers(subQual, superQual)) {
+      if (!isSubtypeShallow(subQual, subType, superQual, superType)) {
         return false;
       }
     }
@@ -239,7 +239,7 @@ public abstract class QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  public abstract @Nullable AnnotationMirror leastUpperBoundQualifiers(
+  protected abstract @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
