@@ -1,5 +1,6 @@
 package org.checkerframework.framework.testchecker.testaccumulation;
 
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -7,7 +8,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAnalysis;
 
 /** A basic transfer function that accumulates the names of methods called. */
 public class TestAccumulationTransfer extends AccumulationTransfer {
@@ -17,7 +17,7 @@ public class TestAccumulationTransfer extends AccumulationTransfer {
    *
    * @param analysis the analysis
    */
-  public TestAccumulationTransfer(CFAnalysis analysis) {
+  public TestAccumulationTransfer(AccumulationAnalysis analysis) {
     super(analysis);
   }
 
