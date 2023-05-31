@@ -332,6 +332,13 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
+      AnnotationMirror result =
+          mcAtf
+              .getAnnotatedType(reference.getElement())
+              .getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+      if (result != null) {
+        return result;
+      }
       // There wasn't an @MustCall annotation for it in the store, so fall back to the default
       // must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
@@ -349,7 +356,8 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
-      return mcAtf.getAnnotatedType(typeElt).getAnnotationInHierarchy(mcAtf.TOP);
+
+      return mcAtf.getAnnotatedType(typeElt).getEffectiveAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override

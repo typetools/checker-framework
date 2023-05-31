@@ -25,10 +25,7 @@ public class SneakyDrop {
     sneakyDrop2(x);
   }
 
-  // It's somewhat undesirable from the user perspective to get required.method.not.known
-  // with these annotations, but it's understandable. The user should write the MustCall annotation
-  // on the parameter itself (as in sneakyDrop2).
-  // :: error: required.method.not.known
+  // :: error: (required.method.not.called)
   public static <T extends @MustCall("close") Object> void sneakyDrop3(@Owning T value) {}
 
   public static void main3(String[] args) throws Exception {
@@ -36,7 +33,6 @@ public class SneakyDrop {
     sneakyDrop3(x);
   }
 
-  // :: error: required.method.not.known
   public static <T extends Object> void sneakyDrop4(@Owning T value) {}
 
   public static void main4(String[] args) throws Exception {
@@ -46,7 +42,7 @@ public class SneakyDrop {
   }
 
   // It's quite undesirable that this error isn't required.method.not.called.
-  // :: error: required.method.not.known
+  // :: error: (required.method.not.called)
   public static <T extends java.io.Closeable> void sneakyDrop5(@Owning T value) {}
 
   public static void main5(String[] args) throws Exception {
