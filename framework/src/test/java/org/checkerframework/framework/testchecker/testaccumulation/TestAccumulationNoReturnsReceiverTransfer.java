@@ -1,6 +1,6 @@
 package org.checkerframework.framework.testchecker.testaccumulation;
 
-import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 
 /**
  * Wrapper for TestAccumulationTransfer so that checker auto-discovery works for the version of the
@@ -12,7 +12,7 @@ public class TestAccumulationNoReturnsReceiverTransfer extends TestAccumulationT
    *
    * @param analysis the analysis
    */
-  public TestAccumulationNoReturnsReceiverTransfer(CFAnalysis analysis) {
+  public TestAccumulationNoReturnsReceiverTransfer(AccumulationAnalysis analysis) {
     super(analysis);
   }
 }
