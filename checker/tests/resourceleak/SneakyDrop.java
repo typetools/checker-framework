@@ -41,7 +41,6 @@ public class SneakyDrop {
     sneakyDrop4(x);
   }
 
-  // It's quite undesirable that this error isn't required.method.not.called.
   // :: error: (required.method.not.called)
   public static <T extends java.io.Closeable> void sneakyDrop5(@Owning T value) {}
 
