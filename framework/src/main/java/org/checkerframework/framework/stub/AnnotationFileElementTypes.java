@@ -797,10 +797,13 @@ public class AnnotationFileElementTypes {
           continue;
         }
         Path relativePath = root.relativize(path);
-        // 4: /src/<module>/share/classes
+        // The number 4 is to strip off "/src/<module>/share/classes".
         Path savepath = relativePath.subpath(4, relativePath.getNameCount());
-        String s = savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-        jdkStubFiles.put(s, path);
+        String savepathString = savepath.toString();
+        // The number 5 is to remove trailing ".java".
+        String savepathWithoutExtension = savepathString.substring(0, savepathString.length() - 5);
+        String fqName = savepathWithoutExtension.replace(File.separatorChar, '.');
+        jdkStubFiles.put(fqName, path);
       }
     } catch (IOException e) {
       throw new BugInCF("prepJdkFromFile(" + resourceURL + ")", e);
@@ -826,20 +829,17 @@ public class AnnotationFileElementTypes {
             // JavaParser can't parse module-info files, so skip them.
             && !jarEntry.getName().contains("module-info")) {
           String jarEntryName = jarEntry.getName();
-          if (parseAllJdkFiles) {
+          if (parseAllJdkFiles || jarEntryName.endsWith("package-info.java")) {
             parseJdkJarEntry(jarEntryName);
             continue;
           }
-          int index = jarEntry.getName().indexOf("/share/classes/");
-          String shortName =
+          int index = jarEntryName.indexOf("/share/classes/");
+          // "-5" is to remove ".java" from end of file name
+          String fqClassName =
               jarEntryName
-                  .substring(index + "/share/classes/".length())
-                  .replace(".java", "")
+                  .substring(index + "/share/classes/".length(), jarEntryName.length() - 5)
                   .replace('/', '.');
-          jdkStubFilesJar.put(shortName, jarEntryName);
-          if (jarEntryName.endsWith("package-info.java")) {
-            parseJdkJarEntry(jarEntryName);
-          }
+          jdkStubFilesJar.put(fqClassName, jarEntryName);
         }
       }
     } catch (IOException e) {
