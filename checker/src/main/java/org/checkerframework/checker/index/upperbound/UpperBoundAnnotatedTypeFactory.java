@@ -710,18 +710,18 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       AnnotatedTypeMirror leftType = getAnnotatedType(left);
-      AnnotationMirror leftResultType = UNKNOWN;
+      AnnotationMirror leftResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(left)) {
-        leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
+        leftResultAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
       }
 
       AnnotatedTypeMirror rightType = getAnnotatedType(right);
-      AnnotationMirror rightResultType = UNKNOWN;
+      AnnotationMirror rightResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(right)) {
-        rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
+        rightResultAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
       }
 
-      type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
+      type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultAnno, rightResultAnno));
     }
 
     /** Gets a sequence tree for a length access tree, or null if it is not a length access. */

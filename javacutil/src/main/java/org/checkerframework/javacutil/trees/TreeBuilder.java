@@ -212,7 +212,6 @@ public class TreeBuilder {
    * @return a MemberSelectTree to dereference the length of the array
    */
   public MemberSelectTree buildArrayLengthAccess(ExpressionTree expression) {
-
     return (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) expression, symtab.lengthVar);
   }
 
@@ -620,7 +619,7 @@ public class TreeBuilder {
    * Builds an AST Tree to perform a binary operation.
    *
    * @param type result type of the operation
-   * @param op AST Tree operator
+   * @param op an AST Tree operator
    * @param left the left operand tree
    * @param right the right operand tree
    * @return a Tree representing "left &lt; right"

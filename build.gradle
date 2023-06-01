@@ -107,7 +107,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.34.1-SNAPSHOT'
+  version '3.35.0'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -177,6 +177,7 @@ allprojects {
     hashmapUtilVersion = '0.0.1'
     reflectionUtilVersion = '1.1.0'
     plumeUtilVersion = '1.7.0'
+    lombokVersion = '1.18.28'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -763,7 +764,7 @@ subprojects {
   if (!project.name.startsWith('checker-qual-android')) {
     task tags(type: Exec) {
       description 'Create Emacs TAGS table'
-      commandLine 'bash', '-c', "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
     }
   }
 
@@ -1078,7 +1079,7 @@ jar.onlyIf {false}
 
 /**
  * Adds the shared pom information to the given publication.
- * @param publication MavenPublication
+ * @param publication the MavenPublication
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {
