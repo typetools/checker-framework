@@ -239,7 +239,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return the type-checking visitor
    */
   @Override
-  @SuppressWarnings("mustcall:return") // generics problem
   protected BaseTypeVisitor<?> createSourceVisitor() {
     // Try to reflectively load the visitor.
     Class<?> checkerClass = this.getClass();

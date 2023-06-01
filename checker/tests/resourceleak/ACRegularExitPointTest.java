@@ -109,13 +109,17 @@ class ACRegularExitPointTest {
 
     Foo f = makeFoo();
     f.a();
-    Function<Foo, @CalledMethods("a") Foo> innerfunc =
+    Function<@MustCall Foo, @CalledMethods("a") @MustCall Foo> innerfunc =
         st -> {
           // :: error: (required.method.not.called)
           Foo fn1 = new Foo();
           Foo fn2 = makeFoo();
           fn2.a();
-          return fn2;
+          // The need for this cast is undesirable, but is a consequence of our approach to
+          // generic types. In this case, this cast is clearly safe (a() has already been called,
+          // so the obligation is satisfied on the returned value, as intended).
+          // :: warning: cast.unsafe
+          return ((@MustCall Foo) fn2);
         };
 
     innerfunc.apply(f);

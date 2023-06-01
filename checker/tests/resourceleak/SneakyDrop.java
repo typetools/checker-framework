@@ -9,11 +9,11 @@ class Resource implements java.io.Closeable {
 
 public class SneakyDrop {
 
-  // :: error: required.method.not.known
   public static <T> void sneakyDrop(@Owning T value) {}
 
   public static void main(String[] args) throws Exception {
     Resource x = new Resource();
+    // :: error: type.argument
     sneakyDrop(x);
   }
 

@@ -160,7 +160,6 @@ public final class TreeUtils {
           if (nested.isEnum() && nested.getSimpleName().equals("CaseKind")) {
             @SuppressWarnings({
               "nullness:assignment",
-              "mustcall:assignment"
             }) // capture problem; fix later
             Object @NonNull [] enumConstants = nested.getEnumConstants();
             for (Object enumConstant : enumConstants) {
