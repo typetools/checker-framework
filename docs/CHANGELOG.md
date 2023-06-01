@@ -5,7 +5,10 @@ Version 3.36.0 (July 5, 2023)
 
 **Implementation details:**
 
+Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
+
 **Closed issues:**
+
 
 Version 3.35.0 (June 1, 2023)
 ------------------------------
