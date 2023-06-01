@@ -1022,7 +1022,7 @@ public class ElementUtils {
       try {
         getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
       } catch (NoSuchMethodException e) {
-        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
       }
     } else {
       getRecordComponentsMethod = null;
