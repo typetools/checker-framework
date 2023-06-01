@@ -331,7 +331,9 @@ public class ElementUtils {
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
+   * @deprecated use {@link #getSimpleDescription}
    */
+  @Deprecated // 2023-06-01
   public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
     Name result = element.getSimpleName();
     switch (result.toString()) {
@@ -341,6 +343,26 @@ public class ElementUtils {
         return "class initializer";
       default:
         return result;
+    }
+  }
+
+  /**
+   * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
+   * "<clinit>"} as ExecutableElement.getSimpleName() does.
+   *
+   * @param element a method declaration
+   * @return a user-friendly name for the method
+   */
+  public static CharSequence getSimpleDescription(ExecutableElement element) {
+    TypeElement enclosingTypeName = (TypeElement) element.getEnclosingElement().getSimpleName();
+    Name methodName = element.getSimpleName();
+    switch (methodName.toString()) {
+      case "<init>":
+        return enclosingTypeName + " constructor";
+      case "<clinit>":
+        return "class initializer for " + enclosingTypeName;
+      default:
+        return enclosingTypeName + "." + methodName;
     }
   }
 
