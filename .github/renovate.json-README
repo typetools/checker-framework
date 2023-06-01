@@ -1,8 +1,18 @@
+This works:
+
+  "packageRules": [
+    {
+      "matchPackageNames": ["com.amazonaws:aws-java-sdk-bom"],
+      "schedule": ["before 3am on the first day of the month"]
+    }
+  ]
+
+===========================================================================
+
 This schedule doesn't work:  Renovate accepts it but updates the dependency every day.
-      "schedule": ["on the last day of the month"],
+      "schedule": ["on the last day of the month"]
 This schedule doesn't work:  Renovate accepts it but updates the dependency every day.
       "schedule": ["* 23 28 * *"]
-
-Or, more likely, the problem was with
+Or, more likely, the problems were with
       "matchPackageNames": ["aws-java-sdk-bom"],
 which I used for both of the above.
