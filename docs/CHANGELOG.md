@@ -32,13 +32,16 @@ Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements
 
 Class `FieldInvariants`:
  * constructor now takes an `AnnotatedTypeFactory`
- * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
+ * `isSuperInvariant()` has been renamed to `isStrongerThan()` and
+   no longer takes an `AnnotatedTypeFactory`
 
 `CFAbstractValue.validateSet()` takes a type factory rather than a `QualifierHierarchy`.
 
 Removed methods that have been deprecated for over two years.
 
 **Closed issues:**
+
+#4170, #5722, #5777, #5807, #5821, #5826, #5829, #5837, #5930.
 
 
 Version 3.34.0 (May 2, 2023)

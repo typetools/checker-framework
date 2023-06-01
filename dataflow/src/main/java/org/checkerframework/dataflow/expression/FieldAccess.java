@@ -45,7 +45,7 @@ public class FieldAccess extends JavaExpression {
    * Create a {@code FieldAccess}.
    *
    * @param receiver receiver of the field access
-   * @param node FieldAccessNode
+   * @param node the FieldAccessNode
    */
   public FieldAccess(JavaExpression receiver, FieldAccessNode node) {
     this(receiver, node.getType(), node.getElement());

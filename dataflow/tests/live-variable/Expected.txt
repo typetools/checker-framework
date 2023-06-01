@@ -98,6 +98,9 @@ AnalysisResult#13
 Before:   live variables = a
 ~~~~~~~~~
 (1 / a)   [ IntegerDivision ]
+~~~~~~~~~
+TransferInput#19
+After:   live variables = a
 
 13:
 Process order: 8

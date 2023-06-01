@@ -18,7 +18,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
@@ -121,7 +120,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    *
    * <p>Top-level type is not checked if tree is a local variable or an expression tree.
    *
-   * @param type AnnotatedTypeMirror being validated
+   * @param type the AnnotatedTypeMirror being validated
    * @param tree a Tree whose type is {@code type}
    * @return whether or not the top-level type should be checked, if {@code type} is a declared or
    *     primitive type.
@@ -188,8 +187,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     for (AnnotationMirror anno : annotations) {
       AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
       if (AnnotationUtils.containsSame(seenTops, top)) {
-        return Collections.singletonList(
-            new DiagMessage(Kind.ERROR, "conflicting.annos", annotations, type));
+        return Collections.singletonList(DiagMessage.error("conflicting.annos", annotations, type));
       }
       seenTops.add(top);
     }
@@ -198,8 +196,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     // wrong number of annotations
     if (!canHaveEmptyAnnotationSet && seenTops.size() < qualHierarchy.getWidth()) {
-      return Collections.singletonList(
-          new DiagMessage(Kind.ERROR, "too.few.annotations", annotations, type));
+      return Collections.singletonList(DiagMessage.error("too.few.annotations", annotations, type));
     }
 
     // success

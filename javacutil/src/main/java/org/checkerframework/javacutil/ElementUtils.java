@@ -55,6 +55,9 @@ public class ElementUtils {
     throw new AssertionError("Class ElementUtils cannot be instantiated.");
   }
 
+  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
+  private static final long Flags_GENERATED_MEMBER = 16777216;
+
   /**
    * Returns the innermost type element that is, or encloses, the given element.
    *
@@ -447,7 +450,7 @@ public class ElementUtils {
   /**
    * Returns the field of the class or {@code null} if not found.
    *
-   * @param type TypeElement to search
+   * @param type the TypeElement to search
    * @param name name of a field
    * @return the VariableElement for the field if it was found, null otherwise
    */
@@ -872,10 +875,9 @@ public class ElementUtils {
     if (!(e instanceof Symbol)) {
       return false;
     }
-
     // Generated constructors seem to get GENERATEDCONSTR even though the documentation
     // seems to imply they would get GENERATED_MEMBER like the fields do.
-    return (((Symbol) e).flags() & (TreeUtils.Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
+    return (((Symbol) e).flags() & (Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
   }
 
   /**
@@ -1020,7 +1022,7 @@ public class ElementUtils {
       try {
         getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
       } catch (NoSuchMethodException e) {
-        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
       }
     } else {
       getRecordComponentsMethod = null;

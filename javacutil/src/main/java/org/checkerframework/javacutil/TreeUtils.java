@@ -26,7 +26,6 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -104,9 +103,6 @@ public final class TreeUtils {
 
   /** Unique IDs for trees. Used instead of hash codes, so output is deterministic. */
   public static final UniqueIdMap<Tree> treeUids = new UniqueIdMap<>();
-
-  /** The value of Flags.GENERATED_MEMBER which does not exist in Java 9 or 11. */
-  /*package-private*/ static final long Flags_GENERATED_MEMBER = 16777216;
 
   /** The value of Flags.RECORD which does not exist in Java 9 or 11. */
   private static final long Flags_RECORD = 2305843009213693952L;
@@ -1080,7 +1076,7 @@ public final class TreeUtils {
 
   static {
     classAndMethodTreeKinds = EnumSet.copyOf(classTreeKinds());
-    classAndMethodTreeKinds.add(Kind.METHOD);
+    classAndMethodTreeKinds.add(Tree.Kind.METHOD);
   }
 
   /**
@@ -1803,7 +1799,7 @@ public final class TreeUtils {
    * method is referred to as the function type.)
    *
    * @param tree lambda or member reference tree
-   * @param env ProcessingEnvironment
+   * @param env the processing environment
    * @return the single abstract method declared by the type of the tree
    */
   public static ExecutableElement findFunction(Tree tree, ProcessingEnvironment env) {

@@ -68,9 +68,9 @@ public abstract class MostlyNoElementQualifierHierarchy extends ElementQualifier
    * {@code superKind}.
    *
    * @param subAnno possible subtype annotation; has elements
-   * @param subKind QualifierKind of {@code subAnno}
+   * @param subKind the QualifierKind of {@code subAnno}
    * @param superAnno possible super annotation; has elements
-   * @param superKind QualifierKind of {@code superAnno}
+   * @param superKind the QualifierKind of {@code superAnno}
    * @return true if {@code subAnno} is a subtype of {@code superAnno}
    */
   protected abstract boolean isSubtypeWithElements(

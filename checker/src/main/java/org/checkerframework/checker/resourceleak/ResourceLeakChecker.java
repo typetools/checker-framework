@@ -1,7 +1,7 @@
 package org.checkerframework.checker.resourceleak;
 
 import java.util.LinkedHashSet;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -84,9 +84,9 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   @Override
   public void typeProcessingOver() {
     if (hasOption(COUNT_MUST_CALL)) {
-      message(Kind.WARNING, "Found %d must call obligation(s).%n", numMustCall);
+      message(Diagnostic.Kind.WARNING, "Found %d must call obligation(s).%n", numMustCall);
       message(
-          Kind.WARNING,
+          Diagnostic.Kind.WARNING,
           "Successfully verified %d must call obligation(s).%n",
           numMustCall - numMustCallFailed);
     }

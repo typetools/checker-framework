@@ -355,7 +355,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
    *       public MyClass() {}}).
    * </ul>
    *
-   * @param tree NewClassTree
+   * @param tree a NewClassTree
    * @param f the type factory
    * @return AnnotatedDeclaredType of {@code tree}
    */

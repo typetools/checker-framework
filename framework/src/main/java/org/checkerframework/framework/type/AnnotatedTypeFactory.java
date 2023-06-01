@@ -19,6 +19,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -1386,7 +1387,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
    * checked.
    *
-   * @param classTree ClassTree on which to perform preprocessing
+   * @param classTree the class on which to perform preprocessing
    */
   public void preProcessClassTree(ClassTree classTree) {}
 
@@ -1576,7 +1577,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * file and if {@code -AmergeStubsWithSource} is passed, it also merges any explicitly written
    * annotations from stub files.
    *
-   * @param tree MethodTree or VariableTree
+   * @param tree a {@link MethodTree} or {@link VariableTree}
    * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
    */
   private AnnotatedTypeMirror fromMember(Tree tree) {
@@ -1708,7 +1709,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree the type tree
    * @return the (partially) annotated type of the type in the AST
    */
-  /* package private */ final AnnotatedTypeMirror fromTypeTree(Tree tree) {
+  /*package-private*/ final AnnotatedTypeMirror fromTypeTree(Tree tree) {
     if (shouldCache && fromTypeTreeCache.containsKey(tree)) {
       return fromTypeTreeCache.get(tree).deepCopy();
     }
@@ -2761,13 +2762,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
    *
-   * @param newClassTree NewClassTree
-   * @return AnnotatedDeclaredType
+   * @param newClassTree a NewClassTree
+   * @return the AnnotatedDeclaredType
    * @deprecated Use {@link #getExplicitNewClassAnnos(NewClassTree)}, {@link
    *     #getExplicitNewClassClassTypeArgs(NewClassTree)}, or {@link #getAnnotatedType(ClassTree)}
    *     instead.
    */
-  @Deprecated // This should be removed when the #979 is fixed and the remaining use is removed.
+  @Deprecated // This should be removed when #979 is fixed and the remaining use is removed.
   public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
     AnnotatedDeclaredType type =
         (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
@@ -4266,7 +4267,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Whether or not the {@code annotatedTypeMirror} has a qualifier parameter.
    *
-   * @param annotatedTypeMirror AnnotatedTypeMirror to check
+   * @param annotatedTypeMirror the type to check
    * @param top the top of the hierarchy to check
    * @return true if the type has a qualifier parameter
    */
@@ -4325,7 +4326,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the set of top annotations representing all the hierarchies for which this type has a
    * qualifier parameter.
    *
-   * @param annotatedType AnnotatedTypeMirror to check
+   * @param annotatedType the type to check
    * @return the set of top annotations representing all the hierarchies for which this type has a
    *     qualifier parameter
    */
@@ -4496,7 +4497,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
    * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
    *
-   * @param typeVar TypeVariable which could not be inferred
+   * @param typeVar the TypeVariable that could not be inferred
    * @return a wildcard that is marked as an uninferred type argument
    */
   public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
@@ -4601,8 +4602,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the functional interface type or an uninferred type argument
    */
   private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree) {
-
-    Tree parentTree = getPath(tree).getParentPath().getLeaf();
+    TreePath parentPath = getPath(tree).getParentPath();
+    Tree parentTree = parentPath.getLeaf();
     switch (parentTree.getKind()) {
       case PARENTHESIZED:
         return getFunctionalInterfaceType(parentTree);
@@ -4692,10 +4693,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree conditionalExpressionTree =
             (ConditionalExpressionTree) parentTree;
-        AnnotatedTypeMirror falseType =
-            getAnnotatedType(conditionalExpressionTree.getFalseExpression());
         AnnotatedTypeMirror trueType =
             getAnnotatedType(conditionalExpressionTree.getTrueExpression());
+        AnnotatedTypeMirror falseType =
+            getAnnotatedType(conditionalExpressionTree.getFalseExpression());
 
         // Known cases where we must use LUB because falseType/trueType will not be equal:
         // a) when one of the types is a type variable that extends a functional interface
@@ -4713,8 +4714,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
         assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
+      case CASE:
+        // Get the functional interface type of the whole switch expression.
+        Tree switchTree = parentPath.getParentPath().getLeaf();
+        return getFunctionalInterfaceType(switchTree);
 
       default:
+        if (parentTree.getKind().toString().equals("YIELD")) {
+          TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
+          return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
+        }
         throw new BugInCF(
             "Could not find functional interface from assignment context. "
                 + "Unexpected tree type: "
@@ -5279,10 +5288,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>Unlike {@link #typeVarSubstitutor}, this method does not copy the type.
      *
-     * @param type AnnotatedTypeMirror whose captured type variables are substituted with those in
-     *     {@code capturedTypeVarToAnnotatedTypeVar}
-     * @param capturedTypeVarToAnnotatedTypeVar mapping from TypeVariable, that is a captured type
-     *     variable, to an AnnotatedTypeVariable
+     * @param type the type whose captured type variables are substituted with those in {@code
+     *     capturedTypeVarToAnnotatedTypeVar}
+     * @param capturedTypeVarToAnnotatedTypeVar mapping from a TypeVariable (which is a captured
+     *     type variable) to an AnnotatedTypeVariable
      */
     private void substitute(
         AnnotatedTypeVariable type,
@@ -5291,6 +5300,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> mapping = new IdentityHashMap<>();
       visit(type.getLowerBound(), mapping);
       visit(type.getUpperBound(), mapping);
+      this.capturedTypeVarToAnnotatedTypeVar = null;
     }
 
     @Override

@@ -21,7 +21,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
@@ -121,7 +120,7 @@ public class PurityChecker {
      */
     public void addNotSEFreeReason(Tree t, String msgId) {
       notSEFreeReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.SIDE_EFFECT_FREE);
+      kinds.remove(Pure.Kind.SIDE_EFFECT_FREE);
     }
 
     /**
@@ -141,7 +140,7 @@ public class PurityChecker {
      */
     public void addNotDetReason(Tree t, String msgId) {
       notDetReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.DETERMINISTIC);
+      kinds.remove(Pure.Kind.DETERMINISTIC);
     }
 
     /**
@@ -161,8 +160,8 @@ public class PurityChecker {
      */
     public void addNotBothReason(Tree t, String msgId) {
       notBothReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.DETERMINISTIC);
-      kinds.remove(Kind.SIDE_EFFECT_FREE);
+      kinds.remove(Pure.Kind.DETERMINISTIC);
+      kinds.remove(Pure.Kind.SIDE_EFFECT_FREE);
     }
 
     @Override
@@ -229,7 +228,7 @@ public class PurityChecker {
 
     /** Represents a method that is both deterministic and side-effect free. */
     private static final EnumSet<Pure.Kind> detAndSeFree =
-        EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+        EnumSet.of(Pure.Kind.DETERMINISTIC, Pure.Kind.SIDE_EFFECT_FREE);
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
@@ -242,8 +241,8 @@ public class PurityChecker {
                 // Avoid computation if not necessary
                 ? detAndSeFree
                 : PurityUtils.getPurityKinds(annoProvider, elt);
-        boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
-        boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
+        boolean det = assumeDeterministic || purityKinds.contains(Pure.Kind.DETERMINISTIC);
+        boolean seFree = assumeSideEffectFree || purityKinds.contains(Pure.Kind.SIDE_EFFECT_FREE);
         if (!det && !seFree) {
           purityResult.addNotBothReason(tree, "call");
         } else if (!det) {

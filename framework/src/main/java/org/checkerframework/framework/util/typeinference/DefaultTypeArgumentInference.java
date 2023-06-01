@@ -22,7 +22,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -127,7 +127,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     if (showInferenceSteps) {
       checker.message(
-          Kind.NOTE,
+          Diagnostic.Kind.NOTE,
           "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s",
           expressionTree.toString().replace(System.lineSeparator(), " "),
           argTypes,
@@ -162,25 +162,25 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       inferredArgs =
           infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  after infer: %s", inferredArgs);
+        checker.message(Diagnostic.Kind.NOTE, "  after infer: %s", inferredArgs);
       }
       handleNullTypeArguments(
           typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  after handleNull: %s", inferredArgs);
+        checker.message(Diagnostic.Kind.NOTE, "  after handleNull: %s", inferredArgs);
       }
     } catch (Exception ex) {
       // Catch any errors thrown by inference.
       inferredArgs = new LinkedHashMap<>();
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
+        checker.message(Diagnostic.Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
       }
     }
 
     handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
     if (showInferenceSteps) {
-      checker.message(Kind.NOTE, "  results: %s", inferredArgs);
+      checker.message(Diagnostic.Kind.NOTE, "  results: %s", inferredArgs);
     }
     try {
       return TypeArgInferenceUtil.correctResults(
@@ -463,7 +463,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * remaining constraints so that Fi = Tj where Tj is a type parameter with an argument to be
    * inferred. Return the resulting constraint set.
    *
-   * @param typeFactory AnnotatedTypeFactory
+   * @param typeFactory the type factory
    * @param argTypes list of annotated types corresponding to the arguments to the method
    * @param methodType annotated type of the method
    * @param targets type variables to be inferred

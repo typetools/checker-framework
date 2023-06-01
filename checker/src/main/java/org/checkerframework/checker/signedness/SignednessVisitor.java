@@ -307,7 +307,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
-          if (TypesUtils.isCharOrCharacter(exprType.getUnderlyingType())) {
+          TypeMirror exprTM = exprType.getUnderlyingType();
+          if (TypesUtils.isCharOrCharacter(exprTM)) {
             break;
           }
           AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();

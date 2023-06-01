@@ -257,9 +257,20 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     // @Unique is verified, so don't check this.
-    if (!constructorType.getReturnType().hasAnnotation(atypeFactory.UNIQUE)) {
-      super.checkConstructorResult(constructorType, constructorElement);
+    AnnotatedTypeMirror returnType = constructorType.getReturnType();
+    if (returnType.hasAnnotation(atypeFactory.UNIQUE)) {
+      return;
     }
+
+    // Don't issue warnings about @LeakedToResult or (implicit) @MaybeLeaked on constructor results.
+    if (!returnType.hasAnnotation(atypeFactory.NON_LEAKED)) {
+      constructorType = constructorType.shallowCopy();
+      constructorType.shallowCopyReturnType();
+      returnType = constructorType.getReturnType();
+      returnType.replaceAnnotation(atypeFactory.NON_LEAKED);
+    }
+
+    super.checkConstructorResult(constructorType, constructorElement);
   }
 
   @Override

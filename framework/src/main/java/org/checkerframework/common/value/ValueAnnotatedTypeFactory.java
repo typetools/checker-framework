@@ -340,7 +340,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
-    return new ValueQualifierHierarchy(this, this.getSupportedTypeQualifiers());
+    return new ValueQualifierHierarchy(this.getSupportedTypeQualifiers(), this);
   }
 
   @Override
@@ -1579,7 +1579,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the minimum length of an array expression or 0 if the min length is unknown.
    *
-   * @param sequenceExpression Java expression
+   * @param sequenceExpression a Java expression
    * @param tree expression tree or variable declaration
    * @param currentPath path to local scope
    * @return min length of sequenceExpression or 0
