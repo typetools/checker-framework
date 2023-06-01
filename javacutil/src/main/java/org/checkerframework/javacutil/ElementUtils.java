@@ -354,7 +354,8 @@ public class ElementUtils {
    * @return a user-friendly name for the method
    */
   public static CharSequence getSimpleDescription(ExecutableElement element) {
-    TypeElement enclosingTypeName = (TypeElement) element.getEnclosingElement().getSimpleName();
+    String enclosingTypeName =
+        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
     Name methodName = element.getSimpleName();
     switch (methodName.toString()) {
       case "<init>":
