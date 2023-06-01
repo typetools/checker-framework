@@ -347,8 +347,9 @@ public class ElementUtils {
   }
 
   /**
-   * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
-   * "<clinit>"} as ExecutableElement.getSimpleName() does.
+   * Returns a user-friendly name for the given method, which includes the name of the enclosing
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
+   * ExecutableElement.getSimpleName() does.
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
