@@ -835,13 +835,14 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{GreaterThanOrEqualNode} & & \code{x >= y} \\
         \nodetype{LessThanNode} & & \code{x < y} \\
         \nodetype{LessThanOrEqualNode} & & \code{x <= y} \\
+        \midrule
+
+        \code{SwitchExpression} & A switch expression (not statement!) & \\
 
         \nodetype{CaseNode} & Case of a switch.  Acts as an equality test. & \\
         \midrule
 
         \nodetype{AssignmentNode} & & \code{x = 1} \\
-%        \midrule
-
         \nodetype{StringConcatenateAssignmentNode} & A compound \code{String} assignment. & \code{s += ".txt"} \\
         \midrule
 
@@ -856,7 +857,7 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{InstanceOfNode} & & \code{x instanceof Float} \\
         \midrule
 
-        & Conversion nodes. & \\
+        & Conversion nodes & \\
         \nodetype{NarrowingConversionNode} & Implicit conversion. & \\
         \nodetype{StringConversionNode} & Might be implicit. & \code{obj.toString()} \\
         \nodetype{WideningConversionNode} & Implicit conversion. & \\
@@ -1015,6 +1016,10 @@ because they cannot maintain the distinction between them.  Merging
 just means taking the least upper bound of the two stores and it
 happens automatically by calling \code{TransferInput.getRegularStore}.
 
+Assignments usually merge conditional stores. For the translation of
+conditional operator expressions, a special non-merging assignment
+node is used (see \autoref{sec:cond-exp} below).
+
 
 \subsubsection{Branches}
 
@@ -1082,6 +1087,19 @@ containing \code{b1 || (b2 || b3)}.
 \flow{CFGConditionalOr}{.33}{1.33}{Example of a conditional or expression
   (\code{||}) with short-circuiting and more precise flow rules.}
 
+Conditional operator expressions (using the ternary conditional operator
+\code{? :}, cf. \jlsref{15.25}) use an additional synthetic local
+variable in the CFG. The second (then) and third (else) expressions are
+assigned to this local variable. In contrast to other assignments, this
+assignment does not merge the stores, to allow the propagation of
+conditional stores from these sub-expressions.
+The \code{TernaryExpressionNode} at the merge of the two branches can
+then either be treated like a local variable read or return a
+conditional store.
+
+\flow{CFGConditionalOpExpr}{.33}{.33}{Example of a conditional operator
+  expression (\code{? :}).}
+
 
 \subsubsection{Implicit \code{this} access}
 
@@ -1131,6 +1149,7 @@ to be disabled.
 
 \subsubsection{Varargs method invocation}
 \label{sec:varargs}
+
 In Java, varargs in method or constructor invocation is compiled
 as new array creation (cf.\ \jlsref{15.12.4.2}). For example,
 \code{m(1, 2, 3)} will be compiled as \code{m(new int[]\{1, 2, 3\})}
@@ -1143,6 +1162,7 @@ the formal parameter, or if \code{null} is given as the actual varargs argument.
 
 \subsubsection{Default case and fall through for switch statement}
 \label{sec:default-switch}
+
 A switch statement is handled as a chain of \code{CaseNode} and nodes in
 the case. \code{CaseNode} makes a branch by comparing the equality of
 the expression of the switch statement and the expression of the case.
@@ -1158,6 +1178,16 @@ For example, see \autoref{fig:CFGSwitch}. The fake variable named \code{switch#n
 is created and each case node creates the branches.
 
 \flow{CFGSwitch}{.21}{1.45}{Example of a switch statement with case, default and fall through.}
+
+\subsubsection{Switch expressions}
+\label{sec:switch-expr}
+
+A switch expression is translated similarly to a switch statement.
+An additional fake variable \code{switchExpr} is used to store the value
+from the cases. The \code{SwitchExpressionNode} itself can then be
+handled like a read of that variable.
+
+% TODO: add an example
 
 \subsubsection{Handling \code{finally} blocks}
 \label{sec:try-finally}
