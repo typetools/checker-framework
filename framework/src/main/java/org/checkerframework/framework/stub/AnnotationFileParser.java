@@ -2143,7 +2143,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug("Supertypes that were searched:");
       for (AnnotatedDeclaredType supertype : types) {
-        stubDebug("  " + supertype);
+        stubDebug("  %s", supertype);
       }
     }
     return null;
@@ -2173,7 +2173,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug("    " + method);
+        stubDebug("    %s", method);
       }
     }
     return null;
@@ -2201,7 +2201,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug("    " + method);
+        stubDebug("    %s", method);
       }
     }
     return null;
@@ -2271,7 +2271,7 @@ public class AnnotationFileParser {
         if (debugAnnotationFileParser) {
           stubDebug("  Here are the methods of %s:", typeElt);
           for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            stubDebug("    " + method);
+            stubDebug("    %s", method);
           }
         }
       }
@@ -2309,7 +2309,7 @@ public class AnnotationFileParser {
         constructorDecl, "Constructor " + wantedMethodString + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-        stubDebug("  " + method);
+        stubDebug("  %s", method);
       }
     }
     return null;
@@ -2348,7 +2348,7 @@ public class AnnotationFileParser {
     stubWarnNotFound(astNode, "Field " + fieldName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
-        stubDebug("  " + field);
+        stubDebug("  %s", field);
       }
     }
     return null;
