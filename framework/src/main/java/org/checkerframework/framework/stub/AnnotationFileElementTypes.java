@@ -69,14 +69,18 @@ public class AnnotationFileElementTypes {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system. By
-   * contrast, {@link #jdkStubFilesJar} contains JDK stub files from checker.jar.
+   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system
+   * that have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #jdkStubFilesJar} contains JDK stub files from checker.jar.
    */
   private final Map<String, Path> jdkStubFiles = new HashMap<>();
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar. By
-   * contrast, {@link #jdkStubFiles} contains JDK stub files from the file system.
+   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar that
+   * have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #jdkStubFiles} contains JDK stub files from the file system.
    */
   private final Map<String, String> jdkStubFilesJar = new HashMap<>();
 
@@ -627,6 +631,7 @@ public class AnnotationFileElementTypes {
       return;
     }
     String className = getOutermostEnclosingClass(e);
+    // `className` can be null if `e` is a package or module element.
     if (className == null || className.isEmpty()) {
       return;
     }
@@ -639,7 +644,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code null}
-   * if no such class exists for {@code e}.
+   * if no such class exists for {@code e}, such as when {@code e} is a package or module element.
    *
    * @param e an element whose outermost enclosing class to return
    * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if no
