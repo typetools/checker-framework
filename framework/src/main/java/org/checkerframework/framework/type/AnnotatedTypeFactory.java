@@ -19,6 +19,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -4601,8 +4602,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the functional interface type or an uninferred type argument
    */
   private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree) {
-
-    Tree parentTree = getPath(tree).getParentPath().getLeaf();
+    TreePath parentPath = getPath(tree).getParentPath();
+    Tree parentTree = parentPath.getLeaf();
     switch (parentTree.getKind()) {
       case PARENTHESIZED:
         return getFunctionalInterfaceType(parentTree);
@@ -4713,8 +4714,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedTypes.leastUpperBound(this, trueType, falseType);
         assertIsFunctionalInterface(conditionalType.getUnderlyingType(), parentTree, tree);
         return conditionalType;
+      case CASE:
+        // Get the functional interface type of the whole switch expression.
+        Tree switchTree = parentPath.getParentPath().getLeaf();
+        return getFunctionalInterfaceType(switchTree);
 
       default:
+        if (parentTree.getKind().toString().equals("YIELD")) {
+          TreePath pathToCase = TreePathUtil.pathTillOfKind(parentPath, Kind.CASE);
+          return getFunctionalInterfaceType(pathToCase.getParentPath().getLeaf());
+        }
         throw new BugInCF(
             "Could not find functional interface from assignment context. "
                 + "Unexpected tree type: "
