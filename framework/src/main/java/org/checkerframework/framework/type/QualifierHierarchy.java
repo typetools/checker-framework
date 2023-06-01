@@ -32,7 +32,7 @@ public interface QualifierHierarchy {
   /**
    * Determine whether this is valid.
    *
-   * @return whether this is valid
+   * @return true if this is valid
    */
   default boolean isValid() {
     return true;
