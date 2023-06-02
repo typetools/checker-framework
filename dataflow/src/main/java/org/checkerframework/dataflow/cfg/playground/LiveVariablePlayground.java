@@ -27,8 +27,7 @@ public class LiveVariablePlayground {
     LiveVarTransfer transfer = new LiveVarTransfer();
     BackwardAnalysis<LiveVarValue, LiveVarStore, LiveVarTransfer> backwardAnalysis =
         new BackwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-    cfgVisualizeLauncher.generateDOTofCFG(
+    CFGVisualizeLauncher.generateDOTofCFG(
         inputFile, outputDir, method, clazz, true, true, backwardAnalysis);
   }
 }
