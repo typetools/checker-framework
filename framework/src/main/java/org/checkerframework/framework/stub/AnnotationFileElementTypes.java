@@ -805,10 +805,13 @@ public class AnnotationFileElementTypes {
           continue;
         }
         Path relativePath = root.relativize(path);
-        // 4: /src/<module>/share/classes
+        // The number 4 is to strip off "/src/<module>/share/classes".
         Path savepath = relativePath.subpath(4, relativePath.getNameCount());
-        String s = savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-        remainingJdkStubFiles.put(s, path);
+        String savepathString = savepath.toString();
+        // The number 5 is to remove trailing ".java".
+        String savepathWithoutExtension = savepathString.substring(0, savepathString.length() - 5);
+        String fqName = savepathWithoutExtension.replace(File.separatorChar, '.');
+        remainingJdkStubFiles.put(fqName, path);
       }
     } catch (IOException e) {
       throw new BugInCF("prepJdkFromFile(" + jdkDirectory + ")", e);
@@ -829,28 +832,25 @@ public class AnnotationFileElementTypes {
       entries.sort(Comparator.comparing(Object::toString));
       for (JarEntry jarEntry : entries) {
         // filter out directories and non-Java files
-        if (!jarEntry.isDirectory()
-            && jarEntry.getName().endsWith(".java")
-            && jarEntry.getName().startsWith("annotated-jdk")
-            // JavaParser can't parse module-info files, so skip them.
-            && !jarEntry.getName().endsWith("module-info.java")) {
-          String jarEntryName = jarEntry.getName();
-          if (parseAllJdkFiles) {
-            parseJdkJarEntry(jarEntryName);
-            continue;
-          }
-          if (jarEntryName.endsWith("package-info.java")) {
-            parseJdkJarEntry(jarEntryName);
-            continue;
-          }
-          int index = jarEntry.getName().indexOf("/share/classes/");
-          String shortName =
-              jarEntryName
-                  .substring(index + "/share/classes/".length())
-                  .replace(".java", "")
-                  .replace('/', '.');
-          remainingJdkStubFilesJar.put(shortName, jarEntryName);
+        if (jarEntry.isDirectory()) {
+          continue;
         }
+        String jarEntryName = jarEntry.getName();
+        if (!jarEntryName.startsWith("annotated-jdk")
+            || !jarEntryName.endsWith(".java")
+            // JavaParser can't parse module-info files, so skip them.
+            || jarEntryName.endsWith("module-info.java")) {
+          continue;
+        }
+        if (parseAllJdkFiles || jarEntryName.endsWith("package-info.java")) {
+          parseJdkJarEntry(jarEntryName);
+          continue;
+        }
+        int index = jarEntryName.indexOf("/share/classes/") + "/share/classes/".length();
+        // "-5" is to remove ".java" from end of file name
+        String fqClassName =
+            jarEntryName.substring(index, jarEntryName.length() - 5).replace('/', '.');
+        remainingJdkStubFilesJar.put(fqClassName, jarEntryName);
       }
     } catch (IOException e) {
       throw new BugInCF("Cannot open the jar file " + connection.getJarFileURL(), e);
