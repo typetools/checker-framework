@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
