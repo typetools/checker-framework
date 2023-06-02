@@ -36,7 +36,7 @@ a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 (a > 0)   [ GreaterThan ]
 ~~~~~~~~~
-TransferInput#49
+TransferInput#52
 After:   live variables = a, b, c
 
 4:
@@ -57,7 +57,7 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#33
+TransferInput#36
 After:   live variables = a
 
 10:
@@ -71,7 +71,7 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#32
+TransferInput#35
 After:   live variables = a
 
 11:
@@ -83,13 +83,14 @@ f   [ VariableDeclaration ]
 b   [ LocalVariable ]
 0   [ IntegerLiteral ]
 b = 0   [ Assignment ]
+expression statement b = 0   [ ExpressionStatement ]
 marker (start of try statement #0)   [ Marker ]
 marker (start of try block #0)   [ Marker ]
 f   [ LocalVariable ]
 1   [ IntegerLiteral ]
 a   [ LocalVariable ]
 ~~~~~~~~~
-TransferInput#21
+TransferInput#23
 After:   live variables = a, b
 
 12:
@@ -99,7 +100,7 @@ Before:   live variables = a
 ~~~~~~~~~
 (1 / a)   [ IntegerDivision ]
 ~~~~~~~~~
-TransferInput#19
+TransferInput#21
 After:   live variables = a
 
 13:
@@ -109,6 +110,7 @@ Before:   live variables = a
 ~~~~~~~~~
 (1 / a)   [ IntegerDivision ]
 f = (1 / a)   [ Assignment ]
+expression statement f = 1 / a   [ ExpressionStatement ]
 marker (end of try block #0)   [ Marker ]
 ~~~~~~~~~
 TransferInput#5
@@ -124,6 +126,7 @@ e   [ VariableDeclaration ]
 f   [ LocalVariable ]
 b   [ LocalVariable ]
 f = b   [ Assignment ]
+expression statement f = b   [ ExpressionStatement ]
 marker (end of catch block for ArithmeticException #0)   [ Marker ]
 ~~~~~~~~~
 TransferInput#6
