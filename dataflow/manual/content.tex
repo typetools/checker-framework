@@ -843,7 +843,6 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \midrule
 
         \nodetype{AssignmentNode} & & \code{x = 1} \\
-        \nodetype{StringConcatenateAssignmentNode} & A compound \code{String} assignment. & \code{s += ".txt"} \\
         \midrule
 
         \nodetype{ArrayCreationNode} & & \code{new double[]} \\
@@ -1359,6 +1358,13 @@ cases that were better handled by desugaring.
       both an unboxing and a boxing operation on \code{i}.  Desugaring
       all compound assignments greatly reduced the total number of
       node classes.
+
+    \item String concatenation assignments are also desugared. A string
+      concatenation assignment like
+      \begin{verbatim}String s; s += "str";\end{verbatim} is represented as
+      \begin{verbatim}String s; s = s + "str";\end{verbatim} in CFGs.
+      This avoids duplicating the same logic that is necessary in assignment
+      and concatenation nodes, which was error prone.
 
     \end{itemize}
 
@@ -1989,7 +1995,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords: IntegerLiteral LongLiteral NullLiteral ShortLiteral args StringLiteral Accessor ArrayAccess FieldAccess This MethodAccess ExplicitThis ImplicitThis NullAway
 %  LocalWords: LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot ConditionalOr FloatingDivision FloatingRemainder LeftShift
 %  LocalWords: IntegerDivision IntegerRemainder NumericalAddition EqualTo NumericalMinus NumericalMultiplication NumericalPlus util NumericalSubtraction SignedRightShift StringConcatenate
-%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation ObjectCreation TypeCast cond
 %  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
 %  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
 %  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
