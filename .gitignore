@@ -147,6 +147,8 @@ checker/tests/nullness/generics/*.class
 
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
+dataflow/tests/busy-expression/Out.txt
+dataflow/tests/busy-expression/*.class
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt

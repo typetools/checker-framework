@@ -1742,6 +1742,33 @@ update the live variable values in the stores.
 
 \flow{LiveSimple}{.33}{1}{Simple sequential program to illustrate live variable.  Intermediate analysis results are shown.}
 
+\section{Example: Very Busy Expression Analysis}
+
+An expression is ``very busy'' if no matter what path is taken,
+the expression is used before any variables occurring in it are redefined.
+This analysis is a backward analysis that intersects abstract states from successors.
+\\
+The main class is \code{org.checkerframework.dataflow.cfg.playground.BusyExpressionPlayground}.
+
+\textbf{Abstract values.} The \code{BusyExprValue} is a very busy expression, represented by a node.
+The node can be any \code{BinaryOperationNode}, such as \code{NumericalAdditionNode}
+or \code{LeftShiftNode}.
+
+\textbf{The store.} The busy expression store \code{BusyExprStore} has a field
+\code{busyExprValueSet} which contains a set of \code{BusyExprValue}s.
+If a node is a \code{BinaryOperationNode}, \code{addUseInExpression(Node)}
+will recursively analyze the subexpressions of the node to determine
+if they are nested \code{BinaryOperationNode}s. It then uses \code{putBusyExpr(BusyExprValue)}
+to put the expression in the set. \code{killBusyExpr(Node)} is used when a variable is re-assigned.
+
+\textbf{The transfer function.} The transfer function \code{BusyExprTransfer}
+initializes empty stores at normal and exceptional exit blocks (because this
+is a backward transfer function). The transfer function visits assignment, method invocation,
+and return statement nodes to update the busy expression values in the stores.
+
+\textbf{Example.} An example is shown in \autoref{fig:BusyExprSimple}.
+
+\flow{BusyExprSimple}{.33}{1}{Very Busy Expression Analysis illustration. Intermediate analysis results are shown.}
 
 \section{Default Analysis}
 
