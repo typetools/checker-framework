@@ -727,7 +727,10 @@ public class AnnotationFileParser {
    */
   private void parseStubUnit(InputStream inputStream) {
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("parsing annotation file %s", filename));
+      stubDebug(
+          String.format(
+              "started parsing annotation file %s for %s",
+              filename, atypeFactory.getClass().getSimpleName()));
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
