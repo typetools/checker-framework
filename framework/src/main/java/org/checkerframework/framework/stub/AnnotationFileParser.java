@@ -728,9 +728,8 @@ public class AnnotationFileParser {
   private void parseStubUnit(InputStream inputStream) {
     if (debugAnnotationFileParser) {
       stubDebug(
-          String.format(
-              "started parsing annotation file %s for %s",
-              filename, atypeFactory.getClass().getSimpleName()));
+          "started parsing annotation file %s for %s",
+          filename, atypeFactory.getClass().getSimpleName());
     }
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
@@ -1109,20 +1108,19 @@ public class AnnotationFileParser {
       int numArgs = (typeArguments == null ? 0 : typeArguments.size());
       if (numParams != numArgs) {
         stubDebug(
-            String.format(
-                "parseType:  mismatched sizes for typeParameters=%s (size %d)"
-                    + " and typeArguments=%s (size %d);"
-                    + " decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
-                typeParameters,
-                numParams,
-                typeArguments,
-                numArgs,
-                decl.toString().replace(LINE_SEPARATOR, " "),
-                elt.toString().replace(LINE_SEPARATOR, " "),
-                elt.getClass(),
-                type,
-                type.getClass(),
-                typeBeingParsed));
+            "parseType:  mismatched sizes for typeParameters=%s (size %d)"
+                + " and typeArguments=%s (size %d);"
+                + " decl=%s; elt=%s (%s); type=%s (%s); typeBeingParsed=%s",
+            typeParameters,
+            numParams,
+            typeArguments,
+            numArgs,
+            decl.toString().replace(LINE_SEPARATOR, " "),
+            elt.toString().replace(LINE_SEPARATOR, " "),
+            elt.getClass(),
+            type,
+            type.getClass(),
+            typeBeingParsed);
         stubDebug("Proceeding despite mismatched sizes");
       }
     }
@@ -1966,8 +1964,7 @@ public class AnnotationFileParser {
         putIfAbsent(elementsToDecl, elt, member);
       }
     } else {
-      stubDebug(
-          String.format("Ignoring element of type %s in %s", member.getClass(), typeDeclName));
+      stubDebug("Ignoring element of type %s in %s", member.getClass(), typeDeclName);
     }
   }
 
@@ -2148,7 +2145,7 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       stubDebug("Supertypes that were searched:");
       for (AnnotatedDeclaredType supertype : types) {
-        stubDebug(String.format("  %s", supertype));
+        stubDebug("  %s", supertype);
       }
     }
     return null;
@@ -2176,9 +2173,9 @@ public class AnnotationFileParser {
     stubWarnNotFound(
         ciDecl, "Class/interface " + wantedClassOrInterfaceName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+      stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug(String.format("    %s", method));
+        stubDebug("    %s", method);
       }
     }
     return null;
@@ -2204,9 +2201,9 @@ public class AnnotationFileParser {
 
     stubWarnNotFound(enumDecl, "Enum " + wantedEnumName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
-      stubDebug(String.format("  Here are the type declarations of %s:", typeElt));
+      stubDebug("  Here are the type declarations of %s:", typeElt);
       for (TypeElement method : ElementFilter.typesIn(typeElt.getEnclosedElements())) {
-        stubDebug(String.format("    %s", method));
+        stubDebug("    %s", method);
       }
     }
     return null;
@@ -2274,9 +2271,9 @@ public class AnnotationFileParser {
         stubWarnNotFound(
             methodDecl, "Method " + wantedMethodString + " not found in type " + typeElt);
         if (debugAnnotationFileParser) {
-          stubDebug(String.format("  Here are the methods of %s:", typeElt));
+          stubDebug("  Here are the methods of %s:", typeElt);
           for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
-            stubDebug(String.format("    %s", method));
+            stubDebug("    %s", method);
           }
         }
       }
@@ -2314,7 +2311,7 @@ public class AnnotationFileParser {
         constructorDecl, "Constructor " + wantedMethodString + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements())) {
-        stubDebug(String.format("  %s", method));
+        stubDebug("  %s", method);
       }
     }
     return null;
@@ -2353,7 +2350,7 @@ public class AnnotationFileParser {
     stubWarnNotFound(astNode, "Field " + fieldName + " not found in type " + typeElt);
     if (debugAnnotationFileParser) {
       for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
-        stubDebug(String.format("  %s", field));
+        stubDebug("  %s", field);
       }
     }
     return null;
@@ -3038,13 +3035,18 @@ public class AnnotationFileParser {
    * If {@code warning} hasn't been printed yet, and {@code debugAnnotationFileParser} is true,
    * prints the given warning as a diagnostic message.
    *
-   * @param warning warning to print
+   * @param fmt format string
+   * @param args arguments to the format string
    */
-  private void stubDebug(String warning) {
-    if (debugAnnotationFileParser && warnings.add(warning)) {
-      processingEnv
-          .getMessager()
-          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+  @FormatMethod
+  private void stubDebug(String fmt, Object... args) {
+    if (debugAnnotationFileParser) {
+      String warning = String.format(fmt, args);
+      if (warnings.add(warning)) {
+        processingEnv
+            .getMessager()
+            .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+      }
     }
   }
 

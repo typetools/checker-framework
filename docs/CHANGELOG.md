@@ -7,6 +7,9 @@ Version 3.36.0 (July 5, 2023)
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
+Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
+used as a statement.
+
 **Closed issues:**
 
 
@@ -412,6 +415,7 @@ was added.
 
 **Closed issues:**
 #2373, #4934, #4977, #4979, #4987.
+
 
 Version 3.20.0 (December 6, 2021)
 ---------------------------------

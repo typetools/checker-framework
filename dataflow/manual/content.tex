@@ -770,10 +770,10 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \hline \multicolumn{3}{|c|}{{Continued on next page}} \\ \hline \endfoot
         \endlastfoot
 
-        \nodetype{Node} & The base class of all nodes. & \\
+        \nodetype{Node} & The base class of all nodes & \\
         \midrule
 
-        \nodetype{ValueLiteralNode} & The base class of literal value nodes. & \\
+        \nodetype{ValueLiteralNode} & The base class of literal value nodes & \\
         \nodetype{BooleanLiteralNode} & & \code{true} \\
         \nodetype{CharacterLiteralNode} & & \code{'c'} \\
         \nodetype{DoubleLiteralNode} & & \code{3.14159} \\
@@ -793,13 +793,13 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{ThisNode} & Base class of references to \code{this} & \\
         \nodetype{ExplicitThisNode} & Explicit use of \code{this} in an expression & \\
         \nodetype{ImplicitThisNode} & Implicit use of \code{this} in an expression & \\
-        \nodetype{SuperNode} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
+        \nodetype{SuperNode} & Explicit use of \code{super} in expression & \code{super(x, y)} \\
         \midrule
 
-        \nodetype{MethodInvocationNode} & Note that access and invocation are distinct. & \code{hashCode()} \\
+        \nodetype{MethodInvocationNode} & Note that access and invocation are distinct & \code{hashCode()} \\
         \midrule
 
-        & Expression supertypes. & \\
+        & Expression supertypes & \\
         \nodetype{BinaryOperationNode} & Base class of binary expression nodes & \\
         \nodetype{UnaryOperationNode} & Base class of unary expression nodes & \\
 
@@ -808,9 +808,9 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{BitwiseComplementNode} & & \verb|~b| \\
         \nodetype{BitwiseOrNode} & & \code{a | b} \\
         \nodetype{BitwiseXorNode} & & \code{a ^ b} \\
-        \nodetype{ConditionalAndNode} & Short-circuiting. & a \&\& \code{b} \\
+        \nodetype{ConditionalAndNode} & Short-circuiting & a \&\& \code{b} \\
         \nodetype{ConditionalNotNode} & & \code{!a} \\
-        \nodetype{ConditionalOrNode} & Short-circuiting. & \code{a || b} \\
+        \nodetype{ConditionalOrNode} & Short-circuiting & \code{a || b} \\
         \nodetype{FloatingDivisionNode} & & \code{1.0 / 2.0} \\
         \nodetype{FloatingRemainderNode} & & \code{13.0 \% 4.0} \\
         \nodetype{LeftShiftNode} & & \code{x << 3} \\
@@ -858,9 +858,9 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \midrule
 
         & Conversion nodes & \\
-        \nodetype{NarrowingConversionNode} & Implicit conversion. & \\
-        \nodetype{StringConversionNode} & Might be implicit. & \code{obj.toString()} \\
-        \nodetype{WideningConversionNode} & Implicit conversion. & \\
+        \nodetype{NarrowingConversionNode} & Implicit conversion & \\
+        \nodetype{StringConversionNode} & Might be implicit & \code{obj.toString()} \\
+        \nodetype{WideningConversionNode} & Implicit conversion & \\
         \midrule
 
         \midrule
@@ -872,18 +872,21 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{PrimitiveTypeNode} & & \\
         \midrule
 
-        \nodetype{ClassNameNode} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
-        \nodetype{PackageNameNode} & Identifier referring to Java package. & \code{java.util} \\
+        \nodetype{ClassNameNode} & Identifier referring to Java class or interface & \code{java.util.HashMap} \\
+        \nodetype{PackageNameNode} & Identifier referring to Java package & \code{java.util} \\
         \midrule
 
-        \nodetype{ThrowNode} & Throw an exception. & \\
-        \nodetype{ReturnNode} & Return from a method. & \\
+        \nodetype{ThrowNode} & Throw an exception & \\
+        \nodetype{ReturnNode} & Return from a method & \\
         \midrule
 
         \nodetype{AssertionErrorNode} & & \code{assert x != null : "Hey"} \\
         \midrule
 
-        \nodetype{SynchronizedNode} & Start or end of a synchronized code block. & \\
+        \nodetype{ExpressionStatementNode} & An expression that is used as a statement & \code{m();} \\
+        \midrule
+
+        \nodetype{SynchronizedNode} & Start or end of a synchronized code block & \\
         \nodetype{MarkerNode} & No-op node used to annotate a CFG with
         information of the underlying Java source code.  Mostly useful
         for debugging and visualization. An example is indicating the
