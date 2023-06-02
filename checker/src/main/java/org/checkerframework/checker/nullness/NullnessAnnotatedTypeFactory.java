@@ -73,11 +73,11 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -428,12 +428,12 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
       NullnessStore store,
       TreePath path,
       boolean isStatic,
       Collection<? extends AnnotationMirror> receiverAnnotations) {
-    Pair<List<VariableTree>, List<VariableTree>> result =
+    IPair<List<VariableTree>, List<VariableTree>> result =
         super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
     // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
     // warning when they are not initialized.

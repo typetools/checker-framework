@@ -109,11 +109,11 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -290,8 +290,8 @@ public class AnnotationFileParser {
      * overrides are always in subtypes of {@code ee.getEnclosingElement()}, which is the same as
      * {@code ee.getReceiverType()}.
      */
-    public final Map<ExecutableElement, List<Pair<TypeMirror, AnnotatedTypeMirror>>> fakeOverrides =
-        new HashMap<>(1);
+    public final Map<ExecutableElement, List<IPair<TypeMirror, AnnotatedTypeMirror>>>
+        fakeOverrides = new HashMap<>(1);
 
     /** Maps fully qualified record name to information in the stub file. */
     public final Map<String, RecordStub> records = new HashMap<>();
@@ -580,7 +580,7 @@ public class AnnotationFileParser {
           } else if (importType == null) {
             // static import of field or method.
 
-            Pair<@FullyQualifiedName String, String> typeParts =
+            IPair<@FullyQualifiedName String, String> typeParts =
                 AnnotationFileUtil.partitionQualifiedName(imported);
             String type = typeParts.first;
             String fieldName = typeParts.second;
@@ -996,7 +996,7 @@ public class AnnotationFileParser {
           typeDecl.getFullyQualifiedName().get(), new RecordStub(byName));
     }
 
-    Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
+    IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
         getMembers(typeDecl, typeElt, typeDecl);
     for (Map.Entry<Element, BodyDeclaration<?>> entry : members.first.entrySet()) {
       Element elt = entry.getKey();
@@ -1862,8 +1862,8 @@ public class AnnotationFileParser {
    *     elements to fake overrides of them
    * @param astNode where to report errors
    */
-  private Pair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> getMembers(
-      TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
+  private IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>>
+      getMembers(TypeDeclaration<?> typeDecl, TypeElement typeElt, NodeWithRange<?> astNode) {
     assert (typeElt.getSimpleName().contentEquals(typeDecl.getNameAsString())
             || typeDecl.getNameAsString().endsWith("$" + typeElt.getSimpleName()))
         : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
@@ -1890,7 +1890,7 @@ public class AnnotationFileParser {
       }
     }
 
-    return Pair.of(elementsToDecl, fakeOverrideDecls);
+    return IPair.of(elementsToDecl, fakeOverrideDecls);
   }
 
   // Used only by getMembers().
@@ -2118,9 +2118,9 @@ public class AnnotationFileParser {
     NodeList<AnnotationExpr> annotations = decl.getAnnotations();
     annotate(methodType.getReturnType(), ((MethodDeclaration) decl).getType(), annotations, decl);
 
-    List<Pair<TypeMirror, AnnotatedTypeMirror>> l =
+    List<IPair<TypeMirror, AnnotatedTypeMirror>> l =
         annotationFileAnnos.fakeOverrides.computeIfAbsent(element, __ -> new ArrayList<>(1));
-    l.add(Pair.of(fakeLocation.asType(), methodType));
+    l.add(IPair.of(fakeLocation.asType(), methodType));
   }
 
   /**
@@ -2779,7 +2779,7 @@ public class AnnotationFileParser {
     VariableElement res = null;
     boolean importFound = false;
     for (String imp : importedConstants) {
-      Pair<@FullyQualifiedName String, String> partitionedName =
+      IPair<@FullyQualifiedName String, String> partitionedName =
           AnnotationFileUtil.partitionQualifiedName(imp);
       String typeName = partitionedName.first;
       String fieldName = partitionedName.second;

@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 public class Driver {
 
@@ -39,7 +39,7 @@ public class Driver {
 
     // Find methods
     for (Method method : clazz.getMethods()) {
-      List<Pair<String, TypeAnnotation.Position>> expected = expectedOf(method);
+      List<IPair<String, TypeAnnotation.Position>> expected = expectedOf(method);
       if (expected == null) {
         continue;
       }
@@ -83,7 +83,7 @@ public class Driver {
     }
   }
 
-  private List<Pair<String, TypeAnnotation.Position>> expectedOf(Method m) {
+  private List<IPair<String, TypeAnnotation.Position>> expectedOf(Method m) {
     TADescription ta = m.getAnnotation(TADescription.class);
     TADescriptions tas = m.getAnnotation(TADescriptions.class);
 
@@ -91,7 +91,7 @@ public class Driver {
       return null;
     }
 
-    List<Pair<String, TypeAnnotation.Position>> result = new ArrayList<>();
+    List<IPair<String, TypeAnnotation.Position>> result = new ArrayList<>();
 
     if (ta != null) {
       result.add(expectedOf(ta));
@@ -106,7 +106,7 @@ public class Driver {
     return result;
   }
 
-  private Pair<String, TypeAnnotation.Position> expectedOf(TADescription d) {
+  private IPair<String, TypeAnnotation.Position> expectedOf(TADescription d) {
     String annoName = d.annotation();
 
     TypeAnnotation.Position p = new TypeAnnotation.Position();
@@ -139,7 +139,7 @@ public class Driver {
       p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
     }
 
-    return Pair.of(annoName, p);
+    return IPair.of(annoName, p);
   }
 
   private List<Integer> wrapIntArray(int[] ints) {
