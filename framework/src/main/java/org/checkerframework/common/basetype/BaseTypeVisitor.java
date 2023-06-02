@@ -4207,10 +4207,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected boolean checkReceiverOverride() {
       AnnotatedDeclaredType overriderReceiver = overrider.getReceiverType();
-      if (!atypeFactory.isRelevantOrCompound(overriderReceiver)) {
-        // The receiver has the only annotation it possibly can; don't issue a warning.
-        return true;
-      }
       AnnotatedDeclaredType overriddenReceiver = overridden.getReceiverType();
       // Check the receiver type.
       // isSubtype() requires its arguments to be actual subtypes with respect to the JLS, but

@@ -144,8 +144,7 @@ public abstract class QualifierHierarchy {
       TypeMirror subType,
       AnnotationMirror superQualifier,
       TypeMirror superType) {
-    if (!atypeFactory.isRelevantOrCompound(subType)
-        || !atypeFactory.isRelevantOrCompound(superType)) {
+    if (!atypeFactory.isRelevant(subType) || !atypeFactory.isRelevant(superType)) {
       // At least one of the types is not relevant.
       return true;
     }

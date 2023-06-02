@@ -196,10 +196,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
     TypeMirror subTM = subtype.getUnderlyingType();
     TypeMirror superTM = supertype.getUnderlyingType();
-    if (!checker.getTypeFactory().isRelevant(subTM)
-        || !checker.getTypeFactory().isRelevant(superTM)) {
-      return true;
-    }
 
     AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
     AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);

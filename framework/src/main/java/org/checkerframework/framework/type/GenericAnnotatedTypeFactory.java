@@ -45,11 +45,9 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
@@ -2370,8 +2368,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
-   * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
-   *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
@@ -2401,8 +2397,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * <p>May return false for a compound type (for which it is possible to write type qualifiers on
    * elements of the type).
    *
-   * <p>Clients generally call {@link #isRelevantOrCompound} rather than this method.
-   *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
@@ -2411,21 +2405,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public final boolean isRelevant(AnnotatedTypeMirror tm) {
     return isRelevant(tm.getUnderlyingType());
-  }
-
-  /**
-   * Returns true if users can write type annotations from this type system on the given type OR
-   * within it (i.e., on an element of a compound type).
-   *
-   * <p>If this returns false, the qualifiers are not checked.
-   *
-   * @param tm a type
-   * @return true if users can write type annotations from this type system on or within the given
-   *     type
-   */
-  // TODO: These receiver annotations are required to make a call site type-check.  Why?
-  public final boolean isRelevantOrCompound(@UnknownKeyFor @Initialized TypeMirror tm) {
-    return isRelevant(tm) || TypesUtils.isCompoundType(tm);
   }
 
   /**

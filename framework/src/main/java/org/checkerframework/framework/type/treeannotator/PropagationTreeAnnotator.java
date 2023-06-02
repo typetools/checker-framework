@@ -217,7 +217,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevantOrCompound(type)) {
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
       return null;
     }
 
@@ -267,7 +267,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   @Override
   public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
-    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevantOrCompound(type)) {
+    if (!((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(type)) {
       return null;
     }
 
