@@ -3,46 +3,52 @@ import org.checkerframework.checker.i18n.qual.*;
 // @C <: @B <: @A
 
 // Testing Rule 1 (constructor declaration type <: class type)
+@SuppressWarnings("anno.on.irrelevant")
 @UnknownLocalizableKey class Issue2163FinalAA {
   @UnknownLocalizableKey Issue2163FinalAA() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @UnknownLocalizableKey class Issue2163FinalAB {
   // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKey Issue2163FinalAB() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @UnknownLocalizableKey class Issue2163FinalAC {
   // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalAC() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKey class Issue2163FinalBA {
-  // :: error: (annotations.on.use)
   @UnknownLocalizableKey Issue2163FinalBA() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKey class Issue2163FinalBB {
   // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKey Issue2163FinalBB() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKey class Issue2163FinalBC {
   // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalBC() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKeyBottom class Issue2163FinalCA {
-  // :: error: (annotations.on.use)
   @UnknownLocalizableKey Issue2163FinalCA() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKeyBottom class Issue2163FinalCB {
-  // :: error: (annotations.on.use) :: warning: (inconsistent.constructor.type) ::
-  // error: (super.invocation)
+  // :: warning: (inconsistent.constructor.type) :: error: (super.invocation)
   @LocalizableKey Issue2163FinalCB() {}
 }
 
+@SuppressWarnings("anno.on.irrelevant")
 @LocalizableKeyBottom class Issue2163FinalCC {
   // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
   @LocalizableKeyBottom Issue2163FinalCC() {}

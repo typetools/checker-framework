@@ -952,6 +952,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (tree.getReturnType() != null) {
       visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getReturnType());
       warnRedundantAnnotations(tree.getReturnType(), methodType.getReturnType());
+    } else if (TreeUtils.isConstructor(tree)) {
+      reportAnnoOnIrrelevant(
+          tree.getModifiers(),
+          methodType.getReturnType().getUnderlyingType(),
+          tree.getModifiers().getAnnotations());
     }
 
     try {
@@ -2708,25 +2713,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // Base cases
         case PRIMITIVE_TYPE:
         case IDENTIFIER:
-          List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annoTrees);
-          if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(t))) {
-            String extraInfo = atypeFactory.irrelevantExtraMessage();
-            checker.reportError(t, "anno.on.irrelevant", supportedAnnoTrees, t, extraInfo);
-          }
+          reportAnnoOnIrrelevant(t, TreeUtils.typeOf(t), annoTrees);
           return;
         case ANNOTATED_TYPE:
           AnnotatedTypeTree at = (AnnotatedTypeTree) t;
           ExpressionTree underlying = at.getUnderlyingType();
-          List<AnnotationTree> annos = supportedAnnoTrees(at.getAnnotations());
-          if (!annos.isEmpty() && !atypeFactory.isRelevant(TreeUtils.typeOf(underlying))) {
-            String extraInfo = atypeFactory.irrelevantExtraMessage();
-            checker.reportError(t, "anno.on.irrelevant", annos, underlying, extraInfo);
-          }
+          reportAnnoOnIrrelevant(t, TreeUtils.typeOf(underlying), at.getAnnotations());
           return;
 
         default:
           return;
       }
+    }
+  }
+
+  private void reportAnnoOnIrrelevant(
+      Tree errorLocation, TypeMirror type, List<? extends AnnotationTree> annos) {
+    List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos);
+    if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(type)) {
+      String extraInfo = atypeFactory.irrelevantExtraMessage();
+      checker.reportError(errorLocation, "anno.on.irrelevant", annos, type, extraInfo);
     }
   }
 
