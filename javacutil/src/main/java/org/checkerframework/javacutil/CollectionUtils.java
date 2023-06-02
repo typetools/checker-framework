@@ -17,10 +17,8 @@ public class CollectionUtils {
   }
 
   ///
-  /// Temporary utility methods
+  /// Deprecated utility methods
   ///
-
-  // TODO: After plume-util is released, use these methods from it.
 
   /**
    * Creates a LRU cache.
