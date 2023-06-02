@@ -1207,7 +1207,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = narrow(node, varType);
       }
     }
-    // node might have been re-assigned; if nodeType is needed, set it again
+    // `node` might have been re-assigned; if `nodeType` is needed, set it again.
     // nodeType = node.getType();
 
     // TODO: if checkers need to know about null references of

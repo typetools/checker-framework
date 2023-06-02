@@ -78,7 +78,7 @@ public class Issue3622 {
     // unreachable. However the store in the unreachable false-branch (where `obj` is @Nullable)
     // is propagated to the merge point, which causes the false positive.
     // TODO: prune the dead branch like https://github.com/typetools/checker-framework/pull/3389
-    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+    @SuppressWarnings("contracts.conditional.postcondition")
     public boolean equals(@Nullable Object obj) {
       return true ? obj instanceof ImmutableIntList8 : false;
     }
@@ -91,7 +91,7 @@ public class Issue3622 {
     // else-store after `false` should be propagated to the else-store of the merge point.
     // TODO: adapt the way of store propagation for boolean variables. i.e. for `true`, only
     // then-store is propagated; and for `false`, only else-store is propagated.
-    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+    @SuppressWarnings("contracts.conditional.postcondition")
     public boolean equals(@Nullable Object obj) {
       return obj instanceof ImmutableIntList9 ? true : false;
     }
@@ -103,7 +103,7 @@ public class Issue3622 {
     // The false positive is because in the Nullness analysis the values of boolean variables
     // are not stored, therefore the relation between boolean variable `b` and `obj` is not
     // known
-    @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+    @SuppressWarnings("contracts.conditional.postcondition")
     public boolean equals(@Nullable Object obj) {
       boolean b;
       if (obj instanceof ImmutableIntList10) {
