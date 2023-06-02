@@ -105,6 +105,7 @@ import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
@@ -2643,23 +2644,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ExpressionTree trueExprTree = tree.getTrueExpression();
     Node trueExprNode = scan(trueExprTree, p);
     trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
-
     extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
-
     extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(falseStart);
     ExpressionTree falseExprTree = tree.getFalseExpression();
     Node falseExprNode = scan(falseExprTree, p);
     falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
-
     extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
-
     extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
-        extendWithVarUseNode(condExprVarTree);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
     Node node =
         new TernaryExpressionNode(
             tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
@@ -2679,31 +2675,32 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void extendWithAssignmentForConditionalExpr(
       VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
-        extendWithVarUseNode(condExprVarTree);
+    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
 
     AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
     handleArtificialTree(assign);
 
+    // Build a "synthetic" assignment node, allowing special handling in transfer functions
     AssignmentNode assignmentNode =
-        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode);
+        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode, true);
     assignmentNode.setInSource(false);
     extendWithNode(assignmentNode);
   }
 
   /**
-   * Extend the CFG with a {@link LocalVariableNode} representing a use of some variable
+   * Build a pair of {@link IdentifierTree} and {@link LocalVariableNode} to represent a use of some
+   * variable. Does not add the node to the CFG.
    *
    * @param varTree tree for the variable
    * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
    *     whose second element is the {@link LocalVariableNode} representing the use
    */
-  private Pair<IdentifierTree, LocalVariableNode> extendWithVarUseNode(VariableTree varTree) {
+  private Pair<IdentifierTree, LocalVariableNode> buildVarUseNode(VariableTree varTree) {
     IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
     handleArtificialTree(condExprVarUseTree);
     LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
     condExprVarUseNode.setInSource(false);
-    extendWithNode(condExprVarUseNode);
+    // Do not actually add the node to the CFG.
     return Pair.of(condExprVarUseTree, condExprVarUseNode);
   }
 
@@ -2773,7 +2770,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitExpressionStatement(ExpressionStatementTree tree, Void p) {
-    return scan(tree.getExpression(), p);
+    ExpressionTree exprTree = tree.getExpression();
+    scan(exprTree, p);
+    extendWithNode(new ExpressionStatementNode(exprTree));
+    return null;
   }
 
   @Override

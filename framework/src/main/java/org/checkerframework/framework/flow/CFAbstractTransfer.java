@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
@@ -648,7 +649,19 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitTernaryExpression(
       TernaryExpressionNode n, TransferInput<V, S> p) {
-    return visitLocalVariable(n.getTernaryExpressionVar(), p);
+    TransferResult<V, S> result = super.visitTernaryExpression(n, p);
+    S thenStore = result.getThenStore();
+    S elseStore = result.getElseStore();
+
+    V thenValue = p.getValueOfSubNode(n.getThenOperand());
+    V elseValue = p.getValueOfSubNode(n.getElseOperand());
+    V resultValue = null;
+    if (thenValue != null && elseValue != null) {
+      // The resulting abstract value is the merge of the 'then' and 'else' branch.
+      resultValue = thenValue.leastUpperBound(elseValue);
+    }
+    V finishedValue = finishValue(resultValue, thenStore, elseStore);
+    return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
   }
 
   @Override
@@ -795,7 +808,6 @@ public abstract class CFAbstractTransfer<
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
 
-    S store = in.getRegularStore();
     V rhsValue = in.getValueOfSubNode(rhs);
 
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
@@ -816,9 +828,20 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    processCommonAssignment(in, lhs, rhs, store, rhsValue);
-
-    return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+    if (n.isSynthetic() && in.containsTwoStores()) {
+      // This is a synthetic assignment node created for a ternary expression. In this case
+      // the `then` and `else` store are not merged.
+      S thenStore = in.getThenStore();
+      S elseStore = in.getElseStore();
+      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      return new ConditionalTransferResult<>(
+          finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
+    } else {
+      S store = in.getRegularStore();
+      processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+    }
   }
 
   @Override
@@ -1299,6 +1322,14 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitExpressionStatement(
+      ExpressionStatementNode n, TransferInput<V, S> vsTransferInput) {
+    // Merge the input
+    S info = vsTransferInput.getRegularStore();
+    return new RegularTransferResult<>(finishValue(null, info), info);
   }
 
   /**

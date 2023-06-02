@@ -69,14 +69,18 @@ public class AnnotationFileElementTypes {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system. By
-   * contrast, {@link #jdkStubFilesJar} contains JDK stub files from checker.jar.
+   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system
+   * that have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #jdkStubFilesJar} contains JDK stub files from checker.jar.
    */
   private final Map<String, Path> jdkStubFiles = new HashMap<>();
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar. By
-   * contrast, {@link #jdkStubFiles} contains JDK stub files from the file system.
+   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar that
+   * have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #jdkStubFiles} contains JDK stub files from the file system.
    */
   private final Map<String, String> jdkStubFilesJar = new HashMap<>();
 
@@ -627,6 +631,7 @@ public class AnnotationFileElementTypes {
       return;
     }
     String className = getOutermostEnclosingClass(e);
+    // `className` can be null if `e` is a package or module element.
     if (className == null || className.isEmpty()) {
       return;
     }
@@ -639,7 +644,7 @@ public class AnnotationFileElementTypes {
 
   /**
    * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code null}
-   * if no such class exists for {@code e}.
+   * if no such class exists for {@code e}, such as when {@code e} is a package or module element.
    *
    * @param e an element whose outermost enclosing class to return
    * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if no
@@ -797,10 +802,13 @@ public class AnnotationFileElementTypes {
           continue;
         }
         Path relativePath = root.relativize(path);
-        // 4: /src/<module>/share/classes
+        // The number 4 is to strip off "/src/<module>/share/classes".
         Path savepath = relativePath.subpath(4, relativePath.getNameCount());
-        String s = savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-        jdkStubFiles.put(s, path);
+        String savepathString = savepath.toString();
+        // The number 5 is to remove trailing ".java".
+        String savepathWithoutExtension = savepathString.substring(0, savepathString.length() - 5);
+        String fqName = savepathWithoutExtension.replace(File.separatorChar, '.');
+        jdkStubFiles.put(fqName, path);
       }
     } catch (IOException e) {
       throw new BugInCF("prepJdkFromFile(" + resourceURL + ")", e);
@@ -826,20 +834,17 @@ public class AnnotationFileElementTypes {
             // JavaParser can't parse module-info files, so skip them.
             && !jarEntry.getName().contains("module-info")) {
           String jarEntryName = jarEntry.getName();
-          if (parseAllJdkFiles) {
+          if (parseAllJdkFiles || jarEntryName.endsWith("package-info.java")) {
             parseJdkJarEntry(jarEntryName);
             continue;
           }
-          int index = jarEntry.getName().indexOf("/share/classes/");
-          String shortName =
+          int index = jarEntryName.indexOf("/share/classes/");
+          // "-5" is to remove ".java" from end of file name
+          String fqClassName =
               jarEntryName
-                  .substring(index + "/share/classes/".length())
-                  .replace(".java", "")
+                  .substring(index + "/share/classes/".length(), jarEntryName.length() - 5)
                   .replace('/', '.');
-          jdkStubFilesJar.put(shortName, jarEntryName);
-          if (jarEntryName.endsWith("package-info.java")) {
-            parseJdkJarEntry(jarEntryName);
-          }
+          jdkStubFilesJar.put(fqClassName, jarEntryName);
         }
       }
     } catch (IOException e) {

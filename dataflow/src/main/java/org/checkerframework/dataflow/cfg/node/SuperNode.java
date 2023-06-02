@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -47,7 +46,7 @@ public class SuperNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash("super");
+    return 109801370; // Objects.hash("super");
   }
 
   @Override
