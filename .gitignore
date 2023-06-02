@@ -59,6 +59,8 @@ plume-bib
 manual.aux
 manual.blg
 manual.dvi
+manual.fdb_latexmk
+manual.fls
 manual.haux
 manual.html
 manual.htoc
@@ -144,6 +146,7 @@ checker/tests/nullness-temp/*.java
 checker/tests/nullness/generics/*.class
 
 dataflow/tests/constant-propagation/Out.txt
+dataflow/tests/constant-propagation/*.class
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt
