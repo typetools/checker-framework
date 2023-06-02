@@ -836,8 +836,7 @@ public class AnnotationFileElementTypes {
           continue;
         }
         String jarEntryName = jarEntry.getName();
-        if (!jarEntryName.startsWith("annotated-jdk")
-            || !jarEntryName.endsWith(".java")
+        if (!(jarEntryName.startsWith("annotated-jdk") && jarEntryName.endsWith(".java"))
             // JavaParser can't parse module-info files, so skip them.
             || jarEntryName.endsWith("module-info.java")) {
           continue;
