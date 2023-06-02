@@ -7,6 +7,9 @@ Version 3.36.0 (July 5, 2023)
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
+Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
+used as a statement.
+
 **Closed issues:**
 
 
@@ -50,9 +53,6 @@ Class `FieldInvariants`:
 `CFAbstractValue.validateSet()` takes a type factory rather than a `QualifierHierarchy`.
 
 Removed methods that have been deprecated for over two years.
-
-Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
-used as a statement.
 
 **Closed issues:**
 
