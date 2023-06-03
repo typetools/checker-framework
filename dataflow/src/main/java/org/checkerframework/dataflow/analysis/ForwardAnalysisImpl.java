@@ -82,11 +82,11 @@ public class ForwardAnalysisImpl<
    * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
    * control flow graph given a transfer function.
    *
-   * @param transfer the transfer function
+   * @param transferFunction the transfer function
    */
-  public ForwardAnalysisImpl(@Nullable T transfer) {
+  public ForwardAnalysisImpl(T transferFunction) {
     this(-1);
-    this.transferFunction = transfer;
+    this.transferFunction = transferFunction;
   }
 
   @Override
