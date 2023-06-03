@@ -116,9 +116,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -126,6 +124,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 import org.plumelib.util.SystemPlume;
 
 /**
@@ -346,8 +345,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
     if (shouldCache) {
       int cacheSize = getCacheSize();
-      flowResultAnalysisCaches = CollectionUtils.createLRUCache(cacheSize);
-      initializerCache = CollectionUtils.createLRUCache(cacheSize);
+      flowResultAnalysisCaches = CollectionsPlume.createLruCache(cacheSize);
+      initializerCache = CollectionsPlume.createLruCache(cacheSize);
     } else {
       flowResultAnalysisCaches = null;
       initializerCache = null;
@@ -1018,11 +1017,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the JavaExpression and offset for the given expression
    * @throws JavaExpressionParseException thrown if the expression cannot be parsed
    */
-  public Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+  public IPair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
       String expression, TreePath currentPath) throws JavaExpressionParseException {
-    Pair<String, String> p = getExpressionAndOffset(expression);
+    IPair<String, String> p = getExpressionAndOffset(expression);
     JavaExpression r = parseJavaExpressionString(p.first, currentPath);
-    return Pair.of(r, p.second);
+    return IPair.of(r, p.second);
   }
 
   /**
@@ -1086,7 +1085,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected final IdentityHashMap<Tree, Store> exceptionalExitStores;
 
   /** A mapping from methods to a list with all return statements and the corresponding store. */
-  protected final IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
+  protected final IdentityHashMap<MethodTree, List<IPair<ReturnNode, TransferResult<Value, Store>>>>
       returnStatementStores;
 
   /**
@@ -1135,7 +1134,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return a list of all return statements of {@code method} paired with their corresponding
    *     {@link TransferResult} or an empty list if {@code method} has no return statements
    */
-  public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
+  public List<IPair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
       MethodTree methodTree) {
     assert returnStatementStores.containsKey(methodTree);
     return returnStatementStores.get(methodTree);
@@ -1323,14 +1322,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // class trees and their initial stores
-    Queue<Pair<ClassTree, Store>> classQueue = new ArrayDeque<>();
+    Queue<IPair<ClassTree, Store>> classQueue = new ArrayDeque<>();
     List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
-    classQueue.add(Pair.of(classTree, null));
+    classQueue.add(IPair.of(classTree, null));
 
     while (!classQueue.isEmpty()) {
-      Pair<ClassTree, Store> qel = classQueue.remove();
+      IPair<ClassTree, Store> qel = classQueue.remove();
       ClassTree ct = qel.first;
       Store capturedStore = qel.second;
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
@@ -1344,7 +1343,7 @@ public abstract class GenericAnnotatedTypeFactory<
       initializationStaticStore = capturedStore;
       initializationStore = capturedStore;
 
-      Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
+      Queue<IPair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
 
       // Queue up classes (for top-level `while` loop) and methods (for within this `try`
       // construct); analyze top-level blocks and variable initializers as they are
@@ -1366,7 +1365,7 @@ public abstract class GenericAnnotatedTypeFactory<
             case ENUM:
               // Visit inner and nested class trees.
               // TODO: Use no store for them? What can be captured?
-              classQueue.add(Pair.of((ClassTree) m, capturedStore));
+              classQueue.add(IPair.of((ClassTree) m, capturedStore));
               break;
             case METHOD:
               MethodTree mt = (MethodTree) m;
@@ -1451,7 +1450,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         while (!lambdaQueue.isEmpty()) {
-          Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+          IPair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
           MethodTree mt =
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
@@ -1514,8 +1513,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
   protected void analyze(
-      Queue<Pair<ClassTree, Store>> classQueue,
-      Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+      Queue<IPair<ClassTree, Store>> classQueue,
+      Queue<IPair<LambdaExpressionTree, Store>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<Value>> fieldValues,
       ClassTree currentClass,
@@ -1593,11 +1592,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // add classes declared in CFG
     for (ClassTree cls : cfg.getDeclaredClasses()) {
-      classQueue.add(Pair.of(cls, getStoreBefore(cls)));
+      classQueue.add(IPair.of(cls, getStoreBefore(cls)));
     }
     // add lambdas declared in CFG
     for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
-      lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
+      lambdaQueue.add(IPair.of(lambda, getStoreBefore(lambda)));
     }
 
     postAnalyze(cfg);
@@ -2354,7 +2353,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** For each type, whether it is relevant. A cache to avoid repeated re-computation. */
-  private final Map<TypeMirror, Boolean> isRelevantCache = CollectionUtils.createLRUCache(300);
+  private final Map<TypeMirror, Boolean> isRelevantCache = CollectionsPlume.createLruCache(300);
 
   /**
    * Returns true if users can write type annotations from this type system directly on the given
@@ -2653,7 +2652,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getPreconditionAnnotations(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         methodAnnos.getPreconditions().entrySet()) {
       result.addAll(
           getPreconditionAnnotations(
@@ -2678,7 +2677,7 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       List<AnnotationMirror> preconds) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         methodAnnos.getPostconditions().entrySet()) {
       result.addAll(
           getPostconditionAnnotations(
