@@ -35,7 +35,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
@@ -252,10 +252,10 @@ public class AnnotationFileUtil {
    * @return a pair of the type name and the field name
    */
   @SuppressWarnings("signature") // string parsing
-  public static Pair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
+  public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
     @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
     String name = imported.substring(imported.lastIndexOf(".") + 1);
-    Pair<String, String> typeParts = Pair.of(typeName, name);
+    IPair<String, String> typeParts = IPair.of(typeName, name);
     return typeParts;
   }
 

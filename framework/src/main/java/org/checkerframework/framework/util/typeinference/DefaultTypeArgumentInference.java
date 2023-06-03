@@ -53,10 +53,10 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -339,7 +339,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             typeFactory, argumentTypes, methodType, targets, useNullArguments);
 
     // 2. Step 2 - Solve the constraints.
-    Pair<InferenceResult, InferenceResult> argInference =
+    IPair<InferenceResult, InferenceResult> argInference =
         inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
     InferenceResult fromArgEqualities = argInference.first; // result 2.a
@@ -506,7 +506,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * Step 2. Infer type arguments from the equality (TisU) and the supertype (TSuperU) constraints
    * of the methods arguments.
    */
-  private Pair<InferenceResult, InferenceResult> inferFromArguments(
+  private IPair<InferenceResult, InferenceResult> inferFromArguments(
       AnnotatedTypeFactory typeFactory,
       Set<AFConstraint> afArgumentConstraints,
       Set<TypeVariable> targets) {
@@ -528,7 +528,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         subtypesSolver.solveFromSubtypes(remainingTargets, argConstraints, typeFactory);
     fromSupertypes.mergeSubordinate(fromSubtypes);
 
-    return Pair.of(inferredFromArgEqualities, fromSupertypes);
+    return IPair.of(inferredFromArgEqualities, fromSupertypes);
   }
 
   /** Step 3. Infer type arguments from the equality constraints of the assignment context. */

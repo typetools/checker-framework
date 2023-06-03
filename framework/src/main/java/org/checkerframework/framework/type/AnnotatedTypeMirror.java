@@ -36,10 +36,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.DeepCopyable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.DeepCopyable;
 
 /**
  * Represents an annotated type in the Java programming language, including:
