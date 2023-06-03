@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /**
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.Pair;
   protected final Types types;
 
   /** An ordered list of pairs because catch blocks are ordered. */
-  protected final List<Pair<TypeMirror, Label>> catchLabels;
+  protected final List<IPair<TypeMirror, Label>> catchLabels;
 
   /**
    * Construct a TryCatchFrame.
@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.Pair;
    * @param types the Types utilities
    * @param catchLabels the catch labels
    */
-  public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
+  public TryCatchFrame(Types types, List<IPair<TypeMirror, Label>> catchLabels) {
     this.types = types;
     this.catchLabels = catchLabels;
   }
@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.Pair;
       return "TryCatchFrame: no catch labels.";
     } else {
       StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
-      for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
+      for (IPair<TypeMirror, Label> ptml : this.catchLabels) {
         sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
       }
       return sb.toString();
@@ -77,7 +77,7 @@ import org.checkerframework.javacutil.Pair;
     DeclaredType declaredThrown = (DeclaredType) thrown;
     assert thrown != null : "thrown type must be bounded by a declared type";
 
-    for (Pair<TypeMirror, Label> pair : catchLabels) {
+    for (IPair<TypeMirror, Label> pair : catchLabels) {
       TypeMirror caught = pair.first;
       boolean canApply = false;
 

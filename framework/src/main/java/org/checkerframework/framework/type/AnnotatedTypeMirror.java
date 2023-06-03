@@ -36,16 +36,22 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.DeepCopyable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.DeepCopyable;
 
 /**
- * Represents an annotated type in the Java programming language. Types include primitive types,
- * declared types (class and interface types), array types, type variables, and the null type. Also
- * represented are wildcard type arguments, the signature and return types of executables, and
- * pseudo-types corresponding to packages and to the keyword {@code void}.
+ * Represents an annotated type in the Java programming language, including:
+ *
+ * <ul>
+ *   <li>standard types: primitive types, declared types (class and interface types), array types,
+ *       type variables, and the null type
+ *   <li>wildcard type arguments
+ *   <li>{@link AnnotatedExecutableType executable types} (their signature and return types)
+ *   <li>{@link AnnotatedNoType pseudo-types} corresponding to packages and to the keyword {@code
+ *       void}
+ * </ul>
  *
  * <p>To implement operations based on the class of an {@code AnnotatedTypeMirror} object, either
  * use a visitor or use the result of the {@link #getKind()} method.
