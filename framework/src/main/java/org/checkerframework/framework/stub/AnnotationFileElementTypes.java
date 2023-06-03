@@ -47,10 +47,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -547,7 +547,7 @@ public class AnnotationFileElementTypes {
 
     // This is a list of pairs of (where defined, method type) for fake overrides.  The second
     // element of each pair is currently always an AnnotatedExecutableType.
-    List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
+    List<IPair<TypeMirror, AnnotatedTypeMirror>> candidates =
         annotationFileAnnos.fakeOverrides.get(method);
 
     if (candidates == null || candidates.isEmpty()) {
@@ -559,7 +559,7 @@ public class AnnotationFileElementTypes {
     // A list of fake receiver types.
     List<TypeMirror> applicableClasses = new ArrayList<>();
     List<TypeMirror> applicableInterfaces = new ArrayList<>();
-    for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
       TypeMirror fakeLocation = candidatePair.first;
       AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
       if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
@@ -605,7 +605,7 @@ public class AnnotationFileElementTypes {
       throw new BugInCF(message.toString());
     }
 
-    for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
       TypeMirror candidateReceiverType = candidatePair.first;
       if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
         return (AnnotatedExecutableType) candidatePair.second;
