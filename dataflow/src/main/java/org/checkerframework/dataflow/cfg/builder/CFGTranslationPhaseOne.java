@@ -513,15 +513,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public void handleArtificialTree(Tree tree) {}
 
   /**
-   * Allow subclasses to access the processing environment and its associated utilities.
-   *
-   * @return the ProcessingEnvironment associated with this object
-   */
-  protected ProcessingEnvironment getProcessingEnvironment() {
-    return env;
-  }
-
-  /**
    * Returns the current path for the tree currently being scanned.
    *
    * @return the current path
