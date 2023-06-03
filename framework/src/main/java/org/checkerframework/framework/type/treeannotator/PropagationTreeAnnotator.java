@@ -22,10 +22,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
@@ -66,7 +66,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * and this cache is used to improve performance.
    */
   private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
-      CollectionUtils.createLRUCache(300);
+      CollectionsPlume.createLruCache(300);
 
   @Override
   public Void visitNewArray(NewArrayTree arrayTree, AnnotatedTypeMirror arrayType) {
@@ -207,7 +207,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+        atypeFactory.binaryTreeArgTypes(tree);
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBounds(
             argTypes.first.getEffectiveAnnotations(), argTypes.second.getEffectiveAnnotations());
