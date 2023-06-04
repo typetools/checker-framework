@@ -24,7 +24,7 @@ public class LiveVarTransfer
     implements BackwardTransferFunction<UnusedAbstractValue, LiveVarStore> {
 
   /** Creates a new LiveVarTransfer. */
-  LiveVarTransfer() {}
+  public LiveVarTransfer() {}
 
   @Override
   @SideEffectFree
