@@ -21,8 +21,8 @@ import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -137,9 +137,9 @@ public class ContractsFromMethod {
     }
 
     // Check for type-system specific annotations.
-    List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+    List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
-    for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
+    for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
       AnnotationMirror anno = r.first;
       // contractAnno is the meta-annotation on anno.
       AnnotationMirror contractAnno = r.second;
