@@ -411,7 +411,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotatedTypeMirror atmVisit : visited) {
       // Use reference equality rather than equals because the visitor may visit two types
       // that are structurally equal, but not actually the same.  For example, the
-      // wildcards in Pair<?,?> may be equal, but they both should be visited.
+      // wildcards in IPair<?,?> may be equal, but they both should be visited.
       if (atmVisit == atm) {
         return true;
       }

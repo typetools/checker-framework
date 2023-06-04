@@ -37,11 +37,11 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
+import org.plumelib.util.IPair;
 
 /**
  * A visitor to validate the types in a tree.
@@ -320,7 +320,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Try to reconstruct the ParameterizedTypeTree from the given tree.
      * TODO: there has to be a nicer way to do this...
      */
-    Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p = extractParameterizedTypeTree(tree, type);
+    IPair<ParameterizedTypeTree, AnnotatedDeclaredType> p =
+        extractParameterizedTypeTree(tree, type);
     ParameterizedTypeTree typeArgTree = p.first;
     type = p.second;
 
@@ -418,8 +419,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @return if {@code tree} has a {@code ParameterizedTypeTree}, then returns the tree and its
    *     type. Otherwise, returns null and {@code type}.
    */
-  private Pair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType> extractParameterizedTypeTree(
-      Tree tree, AnnotatedDeclaredType type) {
+  private IPair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType>
+      extractParameterizedTypeTree(Tree tree, AnnotatedDeclaredType type) {
     ParameterizedTypeTree typeargtree = null;
 
     switch (tree.getKind()) {
@@ -458,7 +459,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // TODO: add more test cases to ensure that nested types are
           // handled correctly,
           // e.g. @Nullable() List<@Nullable Object>[][]
-          Pair<ParameterizedTypeTree, AnnotatedDeclaredType> p =
+          IPair<ParameterizedTypeTree, AnnotatedDeclaredType> p =
               extractParameterizedTypeTree(undtr, type);
           typeargtree = p.first;
           type = p.second;
@@ -488,7 +489,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         break;
     }
 
-    return Pair.of(typeargtree, type);
+    return IPair.of(typeargtree, type);
   }
 
   @Override
