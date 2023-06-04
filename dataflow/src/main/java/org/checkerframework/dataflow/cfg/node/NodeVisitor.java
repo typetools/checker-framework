@@ -72,7 +72,7 @@ public interface NodeVisitor<R, P> {
    *
    * @param n the StringConcatenateAssignment
    * @param p the visitor argument
-   * @returns the visitor result
+   * @return the visitor result
    */
   @Deprecated // 2022-03-22
   R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
