@@ -36,8 +36,6 @@ ext {
   // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
 
-  errorproneJavacVersion = '9+181-r4173-1'
-
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
@@ -137,9 +135,9 @@ allprojects {
   }
 
   dependencies {
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
-    errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
   }
@@ -1035,10 +1033,10 @@ subprojects {
   }
 }
 
+
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
-
 assemble.dependsOn(':checker:assembleForJavac')
 
 assemble.mustRunAfter(clean)
