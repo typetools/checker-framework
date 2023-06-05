@@ -464,6 +464,7 @@ public abstract class CFAbstractTransfer<
    * @param methodDeclTree the declaration of the method or constructor
    * @return true if the receiver of a method or constructor might not yet be fully initialized
    */
+  @Pure
   protected boolean isNotFullyInitializedReceiver(MethodTree methodDeclTree) {
     return TreeUtils.isConstructor(methodDeclTree);
   }
@@ -537,6 +538,7 @@ public abstract class CFAbstractTransfer<
    * @param in the transfer input
    * @return the input information, as a TransferResult
    */
+  @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
     if (in.containsTwoStores()) {
       S thenStore = in.getThenStore();
@@ -559,6 +561,7 @@ public abstract class CFAbstractTransfer<
    * @param in the TransferResult to copy
    * @return the input informatio
    */
+  @SideEffectFree
   protected TransferResult<V, S> recreateTransferResult(
       @Nullable V value, TransferResult<V, S> in) {
     if (in.containsTwoStores()) {
@@ -790,6 +793,7 @@ public abstract class CFAbstractTransfer<
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
    *     contains just the node itself if it is not an assignment)
    */
+  @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
     if (node instanceof AssignmentNode) {
       List<Node> result = new ArrayList<>(2);
@@ -1234,7 +1238,13 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
    * incomparable, then {@code value1} is returned.
+   *
+   * @param value1 an abstract value
+   * @param value2 another abstract value
+   * @return the more specific value of the two parameters, or, if they are incomparable, {@code
+   *     value1}
    */
+  @Pure
   public V moreSpecificValue(V value1, V value2) {
     if (value1 == null) {
       return value2;
@@ -1272,6 +1282,7 @@ public abstract class CFAbstractTransfer<
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
+  @SideEffectFree
   protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
@@ -1294,6 +1305,7 @@ public abstract class CFAbstractTransfer<
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
+  @SideEffectFree
   protected V getWidenedValue(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
