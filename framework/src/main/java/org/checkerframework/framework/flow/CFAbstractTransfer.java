@@ -39,6 +39,7 @@ import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
@@ -49,7 +50,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -464,6 +464,7 @@ public abstract class CFAbstractTransfer<
    * @param methodDeclTree the declaration of the method or constructor
    * @return true if the receiver of a method or constructor might not yet be fully initialized
    */
+  @Pure
   protected boolean isNotFullyInitializedReceiver(MethodTree methodDeclTree) {
     return TreeUtils.isConstructor(methodDeclTree);
   }
@@ -537,6 +538,7 @@ public abstract class CFAbstractTransfer<
    * @param in the transfer input
    * @return the input information, as a TransferResult
    */
+  @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
     if (in.containsTwoStores()) {
       S thenStore = in.getThenStore();
@@ -559,6 +561,7 @@ public abstract class CFAbstractTransfer<
    * @param in the TransferResult to copy
    * @return the input informatio
    */
+  @SideEffectFree
   protected TransferResult<V, S> recreateTransferResult(
       @Nullable V value, TransferResult<V, S> in) {
     if (in.containsTwoStores()) {
@@ -648,7 +651,19 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitTernaryExpression(
       TernaryExpressionNode n, TransferInput<V, S> p) {
-    return visitLocalVariable(n.getTernaryExpressionVar(), p);
+    TransferResult<V, S> result = super.visitTernaryExpression(n, p);
+    S thenStore = result.getThenStore();
+    S elseStore = result.getElseStore();
+
+    V thenValue = p.getValueOfSubNode(n.getThenOperand());
+    V elseValue = p.getValueOfSubNode(n.getElseOperand());
+    V resultValue = null;
+    if (thenValue != null && elseValue != null) {
+      // The resulting abstract value is the merge of the 'then' and 'else' branch.
+      resultValue = thenValue.leastUpperBound(elseValue);
+    }
+    V finishedValue = finishValue(resultValue, thenStore, elseStore);
+    return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
   }
 
   @Override
@@ -778,6 +793,7 @@ public abstract class CFAbstractTransfer<
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
    *     contains just the node itself if it is not an assignment)
    */
+  @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
     if (node instanceof AssignmentNode) {
       List<Node> result = new ArrayList<>(2);
@@ -795,7 +811,6 @@ public abstract class CFAbstractTransfer<
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
 
-    S store = in.getRegularStore();
     V rhsValue = in.getValueOfSubNode(rhs);
 
     if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
@@ -816,9 +831,20 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    processCommonAssignment(in, lhs, rhs, store, rhsValue);
-
-    return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+    if (n.isSynthetic() && in.containsTwoStores()) {
+      // This is a synthetic assignment node created for a ternary expression. In this case
+      // the `then` and `else` store are not merged.
+      S thenStore = in.getThenStore();
+      S elseStore = in.getElseStore();
+      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      return new ConditionalTransferResult<>(
+          finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
+    } else {
+      S store = in.getRegularStore();
+      processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return new RegularTransferResult<>(finishValue(rhsValue, store), store);
+    }
   }
 
   @Override
@@ -859,8 +885,10 @@ public abstract class CFAbstractTransfer<
   }
 
   @Override
+  @Deprecated // 2022-03-22
   public TransferResult<V, S> visitStringConcatenateAssignment(
-      StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
+      org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
+      TransferInput<V, S> in) {
     // This gets the type of LHS + RHS
     TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
     Node lhs = n.getLeftOperand();
@@ -1210,7 +1238,13 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
    * incomparable, then {@code value1} is returned.
+   *
+   * @param value1 an abstract value
+   * @param value2 another abstract value
+   * @return the more specific value of the two parameters, or, if they are incomparable, {@code
+   *     value1}
    */
+  @Pure
   public V moreSpecificValue(V value1, V value2) {
     if (value1 == null) {
       return value2;
@@ -1248,6 +1282,7 @@ public abstract class CFAbstractTransfer<
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
+  @SideEffectFree
   protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
@@ -1270,6 +1305,7 @@ public abstract class CFAbstractTransfer<
    * @return an abstract value with the given {@code type} and the annotations from {@code
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
+  @SideEffectFree
   protected V getWidenedValue(TypeMirror type, V annotatedValue) {
     if (annotatedValue == null) {
       return null;
@@ -1299,6 +1335,14 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitExpressionStatement(
+      ExpressionStatementNode n, TransferInput<V, S> vsTransferInput) {
+    // Merge the input
+    S info = vsTransferInput.getRegularStore();
+    return new RegularTransferResult<>(finishValue(null, info), info);
   }
 
   /**

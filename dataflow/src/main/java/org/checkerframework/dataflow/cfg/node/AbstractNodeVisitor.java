@@ -159,6 +159,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
   }
 
   // Compound assignments
+  @Deprecated // 2022-03-22
   @Override
   public R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p) {
     return visitNode(n, p);
@@ -383,6 +384,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
   // Marker nodes
   @Override
   public R visitMarker(MarkerNode n, P p) {
+    return visitNode(n, p);
+  }
+
+  @Override
+  public R visitExpressionStatement(ExpressionStatementNode n, P p) {
     return visitNode(n, p);
   }
 }

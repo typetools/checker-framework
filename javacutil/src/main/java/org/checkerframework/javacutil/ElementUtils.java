@@ -331,7 +331,9 @@ public class ElementUtils {
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
+   * @deprecated use {@link #getSimpleDescription}
    */
+  @Deprecated // 2023-06-01
   public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
     Name result = element.getSimpleName();
     switch (result.toString()) {
@@ -341,6 +343,28 @@ public class ElementUtils {
         return "class initializer";
       default:
         return result;
+    }
+  }
+
+  /**
+   * Returns a user-friendly name for the given method, which includes the name of the enclosing
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as
+   * ExecutableElement.getSimpleName() does.
+   *
+   * @param element a method declaration
+   * @return a user-friendly name for the method
+   */
+  public static CharSequence getSimpleDescription(ExecutableElement element) {
+    String enclosingTypeName =
+        ((TypeElement) element.getEnclosingElement()).getSimpleName().toString();
+    Name methodName = element.getSimpleName();
+    switch (methodName.toString()) {
+      case "<init>":
+        return enclosingTypeName + " constructor";
+      case "<clinit>":
+        return "class initializer for " + enclosingTypeName;
+      default:
+        return enclosingTypeName + "." + methodName;
     }
   }
 
@@ -1022,7 +1046,7 @@ public class ElementUtils {
       try {
         getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
       } catch (NoSuchMethodException e) {
-        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
+        throw new BugInCF("Cannot access TypeElement.getRecordComponents()", e);
       }
     } else {
       getRecordComponentsMethod = null;
