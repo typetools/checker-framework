@@ -489,18 +489,40 @@ problem is a "Can't find stubparser jar" error message.
 
 <p>
 To build an old version of the Checker Framework, you need to use old versions
-of the other repositories as well.  (Clone them into siblings of
+of the other repositories as well.  Clone them into siblings of
 the <code>checker-framework/</code> directory that holds your old version of the
-Checker Framework.)  If the Checker Framework version is a commit on branch B
-with date D, then you would like to use the commits on other repositories'
-branch B that precede D.  (This isn't quite right, because the commits may have
-been made earlier but all pushed at the same time, so you might need to look at
-commits that are relatively soon after D.)  To obtain these, view the GitHub
-history and click on the pull request to see the commits that were merged into
-it.  You cannot obtain these from the Git history, because after a pull request
-is merged, the commits in the pull request branch are squashed and the branch is
-deleted.
+Checker Framework.
 </p>
+
+<p>
+Here are <b>general rules</b>:
+If the Checker Framework version is a commit on branch B with date D, then use
+the commits on other repositories' branch B (or <code>master</code>, if branch B
+does not exist) that precede D.  (This isn't quite right, because the commits
+may have been made earlier but all pushed at the same time, so you might need to
+look at commits that are relatively soon after D.)  To obtain these, view the
+GitHub history and click on the pull request to see the commits that were merged
+into it.  You cannot obtain these from the Git history, because after a pull
+request is merged, the commits in the pull request branch are squashed and the
+branch is deleted.
+</p>
+
+<p>
+  Here are <b>special cases</b>:
+</p>
+<ul>
+  <li>
+    If you are building an old <em>released</em> version of the Checker Framework,
+    then <code>annotation-tools</code> should have a corresponding tag for the
+    release.
+  </li>
+  <li>
+    Recently, any Stubparser change that breaks building the Checker
+    Framework, should have a new version number. So you should check out
+    Stubparser to the commit that changed the version number (to what it is
+    in <code>checker-framework/build.gradle</code>).
+  </li>
+</ul>    
 
 
 </body>
