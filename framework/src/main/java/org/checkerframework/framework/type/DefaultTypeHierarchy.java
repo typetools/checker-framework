@@ -726,7 +726,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       if (unboxedSuper.getKind() != subtype.getKind()
           && TypesUtils.canBeNarrowingPrimitiveConversion(unboxedSuper, types)) {
         narrowedType = atypeFactory.getNarrowedPrimitive(subtype, unboxedSuper);
-        return visit(narrowedType, supertype, p);
       }
     }
     AnnotatedTypeMirror boxedSubtype = atypeFactory.getBoxedType(narrowedType);
