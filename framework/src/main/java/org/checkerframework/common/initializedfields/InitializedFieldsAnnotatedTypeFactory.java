@@ -12,6 +12,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -238,5 +239,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     return true;
+  }
+
+  // Overridden because there is no InitalizedFieldsAnalysis.
+  @Override
+  protected AccumulationAnalysis createFlowAnalysis() {
+    return new AccumulationAnalysis(this.getChecker(), this);
   }
 }

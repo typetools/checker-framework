@@ -5,7 +5,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
@@ -20,36 +19,8 @@ public class AccumulationAnalysis
    *
    * @param checker the checker
    * @param factory the type factory
-   * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
-  protected AccumulationAnalysis(
-      BaseTypeChecker checker,
-      GenericAnnotatedTypeFactory<
-              AccumulationValue,
-              AccumulationStore,
-              AccumulationTransfer,
-              ? extends
-                  CFAbstractAnalysis<AccumulationValue, AccumulationStore, AccumulationTransfer>>
-          factory,
-      int maxCountBeforeWidening) {
-    super(checker, factory, maxCountBeforeWidening);
-  }
-
-  /**
-   * Constructs an AccumulationAnalysis.
-   *
-   * @param checker the checker
-   * @param factory the type factory
-   */
-  protected AccumulationAnalysis(
-      BaseTypeChecker checker,
-      GenericAnnotatedTypeFactory<
-              AccumulationValue,
-              AccumulationStore,
-              AccumulationTransfer,
-              ? extends
-                  CFAbstractAnalysis<AccumulationValue, AccumulationStore, AccumulationTransfer>>
-          factory) {
+  public AccumulationAnalysis(BaseTypeChecker checker, AccumulationAnnotatedTypeFactory factory) {
     super(checker, factory);
   }
 
