@@ -39,13 +39,11 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -2995,53 +2993,5 @@ public abstract class GenericAnnotatedTypeFactory<
     List<String> result =
         AnnotationUtils.getElementValueArray(contractAnnotation, elementName, String.class, true);
     return result;
-  }
-
-  /**
-   * A TypeMirror for which isRelevant returns true. It is never used for anything else. Its use
-   * should be rare; if you use it, document why there is no real TypeMirror to use.
-   */
-  private static final class AlwaysRelevantTypeMirror implements TypeMirror {
-    /** Create a new AlwaysRelevantTypeMirror. */
-    private AlwaysRelevantTypeMirror() {}
-
-    /** The singleton AlwaysRelevantTypeMirror. */
-    @SuppressWarnings("interning:assignment") // singleton
-    public static @InternedDistinct AlwaysRelevantTypeMirror it = new AlwaysRelevantTypeMirror();
-
-    @Override
-    public List<? extends AnnotationMirror> getAnnotationMirrors() {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public <A extends Annotation> A[] getAnnotationsByType(Class<A> annotationType) {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public boolean equals(Object t) {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public int hashCode() {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public TypeKind getKind() {
-      throw new Error("Do not call");
-    }
-
-    @Override
-    public <R, P> R accept(TypeVisitor<R, P> v, P p) {
-      throw new Error("Do not call");
-    }
   }
 }
