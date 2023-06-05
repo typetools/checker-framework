@@ -96,30 +96,36 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   @Override
   public AccumulationValue mostSpecific(AccumulationValue other, AccumulationValue backup) {
+    if (other == null) {
+      return this;
+    }
     AccumulationValue mostSpecific = super.mostSpecific(other, backup);
-    if (mostSpecific == null) {
-      if (other == null) {
-        return this;
-      }
-      // mostSpecific is null if the two types are not comparable.  This is normally
-      // because one of this or other is a type variable and annotations is empty, but the
-      // other annotations are not empty.  In this case, copy the accumulatedValues to the
-      // value with no annotations and return it as most specific.
-      if (other.getAnnotations().isEmpty()) {
-        other.addAccumulatedValues(this.accumulatedValues);
-        return other;
-      } else if (this.getAnnotations().isEmpty()) {
-        this.addAccumulatedValues(other.accumulatedValues);
-        return this;
-      }
-      return null;
+    if (mostSpecific != null) {
+      mostSpecific.addAccumulatedValues(this.accumulatedValues);
+      mostSpecific.addAccumulatedValues(other.accumulatedValues);
+      return mostSpecific;
     }
 
-    mostSpecific.addAccumulatedValues(this.accumulatedValues);
-    if (other != null) {
+    // mostSpecific is null if the two types are not comparable.  This is normally
+    // because one of this or other is a type variable and annotations is empty, but the
+    // other annotations are not empty.  In this case, copy the accumulatedValues to the
+    // value with no annotations and return it as most specific.
+    if (other.getAnnotations().isEmpty()) {
+      mostSpecific =
+          new AccumulationValue(
+              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
+      mostSpecific.addAccumulatedValues(this.accumulatedValues);
       mostSpecific.addAccumulatedValues(other.accumulatedValues);
+      return mostSpecific;
+    } else if (this.getAnnotations().isEmpty()) {
+      mostSpecific =
+          new AccumulationValue(
+              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
+      mostSpecific.addAccumulatedValues(this.accumulatedValues);
+      mostSpecific.addAccumulatedValues(other.accumulatedValues);
+      return mostSpecific;
     }
-    return mostSpecific;
+    return null;
   }
 
   /**
