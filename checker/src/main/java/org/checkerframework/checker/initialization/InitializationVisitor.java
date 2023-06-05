@@ -41,8 +41,8 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
@@ -394,7 +394,7 @@ public class InitializationVisitor<
       return;
     }
 
-    Pair<List<VariableTree>, List<VariableTree>> uninitializedFields =
+    IPair<List<VariableTree>, List<VariableTree>> uninitializedFields =
         atypeFactory.getUninitializedFields(
             store, getCurrentPath(), staticFields, receiverAnnotations);
     List<VariableTree> violatingFields = uninitializedFields.first;

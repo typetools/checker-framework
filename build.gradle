@@ -107,7 +107,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.35.0'
+  version '3.35.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -176,7 +176,7 @@ allprojects {
 
     hashmapUtilVersion = '0.0.1'
     reflectionUtilVersion = '1.1.0'
-    plumeUtilVersion = '1.7.0'
+    plumeUtilVersion = '1.8.1'
     lombokVersion = '1.18.28'
   }
 
