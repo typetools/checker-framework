@@ -39,7 +39,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.Invoke;
 import org.checkerframework.common.reflection.qual.MethodVal;
@@ -50,7 +49,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExe
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -67,10 +66,6 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
-
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** Message prefix added to verbose reflection messages. */
   public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";
@@ -155,19 +150,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // argument to invoke(Object, Object[]))
       // Check for static methods whose receiver is null
       AnnotatedTypeMirror receiverType = resolvedResult.executableType.getReceiverType();
-      TypeMirror receiverTM =
-          receiverType == null ? alwaysRelevantTM : receiverType.getUnderlyingType();
       if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
-        receiverGlb =
-            glb(
-                receiverGlb,
-                receiverTM,
-                factory.getQualifierHierarchy().getTopAnnotations(),
-                receiverTM,
-                factory);
+        if (receiverGlb == null) {
+          receiverGlb =
+              new AnnotationMirrorSet(factory.getQualifierHierarchy().getTopAnnotations());
+        }
       } else {
+        TypeMirror receiverTM = receiverType.getUnderlyingType();
         receiverGlb =
             glb(receiverGlb, receiverTM, receiverType.getAnnotations(), receiverTM, factory);
       }
