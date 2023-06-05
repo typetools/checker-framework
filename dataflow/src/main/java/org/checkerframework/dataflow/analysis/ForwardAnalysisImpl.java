@@ -25,8 +25,8 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -82,11 +82,11 @@ public class ForwardAnalysisImpl<
    * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
    * control flow graph given a transfer function.
    *
-   * @param transfer the transfer function
+   * @param transferFunction the transfer function
    */
-  public ForwardAnalysisImpl(@Nullable T transfer) {
+  public ForwardAnalysisImpl(T transferFunction) {
     this(-1);
-    this.transferFunction = transfer;
+    this.transferFunction = transferFunction;
   }
 
   @Override
@@ -221,9 +221,9 @@ public class ForwardAnalysisImpl<
   @Override
   @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
-  public List<Pair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-    return CollectionsPlume.<ReturnNode, Pair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
-        returnNode -> Pair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+  public List<IPair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
+    return CollectionsPlume.<ReturnNode, IPair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
+        returnNode -> IPair.of(returnNode, storesAtReturnStatements.get(returnNode)),
         cfg.getReturnNodes());
   }
 
@@ -417,14 +417,6 @@ public class ForwardAnalysisImpl<
       case ELSE_TO_ELSE:
         addStoreBefore(
             succ, node, currentInput.getElseStore(), Store.Kind.ELSE, addToWorklistAgain);
-        break;
-      case BOTH_TO_THEN:
-        addStoreBefore(
-            succ, node, currentInput.getRegularStore(), Store.Kind.THEN, addToWorklistAgain);
-        break;
-      case BOTH_TO_ELSE:
-        addStoreBefore(
-            succ, node, currentInput.getRegularStore(), Store.Kind.ELSE, addToWorklistAgain);
         break;
     }
   }

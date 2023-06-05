@@ -27,7 +27,7 @@ public class KeyForLub {
   }
 
   @PolyKeyFor String poly1(@KeyFor("map1") String key1, @PolyKeyFor String poly) {
-    // :: error: (conditional)
+    // :: error: (return)
     return flag ? key1 : poly;
   }
 

@@ -79,11 +79,11 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressio
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -1668,14 +1668,15 @@ class MustCallConsistencyAnalyzer {
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
    *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
    */
-  private Set<Pair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(Block block) {
+  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
+      Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(Pair.of(regularSucc, null));
+        result.add(IPair.of(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
@@ -1683,15 +1684,15 @@ class MustCallConsistencyAnalyzer {
         TypeMirror exceptionType = entry.getKey();
         if (!isIgnoredExceptionType(((Type) exceptionType).tsym.getQualifiedName())) {
           for (Block exSucc : entry.getValue()) {
-            result.add(Pair.of(exSucc, exceptionType));
+            result.add(IPair.of(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(Pair.of(b, null));
+        result.add(IPair.of(b, null));
       }
       return result;
     }
@@ -1726,7 +1727,7 @@ class MustCallConsistencyAnalyzer {
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (Pair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
       Block successor = successorAndExceptionType.first;
       // If nonnull, currentBlock is an ExceptionBlock.

@@ -16,7 +16,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.javacutil.Pair;
 
 public class Driver {
 
@@ -39,7 +38,7 @@ public class Driver {
 
     // Find methods
     for (Method method : clazz.getMethods()) {
-      List<Pair<String, TypeAnnotation.Position>> expected = expectedOf(method);
+      List<AnnoPosPair> expected = expectedOf(method);
       if (expected == null) {
         continue;
       }
@@ -83,7 +82,7 @@ public class Driver {
     }
   }
 
-  private List<Pair<String, TypeAnnotation.Position>> expectedOf(Method m) {
+  private List<AnnoPosPair> expectedOf(Method m) {
     TADescription ta = m.getAnnotation(TADescription.class);
     TADescriptions tas = m.getAnnotation(TADescriptions.class);
 
@@ -91,7 +90,7 @@ public class Driver {
       return null;
     }
 
-    List<Pair<String, TypeAnnotation.Position>> result = new ArrayList<>();
+    List<AnnoPosPair> result = new ArrayList<>();
 
     if (ta != null) {
       result.add(expectedOf(ta));
@@ -106,7 +105,7 @@ public class Driver {
     return result;
   }
 
-  private Pair<String, TypeAnnotation.Position> expectedOf(TADescription d) {
+  private AnnoPosPair expectedOf(TADescription d) {
     String annoName = d.annotation();
 
     TypeAnnotation.Position p = new TypeAnnotation.Position();
@@ -139,7 +138,7 @@ public class Driver {
       p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
     }
 
-    return Pair.of(annoName, p);
+    return AnnoPosPair.of(annoName, p);
   }
 
   private List<Integer> wrapIntArray(int[] ints) {
@@ -151,6 +150,37 @@ public class Driver {
   }
 
   public static final int NOT_SET = -888;
+}
+
+/** A pair of an annotation name and a position. */
+class AnnoPosPair {
+  /** The first element of the pair. */
+  public final String first;
+
+  /** The second element of the pair. */
+  public final TypeAnnotation.Position second;
+
+  /**
+   * Creates a new immutable pair. Clients should use {@link #of}.
+   *
+   * @param first the first element of the pair
+   * @param second the second element of the pair
+   */
+  private AnnoPosPair(String first, TypeAnnotation.Position second) {
+    this.first = first;
+    this.second = second;
+  }
+
+  /**
+   * Creates a new immutable pair.
+   *
+   * @param first first argument
+   * @param second second argument
+   * @return a pair of the values (first, second)
+   */
+  public static AnnoPosPair of(String first, TypeAnnotation.Position second) {
+    return new AnnoPosPair(first, second);
+  }
 }
 
 @Retention(RetentionPolicy.RUNTIME)

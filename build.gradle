@@ -36,8 +36,6 @@ ext {
   // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
 
-  errorproneJavacVersion = '9+181-r4173-1'
-
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
@@ -107,7 +105,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.35.0'
+  version '3.35.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -137,9 +135,9 @@ allprojects {
   }
 
   dependencies {
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
-    errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
   }
@@ -176,7 +174,7 @@ allprojects {
 
     hashmapUtilVersion = '0.0.1'
     reflectionUtilVersion = '1.1.0'
-    plumeUtilVersion = '1.7.0'
+    plumeUtilVersion = '1.8.1'
     lombokVersion = '1.18.28'
   }
 
@@ -969,9 +967,7 @@ subprojects {
       }
 
       if (project.name.is('dataflow')) {
-        dependsOn('liveVariableTest')
-        dependsOn('issue3447Test')
-        dependsOn('constantPropagationTest')
+        dependsOn('allDataflowTests')
       }
     }
 
@@ -1035,10 +1031,10 @@ subprojects {
   }
 }
 
+
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
-
 assemble.dependsOn(':checker:assembleForJavac')
 
 assemble.mustRunAfter(clean)
