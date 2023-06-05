@@ -8,7 +8,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -53,10 +52,6 @@ import org.plumelib.util.StringsPlume;
  * @param <V> the values that this CFAbstractValue wraps
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
-
-  /** A type mirror that is always relevant. */
-  private static final @InternedDistinct TypeMirror alwaysRelevantTM =
-      GenericAnnotatedTypeFactory.alwaysRelevantTM;
 
   /** The analysis class this value belongs to. */
   protected final CFAbstractAnalysis<V, ?, ?> analysis;
@@ -337,9 +332,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         throw new NullPointerException("combineTwoAnnotations: bTypeMirror==null");
       }
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = analysis.getTypeFactory();
-      if (aTypeMirror != alwaysRelevantTM
-          && gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
-          && bTypeMirror != alwaysRelevantTM
+      if (gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(aTypeMirror), top)
           && gatf.hasQualifierParameterInHierarchy(TypesUtils.getTypeElement(bTypeMirror), top)) {
         // Both types have qualifier parameters, so they are related by invariance rather
         // than subtyping.
@@ -703,9 +696,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror b = qualHierarchy.findAnnotationInHierarchy(bSet, top);
         AnnotationMirror result;
         if (a != null && b != null) {
-          TypeMirror aTM = aAtv == null ? alwaysRelevantTM : aAtv.getUnderlyingType();
-          TypeMirror bTM = bAtv == null ? alwaysRelevantTM : bAtv.getUnderlyingType();
-          result = combineTwoAnnotations(a, aTM, b, bTM, top);
+          result = combineTwoAnnotations(a, aTypeMirror, b, bTypeMirror, top);
         } else if (a != null) {
           result = combineOneAnnotation(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
