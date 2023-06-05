@@ -1385,13 +1385,16 @@ class MustCallConsistencyAnalyzer {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
-    // Special case: re-assigning a field to a value in an owning position on the RHS is
-    // permitted. For example, if the field is a class whose constructor takes another instance
+    // The following code handles a special case where the field being assigned is itself getting
+    // passed in an owning position to another method on the RHS of the assignment.
+    // For example, if the field's type is a class whose constructor takes another instance
     // of itself (such as a node in a linked list) in an owning position, re-assigning the field
     // to a new instance that takes the field's value as an owning parameter is safe (the new value
-    // has taken responsibility for closing the old value). In that case, it is safe to skip the
-    // must call vs called methods check below (but an @CreatesMustCallFor annotation is still
-    // required, so this special case must be here).
+    // has taken responsibility for closing the old value). In such a case, it is not required
+    // that the must-call obligation of the field be satisfied via method calls before the
+    // assignment, since the invoked method will take ownership of the object previously
+    // referenced by the field and handle the obligation. This fixes the false positive in
+    // https://github.com/typetools/checker-framework/issues/5971.
     Node rhs = node.getExpression();
     if (!noLightweightOwnership
         && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
