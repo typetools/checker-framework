@@ -82,17 +82,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // parameters to asSuper are not changed and a copy is returned.
     AnnotatedTypeMirror copyType = type.deepCopy();
     AnnotatedTypeMirror copySuperType = superType.deepCopy();
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
-    boolean typeIsRelevant = !gatf.isRelevant(copyType);
-    boolean superTypeIsRelevant = !gatf.isRelevant(copySuperType);
-    if (typeIsRelevant && !superTypeIsRelevant) {
-      // give superType its default qualifier
-      setDefaultForType(superType);
-    } else if (!typeIsRelevant && superTypeIsRelevant) {
-      // give type its default qualifier
-      setDefaultForType(type);
-    }
     reset();
     AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
@@ -102,27 +91,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     return (T) result;
-  }
-
-  /**
-   * Replaces the type's annotations with the default for the given type. If the given type has no
-   * default annotations, does nothing.
-   *
-   * @param atm a type; is side-effected by this method
-   */
-  private void setDefaultForType(AnnotatedTypeMirror atm) {
-    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf =
-        (GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory;
-    // Make a shallow copy and then see if the primary annotation changed.
-    AnnotatedTypeMirror withoutAnnotations = atm.shallowCopy();
-    withoutAnnotations.removeAnnotations(withoutAnnotations.getAnnotations());
-    AnnotatedTypeMirror withDefaultAnnotations = withoutAnnotations.shallowCopy();
-    gatf.addAnnotationsFromDefaultForType(null, withDefaultAnnotations);
-    if (!withoutAnnotations.getAnnotations().equals(withDefaultAnnotations.getAnnotations())) {
-      // Adding the default annotations had an effect on the temporary variable,
-      // so make the change to the argument.
-      gatf.replaceAnnotations(withDefaultAnnotations, atm);
-    }
   }
 
   /** Resets this. */
