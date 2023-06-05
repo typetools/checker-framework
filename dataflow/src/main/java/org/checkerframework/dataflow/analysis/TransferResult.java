@@ -2,7 +2,6 @@ package org.checkerframework.dataflow.analysis;
 
 import java.util.Map;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -54,7 +53,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    *
    * @return the abstract value produced by the transfer function, {@code null} otherwise
    */
-  public @Nullable @MustCall({}) V getResultValue() {
+  public @Nullable V getResultValue() {
     return resultValue;
   }
 
@@ -75,7 +74,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    * @return the regular result store produced if no exception is thrown by the {@link
    *     org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function result
    */
-  public abstract @MustCall({}) S getRegularStore();
+  public abstract S getRegularStore();
 
   /**
    * Returns the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
@@ -84,7 +83,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
    *     this result belongs to evaluates to {@code true}
    */
-  public abstract @MustCall({}) S getThenStore();
+  public abstract S getThenStore();
 
   /**
    * Returns the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
@@ -93,7 +92,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
    *     this result belongs to evaluates to {@code false}
    */
-  public abstract @MustCall({}) S getElseStore();
+  public abstract S getElseStore();
 
   /**
    * Returns the store that flows along the outgoing exceptional edge labeled with {@code exception}
@@ -103,7 +102,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    * @return the store that flows along the outgoing exceptional edge labeled with {@code exception}
    *     (or {@code null} if no special handling is required for exceptional edges)
    */
-  public @Nullable @MustCall({}) S getExceptionalStore(TypeMirror exception) {
+  public @Nullable S getExceptionalStore(TypeMirror exception) {
     if (exceptionalStores == null) {
       return null;
     }

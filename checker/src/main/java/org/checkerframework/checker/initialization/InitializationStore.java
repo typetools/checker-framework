@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -38,7 +37,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   protected final Set<VariableElement> initializedFields;
 
   /** The set of fields that have the 'invariant' annotation, and their value. */
-  protected final Map<FieldAccess, @MustCall({}) V> invariantFields;
+  protected final Map<FieldAccess, V> invariantFields;
 
   /**
    * Creates a new InitializationStore.
@@ -175,9 +174,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
       }
     }
 
-    Map<FieldAccess, @MustCall({}) V> removedFieldValues = new HashMap<>(invariantFields.size());
-    Map<FieldAccess, @MustCall({}) V> removedOtherFieldValues =
-        new HashMap<>(other.invariantFields.size());
+    Map<FieldAccess, V> removedFieldValues = new HashMap<>(invariantFields.size());
+    Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>(other.invariantFields.size());
     try {
       // Remove invariant annotated fields to avoid performance issue reported in #1438.
       for (FieldAccess invariantField : invariantFields.keySet()) {
@@ -200,9 +198,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   @Override
   public S leastUpperBound(S other) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
-    Map<FieldAccess, @MustCall({}) V> removedFieldValues = new HashMap<>(invariantFields.size());
-    Map<FieldAccess, @MustCall({}) V> removedOtherFieldValues =
-        new HashMap<>(other.invariantFields.size());
+    Map<FieldAccess, V> removedFieldValues = new HashMap<>(invariantFields.size());
+    Map<FieldAccess, V> removedOtherFieldValues = new HashMap<>(other.invariantFields.size());
     for (FieldAccess invariantField : invariantFields.keySet()) {
       V v = fieldValues.remove(invariantField);
       removedFieldValues.put(invariantField, v);
@@ -223,7 +220,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     result.initializedFields.retainAll(initializedFields);
 
     // Set intersection for invariantFields.
-    for (Map.Entry<FieldAccess, @MustCall({}) V> e : invariantFields.entrySet()) {
+    for (Map.Entry<FieldAccess, V> e : invariantFields.entrySet()) {
       FieldAccess key = e.getKey();
       if (other.invariantFields.containsKey(key)) {
         // TODO: Is the value other.invariantFields.get(key) the same as e.getValue()?

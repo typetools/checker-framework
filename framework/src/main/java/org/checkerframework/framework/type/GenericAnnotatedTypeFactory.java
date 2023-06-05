@@ -44,7 +44,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -1102,7 +1101,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tree a MethodTree or other code block, such as a static initializer
    * @return the regular exit store, or {@code null}
    */
-  public @Nullable @MustCall({}) Store getRegularExitStore(Tree tree) {
+  public @Nullable Store getRegularExitStore(Tree tree) {
     if (regularExitStores == null) {
       if (tree.getKind() == Tree.Kind.METHOD) {
         if (((MethodTree) tree).getBody() == null) {
@@ -1146,7 +1145,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return the store immediately before a given {@link Tree}
    */
-  public @MustCall({}) Store getStoreBefore(Tree tree) {
+  public Store getStoreBefore(Tree tree) {
     if (!analysis.isRunning()) {
       return flowResult.getStoreBefore(tree);
     }
