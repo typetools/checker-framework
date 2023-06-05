@@ -16,8 +16,9 @@ makes some code that uses type variables and resources unverifiable with any ann
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
-Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
-used as a statement.
+Dataflow Framework:
+ * New `ExpressionStatementNode` marks an expression that is used as a statement.
+ * Deprecated class `StringConcatenateAssignmentNode`, which is now desugared.
 
 **Closed issues:**
 
