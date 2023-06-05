@@ -2029,15 +2029,15 @@ class MustCallConsistencyAnalyzer {
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
-      AccumulationValue aliasCFValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
+      AccumulationValue cmValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
       AnnotationMirror cmAnno = null;
 
-      if (aliasCFValue != null) { // When store contains the lhs
-        Set<String> accumulatedValues = aliasCFValue.getAccumulatedValues();
-        if (accumulatedValues != null) {
+      if (cmValue != null) { // When store contains the lhs
+        Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+        if (accumulatedValues != null) { // type variable or wildcard type
           cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
         } else {
-          for (AnnotationMirror anno : aliasCFValue.getAnnotations()) {
+          for (AnnotationMirror anno : cmValue.getAnnotations()) {
             if (AnnotationUtils.areSameByName(
                 anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
               cmAnno = anno;
