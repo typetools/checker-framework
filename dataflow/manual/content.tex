@@ -209,7 +209,7 @@ class SpecialBlockImpl extends SingleSuccessorBlockImpl implements SpecialBlock
 \end{verbatim}
 
 A ConditionalBlock contains no operations at all.  It represents a
-control-flow split to either a `then' or an `else' successor based on
+control-flow split to either a ``then'' or an ``else'' successor based on
 the immediately preceding boolean-valued Node.
 
 \begin{verbatim}
@@ -364,7 +364,7 @@ abstract class CFAbstractStore<V extends CFAbstractValue<V>,
 class CFStore extends CFAbstractStore<CFValue, CFStore>
 \end{verbatim}
 
-An InitializationStore tracks which fields of the `self' reference
+An InitializationStore tracks which fields of the ``self'' reference
 have been initialized.
 
 \begin{verbatim}
@@ -395,7 +395,7 @@ explicitly represented as a node visitor that takes a TransferInput
 
 The TransferInput represents the set of dataflow facts known to be
 true immediately before the node to be analyzed.  A TransferInput may
-contain a single store, or a pair of `then' and `else' stores when
+contain a single store, or a pair of ``then'' and ``else'' stores when
 following a boolean-valued expression.
 
 \begin{verbatim}
@@ -410,7 +410,7 @@ class TransferInput<V extends AbstractValue<V>,
 A TransferResult is the output of a transfer function.  In other
 words, it is the set of dataflow facts known to be true immediately
 after a node.  A Boolean-valued expression produces a
-ConditionalTransferResult that contains both a `then' and an `else'
+ConditionalTransferResult that contains both a ``then'' and an ``else''
 store, while most other Nodes produce a RegularTransferResult with a
 single store.
 
@@ -461,7 +461,7 @@ class CFTransfer extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>
 \end{verbatim}
 
 The Initialization Checker's transfer function tracks which fields of
-the `self' reference have been initialized.
+the ``self'' reference have been initialized.
 
 \begin{verbatim}
 package org.checkerframework.checker.initialization;
@@ -863,7 +863,6 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \midrule
 
         \nodetype{AssignmentNode} & & \code{x = 1} \\
-        \nodetype{StringConcatenateAssignmentNode} & A compound \code{String} assignment & \code{s += ".txt"} \\
         \midrule
 
         \nodetype{ArrayCreationNode} & & \code{new double[]} \\
@@ -986,8 +985,8 @@ constructs: conditional basic blocks and control-flow edges between
 basic blocks. For instance, a \code{while} loop is translated into its
 condition followed by a conditional basic block that models the two
 possible outcomes of the condition: either the control flow follows
-the `true' branch and continues with the loop's body, or control goes to the
-`false' successor and executes the first statement after the loop.
+the ``true'' branch and continues with the loop's body, or control goes to the
+``false'' successor and executes the first statement after the loop.
 
 
 \subsubsection{Assignment}
@@ -1329,8 +1328,8 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     \begin{itemize}
     \item Regular basic blocks might be empty.
     \item Some conditional basic blocks might be unnecessary, in that
-      they have the same target for both the `then' as well as the
-      `else' branch.
+      they have the same target for both the ``then'' as well as the
+      ``else'' branch.
     \item Two consecutive, non-empty, regular basic blocks can exist,
       even if the second block has only exactly one predecessor and
       the two blocks could thus be merged.
@@ -1379,6 +1378,13 @@ cases that were better handled by desugaring.
       both an unboxing and a boxing operation on \code{i}.  Desugaring
       all compound assignments greatly reduced the total number of
       node classes.
+
+    \item String concatenation assignments are also desugared. A string
+      concatenation assignment like
+      \begin{verbatim}String s; s += "str";\end{verbatim} is represented as
+      \begin{verbatim}String s; s = s + "str";\end{verbatim} in CFGs.
+      This avoids duplicating the same logic that is necessary in assignment
+      and concatenation nodes, which was error prone.
 
     \end{itemize}
 
@@ -2036,7 +2042,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords: IntegerLiteral LongLiteral NullLiteral ShortLiteral args StringLiteral Accessor ArrayAccess FieldAccess This MethodAccess ExplicitThis ImplicitThis NullAway
 %  LocalWords: LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot ConditionalOr FloatingDivision FloatingRemainder LeftShift
 %  LocalWords: IntegerDivision IntegerRemainder NumericalAddition EqualTo NumericalMinus NumericalMultiplication NumericalPlus util NumericalSubtraction SignedRightShift StringConcatenate
-%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation ObjectCreation TypeCast cond
 %  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
 %  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
 %  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
