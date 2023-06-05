@@ -152,9 +152,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   private static final boolean debug = false;
 
-  /** A TypeMirror for which isRelevant returns true. It is never used for anything else. */
-  public static @InternedDistinct TypeMirror alwaysRelevantTM = AlwaysRelevantTypeMirror.it;
-
   /** To cache the supported monotonic type qualifiers. */
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
@@ -2374,9 +2371,6 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
-    if (tm == alwaysRelevantTM) {
-      return true;
-    }
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
