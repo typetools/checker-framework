@@ -23,7 +23,7 @@ public class ConstantPropagationPlayground {
   public static void main(String[] args) {
 
     /* Configuration: change as appropriate */
-    String inputFile = "cfg-input.java"; // input file name and path
+    String inputFile = "Test.java"; // input file name and path
     String outputDir = "cfg"; // output directory
     String method = "test"; // name of the method to analyze
     String clazz = "Test"; // name of the class to consider
@@ -32,8 +32,7 @@ public class ConstantPropagationPlayground {
     ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
     ForwardAnalysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-    cfgVisualizeLauncher.generateDOTofCFG(
-        inputFile, outputDir, method, clazz, true, false, forwardAnalysis);
+    CFGVisualizeLauncher.generateDOTofCFG(
+        inputFile, outputDir, method, clazz, true, true, forwardAnalysis);
   }
 }

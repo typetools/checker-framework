@@ -82,11 +82,11 @@ public class ForwardAnalysisImpl<
    * Construct an object that can perform a org.checkerframework.dataflow forward analysis over a
    * control flow graph given a transfer function.
    *
-   * @param transfer the transfer function
+   * @param transferFunction the transfer function
    */
-  public ForwardAnalysisImpl(@Nullable T transfer) {
+  public ForwardAnalysisImpl(T transferFunction) {
     this(-1);
-    this.transferFunction = transfer;
+    this.transferFunction = transferFunction;
   }
 
   @Override
@@ -417,14 +417,6 @@ public class ForwardAnalysisImpl<
       case ELSE_TO_ELSE:
         addStoreBefore(
             succ, node, currentInput.getElseStore(), Store.Kind.ELSE, addToWorklistAgain);
-        break;
-      case BOTH_TO_THEN:
-        addStoreBefore(
-            succ, node, currentInput.getRegularStore(), Store.Kind.THEN, addToWorklistAgain);
-        break;
-      case BOTH_TO_ELSE:
-        addStoreBefore(
-            succ, node, currentInput.getRegularStore(), Store.Kind.ELSE, addToWorklistAgain);
         break;
     }
   }
