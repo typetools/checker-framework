@@ -20,7 +20,7 @@
 # Example of usage:
 # ./infer-and-annotate.sh "LockChecker,NullnessChecker" \
 #     plume-util/build/libs/plume-util-all.jar \
-#     `find plume-util/src/main/java/ -name "*.java"`
+#     $(find plume-util/src/main/java/ -name "*.java")
 
 # In case of using this script for Android projects, the classpath must include
 # paths to: android.jar, gen folder, all libs used, source code folder.
