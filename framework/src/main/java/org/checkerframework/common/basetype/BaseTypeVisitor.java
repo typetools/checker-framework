@@ -2397,21 +2397,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(typeCastTree);
-    boolean castTypeIsRelevant =
-        checkCastElementType
-            ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType);
-    if (!castTypeIsRelevant) {
-      return;
-    }
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(typeCastTree.getExpression());
-    boolean exprTypeIsRelevant =
-        checkCastElementType
-            ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType);
-    if (!exprTypeIsRelevant) {
-      return;
-    }
     boolean reported = false;
     for (AnnotationMirror top : atypeFactory.getQualifierParameterHierarchies(castType)) {
       if (!isTypeCastSafeInvariant(castType, exprType, top)) {
@@ -2455,18 +2441,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
         return true;
       }
-    }
-
-    boolean castTypeIsRelevant =
-        checkCastElementType
-            ? atypeFactory.isRelevantOrCompound(castType)
-            : atypeFactory.isRelevant(castType);
-    boolean exprTypeIsRelevant =
-        checkCastElementType
-            ? atypeFactory.isRelevantOrCompound(exprType)
-            : atypeFactory.isRelevant(exprType);
-    if (!castTypeIsRelevant || !exprTypeIsRelevant) {
-      return true;
     }
 
     AnnotationMirrorSet castAnnos;

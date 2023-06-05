@@ -2407,21 +2407,6 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if users can write type annotations from this type system on the given type OR
-   * within it (i.e., on an element of a compound type).
-   *
-   * <p>If this returns false, the qualifiers are not checked.
-   *
-   * @param atm a type
-   * @return true if users can write type annotations from this type system on or within the given
-   *     type
-   */
-  public final boolean isRelevantOrCompound(AnnotatedTypeMirror atm) {
-    TypeMirror underlying = atm.getUnderlyingType();
-    return isRelevant(underlying) || TypesUtils.isCompoundType(underlying);
-  }
-
-  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
    * Does not use a cache.
    *
