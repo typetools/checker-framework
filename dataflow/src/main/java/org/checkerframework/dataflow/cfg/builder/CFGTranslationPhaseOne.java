@@ -1206,7 +1206,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = narrow(node, varType);
       }
     }
-    // node might have been re-assigned; if nodeType is needed, set it again
+    // `node` might have been re-assigned; if `nodeType` is needed, set it again.
     // nodeType = node.getType();
 
     // TODO: if checkers need to know about null references of
@@ -2650,14 +2650,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node trueExprNode = scan(trueExprTree, p);
     trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
     extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(falseStart);
     ExpressionTree falseExprTree = tree.getFalseExpression();
     Node falseExprNode = scan(falseExprTree, p);
     falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
     extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
     IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
