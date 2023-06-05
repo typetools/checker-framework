@@ -157,12 +157,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       // Defaulting wasn't performed yet, so prev might have fewer qualifiers than
       // contextComponentType, which would cause a failure.
       // TODO: better solution?
-      TypeMirror arrayTM = arrayType.getUnderlyingType();
+      TypeMirror contextCTM = contextComponentType.getUnderlyingType();
       boolean prevIsSubtype = true;
       for (AnnotationMirror am : prev) {
         if (contextComponentType.isAnnotatedInHierarchy(am)
             && !this.qualHierarchy.isSubtypeShallow(
-                am, arrayTM, contextComponentType.getAnnotationInHierarchy(am), arrayTM)) {
+                am, contextCTM, contextComponentType.getAnnotationInHierarchy(am), contextCTM)) {
           prevIsSubtype = false;
         }
       }
