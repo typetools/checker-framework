@@ -486,7 +486,7 @@ checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 
-\sectionAndLabel{Errors about unknown must call obligations of generic types}{resource-leak-generic-unknown}
+\sectionAndLabel{Errors about unknown must call obligations of type variables}{resource-leak-generic-unknown}
 
 % Arguably, this is working around a bug in the Must Call checker, which could
 % use a different defaulting scheme for generic type uses.
@@ -504,14 +504,49 @@ public <T extends java.io.Closeable> void foo(
 Without the \<@MustCall("close")> annotation, the checker is unable to determine
 \<value>'s must call obligation, and so conservatively issues an error. If you
 encounter such an error, you can almost always resolve it by adding a
-new \<@MustCall> annotation. Another common, similar situation is a local
-variable whose type is a type variable, and whose initializer also has a generic type:
-local variables are owning by default, so it might be necessary to write \<@MustCall({})>
-on the initializer. For example, in the Checker Framework itself this annotation is necessary
-to avoid a false positive error at a call site:
-\begin{verbatim}
-  public abstract @MustCall({}) S getRegularStore();
-\end{verbatim}
+new \<@MustCall> annotation.
+
+\sectionAndLabel{Collections of resources}{resource-leak-collections}
+
+The Resource Leak Checker cannot verify code that stores a collection of resources
+in a generic collection (e.g., \<java.util.List>) and then resolves the obligations
+of each element of the collection at once (e.g., by iterating over the \<List>).
+This restriction is a technical one, and the checker should support doing so in the future.
+The remainder of this section explains the technical issues; most users can skip it.
+
+There are two related technical issues at play. The first is that \<@Owning> and \<@NotOwning>
+are declaration annotations and are not backed by a type system, meaning that they cannot be
+written on type arguments. So, it is possible under the current design to have an
+\code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
+The problem with the former is that the \<@Owning> annotation applies to the \<List> itself:
+it means that if the \<List> somehow has must-call obligations, they must be fulfilled.
+It does not mean that the \emph{contents} of the \<List> have must-call obligations.
+However, making \<@Owning> a type annotation would come with its own set of problems:
+it is not clear what the right design for a type system to enforce that it is used correctly
+looks like.
+
+The second technical issue is the defaulting rule for \<@MustCall> on type variable upper bounds.
+Currently, this default is \<@MustCall(\{\})>, which prevents many false positives in code that
+makes no use of resources (but does use type variables). A design principle of the Resource Leak
+Checker is that the difficulty of verifying code should scale with the complexity of its resource
+use. This defaulting rule helps the checker embody this design principle in practice. However, this
+defaulting rule does have an unfortunate consequence: it is an error to write List<Socket> and any
+other use of a type variable where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
+needs to write such a type while using the Resource Leak Checker has a few choices, all of which have some
+downsides:
+\begin{itemize}
+\item write \code{List<@MustCall Socket>}. This makes it an error to actually add a
+Socket to the list, since the type of the Socket is \<@MustCall("close")> but the list requires an
+empty \<@MustCall>.
+\item write \code{List<? extends Socket>}. This precludes calls to \<add()> or other methods that require an
+instance of the type variable, but it preserves some of the behavior (e.g., calls to \<remove()>).
+This is the best choice most of the time if the \<List> is not intended to be owning.
+\item suppress one or more warnings.
+\end{itemize}
+
+The recommended way to use the Resource Leak Checker in this situation is to 1) if possible, rewrite
+the code to avoid a \<List> of owning resources. If 1) is not possible, the programmer will probably need
+to suppress a warning and then verify the code using a method other than the Resource Leak Checker.
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite

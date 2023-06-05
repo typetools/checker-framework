@@ -3,6 +3,15 @@ Version 3.36.0 (July 5, 2023)
 
 **User-visible changes:**
 
+The Resource Leak Checker now issues a `required.method.not.known` error
+when an expression with type `@MustCallUnknown` has a must-call obligation
+(e.g., because it is a parameter annotated as `@Owning`).
+
+The Resource Leak Checker's default MustCall type for type variables has been changed
+from `@MustCallUnknown` to `@MustCall({})`. This change 1) reduces the number of
+false positive warnings about code that uses type variables but not resources, but 2)
+makes some code that uses type variables and resources unverifiable with any annotation.
+
 **Implementation details:**
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
