@@ -14,7 +14,11 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>variable</em> += <em>expression</em>
  * </pre>
+ *
+ * @deprecated StringConcatenateAssignmentNode is no longer used in CFGs. Instead, an assignment and
+ *     a concatenation node are generated.
  */
+@Deprecated // 2022-03-22
 public class StringConcatenateAssignmentNode extends Node {
   /** The entire tree of the assignment */
   protected final Tree tree;

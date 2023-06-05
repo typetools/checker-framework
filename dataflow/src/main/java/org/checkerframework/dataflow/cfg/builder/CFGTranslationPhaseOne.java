@@ -143,7 +143,6 @@ import org.checkerframework.dataflow.cfg.node.ParameterizedTypeNode;
 import org.checkerframework.dataflow.cfg.node.PrimitiveTypeNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
@@ -511,15 +510,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param tree the newly created Tree
    */
   public void handleArtificialTree(Tree tree) {}
-
-  /**
-   * Allow subclasses to access the processing environment and its associated utilities.
-   *
-   * @return the ProcessingEnvironment associated with this object
-   */
-  protected ProcessingEnvironment getProcessingEnvironment() {
-    return env;
-  }
 
   /**
    * Returns the current path for the tree currently being scanned.
@@ -1207,7 +1197,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = narrow(node, varType);
       }
     }
-    // node might have been re-assigned; if nodeType is needed, set it again
+    // `node` might have been re-assigned; if `nodeType` is needed, set it again.
     // nodeType = node.getType();
 
     // TODO: if checkers need to know about null references of
@@ -1555,41 +1545,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return nearest owner element of current tree
    */
   private Element findOwner() {
-    Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
-    if (enclosingMethodOrLambda != null) {
-      if (enclosingMethodOrLambda.getKind() == Tree.Kind.METHOD) {
-        return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
-      } else {
-        // The current path is in a lambda tree.  In this case the owner is either a method
-        // or an initializer block.
-        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
-        if (!lambdaTree.getParameters().isEmpty()) {
-          // If there is a lambda parameter, use the same owner.
-          return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
-              .getEnclosingElement();
-        }
-        // If there are no lambda parameters then if the lambda is enclosed in a method,
-        // that's the owner.
-        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        if (enclosingMethod != null) {
-          return TreeUtils.elementFromDeclaration(enclosingMethod);
-        }
-
-        // If the lambda is not enclosed in a method, then the owner should be a
-        // constructor. javac seems to use the last constructor in the list. (If the
-        // lambda is in an initializer of a static field then the owner should be a
-        // static initializer block, but there doesn't seem to be a way to get a
-        // reference to the static initializer element.)
-        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-        TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
-        ExecutableElement constructor = null;
-        for (Element enclosing : typeElement.getEnclosedElements()) {
-          if (enclosing.getKind() == ElementKind.CONSTRUCTOR) {
-            constructor = (ExecutableElement) enclosing;
-          }
-        }
-        return constructor;
-      }
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+    if (enclosingMethod != null) {
+      return TreeUtils.elementFromDeclaration(enclosingMethod);
     } else {
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
       return TreeUtils.elementFromDeclaration(enclosingClass);
@@ -1836,9 +1794,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
             Node targetRHS = stringConversion(targetLHS);
             value = stringConversion(value);
-            Node r = new StringConcatenateAssignmentNode(tree, targetRHS, value);
-            extendWithNode(r);
-            return r;
+            BinaryTree operTree =
+                treeBuilder.buildBinary(
+                    leftType, withoutAssignment(kind), tree.getVariable(), tree.getExpression());
+            handleArtificialTree(operTree);
+            Node operNode = new StringConcatenateNode(operTree, targetRHS, value);
+            extendWithNode(operNode);
+            AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, operNode);
+            extendWithNode(assignNode);
+            return assignNode;
           } else {
             TypeMirror promotedType = binaryPromotedType(leftType, rightType);
             Node targetRHS = binaryNumericPromotion(targetLHS, promotedType);
@@ -2645,14 +2609,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node trueExprNode = scan(trueExprTree, p);
     trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
     extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(falseStart);
     ExpressionTree falseExprTree = tree.getFalseExpression();
     Node falseExprNode = scan(falseExprTree, p);
     falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
     extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
     IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);

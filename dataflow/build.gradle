@@ -60,6 +60,7 @@ tasks.withType(Test) {
 
 tasks.create(name: 'allDataflowTests', group: 'Verification') {
   description 'Run all dataflow analysis tests'
+  // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
 }
 
 /**
