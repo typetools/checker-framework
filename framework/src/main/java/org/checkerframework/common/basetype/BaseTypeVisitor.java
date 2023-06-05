@@ -3059,12 +3059,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueExpTree);
 
     AnnotatedTypeMirror widenedValueType = atypeFactory.getWidenedType(valueType, varType);
-    if (!atypeFactory.isRelevantOrCompound(widenedValueType)) {
-      boolean result = true;
-      commonAssignmentCheckEndDiagnostic(result, null, varType, valueType, valueExpTree);
-      return result;
-    }
-
     boolean result = atypeFactory.getTypeHierarchy().isSubtype(widenedValueType, varType);
 
     // TODO: integrate with subtype test.
