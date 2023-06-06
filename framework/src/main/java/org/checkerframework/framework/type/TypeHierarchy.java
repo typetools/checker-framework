@@ -28,12 +28,8 @@ public interface TypeHierarchy {
    * <p>3 categories are converted in isSubtype:
    *
    * <ul>
-   *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper( AnnotatedTypeFactory,
-   *       AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
-   *       AnnotatedTypeFactory#getBoxedType}
-   *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(
-   *       AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)} which calls {@link
-   *       AnnotatedTypeFactory#getUnboxedType}
+   *   <li>Boxing conversions: isSubtype calls {@link AnnotatedTypeFactory#getBoxedType}
+   *   <li>Unboxing conversions: isSubtype calls {@link AnnotatedTypeFactory#getUnboxedType}
    *   <li>String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
    *       which calls {@link AnnotatedTypeFactory#getStringType(AnnotatedTypeMirror)}
    * </ul>
