@@ -144,10 +144,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Returns true if {@code subtype <: supertype}, but only for the hierarchy of which {@code top}
    * is the top.
    *
-   * <p>Does not check whether the given types are relevant (per {@link
-   * org.checkerframework.framework.qual.RelevantJavaTypes}); the client should do so before calling
-   * this method.
-   *
    * @param subtype expected subtype
    * @param supertype expected supertype
    * @param top the top of the hierarchy for which we want to make a comparison
@@ -156,13 +152,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected boolean isSubtype(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
-
-    // This implementation does not check isRelevantOrCompound; it assumes that clients have already
-    // done so.
-    // As of 2023-05-16, the only client is isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror),
-    // defined just above.  I verified that by marking this method as deprecated and then building
-    // the Checker Framework.
-
     assert top != null;
     currentTop = top;
     return AtmCombo.accept(subtype, supertype, null, this);
