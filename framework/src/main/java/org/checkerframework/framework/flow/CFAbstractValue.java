@@ -593,7 +593,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirror b,
         TypeMirror bTypeMirror,
         AnnotationMirror top) {
-      return qualHierarchy.greatestLowerBoundQualifiersOnly(a, b);
+      return qualHierarchy.greatestLowerBoundShallow(a, aTypeMirror, b, bTypeMirror);
     }
 
     @Override
