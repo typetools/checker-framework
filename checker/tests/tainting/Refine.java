@@ -7,6 +7,7 @@ public class Refine {
   void method(@Tainted Refine tainted, @Untainted Refine untainted) {
     // :: error: (assignment)
     @Tainted Refine local = untainted;
+    // :: error: (assignment)
     @Untainted Refine untaintedLocal = local;
     @Untainted Refine untaintedLocal2 = untaintedLocal;
   }
