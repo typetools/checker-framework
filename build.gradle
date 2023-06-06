@@ -1017,7 +1017,8 @@ subprojects {
   }
 }
 
-
+// The `assembleForJavac` task is faster than the `assemble` task, if you only
+// care about running `javac`.
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
