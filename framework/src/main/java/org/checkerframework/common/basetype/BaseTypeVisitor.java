@@ -1860,8 +1860,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorReturnAnno = returnType.getAnnotationInHierarchy(topAnno);
-
-      if (!qualHierarchy.isSubtypeQualifiersOnly(superAnno, constructorReturnAnno)) {
+      if (!qualHierarchy.isSubtypeShallow(
+          superAnno,
+          superType.getUnderlyingType(),
+          constructorReturnAnno,
+          returnType.getUnderlyingType())) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
       }
     }
@@ -3507,14 +3510,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     AnnotationMirrorSet resultAnnos = constructor.getReturnType().getAnnotations();
+    TypeMirror resultTM = constructor.getReturnType().getUnderlyingType();
     for (AnnotationMirror explicit : explicitAnnos) {
       AnnotationMirror resultAnno =
           qualHierarchy.findAnnotationInSameHierarchy(resultAnnos, explicit);
       // The return type of the constructor (resultAnnos) must be comparable to the
       // annotations on the constructor invocation (explicitAnnos).
       boolean resultIsSubtypeOfExplicit =
-          qualHierarchy.isSubtypeQualifiersOnly(resultAnno, explicit);
-      if (!(qualHierarchy.isSubtypeQualifiersOnly(explicit, resultAnno)
+          qualHierarchy.isSubtypeShallow(resultAnno, resultTM, explicit, resultTM);
+      if (!(qualHierarchy.isSubtypeShallow(explicit, resultTM, resultAnno, resultTM)
           || resultIsSubtypeOfExplicit)) {
         checker.reportError(
             newClassTree, "constructor.invocation", constructor.toString(), explicit, resultAnno);
