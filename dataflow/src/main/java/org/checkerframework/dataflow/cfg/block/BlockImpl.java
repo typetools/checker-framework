@@ -32,7 +32,7 @@ public abstract class BlockImpl implements Block {
    */
   protected BlockImpl(BlockType type) {
     this.type = type;
-    // Most blocks have few predecessors
+    // Most blocks have few predecessors.
     this.predecessors = new ArraySet<>(2);
   }
 

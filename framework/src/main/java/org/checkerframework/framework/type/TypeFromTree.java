@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
  * will support. If a tree kind is not handled by the given visitor, then execution is halted and an
  * RuntimeException is thrown which includes a list of supported tree types.
  */
-class TypeFromTree {
+/*package-private*/ class TypeFromTree {
 
   private static final TypeFromTypeTreeVisitor typeTreeVisitor = new TypeFromTypeTreeVisitor();
   private static final TypeFromMemberVisitor memberVisitor = new TypeFromMemberVisitor();
