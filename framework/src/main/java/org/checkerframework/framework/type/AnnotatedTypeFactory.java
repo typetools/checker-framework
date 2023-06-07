@@ -2711,7 +2711,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
         if (TreeUtils.hasSyntheticArgument(tree)) {
           p.add(con.getParameterTypes().get(0));
+          con.setReceiverType(superCon.getReceiverType());
         } else if (con.getReceiverType() != null) {
+          // Because the anonymous constructor doesn't have annotated receiver type,
+          // we copy the receiver type from the super constructor invoked in the anonymous
+          // constructor and add it to the parameterTypes as the first element.
+          con.setReceiverType(superCon.getReceiverType());
           p.add(con.getReceiverType());
         } else {
           p.add(con.getParameterTypes().get(0));

@@ -154,6 +154,9 @@ import org.plumelib.util.UtilPlume;
   // casting to an array or generic type. This will be the new default soon.
   "checkCastElementType",
 
+  // Whether to type check the enclosing expression of an inner class instantiation.
+  "checkEnclosingExpr",
+
   // Whether to use conservative defaults for bytecode and/or source code.
   // This option takes arguments "source" and/or "bytecode".
   // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").

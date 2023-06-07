@@ -138,6 +138,19 @@ command-line option.)
   This assumption is unsound in general, but holds for most code.
   For other ways to suppress warnings related to method side effects, see
   Section~\ref{type-refinement-side-effects}.
+
+\item
+  \label{nullness-AcheckEnclosingExpr}%
+  If you supply the `-AcheckEnclosingExpr` command-line option, the
+  soundness of the Nullness Initialization Checker is improved. In previous
+  versions and without supplying the new flag, the uninitialized enclosing
+  expression of an inner class instantiation cannot be detected, which is
+  unsound. However, this option is by default disabled since it is strict
+  and will result in many false positives.  Use this flag to soundly handle
+  the nullness of the enclosing expression for the inner class
+  instantiation.
+\end{itemize}
+
 \end{itemize}
 
 \item

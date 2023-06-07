@@ -3,6 +3,12 @@ Version 3.36.0 (July 5, 2023)
 
 **User-visible changes:**
 
+The new command-line argument `-AcheckEnclosingExpr` enables
+type checking for enclosing expression types of inner class instantiations. This fixes an
+unsoundness, in particular for the Nullness Initialization Checker, which did not detect the use of
+an uninitialized outer class for an inner class instantiation.
+The option is off by default to avoid many false-positive errors.
+
 **Implementation details:**
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
