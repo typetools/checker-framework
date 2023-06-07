@@ -33,7 +33,7 @@ public class CatchMarkerNode extends MarkerNode {
             + " of catch block for "
             + TypesUtils.simpleTypeName(catchType)
             + " #"
-            + TreeUtils.treeUids.get(tree),
+            + (tree == null ? "null" : TreeUtils.treeUids.get(tree)),
         types);
     this.catchType = catchType;
     this.types = types;
