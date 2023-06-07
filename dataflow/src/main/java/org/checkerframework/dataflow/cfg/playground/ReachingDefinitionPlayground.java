@@ -9,6 +9,10 @@ import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 
 /** The playground of reaching definition analysis. */
 public class ReachingDefinitionPlayground {
+
+  /** Create a new ReachingDefinitionPlayground. */
+  public ReachingDefinitionPlayground() {}
+
   /**
    * Run reaching definition analysis for a specific file and create a PDF of the CFG in the end.
    *
