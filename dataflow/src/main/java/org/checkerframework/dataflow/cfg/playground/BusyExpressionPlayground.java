@@ -5,29 +5,33 @@ import org.checkerframework.dataflow.analysis.BackwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
 import org.checkerframework.dataflow.busyexpr.BusyExprStore;
 import org.checkerframework.dataflow.busyexpr.BusyExprTransfer;
-import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
 
-/** The playground for busy expression analysis */
+/**
+ * The playground for busy expression analysis. As an example, try {@code
+ * dataflow/manual/examples/BusyExprSimple.java}.
+ */
 public class BusyExpressionPlayground {
 
+  /** Class cannot be instantiated. */
+  private BusyExpressionPlayground() {
+    throw new AssertionError("Class BusyExpressionPlayground cannot be instantiated.");
+  }
+
   /**
-   * Run busy expression analysis playground on a test file and print the CFG graph
+   * Run busy expression analysis on a file.
    *
-   * @param args input arguments
+   * @param args command-line arguments
    */
   public static void main(String[] args) {
 
-    /* Configuration: change as appropriate */
-    String inputFile = "dataflow/manual/examples/BusyExprSimple.java"; // input file name and path
-    String outputDir = "."; // output directory
-    String method = "test"; // name of the method to analyze
-    String clazz = "Test"; // name of the class to consider
+    // Parse the arguments.
+    CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
 
     // Run the analysis and create a PDF file
     BusyExprTransfer transfer = new BusyExprTransfer();
     BackwardAnalysis<UnusedAbstractValue, BusyExprStore, BusyExprTransfer> backwardAnalysis =
         new BackwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.generateDOTofCFG(
-        inputFile, outputDir, method, clazz, true, true, backwardAnalysis);
+    CFGVisualizeLauncher.performAnalysis(config, backwardAnalysis);
   }
 }
