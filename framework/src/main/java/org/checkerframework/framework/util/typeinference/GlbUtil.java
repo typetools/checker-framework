@@ -46,7 +46,6 @@ public class GlbUtil {
     for (Map.Entry<AnnotatedTypeMirror, AnnotationMirrorSet> tmEntry : typeMirrors.entrySet()) {
       AnnotationMirrorSet typeAnnoHierarchies = tmEntry.getValue();
       AnnotatedTypeMirror type = tmEntry.getKey();
-      TypeMirror typeMirror = type.getUnderlyingType();
 
       for (AnnotationMirror top : typeAnnoHierarchies) {
         // TODO: When all of the typeMirrors are either wildcards or type variables than the
@@ -56,9 +55,7 @@ public class GlbUtil {
         AnnotationMirror currentAnno = glbPrimaries.get(top);
         if (typeAnno != null && currentAnno != null) {
           glbPrimaries.put(
-              top,
-              qualHierarchy.greatestLowerBoundShallow(
-                  currentAnno, typeMirror, typeAnno, typeMirror));
+              top, qualHierarchy.greatestLowerBoundQualifiersOnly(currentAnno, typeAnno));
         } else if (typeAnno != null) {
           glbPrimaries.put(top, typeAnno);
         }
