@@ -7,8 +7,9 @@ Version 3.36.0 (July 5, 2023)
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
-Dataflow Framework: new `ExpressionStatementNode` marks an expression that is
-used as a statement.
+Dataflow Framework:
+ * New `ExpressionStatementNode` marks an expression that is used as a statement.
+ * Deprecated class `StringConcatenateAssignmentNode`, which is now desugared.
 
 **Closed issues:**
 

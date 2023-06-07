@@ -18,6 +18,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <pre>
  *   <em>variable</em> = <em>expression</em>
+ *   <em>variable</em> += <em>expression</em>
  *   <em>expression</em> . <em>field</em> = <em>expression</em>
  *   <em>expression</em> [ <em>index</em> ] = <em>expression</em>
  * </pre>
@@ -26,6 +27,11 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>Some desugarings create additional assignments to synthetic local variables. Such assignment
  * nodes are marked as synthetic to allow special handling in transfer functions.
+ *
+ * <p>String concatenation compound assignments are desugared to an assignment and a string
+ * concatenation.
+ *
+ * <p>Numeric compound assignments are desugared to an assignment and a numeric operation.
  */
 public class AssignmentNode extends Node {
 

@@ -29,7 +29,7 @@ public interface CFGVisualizer<
     V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>> {
   /**
    * Initialization method guaranteed to be called once before the first invocation of {@link
-   * #visualize}.
+   * #visualize} or {@link #visualizeWithAction}.
    *
    * @param args implementation-dependent options
    */
@@ -43,8 +43,9 @@ public interface CFGVisualizer<
   public abstract String getSeparator();
 
   /**
-   * Output a visualization representing the control flow graph starting at {@code entry}. The
-   * concrete actions are implementation dependent.
+   * Creates a visualization representing the control flow graph starting at {@code entry}. The keys
+   * and values in the returned map are implementation dependent. The method should not perform any
+   * actions.
    *
    * <p>An invocation {@code visualize(cfg, entry, null);} does not output stores at the beginning
    * of basic blocks.
@@ -57,8 +58,30 @@ public interface CFGVisualizer<
    *     Can also be {@code null} to indicate that this information should not be output.
    * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
    *     representation of the CFG ({@link StringCFGVisualizer})
+   * @see #visualizeWithAction(ControlFlowGraph, Block, Analysis)
    */
   @Nullable Map<String, Object> visualize(
+      ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis);
+
+  /**
+   * Output a visualization representing the control flow graph starting at {@code entry}. The keys
+   * and values in the returned map are implementation dependent. The concrete actions are
+   * implementation dependent, and can include outputting information and producing files.
+   *
+   * <p>An invocation {@code visualizeWithAction(cfg, entry, null);} does not output stores at the
+   * beginning of basic blocks.
+   *
+   * @param cfg the CFG to visualize
+   * @param entry the entry node of the control flow graph to be represented
+   * @param analysis an analysis containing information about the program represented by the CFG.
+   *     The information includes {@link Store}s that are valid at the beginning of basic blocks
+   *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
+   *     Can also be {@code null} to indicate that this information should not be output.
+   * @return visualization results, e.g. generated file names ({@link DOTCFGVisualizer}) or a String
+   *     representation of the CFG ({@link StringCFGVisualizer})
+   * @see #visualize(ControlFlowGraph, Block, Analysis)
+   */
+  @Nullable Map<String, Object> visualizeWithAction(
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis);
 
   /**

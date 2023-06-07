@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.List;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -37,14 +38,14 @@ public interface Block extends UniqueId {
    *
    * @return the predecessors of this basic block
    */
-  List<Block> getPredecessors();
+  Set<Block> getPredecessors();
 
   /**
    * Returns the successors of this basic block.
    *
    * @return the successors of this basic block
    */
-  List<Block> getSuccessors();
+  Set<Block> getSuccessors();
 
   /**
    * Returns the nodes contained within this basic block. The list may be empty.

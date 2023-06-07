@@ -27,9 +27,8 @@ public class ConstantPropagation {
     ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
     ForwardAnalysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
     Map<String, Object> res =
-        cfgVisualizeLauncher.generateStringOfCFG(inputFile, method, clazz, true, forwardAnalysis);
+        CFGVisualizeLauncher.generateStringOfCFG(inputFile, method, clazz, true, forwardAnalysis);
     try (FileWriter out = new FileWriter(outputFile)) {
       out.write(res.get("stringGraph").toString());
       out.write("\n");

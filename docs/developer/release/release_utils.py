@@ -239,7 +239,7 @@ def push_changes_prompt_if_fail(repo_root):
                 + repo_root
                 + "; result="
                 + str(result)
-                + " for command: "
+                + " for command: `"
                 + cmd
                 + "` in "
                 + os.getcwd()
