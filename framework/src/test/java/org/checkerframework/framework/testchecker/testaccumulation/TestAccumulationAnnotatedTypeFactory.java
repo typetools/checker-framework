@@ -3,6 +3,7 @@ package org.checkerframework.framework.testchecker.testaccumulation;
 import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation;
@@ -73,5 +74,11 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
       }
       return super.visitMethodInvocation(tree, type);
     }
+  }
+
+  // Overridden because there is no TestAccumulationAnalysis.
+  @Override
+  protected AccumulationAnalysis createFlowAnalysis() {
+    return new AccumulationAnalysis(this.getChecker(), this);
   }
 }

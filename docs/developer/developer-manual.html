@@ -47,6 +47,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+      <li><a href="#Build_historical">Building a historical version of the Checker Framework</a></li>
     </ul>
 <!-- end toc -->
 
@@ -138,7 +139,7 @@ Frequently-used tasks:
 </p>
 <ul>
   <li> <code>assemble</code>: builds all artifacts, including jars and Javadoc jars.
-  <li> <code>assembleForJavac</code>: builds only the jars required to use checker/bin/javac; faster than assemble.
+  <li> <code>assembleForJavac</code>: builds only the jars required to use <code>checker/bin/javac</code>; faster than <code>assemble</code>.
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
   <li> <code>allTests</code>: runs all tests.
   <li> <code>spotlessApply</code>: reformats Java files.
@@ -471,8 +472,57 @@ See a separate document about the Checker Framework release process:
 <!-- This relative URL works from a clone, but not from the web. -->
 <a href="release/README-release-process.html">local version (link works from a clone)</a> or
 <a href="https://rawgit.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a>.
-
 </p>
+
+
+<h2 id="Build_historical">Building a historical version of the Checker Framework</h2>
+
+<p>
+The use of four different repositories, as explained in
+"<a href="#Related_repositories">Related repositories</a>" above, means that you
+cannot check out an old version of the Checker Framework and build it
+with <code>./gradlew assemble</code>.  By default, the Checker Framework build
+uses the latest version of the other three repositories, which are rarely
+compatible with an old version of the Checker Framework.  One symptom of the
+problem is a "Can't find stubparser jar" error message.
+</p>
+
+<p>
+To build an old version of the Checker Framework, you need to use old versions
+of the other repositories as well.  Clone them into siblings of
+the <code>checker-framework/</code> directory that holds your old version of the
+Checker Framework.
+</p>
+
+<p>
+Here are <b>general rules</b>:
+If the Checker Framework version is a commit on branch B with date D, then use
+the commits on other repositories' branch B (or <code>master</code>, if branch B
+does not exist) that precede D.  (This isn't quite right, because the commits
+may have been made earlier but all pushed at the same time, so you might need to
+look at commits that are relatively soon after D.)  To obtain these, view the
+GitHub history and click on the pull request to see the commits that were merged
+into it.  You cannot obtain these from the Git history, because after a pull
+request is merged, the commits in the pull request branch are squashed and the
+branch is deleted.
+</p>
+
+<p>
+  Here are <b>special cases</b>:
+</p>
+<ul>
+  <li>
+    If you are building an old <em>released</em> version of the Checker Framework,
+    then <code>annotation-tools</code> should have a corresponding tag for the
+    release.
+  </li>
+  <li>
+    Recently, any Stubparser change that breaks building the Checker
+    Framework, should have a new version number. So you should check out
+    Stubparser to the commit that changed the version number (to what it is
+    in <code>checker-framework/build.gradle</code>).
+  </li>
+</ul>
 
 
 </body>
@@ -480,5 +530,5 @@ See a separate document about the Checker Framework release process:
 
 <!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn
  -->
-<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML
+<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML isn
  -->

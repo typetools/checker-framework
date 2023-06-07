@@ -76,6 +76,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -739,6 +740,51 @@ public final class TreeUtils {
     JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
     JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
     return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+  }
+
+  /**
+   * Determines the type for a method invocation at its call site, which has all type variables
+   * substituted with the type arguments at the call site.
+   *
+   * @param tree the method invocation
+   * @return the {@link ExecutableType} corresponding to the method invocation at its call site
+   */
+  @Pure
+  public static ExecutableType typeFromUse(MethodInvocationTree tree) {
+    TypeMirror type = TreeUtils.typeOf(tree.getMethodSelect());
+    if (!(type instanceof ExecutableType)) {
+      throw new BugInCF(
+          "TreeUtils.typeFromUse(MethodInvocationTree): type of method select in method"
+              + " invocation should be ExecutableType. Found: %s",
+          type);
+    }
+    return (ExecutableType) type;
+  }
+
+  /**
+   * Determines the type for a constructor at its call site given an invocation via {@code new},
+   * which has all type variables substituted with the type arguments at the call site.
+   *
+   * @param tree the constructor invocation
+   * @return the {@link ExecutableType} corresponding to the constructor call (i.e., the given
+   *     {@code tree}) at its call site
+   */
+  @Pure
+  public static ExecutableType typeFromUse(NewClassTree tree) {
+    if (!(tree instanceof JCTree.JCNewClass)) {
+      throw new BugInCF("TreeUtils.typeFromUse(NewClassTree): not a javac internal tree");
+    }
+
+    JCNewClass newClassTree = (JCNewClass) tree;
+    TypeMirror type = newClassTree.constructorType;
+
+    if (!(type instanceof ExecutableType)) {
+      throw new BugInCF(
+          "TreeUtils.typeFromUse(NewClassTree): type of constructor in new class tree"
+              + " should be ExecutableType. Found: %s",
+          type);
+    }
+    return (ExecutableType) type;
   }
 
   /**
