@@ -884,35 +884,6 @@ public abstract class CFAbstractTransfer<
     return n.getResult().accept(this, in);
   }
 
-  @Override
-  @Deprecated // 2022-03-22
-  public TransferResult<V, S> visitStringConcatenateAssignment(
-      org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
-      TransferInput<V, S> in) {
-    // This gets the type of LHS + RHS
-    TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
-    Node lhs = n.getLeftOperand();
-    Node rhs = n.getRightOperand();
-
-    // update the results store if the assignment target is something we can process
-    S store = result.getRegularStore();
-    // ResultValue is the type of LHS + RHS
-    V resultValue = result.getResultValue();
-
-    if (lhs instanceof FieldAccessNode
-        && shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
-      // Updates inferred field type
-      analysis
-          .atypeFactory
-          .getWholeProgramInference()
-          .updateFromFieldAssignment((FieldAccessNode) lhs, rhs);
-    }
-
-    processCommonAssignment(in, lhs, rhs, store, resultValue);
-
-    return new RegularTransferResult<>(finishValue(resultValue, store), store);
-  }
-
   /**
    * Determine abstract value of right-hand side and update the store accordingly.
    *

@@ -11,6 +11,9 @@ Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Deprecated class `StringConcatenateAssignmentNode`, which is now desugared.
 
+Remove class `StringConcatenateAssignmentNode` and its last usages.
+The class was deprecated in release 3.21.3-eisop1 (March 23, 2022) and no longer used in CFGs.
+
 **Closed issues:**
 
 
