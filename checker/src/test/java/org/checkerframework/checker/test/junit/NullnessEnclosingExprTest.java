@@ -23,6 +23,6 @@ public class NullnessEnclosingExprTest extends CheckerFrameworkPerDirectoryTest 
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"nullness-enclosingexpr"};
+    return new String[] {"nullness-enclosingexpr", "all-systems"};
   }
 }
