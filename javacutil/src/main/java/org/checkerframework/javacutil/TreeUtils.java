@@ -1928,51 +1928,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Determines the type for a method invocation at its call site, which has all type variables
-   * substituted with the type arguments at the call site.
-   *
-   * @param tree the method invocation
-   * @return the {@link ExecutableType} corresponding to the method invocation at its call site
-   */
-  @Pure
-  public static ExecutableType typeFromUse(MethodInvocationTree tree) {
-    TypeMirror type = TreeUtils.typeOf(tree.getMethodSelect());
-    if (!(type instanceof ExecutableType)) {
-      throw new BugInCF(
-          "TreeUtils.typeFromUse(MethodInvocationTree): type of method select in method"
-              + " invocation should be ExecutableType. Found: %s",
-          type);
-    }
-    return (ExecutableType) type;
-  }
-
-  /**
-   * Determines the type for a constructor at its call site given an invocation via {@code new},
-   * which has all type variables substituted with the type arguments at the call site.
-   *
-   * @param tree the constructor invocation
-   * @return the {@link ExecutableType} corresponding to the constructor call (i.e., the given
-   *     {@code tree}) at its call site
-   */
-  @Pure
-  public static ExecutableType typeFromUse(NewClassTree tree) {
-    if (!(tree instanceof JCTree.JCNewClass)) {
-      throw new BugInCF("TreeUtils.typeFromUse(NewClassTree): not a javac internal tree");
-    }
-
-    JCNewClass newClassTree = (JCNewClass) tree;
-    TypeMirror type = newClassTree.constructorType;
-
-    if (!(type instanceof ExecutableType)) {
-      throw new BugInCF(
-          "TreeUtils.typeFromUse(NewClassTree): type of constructor in new class tree"
-              + " should be ExecutableType. Found: %s",
-          type);
-    }
-    return (ExecutableType) type;
-  }
-
-  /**
    * The type of the lambda or method reference tree is a functional interface type. This method
    * returns the single abstract method declared by that functional interface. (The type of this
    * method is referred to as the function type.)
