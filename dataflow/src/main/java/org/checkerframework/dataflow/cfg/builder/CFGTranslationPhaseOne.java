@@ -1535,6 +1535,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       ea =
           treeBuilder.buildVariableDecl(
               types.getPrimitiveType(TypeKind.BOOLEAN), name, owner, initializer);
+      handleArtificialTree(ea);
     }
     return ea;
   }
@@ -2596,6 +2597,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // create a synthetic variable for the value of the conditional expression
     VariableTree condExprVarTree =
         treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+    handleArtificialTree(condExprVarTree);
     VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
     condExprVarNode.setInSource(false);
     extendWithNode(condExprVarNode);
@@ -3750,7 +3752,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitArrayType(ArrayTypeTree tree, Void p) {
     Node result = new ArrayTypeNode(tree, types);
-    extendWithNode(new ArrayTypeNode(tree, types));
+    extendWithNode(result);
     return result;
   }
 
