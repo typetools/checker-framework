@@ -11,7 +11,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -21,8 +23,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -42,7 +42,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * to read the CFStores; and then finally this field is then reset to null afterwards to prevent
    * it from being used somewhere it shouldn't be.
    */
-  private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
+  private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
 
   /**
    * The element for the CalledMethods annotation's value element. Stored in a field in this class
@@ -62,10 +62,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+  public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     exceptionalStores = makeExceptionalStores(node, input);
-    TransferResult<CFValue, CFStore> superResult = super.visitMethodInvocation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> superResult =
+        super.visitMethodInvocation(node, input);
     handleEnsuresCalledMethodsVarArgs(node, superResult);
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
@@ -75,7 +76,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
               .adjustMethodNameUsingValueChecker(methodName, node.getTree());
       accumulate(receiver, superResult, methodName);
     }
-    TransferResult<CFValue, CFStore> finalResult =
+    TransferResult<AccumulationValue, AccumulationStore> finalResult =
         new ConditionalTransferResult<>(
             superResult.getResultValue(),
             superResult.getThenStore(),
@@ -86,7 +87,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   @Override
-  public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
     if (exceptionalStores == null) {
       return;
@@ -95,7 +97,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<String> valuesAsList = Arrays.asList(values);
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
-      CFValue flowValue = result.getRegularStore().getValue(target);
+      AccumulationValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
         // Dataflow has already recorded information about the target.  Integrate it into
         // the list of values in the new annotation.
@@ -128,15 +130,15 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
-  private Map<TypeMirror, CFStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+  private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
+      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
-    Map<TypeMirror, CFStore> result = new LinkedHashMap<>();
+    Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
     block
         .getExceptionalSuccessors()
         .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
@@ -152,7 +154,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * @param result the current result
    */
   private void handleEnsuresCalledMethodsVarArgs(
-      MethodInvocationNode node, TransferResult<CFValue, CFStore> result) {
+      MethodInvocationNode node, TransferResult<AccumulationValue, AccumulationStore> result) {
     ExecutableElement elt = TreeUtils.elementFromUse(node.getTree());
     AnnotationMirror annot = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
     if (annot == null) {
@@ -172,8 +174,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     if (varArgActual instanceof ArrayCreationNode) {
       ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
       // add in the called method to all the vararg arguments
-      CFStore thenStore = result.getThenStore();
-      CFStore elseStore = result.getElseStore();
+      AccumulationStore thenStore = result.getThenStore();
+      AccumulationStore elseStore = result.getElseStore();
       for (Node arg : arrayCreationNode.getInitializers()) {
         AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arg.getTree());
         AnnotationMirror newType = getUpdatedCalledMethodsType(currentType, ensuredMethodNames);

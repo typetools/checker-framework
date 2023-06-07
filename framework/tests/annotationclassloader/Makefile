@@ -54,24 +54,24 @@ demo2:
 # gradle test usage:
 # loads from build directories
 load-from-dir-test:
-	$(JAVAC) \
+	-$(JAVAC) \
 	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD):${STUBPARSERJAR} \
 	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
-	  LoaderTest.java > Out.txt 2>&1 || true
+	  LoaderTest.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # loads from framework.jar
 load-from-jar-test:
-	$(JAVAC) \
+	-$(JAVAC) \
 	  -processorpath $(FRAMEWORKJAR) \
 	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
-	  LoaderTest.java > Out.txt 2>&1 || true
+	  LoaderTest.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
