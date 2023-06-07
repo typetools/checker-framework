@@ -590,6 +590,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
     Node receiver = new ImplicitThisNode(classElem.asType());
     VariableTree varTree = TreeUtils.bindingPatternTreeGetVariable(bindingPatternTree);
+    VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
+    extendWithNode(variableDeclarationNode);
     LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
     extendWithNode(varNode);
     return varNode;
