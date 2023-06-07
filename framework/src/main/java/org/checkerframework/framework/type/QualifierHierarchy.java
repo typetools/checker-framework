@@ -285,7 +285,15 @@ public abstract class QualifierHierarchy {
   // collection version of LUB below.
   public @Nullable AnnotationMirror leastUpperBoundShallow(
       AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
-    return leastUpperBoundQualifiers(qualifier1, qualifier2);
+    boolean tm1IsRelevant = atypeFactory.isRelevant(tm1);
+    boolean tm2IsRelevant = atypeFactory.isRelevant(tm2);
+    if (tm1IsRelevant == tm2IsRelevant) {
+      return leastUpperBoundQualifiers(qualifier1, qualifier2);
+    } else if (tm1IsRelevant) {
+      return qualifier1;
+    } else { // if(tm2IsRelevant) {
+      return qualifier2;
+    }
   }
 
   /**
