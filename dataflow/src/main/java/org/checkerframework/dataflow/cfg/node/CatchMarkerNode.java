@@ -6,6 +6,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** A CatchMarkerNode is a marker node for the beginning or end of a catch block. */
 public class CatchMarkerNode extends MarkerNode {
@@ -28,7 +29,11 @@ public class CatchMarkerNode extends MarkerNode {
       @Nullable Tree tree, String startOrEnd, TypeMirror catchType, Types types) {
     super(
         tree,
-        startOrEnd + " of catch block for " + catchType + " #" + TreeUtils.treeUids.get(tree),
+        startOrEnd
+            + " of catch block for "
+            + TypesUtils.simpleTypeName(catchType)
+            + " #"
+            + TreeUtils.treeUids.get(tree),
         types);
     this.catchType = catchType;
     this.types = types;
