@@ -161,6 +161,7 @@ import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -533,18 +534,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       path = new TreePath(path, tree);
     }
     try {
-      // Must use String comparison to support compiling on JDK 11 and earlier.
-      //     Features added between JDK 12 and JDK 17 inclusive.
-      switch (tree.getKind().name()) {
-        case "BINDING_PATTERN":
-          return visitBindingPattern17(path.getLeaf(), p);
-        case "SWITCH_EXPRESSION":
-          return visitSwitchExpression17(tree, p);
-        case "YIELD":
-          return visitYield17(tree, p);
-        default:
-          return tree.accept(this, p);
+      // TODO: use JCP to add version-specific behavior
+      if (SystemUtil.jreVersion >= 14) {
+        // Must use String comparison to support compiling on JDK 11 and earlier.
+        // Features added between JDK 12 and JDK 17 inclusive.
+        switch (tree.getKind().name()) {
+          case "BINDING_PATTERN":
+            return visitBindingPattern17(path.getLeaf(), p);
+          case "SWITCH_EXPRESSION":
+            return visitSwitchExpression17(tree, p);
+          case "YIELD":
+            return visitYield17(tree, p);
+          default:
+            // fall through to generic behavior
+        }
       }
+
+      return tree.accept(this, p);
     } finally {
       path = prev;
     }
