@@ -197,7 +197,7 @@ public final class CFGVisualizeLauncher {
 
     CFGVisualizer<V, S, T> viz = new DOTCFGVisualizer<>();
     viz.init(args);
-    Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
+    Map<String, Object> res = viz.visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     viz.shutdown();
 
     if (pdf && res != null) {
