@@ -16,24 +16,13 @@
 11 -> 1 RuntimeException
 11 -> 1 Error
 16 -> 17 EACH_TO_EACH
-12 -> 19 EACH_TO_EACH
+12 -> 17 EACH_TO_EACH
 17 -> 18 EACH_TO_EACH
-17 -> 1 RuntimeException
-17 -> 1 Error
-19 -> 20 EACH_TO_EACH
 18 -> 19 EACH_TO_EACH
-20 -> 22 EACH_TO_EACH
-20 -> 1 NullPointerException
-22 -> 23 EACH_TO_EACH
-22 -> 27 RuntimeException
-22 -> 1 RuntimeException
-22 -> 1 Error
-23 -> 24 EACH_TO_EACH
-27 -> 29 EACH_TO_EACH
-24 -> 25 EACH_TO_EACH
-24 -> 27 ArithmeticException
-29 -> 0 EACH_TO_EACH
-25 -> 29 EACH_TO_EACH
+18 -> 21 ArithmeticException
+19 -> 23 EACH_TO_EACH
+21 -> 23 EACH_TO_EACH
+23 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -61,7 +50,7 @@ a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a != b)   [ NotEqual ]
 ~~~~~~~~~
-TransferInput#89
+TransferInput#80
 After:   busy expressions = (b >> a)
 
 4:
@@ -82,12 +71,11 @@ a   [ LocalVariable ]
 (b >> a)   [ SignedRightShift ]
 x = (b >> a)   [ Assignment ]
 expression statement x = b >> a   [ ExpressionStatement ]
-y   [ LocalVariable ]
 a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a - b)   [ NumericalSubtraction ]
 ~~~~~~~~~
-TransferInput#76
+TransferInput#68
 After:   busy expressions = none
 
 14:
@@ -99,56 +87,8 @@ y   [ LocalVariable ]
 b   [ LocalVariable ]
 a   [ LocalVariable ]
 (b >> a)   [ SignedRightShift ]
-Integer   [ ClassName ]
-Integer.valueOf   [ MethodAccess ]
-~~~~~~~~~
-TransferInput#62
-After:   busy expressions = (b >> a)
-
-9:
-Process order: 5
-AnalysisResult#11
-Before:   busy expressions = none
-~~~~~~~~~
-Integer   [ ClassName ]
-~~~~~~~~~
-TransferInput#2
-After:   busy expressions = none
-
-15:
-Process order: 9
-AnalysisResult#13
-Before:   busy expressions = (b >> a)
-~~~~~~~~~
-Integer.valueOf((b >> a))   [ MethodInvocation ]
-~~~~~~~~~
-TransferInput#4
-After:   busy expressions = none
-
-11:
-Process order: 6
-AnalysisResult#15
-Before:   busy expressions = (a - b)
-~~~~~~~~~
-new Integer((a - b))   [ ObjectCreation ]
-~~~~~~~~~
-TransferInput#3
-After:   busy expressions = none
-
-1:
-Process order: 22
-AnalysisResult#17
-Before:   busy expressions = none
-~~~~~~~~~
-<exceptional-exit>
-
-16:
-Process order: 10
-AnalysisResult#19
-Before:   busy expressions = none
-~~~~~~~~~
-y = Integer.valueOf((b >> a))   [ Assignment ]
-expression statement y = Integer.valueOf(b >> a)   [ ExpressionStatement ]
+y = (b >> a)   [ Assignment ]
+expression statement y = b >> a   [ ExpressionStatement ]
 a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 a = 0   [ Assignment ]
@@ -159,33 +99,75 @@ a   [ LocalVariable ]
 b   [ LocalVariable ]
 (a - b)   [ NumericalSubtraction ]
 ~~~~~~~~~
-TransferInput#48
+TransferInput#40
 After:   busy expressions = (a - b)
+
+9:
+Process order: 5
+AnalysisResult#11
+Before:   busy expressions = none
+~~~~~~~~~
+Test   [ ClassName ]
+~~~~~~~~~
+TransferInput#2
+After:   busy expressions = none
+
+15:
+Process order: 9
+AnalysisResult#13
+Before:   busy expressions = (a - b)
+~~~~~~~~~
+(this).test((a - b))   [ MethodInvocation ]
+~~~~~~~~~
+TransferInput#4
+After:   busy expressions = none
+
+11:
+Process order: 6
+AnalysisResult#15
+Before:   busy expressions = (a - b)
+~~~~~~~~~
+new Test((a - b))   [ ObjectCreation ]
+~~~~~~~~~
+TransferInput#3
+After:   busy expressions = none
+
+1:
+Process order: 17
+AnalysisResult#17
+Before:   busy expressions = none
+~~~~~~~~~
+<exceptional-exit>
+
+16:
+Process order: 10
+AnalysisResult#19
+Before:   busy expressions = none
+~~~~~~~~~
+expression statement test(a - b)   [ ExpressionStatement ]
+~~~~~~~~~
+TransferInput#35
+After:   busy expressions = none
 
 12:
 Process order: 7
 AnalysisResult#21
-Before:   busy expressions = none
+Before:   busy expressions = (a + b)
 ~~~~~~~~~
-y = new Integer((a - b))   [ Assignment ]
-expression statement y = new Integer(a - b)   [ ExpressionStatement ]
+expression statement new Test(a - b)   [ ExpressionStatement ]
+y   [ LocalVariable ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a + b)   [ NumericalAddition ]
+y = (a + b)   [ Assignment ]
+expression statement y = a + b   [ ExpressionStatement ]
 ~~~~~~~~~
-TransferInput#44
+TransferInput#36
 After:   busy expressions = none
 
 17:
 Process order: 11
 AnalysisResult#23
-Before:   busy expressions = (a - b)
-~~~~~~~~~
-(this).test((a - b))   [ MethodInvocation ]
-~~~~~~~~~
-TransferInput#5
-After:   busy expressions = none
-
-19:
-Process order: 13
-AnalysisResult#25
 Before:   busy expressions = none
 ~~~~~~~~~
 d   [ VariableDeclaration ]
@@ -193,53 +175,37 @@ marker (start of try statement #0)   [ Marker ]
 marker (start of try block #0)   [ Marker ]
 d   [ LocalVariable ]
 y   [ LocalVariable ]
+x   [ LocalVariable ]
 ~~~~~~~~~
-TransferInput#36
+TransferInput#27
 After:   busy expressions = none
 
 18:
 Process order: 12
+AnalysisResult#25
+Before:   busy expressions = (y / x)
+~~~~~~~~~
+(y / x)   [ IntegerDivision ]
+~~~~~~~~~
+TransferInput#25
+After:   busy expressions = (y / x)
+
+19:
+Process order: 13
 AnalysisResult#27
-Before:   busy expressions = none
+Before:   busy expressions = (y / x)
 ~~~~~~~~~
-expression statement test(a - b)   [ ExpressionStatement ]
+(y / x)   [ IntegerDivision ]
+d = (y / x)   [ Assignment ]
+expression statement d = y / x   [ ExpressionStatement ]
+marker (end of try block #0)   [ Marker ]
 ~~~~~~~~~
-TransferInput#43
+TransferInput#9
 After:   busy expressions = none
 
-20:
+21:
 Process order: 14
 AnalysisResult#29
-Before:   busy expressions = none
-~~~~~~~~~
-y.intValue   [ MethodAccess ]
-~~~~~~~~~
-TransferInput#6
-After:   busy expressions = none
-
-22:
-Process order: 15
-AnalysisResult#31
-Before:   busy expressions = none
-~~~~~~~~~
-y.intValue()   [ MethodInvocation ]
-~~~~~~~~~
-TransferInput#22
-After:   busy expressions = none
-
-23:
-Process order: 16
-AnalysisResult#33
-Before:   busy expressions = none
-~~~~~~~~~
-x   [ LocalVariable ]
-~~~~~~~~~
-TransferInput#31
-After:   busy expressions = none
-
-27:
-Process order: 19
-AnalysisResult#35
 Before:   busy expressions = none
 ~~~~~~~~~
 marker (start of catch block for ArithmeticException #0)   [ Marker ]
@@ -250,46 +216,23 @@ d = 10000000   [ Assignment ]
 expression statement d = 10000000   [ ExpressionStatement ]
 marker (end of catch block for ArithmeticException #0)   [ Marker ]
 ~~~~~~~~~
-TransferInput#13
+TransferInput#10
 After:   busy expressions = none
 
-24:
-Process order: 17
-AnalysisResult#37
-Before:   busy expressions = (y.intValue() / x)
-~~~~~~~~~
-(y.intValue() / x)   [ IntegerDivision ]
-~~~~~~~~~
-TransferInput#29
-After:   busy expressions = (y.intValue() / x)
-
-29:
-Process order: 20
-AnalysisResult#39
+23:
+Process order: 15
+AnalysisResult#31
 Before:   busy expressions = none
 ~~~~~~~~~
 d   [ LocalVariable ]
 return d   [ Return ]
 ~~~~~~~~~
-TransferInput#8
-After:   busy expressions = none
-
-25:
-Process order: 18
-AnalysisResult#41
-Before:   busy expressions = (y.intValue() / x)
-~~~~~~~~~
-(y.intValue() / x)   [ IntegerDivision ]
-d = (y.intValue() / x)   [ Assignment ]
-expression statement d = y.intValue() / x   [ ExpressionStatement ]
-marker (end of try block #0)   [ Marker ]
-~~~~~~~~~
-TransferInput#12
+TransferInput#5
 After:   busy expressions = none
 
 0:
-Process order: 21
-AnalysisResult#43
+Process order: 16
+AnalysisResult#33
 Before:   busy expressions = none
 ~~~~~~~~~
 <exit>

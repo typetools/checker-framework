@@ -277,9 +277,13 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       ExecutableElement exElt = (ExecutableElement) elt;
       int idx = exElt.getTypeParameters().indexOf(tpe);
       MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
-      if (meth == null) {
-        // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source for: "
-        //                   + elt);
+      if (meth == null || (idx == -1 && exElt.isVarArgs())) {
+        // meth can be null when no source code was found for it.
+        // idx can be -1 when we have a type variable vararg in the parameters and
+        // the method invocation doesn't provide enough information about the type
+        // to substitute for it. In this situation, the `tpe` is an unbounded symbol
+        // created by the compiler, and it doesn't match any type parameters in `exElt`.
+        // Please check `CFGTranslationPhaseOne#convertCallArguments` for details.
         return type.asUse();
       }
       // This works the same as the case above.  Even though `meth` itself is not a
