@@ -30,7 +30,7 @@ public class CFGTranslationPhaseTwo {
    * Perform phase two of the translation.
    *
    * @param in the result of phase one
-   * @return a control flow graph that might still contain degenerate basic block (such as empty
+   * @return a control flow graph that might still contain degenerate basic blocks (such as empty
    *     regular basic blocks or conditional blocks with the same block as 'then' and 'else'
    *     successor)
    */
@@ -172,7 +172,7 @@ public class CFGTranslationPhaseTwo {
             TypeMirror cause = entry.getKey();
             for (Label label : entry.getValue()) {
               Integer target = bindings.get(label);
-              // TODO: This is sometimes null; is this a problem?
+              // TODO: `target` is sometimes null; is this a problem?
               // assert target != null;
               missingExceptionalEdges.add(new MissingEdge(e, target, cause));
             }
