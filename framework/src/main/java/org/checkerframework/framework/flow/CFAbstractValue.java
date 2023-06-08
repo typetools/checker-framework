@@ -373,6 +373,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         boolean canCombinedSetBeMissingAnnos) {
 
       AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
+      TypeMirror upperBoundTM = typeVar.getUpperBound().getUnderlyingType();
 
       if (!canCombinedSetBeMissingAnnos) {
         TypeVariable typeVarTM = typeVar.getUnderlyingType();
@@ -381,11 +382,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       AnnotationMirrorSet lBSet =
           AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
       AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
+      TypeMirror lowerBoundTM = typeVar.getLowerBound().getUnderlyingType();
+
       TypeMirror typeVarTM = typeVar.getUnderlyingType();
-      if (qualHierarchy.isSubtypeShallow(upperBound, typeVarTM, annotation, typeVarTM)) {
+      if (qualHierarchy.isSubtypeShallow(upperBound, upperBoundTM, annotation, typeVarTM)) {
         // no anno is more specific than anno
         return null;
-      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, typeVarTM)) {
+      } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
         return annotation;
       } else {
         return getBackUpAnnoIn(top);
@@ -524,7 +527,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         AnnotationMirrorSet lBSet =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, typeVar);
         AnnotationMirror lowerBound = qualHierarchy.findAnnotationInHierarchy(lBSet, top);
-        if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, typeVarTM)) {
+        if (qualHierarchy.isSubtypeQualifiersOnly(annotation, lowerBound)) {
           return null;
         } else {
           return combineTwoAnnotations(
@@ -631,7 +634,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // glb is typeVar with a primary annotation of glb(anno, lowerBound), where
         // lowerBound is the annotation on the lower bound of typeVar.
         AnnotationMirror upperBound = typeVar.getEffectiveAnnotationInHierarchy(top);
-        if (qualHierarchy.isSubtypeShallow(upperBound, typeVarTM, annotation, typeVarTM)) {
+        if (qualHierarchy.isSubtypeQualifiersOnly(upperBound, annotation)) {
           return null;
         } else {
           AnnotationMirrorSet lBSet =
