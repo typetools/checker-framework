@@ -1,7 +1,7 @@
 .PHONY: all
 
 all: clean
-	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=myjdk.astub -AstubWarnIfOverwritesBytecode Issue559.java > Out.txt 2>&1 || true
+	-$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker -Astubs=myjdk.astub -AstubWarnIfOverwritesBytecode Issue559.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 
 clean:
