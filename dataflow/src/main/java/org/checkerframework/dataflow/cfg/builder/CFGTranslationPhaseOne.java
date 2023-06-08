@@ -97,6 +97,7 @@ import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.CharacterLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ClassDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -162,6 +163,7 @@ import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -482,7 +484,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           regularExitLabel,
           exceptionalExitLabel,
           declaredClasses,
-          declaredLambdas);
+          declaredLambdas,
+          types);
     } finally {
       this.path = null;
     }
@@ -534,18 +537,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       path = new TreePath(path, tree);
     }
     try {
-      // Must use String comparison to support compiling on JDK 11 and earlier.
-      //     Features added between JDK 12 and JDK 17 inclusive.
-      switch (tree.getKind().name()) {
-        case "BINDING_PATTERN":
-          return visitBindingPattern17(path.getLeaf(), p);
-        case "SWITCH_EXPRESSION":
-          return visitSwitchExpression17(tree, p);
-        case "YIELD":
-          return visitYield17(tree, p);
-        default:
-          return tree.accept(this, p);
+      // TODO: use JCP to add version-specific behavior
+      if (SystemUtil.jreVersion >= 14) {
+        // Must use String comparison to support compiling on JDK 11 and earlier.
+        // Features added between JDK 12 and JDK 17 inclusive.
+        switch (tree.getKind().name()) {
+          case "BINDING_PATTERN":
+            return visitBindingPattern17(path.getLeaf(), p);
+          case "SWITCH_EXPRESSION":
+            return visitSwitchExpression17(tree, p);
+          case "YIELD":
+            return visitYield17(tree, p);
+          default:
+            // fall through to generic behavior
+        }
       }
+
+      return tree.accept(this, p);
     } finally {
       path = prev;
     }
@@ -3559,23 +3567,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     int catchIndex = 0;
     for (CatchTree c : catches) {
       addLabelForNextNode(catchLabels.get(catchIndex).second);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "start of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      TypeMirror catchType = TreeUtils.typeOf(c.getParameter().getType());
+      extendWithNode(new CatchMarkerNode(tree, "start", catchType, env.getTypeUtils()));
       scan(c, p);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "end of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      extendWithNode(new CatchMarkerNode(tree, "end", catchType, env.getTypeUtils()));
 
       catchIndex++;
       extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
