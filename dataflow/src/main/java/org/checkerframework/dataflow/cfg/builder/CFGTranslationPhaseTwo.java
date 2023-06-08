@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.cfg.builder;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
@@ -14,6 +15,7 @@ import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraySet;
@@ -205,6 +207,14 @@ public class CFGTranslationPhaseTwo {
         // edge to specific target
         ExtendedNode extendedNode = nodeList.get(index);
         BlockImpl target = extendedNode.getBlock();
+        List<Node> targetNodes = target.getNodes();
+        Node firstNode = targetNodes.isEmpty() ? null : targetNodes.get(0);
+        if (firstNode instanceof CatchMarkerNode) {
+          TypeMirror catchType = ((CatchMarkerNode) firstNode).getCatchType();
+          if (in.types.isSubtype(catchType, cause)) {
+            cause = catchType;
+          }
+        }
         source.addExceptionalSuccessor(target, cause);
       }
     }
