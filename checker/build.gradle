@@ -68,7 +68,7 @@ dependencies {
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.12.0'
+  testImplementation 'commons-io:commons-io:2.13.0'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -93,6 +93,8 @@ jar {
   }
 }
 
+// This task differs from the `assemble` task in that it does not build Javadoc.
+// It is useful for those who only want to run `javac`.
 // checker.jar is copied to checker/dist/ when it is built by the shadowJar task.
 task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
   description 'Builds or downloads jars required by CheckerMain and puts them in checker/dist/.'

@@ -44,6 +44,9 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
@@ -68,7 +71,6 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -163,7 +165,7 @@ class MustCallConsistencyAnalyzer {
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private final IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, AccumulationStore> cmStoreAfter = new IdentityHashMap<>();
 
   /**
    * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
@@ -175,7 +177,7 @@ class MustCallConsistencyAnalyzer {
   private final ResourceLeakChecker checker;
 
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final CFAnalysis analysis;
+  private final AccumulationAnalysis analysis;
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
@@ -474,7 +476,7 @@ class MustCallConsistencyAnalyzer {
    *     so this constructor cannot get it directly.
    */
   /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, CFAnalysis analysis) {
+      ResourceLeakAnnotatedTypeFactory typeFactory, AccumulationAnalysis analysis) {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
@@ -1449,8 +1451,8 @@ class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    CFStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
-    CFValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
+    AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
+    AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
     if (cmValue != null) {
       for (AnnotationMirror anno : cmValue.getAnnotations()) {
@@ -1786,7 +1788,7 @@ class MustCallConsistencyAnalyzer {
                   + " with exception type "
                   + exceptionType;
       // Computed outside the Obligation loop for efficiency.
-      CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+      AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
       for (Obligation obligation : obligations) {
         // This boolean is true if there is no evidence that the Obligation does not go out
         // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -1883,7 +1885,8 @@ class MustCallConsistencyAnalyzer {
           //        path.
           //    2b. in all other cases, use the MC store from after the last node in
           //        the block.
-          CFStore mcStore, cmStore;
+          CFStore mcStore;
+          AccumulationStore cmStore;
           if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
             cmStore =
                 obligationGoesOutOfScopeBeforeSuccessor
@@ -1948,7 +1951,7 @@ class MustCallConsistencyAnalyzer {
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
    */
-  private boolean aliasInScopeInSuccessor(CFStore successorStore, ResourceAlias alias) {
+  private boolean aliasInScopeInSuccessor(AccumulationStore successorStore, ResourceAlias alias) {
     return successorStore.getValue(alias.reference) != null;
   }
 
@@ -2050,7 +2053,7 @@ class MustCallConsistencyAnalyzer {
    *     explanation to include in the error message
    */
   private void checkMustCall(
-      Obligation obligation, CFStore cmStore, CFStore mcStore, String outOfScopeReason) {
+      Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
     // optimization: if there are no must-call methods, do not need to perform the check
@@ -2063,14 +2066,19 @@ class MustCallConsistencyAnalyzer {
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
-      CFValue aliasCFValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
+      AccumulationValue cmValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
       AnnotationMirror cmAnno = null;
 
-      if (aliasCFValue != null) { // When store contains the lhs
-        for (AnnotationMirror anno : aliasCFValue.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-            cmAnno = anno;
+      if (cmValue != null) { // When store contains the lhs
+        Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+        if (accumulatedValues != null) { // type variable or wildcard type
+          cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+        } else {
+          for (AnnotationMirror anno : cmValue.getAnnotations()) {
+            if (AnnotationUtils.areSameByName(
+                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+              cmAnno = anno;
+            }
           }
         }
       }
