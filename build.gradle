@@ -907,6 +907,8 @@ subprojects {
       tasks.create(name: "${junitClassName}", type: Test) {
         description "Run ${junitClassName} tests."
         include "**/${name}.class"
+        testClassesDirs = testing.suites.test.sources.output.classesDirs
+        classpath = testing.suites.test.sources.runtimeClasspath
       }
     }
 
