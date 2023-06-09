@@ -18,7 +18,7 @@ Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDes
 
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
- * Deprecated class `StringConcatenateAssignmentNode`, which is now desugared.
+ * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
 
 **Closed issues:**
 

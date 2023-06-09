@@ -3,7 +3,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// @below-java10-jdk-skip-test
+// @below-java11-jdk-skip-test
 public class Issue4170 {
   public <K, V> void loadSequentially(Iterable<? extends K> keys) {
     Map<K, @Nullable V> result = new LinkedHashMap<>();

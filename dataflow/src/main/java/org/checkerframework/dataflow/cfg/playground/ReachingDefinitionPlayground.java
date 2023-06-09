@@ -4,14 +4,20 @@ import org.checkerframework.dataflow.analysis.ForwardAnalysis;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.analysis.UnusedAbstractValue;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionStore;
 import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
 
-/** The playground of reaching definition analysis. */
+/**
+ * The playground for reaching definition analysis. As an example, try {@code
+ * dataflow/manual/examples/ReachSimple.java}.
+ */
 public class ReachingDefinitionPlayground {
 
-  /** Create a new ReachingDefinitionPlayground. */
-  public ReachingDefinitionPlayground() {}
+  /** Class cannot be instantiated. */
+  private ReachingDefinitionPlayground() {
+    throw new AssertionError("Class ReachingDefinitionPlayground cannot be instantiated.");
+  }
 
   /**
    * Run reaching definition analysis for a specific file and create a PDF of the CFG in the end.
@@ -20,17 +26,13 @@ public class ReachingDefinitionPlayground {
    */
   public static void main(String[] args) {
 
-    /* Configuration: change as appropriate */
-    String inputFile = "./dataflow/manual/examples/ReachSimple.java"; // input file name and path
-    String outputDir = "."; // output directory
-    String method = "test"; // name of the method to analyze
-    String clazz = "Test"; // name of the class to consider
+    // Parse the arguments.
+    CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
 
     // Run the analysis and create a PDF file
     ReachingDefinitionTransfer transfer = new ReachingDefinitionTransfer();
     ForwardAnalysis<UnusedAbstractValue, ReachingDefinitionStore, ReachingDefinitionTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher.generateDOTofCFG(
-        inputFile, outputDir, method, clazz, true, true, forwardAnalysis);
+    CFGVisualizeLauncher.performAnalysis(config, forwardAnalysis);
   }
 }

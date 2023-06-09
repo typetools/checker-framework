@@ -594,15 +594,6 @@ public class ValueTransfer extends CFTransfer {
   }
 
   @Override
-  @Deprecated // 2022-03-22
-  public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
-      org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
-      TransferInput<CFValue, CFStore> p) {
-    TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(n, p);
-    return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
-  }
-
-  @Override
   public TransferResult<CFValue, CFStore> visitStringConcatenate(
       StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(n, p);

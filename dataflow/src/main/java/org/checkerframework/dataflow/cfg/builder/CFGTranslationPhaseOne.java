@@ -97,6 +97,7 @@ import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.CharacterLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ClassDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -483,7 +484,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           regularExitLabel,
           exceptionalExitLabel,
           declaredClasses,
-          declaredLambdas);
+          declaredLambdas,
+          types);
     } finally {
       this.path = null;
     }
@@ -3551,23 +3553,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     int catchIndex = 0;
     for (CatchTree c : catches) {
       addLabelForNextNode(catchLabels.get(catchIndex).second);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "start of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      TypeMirror catchType = TreeUtils.typeOf(c.getParameter().getType());
+      extendWithNode(new CatchMarkerNode(tree, "start", catchType, env.getTypeUtils()));
       scan(c, p);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "end of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      extendWithNode(new CatchMarkerNode(tree, "end", catchType, env.getTypeUtils()));
 
       catchIndex++;
       extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
@@ -3869,8 +3858,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT;
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
-          AssignmentNode unaryAssign =
-              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
 
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
@@ -3897,7 +3884,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             result = new LocalVariableNode(resultExpr);
             result.setInSource(false);
             extendWithNode(result);
-          } else {
+          }
+          AssignmentNode unaryAssign =
+              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
+          if (!isPostfix) {
             result = unaryAssign;
           }
           break;
