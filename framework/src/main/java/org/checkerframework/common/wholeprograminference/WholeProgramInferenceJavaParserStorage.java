@@ -714,27 +714,26 @@ public class WholeProgramInferenceJavaParserStorage
            * Creates a wrapper around the class for {@code tree} and stores it in {@code
            * sourceAnnos}.
            *
-           * <p>This method computes the name of the class and uses it as the key for {@code
-           * classToAnnos}
+           * <p>This method computes the name of the class when the element corresponding to tree is
+           * null and uses it as the key for {@code classToAnnos}
            *
-           * @param tree tree to add. Its corresponding element is used as the key for {@code
-           *     classToAnnos} if {@code classNameKey} is null.
+           * @param tree tree to add. Its corresponding name is used as the key for {@code
+           *     classToAnnos}.
            * @param javaParserNode the node corresponding to the declaration, which is used to place
            *     annotations on the class itself. Can be null, e.g. for an anonymous class.
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
-            // elementFromTree returns null instead of crashing when no element exists
-            // for the class tree, which can happen for certain kinds of anonymous
-            // classes, such as Ordering$1 in PolyCollectorTypeVar.java in the
-            // all-systems test suite.
+            // elementFromDeclaration returns null instead of crashing when no element exists for
+            // the class tree, which can happen for certain kinds of anonymous classes, such as
+            // classes, such as Ordering$1 in PolyCollectorTypeVar.java in the all-systems test
+            // suite.
             TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
             if (classElt == null) {
-              // If such an element does not exist, compute the name of the class,
-              // instead.  This method of computing the name is not 100% guaranteed to
-              // be reliable, but it should be sufficient for WPI's purposes here: if
-              // the wrong name is computed, the worst outcome is a false positive
-              // because WPI inferred an untrue annotation.
+              // If such an element does not exist, compute the name of the class, instead. This
+              // method of computing the name is not 100% guaranteed to be reliable, but it should
+              // be sufficient for WPI's purposes here: if the wrong name is computed, the worst
+              // outcome is a false positive because WPI inferred an untrue annotation.
               if ("".contentEquals(tree.getSimpleName())) {
                 @SuppressWarnings("signature:assignment") // computed from string concatenation
                 @BinaryName String computedName =
