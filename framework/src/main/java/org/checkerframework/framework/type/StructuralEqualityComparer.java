@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -207,11 +208,23 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     if (!arePrimeAnnosEqual(type1, type2)) {
       return false;
     }
-
     // Prevent infinite recursion e.g. in Issue1587b
     visitHistory.put(type1, type2, currentTop, true);
 
-    boolean result = visitTypeArgs(type1, type2);
+    // Capture the types because the wildcards are only not equal if they are provably distinct.
+    // probably distinct is computed using the captured upper bounds of wildcards.
+    // See JLS 4.5.1. Type Arguments of Parameterized Types.
+    AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
+    TypeMirror capture = atypeFactory.types.capture(type1.underlyingType);
+    AnnotatedDeclaredType capturedType1 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1, capture);
+    AnnotatedDeclaredType capturedType2 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type2, capture);
+    visitHistory.put(capturedType1, capturedType2, currentTop, true);
+
+    boolean result = visitTypeArgs(capturedType1, capturedType2);
+
+    visitHistory.put(capturedType1, capturedType2, currentTop, result);
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }
