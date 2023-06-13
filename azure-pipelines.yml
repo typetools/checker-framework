@@ -202,7 +202,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-typecheck.sh
+  - bash: ./checker/bin-devel/test-typecheck-part1.sh
     displayName: test-typecheck-part1.sh
 - job: typecheck_part2_jdk17
   pool:
@@ -211,7 +211,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1000
-  - bash: ./checker/bin-devel/test-typecheck.sh
+  - bash: ./checker/bin-devel/test-typecheck-part2.sh
     displayName: test-typecheck-part2.sh
 - job: typecheck_jdk20
   dependsOn:
@@ -258,7 +258,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25
@@ -272,7 +272,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk20:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 80
   steps:
   - checkout: self
     fetchDepth: 25

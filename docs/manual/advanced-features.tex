@@ -1358,11 +1358,21 @@ systems) \code{<self>}.
 %% TODO: we may eventually have an @SpecField annotation
 
 
-\textbf{Limitations:}
+\subsectionAndLabel{Limitations}{java-expressions-limitations}
+
+If you mention a class in a Java expression, then that class must be
+available to the compiler.  For example, if you write
+  \<@EnsuresNonNull("package1.package2.MyClass.myField.myOtherField")>,
+then you should pass \<MyClass.java> to the compiler.  Otherwise, the
+compiler does not know which components of the dotted name are packages,
+classes, and field names.  In that case, you might get confusing error
+messages such as ``Invalid 'package1.package2' because could not find class
+package1 in package package2''.
+
 It is not possible to write a
 quantification over all array components (e.g., to express that all
-  array elements are non-null).  There is no such Java expression, but it
-  would be useful when writing specifications.
+array elements are non-null).  There is no such Java expression, but it
+would be useful when writing specifications.
 
 
 \sectionAndLabel{Field invariants}{field-invariants}

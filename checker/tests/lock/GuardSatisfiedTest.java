@@ -220,6 +220,7 @@ public class GuardSatisfiedTest {
 
   // :: error: (guardsatisfied.location.disallowed)
   @GuardSatisfied Object field;
+
   // :: error: (guardsatisfied.location.disallowed)
   void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
     // :: error: (guardsatisfied.location.disallowed)
@@ -260,10 +261,13 @@ public class GuardSatisfiedTest {
   }
 
   void testGuardSatisfiedOnArray1(Object @GuardSatisfied [][][] array) {}
+
   // :: error: (guardsatisfied.location.disallowed)
   void testGuardSatisfiedOnArray2(@GuardSatisfied Object[][][] array) {}
+
   // :: error: (guardsatisfied.location.disallowed)
   void testGuardSatisfiedOnArray3(Object[] @GuardSatisfied [][] array) {}
+
   // :: error: (guardsatisfied.location.disallowed)
   void testGuardSatisfiedOnArray4(Object[][] @GuardSatisfied [] array) {}
 }

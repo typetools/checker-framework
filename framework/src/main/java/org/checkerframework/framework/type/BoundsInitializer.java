@@ -31,9 +31,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -766,7 +766,7 @@ public class BoundsInitializer {
   private static class RecursiveTypeStructure {
 
     /** List of TypePath and TypeVariables that were found will traversing this type. */
-    private final List<Pair<TypePath, TypeVariable>> typeVarsInType = new ArrayList<>();
+    private final List<IPair<TypePath, TypeVariable>> typeVarsInType = new ArrayList<>();
 
     /** Current path used to mark the locations of TypeVariables. */
     private final TypePath currentPath = new TypePath();
@@ -775,10 +775,10 @@ public class BoundsInitializer {
      * Add a type variable found at the current path while visiting the type variable or wildcard
      * associated with this structure.
      *
-     * @param typeVariable TypeVariable
+     * @param typeVariable a type variable
      */
     public void addTypeVar(TypeVariable typeVariable) {
-      typeVarsInType.add(Pair.of(this.currentPath.copy(), typeVariable));
+      typeVarsInType.add(IPair.of(this.currentPath.copy(), typeVariable));
     }
 
     /**
@@ -810,7 +810,7 @@ public class BoundsInitializer {
      * represents, this a list of the replacement {@link AnnotatedTypeVariable} for the location
      * specified by the {@link TypePath}.
      */
-    private List<Pair<TypePath, AnnotatedTypeVariable>> replacementList;
+    private List<IPair<TypePath, AnnotatedTypeVariable>> replacementList;
 
     /**
      * Find the AnnotatedTypeVariables that should replace the type variables found in this type.
@@ -820,11 +820,11 @@ public class BoundsInitializer {
     public void findAllReplacements(Map<TypeVariable, TypeVariableStructure> typeVarToStructure) {
       this.annotatedTypeVariables = new ArrayList<>(typeVarsInType.size());
       this.replacementList = new ArrayList<>(typeVarsInType.size());
-      for (Pair<TypePath, TypeVariable> pair : typeVarsInType) {
+      for (IPair<TypePath, TypeVariable> pair : typeVarsInType) {
         TypeVariableStructure targetStructure = typeVarToStructure.get(pair.second);
         AnnotatedTypeVariable template = targetStructure.annotatedTypeVar.deepCopy().asUse();
         annotatedTypeVariables.add(template);
-        replacementList.add(Pair.of(pair.first, template));
+        replacementList.add(IPair.of(pair.first, template));
       }
     }
 
@@ -854,7 +854,7 @@ public class BoundsInitializer {
       if (replacementList == null) {
         throw new BugInCF("Call createReplacementList before calling this method.");
       }
-      for (Pair<TypePath, AnnotatedTypeVariable> entry : replacementList) {
+      for (IPair<TypePath, AnnotatedTypeVariable> entry : replacementList) {
         TypePath path = entry.first;
         AnnotatedTypeVariable replacement = entry.second;
         path.replaceTypeVariable(type, replacement);
@@ -1031,10 +1031,10 @@ public class BoundsInitializer {
     /**
      * Throws a {@link BugInCF} if {@code parent} is {@code typeKind}.
      *
-     * @param typeKind TypeKind
+     * @param typeKind the desired TypeKind
      * @param replacement for debugging
      * @param parent possible parent type of this node
-     * @throws BugInCF if {@code parent} is {@code typeKind}
+     * @throws BugInCF if {@code parent.getKind()} is not {@code typeKind}
      */
     private void abortIfNotKind(
         TypeKind typeKind, AnnotatedTypeVariable replacement, AnnotatedTypeMirror parent) {

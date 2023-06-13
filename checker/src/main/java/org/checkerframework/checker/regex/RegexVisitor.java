@@ -33,12 +33,16 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
   /** The method java.util.regex.MatchResult.end(int). */
   private final ExecutableElement matchResultEndInt;
+
   /** The method java.util.regex.MatchResult.group(int). */
   private final ExecutableElement matchResultGroupInt;
+
   /** The method java.util.regex.MatchResult.start(int). */
   private final ExecutableElement matchResultStartInt;
+
   /** The method java.util.regex.Pattern.compile. */
   private final ExecutableElement patternCompile;
+
   /** The field java.util.regex.Pattern.LITERAL. */
   private final VariableElement patternLiteral;
 

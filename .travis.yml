@@ -62,7 +62,7 @@ before_script:
 # The fcntl line works around a bug where Travis truncates logs and fails.
 script:
 - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
-- REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+- REMOTE_ORIGIN_URL=$(git config --get remote.origin.url)
 - echo "THIS_REPO=${THIS_REPO}"
 - echo "JDKVER=${JDKVER}"
 - echo "GROUP=${GROUP}"

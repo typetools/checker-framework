@@ -281,13 +281,14 @@ public class ControlFlowGraph implements UniqueId {
   /**
    * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
    * the CFG or null otherwise.
+   *
+   * @param t a tree that might correspond to a node in the CFG
+   * @return the method that contains {@code t}'s Node, or null
    */
   public @Nullable MethodTree getContainingMethod(Tree t) {
-    if (treeLookup.containsKey(t)) {
-      if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
-        UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
-        return cfgMethod.getMethod();
-      }
+    if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+      UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+      return cfgMethod.getMethod();
     }
     return null;
   }

@@ -479,7 +479,7 @@ of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
 The qualifiers should be in a \<qual> subpackage of the type checker package ---
 by default, the checker reflectively determines the qualifiers and the only thing that matters for that is the package name.
 As mentioned in {creating-parts-of-a-checker}, the files for that \<qual> package can be
-either in a subdirectory or in a separate gradle module, depending on whether
+either in a subdirectory or in a separate Gradle module, depending on whether
 they should be distributable separately.
 The Checker Framework automatically treats any annotation that
 is declared in the \<qual> package as a type qualifier.
@@ -730,13 +730,51 @@ describes other meta-annotations used to specify default annotations.
 
 \subsectionAndLabel{Relevant Java types}{creating-relevant-java-types}
 
-Sometimes, a checker only processes certain Java types.  For example, the
-\ahrefloc{formatter-checker}{Format String Checker} is relevant only to
-\<CharSequence> and its subtypes such as \<String>.
+Sometimes, a checker is only relevant to certain Java types.
 The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
 written on those types and no others.  All irrelevant types are defaulted to
-the top annotation.
+the top annotation and this annotation cannot be changed.
+
+If a type is relevant, so are all its supertypes including Object.
+The reason for this is to prevent qualifiers from being lost via an
+assignment to a supertype.  For example, in this code, \<x> and \<z> have
+the same type qualifiers if \<@SomeAnn> is relevant to \<MyClass>:
+
+\begin{Verbatim}
+@SomeAnn MyClass x = ...;
+Object y = x;
+MyClass z = (MyClass) y;
+\end{Verbatim}
+
+As an example of relevant types, the \ahrefloc{formatter-checker}{Format
+String Checker} is relevant only to \<CharSequence> and its subtypes such
+as \<String>.  You cannot write \refqualclass{checker/formatter/qual}{Format}
+on a \<List> or a \<Number>.
+%
+As another example, the Index Checker and the Signedness Checker are only
+relevant to integral numeric types.  You cannot write
+\refqualclass{checker/index/qual}{Positive} on a \<List> or a \<float>.
+
+A checker may change the default, and it may differ from type to type.  For
+example, the Signedness Checker treats all types that are not numeric
+integral types as \refqualclass{checker/signedness/qual}{Signed}, but
+treats the \<char> and \<Character> types as
+\refqualclass{checker/signedness/qual}{Unsigned}.
+
+Every annotation that is applicable to a non-primitive type is also
+applicable to all supertypes including \<Object>.  That ensures that in
+code like this:
+
+\begin{Verbatim}
+@SomeAnn MyClass x = ...;
+Object y = x;
+MyClass z = (MyClass) y;
+\end{Verbatim}
+
+\noindent
+variables \<x> and \<z> have the same type qualifiers, without them being
+lost via the assignment to \<Object>.
 
 
 \subsectionAndLabel{Do not re-use type qualifiers}{creating-do-not-re-use-type-qualifiers}
@@ -1543,7 +1581,7 @@ a transfer class.)
 %\begin{Verbatim}
 %  @Override
 %  protected RegexAnalysis createFlowAnalysis(
-%          List<Pair<VariableElement, CFValue>> fieldValues) {
+%          List<IPair<VariableElement, CFValue>> fieldValues) {
 %
 %      return new RegexAnalysis(checker, this, fieldValues);
 %  }
@@ -2566,9 +2604,9 @@ without warnings or errors.
 %  LocalWords:  formatter nChecker nSubchecker AprintVerboseGenerics pdf
 %  LocalWords:  AshowInferenceSteps DefaultTypeArgumentInference Graphviz
 %  LocalWords:  javacutil LiteralKind EnsuresQualifier EnsuresQualifierIf
-%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals
+%%  LocalWords:  mychecker AnnotationBuilder AnnotationUtils typequals pos
 %%  LocalWords:  TypeAnnotationUtils reimplementing typesystem TreeType
-%%  LocalWords:  getTypeFactoryOfSubchecker checkername inference''
+%%  LocalWords:  getTypeFactoryOfSubchecker checkername inference'' Werror
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
 %%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
@@ -2577,7 +2615,9 @@ without warnings or errors.
 % LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
 % LocalWords:  Signedness UnknownSignedness signedness PolySigned fromTree
 % LocalWords:  DefaultQualifierPolymorphism createQualifierPolymorphism
-% LocalWords:  representation'' stubfilename commonAssignmentCheck
+% LocalWords:  representation'' stubfilename commonAssignmentCheck foreach
 % LocalWords:  AshowWpiFailedInferences CheckerMain wrapper'' typechecker
 % LocalWords:  AatfDoNotCache AatfCacheSize PolyPresent Subinterface
-% LocalWords:  UnionType
+% LocalWords:  UnionType subpackage distributable DefaultFor FormatMethod
+% LocalWords:  AnoWarnMemoryConstraints JCDiagnostic DiagnosticPosition
+% LocalWords:  LineMap

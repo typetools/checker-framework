@@ -32,8 +32,12 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
+  /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
-  private final QualifierHierarchy qualifierHierarchy;
+
+  /** The qualifier hierarchy. */
+  private final QualifierHierarchy qualHierarchy;
+
   /**
    * List of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
    * Call {@link #visited(AnnotatedTypeMirror)} to check if the type have been visited, so that
@@ -43,7 +47,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
   AtmLubVisitor(AnnotatedTypeFactory atypeFactory) {
     this.atypeFactory = atypeFactory;
-    this.qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    this.qualHierarchy = atypeFactory.getQualifierHierarchy();
   }
 
   /**
@@ -70,6 +74,14 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     return lub;
   }
 
+  /**
+   * Lub a type with the nulltype.
+   *
+   * @param nullType an annotated null type
+   * @param otherType the other type to lub
+   * @param lub a type mirror that will be copied, side-effected, and returned
+   * @return the lub
+   */
   private AnnotatedTypeMirror lubWithNull(
       AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
     AnnotatedTypeMirror otherAsLub;
@@ -84,7 +96,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     if (otherAsLub.getKind() != TypeKind.TYPEVAR && otherAsLub.getKind() != TypeKind.WILDCARD) {
       for (AnnotationMirror nullAnno : nullType.getAnnotations()) {
         AnnotationMirror otherAnno = otherAsLub.getAnnotationInHierarchy(nullAnno);
-        AnnotationMirror lubAnno = qualifierHierarchy.leastUpperBound(nullAnno, otherAnno);
+        AnnotationMirror lubAnno = qualHierarchy.leastUpperBound(nullAnno, otherAnno);
         lub.replaceAnnotation(lubAnno);
       }
       return lub;
@@ -95,15 +107,15 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // if @L <: @N <:@U && @N != @L  then LUB(@N null, T) = @U T
     // if @N <: @L <: @U             then LUB(@N null, T) =    T
     AnnotationMirrorSet lowerBounds =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, otherAsLub);
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, otherAsLub);
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getAnnotationInHierarchy(lowerBound);
       AnnotationMirror upperBound = otherAsLub.getEffectiveAnnotationInHierarchy(lowerBound);
-      if (qualifierHierarchy.isSubtype(upperBound, nullAnno)) {
+      if (qualHierarchy.isSubtype(upperBound, nullAnno)) {
         // @L <: @U <: @N
         lub.replaceAnnotation(nullAnno);
-      } else if (qualifierHierarchy.isSubtype(lowerBound, nullAnno)
-          && !qualifierHierarchy.isSubtype(nullAnno, lowerBound)) {
+      } else if (qualHierarchy.isSubtype(lowerBound, nullAnno)
+          && !qualHierarchy.isSubtype(nullAnno, lowerBound)) {
         // @L <: @N <:@U && @N != @L
         lub.replaceAnnotation(upperBound);
       } // else @N <: @L <: @U
@@ -123,7 +135,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     } else if (type2.getAnnotations().isEmpty()) {
       lubSet = type1.getAnnotations();
     } else {
-      lubSet = qualifierHierarchy.leastUpperBounds(type1.getAnnotations(), type2.getAnnotations());
+      lubSet = qualHierarchy.leastUpperBounds(type1.getAnnotations(), type2.getAnnotations());
     }
     lub.replaceAnnotations(lubSet);
   }
@@ -254,12 +266,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     visit(type1UpperBound, type2UpperBound, lubUpperBound);
     visit(type1LowerBound, type2LowerBound, lubLowerBound);
 
-    for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+    for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       AnnotationMirror anno1 = type1LowerBound.getAnnotationInHierarchy(top);
       AnnotationMirror anno2 = type2LowerBound.getAnnotationInHierarchy(top);
 
       if (anno1 != null && anno2 != null) {
-        AnnotationMirror glb = qualifierHierarchy.greatestLowerBound(anno1, anno2);
+        AnnotationMirror glb = qualHierarchy.greatestLowerBound(anno1, anno2);
         lubLowerBound.replaceAnnotation(glb);
       }
     }
@@ -310,30 +322,28 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     // subtype of type1, then the primary annotation on lub must be the effective upper
     // bound of type1 or type2, whichever is higher.
     AnnotationMirrorSet type1LowerBoundAnnos =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type1);
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type1);
     AnnotationMirrorSet type2LowerBoundAnnos =
-        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualifierHierarchy, type2);
+        AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, type2);
 
     for (AnnotationMirror lower1 : type1LowerBoundAnnos) {
-      AnnotationMirror top = qualifierHierarchy.getTopAnnotation(lower1);
+      AnnotationMirror top = qualHierarchy.getTopAnnotation(lower1);
 
       // Can't just call isSubtype because it will return false if bounds have
       // different annotations on component types
-      AnnotationMirror lower2 =
-          qualifierHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
+      AnnotationMirror lower2 = qualHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
       AnnotationMirror upper1 = type1.getEffectiveAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getEffectiveAnnotationInHierarchy(lower1);
 
-      if (qualifierHierarchy.isSubtype(upper2, upper1)
-          && qualifierHierarchy.isSubtype(upper1, upper2)
-          && qualifierHierarchy.isSubtype(lower1, lower2)
-          && qualifierHierarchy.isSubtype(lower2, lower1)) {
+      if (qualHierarchy.isSubtype(upper2, upper1)
+          && qualHierarchy.isSubtype(upper1, upper2)
+          && qualHierarchy.isSubtype(lower1, lower2)
+          && qualHierarchy.isSubtype(lower2, lower1)) {
         continue;
       }
 
-      if (!qualifierHierarchy.isSubtype(upper2, lower1)
-          && !qualifierHierarchy.isSubtype(upper1, lower2)) {
-        lub.replaceAnnotation(qualifierHierarchy.leastUpperBound(upper1, upper2));
+      if (!qualHierarchy.isSubtype(upper2, lower1) && !qualHierarchy.isSubtype(upper1, lower2)) {
+        lub.replaceAnnotation(qualHierarchy.leastUpperBound(upper1, upper2));
       }
     }
   }
@@ -386,7 +396,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotatedTypeMirror atmVisit : visited) {
       // Use reference equality rather than equals because the visitor may visit two types
       // that are structurally equal, but not actually the same.  For example, the
-      // wildcards in Pair<?,?> may be equal, but they both should be visited.
+      // wildcards in IPair<?,?> may be equal, but they both should be visited.
       if (atmVisit == atm) {
         return true;
       }

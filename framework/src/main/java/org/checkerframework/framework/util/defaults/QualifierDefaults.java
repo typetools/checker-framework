@@ -46,10 +46,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -85,8 +85,10 @@ public class QualifierDefaults {
 
   /** The value() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierValueElement;
+
   /** The locations() element/field of a @DefaultQualifier annotation. */
   protected final ExecutableElement defaultQualifierLocationsElement;
+
   /** The value() element/field of a @DefaultQualifier.List annotation. */
   protected final ExecutableElement defaultQualifierListValueElement;
 
@@ -104,7 +106,7 @@ public class QualifierDefaults {
 
   /** Mapping from an Element to the bound type. */
   protected final Map<Element, BoundType> elementToBoundType =
-      CollectionUtils.createLRUCache(CACHE_SIZE);
+      CollectionsPlume.createLruCache(CACHE_SIZE);
 
   /**
    * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
@@ -353,6 +355,14 @@ public class QualifierDefaults {
     }
   }
 
+  /**
+   * Returns true if there are conflicts with existing defaults.
+   *
+   * @param previousDefaults the previous defaults
+   * @param newAnno the new annotation
+   * @param newLoc the location of the type use
+   * @return true if there are conflicts with existing defaults
+   */
   private boolean conflictsWithExistingDefaults(
       DefaultSet previousDefaults, AnnotationMirror newAnno, TypeUseLocation newLoc) {
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();

@@ -45,6 +45,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   /** The type of the class currently being visited. */
   private @Nullable AnnotatedDeclaredType classType = null;
+
   /** The receiver type of the enclosing method tree. */
   private @Nullable AnnotatedDeclaredType receiverType = null;
 
@@ -503,7 +504,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
         AnnotatedExecutableType invokedMethod = mType.executableType;
         ExecutableElement method = invokedMethod.getElement();
-        CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+        CharSequence methodName = ElementUtils.getSimpleDescription(method);
         List<? extends VariableElement> methodParams = method.getParameters();
         List<AnnotatedTypeMirror> paramTypes =
             AnnotatedTypes.adaptParameters(

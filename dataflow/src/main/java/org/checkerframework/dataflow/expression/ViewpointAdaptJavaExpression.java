@@ -24,6 +24,7 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
       JavaExpression javaExpr, @Nullable List<JavaExpression> args) {
     return viewpointAdapt(javaExpr, null, args);
   }
+
   /**
    * Replace {@link ThisReference} with {@code thisReference} in {@code javaExpr}. ({@link
    * FormalParameter} are not replaced.

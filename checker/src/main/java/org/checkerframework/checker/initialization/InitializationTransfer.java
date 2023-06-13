@@ -147,7 +147,6 @@ public class InitializationTransfer<
   @Override
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitAssignment(n, in);
-    assert result instanceof RegularTransferResult;
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.

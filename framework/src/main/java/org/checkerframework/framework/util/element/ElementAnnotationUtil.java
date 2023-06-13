@@ -186,8 +186,10 @@ public class ElementAnnotationUtil {
   private static final class WildcardBoundAnnos {
     /** The wildcard type. */
     public final AnnotatedWildcardType wildcard;
+
     /** The upper bound annotations. */
     public final AnnotationMirrorSet upperBoundAnnos;
+
     /** The lower bound annotations. */
     public final AnnotationMirrorSet lowerBoundAnnos;
 

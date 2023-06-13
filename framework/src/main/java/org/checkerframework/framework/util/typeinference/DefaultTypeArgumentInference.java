@@ -22,7 +22,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -53,10 +53,10 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -127,7 +127,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     if (showInferenceSteps) {
       checker.message(
-          Kind.NOTE,
+          Diagnostic.Kind.NOTE,
           "DTAI: expression: %s%n  argTypes: %s%n  assignedTo: %s",
           expressionTree.toString().replace(System.lineSeparator(), " "),
           argTypes,
@@ -162,25 +162,25 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       inferredArgs =
           infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  after infer: %s", inferredArgs);
+        checker.message(Diagnostic.Kind.NOTE, "  after infer: %s", inferredArgs);
       }
       handleNullTypeArguments(
           typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  after handleNull: %s", inferredArgs);
+        checker.message(Diagnostic.Kind.NOTE, "  after handleNull: %s", inferredArgs);
       }
     } catch (Exception ex) {
       // Catch any errors thrown by inference.
       inferredArgs = new LinkedHashMap<>();
       if (showInferenceSteps) {
-        checker.message(Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
+        checker.message(Diagnostic.Kind.NOTE, "  exception: %s", ex.getLocalizedMessage());
       }
     }
 
     handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
     if (showInferenceSteps) {
-      checker.message(Kind.NOTE, "  results: %s", inferredArgs);
+      checker.message(Diagnostic.Kind.NOTE, "  results: %s", inferredArgs);
     }
     try {
       return TypeArgInferenceUtil.correctResults(
@@ -339,7 +339,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             typeFactory, argumentTypes, methodType, targets, useNullArguments);
 
     // 2. Step 2 - Solve the constraints.
-    Pair<InferenceResult, InferenceResult> argInference =
+    IPair<InferenceResult, InferenceResult> argInference =
         inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
     InferenceResult fromArgEqualities = argInference.first; // result 2.a
@@ -437,8 +437,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       InferenceResult fromArgSupertypes,
       List<AnnotatedTypeVariable> targetDeclarations,
       AnnotatedTypeFactory typeFactory) {
-    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
+    QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
 
     for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
       InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
@@ -449,7 +449,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
           AnnotatedTypeMirror inferredType = ((InferredType) inferred).type;
           AnnotationMirror argAnno = inferredType.getEffectiveAnnotationInHierarchy(top);
-          if (qualifierHierarchy.isSubtype(argAnno, lowerBoundAnno)) {
+          if (qualHierarchy.isSubtype(argAnno, lowerBoundAnno)) {
             inferredType.replaceAnnotation(lowerBoundAnno);
           }
         }
@@ -463,7 +463,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * remaining constraints so that Fi = Tj where Tj is a type parameter with an argument to be
    * inferred. Return the resulting constraint set.
    *
-   * @param typeFactory AnnotatedTypeFactory
+   * @param typeFactory the type factory
    * @param argTypes list of annotated types corresponding to the arguments to the method
    * @param methodType annotated type of the method
    * @param targets type variables to be inferred
@@ -506,7 +506,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * Step 2. Infer type arguments from the equality (TisU) and the supertype (TSuperU) constraints
    * of the methods arguments.
    */
-  private Pair<InferenceResult, InferenceResult> inferFromArguments(
+  private IPair<InferenceResult, InferenceResult> inferFromArguments(
       AnnotatedTypeFactory typeFactory,
       Set<AFConstraint> afArgumentConstraints,
       Set<TypeVariable> targets) {
@@ -528,7 +528,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         subtypesSolver.solveFromSubtypes(remainingTargets, argConstraints, typeFactory);
     fromSupertypes.mergeSubordinate(fromSubtypes);
 
-    return Pair.of(inferredFromArgEqualities, fromSupertypes);
+    return IPair.of(inferredFromArgEqualities, fromSupertypes);
   }
 
   /** Step 3. Infer type arguments from the equality constraints of the assignment context. */

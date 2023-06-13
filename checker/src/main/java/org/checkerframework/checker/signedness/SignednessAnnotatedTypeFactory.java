@@ -48,12 +48,12 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The type factory for the Signedness Checker.
@@ -64,17 +64,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @Signed annotation. */
   protected final AnnotationMirror SIGNED = AnnotationBuilder.fromClass(elements, Signed.class);
+
   /** The @Unsigned annotation. */
   private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+
   /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
   private final AnnotationMirror SIGNEDNESS_GLB =
       AnnotationBuilder.fromClass(elements, SignednessGlb.class);
+
   /** The @SignedPositiveFromUnsigned annotation. */
   protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
       AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+
   /** The @SignednessBottom annotation. */
   protected final AnnotationMirror SIGNEDNESS_BOTTOM =
       AnnotationBuilder.fromClass(elements, SignednessBottom.class);
+
   /** The @PolySigned annotation. */
   protected final AnnotationMirror POLY_SIGNED =
       AnnotationBuilder.fromClass(elements, PolySigned.class);
@@ -82,6 +87,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @NonNegative annotation of the Index Checker, as represented by the Value Checker. */
   private final AnnotationMirror INT_RANGE_FROM_NON_NEGATIVE =
       AnnotationBuilder.fromClass(elements, IntRangeFromNonNegative.class);
+
   /** The @Positive annotation of the Index Checker, as represented by the Value Checker. */
   private final AnnotationMirror INT_RANGE_FROM_POSITIVE =
       AnnotationBuilder.fromClass(elements, IntRangeFromPositive.class);
@@ -89,12 +95,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The Serializable type mirror. */
   private final TypeMirror serializableTM =
       elements.getTypeElement(Serializable.class.getCanonicalName()).asType();
+
   /** The Comparable type mirror. */
   private final TypeMirror comparableTM =
       elements.getTypeElement(Comparable.class.getCanonicalName()).asType();
+
   /** The Number type mirror. */
   private final TypeMirror numberTM =
       elements.getTypeElement(Number.class.getCanonicalName()).asType();
+
+  /** A set containing just {@code @Signed}. */
+  private final AnnotationMirrorSet SIGNED_SINGLETON = new AnnotationMirrorSet(SIGNED);
+
+  /** A set containing just {@code @Unsigned}. */
+  private final AnnotationMirrorSet UNSIGNED_SINGLETON = new AnnotationMirrorSet(UNSIGNED);
 
   /**
    * Create a SignednessAnnotatedTypeFactory.
@@ -247,6 +261,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(new SignednessTreeAnnotator(this), super.createTreeAnnotator());
+  }
+
+  @Override
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    if (TypesUtils.isCharOrCharacter(tm)) {
+      return UNSIGNED_SINGLETON;
+    } else {
+      return SIGNED_SINGLETON;
+    }
   }
 
   /**
@@ -593,7 +616,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Determines if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
    * operation of the form {@code shiftExpr & maskLit} or {@code shiftExpr | maskLit} such that the
-   * mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by destroying the bits
+   * mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by destroying the bits
    * duplicated into the shift result. For example, the following pairs of right shifts on {@code
    * byte b} both produce the same results under any input, because of their masks:
    *
@@ -607,7 +630,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *     same effect
    */
   /*package-private*/ boolean isMaskedShiftEitherSignedness(BinaryTree shiftExpr, TreePath path) {
-    Pair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
+    IPair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
     Tree enclosing = enclosingPair.first;
     // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
@@ -643,7 +666,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Determines if a right shift operation, {@code >>} or {@code >>>}, is type casted such that the
-   * cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevent by discarding the bits
+   * cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by discarding the bits
    * duplicated into the shift result. For example, the following pair of right shifts on {@code
    * short s} both produce the same results under any input, because of type casting:
    *

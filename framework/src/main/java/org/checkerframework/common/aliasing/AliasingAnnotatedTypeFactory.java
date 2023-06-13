@@ -31,11 +31,14 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link MaybeAliased} annotation. */
   protected final AnnotationMirror MAYBE_ALIASED =
       AnnotationBuilder.fromClass(elements, MaybeAliased.class);
+
   /** The @{@link NonLeaked} annotation. */
   protected final AnnotationMirror NON_LEAKED =
       AnnotationBuilder.fromClass(elements, NonLeaked.class);
+
   /** The @{@link Unique} annotation. */
   protected final AnnotationMirror UNIQUE = AnnotationBuilder.fromClass(elements, Unique.class);
+
   /** The @{@link MaybeLeaked} annotation. */
   protected final AnnotationMirror MAYBE_LEAKED =
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);

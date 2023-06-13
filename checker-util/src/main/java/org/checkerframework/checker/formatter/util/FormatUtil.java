@@ -24,6 +24,7 @@ public class FormatUtil {
   private static class Conversion {
     /** The index in the argument list. */
     private final int index;
+
     /** The conversion category. */
     private final ConversionCategory cath;
 
@@ -163,8 +164,10 @@ public class FormatUtil {
    */
   private static final @Regex(6) String formatSpecifier =
       "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+
   /** The capturing group for the optional {@code t} character. */
   private static final int formatSpecifierT = 5;
+
   /**
    * The capturing group for the last character in a format specifier, which is the conversion
    * character unless the {@code t} character was given.

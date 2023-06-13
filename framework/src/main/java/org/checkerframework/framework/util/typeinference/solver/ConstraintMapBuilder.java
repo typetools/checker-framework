@@ -49,8 +49,8 @@ public class ConstraintMapBuilder {
   public ConstraintMap build(
       Set<TypeVariable> targets, Set<TUConstraint> constraints, AnnotatedTypeFactory typeFactory) {
 
-    QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
+    QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet tops = new AnnotationMirrorSet(qualHierarchy.getTopAnnotations());
     ConstraintMap result = new ConstraintMap(targets);
 
     AnnotationMirrorSet tAnnos = new AnnotationMirrorSet();
@@ -114,7 +114,7 @@ public class ConstraintMapBuilder {
                 constraint,
                 result,
                 tAnnos,
-                qualifierHierarchy);
+                qualHierarchy);
           }
 
           if (!uAnnos.isEmpty()) {
@@ -123,7 +123,7 @@ public class ConstraintMapBuilder {
                 constraint,
                 result,
                 uAnnos,
-                qualifierHierarchy);
+                qualHierarchy);
           }
         }
 
@@ -180,13 +180,13 @@ public class ConstraintMapBuilder {
       TUConstraint constraint,
       ConstraintMap result,
       AnnotationMirrorSet annotationMirrors,
-      QualifierHierarchy qualifierHierarchy) {
+      QualifierHierarchy qualHierarchy) {
     if (constraint instanceof TIsU) {
-      result.addPrimaryEqualities(typeVariable, qualifierHierarchy, annotationMirrors);
+      result.addPrimaryEqualities(typeVariable, qualHierarchy, annotationMirrors);
     } else if (constraint instanceof TSuperU) {
-      result.addPrimarySupertype(typeVariable, qualifierHierarchy, annotationMirrors);
+      result.addPrimarySupertype(typeVariable, qualHierarchy, annotationMirrors);
     } else {
-      result.addPrimarySubtypes(typeVariable, qualifierHierarchy, annotationMirrors);
+      result.addPrimarySubtypes(typeVariable, qualHierarchy, annotationMirrors);
     }
   }
 

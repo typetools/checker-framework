@@ -30,6 +30,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** The top qualifier of the Substring Index hierarchy. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, SubstringIndexUnknown.class);
+
   /** The bottom qualifier of the Substring Index hierarchy. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, SubstringIndexBottom.class);

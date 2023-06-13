@@ -766,6 +766,7 @@ public class CheckerMain {
 
   /** Processor shorthand is enabled for processors in this directory in checker.jar. */
   protected static final String CHECKER_BASE_DIR_NAME = "org/checkerframework/checker/";
+
   /** Processor shorthand is enabled for processors in this directory in checker.jar. */
   protected static final String COMMON_BASE_DIR_NAME = "org/checkerframework/common/";
 

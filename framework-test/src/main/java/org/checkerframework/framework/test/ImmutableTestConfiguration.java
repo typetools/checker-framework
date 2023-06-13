@@ -23,11 +23,12 @@ public class ImmutableTestConfiguration implements TestConfiguration {
    * <pre>{@code
    * Map(
    *   "-AprintAllQualifiers" => null
-   *    "-classpath" => "myDir1:myDir2"
+   *   "-classpath" => "myDir1:myDir2"
    * )
    * }</pre>
    */
   private final Map<String, @Nullable String> options;
+
   /**
    * These files contain diagnostics that should be returned by Javac. If this list is empty, the
    * diagnostics are instead read from comments in the Java file itself

@@ -20,7 +20,7 @@ import org.checkerframework.javacutil.BugInCF;
  * </ul>
  */
 @SuppressWarnings("nullness") // TODO
-public abstract class ExtendedNode {
+/*package-private*/ abstract class ExtendedNode {
 
   /** The basic block this extended node belongs to (as determined in phase two). */
   protected BlockImpl block;

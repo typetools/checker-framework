@@ -6,6 +6,7 @@ record RecordPurityOverride(@Nullable String pure, @Nullable String impure) {
   public @Nullable String pure() {
     return pure;
   }
+
   // Note: not @Pure
   public @Nullable String impure() {
     return impure;

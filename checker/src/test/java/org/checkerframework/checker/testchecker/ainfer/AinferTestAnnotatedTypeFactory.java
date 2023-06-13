@@ -47,7 +47,24 @@ import org.checkerframework.javacutil.TypeSystemError;
 /**
  * AnnotatedTypeFactory to test whole-program inference using .jaif files.
  *
- * <p>The used qualifier hierarchy is straightforward and only intended for test purposes.
+ * <p>The used qualifier hierarchy is only intended for test purposes. It is:
+ *
+ * <pre>{@code
+ *                   AinferTop
+ *                      |
+ *               AinferDefaultType
+ *                      |
+ *                 AinferParent
+ *               /      |       \
+ *  AinferSibling AinferSibling2 AinferSiblingWithFields
+ *               \      |       /
+ *              AinferImplicitAnno
+ *                      |
+ *                 AinferBottom
+ *
+ * AinferTreatAsSibling1 : a declaration annotation
+ * AinferToIgnore : unused
+ * }</pre>
  */
 public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -67,6 +84,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The AinferSiblingWithFields.value field/element. */
   private final ExecutableElement siblingWithFieldsValueElement =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value", 0, processingEnv);
+
   /** The AinferSiblingWithFields.value2 field/element. */
   private final ExecutableElement siblingWithFieldsValue2Element =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value2", 0, processingEnv);

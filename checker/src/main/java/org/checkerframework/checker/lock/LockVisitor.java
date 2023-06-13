@@ -73,6 +73,7 @@ import org.plumelib.util.CollectionsPlume;
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
   /** The class of GuardedBy */
   private static final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
+
   /** The class of GuardSatisfied */
   private static final Class<? extends Annotation> checkerGuardSatisfiedClass =
       GuardSatisfied.class;
@@ -306,7 +307,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
   @Override
   protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
-    AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet annotationSet = new AnnotationMirrorSet();
     for (AnnotationMirror anno : tops) {
       if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)) {
@@ -692,11 +693,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               }
 
               if (bothAreGSwithNoIndex
-                  || !(atypeFactory.getQualifierHierarchy().isSubtype(arg1Anno, arg2Anno)
-                      || atypeFactory.getQualifierHierarchy().isSubtype(arg2Anno, arg1Anno))) {
+                  || !(qualHierarchy.isSubtype(arg1Anno, arg2Anno)
+                      || qualHierarchy.isSubtype(arg2Anno, arg1Anno))) {
 
-                String formalParam1 = null;
-
+                String formalParam1;
                 if (i == 0) {
                   formalParam1 = "The receiver type";
                 } else {
@@ -917,7 +917,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * Issues an error if a GuardSatisfied annotation is found in a location other than a method
    * return type or parameter (including the receiver).
    *
-   * @param annotationTree AnnotationTree used for error reporting and to help determine that an
+   * @param annotationTree an AnnotationTree used for error reporting and to help determine that an
    *     array parameter has no GuardSatisfied annotations except on the array type
    */
   // TODO: Remove this method once @TargetLocations are enforced (i.e. once
@@ -1189,7 +1189,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       return false;
     }
     AnnotationMirrorSet annos = value.getAnnotations();
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy hierarchy = qualHierarchy;
     AnnotationMirror lockAnno =
         hierarchy.findAnnotationInSameHierarchy(annos, atypeFactory.LOCKHELD);
     return lockAnno != null && atypeFactory.areSameByClass(lockAnno, LockHeld.class);

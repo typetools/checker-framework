@@ -82,6 +82,7 @@ public class NullnessFieldInvar {
   class SuperWithNonFinal {
     @Nullable Object nonfinal = null;
   }
+
   // nonfinal isn't final
   // :: error: (field.invariant.not.final)
   @FieldInvariant(field = "nonfinal", qualifier = NonNull.class)
@@ -143,6 +144,7 @@ public class NullnessFieldInvar {
       field = {},
       qualifier = NonNull.class)
   class Invalid1 extends Super2 {}
+
   // :: error: (field.invariant.not.wellformed)
   @FieldInvariant(
       field = {"a", "b"},

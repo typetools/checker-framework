@@ -241,6 +241,7 @@
         <copy file="${dataflow.manual}/dataflow.pdf"  tofile="${dest.dir.manual}/${dataflow.manual.name}.pdf" failonerror="false"/>
         <copy file="${developer.dir}/developer-manual.html"  tofile="${dest.dir.manual}/developer-manual.html" failonerror="false"/>
         <copy file="${developer.dir}/gsoc-ideas.html"  tofile="${dest.dir.manual}/gsoc-ideas.html" failonerror="false"/>
+        <copy file="${developer.dir}/new-contributor-projects.html"  tofile="${dest.dir.manual}/new-contributor-projects.html" failonerror="false"/>
 
         <copy todir="${dest.dir.manual}" flatten="true">
             <fileset dir="${checker.manual}">

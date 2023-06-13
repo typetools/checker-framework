@@ -12,27 +12,33 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& apt-get -y install aptitude \
+&& aptitude -y install \
+  apt-utils
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& aptitude -y install \
   openjdk-11-jdk
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
   ant \
   cpp \
   git \
-  gradle \
   jq \
   jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
   mercurial \
-  python3-pip \
+  python3-distutils \
   python3-requests \
   unzip \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

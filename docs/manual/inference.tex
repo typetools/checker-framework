@@ -411,7 +411,7 @@ cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
     "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
-    `find java/src/plume/ -name "*.java"`
+    $(find java/src/plume/ -name "*.java")
 # View the results
 git diff
 \end{Verbatim}

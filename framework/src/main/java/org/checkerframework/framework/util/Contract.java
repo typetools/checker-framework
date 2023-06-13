@@ -72,8 +72,10 @@ public abstract class Contract {
 
     /** The meta-annotation identifying annotations of this kind. */
     public final Class<? extends Annotation> metaAnnotation;
+
     /** The built-in framework qualifier for this contract. */
     public final Class<? extends Annotation> frameworkContractClass;
+
     /** The built-in framework qualifier for repeated occurrences of this contract. */
     public final Class<? extends Annotation> frameworkContractListClass;
 

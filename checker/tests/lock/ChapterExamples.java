@@ -265,6 +265,7 @@ public class ChapterExamples {
   @GuardedBy("lock") MyClass x = new MyClass();
 
   @GuardedBy("lock") MyClass y = x; // OK, because dereferences of y will require "lock" to be held.
+
   // :: error: (assignment)
   @GuardedBy({}) MyClass z = x; // ILLEGAL because dereferences of z do not require "lock" to be held.
 
@@ -402,6 +403,7 @@ public class ChapterExamples {
 
   @ReleasesNoLocks
   void helper5() {}
+
   // No annotation means @ReleasesNoLocks
   void helper6() {}
 
@@ -562,6 +564,7 @@ public class ChapterExamples {
   }
 
   private static final Object NULL_KEY = new Object();
+
   // A guardsatisfied.location.disallowed error is issued for the cast.
   @SuppressWarnings({"cast.unsafe", "guardsatisfied.location.disallowed"})
   private static @GuardSatisfied(1) Object maskNull(@GuardSatisfied(1) Object key) {

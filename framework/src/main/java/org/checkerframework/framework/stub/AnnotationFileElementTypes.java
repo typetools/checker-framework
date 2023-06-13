@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -47,9 +47,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -69,19 +70,24 @@ public class AnnotationFileElementTypes {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system. By
-   * contrast, {@link #jdkStubFilesJar} contains JDK stub files from checker.jar.
+   * Mapping from fully-qualified class name to corresponding JDK stub file from the file system
+   * that have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #remainingJdkStubFilesJar} contains JDK stub files from checker.jar.
    */
-  private final Map<String, Path> jdkStubFiles = new HashMap<>();
+  private final Map<String, Path> remainingJdkStubFiles = new HashMap<>();
 
   /**
-   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar. By
-   * contrast, {@link #jdkStubFiles} contains JDK stub files from the file system.
+   * Mapping from fully-qualified class name to corresponding JDK stub files from checker.jar that
+   * have not yet been read. When a file is read, its mapping is removed from this map.
+   *
+   * <p>By contrast, {@link #remainingJdkStubFiles} contains JDK stub files from the file system.
    */
-  private final Map<String, String> jdkStubFilesJar = new HashMap<>();
+  private final Map<String, String> remainingJdkStubFilesJar = new HashMap<>();
 
   /** Which version number of the annotated JDK should be used? */
   private final String annotatedJdkVersion;
+
   /** Should the JDK be parsed? */
   private final boolean shouldParseJdk;
 
@@ -97,7 +103,7 @@ public class AnnotationFileElementTypes {
   /**
    * Creates an empty annotation source.
    *
-   * @param factory AnnotatedTypeFactory
+   * @param factory a type factory
    */
   public AnnotationFileElementTypes(AnnotatedTypeFactory factory) {
     this.factory = factory;
@@ -212,7 +218,7 @@ public class AnnotationFileElementTypes {
       }
     } catch (IOException e) {
       checker.message(
-          Kind.NOTE,
+          Diagnostic.Kind.NOTE,
           "Could not read annotation resource from " + checkerClass + ": " + stubFileName);
     }
   }
@@ -252,7 +258,7 @@ public class AnnotationFileElementTypes {
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
-      checker.message(Kind.NOTE, "Could not read ajava file: " + ajavaPath);
+      checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
     } finally {
       parsing = false;
     }
@@ -292,7 +298,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Kind.NOTE, "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.NOTE,
+                "Could not read annotation resource: " + resource.getDescription());
             continue;
           }
         }
@@ -321,7 +328,7 @@ public class AnnotationFileElementTypes {
               URL topLevelResource = currentChecker.getClass().getResource("/" + path);
               if (topLevelResource != null) {
                 currentChecker.message(
-                    Kind.WARNING,
+                    Diagnostic.Kind.WARNING,
                     path
                         + " should be in the same directory as "
                         + currentChecker.getClass().getSimpleName()
@@ -354,11 +361,11 @@ public class AnnotationFileElementTypes {
               for (URI uri : new ClassGraph().getClasspathURIs()) {
                 sj.add(uri.toString());
               }
-              checker.message(Kind.WARNING, sj.toString());
+              checker.message(Diagnostic.Kind.WARNING, sj.toString());
             }
           }
         } catch (IOException e) {
-          checker.message(Kind.NOTE, "Could not read annotation resource: " + path);
+          checker.message(Diagnostic.Kind.NOTE, "Could not read annotation resource: " + path);
         }
       }
     }
@@ -377,7 +384,7 @@ public class AnnotationFileElementTypes {
     if (isParsing()) {
       return null;
     }
-    parseEnclosingJdkClass(e);
+    maybeParseEnclosingJdkClass(e);
     AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
     return type == null ? null : type.deepCopy();
   }
@@ -413,7 +420,7 @@ public class AnnotationFileElementTypes {
       return AnnotationMirrorSet.emptySet();
     }
 
-    parseEnclosingJdkClass(elt);
+    maybeParseEnclosingJdkClass(elt);
     String eltName = ElementUtils.getQualifiedName(elt);
     if (annotationFileAnnos.declAnnos.containsKey(eltName)) {
       return annotationFileAnnos.declAnnos.get(eltName);
@@ -540,7 +547,7 @@ public class AnnotationFileElementTypes {
 
     // This is a list of pairs of (where defined, method type) for fake overrides.  The second
     // element of each pair is currently always an AnnotatedExecutableType.
-    List<Pair<TypeMirror, AnnotatedTypeMirror>> candidates =
+    List<IPair<TypeMirror, AnnotatedTypeMirror>> candidates =
         annotationFileAnnos.fakeOverrides.get(method);
 
     if (candidates == null || candidates.isEmpty()) {
@@ -552,7 +559,7 @@ public class AnnotationFileElementTypes {
     // A list of fake receiver types.
     List<TypeMirror> applicableClasses = new ArrayList<>();
     List<TypeMirror> applicableInterfaces = new ArrayList<>();
-    for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
       TypeMirror fakeLocation = candidatePair.first;
       AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
       if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
@@ -598,7 +605,7 @@ public class AnnotationFileElementTypes {
       throw new BugInCF(message.toString());
     }
 
-    for (Pair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
+    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
       TypeMirror candidateReceiverType = candidatePair.first;
       if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
         return (AnnotatedExecutableType) candidatePair.second;
@@ -615,29 +622,31 @@ public class AnnotationFileElementTypes {
   ///
 
   /**
-   * Parses the outermost enclosing class of {@code e} if it is in the JDK, there exists an
-   * annotation file for it, and it has not already been parsed.
+   * Parses the outermost enclosing class of {@code e} if it is in the annotated JDK and it has not
+   * already been parsed.
    *
-   * @param e element whose outermost enclosing class will be parsed
+   * @param e element whose outermost enclosing class might be parsed, if it is in the JDK and has
+   *     not already been parsed
    */
-  private void parseEnclosingJdkClass(Element e) {
+  private void maybeParseEnclosingJdkClass(Element e) {
     if (!shouldParseJdk) {
       return;
     }
     String className = getOutermostEnclosingClass(e);
+    // `className` can be null if `e` is a package or module element.
     if (className == null || className.isEmpty()) {
       return;
     }
-    if (jdkStubFiles.containsKey(className)) {
-      parseJdkStubFile(jdkStubFiles.remove(className));
-    } else if (jdkStubFilesJar.containsKey(className)) {
-      parseJdkJarEntry(jdkStubFilesJar.remove(className));
+    if (remainingJdkStubFiles.containsKey(className)) {
+      parseJdkStubFile(remainingJdkStubFiles.remove(className));
+    } else if (remainingJdkStubFilesJar.containsKey(className)) {
+      parseJdkJarEntry(remainingJdkStubFilesJar.remove(className));
     }
   }
 
   /**
    * Returns the fully qualified name of the outermost enclosing class of {@code e} or {@code null}
-   * if no such class exists for {@code e}.
+   * if no such class exists for {@code e}, such as when {@code e} is a package or module element.
    *
    * @param e an element whose outermost enclosing class to return
    * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if no
@@ -734,8 +743,8 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the jdk directory and create a mapping, {@link #jdkStubFiles}, from file name to
-   * the class contained with in it. Also, parses all package-info.java files.
+   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
+   * name to the class contained with in it. Also, parses all package-info.java files.
    */
   private void prepJdkStubs() {
     if (!shouldParseJdk) {
@@ -764,23 +773,24 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Walk through the JDK directory and create a mapping, {@link #jdkStubFiles}, from file name to
-   * the class contained with in it. Also, parses all package-info.java files.
+   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFiles}, from file
+   * name to the class contained with in it. Also, parses all package-info.java files.
    *
-   * @param resourceURL the URL pointing to the JDK directory
+   * @param jdkDirectory the URL pointing to the JDK directory
    */
-  private void prepJdkFromFile(URL resourceURL) {
+  private void prepJdkFromFile(URL jdkDirectory) {
     Path root;
     try {
-      root = Paths.get(resourceURL.toURI());
+      root = Paths.get(jdkDirectory.toURI());
     } catch (URISyntaxException e) {
-      throw new BugInCF("Cannot parse URL: " + resourceURL.toString(), e);
+      throw new BugInCF("Cannot parse URL: " + jdkDirectory.toString(), e);
     }
 
     try (Stream<Path> walk = Files.walk(root)) {
       List<Path> paths =
           walk.filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"))
               .collect(Collectors.toList());
+      paths.sort(Path::compareTo);
       for (Path path : paths) {
         if (path.getFileName().toString().equals("package-info.java")) {
           parseJdkStubFile(path);
@@ -795,53 +805,54 @@ public class AnnotationFileElementTypes {
           continue;
         }
         Path relativePath = root.relativize(path);
-        // 4: /src/<module>/share/classes
+        // The number 4 is to strip off "/src/<module>/share/classes".
         Path savepath = relativePath.subpath(4, relativePath.getNameCount());
-        String s = savepath.toString().replace(".java", "").replace(File.separatorChar, '.');
-        jdkStubFiles.put(s, path);
+        String savepathString = savepath.toString();
+        // The number 5 is to remove trailing ".java".
+        String savepathWithoutExtension = savepathString.substring(0, savepathString.length() - 5);
+        String fqName = savepathWithoutExtension.replace(File.separatorChar, '.');
+        remainingJdkStubFiles.put(fqName, path);
       }
     } catch (IOException e) {
-      throw new BugInCF("prepJdkFromFile(" + resourceURL + ")", e);
+      throw new BugInCF("prepJdkFromFile(" + jdkDirectory + ")", e);
     }
   }
 
   /**
-   * Walk through the JDK directory and create a mapping, {@link #jdkStubFilesJar}, from file name
-   * to the class contained with in it. Also, parses all package-info.java files.
+   * Walk through the JDK directory and create a mapping, {@link #remainingJdkStubFilesJar}, from
+   * file name to the class contained with in it. Also, parses all package-info.java files.
    *
-   * @param resourceURL the URL pointing to the JDK directory
+   * @param jdkJarfile the URL pointing to the JDK jarfile
    */
-  private void prepJdkFromJar(URL resourceURL) {
+  private void prepJdkFromJar(@SuppressWarnings("UnusedVariable") URL jdkJarfile) {
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
-      for (Enumeration<JarEntry> e = jarFile.entries(); e.hasMoreElements(); ) {
-        JarEntry jarEntry = e.nextElement();
-        // filter out directories and non-class files
-        if (!jarEntry.isDirectory()
-            && jarEntry.getName().endsWith(".java")
-            && jarEntry.getName().startsWith("annotated-jdk")
-            // JavaParser can't parse module-info files, so skip them.
-            && !jarEntry.getName().contains("module-info")) {
-          String jarEntryName = jarEntry.getName();
-          if (parseAllJdkFiles) {
-            parseJdkJarEntry(jarEntryName);
-            continue;
-          }
-          int index = jarEntry.getName().indexOf("/share/classes/");
-          String shortName =
-              jarEntryName
-                  .substring(index + "/share/classes/".length())
-                  .replace(".java", "")
-                  .replace('/', '.');
-          jdkStubFilesJar.put(shortName, jarEntryName);
-          if (jarEntryName.endsWith("package-info.java")) {
-            parseJdkJarEntry(jarEntryName);
-          }
+      ArrayList<JarEntry> entries = CollectionsPlume.makeArrayList(jarFile.entries());
+      entries.sort(Comparator.comparing(Object::toString));
+      for (JarEntry jarEntry : entries) {
+        // filter out directories and non-Java files
+        if (jarEntry.isDirectory()) {
+          continue;
         }
+        String jarEntryName = jarEntry.getName();
+        if (!(jarEntryName.startsWith("annotated-jdk") && jarEntryName.endsWith(".java"))
+            // JavaParser can't parse module-info files, so skip them.
+            || jarEntryName.endsWith("module-info.java")) {
+          continue;
+        }
+        if (parseAllJdkFiles || jarEntryName.endsWith("package-info.java")) {
+          parseJdkJarEntry(jarEntryName);
+          continue;
+        }
+        int index = jarEntryName.indexOf("/share/classes/") + "/share/classes/".length();
+        // "-5" is to remove ".java" from end of file name
+        String fqClassName =
+            jarEntryName.substring(index, jarEntryName.length() - 5).replace('/', '.');
+        remainingJdkStubFilesJar.put(fqClassName, jarEntryName);
       }
     } catch (IOException e) {
-      throw new BugInCF("Cannot open the jar file " + resourceURL.getFile(), e);
+      throw new BugInCF("Cannot open the jar file " + connection.getJarFileURL(), e);
     }
   }
 }

@@ -16,10 +16,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
@@ -115,13 +114,13 @@ public class KeyForPropagator {
       return;
     }
 
-    Set<Pair<Integer, Integer>> typeParamMappings =
+    Set<IPair<Integer, Integer>> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
     List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
     List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (Pair<Integer, Integer> path : typeParamMappings) {
+    for (IPair<Integer, Integer> path : typeParamMappings) {
       AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
       AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
 
@@ -168,16 +167,16 @@ public class KeyForPropagator {
       return;
     }
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext != null && assignmentContext instanceof VariableTree) {
+    AnnotatedTypeMirror assignedTo;
+    if (assignmentContext instanceof VariableTree) {
       if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) assignmentContext)) {
         return;
       }
-    }
-
-    AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
-    if (assignedTo == null) {
+      assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);
+    } else {
       return;
     }
+
     // array types and boxed primitives etc don't require propagation
     if (assignedTo.getKind() == TypeKind.DECLARED) {
       propagate(

@@ -6,6 +6,7 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 public class TestAgainstLength {
 
   protected int[] values;
+
   /** The number of active elements (equivalently, the first unused index). */
   @IndexOrHigh("values") int num_values;
 

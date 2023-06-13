@@ -74,8 +74,10 @@ public class TypeVarUseApplier {
 
   /** The type variable. */
   private final AnnotatedTypeVariable typeVariable;
+
   /** The element for the declaration. */
   private final TypeParameterElement declarationElem;
+
   /** The element for the use. */
   private final Element useElem;
 

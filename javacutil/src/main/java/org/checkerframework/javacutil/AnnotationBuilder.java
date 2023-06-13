@@ -59,13 +59,16 @@ public class AnnotationBuilder {
 
   /** The element utilities to use. */
   private final Elements elements;
+
   /** The type utilities to use. */
   private final Types types;
 
   /** The type element of the annotation. */
   private final TypeElement annotationElt;
+
   /** The type of the annotation. */
   private final DeclaredType annotationType;
+
   /** A mapping from element to AnnotationValue. */
   private final Map<ExecutableElement, AnnotationValue> elementValues;
 
@@ -666,10 +669,13 @@ public class AnnotationBuilder {
   static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
     /** The interned toString value. */
     private @Nullable @Interned String toStringVal;
+
     /** The annotation type. */
     private final DeclaredType annotationType;
+
     /** The element values. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
+
     /** The annotation name. */
     // default visibility to allow access from within package.
     final @Interned @CanonicalName String annotationName;
@@ -738,6 +744,7 @@ public class AnnotationBuilder {
   private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
     /** The value. */
     private final Object value;
+
     /** The interned value of toString. */
     private @Nullable @Interned String toStringVal;
 

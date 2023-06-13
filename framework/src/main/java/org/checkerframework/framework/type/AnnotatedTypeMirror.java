@@ -36,16 +36,22 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.DeepCopyable;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.DeepCopyable;
 
 /**
- * Represents an annotated type in the Java programming language. Types include primitive types,
- * declared types (class and interface types), array types, type variables, and the null type. Also
- * represented are wildcard type arguments, the signature and return types of executables, and
- * pseudo-types corresponding to packages and to the keyword {@code void}.
+ * Represents an annotated type in the Java programming language, including:
+ *
+ * <ul>
+ *   <li>standard types: primitive types, declared types (class and interface types), array types,
+ *       type variables, and the null type
+ *   <li>wildcard type arguments
+ *   <li>{@link AnnotatedExecutableType executable types} (their signature and return types)
+ *   <li>{@link AnnotatedNoType pseudo-types} corresponding to packages and to the keyword {@code
+ *       void}
+ * </ul>
  *
  * <p>To implement operations based on the class of an {@code AnnotatedTypeMirror} object, either
  * use a visitor or use the result of the {@link #getKind()} method.
@@ -58,6 +64,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
+
   /** A HashcodeAtmVisitor. */
   protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
 
@@ -284,8 +291,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       }
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-      AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, canonical);
+      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+      AnnotationMirror anno = qualHierarchy.findAnnotationInSameHierarchy(annotations, canonical);
       if (anno != null) {
         return anno;
       }
@@ -308,9 +315,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       canonical = atypeFactory.canonicalAnnotation(p);
     }
     if (atypeFactory.isSupportedQualifier(canonical)) {
-      QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+      QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
       AnnotationMirror anno =
-          qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
+          qualHierarchy.findAnnotationInSameHierarchy(getEffectiveAnnotations(), canonical);
       if (anno != null) {
         return anno;
       }
@@ -716,8 +723,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getAnnotationInHierarchy(a);
-    QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-    if (prev != null && !prev.equals(qualHier.getTopAnnotation(a))) {
+    QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
+    if (prev != null && !prev.equals(qualHierarchy.getTopAnnotation(a))) {
       return this.removeAnnotation(prev);
     }
     return false;
@@ -1143,22 +1150,31 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /** The parameter types; an unmodifiable list. */
     private List<AnnotatedTypeMirror> paramTypes;
+
     /** Whether {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
+
     /** The receiver type. */
     private AnnotatedDeclaredType receiverType;
+
     /** Whether {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
+
     /** The return type. */
     private AnnotatedTypeMirror returnType;
+
     /** Whether {@link returnType} has been computed. */
     private boolean returnTypeComputed = false;
+
     /** The thrown types; an unmodifiable list. */
     private List<AnnotatedTypeMirror> thrownTypes;
+
     /** Whether {@link thrownTypes} has been computed. */
     private boolean thrownTypesComputed = false;
+
     /** The type variables; an unmodifiable list. */
     private List<AnnotatedTypeVariable> typeVarTypes;
+
     /** Whether {@link typeVarTypes} has been computed. */
     private boolean typeVarTypesComputed = false;
 
@@ -1182,9 +1198,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * It never makes sense to add annotations to an executable type - instead, they should be added
-     * to the right component.
+     * It never makes sense to add annotations to an executable type. Instead, they should be added
+     * to the appropriate component.
+     *
+     * @deprecated add to the appropriate component
      */
+    @Deprecated // not for removal
     @Override
     public void addAnnotation(AnnotationMirror a) {
       assert false : "AnnotatedExecutableType.addAnnotation should never be called";
@@ -1226,11 +1245,16 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Sets the return type of this executable type.
      *
-     * @param returnType the return type
+     * @param returnType the new return type
      */
     /*package-private*/ void setReturnType(AnnotatedTypeMirror returnType) {
       this.returnType = returnType;
       returnTypeComputed = true;
+    }
+
+    /** Replaces the return type by a shallow copy of itself. */
+    public void shallowCopyReturnType() {
+      setReturnType(returnType.shallowCopy());
     }
 
     /**
@@ -1739,9 +1763,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return new AnnotatedTypeParameterBounds(getUpperBoundField(), getLowerBoundField());
     }
 
-    /** Used to terminate recursion into upper bounds. */
-    private boolean inUpperBounds = false;
-
     @Override
     public AnnotatedTypeVariable deepCopy(boolean copyAnnotations) {
       return (AnnotatedTypeVariable) new AnnotatedTypeCopier(copyAnnotations).visit(this);
@@ -1754,23 +1775,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedTypeVariable shallowCopy(boolean copyAnnotations) {
-      AnnotatedTypeVariable type =
-          new AnnotatedTypeVariable(((TypeVariable) underlyingType), atypeFactory, declaration);
-
-      if (copyAnnotations) {
-        type.addAnnotations(this.getAnnotationsField());
+      // Because type variables can refer to themselves, they can't be shallow copied, so return a
+      // deep copy instead.
+      AnnotatedTypeVariable type = deepCopy(true);
+      if (!copyAnnotations) {
+        type.getAnnotationsField().clear();
       }
-
-      if (!inUpperBounds) {
-        inUpperBounds = true;
-        type.inUpperBounds = true;
-        type.setUpperBound(getUpperBound().shallowCopy());
-        inUpperBounds = false;
-        type.inUpperBounds = false;
-      }
-
-      type.setLowerBound(getLowerBound().shallowCopy());
-
       return type;
     }
 
@@ -2095,17 +2105,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedWildcardType shallowCopy(boolean copyAnnotations) {
-      AnnotatedWildcardType type =
-          new AnnotatedWildcardType((WildcardType) underlyingType, atypeFactory);
-      type.setExtendsBound(getExtendsBound().shallowCopy());
-      type.setSuperBound(getSuperBound().shallowCopy());
-      if (copyAnnotations) {
-        type.addAnnotations(this.getAnnotationsField());
+      // Because wildcards can refer to themselves, they can't be shallow copied, so return a deep
+      // copy instead.
+      AnnotatedWildcardType type = deepCopy(true);
+      if (!copyAnnotations) {
+        type.getAnnotationsField().clear();
       }
-
-      type.uninferredTypeArgument = uninferredTypeArgument;
-      type.typeVariable = typeVariable;
-
       return type;
     }
 

@@ -28,8 +28,10 @@ public class ValueChecker extends BaseTypeChecker {
    * compile time.
    */
   public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
+
   /** Command-line option to ignore the possibility of overflow for range annotations. */
   public static final String IGNORE_RANGE_OVERFLOW = "ignoreRangeOverflow";
+
   /** Command-line option that assumes most expressions in String concatenations can be null. */
   public static final String NON_NULL_STRINGS_CONCATENATION = "nonNullStringsConcatenation";
 

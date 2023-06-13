@@ -1,3 +1,19 @@
+Version 3.36.0 (July 5, 2023)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
+
+Dataflow Framework:
+ * New `ExpressionStatementNode` marks an expression that is used as a statement.
+ * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
+
+**Closed issues:**
+
+
 Version 3.35.0 (June 1, 2023)
 ------------------------------
 
@@ -32,11 +48,16 @@ Renamed `BaseTypeVisitor.checkExtendsImplements()` to `checkExtendsAndImplements
 
 Class `FieldInvariants`:
  * constructor now takes an `AnnotatedTypeFactory`
- * `isSuperInvariant()` no longer takes an `AnnotatedTypeFactory`
+ * `isSuperInvariant()` has been renamed to `isStrongerThan()` and
+   no longer takes an `AnnotatedTypeFactory`
+
+`CFAbstractValue.validateSet()` takes a type factory rather than a `QualifierHierarchy`.
 
 Removed methods that have been deprecated for over two years.
 
 **Closed issues:**
+
+#4170, #5722, #5777, #5807, #5821, #5826, #5829, #5837, #5930.
 
 
 Version 3.34.0 (May 2, 2023)
@@ -92,7 +113,7 @@ Version 3.32.0 (March 2, 2023)
 Fixed a bug in the Nullness Checker where a call to a side-effecting method did
 not make some formal parameters possibly-null.  The Nullness Checker is likely
 to issue more warnings for your code.  For ways to eliminate the new warnings,
-see https://checkerframework.org/manual/#type-refinement-side-effects .
+see <https://checkerframework.org/manual/#type-refinement-side-effects>.
 
 If you supply the `-AinvocationPreservesArgumentNullness` command-line
 option, the Nullness Checker unsoundly assumes that arguments passed to
@@ -396,6 +417,7 @@ was added.
 **Closed issues:**
 #2373, #4934, #4977, #4979, #4987.
 
+
 Version 3.20.0 (December 6, 2021)
 ---------------------------------
 
@@ -596,7 +618,7 @@ Version 3.13.0 (May 3, 2021)
 If you use the Checker Framework, please answer a 3-question survey about what
 version of Java you use.  It will take less than 1 minute to complete.  Please
 answer it at
-https://docs.google.com/forms/d/1Bbt34c_3nDItHsBnmEfumoyrR-Zxhvo3VTHucXwfMcQ .
+<https://docs.google.com/forms/d/1Bbt34c_3nDItHsBnmEfumoyrR-Zxhvo3VTHucXwfMcQ>.
 Thanks!
 
 **User-visible changes:**
@@ -1190,11 +1212,11 @@ Version 3.3.0 (April 1, 2020)
 **User-visible changes:**
 
 New command-line options:
-  -Alint=trustArrayLenZero trust @ArrayLen(0) annotations when determining
+  `-Alint=trustArrayLenZero` trust `@ArrayLen(0)` annotations when determining
   the type of Collections.toArray.
 
 Renamings:
-  -AuseDefaultsForUncheckedCode to -AuseConservativeDefaultsForUncheckedCode
+  `-AuseDefaultsForUncheckedCode` to `-AuseConservativeDefaultsForUncheckedCode`
     The old name works temporarily but will be removed in a future release.
 
 For collection methods with `Object` formal parameter type, such as
@@ -1646,7 +1668,7 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
 Added new type @InternalFormForNonArray to the Signature Checker
 
 Moved annotated libraries from checker/lib/*.jar to the Maven Central Repository:
-https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22
+<https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.checkerframework.annotatedlib%22>
 
 Moved the Javadoc stub file from checker/lib/javadoc.astub to
 checker/resources/javadoc.astub.
@@ -1829,7 +1851,7 @@ get the conservative behavior.
 Version 2.1.8 (20 January 2017)
 -------------------------------
 
-The Checker Framework webpage has moved to https://checkerframework.org/.
+The Checker Framework webpage has moved to <https://checkerframework.org/>.
 Old URLs should redirect to the new one, but please update your links
 and let us know if any old links are broken rather than redirecting.
 
@@ -1993,7 +2015,7 @@ Documentation improvements:
 Tool changes:
 
  * The Checker Framework Live Demo webpage lets you try the Checker
-   Framework without installing it:  http://eisop.uwaterloo.ca/live/
+   Framework without installing it:  <http://eisop.uwaterloo.ca/live/>
 
  * New command-line arguments -Acfgviz and -Averbosecfg enable better
    debugging of the control-flow-graph generation step of type-checking.
@@ -2078,17 +2100,17 @@ Documentation:
  * Documented how to initialize circular data structures in the
    Initialization type system.
  * Linked to David Bürgin's Nullness Checker tutorial at
-   https://github.com/glts/safer-spring-petclinic/wiki
+   <https://github.com/glts/safer-spring-petclinic/wiki>
  * Acknowledged more contributors in the manual.
 
 For type-system developers:
  * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
    now deprecated.  To indicate which annotations a checker supports, see
-   https://checkerframework.org/manual/#creating-indicating-supported-annotations .
+   <https://checkerframework.org/manual/#creating-indicating-supported-annotations>.
    Support for TypeQualifier{s} will be removed in the next release.
  * Renamed
-   org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
-   DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode.
+   `org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode` to
+   `DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode`.
 
 **Closed issues:**
 #169, #363, #448, #478, #496, #516, #529.
@@ -2157,7 +2179,9 @@ Moved the Checker Framework version control repository from Google Code to
 GitHub, and from the Mercurial version control system to Git.  If you have
 cloned the old repository, then discard your old clone and create a new one
 using this command:
+```
   git clone https://github.com/typetools/checker-framework.git
+```
 
 Fixed issues:  #427, #429, #434, #442, #450.
 
@@ -2682,7 +2706,7 @@ Adapt to underlying jsr308-langtools changes.
   JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
-  A new tutorial is available at https://checkerframework.org/tutorial/
+  A new tutorial is available at <https://checkerframework.org/tutorial/>
 
 
 Version 1.5.0 (14 Jan 2013)
@@ -3165,7 +3189,7 @@ Manual:
   of the method and the inferred or explicit method type arguments.
   If you override this method, you will need to update your version.
   See this change set for a simple example:
-  https://github.com/typetools/checker-framework/source/detail?r=8381a213a4
+  <https://github.com/typetools/checker-framework/source/detail?r=8381a213a4>
 
 - Testing framework:
   Support for multiple expected errors using the "// :: A :: B :: C" syntax.
@@ -3189,7 +3213,7 @@ Property File Checker (new):
 
 Signature Checker (new):
   Ensures that different string representations of a Java type (e.g.,
-  "pakkage.Outer.Inner" vs. "pakkage.Outer$Inner" vs. "Lpakkage/Outer$Inner;")
+  `"pakkage.Outer.Inner"` vs. `"pakkage.Outer$Inner"` vs. `"Lpakkage/Outer$Inner;"`)
   are not misused.
 
 Interning Checker enhancements:
@@ -4000,7 +4024,7 @@ Manual
     8  Annotating libraries
     9  How to create a new checker plugin
   Javadoc for the Checker Framework is included in its distribution and is
-    available online at https://checkerframework.org/api/ .
+    available online at <https://checkerframework.org/api/>.
 
 
 Version 0.6.4 (9 June 2008)

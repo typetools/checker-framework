@@ -73,11 +73,11 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -86,10 +86,13 @@ public class NullnessAnnotatedTypeFactory
 
   /** The @{@link NonNull} annotation. */
   protected final AnnotationMirror NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
+
   /** The @{@link Nullable} annotation. */
   protected final AnnotationMirror NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
+
   /** The @{@link PolyNull} annotation. */
   protected final AnnotationMirror POLYNULL = AnnotationBuilder.fromClass(elements, PolyNull.class);
+
   /** The @{@link MonotonicNonNull} annotation. */
   protected final AnnotationMirror MONOTONIC_NONNULL =
       AnnotationBuilder.fromClass(elements, MonotonicNonNull.class);
@@ -102,6 +105,7 @@ public class NullnessAnnotatedTypeFactory
 
   /** The Class.getCanonicalName() method. */
   protected final ExecutableElement classGetCanonicalName;
+
   /** The Arrays.copyOf() methods that operate on arrays of references. */
   private final List<ExecutableElement> copyOfMethods;
 
@@ -424,12 +428,12 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
       NullnessStore store,
       TreePath path,
       boolean isStatic,
       Collection<? extends AnnotationMirror> receiverAnnotations) {
-    Pair<List<VariableTree>, List<VariableTree>> result =
+    IPair<List<VariableTree>, List<VariableTree>> result =
         super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
     // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
     // warning when they are not initialized.

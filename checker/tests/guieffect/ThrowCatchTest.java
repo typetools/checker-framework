@@ -12,6 +12,7 @@ public class ThrowCatchTest {
   class Inner {}
 
   boolean flag = true;
+
   // Type var test
   <E extends @UI PolyUIException> void throwTypeVarUI1(E ex1, @UI E ex2) throws PolyUIException {
     if (flag) {

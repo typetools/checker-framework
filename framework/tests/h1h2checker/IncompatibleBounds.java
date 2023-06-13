@@ -39,10 +39,13 @@ public class IncompatibleBounds {
   // invalid combinations
   // :: error: (bound)
   class BottomToTop<@H1Top U extends @H1Bot Object> {}
+
   // :: error: (bound)
   class H1S1ToTop<@H1Top UU extends @H1S1 Object> {}
+
   // :: error: (bound)
   class BottomToH1S1<@H1S1 UUU extends @H1Bot Object> {}
+
   // :: error: (bound)
   class H1S2ToH1S1<@H1S1 UUUU extends @H1S2 Object> {}
 

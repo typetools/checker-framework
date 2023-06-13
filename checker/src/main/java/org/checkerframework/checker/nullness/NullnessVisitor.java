@@ -82,6 +82,7 @@ public class NullnessVisitor
 
   /** Annotation mirrors for nullness annotations. */
   private final AnnotationMirror NONNULL, NULLABLE, MONOTONIC_NONNULL;
+
   /** TypeMirror for java.lang.String. */
   private final TypeMirror stringType;
 

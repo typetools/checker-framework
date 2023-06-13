@@ -167,9 +167,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           // here.
           AnnotationMirror effectiveMCAnno = type.getAnnotation();
           if (effectiveMCAnno != null
-              && !atypeFactory
-                  .getQualifierHierarchy()
-                  .isSubtype(inheritedMCAnno, effectiveMCAnno)) {
+              && !qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
             checker.reportError(
                 tree,
@@ -205,7 +203,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             AnnotationMirror effectiveMCAnno = type.getAnnotation();
 
-            if (!atypeFactory.getQualifierHierarchy().isSubtype(inheritedMCAnno, effectiveMCAnno)) {
+            if (!qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
               checker.reportError(
                   tree,
@@ -309,9 +307,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check; instead do a check that does not include "close".
       AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
       AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
-      if (atypeFactory
-          .getQualifierHierarchy()
-          .isSubtype(atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
+      if (qualHierarchy.isSubtype(
+          atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
         return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -330,7 +327,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * <p>Instead, this method checks that the result type of a constructor is a supertype of the
    * declared type on the class, if one exists.
    *
-   * @param constructorType AnnotatedExecutableType for the constructor
+   * @param constructorType an AnnotatedExecutableType for the constructor
    * @param constructorElement element that declares the constructor
    */
   @Override
@@ -341,7 +338,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
     AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    if (!atypeFactory.getQualifierHierarchy().isSubtype(defaultAnno, resultAnno)) {
+    if (!qualHierarchy.isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
     }

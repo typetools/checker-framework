@@ -15,6 +15,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.IPair;
 
 /**
  * Utility methods for obtaining or analyzing a javac {@code TreePath}.
@@ -226,7 +227,7 @@ public final class TreePathUtil {
    * @return a pair of a non-parenthesis tree that contains the argument, and its child that is the
    *     argument or is a parenthesized version of it
    */
-  public static Pair<Tree, Tree> enclosingNonParen(TreePath path) {
+  public static IPair<Tree, Tree> enclosingNonParen(TreePath path) {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
@@ -235,7 +236,7 @@ public final class TreePathUtil {
       enclosingChild = enclosing;
       enclosing = parentPath.getLeaf();
     }
-    return Pair.of(enclosing, enclosingChild);
+    return IPair.of(enclosing, enclosingChild);
   }
 
   /**
@@ -328,7 +329,7 @@ public final class TreePathUtil {
   /**
    * Returns true if the leaf of the tree path is in a static scope.
    *
-   * @param path TreePath whose leaf may or may not be in static scope
+   * @param path a TreePath whose leaf may or may not be in static scope
    * @return true if the leaf of the tree path is in a static scope
    */
   public static boolean isTreeInStaticScope(TreePath path) {

@@ -45,8 +45,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    */
   /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Tree.Kind, AnnotationMirrorSet> treeKinds;
+
   /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Class<?>, AnnotationMirrorSet> treeClasses;
+
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
   private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 

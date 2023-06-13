@@ -44,28 +44,52 @@ public class LubGlbChecker extends BaseTypeChecker {
 
     QualifierHierarchy qh = ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
 
-    // System.out.println("LUB of D and E: " + qh.leastUpperBound(D, E));
-    assert AnnotationUtils.areSame(qh.leastUpperBound(D, E), C) : "LUB of D and E is not C!";
+    lubAssert(D, E, C);
+    lubAssert(E, D, C);
 
-    // System.out.println("LUB of E and D: " + qh.leastUpperBound(E, D));
-    assert AnnotationUtils.areSame(qh.leastUpperBound(E, D), C) : "LUB of E and D is not C!";
+    glbAssert(B, C, D);
+    glbAssert(C, B, D);
 
-    // System.out.println("GLB of B and C: " + qh.greatestLowerBound(B, C));
-    assert AnnotationUtils.areSame(qh.greatestLowerBound(B, C), D) : "GLB of B and C is not D!";
+    glbAssert(POLY, B, F);
+    glbAssert(POLY, F, F);
+    glbAssert(POLY, A, POLY);
 
-    // System.out.println("GLB of C and B: " + qh.greatestLowerBound(C, B));
-    assert AnnotationUtils.areSame(qh.greatestLowerBound(C, B), D) : "GLB of C and B is not D!";
+    lubAssert(POLY, B, A);
+    lubAssert(POLY, F, POLY);
+    lubAssert(POLY, A, A);
+  }
 
-    assert AnnotationUtils.areSame(qh.greatestLowerBound(POLY, B), F)
-        : "GLB of POLY and B is not F!";
-    assert AnnotationUtils.areSame(qh.greatestLowerBound(POLY, F), F)
-        : "GLB of POLY and F is not F!";
-    assert AnnotationUtils.areSame(qh.greatestLowerBound(POLY, A), POLY)
-        : "GLB of POLY and A is not POLY!";
+  /**
+   * Throws an exception if glb(arg1, arg2) != result.
+   *
+   * @param arg1 the first argument
+   * @param arg2 the second argument
+   * @param expected the expected result
+   */
+  private void glbAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
+    QualifierHierarchy qualHierarchy =
+        ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
+    AnnotationMirror result = qualHierarchy.greatestLowerBound(arg1, arg2);
+    if (!AnnotationUtils.areSame(expected, result)) {
+      throw new AssertionError(
+          String.format("GLB of %s and %s should be %s, but is %s", arg1, arg2, expected, result));
+    }
+  }
 
-    assert AnnotationUtils.areSame(qh.leastUpperBound(POLY, B), A) : "LUB of POLY and B is not A!";
-    assert AnnotationUtils.areSame(qh.leastUpperBound(POLY, F), POLY)
-        : "LUB of POLY and F is not POLY!";
-    assert AnnotationUtils.areSame(qh.leastUpperBound(POLY, A), A) : "LUB of POLY and A is not A!";
+  /**
+   * Throws an exception if lub(arg1, arg2) != result.
+   *
+   * @param arg1 the first argument
+   * @param arg2 the second argument
+   * @param expected the expected result
+   */
+  private void lubAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
+    QualifierHierarchy qualHierarchy =
+        ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
+    AnnotationMirror result = qualHierarchy.leastUpperBound(arg1, arg2);
+    if (!AnnotationUtils.areSame(expected, result)) {
+      throw new AssertionError(
+          String.format("LUB of %s and %s should be %s, but is %s", arg1, arg2, expected, result));
+    }
   }
 }

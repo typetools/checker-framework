@@ -62,8 +62,10 @@ public class NullnessTransfer
 
   /** The @{@link NonNull} annotation. */
   protected final AnnotationMirror NONNULL;
+
   /** The @{@link Nullable} annotation. */
   protected final AnnotationMirror NULLABLE;
+
   /** The @{@link PolyNull} annotation. */
   protected final AnnotationMirror POLYNULL;
 

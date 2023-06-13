@@ -85,6 +85,7 @@ final class SupertypeFinder {
 
     /** Types util class. */
     private final Types types;
+
     /** Annotated type factory. */
     private final AnnotatedTypeFactory atypeFactory;
 

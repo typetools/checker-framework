@@ -324,7 +324,7 @@ public class TypeArgInferenceUtil {
    * improve type argument inference in this case and by using the lower bound of {@code S} instead
    * of the local variable default.
    *
-   * @param atypeFactory AnnotatedTypeFactory
+   * @param atypeFactory the type factory
    * @param assignmentContext VariableTree
    * @return AnnotatedTypeMirror of Assignment context
    */
@@ -376,11 +376,11 @@ public class TypeArgInferenceUtil {
    * annotations in hierarchy}.
    */
   public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
-      AnnotationMirrorSet annos, QualifierHierarchy qualifierHierarchy) {
+      AnnotationMirrorSet annos, QualifierHierarchy qualHierarchy) {
     AnnotationMirrorMap<AnnotationMirror> result = new AnnotationMirrorMap<>();
 
     for (AnnotationMirror anno : annos) {
-      result.put(qualifierHierarchy.getTopAnnotation(anno), anno);
+      result.put(qualHierarchy.getTopAnnotation(anno), anno);
     }
 
     return result;

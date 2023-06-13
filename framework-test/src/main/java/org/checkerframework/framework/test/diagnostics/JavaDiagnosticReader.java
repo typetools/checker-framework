@@ -162,6 +162,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
 
   /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
+
   /** The line number of the next line to be read, or -1. */
   private @GTENegativeOne int nextLineNumber = -1;
 

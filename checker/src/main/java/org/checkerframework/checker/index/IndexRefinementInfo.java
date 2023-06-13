@@ -23,6 +23,7 @@ public class IndexRefinementInfo {
 
   /** The left operand. */
   public final Node left;
+
   /** The right operand. */
   public final Node right;
 
@@ -31,6 +32,7 @@ public class IndexRefinementInfo {
    * expression.
    */
   public final @Nullable AnnotationMirror leftAnno;
+
   /**
    * Annotation for right expressions. Might be null if dataflow doesn't have a value for the
    * expression.
@@ -39,8 +41,10 @@ public class IndexRefinementInfo {
 
   /** The then store. */
   public final CFStore thenStore;
+
   /** The else store. */
   public final CFStore elseStore;
+
   /** The new result, after refinement. */
   public final ConditionalTransferResult<CFValue, CFStore> newResult;
 

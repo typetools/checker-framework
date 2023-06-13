@@ -26,6 +26,7 @@ public class Polymorphic2 {
   @PolyUpperBound int mergeUpperBound(@PolyUpperBound int a, @PolyUpperBound int b) {
     return flag ? a : b;
   }
+
   // UpperBound tests
   void testUpperBound(@LTLengthOf("array1") int a, @LTLengthOf("array2") int b) {
     int z = mergeUpperBound(a, b);
@@ -42,6 +43,7 @@ public class Polymorphic2 {
   @PolyLowerBound int mergeLowerBound(@PolyLowerBound int a, @PolyLowerBound int b) {
     return flag ? a : b;
   }
+
   // LowerBound tests
   void lbc_id(@NonNegative int n, @Positive int p) {
     @NonNegative int z = mergeLowerBound(n, p);

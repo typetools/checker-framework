@@ -25,6 +25,7 @@ public class Issue868 {
   <E extends Object & MyList> void test4(E e) {
     e.toString();
   }
+
   // :: warning: (explicit.annotation.ignored)
   <E extends @NonNull Object & @Nullable MyList> void test5(E e) {
     e.toString();

@@ -8,6 +8,7 @@ public class Xor {
     void b() {}
 
     void c() {}
+
     // SPEL doesn't support XOR directly (it represents exponentiation as ^ instead),
     // so use a standard gate encoding
     void aXorB(@CalledMethodsPredicate("(a || b) && !(a && b)") Foo this) {}

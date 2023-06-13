@@ -6,7 +6,6 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -78,10 +77,23 @@ public class DOTCFGVisualizer<
   }
 
   @Override
-  public @Nullable Map<String, Object> visualize(
+  public Map<String, Object> visualize(
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
-
     String dotGraph = visualizeGraph(cfg, entry, analysis);
+
+    Map<String, Object> vis = new HashMap<>(2);
+    vis.put("dotGraph", dotGraph);
+    return vis;
+  }
+
+  @Override
+  public Map<String, Object> visualizeWithAction(
+      ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
+    Map<String, Object> vis = visualize(cfg, entry, analysis);
+    String dotGraph = (String) vis.get("dotGraph");
+    if (dotGraph == null) {
+      throw new BugInCF("dotGraph key missing in visualize result!");
+    }
     String dotFileName = dotOutputFileName(cfg.underlyingAST);
 
     try (BufferedWriter out = new BufferedWriter(new FileWriter(dotFileName))) {
@@ -89,8 +101,8 @@ public class DOTCFGVisualizer<
     } catch (IOException e) {
       throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
     }
-
-    return Collections.singletonMap("dotFileName", dotFileName);
+    vis.put("dotFileName", dotFileName);
+    return vis;
   }
 
   @SuppressWarnings("keyfor:enhancedfor")

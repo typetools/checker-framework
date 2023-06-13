@@ -48,7 +48,6 @@ import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.dataflow.cfg.node.NumericalPlusNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
@@ -73,8 +72,9 @@ import org.plumelib.util.CollectionsPlume;
 public class ValueTransfer extends CFTransfer {
   /** The Value type factory. */
   protected final ValueAnnotatedTypeFactory atypeFactory;
+
   /** The Value qualifier hierarchy. */
-  protected final QualifierHierarchy hierarchy;
+  protected final QualifierHierarchy qualHierarchy;
 
   /** True if -AnonNullStringsConcatenation was passed on the command line. */
   private final boolean nonNullStringsConcatenation;
@@ -87,7 +87,7 @@ public class ValueTransfer extends CFTransfer {
   public ValueTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     atypeFactory = (ValueAnnotatedTypeFactory) analysis.getTypeFactory();
-    hierarchy = atypeFactory.getQualifierHierarchy();
+    qualHierarchy = atypeFactory.getQualifierHierarchy();
     nonNullStringsConcatenation =
         atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
   }
@@ -115,7 +115,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns a range of possible lengths for {@code subNode}, as casted to a String.
    *
    * @param subNode some subnode of {@code p}
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return a range of possible lengths for {@code subNode}, as casted to a String
    */
   private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -200,7 +200,7 @@ public class ValueTransfer extends CFTransfer {
    * bottom.
    *
    * @param subNode a subNode of p
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return a list of possible values for {@code subNode} or null
    */
   private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -300,7 +300,7 @@ public class ValueTransfer extends CFTransfer {
 
     if (atypeFactory.isIntRange(value.getAnnotations())) {
       intAnno =
-          hierarchy.findAnnotationInHierarchy(value.getAnnotations(), atypeFactory.UNKNOWNVAL);
+          qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), atypeFactory.UNKNOWNVAL);
       Range range = atypeFactory.getRange(intAnno);
       return ValueCheckerUtils.getValuesFromRange(range, Character.class);
     }
@@ -320,7 +320,8 @@ public class ValueTransfer extends CFTransfer {
    * @return the Value Checker annotation within cfValue
    */
   private AnnotationMirror getValueAnnotation(CFValue cfValue) {
-    return hierarchy.findAnnotationInHierarchy(cfValue.getAnnotations(), atypeFactory.UNKNOWNVAL);
+    return qualHierarchy.findAnnotationInHierarchy(
+        cfValue.getAnnotations(), atypeFactory.UNKNOWNVAL);
   }
 
   /**
@@ -398,7 +399,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns true if subNode is annotated with {@code @IntRange}.
    *
    * @param subNode subNode of {@code p}
-   * @param p TransferInput
+   * @param p a TransferInput
    * @return true if this subNode is annotated with {@code @IntRange}
    */
   private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
@@ -531,7 +532,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Transform @IntVal or @IntRange annotations of a array or string length into an @ArrayLen
+   * Transform @IntVal or @IntRange annotations of an array or string length into an @ArrayLen
    * or @ArrayLenRange annotation for the array or string.
    *
    * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
@@ -557,11 +558,11 @@ public class ValueTransfer extends CFTransfer {
     if (lengthAnno == null) {
       return;
     }
+    JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
     if (AnnotationUtils.areSameByName(lengthAnno, ValueAnnotatedTypeFactory.BOTTOMVAL_NAME)) {
       // If the length is bottom, then this is dead code, so the receiver type
       // should also be bottom.
-      JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-      store.insertValue(receiver, lengthAnno);
+      store.insertValue(receiverJE, lengthAnno);
       return;
     }
 
@@ -584,17 +585,9 @@ public class ValueTransfer extends CFTransfer {
     if (oldRecAnno == null) {
       combinedRecAnno = newRecAnno;
     } else {
-      combinedRecAnno = hierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
+      combinedRecAnno = qualHierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
     }
-    JavaExpression receiver = JavaExpression.fromNode(receiverNode);
-    store.insertValue(receiver, combinedRecAnno);
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(
-      StringConcatenateAssignmentNode n, TransferInput<CFValue, CFStore> p) {
-    TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(n, p);
-    return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
+    store.insertValue(receiverJE, combinedRecAnno);
   }
 
   @Override
@@ -1372,7 +1365,7 @@ public class ValueTransfer extends CFTransfer {
               : getValueAnnotation(currentValueFromStore));
       // Combine the new annotations based on the results of the comparison with the existing
       // type.
-      AnnotationMirror newAnno = hierarchy.greatestLowerBound(anno, currentAnno);
+      AnnotationMirror newAnno = qualHierarchy.greatestLowerBound(anno, currentAnno);
       store.insertValue(je, newAnno);
 
       if (node instanceof FieldAccessNode) {

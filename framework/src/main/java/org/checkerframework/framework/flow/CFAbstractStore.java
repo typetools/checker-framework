@@ -39,8 +39,8 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
 
@@ -111,9 +111,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   private final boolean assumeSideEffectFree;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
+
   /** The unique ID of this object. */
-  final transient long uid = nextUid.getAndIncrement();
+  private final transient long uid = nextUid.getAndIncrement();
 
   @Override
   public long getUid() {
@@ -143,6 +144,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
   }
+
   /**
    * Copy constructor.
    *
@@ -219,7 +221,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param atypeFactory the type factory of the associated checker
    * @param val abstract value of the method call
    */
   public void updateForMethodCall(
@@ -258,11 +260,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
           if (!((GenericAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
               .getSupportedMonotonicTypeQualifiers()
               .isEmpty()) {
-            List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+            List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
                 atypeFactory.getAnnotationWithMetaAnnotation(
                     fieldAccess.getField(), MonotonicQualifier.class);
             V newOtherVal = null;
-            for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+            for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
               AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
               @SuppressWarnings("deprecation") // permitted for use in the framework
               Name annotation =
@@ -448,6 +450,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public final void insertValue(JavaExpression expr, @Nullable V value) {
     insertValue(expr, value, false);
   }
+
   /**
    * Like {@link #insertValue(JavaExpression, CFAbstractValue)}, but updates the store even if
    * {@code expr} is nondeterministic.
@@ -625,10 +628,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // TODO: Update the javadoc of this method when the above to-do item is addressed.
     if (!sequentialSemantics) { // only compute if necessary
       AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-      List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+      List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
           atypeFactory.getAnnotationWithMetaAnnotation(
               fieldAcc.getField(), MonotonicQualifier.class);
-      for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
+      for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
         AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
         @SuppressWarnings("deprecation") // permitted for use in the framework
         Name annotation =
