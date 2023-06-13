@@ -49,12 +49,7 @@ public class SneakyDrop {
     sneakyDrop5(x);
   }
 
-  // TODO: The error here is a false positive: the Called Methods Checker for some reason fails to
-  // recognize that value has had close() called on it. The problem appears to be that
-  // the Called Methods Checker's store isn't updated. I suspect the problem has to do with
-  // generics/type variables.
   public static <T extends java.io.Closeable> void sneakyDropCorrect(
-      // :: error: required.method.not.called
       @Owning @MustCall("close") T value) throws Exception {
     value.close();
   }
