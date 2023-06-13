@@ -1249,4 +1249,21 @@ public final class TypesUtils {
     }
     throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
   }
+
+  /**
+   * Returns true if the type is byte, short, char, Byte, Short, or Character. All other narrowings
+   * require a cast. See JLS 5.1.3.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if assignment to the type may be a narrowing
+   */
+  public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
+    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
+    TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
+    TypeKind unboxedKind = unboxedType.getKind();
+    return unboxedKind == TypeKind.BYTE
+        || unboxedKind == TypeKind.SHORT
+        || unboxedKind == TypeKind.CHAR;
+  }
 }

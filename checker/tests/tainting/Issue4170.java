@@ -3,7 +3,7 @@ import java.util.List;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-// @below-java10-jdk-skip-test
+// @below-java11-jdk-skip-test
 public class Issue4170 {
   public void method1() {
     var list = new ArrayList<@Untainted String>();
