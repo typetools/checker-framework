@@ -158,12 +158,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
     return visitNode(n, p);
   }
 
-  // Compound assignments
-  @Override
-  public R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p) {
-    return visitNode(n, p);
-  }
-
   // Comparison operations
   @Override
   public R visitLessThan(LessThanNode n, P p) {
@@ -383,6 +377,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
   // Marker nodes
   @Override
   public R visitMarker(MarkerNode n, P p) {
+    return visitNode(n, p);
+  }
+
+  @Override
+  public R visitExpressionStatement(ExpressionStatementNode n, P p) {
     return visitNode(n, p);
   }
 }

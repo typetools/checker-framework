@@ -28,9 +28,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The OptionalVisitor enforces the Optional Checker rules. These rules are described in the Checker
@@ -114,7 +114,7 @@ public class OptionalVisitor
    *     Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver; or null if not a call
    *     to either of the methods
    */
-  private @Nullable Pair<Boolean, ExpressionTree> isCallToIsPresent(ExpressionTree expression) {
+  private @Nullable IPair<Boolean, ExpressionTree> isCallToIsPresent(ExpressionTree expression) {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     boolean negate = false;
     while (true) {
@@ -128,10 +128,10 @@ public class OptionalVisitor
           break;
         case METHOD_INVOCATION:
           if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
-            return Pair.of(!negate, TreeUtils.getReceiverTree(expression));
+            return IPair.of(!negate, TreeUtils.getReceiverTree(expression));
           } else if (optionalIsEmpty != null
               && TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
-            return Pair.of(negate, TreeUtils.getReceiverTree(expression));
+            return IPair.of(negate, TreeUtils.getReceiverTree(expression));
           } else {
             return null;
           }
@@ -190,7 +190,7 @@ public class OptionalVisitor
   public void handleTernaryIsPresentGet(ConditionalExpressionTree tree) {
 
     ExpressionTree condExpr = TreeUtils.withoutParens(tree.getCondition());
-    Pair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
+    IPair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
     if (isPresentCall == null) {
       return;
     }
@@ -238,7 +238,7 @@ public class OptionalVisitor
    */
   private boolean sameExpression(ExpressionTree tree1, ExpressionTree tree2) {
     JavaExpression r1 = JavaExpression.fromTree(tree1);
-    JavaExpression r2 = JavaExpression.fromTree(tree1);
+    JavaExpression r2 = JavaExpression.fromTree(tree2);
     if (r1 != null && !r1.containsUnknown() && r2 != null && !r2.containsUnknown()) {
       return r1.equals(r2);
     } else {
@@ -264,7 +264,7 @@ public class OptionalVisitor
   public void handleConditionalStatementIsPresentGet(IfTree tree) {
 
     ExpressionTree condExpr = TreeUtils.withoutParens(tree.getCondition());
-    Pair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
+    IPair<Boolean, ExpressionTree> isPresentCall = isCallToIsPresent(condExpr);
     if (isPresentCall == null) {
       return;
     }

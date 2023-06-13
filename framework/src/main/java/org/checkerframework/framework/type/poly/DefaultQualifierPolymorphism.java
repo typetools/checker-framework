@@ -50,7 +50,11 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     }
   }
 
-  /** Combines the two annotations using the least upper bound. */
+  /**
+   * This implementation combines the two annotations using the least upper bound.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   protected AnnotationMirror combine(
       AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {

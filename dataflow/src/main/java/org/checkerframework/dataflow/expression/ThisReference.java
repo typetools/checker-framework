@@ -6,7 +6,13 @@ import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** A use of {@code this}. */
 public class ThisReference extends JavaExpression {
+  /**
+   * Create a new ThisReference.
+   *
+   * @param type the type of the {@code this} reference
+   */
   public ThisReference(TypeMirror type) {
     super(type);
   }

@@ -232,7 +232,7 @@ public class JavaExpressionParseUtil {
      * Create a new ExpressionToJavaExpressionVisitor.
      *
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
      *     as "#2", or null if parameters should not appear in the expression
@@ -263,7 +263,7 @@ public class JavaExpressionParseUtil {
      *
      * @param expr the JavaParser {@link Expression} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
@@ -624,7 +624,8 @@ public class JavaExpressionParseUtil {
         }
       }
 
-      // Construct a FieldAccess expression.
+      // `fieldElem` is now set.  Construct a FieldAccess expression.
+
       if (ElementUtils.isStatic(fieldElem)) {
         Element classElem = fieldElem.getEnclosingElement();
         JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -782,8 +783,11 @@ public class JavaExpressionParseUtil {
       throw constructJavaExpressionParseError(methodName, "no such method");
     }
 
-    // expr is a field access, a fully qualified class name, or a class name qualified with
-    // another class name (e.g. {@code OuterClass.InnerClass})
+    // `expr` should be a field access, a fully qualified class name, or a class name qualified with
+    // another class name (e.g. {@code OuterClass.InnerClass}).
+    // If the expression refers to a class that is not available to the resolver (the class wasn't
+    // passed to javac on the command line), then the argument can be "outerpackage.innerpackage",
+    // which will lead to a confusing error message.
     @Override
     public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
       setResolverField();

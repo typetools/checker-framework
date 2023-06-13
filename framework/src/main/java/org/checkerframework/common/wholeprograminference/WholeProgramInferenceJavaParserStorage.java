@@ -87,13 +87,12 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.DeepCopyable;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.DeepCopyable;
+import org.plumelib.util.IPair;
 import org.plumelib.util.UtilPlume;
 
 /**
@@ -663,7 +662,7 @@ public class WholeProgramInferenceJavaParserStorage
    * stores those wrappers in {@code sourceAnnos}.
    *
    * @param javacClass javac tree for class
-   * @param javaParserClass JavaParser node corresponding to the same class as {@code javacClass}
+   * @param javaParserClass a JavaParser node corresponding to the same class as {@code javacClass}
    * @param sourceAnnos compilation unit wrapper to add new wrappers to
    */
   private void createWrappersForClass(
@@ -815,7 +814,7 @@ public class WholeProgramInferenceJavaParserStorage
            * javaParserNode} and stores it in {@code sourceAnnos}.
            *
            * @param javacTree javac tree for declaration to add
-           * @param javaParserNode JavaParser node for the same class as {@code javacTree}
+           * @param javaParserNode a JavaParser node for the same class as {@code javacTree}
            */
           private void addCallableDeclaration(
               MethodTree javacTree, CallableDeclaration<?> javaParserNode) {
@@ -1232,7 +1231,7 @@ public class WholeProgramInferenceJavaParserStorage
 
     @Override
     public CompilationUnitAnnos deepCopy() {
-      return new CompilationUnitAnnos(compilationUnit, CollectionUtils.deepCopy(types));
+      return new CompilationUnitAnnos(compilationUnit, CollectionsPlume.deepCopy(types));
     }
 
     /**
@@ -1326,8 +1325,8 @@ public class WholeProgramInferenceJavaParserStorage
     @Override
     public ClassOrInterfaceAnnos deepCopy() {
       ClassOrInterfaceAnnos result = new ClassOrInterfaceAnnos(className, classDeclaration);
-      result.callableDeclarations = CollectionUtils.deepCopyValues(callableDeclarations);
-      result.fields = CollectionUtils.deepCopyValues(fields);
+      result.callableDeclarations = CollectionsPlume.deepCopyValues(callableDeclarations);
+      result.fields = CollectionsPlume.deepCopyValues(fields);
       result.enumConstants = UtilPlume.clone(enumConstants); // no deep copy: elements are strings
       if (classAnnotations != null) {
         result.classAnnotations = classAnnotations.deepCopy();
@@ -1429,7 +1428,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @MonotonicNonNull List<@Nullable AnnotatedTypeMirror> parameterTypes = null;
 
     /** Declaration annotations on the parameters. */
-    private @MonotonicNonNull Set<Pair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
+    private @MonotonicNonNull Set<IPair<Integer, AnnotationMirror>> paramsDeclAnnos = null;
 
     /**
      * Annotations on the callable declaration. This does not include preconditions and
@@ -1442,7 +1441,7 @@ public class WholeProgramInferenceJavaParserStorage
      * are strings representing JavaExpressions, using the same format as a user would in an {@link
      * org.checkerframework.framework.qual.RequiresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
+    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
         preconditions = null;
 
     /**
@@ -1450,7 +1449,7 @@ public class WholeProgramInferenceJavaParserStorage
      * okeys are strings representing JavaExpressions, using the same format as a user would in an
      * {@link org.checkerframework.framework.qual.EnsuresQualifier} annotation.
      */
-    private @MonotonicNonNull Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
+    private @MonotonicNonNull Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
         postconditions = null;
 
     /**
@@ -1468,7 +1467,7 @@ public class WholeProgramInferenceJavaParserStorage
       result.returnType = DeepCopyable.deepCopyOrNull(this.returnType);
       result.receiverType = DeepCopyable.deepCopyOrNull(this.receiverType);
       if (parameterTypes != null) {
-        result.parameterTypes = CollectionUtils.deepCopy(this.parameterTypes);
+        result.parameterTypes = CollectionsPlume.deepCopy(this.parameterTypes);
       }
       result.declarationAnnotations = DeepCopyable.deepCopyOrNull(this.declarationAnnotations);
 
@@ -1539,7 +1538,7 @@ public class WholeProgramInferenceJavaParserStorage
         paramsDeclAnnos = new ArraySet<>(4);
       }
 
-      return paramsDeclAnnos.add(Pair.of(index, annotation));
+      return paramsDeclAnnos.add(IPair.of(index, annotation));
     }
 
     /**
@@ -1639,7 +1638,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPreconditionsForExpression
      */
-    public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
+    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPreconditions() {
       if (preconditions == null) {
         return Collections.emptyMap();
       } else {
@@ -1660,7 +1659,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     expression, declared type of the expression)
      * @see #getPostconditionsForExpression
      */
-    public Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
+    public Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> getPostconditions() {
       if (postconditions == null) {
         return Collections.emptyMap();
       }
@@ -1689,7 +1688,7 @@ public class WholeProgramInferenceJavaParserStorage
       if (!preconditions.containsKey(expression)) {
         AnnotatedTypeMirror preconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        preconditions.put(expression, Pair.of(preconditionsType, declaredType));
+        preconditions.put(expression, IPair.of(preconditionsType, declaredType));
       }
 
       return preconditions.get(expression).first;
@@ -1716,7 +1715,7 @@ public class WholeProgramInferenceJavaParserStorage
       if (!postconditions.containsKey(expression)) {
         AnnotatedTypeMirror postconditionsType =
             AnnotatedTypeMirror.createType(declaredType.getUnderlyingType(), atf, false);
-        postconditions.put(expression, Pair.of(postconditionsType, declaredType));
+        postconditions.put(expression, IPair.of(postconditionsType, declaredType));
       }
 
       return postconditions.get(expression).first;
@@ -1747,7 +1746,7 @@ public class WholeProgramInferenceJavaParserStorage
       }
 
       if (paramsDeclAnnos != null) {
-        for (Pair<Integer, AnnotationMirror> pair : paramsDeclAnnos) {
+        for (IPair<Integer, AnnotationMirror> pair : paramsDeclAnnos) {
           Parameter param = declaration.getParameter(pair.first);
           param.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
@@ -1820,20 +1819,20 @@ public class WholeProgramInferenceJavaParserStorage
    * @param orig the map to copy
    * @return a deep copy of the map
    */
-  private static Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
+  private static Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
       deepCopyMapOfStringToPair(
-          @Nullable Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
+          @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
     if (orig == null) {
       return null;
     }
-    Map<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
+    Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> result =
         new HashMap<>(CollectionsPlume.mapCapacity(orig.size()));
     result.clear();
-    for (Map.Entry<String, Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
+    for (Map.Entry<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> entry :
         orig.entrySet()) {
       String javaExpression = entry.getKey();
-      Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> atms = entry.getValue();
-      result.put(javaExpression, Pair.deepCopy(atms));
+      IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> atms = entry.getValue();
+      result.put(javaExpression, IPair.deepCopy(atms));
     }
     return result;
   }

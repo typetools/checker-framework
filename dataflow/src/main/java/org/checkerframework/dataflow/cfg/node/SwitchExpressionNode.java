@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SystemUtil;
 
 /** A node for a switch expression. */
 public class SwitchExpressionNode extends Node {
@@ -34,7 +35,9 @@ public class SwitchExpressionNode extends Node {
       TypeMirror type, Tree switchExpressionTree, LocalVariableNode switchExpressionVar) {
     super(type);
 
-    if (!switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
+    // TODO: use JCP to add version-specific behavior
+    if (SystemUtil.jreVersion < 14
+        || !switchExpressionTree.getKind().name().equals("SWITCH_EXPRESSION")) {
       throw new BugInCF(
           "switchExpressionTree is not a SwitchExpressionTree found tree with kind %s instead.",
           switchExpressionTree.getKind());

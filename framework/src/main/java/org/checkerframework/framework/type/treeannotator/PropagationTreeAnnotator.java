@@ -10,6 +10,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import java.util.Set;
@@ -22,10 +23,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.CollectionUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
@@ -66,7 +68,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
    * and this cache is used to improve performance.
    */
   private final Map<MethodInvocationTree, AnnotatedExecutableType> methodInvocationToType =
-      CollectionUtils.createLRUCache(300);
+      CollectionsPlume.createLruCache(300);
 
   @Override
   public Void visitNewArray(NewArrayTree arrayTree, AnnotatedTypeMirror arrayType) {
@@ -104,7 +106,9 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
         Tree var = ((AssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
       } else if (parentTree.getKind() == Tree.Kind.VARIABLE) {
-        contextType = atypeFactory.getAnnotatedType(parentTree);
+        if (!TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parentTree)) {
+          contextType = atypeFactory.getAnnotatedType(parentTree);
+        }
       } else if (parentTree instanceof CompoundAssignmentTree) {
         Tree var = ((CompoundAssignmentTree) parentTree).getVariable();
         contextType = atypeFactory.getAnnotatedType(var);
@@ -207,7 +211,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       return null;
     }
 
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+        atypeFactory.binaryTreeArgTypes(tree);
     Set<? extends AnnotationMirror> lubs =
         qualHierarchy.leastUpperBounds(
             argTypes.first.getEffectiveAnnotations(), argTypes.second.getEffectiveAnnotations());

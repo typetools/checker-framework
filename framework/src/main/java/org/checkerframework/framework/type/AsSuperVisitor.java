@@ -93,6 +93,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return (T) result;
   }
 
+  /** Resets this. */
   private void reset() {
     isUninferredTypeArgument = false;
   }
@@ -540,28 +541,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     if (TypesUtils.isBoxedPrimitive(superType.getUnderlyingType())) {
       TypeMirror unboxedSuper = types.unboxedType(superType.getUnderlyingType());
       if (unboxedSuper.getKind() != type.getKind()
-          && canBeNarrowingPrimitiveConversion(unboxedSuper)) {
+          && TypesUtils.canBeNarrowingPrimitiveConversion(unboxedSuper, types)) {
         AnnotatedPrimitiveType narrowedType = atypeFactory.getNarrowedPrimitive(type, unboxedSuper);
         return visit(narrowedType, superType, p);
       }
     }
     return visitPrimitive_Other(type, superType, p);
-  }
-
-  /**
-   * Returns true if the type is byte, short, char, Byte, Short, or Character. All other narrowings
-   * require a cast. See JLS 5.1.3.
-   *
-   * @param type a type
-   * @return true if assignment to the type may be a narrowing
-   */
-  private boolean canBeNarrowingPrimitiveConversion(TypeMirror type) {
-    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
-    TypeMirror unboxedType = TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
-    TypeKind unboxedKind = unboxedType.getKind();
-    return unboxedKind == TypeKind.BYTE
-        || unboxedKind == TypeKind.SHORT
-        || unboxedKind == TypeKind.CHAR;
   }
 
   @Override

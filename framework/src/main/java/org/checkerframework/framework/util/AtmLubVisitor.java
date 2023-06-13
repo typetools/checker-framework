@@ -74,6 +74,14 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     return lub;
   }
 
+  /**
+   * Lub a type with the nulltype.
+   *
+   * @param nullType an annotated null type
+   * @param otherType the other type to lub
+   * @param lub a type mirror that will be copied, side-effected, and returned
+   * @return the lub
+   */
   private AnnotatedTypeMirror lubWithNull(
       AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
     AnnotatedTypeMirror otherAsLub;
@@ -388,7 +396,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotatedTypeMirror atmVisit : visited) {
       // Use reference equality rather than equals because the visitor may visit two types
       // that are structurally equal, but not actually the same.  For example, the
-      // wildcards in Pair<?,?> may be equal, but they both should be visited.
+      // wildcards in IPair<?,?> may be equal, but they both should be visited.
       if (atmVisit == atm) {
         return true;
       }

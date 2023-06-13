@@ -53,10 +53,10 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 import org.plumelib.util.StringsPlume;
 
 /**
@@ -214,7 +214,7 @@ public class AnnotatedTypes {
       return;
     }
 
-    Set<Pair<Integer, Integer>> typeArgMap =
+    Set<IPair<Integer, Integer>> typeArgMap =
         TypeArgumentMapper.mapTypeArgumentIndices(
             (TypeElement) declaredSubtype.getUnderlyingType().asElement(),
             (TypeElement) declaredAsSuper.getUnderlyingType().asElement(),
@@ -224,7 +224,7 @@ public class AnnotatedTypes {
       return;
     }
 
-    List<Pair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
+    List<IPair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
     orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
 
     if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
@@ -456,7 +456,7 @@ public class AnnotatedTypes {
    *
    * @param receiver type of the receiver of the call
    * @param method the element of a method or constructor
-   * @param types TypesUtils
+   * @param types type utilities
    * @return whether the call to {@code method} with {@code receiver} raw
    */
   private static boolean isRawCall(AnnotatedDeclaredType receiver, Element method, Types types) {
@@ -765,10 +765,10 @@ public class AnnotatedTypes {
   /**
    * Returns the lub of two annotated types.
    *
-   * @param atypeFactory AnnotatedTypeFactory
-   * @param type1 annotated type
-   * @param type2 annotated type
-   * @return the lub of type1 and type2
+   * @param atypeFactory the type factory
+   * @param type1 a type
+   * @param type2 another type
+   * @return the lub of {@code type1} and {@code type2}
    */
   public static AnnotatedTypeMirror leastUpperBound(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
@@ -781,7 +781,7 @@ public class AnnotatedTypes {
   /**
    * Returns the lub, whose underlying type is {@code lubTypeMirror} of two annotated types.
    *
-   * @param atypeFactory AnnotatedTypeFactory
+   * @param atypeFactory a type factory
    * @param type1 annotated type whose underlying type must be a subtype or convertible to
    *     lubTypeMirror
    * @param type2 annotated type whose underlying type must be a subtype or convertible to
@@ -831,20 +831,20 @@ public class AnnotatedTypes {
    */
   public static AnnotatedTypeMirror annotatedGLB(
       AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-    TypeMirror glbJava =
-        TypesUtils.greatestLowerBound(
-            type1.getUnderlyingType(), type2.getUnderlyingType(), atypeFactory.getProcessingEnv());
+    TypeMirror tm1 = type1.getUnderlyingType();
+    TypeMirror tm2 = type2.getUnderlyingType();
+    TypeMirror glbJava = TypesUtils.greatestLowerBound(tm1, tm2, atypeFactory.getProcessingEnv());
     Types types = atypeFactory.types;
     QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
-    if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
+    if (types.isSubtype(tm1, tm2)) {
       return glbSubtype(qualHierarchy, type1, type2);
-    } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+    } else if (types.isSubtype(tm2, tm1)) {
       return glbSubtype(qualHierarchy, type2, type1);
     }
 
-    if (types.isSameType(type1.getUnderlyingType(), glbJava)) {
+    if (types.isSameType(tm1, glbJava)) {
       return glbSubtype(qualHierarchy, type1, type2);
-    } else if (types.isSameType(type2.getUnderlyingType(), glbJava)) {
+    } else if (types.isSameType(tm2, glbJava)) {
       return glbSubtype(qualHierarchy, type2, type1);
     }
 
@@ -866,9 +866,9 @@ public class AnnotatedTypes {
 
     List<AnnotatedTypeMirror> newBounds = new ArrayList<>(2);
     for (AnnotatedTypeMirror bound : glb.getBounds()) {
-      if (types.isSameType(bound.getUnderlyingType(), type1.getUnderlyingType())) {
+      if (types.isSameType(bound.getUnderlyingType(), tm1)) {
         newBounds.add(type1.deepCopy());
-      } else if (types.isSameType(bound.getUnderlyingType(), type2.getUnderlyingType())) {
+      } else if (types.isSameType(bound.getUnderlyingType(), tm2)) {
         newBounds.add(type2.deepCopy());
       } else if (type1.getKind() == TypeKind.INTERSECTION) {
         AnnotatedIntersectionType intertype1 = (AnnotatedIntersectionType) type1;
@@ -903,7 +903,7 @@ public class AnnotatedTypes {
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
    *
-   * @param qualHierarchy QualifierHierarchy
+   * @param qualHierarchy the qualifier hierarchy
    * @param subtype annotated type whose underlying type is a subtype of {@code supertype}
    * @param supertype annotated type whose underlying type is a supertype of {@code subtype}
    * @return the annotated greatest lower bound of {@code subtype} and {@code supertype}
@@ -1078,11 +1078,10 @@ public class AnnotatedTypes {
    * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
    * expected at the indexth position (unwrapping varargs if necessary).
    *
-   * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
-   *     return
-   * @param index position of parameter type to return
-   * @return if that parameter is a varArgs, return the component of the var args and NOT the array
-   *     type. Otherwise, return the exact type of the parameter in the index position.
+   * @param methodType the type of a method or constructor containing the parameter to return
+   * @param index position of the parameter type to return
+   * @return the type of the parameter in the index position. If that parameter is a varArgs, return
+   *     the component type of the varargs and NOT the array type.
    */
   public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
       AnnotatedExecutableType methodType, int index) {
@@ -1670,11 +1669,11 @@ public class AnnotatedTypes {
   /**
    * Add all the annotations in {@code declaredType} to {@code annotatedDeclaredType}.
    *
-   * <p>(The {@code TypeMirror} returned by {@code annotatedDeclaredType#getUnderlyingType} may have
-   * not have all the annotations on the type, so allow the user to specify a different one.)
+   * <p>(The {@code TypeMirror} returned by {@code annotatedDeclaredType#getUnderlyingType} may not
+   * have all the annotations on the type, so allow the user to specify a different one.)
    *
    * @param annotatedDeclaredType annotated type to which annotations are added
-   * @param declaredType TypeMirror that may have annotations
+   * @param declaredType a type that may have annotations
    */
   public static void applyAnnotationsFromDeclaredType(
       AnnotatedDeclaredType annotatedDeclaredType, DeclaredType declaredType) {

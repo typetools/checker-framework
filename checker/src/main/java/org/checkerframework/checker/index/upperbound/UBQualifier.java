@@ -20,9 +20,9 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * Abstraction for Upper Bound annotations. This abstract class has 4 subclasses, each of which is a
@@ -436,7 +436,7 @@ public abstract class UBQualifier {
      * @param i an integer
      * @return true if the given integer literal is a subtype of this
      */
-    /*package-protected*/ boolean literalIsSubtype(int i) {
+    /*package-private*/ boolean literalIsSubtype(int i) {
       for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
         for (OffsetEquation equation : entry.getValue()) {
           if (!equation.isInt()) {
@@ -910,7 +910,7 @@ public abstract class UBQualifier {
           || !containsSame(other.map.keySet(), lubMap.keySet())) {
         return;
       }
-      List<Pair<String, OffsetEquation>> remove = new ArrayList<>();
+      List<IPair<String, OffsetEquation>> remove = new ArrayList<>();
       for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
         String sequence = entry.getKey();
         Set<OffsetEquation> lubOffsets = entry.getValue();
@@ -924,7 +924,7 @@ public abstract class UBQualifier {
             int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
             int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
             if (thisInt != otherInt) {
-              remove.add(Pair.of(sequence, lubEq));
+              remove.add(IPair.of(sequence, lubEq));
             }
           } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
             //  continue;
@@ -933,11 +933,12 @@ public abstract class UBQualifier {
           }
         }
       }
-      for (Pair<String, OffsetEquation> pair : remove) {
-        Set<OffsetEquation> offsets = lubMap.get(pair.first);
+      for (IPair<String, OffsetEquation> pair : remove) {
+        String sequence = pair.first;
+        Set<OffsetEquation> offsets = lubMap.get(sequence);
         offsets.remove(pair.second);
         if (offsets.isEmpty()) {
-          lubMap.remove(pair.first);
+          lubMap.remove(sequence);
         }
       }
     }
@@ -1426,7 +1427,7 @@ public abstract class UBQualifier {
   /** The bottom qualifier for the upperbound type system. */
   private static class UpperBoundBottomQualifier extends UBQualifier {
     /** The canonical bottom qualifier for the upperbound type system. */
-    static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
+    public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
     /** This class is a singleton. */
     private UpperBoundBottomQualifier() {}

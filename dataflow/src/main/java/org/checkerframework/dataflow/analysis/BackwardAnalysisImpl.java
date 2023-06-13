@@ -64,7 +64,7 @@ public class BackwardAnalysisImpl<
    *
    * @param transferFunction the transfer function
    */
-  public BackwardAnalysisImpl(@Nullable T transferFunction) {
+  public BackwardAnalysisImpl(T transferFunction) {
     this();
     this.transferFunction = transferFunction;
   }

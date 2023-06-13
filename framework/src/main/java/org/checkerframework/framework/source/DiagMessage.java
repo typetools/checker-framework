@@ -46,6 +46,17 @@ public class DiagMessage {
   }
 
   /**
+   * Create a DiagMessage with kind ERROR.
+   *
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   * @return a new DiagMessage
+   */
+  public static DiagMessage error(@CompilerMessageKey String messageKey, Object... args) {
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
    * Returns the kind of this DiagMessage.
    *
    * @return the kind of this DiagMessage

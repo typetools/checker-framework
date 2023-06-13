@@ -324,7 +324,7 @@ public class TypeArgInferenceUtil {
    * improve type argument inference in this case and by using the lower bound of {@code S} instead
    * of the local variable default.
    *
-   * @param atypeFactory AnnotatedTypeFactory
+   * @param atypeFactory the type factory
    * @param assignmentContext VariableTree
    * @return AnnotatedTypeMirror of Assignment context
    */

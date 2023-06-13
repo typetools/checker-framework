@@ -41,7 +41,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
    * Returns true if IrrelevantTypeAnnotator should add a primary annotation.
    *
    * @param tm a type mirror
-   * @return true if IrrelevantTypeAnnotator should add a primary annotation.
+   * @return true if IrrelevantTypeAnnotator should add a primary annotation
    */
   boolean shouldAddPrimaryAnnotation(TypeMirror tm) {
     switch (tm.getKind()) {
@@ -59,9 +59,10 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         return true;
 
       case ARRAY:
+        return true;
       case TYPEVAR:
       case WILDCARD:
-        return true;
+        return false;
 
       case ERROR:
       case EXECUTABLE:

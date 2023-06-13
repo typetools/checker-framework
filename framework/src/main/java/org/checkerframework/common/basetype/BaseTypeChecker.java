@@ -592,7 +592,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
    * this checker itself.
    *
-   * @return the first checker in the parent checker chain with no parent checker of its own, i.e.
+   * @return the first checker in the parent checker chain with no parent checker of its own, i.e.,
    *     the ultimate parent checker
    */
   public BaseTypeChecker getUltimateParentChecker() {

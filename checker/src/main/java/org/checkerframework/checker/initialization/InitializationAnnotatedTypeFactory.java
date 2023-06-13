@@ -56,10 +56,10 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The annotated type factory for the freedom-before-commitment type-system. The
@@ -572,7 +572,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that are not yet initialized in a given store (a pair of lists)
    */
-  public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
       Store store,
       TreePath path,
       boolean isStatic,
@@ -598,7 +598,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
       }
     }
-    return Pair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
+    return IPair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
   }
 
   /**

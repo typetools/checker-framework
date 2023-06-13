@@ -77,9 +77,9 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.IPair;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -710,18 +710,18 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       AnnotatedTypeMirror leftType = getAnnotatedType(left);
-      AnnotationMirror leftResultType = UNKNOWN;
+      AnnotationMirror leftResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(left)) {
-        leftResultType = leftType.getAnnotationInHierarchy(UNKNOWN);
+        leftResultAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
       }
 
       AnnotatedTypeMirror rightType = getAnnotatedType(right);
-      AnnotationMirror rightResultType = UNKNOWN;
+      AnnotationMirror rightResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(right)) {
-        rightResultType = rightType.getAnnotationInHierarchy(UNKNOWN);
+        rightResultAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
       }
 
-      type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultType, rightResultType));
+      type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultAnno, rightResultAnno));
     }
 
     /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
@@ -951,7 +951,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       Tree tree, TreePath treePath, List<String> lessThanExpressions) {
     UBQualifier ubQualifier = null;
     for (String expression : lessThanExpressions) {
-      Pair<JavaExpression, String> exprAndOffset;
+      IPair<JavaExpression, String> exprAndOffset;
       try {
         exprAndOffset = getExpressionAndOffsetFromJavaExpressionString(expression, treePath);
       } catch (JavaExpressionParseException e) {

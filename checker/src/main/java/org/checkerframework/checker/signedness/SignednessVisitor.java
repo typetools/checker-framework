@@ -20,9 +20,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -75,7 +75,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree leftOp = tree.getLeftOperand();
     ExpressionTree rightOp = tree.getRightOperand();
 
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+        atypeFactory.binaryTreeArgTypes(tree);
     AnnotatedTypeMirror leftOpType = argTypes.first;
     AnnotatedTypeMirror rightOpType = argTypes.second;
 
@@ -253,7 +254,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree var = tree.getVariable();
     ExpressionTree expr = tree.getExpression();
 
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
         atypeFactory.compoundAssignmentTreeArgTypes(tree);
     AnnotatedTypeMirror varType = argTypes.first;
     AnnotatedTypeMirror exprType = argTypes.second;
@@ -307,7 +308,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
-          if (TypesUtils.isCharOrCharacter(exprType.getUnderlyingType())) {
+          TypeMirror exprTM = exprType.getUnderlyingType();
+          if (TypesUtils.isCharOrCharacter(exprTM)) {
             break;
           }
           AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();

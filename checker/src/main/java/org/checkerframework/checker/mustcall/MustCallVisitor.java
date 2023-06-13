@@ -341,7 +341,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * <p>Instead, this method checks that the result type of a constructor is a supertype of the
    * declared type on the class, if one exists.
    *
-   * @param constructorType AnnotatedExecutableType for the constructor
+   * @param constructorType an AnnotatedExecutableType for the constructor
    * @param constructorElement element that declares the constructor
    */
   @Override

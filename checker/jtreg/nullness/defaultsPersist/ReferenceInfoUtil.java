@@ -14,7 +14,6 @@ import com.sun.tools.classfile.TypeAnnotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.checkerframework.javacutil.Pair;
 
 public class ReferenceInfoUtil {
 
@@ -214,7 +213,7 @@ public class ReferenceInfoUtil {
   }
 
   public static boolean compare(
-      List<Pair<String, TypeAnnotation.Position>> expectedAnnos,
+      List<AnnoPosPair> expectedAnnos,
       List<TypeAnnotation> actualAnnos,
       ClassFile cf,
       String diagnostic)
@@ -224,7 +223,7 @@ public class ReferenceInfoUtil {
           "Wrong number of annotations in " + cf + "; " + diagnostic, expectedAnnos, actualAnnos);
     }
 
-    for (Pair<String, TypeAnnotation.Position> e : expectedAnnos) {
+    for (AnnoPosPair e : expectedAnnos) {
       String aName = e.first;
       TypeAnnotation.Position expected = e.second;
       TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
@@ -247,13 +246,11 @@ public class ReferenceInfoUtil {
 class ComparisonException extends RuntimeException {
   private static final long serialVersionUID = -3930499712333815821L;
 
-  public final List<Pair<String, TypeAnnotation.Position>> expected;
+  public final List<AnnoPosPair> expected;
   public final List<TypeAnnotation> found;
 
   public ComparisonException(
-      String message,
-      List<Pair<String, TypeAnnotation.Position>> expected,
-      List<TypeAnnotation> found) {
+      String message, List<AnnoPosPair> expected, List<TypeAnnotation> found) {
     super(message);
     this.expected = expected;
     this.found = found;

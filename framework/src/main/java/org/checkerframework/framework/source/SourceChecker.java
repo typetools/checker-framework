@@ -1074,7 +1074,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
    * messager.
    *
-   * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+   * <p>It is rare to use this method. Most clients should use {@link #reportError} or {@link
+   * #reportWarning}.
    *
    * @param source the source position information; may be an Element, a Tree, or null
    * @param d the diagnostic message
@@ -2712,13 +2713,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new BugInCF("Could not find the version in git.properties");
     }
     String branch = gitProperties.getProperty("git.branch");
-    if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
+    // git.dirty indicates modified tracked files and staged changes.  Untracked content doesn't
+    // count, so not being dirty doesn't mean that exactly the printed commit is being run.
+    String dirty = gitProperties.getProperty("git.dirty");
+    if (version.endsWith("-SNAPSHOT") || !branch.equals("master") || dirty.equals("true")) {
       // Sometimes the branch is HEAD, which is not informative.
       // How does that happen, and how can I fix it?
       version += ", branch " + branch;
       // For brevity, only date but not time of day.
       version += ", " + gitProperties.getProperty("git.commit.time").substring(0, 10);
       version += ", commit " + gitProperties.getProperty("git.commit.id.abbrev");
+      if (dirty.equals("true")) {
+        version += ", dirty=true";
+      }
     }
     return version;
   }

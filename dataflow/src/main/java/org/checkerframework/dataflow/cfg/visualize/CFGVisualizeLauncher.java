@@ -5,7 +5,7 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Options;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -35,89 +35,87 @@ import org.plumelib.util.ArrayMap;
  */
 public final class CFGVisualizeLauncher {
 
-  /** Create a CFGVisualizeLauncher. */
-  public CFGVisualizeLauncher() {}
+  /** Class cannot be instantiated. */
+  private CFGVisualizeLauncher() {
+    throw new AssertionError("Class CFGVisualizeLauncher cannot be instantiated.");
+  }
 
   /**
    * The main entry point of CFGVisualizeLauncher.
    *
-   * @param args the passed arguments, see {@link #printUsage()} for the usage
+   * @param args command-line arguments
    */
   public static void main(String[] args) {
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-    if (args.length == 0) {
-      cfgVisualizeLauncher.printUsage();
-      System.exit(1);
-    }
-    String input = args[0];
-    File file = new File(input);
-    if (!file.canRead()) {
-      cfgVisualizeLauncher.printError("Cannot read input file: " + file.getAbsolutePath());
-      cfgVisualizeLauncher.printUsage();
-      System.exit(1);
-    }
+    CFGVisualizeOptions config = CFGVisualizeOptions.parseArgs(args);
 
-    String method = "test";
-    String clas = "Test";
-    String output = ".";
-    boolean pdf = false;
-    boolean error = false;
-    boolean verbose = false;
-    boolean string = false;
+    performAnalysis(config, null);
+  }
 
-    for (int i = 1; i < args.length; i++) {
-      switch (args[i]) {
-        case "--outputdir":
-          if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <outputdir> after --outputdir.");
-            continue;
-          }
-          i++;
-          output = args[i];
-          break;
-        case "--pdf":
-          pdf = true;
-          break;
-        case "--method":
-          if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <name> after --method.");
-            continue;
-          }
-          i++;
-          method = args[i];
-          break;
-        case "--class":
-          if (i >= args.length - 1) {
-            cfgVisualizeLauncher.printError("Did not find <name> after --class.");
-            continue;
-          }
-          i++;
-          clas = args[i];
-          break;
-        case "--verbose":
-          verbose = true;
-          break;
-        case "--string":
-          string = true;
-          break;
-        default:
-          cfgVisualizeLauncher.printError("Unknown command line argument: " + args[i]);
-          error = true;
-          break;
+  /**
+   * Generate a visualization of the CFG of a method, with an optional analysis.
+   *
+   * @param <V> the abstract value type of the analysis
+   * @param <S> the store type of the analysis
+   * @param <T> the transfer function type of the analysis
+   * @param config CFGVisualizeOptions that includes input file, output directory, method name, and
+   *     class name
+   * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
+   *     to be performed)
+   */
+  public static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+      void performAnalysis(CFGVisualizeOptions config, @Nullable Analysis<V, S, T> analysis) {
+    if (!config.isString()) {
+      if (analysis == null) {
+        generateDOTofCFGWithoutAnalysis(
+            config.getInputFile(),
+            config.getOutputDirectory(),
+            config.getMethodName(),
+            config.getClassName(),
+            config.isPDF(),
+            config.isVerbose());
+      } else {
+        generateDOTofCFG(
+            config.getInputFile(),
+            config.getOutputDirectory(),
+            config.getMethodName(),
+            config.getClassName(),
+            config.isPDF(),
+            config.isVerbose(),
+            analysis);
       }
-    }
-
-    if (error) {
-      System.exit(1);
-    }
-
-    if (!string) {
-      cfgVisualizeLauncher.generateDOTofCFGWithoutAnalysis(
-          input, output, method, clas, pdf, verbose);
     } else {
-      String stringGraph =
-          cfgVisualizeLauncher.generateStringOfCFGWithoutAnalysis(input, method, clas, verbose);
-      System.out.println(stringGraph);
+      if (analysis == null) {
+        String stringGraph =
+            generateStringOfCFGWithoutAnalysis(
+                config.getInputFile(),
+                config.getMethodName(),
+                config.getClassName(),
+                config.isVerbose());
+        System.out.println(stringGraph);
+      } else {
+        Map<String, Object> res =
+            generateStringOfCFG(
+                config.getInputFile(),
+                config.getMethodName(),
+                config.getClassName(),
+                config.isVerbose(),
+                analysis);
+        if (res != null) {
+          String stringGraph = (String) res.get("stringGraph");
+          if (stringGraph == null) {
+            System.err.println(
+                "Unexpected output from generating string control flow graph, shouldn't be"
+                    + " null. Result map: "
+                    + res);
+            return;
+          }
+          System.out.println(stringGraph);
+        } else {
+          System.err.println(
+              "Unexpected output from generating string control flow graph, shouldn't be"
+                  + " null.");
+        }
+      }
     }
   }
 
@@ -131,7 +129,7 @@ public final class CFGVisualizeLauncher {
    * @param pdf also generate a PDF
    * @param verbose show verbose information in CFG
    */
-  void generateDOTofCFGWithoutAnalysis(
+  private static void generateDOTofCFGWithoutAnalysis(
       String inputFile,
       String outputDir,
       String method,
@@ -150,7 +148,7 @@ public final class CFGVisualizeLauncher {
    * @param verbose show verbose information in CFG
    * @return the String representation of the CFG
    */
-  String generateStringOfCFGWithoutAnalysis(
+  private static String generateStringOfCFGWithoutAnalysis(
       String inputFile, String method, String clas, boolean verbose) {
     Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, verbose, null);
     if (res != null) {
@@ -179,7 +177,7 @@ public final class CFGVisualizeLauncher {
    * @param analysis analysis to perform before the visualization (or {@code null} if no analysis is
    *     to be performed)
    */
-  public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+  private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       void generateDOTofCFG(
           String inputFile,
           String outputDir,
@@ -199,7 +197,7 @@ public final class CFGVisualizeLauncher {
 
     CFGVisualizer<V, S, T> viz = new DOTCFGVisualizer<>();
     viz.init(args);
-    Map<String, Object> res = viz.visualize(cfg, cfg.getEntryBlock(), analysis);
+    Map<String, Object> res = viz.visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     viz.shutdown();
 
     if (pdf && res != null) {
@@ -216,7 +214,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @return control flow graph of the specified method
    */
-  ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
+  private static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
 
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
@@ -269,11 +267,34 @@ public final class CFGVisualizeLauncher {
   }
 
   /**
+   * Write generated String representation of the CFG for a method to a file.
+   *
+   * @param inputFile a Java source file, used as input
+   * @param method name of the method to generate the CFG for
+   * @param clas name of the class which includes the method to generate the CFG for
+   * @param outputFile source output file
+   * @param analysis instance of forward or backward analysis from specific dataflow test case
+   */
+  @SuppressWarnings("CatchAndPrintStackTrace") // we want to use e.printStackTrace here.
+  public static void writeStringOfCFG(
+      String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
+    Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
+    try (FileWriter out = new FileWriter(outputFile)) {
+      if (res != null && res.get("stringGraph") != null) {
+        out.write(res.get("stringGraph").toString());
+      }
+      out.write("\n");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  /**
    * Invoke "dot" command to generate a PDF.
    *
    * @param file name of the dot file
    */
-  void producePDF(String file) {
+  private static void producePDF(String file) {
     try {
       String command = "dot -Tpdf \"" + file + "\" -o \"" + file + ".pdf\"";
       Process child = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", command});
@@ -299,7 +320,7 @@ public final class CFGVisualizeLauncher {
    * @return a map which includes a key "stringGraph" and the String representation of CFG as the
    *     value
    */
-  public <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
+  private static <V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
       @Nullable Map<String, Object> generateStringOfCFG(
       String inputFile,
       String method,
@@ -320,31 +341,12 @@ public final class CFGVisualizeLauncher {
     return res;
   }
 
-  /** Print usage information. */
-  void printUsage() {
-    System.out.println(
-        "Generate the control flow graph of a Java method, represented as a DOT or String graph.");
-    System.out.println(
-        "Parameters: <inputfile> [--outputdir <outputdir>] [--method <name>] [--class <name>]"
-            + " [--pdf] [--verbose] [--string]");
-    System.out.println(
-        "    --outputdir: The output directory for the generated files (defaults to '.').");
-    System.out.println("    --method:    The method to generate the CFG for (defaults to 'test').");
-    System.out.println(
-        "    --class:     The class in which to find the method (defaults to 'Test').");
-    System.out.println("    --pdf:       Also generate the PDF by invoking 'dot'.");
-    System.out.println("    --verbose:   Show the verbose output (defaults to 'false').");
-    System.out.println(
-        "    --string:    Print the string representation of the control flow graph"
-            + " (defaults to 'false').");
-  }
-
   /**
    * Print error message.
    *
    * @param string error message
    */
-  void printError(@Nullable String string) {
+  private static void printError(@Nullable String string) {
     System.err.println("ERROR: " + string);
   }
 }

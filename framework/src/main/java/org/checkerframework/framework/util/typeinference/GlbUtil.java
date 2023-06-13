@@ -24,11 +24,15 @@ import org.checkerframework.javacutil.TypesUtils;
 public class GlbUtil {
 
   /**
-   * Note: This method can be improved for wildcards and type variables.
+   * Returns the greatest lower bound of the given {@code TypeMirror}s. If any of the type mirrors
+   * are incomparable, Returns an AnnotatedNullType that contains the greatest lower bounds of the
+   * primary annotations of typeMirrors.
    *
-   * @return the greatest lower bound of typeMirrors. If any of the type mirrors are incomparable,
-   *     use an AnnotatedNullType that will contain the greatest lower bounds of the primary
-   *     annotations of typeMirrors.
+   * <p>Note: This method can be improved for wildcards and type variables.
+   *
+   * @param typeMirrors the types to glb
+   * @param typeFactory the type factory
+   * @return the greatest lower bound of typeMirrors
    */
   public static AnnotatedTypeMirror glbAll(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {

@@ -152,7 +152,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** Returns a new Regex annotation with the given group count. */
-  /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
+  /*package-private*/ AnnotationMirror createRegexAnnotation(int groupCount) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Regex.class);
     if (groupCount > 0) {
       builder.setValue("value", groupCount);
