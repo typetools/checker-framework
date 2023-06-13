@@ -13,6 +13,58 @@
 # This script works at least through mid-April 2019.
 # It does not work for mid-January 2019.
 
+# # To verify that you can build an old version of the Checker Framework,
+# # set two environment variables and then run these commands.  See below
+# # for examples of setting the environment variables.
+# mkdir -p /tmp/test-historical
+# git clone https://github.com/typetools/checker-framework.git ${CHECKERFRAMEWORK}
+# cd ${CHECKERFRAMEWORK}
+# git checkout ${CFCOMMIT}
+# /scratch/mernst/clones/types/checker-framework-fork-mernst-branch-historical-checkout/checker/bin-devel/checkout-historical.sh
+#
+# # January 2023
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202301
+# export CFCOMMIT=9d60936fcd81827f3761d0244014a6e419133b16
+#
+# # July 2022
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202207
+# export CFCOMMIT=c37aff5ef28569e5bdadf681c81210d084de24df
+#
+# # January 2022
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202201
+# export CFCOMMIT=24364449c1bac6cee1896759e1ab5fc87ad5a70d
+#
+# # January 2021
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202101
+# export CFCOMMIT=f3cc3d328a70ef8e834bf2693be6cbb6a94ece63
+#
+# # January 2020
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202001
+# export CFCOMMIT=b7d026e424df2a04f8b9275bc2792cb03991425d
+#
+# # October 2019
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201910
+# export CFCOMMIT=b6e7558f3f0b0cf996f00039ca98a8d1fa798896
+#
+# # July 2019; use JDK 8
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201907
+# export CFCOMMIT=5000c1ecb72581aeebd3c10a2851cf003eeb554c
+#
+# # April 2019; use JDK 8
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201904
+# export CFCOMMIT=cc3b007addee9e241e4ef560d009fd212c478819
+#
+# # January 2019; use JDK 8
+# # This fails because it references deleted repository https://bitbucket.org/typetools/jsr308-langtools
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201901
+# export CFCOMMIT=b76bd9dcd5839285a4dd9fd6c2d769647357f288
+#
+# # January 2018; use JDK 8
+# # This fails, because plume-scripts does not exist.
+# export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-201801
+# export CFCOMMIT=1f48ddb600620454731170eb2628e5f7efa93c3e
+
+
 # Fail the whole script if any command fails
 set -e
 
