@@ -13,14 +13,18 @@
 # This script works at least through mid-April 2019.
 # It does not work for mid-January 2019.
 
-# # To verify that you can build an old version of the Checker Framework,
-# # set two environment variables and then run these commands.  See below
-# # for examples of setting the environment variables.
-# mkdir -p /tmp/test-historical
+# # To verify that you can build an old version of the Checker Framework, do
+# # preparation, then set two environment variables, and then run these
+# # commands.  See below for preparation and examples of setting the environment
+# # variables.
 # git clone https://github.com/typetools/checker-framework.git ${CHECKERFRAMEWORK}
 # cd ${CHECKERFRAMEWORK}
 # git checkout ${CFCOMMIT}
-# /scratch/mernst/clones/types/checker-framework-fork-mernst-branch-historical-checkout/checker/bin-devel/checkout-historical.sh
+# /tmp/test-historical/checker-framework/checker/bin-devel/checkout-historical.sh
+#
+# # Preparation (only needs to be done once every)
+# mkdir -p /tmp/test-historical
+# git clone https://github.com/typetools/checker-framework.git
 #
 # # January 2023
 # export CHECKERFRAMEWORK=/tmp/test-historical/checker-framework-202301
