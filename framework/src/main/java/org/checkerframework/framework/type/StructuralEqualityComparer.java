@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -211,46 +210,96 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // Prevent infinite recursion e.g. in Issue1587b
     visitHistory.put(type1, type2, currentTop, true);
 
+    List<AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
+    List<AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
+
     // Capture the types because the wildcards are only not equal if they are provably distinct.
-    // probably distinct is computed using the captured upper bounds of wildcards.
+    // Provably distinct is computed using the captured upper bounds of wildcards.
     // See JLS 4.5.1. Type Arguments of Parameterized Types.
     AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
-    TypeMirror capture = atypeFactory.types.capture(type1.underlyingType);
     AnnotatedDeclaredType capturedType1 =
-        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1, capture);
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1);
     AnnotatedDeclaredType capturedType2 =
-        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type2, capture);
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type2);
     visitHistory.put(capturedType1, capturedType2, currentTop, true);
 
-    boolean result = visitTypeArgs(capturedType1, capturedType2);
+    List<AnnotatedTypeMirror> capturedType1Args = capturedType1.getTypeArguments();
+    List<AnnotatedTypeMirror> capturedType2Args = capturedType2.getTypeArguments();
+    boolean result = true;
+    for (int i = 0; i < type1.getTypeArguments().size(); i++) {
+      AnnotatedTypeMirror type1Arg = type1Args.get(i);
+      AnnotatedTypeMirror type2Arg = type2Args.get(i);
+      if (!arePrimeAnnosEqual(type1Arg, type2Arg)) {
+        result = false;
+        break;
+      }
+      Boolean pastResultTA = visitHistory.get(type1Arg, type2Arg, currentTop);
+      if (pastResultTA != null) {
+        result = pastResultTA;
+      } else {
+        if (type1Arg.getKind() != TypeKind.WILDCARD || type2Arg.getKind() != TypeKind.WILDCARD) {
+          result = areEqual(type1Arg, type2Arg);
+        } else {
+          AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
+          AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
+          if (type1.atypeFactory.ignoreUninferredTypeArguments
+              && (wildcardType1.isUninferredTypeArgument()
+                  || wildcardType2.isUninferredTypeArgument())) {
+            result = true;
+          } else {
+            AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
+            AnnotatedTypeMirror capturedType2Arg = capturedType2Args.get(i);
+            result =
+                visitWildcard_WildcardCapture(
+                    wildcardType1,
+                    wildcardType2,
+                    (AnnotatedTypeVariable) capturedType1Arg,
+                    (AnnotatedTypeVariable) capturedType2Arg);
+          }
+        }
+      }
+      if (!result) {
+        break;
+      }
+    }
 
     visitHistory.put(capturedType1, capturedType2, currentTop, result);
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }
 
-  /**
-   * A helper class for visitDeclared_Declared. There are subtypes of DefaultTypeHierarchy that need
-   * to customize the handling of type arguments. This method provides a convenient extension point.
-   */
-  protected boolean visitTypeArgs(AnnotatedDeclaredType type1, AnnotatedDeclaredType type2) {
+  public boolean visitWildcard_WildcardCapture(
+      AnnotatedWildcardType type1,
+      AnnotatedWildcardType type2,
+      AnnotatedTypeVariable captureType1,
+      AnnotatedTypeVariable captureType2) {
+    Boolean pastResult = visitHistory.get(type1, type2, currentTop);
+    if (pastResult != null) {
+      return pastResult;
+    }
+    pastResult = visitHistory.get(captureType1, captureType2, currentTop);
+    if (pastResult != null) {
+      return pastResult;
+    }
 
-    // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
-    // ignoreRawTypes
-    List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
-    List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
-
-    if (type1Args.isEmpty() && type2Args.isEmpty()) {
+    if (type1.atypeFactory.ignoreUninferredTypeArguments
+        && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
       return true;
     }
-
-    if (type1Args.size() == type2Args.size()) {
-      return areAllEqual(type1Args, type2Args);
-    } else {
-      throw new BugInCF(
-          "Mismatching type argument sizes:%n    type 1: %s (%d)%n    type 2: %s (%d)",
-          type1, type1Args.size(), type2, type2Args.size());
+    pastResult = visitHistory.get(type1.getExtendsBound(), type2.getExtendsBound(), currentTop);
+    if (pastResult != null) {
+      return pastResult;
     }
+    visitHistory.put(type1.getExtendsBound(), type2.getExtendsBound(), currentTop, true);
+
+    boolean result =
+        areEqual(captureType1.getUpperBound(), captureType2.getUpperBound())
+            && areEqual(type1.getSuperBound(), type2.getSuperBound());
+    visitHistory.put(type1, type2, currentTop, result);
+    visitHistory.put(captureType1, captureType2, currentTop, result);
+    visitHistory.put(type1.getExtendsBound(), type2.getExtendsBound(), currentTop, result);
+
+    return result;
   }
 
   /**
