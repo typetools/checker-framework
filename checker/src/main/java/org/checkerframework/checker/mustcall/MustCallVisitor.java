@@ -151,7 +151,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         //     an @InheritableMustCall annotation on a supertype.
 
         // Check for problem 1.
-        AnnotationMirror explicitMustCall = atypeFactory.fromElement(classEle).getAnnotation();
+        AnnotationMirror explicitMustCall =
+            atypeFactory.fromElement(classEle).getPrimaryAnnotation();
         if (explicitMustCall != null) {
           // There is a @MustCall annotation here.
 
@@ -165,7 +166,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           // Issue an error if there is an inconsistent, user-written @MustCall annotation
           // here.
-          AnnotationMirror effectiveMCAnno = type.getAnnotation();
+          AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
           if (effectiveMCAnno != null
               && !qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
@@ -201,7 +202,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             }
             AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(inheritedMustCallVal);
 
-            AnnotationMirror effectiveMCAnno = type.getAnnotation();
+            AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
 
             if (!qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
 
@@ -305,8 +306,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
-      AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror varAnno = varType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
       if (qualHierarchy.isSubtype(
           atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
         return true;
@@ -335,9 +336,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
-    AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
-    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     if (!qualHierarchy.isSubtype(defaultAnno, resultAnno)) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
