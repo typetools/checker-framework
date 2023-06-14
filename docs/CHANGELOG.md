@@ -7,6 +7,15 @@ Version 3.36.0 (July 5, 2023)
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
+Renamed methods in `AnnotatedTypeMirror`:
+ * `getAnnotation*()` in favor of `getPrimaryAnnotation*()`.
+ * `removeAnnotation*()` in favor of `removePrimaryAnnotation*()`.
+Because these methods might not return an annotation of a type variable or wildcard, it is
+better to call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
+
+Also renamed  `AnnotatedTypeMirror#clearAnnotations*()` in favor of `clearPrimaryAnnotations()
+and `hasAnnotation*()` in favor of `hasPrimaryAnnotation()`.
+
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
