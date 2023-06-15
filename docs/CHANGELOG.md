@@ -3,8 +3,8 @@ Version 3.36.0 (July 5, 2023)
 
 **User-visible changes:**
 
-The Initialization Checker issue a `cast.unsafe` warning instead of an `initialization.cast`
-error.
+The Initialization Checker issues a `cast.unsafe` warning instead of an
+`initialization.cast` error.
 
 **Implementation details:**
 
