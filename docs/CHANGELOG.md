@@ -15,6 +15,7 @@ call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
  * `getAnnotation*()` => `getPrimaryAnnotation*()`.
  * `hasAnnotation*()` => `hasPrimaryAnnotation()`.
  * `removeAnnotation*()` => `removePrimaryAnnotation*()`.
+ * `removeNonTopAnnotationInHierarchy()` should not be used.
 
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.

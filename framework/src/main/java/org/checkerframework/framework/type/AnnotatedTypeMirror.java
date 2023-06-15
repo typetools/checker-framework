@@ -361,8 +361,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns the single annotation on this type. It does not include annotations in deep types (type
    * arguments, array components, etc).
    *
-   * <p>This method requires that there is only a single hierarchy. In that case, it is equivalent
-   * to {@link #getPrimaryAnnotationInHierarchy}.
+   * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
+   * {@link #getPrimaryAnnotationInHierarchy}.
    *
    * @see #getPrimaryAnnotations
    * @return the annotation on this, or null if none (which can only happen if {@code this} is a
@@ -726,7 +726,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param a an annotation from the same qualifier hierarchy
    * @return if an annotation was removed
-   * @deprecated TODO what should be called?
+   * @deprecated This will be removed in a future release
    */
   @Deprecated // 2023-06-15
   public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
@@ -2450,8 +2450,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns the single annotation on this type. It does not include annotations in deep types (type
    * arguments, array components, etc).
    *
-   * <p>This method requires that there is only a single hierarchy. In that case, it is equivalent
-   * to {@link #getPrimaryAnnotationInHierarchy}.
+   * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
+   * {@link #getPrimaryAnnotationInHierarchy}.
    *
    * @see #getPrimaryAnnotations
    * @return the annotation on this, or null if none (which can only happen if {@code this} is a
@@ -2464,8 +2464,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the actual annotation mirror used to annotate this type, whose Class equals the passed
-   * {@code annoClass} if one exists, null otherwise.
+   * Returns the annotation mirror used to annotate this type, whose Class equals the passed {@code
+   * annoClass} if one exists, null otherwise.
    *
    * @param annoClass annotation class
    * @return the annotation mirror for anno
@@ -2477,8 +2477,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
-   * {@code annoName} if one exists, null otherwise.
+   * Returns the annotation mirror used to annotate this type, whose name equals the passed {@code
+   * annoName} if one exists, null otherwise.
    *
    * @param annoName annotation name
    * @return the annotation mirror for annoName
