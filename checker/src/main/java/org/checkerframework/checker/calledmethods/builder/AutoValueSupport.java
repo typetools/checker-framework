@@ -105,14 +105,7 @@ public class AutoValueSupport implements BuilderFrameworkSupport {
         createCalledMethodsForAutoValueClass(builderElement, autoValueClassElement);
     // Only add the new @CalledMethods annotation if there is not already a @CalledMethods
     // annotation present.
-    AnnotationMirror explicitCalledMethodsAnno =
-        builderBuildType
-            .getReceiverType()
-            .getAnnotationInHierarchy(
-                atypeFactory.getQualifierHierarchy().getTopAnnotation(newCalledMethodsAnno));
-    if (explicitCalledMethodsAnno == null) {
-      builderBuildType.getReceiverType().addAnnotation(newCalledMethodsAnno);
-    }
+    builderBuildType.getReceiverType().addMissingAnnotation(newCalledMethodsAnno);
   }
 
   @Override
