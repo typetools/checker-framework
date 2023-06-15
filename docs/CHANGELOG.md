@@ -7,14 +7,14 @@ Version 3.36.0 (July 5, 2023)
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
-Renamed methods in `AnnotatedTypeMirror`:
+Renamed methods in `AnnotatedTypeMirror`.
+The old versions are deprecated.  Because the `*PrimaryAnnotation*` methods
+might not return an annotation of a type variable or wildcard, it is better to
+call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
  * `clearAnnotations*()` => `clearPrimaryAnnotations()`
  * `getAnnotation*()` => `getPrimaryAnnotation*()`.
  * `hasAnnotation*()` => `hasPrimaryAnnotation()`.
  * `removeAnnotation*()` => `removePrimaryAnnotation*()`.
-The old versions are deprecated.  Because the `*PrimaryAnnotation*` methods
-might not return an annotation of a type variable or wildcard, it is better to
-call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
 
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
