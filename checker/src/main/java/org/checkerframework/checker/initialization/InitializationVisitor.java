@@ -57,6 +57,9 @@ public class InitializationVisitor<
   /** The annotation formatter. */
   protected final AnnotationFormatter annoFormatter;
 
+  /** List of fields in the current compilation unit that have been initialized. */
+  protected final List<VariableTree> initializedFields;
+
   /**
    * Creates a new InitializationVisitor.
    *
@@ -215,8 +218,6 @@ public class InitializationVisitor<
     }
     return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
   }
-
-  protected final List<VariableTree> initializedFields;
 
   @Override
   public void processClassTree(ClassTree tree) {
