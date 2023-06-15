@@ -253,15 +253,17 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns true if an annotation from the given sub-hierarchy targets this type.
+   * Returns true if this type has a primary annotation in the same hierarchy as {@code annotation}.
    *
-   * <p>It doesn't account for annotations in deep types (type arguments, array components, etc).
+   * <p><annotation>It doesn't account for annotations in deep types (type arguments, array
+   * components, etc).
    *
-   * @param p the qualifier hierarchy to check for
-   * @return true iff an annotation from the same hierarchy as {@code p} is present
+   * @param annotation the qualifier hierarchy to check for
+   * @return true iff this type has a primary annotation in the same hierarchy as {@code
+   *     annotation}.
    */
-  public boolean hasPrimaryAnnotationInHierarchy(AnnotationMirror p) {
-    return getPrimaryAnnotationInHierarchy(p) != null;
+  public boolean hasPrimaryAnnotationInHierarchy(AnnotationMirror annotation) {
+    return getPrimaryAnnotationInHierarchy(annotation) != null;
   }
 
   /**
@@ -487,16 +489,17 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Determines whether this type contains the given annotation. This method considers the
-   * annotation's values. If the type is {@code @A("s") @B(3) Object}, then a call with
-   * {@code @A("t")} or {@code @A} will return false, whereas a call with {@code @B(3)} will return
-   * true.
+   * Returns if this type has a primary annotation that is the same as {@code a}.
+   *
+   * <p>This method considers the annotation's values. If the type is {@code @A("s") @B(3) Object},
+   * then a call with {@code @A("t")} or {@code @A} will return false, whereas a call with
+   * {@code @B(3)} will return true.
    *
    * <p>In contrast to {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} this method also
    * compares annotation values.
    *
    * @param a the annotation to check for
-   * @return true iff the type contains the annotation {@code a}
+   * @return true iff this type has a primary annotation that is the same as {@code a}.
    * @see #hasPrimaryAnnotationRelaxed(AnnotationMirror)
    */
   public boolean hasPrimaryAnnotation(AnnotationMirror a) {
@@ -504,8 +507,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Determines whether this type contains an annotation with the same annotation type as a
-   * particular annotation. This method does not consider an annotation's values.
+   * Returns if this type has a primary annotation that has the same annotation type as {@code a}.
+   * This method does not consider an annotation's values.
    *
    * @param a the class of annotation to check for
    * @return true iff the type contains an annotation with the same type as the annotation given by
@@ -572,14 +575,16 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Determines whether this type contains an annotation with the same annotation type as a
+   * Returns true if this type has a primary annotation that has the same annotation class as {@code
+   * a}.
+   *
+   * <p>Determines whether this type contains an annotation with the same annotation type as a
    * particular annotation. This method does not consider an annotation's values. If the type is
    * {@code @A("s") @B(3) Object}, then a call with {@code @A("t")}, {@code @A}, or {@code @B} will
    * return true.
    *
    * @param a the annotation to check for
-   * @return true iff the type contains an annotation with the same type as the annotation given by
-   *     {@code a}
+   * @return true iff the type has a primary annotation with the same type as {@code a}
    * @see #hasPrimaryAnnotation(AnnotationMirror)
    */
   public boolean hasPrimaryAnnotationRelaxed(AnnotationMirror a) {
@@ -646,8 +651,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Adds an annotation to this type, removing any existing annotation from the same qualifier
-   * hierarchy first.
+   * Adds an annotation to this type, removing any existing primary annotations from the same
+   * qualifier hierarchy first.
    *
    * @param a the annotation to add
    */
@@ -708,7 +713,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Adds multiple annotations to this type, removing any existing annotations from the same
+   * Adds multiple annotations to this type, removing any existing primary annotations from the same
    * qualifier hierarchy first.
    *
    * @param replAnnos the annotations to replace
@@ -720,7 +725,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Removes an annotation from the type.
+   * Removes a primary annotation from the type.
    *
    * @param a the annotation to remove
    * @return true if the annotation was removed, false if the type's annotations were unchanged
@@ -734,7 +739,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Removes an annotation of the given class from the type.
+   * Removes a primary annotation of the given class from the type.
    *
    * @param a the class of the annotation to remove
    * @return true if the annotation was removed, false if the type's annotations were unchanged
@@ -748,7 +753,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Remove any annotation that is in the same qualifier hierarchy as the parameter.
+   * Remove any primary annotation that is in the same qualifier hierarchy as the parameter.
    *
    * @param a an annotation from the same qualifier hierarchy
    * @return if an annotation was removed
@@ -780,7 +785,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Removes multiple annotations from the type.
+   * Removes multiple primary annotations from the type.
    *
    * @param annotations the annotations to remove
    * @return true if at least one annotation was removed, false if the type's annotations were
