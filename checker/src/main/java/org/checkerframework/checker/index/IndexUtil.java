@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 

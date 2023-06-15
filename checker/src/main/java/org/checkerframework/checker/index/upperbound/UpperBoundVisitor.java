@@ -18,6 +18,7 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;

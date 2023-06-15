@@ -39,6 +39,7 @@ import org.checkerframework.checker.lock.qual.GuardedByBottom;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;

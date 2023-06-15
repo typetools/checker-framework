@@ -551,7 +551,7 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Returns the index (that is, the {@code value} element) on the {@link @GuardSatisfied}
+   * Returns the index (that is, the {@code value} element) on the {@code @}{@link GuardSatisfied}
    * annotation in the given AnnotatedTypeMirror.
    *
    * @param atm an AnnotatedTypeMirror containing a {@link GuardSatisfied} annotation
@@ -562,8 +562,8 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Returns the index (that is, the {@code value} element) on the given {@link @GuardSatisfied}
-   * annotation.
+   * Returns the index (that is, the {@code value} element) on the given {@code @}{@link
+   * GuardSatisfied} annotation.
    *
    * @param am an AnnotationMirror for a {@link GuardSatisfied} annotation
    * @return the index on the {@link GuardSatisfied} annotation
