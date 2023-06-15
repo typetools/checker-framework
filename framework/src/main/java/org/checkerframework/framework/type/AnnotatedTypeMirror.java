@@ -489,7 +489,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns if this type has a primary annotation that is the same as {@code a}.
+   * Returns true if this type has a primary annotation that is the same as {@code a}.
    *
    * <p>This method considers the annotation's values. If the type is {@code @A("s") @B(3) Object},
    * then a call with {@code @A("t")} or {@code @A} will return false, whereas a call with
@@ -499,7 +499,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * compares annotation values.
    *
    * @param a the annotation to check for
-   * @return true iff this type has a primary annotation that is the same as {@code a}.
+   * @return true iff this type has a primary annotation that is the same as {@code a}
    * @see #hasPrimaryAnnotationRelaxed(AnnotationMirror)
    */
   public boolean hasPrimaryAnnotation(AnnotationMirror a) {
@@ -507,8 +507,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns if this type has a primary annotation that has the same annotation type as {@code a}.
-   * This method does not consider an annotation's values.
+   * Returns true if this type has a primary annotation that has the same annotation type as {@code
+   * a}. This method does not consider an annotation's values.
    *
    * @param a the class of annotation to check for
    * @return true iff the type contains an annotation with the same type as the annotation given by
@@ -578,10 +578,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns true if this type has a primary annotation that has the same annotation class as {@code
    * a}.
    *
-   * <p>Determines whether this type contains an annotation with the same annotation type as a
-   * particular annotation. This method does not consider an annotation's values. If the type is
-   * {@code @A("s") @B(3) Object}, then a call with {@code @A("t")}, {@code @A}, or {@code @B} will
-   * return true.
+   * <p>This method does not consider an annotation's values. If the type is {@code @A("s") @B(3)
+   * Object}, then a call with {@code @A("t")}, {@code @A}, or {@code @B} will return true.
    *
    * @param a the annotation to check for
    * @return true iff the type has a primary annotation with the same type as {@code a}
