@@ -64,7 +64,7 @@ public class SameLenTransfer extends CFTransfer {
    * Gets the receiver sequence of a length access node, or null if {@code lengthNode} is not a
    * length access.
    */
-  private Node getLengthReceiver(Node lengthNode) {
+  private @Nullable Node getLengthReceiver(Node lengthNode) {
     if (isArrayLengthAccess(lengthNode)) {
       // lengthNode is a.length
       FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;

@@ -217,7 +217,8 @@ public class I18nFormatterTreeUtil {
     checker.reportWarning(res.location, msgKey, args);
   }
 
-  private I18nConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
+  private I18nConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
+      MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
     if (vararg instanceof ArrayCreationNode) {
       List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();

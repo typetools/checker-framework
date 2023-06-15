@@ -388,7 +388,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent an
    * array's length field.
    */
-  Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
+  @Nullable Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
     if (TreeUtils.isArrayLengthAccess(tree)) {
       return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
     }
@@ -399,7 +399,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't represent an
    * string length method.
    */
-  Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
+  @Nullable Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
     if (imf.isLengthOfMethodInvocation(tree)) {
       return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
     }
@@ -416,7 +416,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return an AnnotationMirror representing the result if the special case is valid, or null if
    *     not
    */
-  AnnotationMirror checkForMathRandomSpecialCase(NumericalMultiplicationNode node) {
+  @Nullable AnnotationMirror checkForMathRandomSpecialCase(NumericalMultiplicationNode node) {
     AnnotationMirror forwardRes =
         checkForMathRandomSpecialCase(
             node.getLeftOperand().getTree(), node.getRightOperand().getTree());

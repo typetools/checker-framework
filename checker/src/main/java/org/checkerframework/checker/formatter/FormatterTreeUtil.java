@@ -256,7 +256,7 @@ public class FormatterTreeUtil {
      * @return an error description if the format string is not annotated as {@code @Format}, or
      *     null if it is
      */
-    public final Result<String> errMissingFormatAnnotation() {
+    public final @Nullable Result<String> errMissingFormatAnnotation() {
       if (!formatStringType.hasAnnotation(Format.class)) {
         String msg = "(is a @Format annotation missing?)";
         AnnotationMirror inv = formatStringType.getAnnotation(InvalidFormat.class);

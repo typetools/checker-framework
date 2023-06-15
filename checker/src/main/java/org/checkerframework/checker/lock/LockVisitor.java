@@ -731,7 +731,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param lockExpression the receiver tree for the method call to unlock(). Can be null.
    */
   private void ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(
-      ExecutableElement methodElement, ExpressionTree lockExpression) {
+      ExecutableElement methodElement, @Nullable ExpressionTree lockExpression) {
     if (lockExpression == null) {
       // Implicit this, or class name receivers, are null. But they are also final. So nothing
       // to be checked for them.

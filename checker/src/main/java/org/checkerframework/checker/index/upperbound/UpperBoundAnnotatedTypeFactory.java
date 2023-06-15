@@ -725,7 +725,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
 
     /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
-    private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
+    private @Nullable ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
       return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
     }
 

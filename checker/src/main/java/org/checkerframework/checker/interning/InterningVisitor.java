@@ -80,7 +80,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * one. The user can pass the class name via the {@code -Acheckclass=...} option. Null if no class
    * is specified, or the class specified isn't in the classpath.
    */
-  private final DeclaredType typeToCheck = typeToCheck();
+  private final @Nullable DeclaredType typeToCheck = typeToCheck();
 
   /** The Comparable.compareTo method. */
   private final ExecutableElement comparableCompareTo =
@@ -410,7 +410,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param tree a class
    * @return the class's implementation of equals, or null
    */
-  private MethodTree equalsImplementation(ClassTree tree) {
+  private @Nullable MethodTree equalsImplementation(ClassTree tree) {
     List<? extends Tree> members = tree.getMembers();
     for (Tree member : members) {
       if (member instanceof MethodTree) {
@@ -903,7 +903,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    * @param scope the scope to search for the element corresponding to "this" in
    * @return the element corresponding to "this" in the given scope, or null if not found
    */
-  private Element getThis(Scope scope) {
+  private @Nullable Element getThis(Scope scope) {
     for (Element e : scope.getLocalElements()) {
       if (e.getSimpleName().contentEquals("this")) {
         return e;

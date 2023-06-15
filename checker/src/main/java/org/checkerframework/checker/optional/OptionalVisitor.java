@@ -68,7 +68,7 @@ public class OptionalVisitor
   private final @Nullable ExecutableElement optionalOrElseThrow;
 
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
-  private final ExecutableElement optionalOrElseThrowSupplier;
+  private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
 
   /** Create an OptionalVisitor. */
   public OptionalVisitor(BaseTypeChecker checker) {

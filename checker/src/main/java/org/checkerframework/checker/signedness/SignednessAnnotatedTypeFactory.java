@@ -446,12 +446,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // TODO: Return a TypeKind rather than a PrimitiveTypeTree?
   /**
-   * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
+   * Returns the type of a primitive cast, or null if the argument is not a cast to a primitive.
    *
    * @param tree a tree that might be a cast to a primitive
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
-  private PrimitiveTypeTree primitiveTypeCast(Tree tree) {
+  private @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
     if (tree.getKind() != Tree.Kind.TYPE_CAST) {
       return null;
     }

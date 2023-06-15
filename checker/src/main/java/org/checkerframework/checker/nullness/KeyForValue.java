@@ -79,7 +79,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
    * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
    * this value is a key. Otherwise, it's null.
    */
-  public Set<String> getKeyForMaps() {
+  public @Nullable Set<String> getKeyForMaps() {
     return keyForMaps;
   }
 

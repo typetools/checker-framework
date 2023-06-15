@@ -131,10 +131,10 @@ public class LockAnnotatedTypeFactory
       TreeUtils.getMethod(EnsuresLockHeldIf.class, "expression", 0, processingEnv);
 
   /** The net.jcip.annotations.GuardedBy annotation, or null if not on the classpath. */
-  protected final Class<? extends Annotation> jcipGuardedBy;
+  protected final @Nullable Class<? extends Annotation> jcipGuardedBy;
 
   /** The javax.annotation.concurrent.GuardedBy annotation, or null if not on the classpath. */
-  protected final Class<? extends Annotation> javaxGuardedBy;
+  protected final @Nullable Class<? extends Annotation> javaxGuardedBy;
 
   /** Create a new LockAnnotatedTypeFactory. */
   public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -154,7 +154,8 @@ public class LockAnnotatedTypeFactory
    * @return an annotation class or null
    */
   @SuppressWarnings("unchecked") // cast to generic type
-  private Class<? extends Annotation> classForNameOrNull(@ClassGetName String annotationClassName) {
+  private @Nullable Class<? extends Annotation> classForNameOrNull(
+      @ClassGetName String annotationClassName) {
     try {
       return (Class<? extends Annotation>) Class.forName(annotationClassName);
     } catch (Exception e) {
@@ -550,23 +551,22 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Returns the index (that is, the {@code value} element) on the {@code @GuardSatisfied}
-   * annotation in the given AnnotatedTypeMirror. Assumes atm is non-null and contains a
-   * {@code @GuardSatisfied} annotation.
+   * Returns the index (that is, the {@code value} element) on the {@link @GuardSatisfied}
+   * annotation in the given AnnotatedTypeMirror.
    *
-   * @param atm an AnnotatedTypeMirror containing a GuardSatisfied annotation
-   * @return the index on the GuardSatisfied annotation
+   * @param atm an AnnotatedTypeMirror containing a {@link GuardSatisfied} annotation
+   * @return the index on the {@link GuardSatisfied} annotation
    */
   /*package-private*/ int getGuardSatisfiedIndex(AnnotatedTypeMirror atm) {
     return getGuardSatisfiedIndex(atm.getAnnotation(GuardSatisfied.class));
   }
 
   /**
-   * Returns the index (that is, the {@code value} element) on the given {@code @GuardSatisfied}
-   * annotation. Assumes am is non-null and is a GuardSatisfied annotation.
+   * Returns the index (that is, the {@code value} element) on the given {@link @GuardSatisfied}
+   * annotation.
    *
-   * @param am an AnnotationMirror for a GuardSatisfied annotation
-   * @return the index on the GuardSatisfied annotation
+   * @param am an AnnotationMirror for a {@link GuardSatisfied} annotation
+   * @return the index on the {@link GuardSatisfied} annotation
    */
   /*package-private*/ int getGuardSatisfiedIndex(AnnotationMirror am) {
     return AnnotationUtils.getElementValueInt(am, guardSatisfiedValueElement, -1);
@@ -661,7 +661,7 @@ public class LockAnnotatedTypeFactory
    */
   private boolean replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
       AnnotatedTypeMirror methodReturnAtm,
-      AnnotatedTypeMirror atm,
+      @Nullable AnnotatedTypeMirror atm,
       int matchingGuardSatisfiedIndex,
       AnnotationMirror annotationInGuardedByHierarchy) {
     if (atm == null

@@ -18,7 +18,7 @@ public class IndexUtil {
   }
 
   /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
-  public static ExpressionTree getLengthSequenceTree(
+  public static @Nullable ExpressionTree getLengthSequenceTree(
       Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
     if (TreeUtils.isArrayLengthAccess(lengthTree)) {
       return ((MemberSelectTree) lengthTree).getExpression();

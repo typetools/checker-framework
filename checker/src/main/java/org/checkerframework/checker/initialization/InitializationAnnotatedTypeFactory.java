@@ -890,7 +890,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param qual2 a qualifier kind
      * @return the lub of anno1 and anno2
      */
-    protected AnnotationMirror leastUpperBoundInitialization(
+    protected @Nullable AnnotationMirror leastUpperBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
       if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
         return null;
@@ -954,7 +954,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param qual2 a qualifier kind
      * @return the glb of anno1 and anno2
      */
-    protected AnnotationMirror greatestLowerBoundInitialization(
+    protected @Nullable AnnotationMirror greatestLowerBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
       if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
         return null;
