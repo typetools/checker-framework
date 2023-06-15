@@ -3232,7 +3232,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param atm1 the first AnnotatedTypeMirror
    * @param atm2 the second AnnotatedTypeMirror
-   * @return true iff neither argumentc contains "@", or there are two annotated types (in either
+   * @return true iff neither argument contains "@", or there are two annotated types (in either
    *     ATM) such that their toStrings are the same but their verbose toStrings differ
    */
   private static boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
