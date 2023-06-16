@@ -981,7 +981,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @return a TreePath that can be passed to methods in the Resolver class to locate local
    *     variables
    */
-  private TreePath getPathForLocalVariableRetrieval(TreePath path) {
+  private @Nullable TreePath getPathForLocalVariableRetrieval(TreePath path) {
     assert path.getLeaf() instanceof AnnotationTree;
 
     // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this

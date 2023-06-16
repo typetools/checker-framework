@@ -100,6 +100,7 @@ public class MustCallTransfer extends CFTransfer {
           atypeFactory
               .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
               .getAnnotationInHierarchy(atypeFactory.TOP);
+      assert this.defaultStringType != null : "@AssumeAssertion(nullness): same hierarchy";
     }
     return this.defaultStringType;
   }

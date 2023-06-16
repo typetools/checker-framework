@@ -325,7 +325,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
    * given tree.
    */
-  public AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
+  public @Nullable AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
     AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
     return sameLenType.getAnnotation(SameLen.class);
   }
@@ -926,7 +926,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return ltlQualifier.convertToAnnotation(processingEnv);
   }
 
-  UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
+  @Nullable UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
     List<String> lessThanExpressions =
         getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
     if (lessThanExpressions == null) {
@@ -939,7 +939,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return null;
   }
 
-  UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
+  @Nullable UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
     List<String> lessThanExpressions =
         getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
     if (lessThanExpressions == null) {
@@ -949,7 +949,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return ubQualifier;
   }
 
-  private UBQualifier fromLessThanOrEqual(
+  private @Nullable UBQualifier fromLessThanOrEqual(
       Tree tree, TreePath treePath, List<String> lessThanExpressions) {
     UBQualifier ubQualifier = null;
     for (String expression : lessThanExpressions) {

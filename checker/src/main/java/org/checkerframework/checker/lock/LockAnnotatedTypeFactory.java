@@ -512,7 +512,7 @@ public class LockAnnotatedTypeFactory
    *     annotation is present on the method
    * @return the side effect annotation that is present on the given method
    */
-  /*package-private*/ SideEffectAnnotation methodSideEffectAnnotation(
+  /*package-private*/ @Nullable SideEffectAnnotation methodSideEffectAnnotation(
       ExecutableElement methodElement, boolean issueErrorIfMoreThanOnePresent) {
     if (methodElement == null) {
       // When there is not enough information to determine the correct side effect annotation,

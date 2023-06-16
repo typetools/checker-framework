@@ -435,10 +435,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   }
 
   /**
-   * Return true if randTree is a call to Math.random() or Random.nextDouble(), and arrLenTree is
-   * someArray.length.
+   * Return a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   * arrLenTree is someArray.length.
    */
-  private AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
+  private @Nullable AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
     if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
         && TreeUtils.isArrayLengthAccess(arrLenTree)) {
       MethodInvocationTree miTree = (MethodInvocationTree) randTree;

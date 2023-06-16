@@ -136,7 +136,8 @@ public class FormatterTreeUtil {
     return anno != null;
   }
 
-  private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
+  private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
+      MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
     if (!(vararg instanceof ArrayCreationNode)) {
       return null;

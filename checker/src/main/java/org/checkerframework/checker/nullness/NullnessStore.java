@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.InitializationStore;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -30,7 +31,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   private final transient long uid = nextUid.getAndIncrement();
 
   @Override
-  public long getUid() {
+  public long getUid(@UnknownInitialization NullnessStore this) {
     return uid;
   }
 

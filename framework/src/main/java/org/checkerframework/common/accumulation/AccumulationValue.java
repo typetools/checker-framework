@@ -95,7 +95,8 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   }
 
   @Override
-  public AccumulationValue mostSpecific(AccumulationValue other, AccumulationValue backup) {
+  public @Nullable AccumulationValue mostSpecific(
+      AccumulationValue other, AccumulationValue backup) {
     if (other == null) {
       return this;
     }

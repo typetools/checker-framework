@@ -18,6 +18,7 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -656,7 +657,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
    *
    * @param n sequence length access node
    */
-  private TransferResult<CFValue, CFStore> visitLengthAccess(
+  private @Nullable TransferResult<CFValue, CFStore> visitLengthAccess(
       Node n, TransferInput<CFValue, CFStore> in, JavaExpression sequenceJe, Tree sequenceTree) {
     if (sequenceTree == null) {
       return null;

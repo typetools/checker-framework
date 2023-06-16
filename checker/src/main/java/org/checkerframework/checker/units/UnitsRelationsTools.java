@@ -169,8 +169,7 @@ public class UnitsRelationsTools {
    * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
    * @return the base SI Unit's AnnotationMirror, or null if the base SI Unit cannot be constructed
    */
-  public static @Nullable AnnotationMirror removePrefix(
-      Elements elements, AnnotationMirror unitsAnnotation) {
+  public static AnnotationMirror removePrefix(Elements elements, AnnotationMirror unitsAnnotation) {
     if (hasNoPrefix(unitsAnnotation)) {
       // Optimization, though the else case would also work.
       return unitsAnnotation;

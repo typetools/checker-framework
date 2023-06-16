@@ -119,7 +119,7 @@ public class DiagMessage {
    * @param list2 a list of DiagMessage, or null
    * @return the concatenation of the lists
    */
-  public static List<DiagMessage> mergeLists(
+  public static @Nullable List<DiagMessage> mergeLists(
       @Nullable List<DiagMessage> list1, @Nullable List<DiagMessage> list2) {
     if (list1 == null || list1.isEmpty()) {
       return list2;

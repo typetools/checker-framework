@@ -537,23 +537,20 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
 
-    private AnnotationMirror useUnitsRelation(
+    private @Nullable AnnotationMirror useUnitsRelation(
         Tree.Kind kind, UnitsRelations ur, AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
 
-      AnnotationMirror res = null;
       if (ur != null) {
         switch (kind) {
           case DIVIDE:
-            res = ur.division(lht, rht);
-            break;
+            return ur.division(lht, rht);
           case MULTIPLY:
-            res = ur.multiplication(lht, rht);
-            break;
+            return ur.multiplication(lht, rht);
           default:
             // Do nothing
         }
       }
-      return res;
+      return null;
     }
   }
 

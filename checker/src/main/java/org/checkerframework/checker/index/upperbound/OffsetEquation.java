@@ -71,7 +71,7 @@ public class OffsetEquation {
     return error != null;
   }
 
-  public String getError() {
+  public @Nullable String getError() {
     return error;
   }
 

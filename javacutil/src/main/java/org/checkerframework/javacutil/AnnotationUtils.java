@@ -801,7 +801,7 @@ public class AnnotationUtils {
    * @param <T> the class of the type
    * @return the value of the element with the given name
    */
-  public static <T> @Nullable T getElementValue(
+  public static <T> T getElementValue(
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {
@@ -827,7 +827,7 @@ public class AnnotationUtils {
    * @param defaultValue the value to return if the element is not present
    * @return the value of the element with the given name
    */
-  public static <T> @Nullable T getElementValue(
+  public static <T> T getElementValue(
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType, T defaultValue) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {

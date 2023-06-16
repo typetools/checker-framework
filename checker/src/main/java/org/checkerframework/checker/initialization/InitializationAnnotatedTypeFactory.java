@@ -439,7 +439,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   @Override
-  public AnnotatedDeclaredType getSelfType(Tree tree) {
+  public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
     AnnotatedDeclaredType selfType = super.getSelfType(tree);
 
     TreePath path = getPath(tree);
@@ -469,7 +469,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return path to a top-level member containing the leaf of {@code path}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparison
-  private TreePath findTopLevelClassMemberForTree(TreePath path) {
+  private @Nullable TreePath findTopLevelClassMemberForTree(TreePath path) {
     if (TreeUtils.isClassTree(path.getLeaf())) {
       path = path.getParentPath();
       if (path == null) {
@@ -891,7 +891,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param qual2 a qualifier kind
      * @return the lub of anno1 and anno2
      */
-    protected @Nullable AnnotationMirror leastUpperBoundInitialization(
+    protected AnnotationMirror leastUpperBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
       if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
         return null;

@@ -14,6 +14,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.PartialRegex;
 import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
@@ -486,7 +487,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @param type type that may carry a Regex annotation
      * @return the Integer value of the Regex annotation (0 if no value exists)
      */
-    private Integer getMinimumRegexCount(AnnotatedTypeMirror type) {
+    private @Nullable Integer getMinimumRegexCount(AnnotatedTypeMirror type) {
       AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
       if (primaryRegexAnno == null) {
         switch (type.getKind()) {

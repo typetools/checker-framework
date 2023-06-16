@@ -14,6 +14,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -524,7 +525,7 @@ public abstract class UBQualifier {
      */
     private static SequencesOffsetsAndClass mapToSequencesAndOffsets(
         Map<String, Set<OffsetEquation>> map, boolean buildSubstringIndexAnnotation) {
-      List<String> sortedSequences = new ArrayList<>(map.keySet());
+      List<@KeyFor("map") String> sortedSequences = new ArrayList<>(map.keySet());
       Collections.sort(sortedSequences);
       List<String> sequences = new ArrayList<>();
       List<String> offsets = new ArrayList<>();

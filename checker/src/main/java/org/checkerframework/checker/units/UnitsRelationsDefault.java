@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 /** Default relations between SI units. */
 public class UnitsRelationsDefault implements UnitsRelations {
   /** SI base units. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // init() method
   protected AnnotationMirror m, km, mm, s, g, kg;
 
   /** Derived SI units without special names */
