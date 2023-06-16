@@ -255,9 +255,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * Returns true if this type has a primary annotation in the same hierarchy as {@code annotation}.
    *
-   * <p><annotation>It doesn't account for annotations in deep types (type arguments, array
-   * components, etc).
-   *
    * @param annotation the qualifier hierarchy to check for
    * @return true iff this type has a primary annotation in the same hierarchy as {@code
    *     annotation}.
@@ -2700,9 +2697,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /**
    * Returns true if this type has a primary annotation in the same hierarchy as {@code annotation}.
-   *
-   * <p><annotation>It doesn't account for annotations in deep types (type arguments, array
-   * components, etc).
    *
    * @param annotation the qualifier hierarchy to check for
    * @return true iff this type has a primary annotation in the same hierarchy as {@code
