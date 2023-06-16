@@ -267,9 +267,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the primary annotation on this type that is in the same hierarchy as {@code annotation).
-   * For {@link AnnotatedTypeVariable}s and {@link
-   * AnnotatedWildcardType}s, {@code null} may be returned when the upper bound may have an annotation with that class, so {@link #getEffectiveAnnotationInHierarchy(AnnotationMirror)} should be called instead.
+   * Returns the primary annotation on this type that is in the same hierarchy as {@code
+   * annotation}. For {@link AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code
+   * null} may be returned when the upper bound may have an annotation with that class, so {@link
+   * #getEffectiveAnnotationInHierarchy(AnnotationMirror)} should be called instead.
    *
    * @param annotation an annotation in the qualifier hierarchy to check for
    * @return the annotation mirror whose class is named {@code annoNAme} or null
@@ -444,7 +445,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * #getEffectiveAnnotation(Class)} should be called instead.
    *
    * @param annoName annotation class name
-   * @return the annotation mirror whose class is named {@code annoNAme} or null
+   * @return the annotation mirror whose class is named {@code annoName} or null
    */
   public @Nullable AnnotationMirror getPrimaryAnnotation(String annoName) {
     for (AnnotationMirror annoMirror : primaryAnnotations) {
@@ -694,11 +695,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Adds only the annotations in {@code annotations} that the type does not already have a primary
    * annotation in the same hierarchy.
    *
-   * <p>The canonical version of the {@code annotation} is added as a primary annotations of this
+   * <p>The canonical version of the {@code annotations} are added as primary annotations of this
    * type and, in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
    * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
-   * via {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
-   * annotation} is not a supported qualifier, then that annotation is not add added.
+   * via {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an
+   * annotation is not a supported qualifier, then that annotation is not add added.
    *
    * @param annotations the annotations to add
    */

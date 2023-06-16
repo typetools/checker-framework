@@ -377,12 +377,10 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         boolean rExprPoly = rExpr.hasPrimaryAnnotation(PolyRegex.class);
 
         if (lExprRE && rExprRE) {
-          // Remove current @Regex annotation...
-          type.removePrimaryAnnotationInHierarchy(REGEX);
-          // ...and add a new one with the correct group count value.
-          type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
+          // Remove current @Regex annotation and add a new one with the correct group count value.
+          type.replaceAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
         } else if ((lExprPoly && rExprPoly) || (lExprPoly && rExprRE) || (lExprRE && rExprPoly)) {
-          type.addAnnotation(PolyRegex.class);
+          type.addAnnotation(POLYREGEX);
         } else if (lExprPart && rExprPart) {
           String lRegex = getPartialRegexValue(lExpr);
           String rRegex = getPartialRegexValue(rExpr);

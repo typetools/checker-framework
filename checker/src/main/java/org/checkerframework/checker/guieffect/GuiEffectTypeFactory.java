@@ -69,6 +69,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    */
   protected final Set<TypeElement> uiAnonClasses = new HashSet<>();
 
+  /** The @{@link AlwaysSafe} annotation. */
+  protected final AnnotationMirror ALWAYSSAFE =
+      AnnotationBuilder.fromClass(elements, AlwaysSafe.class);
+
+  /** The @{@link PolyUI} annotation. */
+  protected final AnnotationMirror POLYUI = AnnotationBuilder.fromClass(elements, PolyUI.class);
+
+  /** The @{@link UI} annotation. */
+  protected final AnnotationMirror UI = AnnotationBuilder.fromClass(elements, UI.class);
+
   public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
     // use true to enable flow inference, false to disable it
     super(checker, false);
@@ -610,13 +620,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
       // STEP 2: Fix up the method receiver annotation
       AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = methType.getReceiverType();
-      if (receiverType != null
-          && !receiverType.hasPrimaryAnnotationInHierarchy(
-              AnnotationBuilder.fromClass(elements, UI.class))) {
+      if (receiverType != null && !receiverType.hasPrimaryAnnotationInHierarchy(UI)) {
         receiverType.addAnnotation(
             isPolymorphicType(cls)
-                ? PolyUI.class
-                : fromElement(cls).hasPrimaryAnnotation(UI.class) ? UI.class : AlwaysSafe.class);
+                ? POLYUI
+                : fromElement(cls).hasPrimaryAnnotation(UI.class) ? UI : ALWAYSSAFE);
       }
       return super.visitMethod(tree, type);
     }
