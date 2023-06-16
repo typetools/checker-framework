@@ -220,8 +220,8 @@ public final class ElementAnnotationApplier {
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
 
-      if (type.getAnnotations().isEmpty()
-          && type.getUpperBound().getAnnotations().isEmpty()
+      if (type.getPrimaryAnnotations().isEmpty()
+          && type.getUpperBound().getPrimaryAnnotations().isEmpty()
           && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
         try {
           ElementAnnotationApplier.applyInternal(type, tpelt, factory);

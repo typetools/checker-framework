@@ -970,10 +970,10 @@ public abstract class CFAbstractTransfer<
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getAnnotations().equals(expType.getAnnotations())
-          && !expType.getAnnotations().isEmpty()) {
+          && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
+          && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
-        for (AnnotationMirror anno : refType.getAnnotations()) {
+        for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           in.getRegularStore().insertOrRefine(expr, anno);
         }
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
@@ -984,7 +984,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getAnnotations()) {
+      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }

@@ -142,7 +142,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       AnnotatedTypeMirror returnType = resolvedResult.executableType.getReturnType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnType.getAnnotations(), factory);
+      returnLub = lub(returnLub, returnType.getPrimaryAnnotations(), factory);
 
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
@@ -154,14 +154,14 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         receiverGlb =
             glb(receiverGlb, factory.getQualifierHierarchy().getTopAnnotations(), factory);
       } else {
-        receiverGlb = glb(receiverGlb, receiverType.getAnnotations(), factory);
+        receiverGlb = glb(receiverGlb, receiverType.getPrimaryAnnotations(), factory);
       }
 
       // Glb parameter types.  All formal parameter types get combined together because
       // Method#invoke takes as argument an array of parameter types, so there is no way to
       // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
+        paramsGlb = glb(paramsGlb, mirror.getPrimaryAnnotations(), factory);
       }
     }
 
@@ -285,11 +285,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       AnnotatedTypeMirror returnType = executableType.getReturnType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnType.getAnnotations(), factory);
+      returnLub = lub(returnLub, returnType.getPrimaryAnnotations(), factory);
 
       // Glb parameter types
       for (AnnotatedTypeMirror mirror : executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getAnnotations(), factory);
+        paramsGlb = glb(paramsGlb, mirror.getPrimaryAnnotations(), factory);
       }
     }
     if (returnLub == null) {

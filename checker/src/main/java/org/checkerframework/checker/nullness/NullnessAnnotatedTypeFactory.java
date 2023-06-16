@@ -416,7 +416,7 @@ public class NullnessAnnotatedTypeFactory
    * @param context tree used to get dataflow value
    */
   protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
-    if (lhsType.hasAnnotation(PolyNull.class)) {
+    if (lhsType.hasPrimaryAnnotation(PolyNull.class)) {
       NullnessValue inferred = getInferredValueFor(context);
       if (inferred != null) {
         if (inferred.isPolyNullNonNull) {
@@ -687,7 +687,7 @@ public class NullnessAnnotatedTypeFactory
             // Maybe this call is only necessary if argNullness is @NonNull.
             ((AnnotatedArrayType) type)
                 .getComponentType()
-                .replaceAnnotations(arrayArgComponentType.getAnnotations());
+                .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
           }
         }
       }
@@ -888,7 +888,7 @@ public class NullnessAnnotatedTypeFactory
   @Override
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
     AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
-    if (getAnnotationByClass(result.getAnnotations(), Nullable.class) != null) {
+    if (getAnnotationByClass(result.getPrimaryAnnotations(), Nullable.class) != null) {
       result.replaceAnnotation(MONOTONIC_NONNULL);
     }
     return result;
@@ -909,7 +909,7 @@ public class NullnessAnnotatedTypeFactory
   public void wpiAdjustForUpdateField(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
     // Synthetic variable names contain "#". Ignore them.
-    if (!rhsATM.hasAnnotation(Nullable.class) || fieldName.contains("#")) {
+    if (!rhsATM.hasPrimaryAnnotation(Nullable.class) || fieldName.contains("#")) {
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
@@ -926,7 +926,7 @@ public class NullnessAnnotatedTypeFactory
   // then change rhs to @Nullable
   @Override
   public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
-    if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
+    if (rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class)) {
       rhsATM.replaceAnnotation(NULLABLE);
     }
   }
@@ -951,14 +951,14 @@ public class NullnessAnnotatedTypeFactory
       @Nullable List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default
     // annotation.
-    if (!(declaredType.hasAnnotation(NULLABLE)
-        || declaredType.hasAnnotation(POLYNULL)
-        || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+    if (!(declaredType.hasPrimaryAnnotation(NULLABLE)
+        || declaredType.hasPrimaryAnnotation(POLYNULL)
+        || declaredType.hasPrimaryAnnotation(MONOTONIC_NONNULL))) {
       return null;
     }
 
     if (preOrPost == BeforeOrAfter.AFTER
-        && declaredType.hasAnnotation(MONOTONIC_NONNULL)
+        && declaredType.hasPrimaryAnnotation(MONOTONIC_NONNULL)
         && preconds.contains(requiresNonNullAnno(expression))) {
       // The postcondition is implied by the precondition and the field being
       // @MonotonicNonNull.

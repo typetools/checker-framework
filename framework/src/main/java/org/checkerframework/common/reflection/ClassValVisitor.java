@@ -47,8 +47,8 @@ class ClassNameValidator extends BaseTypeValidator {
    */
   @Override
   public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-    AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
-    classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
+    AnnotationMirror classVal = type.getPrimaryAnnotation(ClassVal.class);
+    classVal = classVal == null ? type.getPrimaryAnnotation(ClassBound.class) : classVal;
     if (classVal != null) {
       List<String> classNames =
           ((ClassValAnnotatedTypeFactory) atypeFactory).getClassNamesFromAnnotation(classVal);

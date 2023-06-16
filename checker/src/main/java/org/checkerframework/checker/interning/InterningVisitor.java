@@ -374,7 +374,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    */
   private boolean checkCreationOfInternedObject(
       NewClassTree newInternedObject, AnnotatedExecutableType constructor) {
-    if (constructor.getReturnType().hasAnnotation(Interned.class)) {
+    if (constructor.getReturnType().hasPrimaryAnnotation(Interned.class)) {
       return true;
     }
     TreePath path = getCurrentPath();

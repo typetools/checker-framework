@@ -49,19 +49,19 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      type.removeAnnotation(LOCALIZED);
+      type.removePrimaryAnnotation(LOCALIZED);
       return null;
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
-      type.removeAnnotation(LOCALIZED);
+      type.removePrimaryAnnotation(LOCALIZED);
       return null;
     }
 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-      if (!type.isAnnotatedInHierarchy(LOCALIZED)) {
+      if (!type.hasPrimaryAnnotationInHierarchy(LOCALIZED)) {
         if (tree.getKind() == Tree.Kind.STRING_LITERAL && tree.getValue().equals("")) {
           type.addAnnotation(LOCALIZED);
         }

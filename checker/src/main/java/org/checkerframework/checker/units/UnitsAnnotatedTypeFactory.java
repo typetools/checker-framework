@@ -475,21 +475,21 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         switch (kind) {
           case MINUS:
           case PLUS:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // The sum or difference has the same units as both operands.
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // otherwise it results in mixed
               type.replaceAnnotation(mixedUnits);
             }
             break;
           case DIVIDE:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // If the units of the division match, return TOP
               type.replaceAnnotation(TOP);
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any unit divided by a scalar keeps that unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(lht)) {
               // scalar divided by any unit returns mixed
               type.replaceAnnotation(mixedUnits);
@@ -503,10 +503,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           case MULTIPLY:
             if (UnitsRelationsTools.hasNoUnits(lht)) {
               // any unit multiplied by a scalar keeps the unit
-              type.replaceAnnotations(rht.getAnnotations());
+              type.replaceAnnotations(rht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any scalar multiplied by a unit becomes the unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // else it is a multiplication of two units that have no defined
               // relations from a relations class
@@ -517,7 +517,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           case REMAINDER:
             // in modulo operation, it always returns the left unit regardless of what
             // it is (unknown, or some unit)
-            type.replaceAnnotations(lht.getAnnotations());
+            type.replaceAnnotations(lht.getPrimaryAnnotations());
             break;
           default:
             // Placeholders for unhandled binary operations
@@ -533,7 +533,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       ExpressionTree var = tree.getVariable();
       AnnotatedTypeMirror varType = getAnnotatedType(var);
 
-      type.replaceAnnotations(varType.getAnnotations());
+      type.replaceAnnotations(varType.getPrimaryAnnotations());
       return null;
     }
 

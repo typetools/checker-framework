@@ -157,7 +157,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    */
   public boolean isLessThan(Tree left, String right) {
     AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-    return isLessThan(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
+    return isLessThan(leftATM.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
   }
 
   /**
@@ -266,7 +266,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    */
   public boolean isLessThanOrEqual(Tree left, String right) {
     AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-    return isLessThanOrEqual(leftATM.getAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
+    return isLessThanOrEqual(leftATM.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
   }
 
   /**
@@ -303,7 +303,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    */
   public @Nullable List<String> getLessThanExpressions(ExpressionTree expression) {
     AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-    return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN));
+    return getLessThanExpressions(
+        annotatedTypeMirror.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN));
   }
 
   /**

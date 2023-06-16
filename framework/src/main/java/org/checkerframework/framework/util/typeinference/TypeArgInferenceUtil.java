@@ -540,7 +540,7 @@ public class TypeArgInferenceUtil {
             factory.getUninferredWildcardType(
                 (AnnotatedTypeVariable)
                     AnnotatedTypeMirror.createType(typeVariable, factory, false));
-        wt.replaceAnnotations(entry.getValue().getAnnotations());
+        wt.replaceAnnotations(entry.getValue().getPrimaryAnnotations());
         result.put(typeVariable, wt);
       }
     }

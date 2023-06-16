@@ -287,12 +287,12 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   * fewer qualifiers than the width of the QualifierHierarchy.
+   * Returns true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   * set with fewer qualifiers than the width of the QualifierHierarchy.
    *
    * @param type the type to test
-   * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   *     fewer qualifiers than the width of the QualifierHierarchy
+   * @return true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   *     set with fewer qualifiers than the width of the QualifierHierarchy
    */
   static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
     return type.getKind() == TypeKind.TYPEVAR
