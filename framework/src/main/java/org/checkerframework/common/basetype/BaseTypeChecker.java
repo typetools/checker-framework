@@ -432,7 +432,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
   public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
-    return getTypeFactory().getTypeFactoryOfSubchecker(subCheckerClass);
+    return getTypeFactory().getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
   }
 
   /**
