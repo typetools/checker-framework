@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * The Range class models a 64-bit two's-complement integral interval, such as all integers between
@@ -16,6 +17,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * <p>{@code Range} is immutable.
  */
+@AnnotatedFor("nullness")
 public class Range {
 
   /** The lower bound of the interval, inclusive. */

@@ -19,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -39,6 +40,7 @@ import org.plumelib.util.StringsPlume;
  * represents that element (or a use of that Element). This class also contains package private
  * methods used by the ElementAnnotationAppliers that do most of the work.
  */
+@AnnotatedFor("nullness")
 public class ElementAnnotationUtil {
 
   /**
@@ -391,7 +393,7 @@ public class ElementAnnotationUtil {
   private static AnnotatedTypeMirror getTypeAtLocation(
       AnnotatedTypeMirror type,
       List<TypeAnnotationPosition.TypePathEntry> location,
-      TypeCompound anno,
+      @Nullable TypeCompound anno,
       boolean isComponentTypeOfArray)
       throws UnexpectedAnnotationLocationException {
     if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {

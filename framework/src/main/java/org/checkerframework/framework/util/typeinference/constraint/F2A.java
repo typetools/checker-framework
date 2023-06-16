@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
@@ -8,6 +9,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  *
  * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint
  */
+@AnnotatedFor("nullness")
 public class F2A extends AFConstraint {
 
   /** Create a constraint with an argument greater than a formal. */

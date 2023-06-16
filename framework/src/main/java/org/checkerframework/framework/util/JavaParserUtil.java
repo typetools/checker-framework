@@ -25,12 +25,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Optional;
 import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Utility methods for working with JavaParser. It is a replacement for StaticJavaParser that does
  * not leak memory, and it provides some other methods.
  */
+@AnnotatedFor("nullness")
 public class JavaParserUtil {
 
   /**

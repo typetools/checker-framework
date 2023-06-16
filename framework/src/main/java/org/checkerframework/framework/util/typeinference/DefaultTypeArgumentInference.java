@@ -23,6 +23,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -98,6 +99,7 @@ import org.plumelib.util.StringsPlume;
  *       {@code T <: S}.
  * </ul>
  */
+@AnnotatedFor("nullness")
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
   private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
   private final SupertypesSolver supertypesSolver = new SupertypesSolver();

@@ -10,6 +10,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -22,6 +23,7 @@ import org.checkerframework.javacutil.BugInCF;
  * Note, the index of IndexedElementAnnotationApplier refers to the type parameter's index in the
  * list that encloses it.
  */
+@AnnotatedFor("nullness")
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
   /**

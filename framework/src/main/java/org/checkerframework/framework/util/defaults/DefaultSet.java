@@ -1,12 +1,14 @@
 package org.checkerframework.framework.util.defaults;
 
 import java.util.TreeSet;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.plumelib.util.StringsPlume;
 
 /**
  * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}).
  * This class provides a little syntactic sugar and a better toString over TreeSet.
  */
+@AnnotatedFor("nullness")
 @SuppressWarnings("serial")
 class DefaultSet extends TreeSet<Default> {
 

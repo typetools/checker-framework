@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -21,6 +22,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>Note: This class is only useful so that AtmCombo can look up combinations via the
  * AtmKind.ordinal(). See AtmCombo.comboMap
  */
+@AnnotatedFor("nullness")
 enum AtmKind {
   ARRAY(AnnotatedArrayType.class),
   DECLARED(AnnotatedDeclaredType.class),
@@ -79,6 +81,7 @@ enum AtmKind {
  *
  * @see AtmCombo#accept
  */
+@AnnotatedFor("nullness")
 public enum AtmCombo {
   ARRAY_ARRAY(AtmKind.ARRAY, AtmKind.ARRAY),
   ARRAY_DECLARED(AtmKind.ARRAY, AtmKind.DECLARED),

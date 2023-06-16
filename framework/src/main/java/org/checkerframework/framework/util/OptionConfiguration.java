@@ -2,8 +2,10 @@ package org.checkerframework.framework.util;
 
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** Provides methods for querying the Checker's options. */
+@AnnotatedFor("nullness")
 public interface OptionConfiguration {
 
   /**

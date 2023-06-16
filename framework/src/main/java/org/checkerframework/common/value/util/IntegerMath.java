@@ -1,5 +1,8 @@
 package org.checkerframework.common.value.util;
 
+import org.checkerframework.framework.qual.AnnotatedFor;
+
+@AnnotatedFor("nullness")
 public class IntegerMath extends NumberMath<Integer> {
   int number;
 

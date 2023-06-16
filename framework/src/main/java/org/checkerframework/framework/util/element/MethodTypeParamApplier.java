@@ -5,6 +5,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -12,6 +13,7 @@ import org.checkerframework.framework.util.element.ElementAnnotationUtil.Unexpec
 import org.checkerframework.javacutil.BugInCF;
 
 /** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
+@AnnotatedFor("nullness")
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
   /** Apply annotations from {@code element} to {@code type}. */

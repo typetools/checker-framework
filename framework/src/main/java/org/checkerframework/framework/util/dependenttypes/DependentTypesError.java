@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -16,6 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
  * thrown. The errors are not thrown so that they are only reported once rather than every time the
  * annotation is parsed. See {@link DependentTypesHelper} for more details.
  */
+@AnnotatedFor("nullness")
 public class DependentTypesError {
 
   /// Static fields

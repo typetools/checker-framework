@@ -40,6 +40,7 @@ import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -104,6 +105,7 @@ import org.plumelib.util.CollectionsPlume;
  * rather than every time the expression string is parsed. (The expression string is parsed multiple
  * times because annotated types are created multiple times.)
  */
+@AnnotatedFor("nullness")
 public class DependentTypesHelper {
 
   /** AnnotatedTypeFactory */

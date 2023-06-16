@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -17,6 +18,7 @@ import org.checkerframework.javacutil.BugInCF;
  * <p>If a FieldInvariants object is malformed (inconsistent number of fields and qualifiers),
  * BaseTypeVisitor will issue an error.
  */
+@AnnotatedFor("nullness")
 public class FieldInvariants {
 
   /**

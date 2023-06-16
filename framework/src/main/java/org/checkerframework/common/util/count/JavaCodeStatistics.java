@@ -17,6 +17,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -40,6 +41,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @see AnnotationStatistics
  */
+@AnnotatedFor("nullness")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class JavaCodeStatistics extends SourceChecker {
 

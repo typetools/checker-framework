@@ -20,11 +20,13 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -39,6 +41,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>The formatted type information is designed to be visualized by editors and IDEs that support
  * Language Server Protocol (LSP).
  */
+@AnnotatedFor("nullness")
 public class TypeInformationPresenter {
 
   /** The AnnotatedTypeFactory for the current analysis. */
@@ -49,7 +52,7 @@ public class TypeInformationPresenter {
    * instance of GenericAnnotatedTypeFactory; otherwise, factory and genFactory refer to the same
    * object.
    */
-  private final GenericAnnotatedTypeFactory<
+  private final @Nullable GenericAnnotatedTypeFactory<
           ? extends CFAbstractValue<?>,
           ? extends CFAbstractStore<? extends CFAbstractValue<?>, ?>,
           ? extends CFAbstractTransfer<?, ?, ?>,

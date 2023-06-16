@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference.constraint;
 
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -35,6 +36,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * exactly @NonNull String and the second argument would be invalid. However, the correct inference
  * would be @Nullable String and both arguments would be valid.
  */
+@AnnotatedFor("nullness")
 public abstract class TUConstraint {
   /**
    * An AnnotatedTypeVariable representing a target type parameter for which we are inferring a type

@@ -4,6 +4,7 @@ import com.sun.tools.javac.code.Attribute;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
@@ -12,6 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * TargetedElementAnnotationApplier} -- only include those with a position that matches the index
  * returned by getElementIndex.
  */
+@AnnotatedFor("nullness")
 abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotationApplier {
 
   protected IndexedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {

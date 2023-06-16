@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -18,7 +19,10 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
@@ -48,6 +52,7 @@ import org.plumelib.util.CollectionsPlume;
  * because its functionality is not available to users who choose not to use the Checker Framework
  * javac script.
  */
+@AnnotatedFor("nullness")
 public class CheckerMain {
 
   /**
@@ -126,6 +131,7 @@ public class CheckerMain {
    * Construct all the relevant file locations and Java version given the path to this jar and a set
    * of directories in which to search for jars.
    */
+  @SuppressWarnings("nullness:method.invocation") // call instance method within  constructor
   public CheckerMain(File checkerJar, List<String> args) {
 
     this.checkerJar = checkerJar;
@@ -156,9 +162,9 @@ public class CheckerMain {
   /** Assert that required jars exist. */
   protected void assertValidState() {
     if (SystemUtil.jreVersion == 8) {
-      assertFilesExist(Arrays.asList(javacJar, checkerJar, checkerQualJar, checkerUtilJar));
+      assertFilesExist(javacJar, checkerJar, checkerQualJar, checkerUtilJar);
     } else {
-      assertFilesExist(Arrays.asList(checkerJar, checkerQualJar, checkerUtilJar));
+      assertFilesExist(checkerJar, checkerQualJar, checkerUtilJar);
     }
   }
 
@@ -245,7 +251,8 @@ public class CheckerMain {
    * @return the string that follows argumentName if argumentName is in args, or alternative if
    *     argumentName is not present in args
    */
-  protected static String extractArg(String argumentName, String alternative, List<String> args) {
+  protected static @PolyNull String extractArg(
+      String argumentName, @PolyNull String alternative, List<String> args) {
     int i = args.indexOf(argumentName);
     if (i == -1) {
       return alternative;
@@ -287,14 +294,18 @@ public class CheckerMain {
    *     or the empty list if there were none
    */
   protected static List<String> extractOptWithPattern(
-      Pattern pattern, boolean allowEmpties, List<String> args) {
+      @Regex(1) Pattern pattern, boolean allowEmpties, List<String> args) {
     List<String> matchedArgs = new ArrayList<>();
 
     int i = 0;
     while (i < args.size()) {
       Matcher matcher = pattern.matcher(args.get(i));
       if (matcher.matches()) {
-        String arg = matcher.group(1).trim();
+        String group1 = matcher.group(1);
+        if (group1 == null) {
+          throw new BugInCF("Regex didn't capture group 1: " + pattern);
+        }
+        String arg = group1.trim();
 
         if (!arg.isEmpty() || allowEmpties) {
           matchedArgs.add(arg);
@@ -677,15 +688,19 @@ public class CheckerMain {
       classFileName = (idx == -1 ? name : name.substring(idx + 1)) + ".class";
     }
 
-    String uri = cls.getResource(classFileName).toString();
-    if (uri.startsWith("file:")) {
+    URL classFileUrl = cls.getResource(classFileName);
+    if (classFileUrl == null) {
+      throw new BugInCF("Cannot find resource " + classFileName);
+    }
+    if (classFileUrl.getProtocol().equals("file")) {
       if (errIfFromDirectory) {
-        return uri;
+        return classFileUrl.toString();
       } else {
         throw new IllegalStateException(
             "This class has been loaded from a directory and not from a jar file.");
       }
     }
+    String uri = classFileUrl.toString();
     if (!uri.startsWith("jar:file:")) {
       int idx = uri.indexOf(':');
       String protocol = idx == -1 ? "(unknown)" : uri.substring(0, idx);
@@ -719,7 +734,7 @@ public class CheckerMain {
    *
    * @param expectedFiles files that must exist
    */
-  private static void assertFilesExist(List<File> expectedFiles) {
+  private static void assertFilesExist(File... expectedFiles) {
     List<File> missingFiles = new ArrayList<>();
     for (File file : expectedFiles) {
       if (file == null) {

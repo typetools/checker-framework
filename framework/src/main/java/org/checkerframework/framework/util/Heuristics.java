@@ -11,6 +11,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -19,6 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>For an example, see {@code org.checkerframework.checker.interning.InterningVisitor}.
  */
+@AnnotatedFor("nullness")
 public class Heuristics {
 
   /**

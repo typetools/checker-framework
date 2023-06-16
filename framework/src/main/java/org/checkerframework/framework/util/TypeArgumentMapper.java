@@ -16,6 +16,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.plumelib.util.IPair;
 
 /**
@@ -58,6 +59,7 @@ import org.plumelib.util.IPair;
  * Map() // there are no type argument relationships between the two types
  * }</pre>
  */
+@AnnotatedFor("nullness")
 public class TypeArgumentMapper {
 
   /**

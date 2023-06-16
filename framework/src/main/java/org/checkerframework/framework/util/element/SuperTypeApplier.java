@@ -6,6 +6,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 
@@ -14,6 +15,7 @@ import org.checkerframework.framework.util.element.ElementAnnotationUtil.Unexpec
  * annotations of the subtypes class declaration. This class provides static methods to do this for
  * a list of supertypes. An instance of this class handles ONE supertype.
  */
+@AnnotatedFor("nullness")
 public class SuperTypeApplier extends IndexedElementAnnotationApplier {
 
   /**

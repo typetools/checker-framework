@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
@@ -14,6 +15,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
  * Represents the result from inferring type arguments. InferenceResult is a map from: target type
  * variable to (inferred type or target).
  */
+@AnnotatedFor("nullness")
 public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
   private static final long serialVersionUID = 6911459752070485818L;
 

@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ViewpointAdaptJavaExpression;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
@@ -37,6 +38,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>To parse a string "at a location" means to parse it as if it were written in an annotation
  * that is written on that location.
  */
+@AnnotatedFor("nullness")
 @FunctionalInterface
 public interface StringToJavaExpression {
 

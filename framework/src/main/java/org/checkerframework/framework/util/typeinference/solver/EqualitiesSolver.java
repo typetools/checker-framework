@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -23,6 +24,7 @@ import org.checkerframework.javacutil.BugInCF;
  * EqualitiesSolver infers type arguments for targets using the equality constraints in
  * ConstraintMap. When a type is inferred, it rewrites the remaining equality/supertype constraints
  */
+@AnnotatedFor("nullness")
 public class EqualitiesSolver {
   private boolean dirty = false;
 

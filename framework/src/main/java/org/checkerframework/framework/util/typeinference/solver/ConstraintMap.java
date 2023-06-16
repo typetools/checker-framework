@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
@@ -28,6 +29,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * Note: This class, along with TargetConstraints, uses a lot of mutable state and few
  * setters/getters be careful. This choice was made as it makes the resulting code more readable.
  */
+@AnnotatedFor("nullness")
 public class ConstraintMap {
 
   private final Map<TypeVariable, TargetConstraints> targetToRecords = new LinkedHashMap<>();

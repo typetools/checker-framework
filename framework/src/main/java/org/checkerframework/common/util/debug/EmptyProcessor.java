@@ -6,12 +6,14 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Empty simple processor.
  *
  * <p>It is useful in debugging compiler behavior with an annotation processor present.
  */
+@AnnotatedFor("nullness")
 @SupportedAnnotationTypes("*")
 public class EmptyProcessor extends AbstractProcessor {
 

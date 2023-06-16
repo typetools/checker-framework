@@ -76,6 +76,7 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -174,6 +175,7 @@ import org.plumelib.util.SystemPlume;
  *
  * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
+@AnnotatedFor("nullness")
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */
@@ -3279,6 +3281,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return true if that annotation is part of the type system under which this type factory
    *     operates, false otherwise
    */
+  @EnsuresNonNullIf(expression = "#1", result = true)
   public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
     if (a == null) {
       return false;

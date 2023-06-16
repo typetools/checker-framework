@@ -27,9 +27,11 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -60,6 +62,7 @@ import org.plumelib.util.DeepCopyable;
  *
  * @see TypeMirror
  */
+@AnnotatedFor("nullness")
 public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeMirror> {
 
   /** An EqualityAtmComparer. */
@@ -309,7 +312,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param p the qualifier hierarchy to check for
    * @return an annotation from the same hierarchy as p if present
    */
-  public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
+  public @Nullable AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
     AnnotationMirror canonical = p;
     if (!atypeFactory.isSupportedQualifier(canonical)) {
       canonical = atypeFactory.canonicalAnnotation(p);
@@ -398,7 +401,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param annoClass annotation class
    * @return the annotation mirror for anno
    */
-  public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
+  public @Nullable AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
     for (AnnotationMirror annoMirror : annotations) {
       if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
         return annoMirror;
@@ -414,7 +417,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param annoName annotation name
    * @return the annotation mirror for annoName
    */
-  public AnnotationMirror getAnnotation(String annoName) {
+  public @Nullable AnnotationMirror getAnnotation(String annoName) {
     for (AnnotationMirror annoMirror : annotations) {
       if (AnnotationUtils.areSameByName(annoMirror, annoName)) {
         return annoMirror;
@@ -491,7 +494,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param annoClass annotation class
    * @return the annotation mirror for anno
    */
-  public AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
+  public @Nullable AnnotationMirror getEffectiveAnnotation(Class<? extends Annotation> annoClass) {
     for (AnnotationMirror annoMirror : getEffectiveAnnotations()) {
       if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
         return annoMirror;
@@ -1142,20 +1145,23 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** Represents a type of an executable. An executable is a method, constructor, or initializer. */
   public static class AnnotatedExecutableType extends AnnotatedTypeMirror {
 
-    private ExecutableElement element;
+    private @MonotonicNonNull ExecutableElement element;
 
     private AnnotatedExecutableType(ExecutableType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
 
     /** The parameter types; an unmodifiable list. */
-    private List<AnnotatedTypeMirror> paramTypes;
+    private @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
 
     /** Whether {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
 
-    /** The receiver type. */
-    private AnnotatedDeclaredType receiverType;
+    /**
+     * The receiver type of this executable type; null for static methods and constructors of
+     * top-level classes.
+     */
+    private @Nullable AnnotatedDeclaredType receiverType;
 
     /** Whether {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
@@ -1303,7 +1309,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @param receiverType the receiver type
      */
-    /*package-private*/ void setReceiverType(AnnotatedDeclaredType receiverType) {
+    /*package-private*/ void setReceiverType(@Nullable AnnotatedDeclaredType receiverType) {
       this.receiverType = receiverType;
       receiverTypeComputed = true;
     }
@@ -1971,7 +1977,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * The type variable to which this wildcard is an argument. Used to initialize the upper bound
      * of unbounded wildcards and wildcards in raw types.
      */
-    private TypeVariable typeVariable = null;
+    @SuppressWarnings("nullness") // is reset during initialization
+    private @NonNull TypeVariable typeVariable = null;
 
     private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
       super(type, factory);

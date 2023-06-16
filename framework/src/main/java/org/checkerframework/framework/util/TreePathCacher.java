@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target Tree.
@@ -16,9 +17,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * intermediate TreePaths that are generated. The intermediate TreePaths are reused when other
  * targets have overlapping paths.
  */
+@AnnotatedFor("nullness")
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
-  private final Map<Tree, TreePath> foundPaths = new HashMap<>(32);
+  private final Map<Tree, @Nullable TreePath> foundPaths = new HashMap<>(32);
 
   /**
    * The TreePath of the previous tree scanned. It is always set back to null after a scan has
@@ -105,12 +107,13 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
   @Override
   public TreePath scan(Tree tree, Tree target) {
     TreePath prev = path;
-    if (tree != null && foundPaths.get(tree) == null) {
-      TreePath current = new TreePath(path, tree);
-      foundPaths.put(tree, current);
-      this.path = current;
-    } else {
-      this.path = foundPaths.get(tree);
+    if (tree != null) {
+      TreePath foundPath = foundPaths.get(tree);
+      if (foundPath == null) {
+        foundPath = new TreePath(path, tree);
+        foundPaths.put(tree, foundPath);
+      }
+      this.path = foundPath;
     }
 
     if (tree == target) {

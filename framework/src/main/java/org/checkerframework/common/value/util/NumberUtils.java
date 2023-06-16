@@ -3,10 +3,12 @@ package org.checkerframework.common.value.util;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Utility routines for manipulating numbers. */
+@AnnotatedFor("nullness")
 public class NumberUtils {
 
   /** Do not instantiate. */

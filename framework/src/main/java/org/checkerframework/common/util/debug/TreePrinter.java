@@ -10,6 +10,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 
 /**
@@ -36,6 +37,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
  *
  * @see org.checkerframework.common.util.debug.TreeDebug
  */
+@AnnotatedFor("nullness")
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TreePrinter extends AbstractTypeProcessor {

@@ -18,6 +18,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * A utility class for displaying the structure of the AST of a program.
@@ -34,6 +35,7 @@ import javax.lang.model.util.ElementFilter;
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */
+@AnnotatedFor("nullness")
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class TreeDebug extends AbstractProcessor {

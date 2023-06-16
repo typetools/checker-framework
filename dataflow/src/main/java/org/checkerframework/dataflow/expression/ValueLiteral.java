@@ -38,7 +38,7 @@ public class ValueLiteral extends JavaExpression {
    * @param type type of the literal
    * @param value the literal value
    */
-  public ValueLiteral(TypeMirror type, Object value) {
+  public ValueLiteral(TypeMirror type, @Nullable Object value) {
     super(type);
     this.value = value;
   }

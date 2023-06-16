@@ -10,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -19,6 +20,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * Standardizes Java expressions in annotations and also viewpoint-adapts field accesses. Other
  * viewpoint adaption is handled in {@link DependentTypesHelper}.
  */
+@AnnotatedFor("nullness")
 public class DependentTypesTreeAnnotator extends TreeAnnotator {
   private final DependentTypesHelper helper;
 
