@@ -76,14 +76,14 @@ public class ConstraintMapBuilder {
           && typeU.getKind() == TypeKind.TYPEVAR
           && targets.contains(
               (TypeVariable) TypeAnnotationUtils.unannotatedType(typeU.getUnderlyingType()))) {
-        if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {
+        if (typeT.getPrimaryAnnotations().isEmpty() && typeU.getPrimaryAnnotations().isEmpty()) {
           hierarchiesInRelation.addAll(tops);
 
         } else {
 
           for (AnnotationMirror top : tops) {
-            AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
-            AnnotationMirror uAnno = typeU.getAnnotationInHierarchy(top);
+            AnnotationMirror tAnno = typeT.getPrimaryAnnotationInHierarchy(top);
+            AnnotationMirror uAnno = typeU.getPrimaryAnnotationInHierarchy(top);
 
             if (tAnno == null) {
               if (uAnno == null) {
@@ -141,7 +141,7 @@ public class ConstraintMapBuilder {
         }
       } else {
         for (AnnotationMirror top : tops) {
-          AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
+          AnnotationMirror tAnno = typeT.getPrimaryAnnotationInHierarchy(top);
 
           if (tAnno == null) {
             hierarchiesInRelation.add(top);

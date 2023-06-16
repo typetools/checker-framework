@@ -222,7 +222,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     if (defaultAnno != null) {
       if (atypeFactory
               .getQualifierHierarchy()
-              .findAnnotationInHierarchy(type.getAnnotations(), defaultAnno)
+              .findAnnotationInHierarchy(type.getPrimaryAnnotations(), defaultAnno)
           == null) {
         type.addAnnotation(defaultAnno);
       }

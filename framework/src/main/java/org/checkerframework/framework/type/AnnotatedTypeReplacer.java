@@ -72,11 +72,11 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    */
   protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (top == null) {
-      to.replaceAnnotations(from.getAnnotations());
+      to.replaceAnnotations(from.getPrimaryAnnotations());
     } else {
-      AnnotationMirror replacement = from.getAnnotationInHierarchy(top);
+      AnnotationMirror replacement = from.getPrimaryAnnotationInHierarchy(top);
       if (replacement != null) {
-        to.replaceAnnotation(from.getAnnotationInHierarchy(top));
+        to.replaceAnnotation(from.getPrimaryAnnotationInHierarchy(top));
       }
     }
   }
@@ -104,13 +104,13 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
   public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {
       if (top != null) {
-        if (from.getAnnotationInHierarchy(top) == null) {
-          to.removeAnnotationInHierarchy(top);
+        if (from.getPrimaryAnnotationInHierarchy(top) == null) {
+          to.removePrimaryAnnotationInHierarchy(top);
         }
       } else {
         List<AnnotationMirror> toRemove = new ArrayList<>(1);
-        for (AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
-          if (from.getAnnotationInHierarchy(toPrimaryAnno) == null) {
+        for (AnnotationMirror toPrimaryAnno : to.getPrimaryAnnotations()) {
+          if (from.getPrimaryAnnotationInHierarchy(toPrimaryAnno) == null) {
             // Doing the removal here directly can lead to a
             // ConcurrentModificationException,
             // because this loop is iterating over the annotations in `to`.
@@ -118,7 +118,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
           }
         }
         for (AnnotationMirror annoToRemove : toRemove) {
-          to.removeAnnotation(annoToRemove);
+          to.removePrimaryAnnotation(annoToRemove);
         }
       }
     } else {

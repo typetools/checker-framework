@@ -160,13 +160,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   private void addLowerBoundTypeFromValueType(
       AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
     AnnotationMirror anm = getLowerBoundAnnotationFromValueType(valueType);
-    if (!type.isAnnotatedInHierarchy(UNKNOWN)) {
+    if (!type.hasPrimaryAnnotationInHierarchy(UNKNOWN)) {
       if (!areSameByClass(anm, LowerBoundUnknown.class)) {
         type.addAnnotation(anm);
       }
       return;
     }
-    if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+    if (qualHierarchy.isSubtype(anm, type.getPrimaryAnnotationInHierarchy(UNKNOWN))) {
       type.replaceAnnotation(anm);
     }
   }
@@ -225,7 +225,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     if (possibleValues == null) {
       // possibleValues is null if there is no IntVal annotation on the type - such as
       // when there is a BottomVal annotation. In that case, give this the LBC's bottom type.
-      if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+      if (containsSameByClass(valueType.getPrimaryAnnotations(), BottomVal.class)) {
         return BOTTOM;
       }
       return UNKNOWN;
@@ -272,11 +272,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *  </pre>
      */
     private void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasAnnotation(POS)) {
+      if (typeSrc.hasPrimaryAnnotation(POS)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasAnnotation(NN)) {
+      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasAnnotation(GTEN1)) {
+      } else if (typeSrc.hasPrimaryAnnotation(GTEN1)) {
         typeDst.replaceAnnotation(NN);
       } else { // Only unknown is left.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -294,9 +294,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *  </pre>
      */
     private void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasAnnotation(POS)) {
+      if (typeSrc.hasPrimaryAnnotation(POS)) {
         typeDst.replaceAnnotation(NN);
-      } else if (typeSrc.hasAnnotation(NN)) {
+      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
         typeDst.replaceAnnotation(GTEN1);
       } else { // GTEN1 and UNKNOWN both become UNKNOWN.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -339,7 +339,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private void handleBitWiseComplement(
         AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-      if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+      if (containsSameByClass(searchIndexType.getPrimaryAnnotations(), NegativeIndexFor.class)) {
         typeDst.addAnnotation(NN);
       }
     }
@@ -354,7 +354,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBound(
-                leftType.getAnnotationInHierarchy(POS), rightType.getAnnotationInHierarchy(POS)));
+                leftType.getPrimaryAnnotationInHierarchy(POS),
+                rightType.getPrimaryAnnotationInHierarchy(POS)));
       }
       return super.visitMethodInvocation(tree, type);
     }
@@ -458,6 +459,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public boolean isNonNegative(Tree tree) {
     // TODO: consolidate with the isNonNegative method in LowerBoundTransfer
     AnnotatedTypeMirror treeType = getAnnotatedType(tree);
-    return treeType.hasAnnotation(NonNegative.class) || treeType.hasAnnotation(Positive.class);
+    return treeType.hasPrimaryAnnotation(NonNegative.class)
+        || treeType.hasPrimaryAnnotation(Positive.class);
   }
 }
