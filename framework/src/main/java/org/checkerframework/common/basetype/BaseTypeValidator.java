@@ -621,18 +621,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
-          AnnotatedTypeMirror superBound = wildcard.getSuperBound();
-          TypeMirror superBoundTM = superBound.getUnderlyingType();
-          AnnotationMirrorSet superBoundAnnos = superBound.getEffectiveAnnotations();
-          AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
-          TypeMirror extendsBoundTM = extendsBound.getUnderlyingType();
-          AnnotationMirrorSet extendsBoundAnnos = extendsBound.getAnnotations();
-          if (!(qualHierarchy.isSubtypeShallow(
-                  superBoundAnnos, superBoundTM, extendsBoundAnnos, extendsBoundTM)
-              && qualHierarchy.isSubtypeShallow(
-                  extendsBoundAnnos, extendsBoundTM, superBoundAnnos, superBoundTM))) {
+
+          if (!(qualHierarchy.isSubtypeShallowEffective(
+                  wildcard.getSuperBound(), wildcard.getExtendsBound())
+              && qualHierarchy.isSubtypeShallowEffective(
+                  wildcard.getExtendsBound(), wildcard.getSuperBound()))) {
             checker.reportError(
-                tree.getTypeArguments().get(i), "super.wildcard", extendsBound, superBound);
+                tree.getTypeArguments().get(i),
+                "super.wildcard",
+                wildcard.getExtendsBound(),
+                wildcard.getSuperBound());
           }
         }
       }
@@ -690,11 +688,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         AnnotatedTypes.findEffectiveAnnotations(qualHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualHierarchy.isSubtypeShallow(
-          lowerBoundAnnos,
-          lowerBound.getUnderlyingType(),
-          upperBoundAnnos,
-          upperBound.getUnderlyingType());
+      return qualHierarchy.isSubtypeShallowEffective(upperBound, lowerBound);
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report

@@ -6,9 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.InterningVisitor;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.signedness.qual.PolySigned;
@@ -136,15 +134,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(tree)) {
-          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotation();
-          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotation();
-
-          TypeMirror leftOpTM = leftOpType.getUnderlyingType();
-          TypeMirror rightOpTM = rightOpType.getUnderlyingType();
-          if (!qualHierarchy.isSubtypeShallow(leftAnno, leftOpTM, atypeFactory.SIGNED, leftOpTM)) {
+          if (!qualHierarchy.isSubtypeShallowEffective(leftOpType, atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (!qualHierarchy.isSubtypeShallow(
-              rightAnno, rightOpTM, atypeFactory.SIGNED, rightOpTM)) {
+          } else if (!qualHierarchy.isSubtypeShallowEffective(rightOpType, atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -306,9 +298,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
-          TypeMirror exprTM = exprType.getUnderlyingType();
-          AnnotationMirror anno = exprType.getEffectiveAnnotation();
-          if (!qualHierarchy.isSubtypeShallow(anno, exprTM, atypeFactory.SIGNED, exprTM)) {
+          if (!qualHierarchy.isSubtypeShallowEffective(exprType, atypeFactory.SIGNED)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
           }
           break;

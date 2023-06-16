@@ -168,7 +168,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           AnnotationMirror effectiveMCAnno = type.getAnnotation();
           TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
-              && !qualHierarchy.isSubtypeShallow(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+              && !qualHierarchy.isSubtypeShallow(inheritedMCAnno, effectiveMCAnno, tm)) {
 
             checker.reportError(
                 tree,
@@ -206,7 +206,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             TypeMirror tm = type.getUnderlyingType();
 
-            if (!qualHierarchy.isSubtypeShallow(inheritedMCAnno, tm, effectiveMCAnno, tm)) {
+            if (!qualHierarchy.isSubtypeShallow(inheritedMCAnno, effectiveMCAnno, tm)) {
 
               checker.reportError(
                   tree,

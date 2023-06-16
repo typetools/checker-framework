@@ -67,9 +67,8 @@ public class GlbUtil {
     // create a copy of all of the types and apply the glb primary annotation
     AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
     for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
-      TypeMirror tm = atm.getUnderlyingType();
       if (atm.getKind() != TypeKind.TYPEVAR
-          || !qualHierarchy.isSubtypeShallow(atm.getEffectiveAnnotations(), tm, values, tm)) {
+          || !qualHierarchy.isSubtypeShallowEffective(atm, values)) {
         AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);

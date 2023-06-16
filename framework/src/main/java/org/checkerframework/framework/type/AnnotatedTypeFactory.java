@@ -2554,8 +2554,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     for (AnnotationMirror receiverTypeBoundAnno : receiverTypeBoundAnnos) {
       AnnotationMirror wildcardAnno =
           qualHierarchy.findAnnotationInSameHierarchy(wildcardBoundAnnos, receiverTypeBoundAnno);
-      if (qualHierarchy.isSubtypeShallow(
-          receiverTypeBoundAnno, receiverTM, wildcardAnno, receiverTM)) {
+      if (qualHierarchy.isSubtypeShallow(receiverTypeBoundAnno, wildcardAnno, receiverTM)) {
         newAnnos.add(receiverTypeBoundAnno);
       } else {
         newAnnos.add(wildcardAnno);

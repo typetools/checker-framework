@@ -168,8 +168,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       return;
     }
     TypeMirror valueTM = valueType.getUnderlyingType();
-    if (qualHierarchy.isSubtypeShallow(
-        anm, valueTM, type.getAnnotationInHierarchy(UNKNOWN), valueTM)) {
+    if (qualHierarchy.isSubtypeShallow(anm, type.getAnnotationInHierarchy(UNKNOWN), valueTM)) {
       type.replaceAnnotation(anm);
     }
   }

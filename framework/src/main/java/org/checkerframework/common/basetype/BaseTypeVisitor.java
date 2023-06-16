@@ -807,10 +807,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       Tree superClause, AnnotationMirrorSet classBounds, TypeMirror classType, boolean isExtends) {
     AnnotatedTypeMirror superType = atypeFactory.getTypeOfExtendsImplements(superClause);
     TypeMirror superTM = superType.getUnderlyingType();
-    AnnotationMirrorSet superAnnos = superType.getAnnotations();
     for (AnnotationMirror classAnno : classBounds) {
-      AnnotationMirror superAnno =
-          qualHierarchy.findAnnotationInSameHierarchy(superAnnos, classAnno);
+      AnnotationMirror superAnno = superType.getAnnotationInHierarchy(classAnno);
       if (!qualHierarchy.isSubtypeShallow(classAnno, classType, superAnno, superTM)) {
         checker.reportError(
             superClause,
@@ -2500,11 +2498,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, exprType);
         return qualHierarchy.isSubtypeShallow(
                 lowerBoundAnnotationsExpr, newExprTM, lowerBoundAnnotationsCast, newCastTM)
-            && qualHierarchy.isSubtypeShallow(
-                exprType.getEffectiveAnnotations(),
-                newExprTM,
-                castType.getEffectiveAnnotations(),
-                newCastTM);
+            && qualHierarchy.isSubtypeShallowEffective(exprType, castType);
       }
       if (castTypeKind == TypeKind.TYPEVAR) {
         // If the cast type is a type var, but the expression is not, then check that the
@@ -2853,29 +2847,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     switch (throwType.getKind()) {
       case NULL:
       case DECLARED:
-        AnnotationMirrorSet found = throwType.getAnnotations();
-        if (!qualHierarchy.isSubtypeShallow(found, throwTM, required, throwTM)) {
+      case TYPEVAR:
+      case WILDCARD:
+        if (!qualHierarchy.isSubtypeShallowEffective(throwType, required)) {
+          AnnotationMirrorSet found = throwType.getEffectiveAnnotations();
           checker.reportError(tree.getExpression(), "throw", found, required);
         }
         break;
-      case TYPEVAR:
-      case WILDCARD:
-        // TODO: this code might change after the type var changes.
-        AnnotationMirrorSet foundEffective = throwType.getEffectiveAnnotations();
-        if (!qualHierarchy.isSubtypeShallow(foundEffective, throwTM, required, throwTM)) {
-          checker.reportError(tree.getExpression(), "throw", foundEffective, required);
-        }
-        break;
+
       case UNION:
         AnnotatedUnionType unionType = (AnnotatedUnionType) throwType;
         AnnotationMirrorSet foundPrimary = unionType.getAnnotations();
-        if (!qualHierarchy.isSubtypeShallow(foundPrimary, throwTM, required, throwTM)) {
+        if (!qualHierarchy.isSubtypeShallow(foundPrimary, required, throwTM)) {
           checker.reportError(tree.getExpression(), "throw", foundPrimary, required);
         }
         for (AnnotatedTypeMirror altern : unionType.getAlternatives()) {
           TypeMirror alternTM = altern.getUnderlyingType();
-          if (!qualHierarchy.isSubtypeShallow(
-              altern.getAnnotations(), alternTM, required, alternTM)) {
+          if (!qualHierarchy.isSubtypeShallow(altern.getAnnotations(), required, alternTM)) {
             checker.reportError(tree.getExpression(), "throw", altern.getAnnotations(), required);
           }
         }
@@ -4199,17 +4187,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // TODO: this will need to be improved for generic receivers.
       AnnotationMirrorSet overriderAnnos = overriderReceiver.getAnnotations();
       TypeMirror overriderReceiverTM = overriderReceiver.getUnderlyingType();
-      AnnotationMirrorSet overriddenAnnos = overriddenReceiver.getAnnotations();
-      TypeMirror overriddenReceiverTM = overriddenReceiver.getUnderlyingType();
-
-      if (!qualHierarchy.isSubtypeShallow(
-          overriddenAnnos, overriddenReceiverTM, overriderAnnos, overriderReceiverTM)) {
+      if (!qualHierarchy.isSubtypeShallowEffective(overriddenReceiver, overriderReceiver)) {
         AnnotationMirrorSet declaredAnnos =
             atypeFactory.getTypeDeclarationBounds(overriderType.getUnderlyingType());
-        if (qualHierarchy.isSubtypeShallow(
-                overriderAnnos, overriderReceiverTM, declaredAnnos, overriderReceiverTM)
-            && qualHierarchy.isSubtypeShallow(
-                declaredAnnos, overriderReceiverTM, overriderAnnos, overriderReceiverTM)) {
+        if (qualHierarchy.isSubtypeShallow(overriderAnnos, declaredAnnos, overriderReceiverTM)
+            && qualHierarchy.isSubtypeShallow(declaredAnnos, overriderAnnos, overriderReceiverTM)) {
           // All the type of an object must be no higher than its upper bound. So if the
           // receiver is annotated with the upper bound qualifiers, then the override is
           // safe.
@@ -4737,7 +4719,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
     PrimitiveType primitiveTM = type.getUnderlyingType();
     AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
-    return qualHierarchy.isSubtypeShallow(type.getAnnotations(), primitiveTM, bounds, primitiveTM);
+    return qualHierarchy.isSubtypeShallow(type.getAnnotations(), bounds, primitiveTM);
   }
 
   /**
@@ -4752,7 +4734,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
     ArrayType arrayTM = type.getUnderlyingType();
     AnnotationMirrorSet bounds = atypeFactory.getTypeDeclarationBounds(type.getUnderlyingType());
-    return qualHierarchy.isSubtypeShallow(type.getAnnotations(), arrayTM, bounds, arrayTM);
+    return qualHierarchy.isSubtypeShallow(type.getAnnotations(), bounds, arrayTM);
   }
 
   /**
