@@ -2172,7 +2172,12 @@ public abstract class GenericAnnotatedTypeFactory<
       Class<? extends BaseTypeChecker> subCheckerClass) {
     T result = getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
     if (result == null) {
-      throw new TypeSystemError("no type factory found for " + subCheckerClass);
+      throw new TypeSystemError(
+          "In "
+              + this.getClass().getSimpleName()
+              + ", no type factory found for "
+              + subCheckerClass.getSimpleName()
+              + ".");
     }
     return result;
   }
