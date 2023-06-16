@@ -707,13 +707,13 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Add {@code annotation}if the type does not already have a primary annotation in the same
+   * Add {@code annotation} if the type does not already have a primary annotation in the same
    * hierarchy.
    *
-   * <p>The canonical version of the {@code annotation} is added as a primary annotations of this
-   * type and, in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
-   * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
-   * via {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
+   * <p>The canonical version of the {@code annotation} is added as a primary annotation of this
+   * type and (in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
+   * {@link AnnotatedIntersectionType}s) added to all bounds. (The canonical version is found via
+   * {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
    * annotation} is not a supported qualifier, then that annotation is not add added.
    *
    * @param annotation the annotations to add
