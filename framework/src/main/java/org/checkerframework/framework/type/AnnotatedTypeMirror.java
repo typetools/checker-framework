@@ -709,14 +709,20 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Add {@code a} to the current type, only if no annotation from the same qualifier hierarchy is
-   * present.
+   * Add {@code annotation}if the type does not already have a primary annotation in the same
+   * hierarchy.
    *
-   * @param a the annotation to add
+   * <p>The canonical version of the {@code annotation} is added as a primary annotations of this
+   * type and, in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
+   * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
+   * via {@link AnnotatedTypeFactory#canonicalAnnotation}.) If the canonical version of an {@code
+   * annotation} is not a supported qualifier, then that annotation is not add added.
+   *
+   * @param annotation the annotations to add
    */
-  public void addMissingAnnotation(AnnotationMirror a) {
-    if (!this.hasPrimaryAnnotationInHierarchy(a)) {
-      this.addAnnotation(a);
+  public void addMissingAnnotation(AnnotationMirror annotation) {
+    if (!this.hasPrimaryAnnotationInHierarchy(annotation)) {
+      this.addAnnotation(annotation);
     }
   }
 
