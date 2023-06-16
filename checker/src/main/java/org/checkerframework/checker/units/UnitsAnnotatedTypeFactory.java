@@ -612,6 +612,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
+    @SuppressWarnings("nullness:return")
     @Override
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,

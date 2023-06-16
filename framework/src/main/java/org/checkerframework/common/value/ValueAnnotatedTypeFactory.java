@@ -222,7 +222,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
-  @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
+  @SuppressWarnings({
+    "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
+    "nullness:method.invocation" // inference failed at postInit()
+  })
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -381,7 +384,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public FieldInvariants getFieldInvariants(TypeElement element) {
+  public @Nullable FieldInvariants getFieldInvariants(TypeElement element) {
     AnnotationMirror fieldInvarAnno = getDeclAnnotation(element, MinLenFieldInvariant.class);
     if (fieldInvarAnno == null) {
       return null;
@@ -1223,7 +1226,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param rangeAnno a {@code @Range} annotation
    * @return the {@link Range} that the annotation represents
    */
-  public Range getRange(@Nullable AnnotationMirror rangeAnno) {
+  public @Nullable Range getRange(@Nullable AnnotationMirror rangeAnno) {
     if (rangeAnno == null) {
       return null;
     }
@@ -1639,7 +1642,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * annotations applied.
    */
   @Override
-  public AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
+  public @Nullable AnnotatedTypeMirror getDummyAssignedTo(ExpressionTree expressionTree) {
     TypeMirror type = TreeUtils.typeOf(expressionTree);
     if (type.getKind() != TypeKind.VOID) {
       AnnotatedTypeMirror atm = type(expressionTree);

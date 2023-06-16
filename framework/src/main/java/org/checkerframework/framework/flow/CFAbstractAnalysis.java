@@ -107,6 +107,7 @@ public abstract class CFAbstractAnalysis<
    * @param factory an annotated type factory to introduce type and dataflow rules
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
+  @SuppressWarnings("nullness:method.invocation") // inference failed at createTransferFunction()
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
@@ -212,7 +213,7 @@ public abstract class CFAbstractAnalysis<
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
   /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
-  public CFValue defaultCreateAbstractValue(
+  public @Nullable CFValue defaultCreateAbstractValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {

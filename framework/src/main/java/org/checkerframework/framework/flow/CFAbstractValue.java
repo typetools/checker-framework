@@ -75,6 +75,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param annotations the annotations in this abstract value
    * @param underlyingType the underlying (Java) type in this abstract value
    */
+  @SuppressWarnings("nullness:method.invocation") // inference failed at getAnnotations()
   protected CFAbstractValue(
       CFAbstractAnalysis<V, ?, ?> analysis,
       AnnotationMirrorSet annotations,
@@ -315,7 +316,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    private AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
+    private @Nullable AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
       if (backupSet == null) {
         // If there is no back up value, but one is required then the resulting set will
         // not be the most specific.  Indicate this with the error.

@@ -677,7 +677,7 @@ public class AnnotatedTypes {
     Map<AnnotatedDeclaredType, ExecutableElement> overrides = new LinkedHashMap<>();
 
     for (AnnotatedDeclaredType supertype : supertypes) {
-      @Nullable TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
+      TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
       assert superElement != null;
       // For all method in the supertype, add it to the set if
       // it overrides the given method.

@@ -156,7 +156,7 @@ public class AnnotationFileUtil {
     return findDeclaration(type.getQualifiedName().toString(), indexFile);
   }
 
-  /*package-private*/ static FieldDeclaration findDeclaration(
+  /*package-private*/ static @Nullable FieldDeclaration findDeclaration(
       VariableElement field, StubUnit indexFile) {
     TypeDeclaration<?> type = findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
     if (type == null) {
@@ -177,7 +177,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-private*/ static BodyDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable BodyDeclaration<?> findDeclaration(
       ExecutableElement method, StubUnit indexFile) {
     TypeDeclaration<?> type =
         findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
@@ -201,7 +201,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-private*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String simpleName, CompilationUnit cu) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       if (simpleName.equals(type.getNameAsString())) {
@@ -234,7 +234,7 @@ public class AnnotationFileUtil {
     return element.getSimpleName().toString();
   }
 
-  /*package-private*/ static String toString(Element element) {
+  /*package-private*/ static @Nullable String toString(Element element) {
     if (element instanceof ExecutableElement) {
       return toString((ExecutableElement) element);
     } else if (element instanceof VariableElement) {
@@ -441,7 +441,10 @@ public class AnnotationFileUtil {
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    */
-  @SuppressWarnings("JdkObsolete") // JarFile.entries()
+  @SuppressWarnings({
+    "JdkObsolete", // JarFile.entries()
+    "nullness:argument" // inference failed in Arrays.sort
+  })
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {

@@ -280,6 +280,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param checker the type-checker associated with this visitor
    * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
    */
+  @SuppressWarnings("nullness:method.invocation" // inference failed at getQualifierHierarchy(),
+  // createTypeValidator()
+  )
   protected BaseTypeVisitor(BaseTypeChecker checker, @Nullable Factory typeFactory) {
     super(checker);
 
@@ -4544,7 +4547,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree an AST node that is on the current path
    * @return the statement that encloses the given one
    */
-  protected Tree enclosingStatement(@FindDistinct Tree tree) {
+  protected @Nullable Tree enclosingStatement(@FindDistinct Tree tree) {
     TreePath path = this.getCurrentPath();
     while (path != null && path.getLeaf() != tree) {
       path = path.getParentPath();

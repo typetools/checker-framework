@@ -119,7 +119,7 @@ public class ValueTransfer extends CFTransfer {
    * @param p a TransferInput
    * @return a range of possible lengths for {@code subNode}, as casted to a String
    */
-  private Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+  private @Nullable Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
 
     AnnotationMirror anno = getValueAnnotation(value);
@@ -344,7 +344,8 @@ public class ValueTransfer extends CFTransfer {
    * @param valueAnno annotation mirror
    * @return the numerical values in valueAnno casted to the type of subNode
    */
-  private List<? extends Number> getNumericalValues(Node subNode, AnnotationMirror valueAnno) {
+  private @Nullable List<? extends Number> getNumericalValues(
+      Node subNode, AnnotationMirror valueAnno) {
 
     if (valueAnno == null
         || AnnotationUtils.areSameByName(valueAnno, ValueAnnotatedTypeFactory.UNKNOWN_NAME)) {
@@ -851,7 +852,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** Calculate the possible values after a binary operation between two numerical type nodes. */
-  private List<Number> calculateValuesBinaryOp(
+  private @Nullable List<Number> calculateValuesBinaryOp(
       Node leftNode, Node rightNode, NumericalBinaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(leftNode, p);
     List<? extends Number> rights = getNumericalValues(rightNode, p);
@@ -1101,7 +1102,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /** Calculate the possible values after a unary operation of a numerical type node. */
-  private List<Number> calculateValuesUnaryOp(
+  private @Nullable List<Number> calculateValuesUnaryOp(
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(operand, p);
     if (lefts == null) {
@@ -1163,7 +1164,7 @@ public class ValueTransfer extends CFTransfer {
     LESS_THAN_EQ;
   }
 
-  private List<Boolean> calculateBinaryComparison(
+  private @Nullable List<Boolean> calculateBinaryComparison(
       Node leftNode,
       CFValue leftValue,
       Node rightNode,
@@ -1257,7 +1258,7 @@ public class ValueTransfer extends CFTransfer {
    * Calculates the result of a binary comparison on a pair of intRange annotations, and refines
    * annotations appropriately.
    */
-  private List<Boolean> refineIntRanges(
+  private @Nullable List<Boolean> refineIntRanges(
       Node leftNode,
       AnnotationMirror leftAnno,
       Node rightNode,

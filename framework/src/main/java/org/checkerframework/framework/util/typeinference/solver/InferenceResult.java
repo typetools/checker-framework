@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
@@ -135,7 +136,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   /** Performs a merge for a specific target, we keep only results that lead to a concrete type. */
-  protected InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
+  protected @Nullable InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
     InferredValue inferred = this.get(target);
     if (inferred instanceof InferredTarget) {
       InferredType newType = mergeTarget(((InferredTarget) inferred).target, subordinate);

@@ -1223,7 +1223,7 @@ public class AnnotationFileParser {
    * @param elt the method or constructor's element
    * @return type variables for the method
    */
-  private List<AnnotatedTypeVariable> processCallableDeclaration(
+  private @Nullable List<AnnotatedTypeVariable> processCallableDeclaration(
       CallableDeclaration<?> decl, ExecutableElement elt) {
     if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
       return null;
@@ -1451,7 +1451,7 @@ public class AnnotationFileParser {
     }
   }
 
-  private ClassOrInterfaceType unwrapDeclaredType(Type type) {
+  private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
     if (type instanceof ClassOrInterfaceType) {
       return (ClassOrInterfaceType) type;
     } else if (type instanceof ReferenceType && type.getArrayLevel() == 0) {

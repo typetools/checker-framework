@@ -90,7 +90,7 @@ public class ValueCheckerUtils {
   }
 
   /** Get the minimum and maximum of a list and return a range bounded by them. */
-  public static Range getRangeFromValues(List<? extends Number> values) {
+  public static @Nullable Range getRangeFromValues(List<? extends Number> values) {
     if (values == null) {
       return null;
     } else if (values.isEmpty()) {
@@ -174,7 +174,8 @@ public class ValueCheckerUtils {
    * @return a list of the formatted objects
    */
   @SuppressWarnings("mustcall:methodref.receiver") // generics; #979 ?
-  private static List<?> convertToStringVal(List<? extends @MustCallUnknown Object> origValues) {
+  private static @Nullable List<?> convertToStringVal(
+      List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }
@@ -229,7 +230,7 @@ public class ValueCheckerUtils {
    * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
    *     {@code List<char[]>}
    */
-  private static List<?> convertIntVal(
+  private static @Nullable List<?> convertIntVal(
       List<Long> longs, Class<?> newClass, TypeMirror newType, boolean isUnsigned) {
     if (longs == null) {
       return null;
@@ -254,7 +255,7 @@ public class ValueCheckerUtils {
    * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
    * @return the {@code value} of a {@code @DoubleVal} annotation
    */
-  private static List<?> convertDoubleVal(
+  private static @Nullable List<?> convertDoubleVal(
       AnnotationMirror anno,
       Class<?> newClass,
       TypeMirror newType,
@@ -392,7 +393,7 @@ public class ValueCheckerUtils {
   /**
    * Looks up the minlen of a member select tree. The tree must be an access to a sequence length.
    */
-  public static Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
+  public static @Nullable Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
     AnnotatedTypeMirror minLenType = valueATF.getAnnotatedType(tree);
     Long min = valueATF.getMinimumIntegralValue(minLenType);
     if (min == null) {

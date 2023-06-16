@@ -3,7 +3,7 @@ package org.checkerframework.common.value.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public abstract class NumberMath<T extends Number> {
-  public static NumberMath<?> getNumberMath(Number number) {
+  public static @Nullable NumberMath<?> getNumberMath(Number number) {
     if (number instanceof Byte) {
       return new ByteMath(number.byteValue());
     }

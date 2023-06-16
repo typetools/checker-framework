@@ -999,7 +999,7 @@ public abstract class CFAbstractTransfer<
    * @return whether to perform whole-program inference on the tree
    */
   private boolean shouldPerformWholeProgramInference(Tree tree) {
-    @Nullable TreePath path = this.analysis.atypeFactory.getPath(tree);
+    TreePath path = this.analysis.atypeFactory.getPath(tree);
     return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
   }
 

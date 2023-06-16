@@ -183,7 +183,7 @@ public class ReflectiveEvaluator {
    * @param tree a method invocation tree
    * @return the Method object corresponding to the method invocation tree
    */
-  private Method getMethodObject(MethodInvocationTree tree) {
+  private @Nullable Method getMethodObject(MethodInvocationTree tree) {
     ExecutableElement ele = TreeUtils.elementFromUse(tree);
     List<Class<?>> paramClasses = null;
     try {
@@ -314,7 +314,7 @@ public class ReflectiveEvaluator {
     }
   }
 
-  public List<?> evaluteConstructorCall(
+  public @Nullable List<?> evaluteConstructorCall(
       ArrayList<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
     Constructor<?> constructor;
     try {

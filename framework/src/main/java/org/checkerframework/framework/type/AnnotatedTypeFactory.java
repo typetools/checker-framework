@@ -996,7 +996,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (candidateAjavaFiles.size() == 1) {
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-        String ajavaPath = candidateAjavaFiles.toArray(new String[1])[0];
+        String ajavaPath = candidateAjavaFiles.toArray(new String[candidateAjavaFiles.size()])[0];
         try {
           currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
         } catch (Throwable e) {
@@ -1854,7 +1854,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param element class for which to get invariants
    * @return field invariants for {@code element}
    */
-  public FieldInvariants getFieldInvariants(TypeElement element) {
+  public @Nullable FieldInvariants getFieldInvariants(TypeElement element) {
     if (element == null) {
       return null;
     }

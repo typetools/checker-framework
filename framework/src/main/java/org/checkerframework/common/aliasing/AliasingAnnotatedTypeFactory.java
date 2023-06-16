@@ -44,6 +44,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
   /** Create the type factory. */
+  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == AliasingAnnotatedTypeFactory.class) {

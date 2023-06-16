@@ -325,6 +325,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param checker the checker to which this type factory belongs
    * @param useFlow whether flow analysis should be performed
    */
+  @SuppressWarnings("nullness:method.invocation" // inference failed at createCFGVisualizer(),
+  // createTransferFunction()
+  )
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker);
 
@@ -1183,7 +1186,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param node a node whose pre-store to return
    * @return the store immediately before {@code node}
    */
-  public Store getStoreBefore(Node node) {
+  public @Nullable Store getStoreBefore(Node node) {
     if (!analysis.isRunning()) {
       return flowResult.getStoreBefore(node);
     }
@@ -1283,7 +1286,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #getStoreBefore(Tree)
    * @see #getStoreAfter(Tree)
    */
-  public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
+  public <T extends Node> @Nullable T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
     Set<Node> nodes = getNodesForTree(tree);
     for (Node node : nodes) {
       if (node.getClass() == kind) {

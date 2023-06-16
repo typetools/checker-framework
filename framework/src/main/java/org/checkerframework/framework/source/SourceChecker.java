@@ -61,6 +61,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -439,24 +440,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
-   * #fullMessageOf} or {@link #processArg}.
+   * #fullMessageOf} or {@link #processArg}. Is set in {@link #initChecker}.
    */
-  protected @MonotonicNonNull Properties messagesProperties;
+  protected Properties messagesProperties;
 
-  /** Used to report error messages and warnings via the compiler. */
-  protected @MonotonicNonNull Messager messager;
+  /**
+   * Used to report error messages and warnings via the compiler. Is set in {@link
+   * #typeProcessingStart}.
+   */
+  protected Messager messager;
 
   /** Element utilities. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Elements elements;
 
   /** Tree utilities; used as a helper for the {@link SourceVisitor}. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Trees trees;
 
   /** Type utilities. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Types types;
 
-  /** The source tree that is being scanned. */
-  protected @InternedDistinct CompilationUnitTree currentRoot;
+  /** The source tree that is being scanned. Is set in {@link #setRoot}. */
+  protected @MonotonicNonNull @InternedDistinct CompilationUnitTree currentRoot;
 
   /** The visitor to use. */
   protected SourceVisitor<?, ?> visitor;
@@ -519,8 +526,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** The supported lint options. */
   private @MonotonicNonNull Set<String> supportedLints;
 
-  /** The enabled lint options. */
-  private @MonotonicNonNull Set<String> activeLints;
+  /** The enabled lint options. Is set in {@link #initChecker}. */
+  private Set<String> activeLints;
 
   /**
    * The active options for this checker. This is a processed version of {@link
@@ -668,7 +675,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       SourceChecker checker = this;
 
       while (checker != null) {
-        upstreamCheckerNames.add(checker.getClass().getCanonicalName());
+        @NonNull String className = checker.getClass().getCanonicalName();
+        assert className != null : "@AssumeAssertion(nullness): checker classes have names";
+        upstreamCheckerNames.add(className);
         checker = checker.parentChecker;
       }
     }
@@ -760,6 +769,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     while (currClass != AbstractTypeProcessor.class) {
       checkers.addFirst(currClass);
       currClass = currClass.getSuperclass();
+      assert currClass != null : "@AssumeAssertion(nullness): won't encounter Object.class";
     }
 
     for (Class<?> checker : checkers) {
@@ -797,8 +807,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   private Pattern getPattern(
       String patternName, Map<String, String> options, String defaultPattern) {
-    String pattern = "";
-
+    String pattern;
     if (options.containsKey(patternName)) {
       pattern = options.get(patternName);
       if (pattern == null) {
@@ -807,10 +816,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             "The " + patternName + " property is empty; please fix your command line");
         pattern = "";
       }
-    } else if (System.getProperty("checkers." + patternName) != null) {
+    } else {
       pattern = System.getProperty("checkers." + patternName);
-    } else if (System.getenv(patternName) != null) {
-      pattern = System.getenv(patternName);
+      if (pattern == null) {
+        pattern = System.getenv(patternName);
+      }
+      if (pattern == null) {
+        pattern = "";
+      }
     }
 
     if (pattern.indexOf("/") != -1) {
@@ -906,7 +919,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public void initChecker() {
     // Grab the Trees and Messager instances now; other utilities
     // (like Types and Elements) can be retrieved by subclasses.
-    @Nullable Trees trees = Trees.instance(processingEnv);
+    Trees trees = Trees.instance(processingEnv);
     assert trees != null;
     this.trees = trees;
 
@@ -1281,8 +1294,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     String key = messageKey;
 
     do {
-      if (messagesProperties.containsKey(key)) {
-        return messagesProperties.getProperty(key);
+      String messageForKey = messagesProperties.getProperty(key);
+      if (messageForKey != null) {
+        return messageForKey;
       }
 
       int dot = key.indexOf('.');
@@ -1604,7 +1618,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param name the lint key whose parest to find
    * @return the parent of the lint key
    */
-  private String parentOfOption(String name) {
+  private @Nullable String parentOfOption(String name) {
     if (name.equals("all")) {
       return null;
     }
@@ -1631,7 +1645,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** Compute the set of supported lint options. */
   protected Set<String> createSupportedLintOptions() {
-    @Nullable SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
+    SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
 
     if (sl == null) {
       return Collections.emptySet();
@@ -2071,7 +2085,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     // trees.getPath might be slow, but this is only used in error reporting
-    @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+    TreePath path = trees.getPath(this.currentRoot, tree);
 
     return shouldSuppressWarnings(path, errKey);
   }
@@ -2093,7 +2107,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     // iterate through the path; continue until path contains no declarations
-    for (@Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
+    for (TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
         declPath != null;
         declPath = TreePathUtil.enclosingDeclarationPath(declPath.getParentPath())) {
 
@@ -2331,7 +2345,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
-    @Nullable AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
+    AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
 
     String[] userAnnotatedFors = (anno == null ? null : anno.value());
 

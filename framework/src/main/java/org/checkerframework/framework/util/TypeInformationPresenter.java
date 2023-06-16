@@ -242,7 +242,7 @@ public class TypeInformationPresenter {
      * @param tree the tree for which we want to compute the message range
      * @return a message range corresponds to the tree
      */
-    private MessageRange computeMessageRange(Tree tree) {
+    private @Nullable MessageRange computeMessageRange(Tree tree) {
       long startPos = sourcePositions.getStartPosition(currentRoot, tree);
       long endPos = sourcePositions.getEndPosition(currentRoot, tree);
       if (startPos == Diagnostic.NOPOS || endPos == Diagnostic.NOPOS) {

@@ -11,6 +11,7 @@ import org.checkerframework.framework.qual.PurityUnqualified;
 /** AnnotatedTypeFactory for the {@link PurityChecker}. */
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public PurityAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();
