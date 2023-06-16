@@ -313,6 +313,7 @@ public class I18nFormatterTreeUtil {
      * @param tree method invocation tree
      * @param atypeFactory type factory
      */
+    @SuppressWarnings("nullness:initialization.fields.uninitialized")
     public I18nFormatCall(MethodInvocationTree tree, AnnotatedTypeFactory atypeFactory) {
       this.tree = tree;
       this.atypeFactory = atypeFactory;
