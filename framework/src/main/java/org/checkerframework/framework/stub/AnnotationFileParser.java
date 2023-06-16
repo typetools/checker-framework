@@ -1398,7 +1398,7 @@ public class AnnotationFileParser {
     // TODO: only produce output if the removed annotation isn't the top or default
     // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
     /*
-    if (!atype.getAnnotations().isEmpty()) {
+    if (!atype.getPrimaryAnnotations().isEmpty()) {
         stubWarnOverwritesBytecode(
                 String.format(
                         "in file %s at line %s removed existing annotations on type: %s",

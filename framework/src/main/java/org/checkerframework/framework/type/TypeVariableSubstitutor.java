@@ -62,10 +62,10 @@ public class TypeVariableSubstitutor {
   protected AnnotatedTypeMirror substituteTypeVariable(
       AnnotatedTypeMirror argument, AnnotatedTypeVariable use) {
     AnnotatedTypeMirror substitute = argument.deepCopy(true);
-    substitute.addAnnotations(argument.getAnnotationsField());
+    substitute.addAnnotations(argument.getPrimaryAnnotationsField());
 
-    if (!use.getAnnotationsField().isEmpty()) {
-      substitute.replaceAnnotations(use.getAnnotations());
+    if (!use.getPrimaryAnnotationsField().isEmpty()) {
+      substitute.replaceAnnotations(use.getPrimaryAnnotations());
     }
 
     return substitute;
