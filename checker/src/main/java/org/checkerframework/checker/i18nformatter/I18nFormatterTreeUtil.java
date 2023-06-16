@@ -274,7 +274,7 @@ public class I18nFormatterTreeUtil {
     AnnotatedExecutableType methodAnno = atypeFactory.getAnnotatedType(method);
     for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
       // find @FormatFor
-      if (paramType.getAnnotation(I18nFormatFor.class) != null) {
+      if (paramType.getPrimaryAnnotation(I18nFormatFor.class) != null) {
         return atypeFactory.treeUtil.new I18nFormatCall(tree, atypeFactory);
       }
     }
@@ -352,7 +352,7 @@ public class I18nFormatterTreeUtil {
       int paramIndex = -1;
       int i = 0;
       for (AnnotatedTypeMirror paramType : methodAnno.getParameterTypes()) {
-        if (paramType.getAnnotation(I18nFormatFor.class) != null) {
+        if (paramType.getPrimaryAnnotation(I18nFormatFor.class) != null) {
           this.formatArg = theargs.get(i);
           this.formatAnno = atypeFactory.getAnnotatedType(formatArg);
 
@@ -361,7 +361,8 @@ public class I18nFormatterTreeUtil {
             return;
           }
 
-          String formatforArg = getI18nFormatForValue(paramType.getAnnotation(I18nFormatFor.class));
+          String formatforArg =
+              getI18nFormatForValue(paramType.getPrimaryAnnotation(I18nFormatFor.class));
 
           paramIndex = JavaExpressionParseUtil.parameterIndex(formatforArg);
           if (paramIndex == -1) {
@@ -388,14 +389,14 @@ public class I18nFormatterTreeUtil {
     public Result<FormatType> getFormatType() {
       FormatType type;
       if (isValidFormatForInvocation()) {
-        if (formatAnno.hasAnnotation(I18nFormat.class)) {
+        if (formatAnno.hasPrimaryAnnotation(I18nFormat.class)) {
           type = FormatType.I18NFORMAT;
-        } else if (formatAnno.hasAnnotation(I18nFormatFor.class)) {
+        } else if (formatAnno.hasPrimaryAnnotation(I18nFormatFor.class)) {
           type = FormatType.I18NFORMATFOR;
         } else {
           type = FormatType.I18NINVALID;
           invalidMessage = "(is a @I18nFormat annotation missing?)";
-          AnnotationMirror inv = formatAnno.getAnnotation(I18nInvalidFormat.class);
+          AnnotationMirror inv = formatAnno.getPrimaryAnnotation(I18nInvalidFormat.class);
           if (inv != null) {
             invalidMessage = getI18nInvalidFormatValue(inv);
           }
@@ -490,7 +491,7 @@ public class I18nFormatterTreeUtil {
      * @see I18nConversionCategory
      */
     public final I18nConversionCategory[] getFormatCategories() {
-      AnnotationMirror anno = formatAnno.getAnnotation(I18nFormat.class);
+      AnnotationMirror anno = formatAnno.getPrimaryAnnotation(I18nFormat.class);
       return formatAnnotationToCategories(anno);
     }
 

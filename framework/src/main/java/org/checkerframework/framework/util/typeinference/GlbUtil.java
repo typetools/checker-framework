@@ -183,8 +183,8 @@ public class GlbUtil {
      * @return the comparison of type1 and type2
      */
     private int compareAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-      AnnotationMirrorSet annos1 = type1.getAnnotations();
-      AnnotationMirrorSet annos2 = type2.getAnnotations();
+      AnnotationMirrorSet annos1 = type1.getPrimaryAnnotations();
+      AnnotationMirrorSet annos2 = type2.getPrimaryAnnotations();
       if (AnnotationUtils.areSame(annos1, annos2)) {
         return 0;
       } else if (qualHierarchy.isSubtype(annos1, annos2)) {

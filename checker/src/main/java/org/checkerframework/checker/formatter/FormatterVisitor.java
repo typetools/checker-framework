@@ -266,8 +266,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     boolean result =
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
-    AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
-    AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
     // From the manual: "It is legal to use a format string with fewer format specifiers
     // than required, but a warning is issued."

@@ -73,7 +73,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
       FieldAccess fieldAccess = (FieldAccess) je;
       if (!fieldValues.containsKey(je)) {
         AnnotationMirrorSet declaredAnnos =
-            atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+            atypeFactory.getAnnotatedType(fieldAccess.getField()).getPrimaryAnnotations();
         if (AnnotationUtils.containsSame(declaredAnnos, invariantAnno)) {
           if (!invariantFields.containsKey(fieldAccess)) {
             invariantFields.put(
