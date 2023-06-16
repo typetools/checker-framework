@@ -8,7 +8,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -25,20 +24,14 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
     if (!TreeUtils.isStringConcatenation(tree)) {
-      // TODO: ignore string concatenations
-
       // The Fenum Checker is only concerned with primitive types, so just check that
       // the primary annotations are equivalent.
-      AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(tree.getLeftOperand());
-      AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(tree.getRightOperand());
+      AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(tree.getRightOperand());
 
-      AnnotationMirrorSet lhs = lhsAtm.getEffectiveAnnotations();
-      AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
-      TypeMirror lhsTM = lhsAtm.getUnderlyingType();
-      TypeMirror rhsTM = rhsAtm.getUnderlyingType();
-      if (!(qualHierarchy.isSubtypeShallow(lhs, lhsTM, rhs, rhsTM)
-          || qualHierarchy.isSubtypeShallow(rhs, rhsTM, lhs, lhsTM))) {
-        checker.reportError(tree, "binary", lhsAtm, rhsAtm);
+      if (!(qualHierarchy.isSubtypeShallowEffective(lhs, rhs)
+          || qualHierarchy.isSubtypeShallowEffective(rhs, lhs))) {
+        checker.reportError(tree, "binary", lhs, rhs);
       }
     }
     return super.visitBinary(tree, p);

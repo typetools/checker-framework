@@ -221,6 +221,22 @@ public abstract class QualifierHierarchy {
     return true;
   }
 
+  public boolean isSubtypeShallowEffective(
+      AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+    AnnotatedTypeMirror erasedSubtype = subtype.getErased();
+    AnnotatedTypeMirror erasedSupertype = supertype.getErased();
+    TypeMirror subTM =
+        erasedSubtype.getKind() == subtype.getKind()
+            ? subtype.getUnderlyingType()
+            : erasedSubtype.getUnderlyingType();
+    TypeMirror superTM =
+        erasedSupertype.getKind() == supertype.getKind()
+            ? supertype.getUnderlyingType()
+            : erasedSupertype.getUnderlyingType();
+    return isSubtypeShallow(
+        erasedSubtype.getAnnotations(), subTM, erasedSupertype.getAnnotations(), superTM);
+  }
+
   /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
