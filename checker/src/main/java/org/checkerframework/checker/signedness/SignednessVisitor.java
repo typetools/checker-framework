@@ -21,7 +21,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -142,13 +141,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
           TypeMirror leftOpTM = leftOpType.getUnderlyingType();
           TypeMirror rightOpTM = rightOpType.getUnderlyingType();
-          if (!TypesUtils.isCharOrCharacter(leftOpTM)
-              && !qualHierarchy.isSubtypeShallow(
-                  leftAnno, leftOpTM, atypeFactory.SIGNED, leftOpTM)) {
+          if (!qualHierarchy.isSubtypeShallow(leftAnno, leftOpTM, atypeFactory.SIGNED, leftOpTM)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (!TypesUtils.isCharOrCharacter(rightOpTM)
-              && !qualHierarchy.isSubtypeShallow(
-                  rightAnno, rightOpTM, atypeFactory.SIGNED, rightOpTM)) {
+          } else if (!qualHierarchy.isSubtypeShallow(
+              rightAnno, rightOpTM, atypeFactory.SIGNED, rightOpTM)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -311,9 +307,6 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
           TypeMirror exprTM = exprType.getUnderlyingType();
-          if (TypesUtils.isCharOrCharacter(exprTM)) {
-            break;
-          }
           AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
           if (!qualHierarchy.isSubtypeShallow(anno, exprTM, atypeFactory.SIGNED, exprTM)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
