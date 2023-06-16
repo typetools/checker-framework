@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -57,6 +56,9 @@ public class InitializationVisitor<
 
   /** The annotation formatter. */
   protected final AnnotationFormatter annoFormatter;
+
+  /** List of fields in the current compilation unit that have been initialized. */
+  protected final List<VariableTree> initializedFields;
 
   /**
    * Creates a new InitializationVisitor.
@@ -216,51 +218,6 @@ public class InitializationVisitor<
     }
     return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
   }
-
-  @Override
-  public Void visitTypeCast(TypeCastTree tree, Void p) {
-    AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
-    AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(tree);
-    AnnotationMirror exprAnno = null, castAnno = null;
-
-    // find commitment annotation
-    for (Class<? extends Annotation> a : atypeFactory.getInitializationAnnotations()) {
-      if (castType.hasAnnotation(a)) {
-        assert castAnno == null;
-        castAnno = castType.getAnnotation(a);
-      }
-      if (exprType.hasAnnotation(a)) {
-        assert exprAnno == null;
-        exprAnno = exprType.getAnnotation(a);
-      }
-    }
-
-    // TODO: this is most certainly unsafe!! (and may be hiding some problems)
-    // If we don't find a commitment annotation, then we just assume that
-    // the subtyping is alright.
-    // The case that has come up is with wildcards not getting a type for
-    // some reason, even though the default is @Initialized.
-    boolean isSubtype;
-    if (exprAnno == null || castAnno == null) {
-      isSubtype = true;
-    } else {
-      assert exprAnno != null && castAnno != null;
-      isSubtype = qualHierarchy.isSubtype(exprAnno, castAnno);
-    }
-
-    if (!isSubtype) {
-      checker.reportError(
-          tree,
-          "initialization.cast",
-          annoFormatter.formatAnnotationMirror(exprAnno),
-          annoFormatter.formatAnnotationMirror(castAnno));
-      return p; // suppress cast.unsafe warning
-    }
-
-    return super.visitTypeCast(tree, p);
-  }
-
-  protected final List<VariableTree> initializedFields;
 
   @Override
   public void processClassTree(ClassTree tree) {
