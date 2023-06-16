@@ -2573,19 +2573,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-    boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-    Throwable cause = ce.getCause().getCause();
-    while (cause != null) {
-      msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-      printClasspath |= cause instanceof NoClassDefFoundError;
-      cause = cause.getCause();
-    }
+    if (ce.getCause() != null) {
+      msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
+      boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+      Throwable cause = ce.getCause().getCause();
+      while (cause != null) {
+        msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+        printClasspath |= cause instanceof NoClassDefFoundError;
+        cause = cause.getCause();
+      }
 
-    if (printClasspath) {
-      msg.add("Classpath:");
-      for (URI uri : new ClassGraph().getClasspathURIs()) {
-        msg.add(uri.toString());
+      if (printClasspath) {
+        msg.add("Classpath:");
+        for (URI uri : new ClassGraph().getClasspathURIs()) {
+          msg.add(uri.toString());
+        }
       }
     }
 
