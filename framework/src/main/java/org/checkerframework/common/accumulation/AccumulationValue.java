@@ -74,7 +74,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    *
    * @return the set (this is not a copy of the set, but an alias)
    */
-  public Set<String> getAccumulatedValues() {
+  public @Nullable Set<String> getAccumulatedValues() {
     return accumulatedValues;
   }
 

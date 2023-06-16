@@ -1055,7 +1055,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
+  public void reportError(
+      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     report(source, Diagnostic.Kind.ERROR, messageKey, args);
   }
 
@@ -1066,7 +1067,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  public void reportWarning(Object source, @CompilerMessageKey String messageKey, Object... args) {
+  public void reportWarning(
+      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
   }
 
@@ -1080,7 +1082,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param source the source position information; may be an Element, a Tree, or null
    * @param d the diagnostic message
    */
-  public void report(Object source, DiagMessage d) {
+  public void report(@Nullable Object source, DiagMessage d) {
     report(source, d.getKind(), d.getMessageKey(), d.getArgs());
   }
 
@@ -1098,7 +1100,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
-      Object source, Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+      @Nullable Object source,
+      Diagnostic.Kind kind,
+      @CompilerMessageKey String messageKey,
+      Object... args) {
     assert messagesProperties != null : "null messagesProperties";
 
     if (shouldSuppressWarnings(source, messageKey)) {
@@ -1320,7 +1325,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
-  private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
+  private String detailedMsgTextPrefix(
+      @Nullable Object source, String defaultFormat, Object[] args) {
     StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
 
     // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
@@ -1418,7 +1424,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return a tuple string representing the range of characters that tree occupies in the source
    *     file, or the empty string if {@code tree} is null
    */
-  private String detailedMsgTextPositionString(Tree tree, CompilationUnitTree currentRoot) {
+  private String detailedMsgTextPositionString(
+      @Nullable Tree tree, CompilationUnitTree currentRoot) {
     if (tree == null) {
       return "";
     }

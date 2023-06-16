@@ -1,5 +1,6 @@
 package org.checkerframework.common.value.util;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 @AnnotatedFor("nullness")
@@ -36,13 +37,13 @@ public abstract class NumberMath<T extends Number> {
    * Returns the result of dividing the {@code this} by {@code right}. If {@code right} is zero and
    * this is an integer division, {@code null} is returned.
    */
-  public abstract Number divide(Number right);
+  public abstract @Nullable Number divide(Number right);
 
   /**
    * Returns the result of {@code this % right}. If {@code right} is zero and this is an integer
    * remainder, {@code null} is returned.
    */
-  public abstract Number remainder(Number right);
+  public abstract @Nullable Number remainder(Number right);
 
   public abstract Number shiftLeft(Number right);
 

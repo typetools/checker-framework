@@ -1582,8 +1582,8 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred declaration annotations on this executable, or null if there are no
-     * annotations.
+     * Returns the inferred declaration annotations on this executable. Returns an empty set if
+     * there are no annotations.
      *
      * @return the declaration annotations for this callable declaration
      */

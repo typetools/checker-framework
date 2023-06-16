@@ -123,7 +123,7 @@ public class AnnotationFileUtil {
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
    *     otherwise.
    */
-  /*package-private*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
     int indexOfDot = className.lastIndexOf('.');
 

@@ -226,7 +226,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return a primitive type kind if this is a primitive type or boxed primitive type; otherwise
    *     null
    */
-  public TypeKind getPrimitiveKind() {
+  public @Nullable TypeKind getPrimitiveKind() {
     return TypeKindUtils.primitiveOrBoxedToTypeKind(getUnderlyingType());
   }
 
@@ -2011,7 +2011,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @return the lower bound of this wildcard, or null if none is explicitly declared
      */
-    public AnnotatedTypeMirror getSuperBound() {
+    public @Nullable AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
         BoundsInitializer.initializeSuperBound(this);
         fixupBoundAnnotations();

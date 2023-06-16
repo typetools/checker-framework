@@ -158,6 +158,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -2286,7 +2287,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javacTree a javac tree or null
    * @param javaParserNode an optional JavaParser node, which might not be present
    */
-  private void visitOptional(Tree javacTree, Optional<? extends Node> javaParserNode) {
+  private void visitOptional(@Nullable Tree javacTree, Optional<? extends Node> javaParserNode) {
     assert javacTree != null == javaParserNode.isPresent()
         : String.format("visitOptional(%s, %s)", javacTree, javaParserNode);
     if (javacTree != null) {

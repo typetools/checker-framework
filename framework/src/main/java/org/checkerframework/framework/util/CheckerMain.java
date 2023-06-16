@@ -19,6 +19,7 @@ import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -675,7 +676,7 @@ public class CheckerMain {
    * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class
    * @param errIfFromDirectory if false, throw an exception if the file was loaded from a directory
    */
-  public static String findPathTo(Class<?> cls, boolean errIfFromDirectory)
+  public static String findPathTo(@Nullable Class<?> cls, boolean errIfFromDirectory)
       throws IllegalStateException {
     if (cls == null) {
       cls = CheckerMain.class;

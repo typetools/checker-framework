@@ -60,7 +60,7 @@ public class FieldInvariants {
    * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other,
+      @Nullable FieldInvariants other,
       List<String> fields,
       List<AnnotationMirror> qualifiers,
       AnnotatedTypeFactory factory) {

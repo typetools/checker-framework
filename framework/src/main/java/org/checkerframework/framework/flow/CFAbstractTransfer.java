@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -749,7 +750,7 @@ public abstract class CFAbstractTransfer<
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison.
    * @return the conditional transfer result (if information has been added), or {@code null}
    */
-  protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
+  protected @Nullable TransferResult<V, S> strengthenAnnotationOfEqualTo(
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
@@ -1254,7 +1255,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
   @SideEffectFree
-  protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+  protected @PolyNull V getNarrowedValue(TypeMirror type, @PolyNull V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
@@ -1277,7 +1278,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
   @SideEffectFree
-  protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+  protected @PolyNull V getWidenedValue(TypeMirror type, @PolyNull V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }

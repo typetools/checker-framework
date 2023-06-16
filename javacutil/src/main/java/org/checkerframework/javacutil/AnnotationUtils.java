@@ -1258,7 +1258,8 @@ public class AnnotationUtils {
    * @param <T> the class of the type
    * @return the annotation value, converted to a list
    */
-  public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
+  public static <T> List<T> annotationValueToList(
+      @Nullable AnnotationValue avList, Class<T> expectedType) {
     @SuppressWarnings("unchecked")
     List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
     return annotationValueToList(list, expectedType);

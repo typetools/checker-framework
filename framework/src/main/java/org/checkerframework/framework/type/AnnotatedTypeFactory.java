@@ -417,7 +417,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String aliasName,
         AnnotationMirror canonical,
         boolean copyElements,
-        @CanonicalName String canonicalName,
+        @Nullable @CanonicalName String canonicalName,
         String[] ignorableElements) {
       this.canonical = canonical;
       this.copyElements = copyElements;
@@ -549,22 +549,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private final TypeInformationPresenter typeInformationPresenter;
 
   /**
-   * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
-   * root. (These parameters are required so that the factory may conduct the appropriate
-   * annotation-gathering analyses on certain tree types.)
-   *
-   * <p>Root can be {@code null} if the factory does not operate on trees.
+   * Constructs a factory from the given checker.
    *
    * <p>A subclass must call postInit at the end of its constructor. postInit must be the last call
    * in the constructor or else types from stub files may not be created as expected.
    *
    * @param checker the {@link SourceChecker} to which this factory belongs
-   * @throws IllegalArgumentException if either argument is {@code null}
    */
   public AnnotatedTypeFactory(BaseTypeChecker checker) {
     uid = ++uidCounter;
     this.processingEnv = checker.getProcessingEnvironment();
-    // this.root = root;
     this.checker = checker;
     this.assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
@@ -877,7 +871,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return the WholeProgramInference instance, or null
    */
-  public WholeProgramInference getWholeProgramInference() {
+  public @Nullable WholeProgramInference getWholeProgramInference() {
     return wholeProgramInference;
   }
 
@@ -1920,7 +1914,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     one isn't found
    */
   public @Nullable AnnotationTree getFieldInvariantAnnotationTree(
-      List<? extends AnnotationTree> annoTrees) {
+      @Nullable List<? extends AnnotationTree> annoTrees) {
     List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
     for (int i = 0; i < annos.size(); i++) {
       for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
@@ -2219,7 +2213,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param expression the expression for which to determine the receiver type
    * @return the type of the receiver of expression
    */
-  public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
+  public final @Nullable AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
     ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
     if (receiver != null) {
       return getAnnotatedType(receiver);
@@ -3769,7 +3763,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree the {@link Tree} to get the enclosing method for
    * @return the method {@link Element} enclosing the argument, or null if none has been recorded
    */
-  public final Element getEnclosingElementForArtificialTree(Tree tree) {
+  public final @Nullable Element getEnclosingElementForArtificialTree(Tree tree) {
     return artificialTreeToEnclosingElementMap.get(tree);
   }
 
@@ -3880,7 +3874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param anno annotation class
    * @return the annotation mirror for anno
    */
-  public final AnnotationMirror getDeclAnnotationNoAliases(
+  public final @Nullable AnnotationMirror getDeclAnnotationNoAliases(
       Element elt, Class<? extends Annotation> anno) {
     return getDeclAnnotation(elt, anno, false);
   }
@@ -3931,12 +3925,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * method.
    *
    * @param elt the element to retrieve the annotation from
-   * @param annoClass the class the annotation to retrieve
+   * @param annoClass the class of the annotation to retrieve
    * @param checkAliases whether to return an annotation mirror for an alias of the requested
    *     annotation class name
    * @return the annotation mirror for the requested annotation, or null if not found
    */
-  private AnnotationMirror getDeclAnnotation(
+  private @Nullable AnnotationMirror getDeclAnnotation(
       Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
     AnnotationMirrorSet declAnnos = getDeclAnnotations(elt);
 

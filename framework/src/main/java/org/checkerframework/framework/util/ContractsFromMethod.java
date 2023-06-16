@@ -11,6 +11,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
@@ -176,7 +177,7 @@ public class ContractsFromMethod {
    *     null
    */
   private <T extends Contract> Set<T> getContract(
-      Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
+      Contract.Kind kind, @Nullable AnnotationMirror contractAnnotation, Class<T> clazz) {
     if (contractAnnotation == null) {
       return Collections.emptySet();
     }
@@ -211,7 +212,8 @@ public class ContractsFromMethod {
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(AnnotationMirror contractAnno) {
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+      AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
 
@@ -223,7 +225,7 @@ public class ContractsFromMethod {
    * @param argumentAnno supplies the elements/fields in the return value
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
@@ -248,10 +250,10 @@ public class ContractsFromMethod {
    * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
    *     null if it is not a supported qualifier of the type system
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
-      AnnotationMirror argumentAnno,
-      Map<String, String> argumentRenaming) {
+      @Nullable AnnotationMirror argumentAnno,
+      @Nullable Map<String, String> argumentRenaming) {
 
     @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);

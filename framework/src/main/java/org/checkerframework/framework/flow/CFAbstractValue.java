@@ -706,9 +706,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Returns the primary annotation that result from of combining the two {@link
-     * AnnotatedTypeVariable}. If the result has not primary annotation, the {@code null} is
-     * returned. This method is called when no annotation exists in either sets for the hierarchy
-     * whose top is {@code top}.
+     * AnnotatedTypeVariable}. If the result has no primary annotation, {@code null} is returned.
+     * This method is called when no annotation exists in either sets for the hierarchy whose top is
+     * {@code top}.
      *
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy

@@ -26,7 +26,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
    * The TreePath of the previous tree scanned. It is always set back to null after a scan has
    * completed.
    */
-  private TreePath path;
+  private @Nullable TreePath path;
 
   /**
    * Returns true if the tree is cached.

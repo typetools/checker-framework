@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 public interface AnnotatedTypeVisitor<R, P> {
 
   /**
-   * A Convenience method equivalent to {@code v.visit(t, null)}.
+   * A convenience method equivalent to {@code v.visit(t, null)}.
    *
    * @param type the type to visit
    * @return a visitor-specified result

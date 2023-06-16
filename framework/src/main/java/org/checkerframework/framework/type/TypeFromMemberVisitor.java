@@ -13,6 +13,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -138,7 +139,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
    *
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
-  private static AnnotatedTypeMirror inferLambdaParamAnnotations(
+  private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
       AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
     if (paramElement.getKind() != ElementKind.PARAMETER
         || f.declarationFromElement(paramElement) == null

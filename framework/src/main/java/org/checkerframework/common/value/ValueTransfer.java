@@ -10,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.ArrayLenRange;
 import org.checkerframework.common.value.qual.StringVal;
@@ -155,7 +156,8 @@ public class ValueTransfer extends CFTransfer {
    * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
    * bottom.
    */
-  private List<Integer> getStringLengths(Node subNode, TransferInput<CFValue, CFStore> p) {
+  private @Nullable List<Integer> getStringLengths(
+      Node subNode, TransferInput<CFValue, CFStore> p) {
 
     CFValue value = p.getValueOfSubNode(subNode);
     AnnotationMirror anno = getValueAnnotation(value);
@@ -203,7 +205,7 @@ public class ValueTransfer extends CFTransfer {
    * @param p a TransferInput
    * @return a list of possible values for {@code subNode} or null
    */
-  private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
+  private @Nullable List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
     AnnotationMirror anno = getValueAnnotation(value);
     if (anno == null) {
@@ -263,7 +265,7 @@ public class ValueTransfer extends CFTransfer {
    * @param value a CFValue
    * @return theboolean if {@code value} represents a single boolean value; otherwise null
    */
-  private Boolean getBooleanValue(CFValue value) {
+  private @Nullable Boolean getBooleanValue(CFValue value) {
     AnnotationMirror boolAnno =
         AnnotationUtils.getAnnotationByName(
             value.getAnnotations(), ValueAnnotatedTypeFactory.BOOLVAL_NAME);
@@ -278,7 +280,8 @@ public class ValueTransfer extends CFTransfer {
    * @param p the transfer input in which to look up values
    * @return the possible boolean values for the node
    */
-  private List<Boolean> getBooleanValues(Node subNode, TransferInput<CFValue, CFStore> p) {
+  private @Nullable List<Boolean> getBooleanValues(
+      Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
     AnnotationMirror intAnno =
         AnnotationUtils.getAnnotationByName(
@@ -328,7 +331,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns a list of possible values, or null if no estimate is available and any value is
    * possible.
    */
-  private List<? extends Number> getNumericalValues(
+  private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, TransferInput<CFValue, CFStore> p) {
     AnnotationMirror valueAnno = getValueAnnotation(subNode, p);
     return getNumericalValues(subNode, valueAnno);
