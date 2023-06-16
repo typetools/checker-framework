@@ -114,7 +114,8 @@ public class InitializationVisitor<
       AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
       // the special FBC rules do not apply if there is an explicit
       // UnknownInitialization annotation
-      AnnotationMirrorSet fieldAnnotations = atypeFactory.getAnnotatedType(el).getAnnotations();
+      AnnotationMirrorSet fieldAnnotations =
+          atypeFactory.getAnnotatedType(el).getPrimaryAnnotations();
       if (!AnnotationUtils.containsSameByName(
           fieldAnnotations, atypeFactory.UNKNOWN_INITIALIZATION)) {
         if (!ElementUtils.isStatic(el)
@@ -181,7 +182,7 @@ public class InitializationVisitor<
       if (s.isFieldInitialized(fa.getField())) {
         AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(fa.getField());
         // is this an invariant-field?
-        if (AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
+        if (AnnotationUtils.containsSame(fieldType.getPrimaryAnnotations(), invariantAnno)) {
           return true;
         }
       }
@@ -195,7 +196,7 @@ public class InitializationVisitor<
       } else if (fa.getReceiver() instanceof LocalVariable) {
         Element elem = ((LocalVariable) fa.getReceiver()).getElement();
         AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(elem);
-        receiverAnnoSet = receiverType.getAnnotations();
+        receiverAnnoSet = receiverType.getPrimaryAnnotations();
       } else {
         // Is there anything better we could do?
         return false;
@@ -212,7 +213,7 @@ public class InitializationVisitor<
       // The receiver is fully initialized and the field type
       // has the invariant type.
       if (isReceiverInitialized
-          && AnnotationUtils.containsSame(fieldType.getAnnotations(), invariantAnno)) {
+          && AnnotationUtils.containsSame(fieldType.getPrimaryAnnotations(), invariantAnno)) {
         return true;
       }
     }

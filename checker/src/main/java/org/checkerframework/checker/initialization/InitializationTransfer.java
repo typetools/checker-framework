@@ -177,7 +177,7 @@ public class InitializationTransfer<
       AnnotatedTypeMirror fieldAnno = analysis.getTypeFactory().getAnnotatedType(n.getElement());
       // Only if the field has the type system's invariant annotation,
       // such as @NonNull.
-      if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
+      if (fieldAnno.hasPrimaryAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
         AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
         V oldResultValue = result.getResultValue();
         V refinedResultValue =

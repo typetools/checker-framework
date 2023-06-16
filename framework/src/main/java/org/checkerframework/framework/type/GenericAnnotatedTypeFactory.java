@@ -734,7 +734,7 @@ public abstract class GenericAnnotatedTypeFactory<
     AnnotationMirrorSet superResult = super.getExplicitNewClassAnnos(newClassTree);
     AnnotatedTypeMirror dummy = getAnnotatedNullType(superResult);
     dependentTypesHelper.atExpression(dummy, newClassTree);
-    return dummy.getAnnotations();
+    return dummy.getPrimaryAnnotations();
   }
 
   /**
@@ -986,10 +986,10 @@ public abstract class GenericAnnotatedTypeFactory<
       // and the workaround in
       // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
       // The annotationMirror may not contain all explicitly written annotations.
-      return getAnnotatedType(ele).getAnnotations();
+      return getAnnotatedType(ele).getPrimaryAnnotations();
     } else if (expr instanceof FieldAccess) {
       Element ele = ((FieldAccess) expr).getField();
-      return getAnnotatedType(ele).getAnnotations();
+      return getAnnotatedType(ele).getPrimaryAnnotations();
     } else {
       return AnnotationMirrorSet.emptySet();
     }
@@ -1800,7 +1800,7 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public AnnotatedTypeMirror getDefaultAnnotations(Tree tree, AnnotatedTypeMirror type) {
     AnnotatedTypeMirror copy = type.deepCopy();
-    copy.removeAnnotations(type.getAnnotations());
+    copy.removePrimaryAnnotations(type.getPrimaryAnnotations());
     addComputedTypeAnnotations(tree, copy, false);
     return copy;
   }
@@ -1818,7 +1818,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public AnnotatedTypeMirror getDefaultAnnotationsForWarnRedundant(
       Tree tree, AnnotatedTypeMirror type) {
     AnnotatedTypeMirror copy = type.deepCopy();
-    copy.removeAnnotations(type.getAnnotations());
+    copy.removePrimaryAnnotations(type.getPrimaryAnnotations());
     addComputedTypeAnnotationsForWarnRedundant(tree, copy, false);
     return copy;
   }
@@ -2089,7 +2089,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     AnnotationMirrorSet qualParamTypes = new AnnotationMirrorSet();
-    for (AnnotationMirror initializerAnnotation : initializerType.getAnnotations()) {
+    for (AnnotationMirror initializerAnnotation : initializerType.getPrimaryAnnotations()) {
       if (hasQualifierParameterInHierarchy(
           type, qualHierarchy.getTopAnnotation(initializerAnnotation))) {
         qualParamTypes.add(initializerAnnotation);
@@ -2779,8 +2779,8 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     List<AnnotationMirror> result = new ArrayList<>();
-    for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
-      AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
+    for (AnnotationMirror inferredAm : inferredType.getPrimaryAnnotations()) {
+      AnnotationMirror declaredAm = declaredType.getPrimaryAnnotationInHierarchy(inferredAm);
       if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
         continue;
       }

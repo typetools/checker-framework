@@ -85,7 +85,7 @@ public class SubtypesSolver {
           AnnotationMirrorSet superAnnos = primaries.get(top);
           // if it is null we're just going to use the anno already on supertype
           if (superAnnos != null) {
-            AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(top);
+            AnnotationMirror supertypeAnno = supertype.getPrimaryAnnotationInHierarchy(top);
             superAnnos.add(supertypeAnno);
           }
         }
@@ -108,7 +108,7 @@ public class SubtypesSolver {
           if (!primaries.isEmpty()) {
             for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
               AnnotationMirror glb = greatestLowerBound(subtypes.primaries.get(top), qualHierarchy);
-              AnnotationMirror currentAnno = glbType.getAnnotationInHierarchy(top);
+              AnnotationMirror currentAnno = glbType.getPrimaryAnnotationInHierarchy(top);
 
               if (currentAnno == null) {
                 glbType.addAnnotation(glb);
