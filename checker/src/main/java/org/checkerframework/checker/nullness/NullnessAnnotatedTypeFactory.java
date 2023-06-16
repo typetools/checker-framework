@@ -338,6 +338,7 @@ public class NullnessAnnotatedTypeFactory
    *
    * @param checker the associated {@link NullnessChecker}
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public NullnessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

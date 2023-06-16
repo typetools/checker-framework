@@ -75,6 +75,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param checker the associated checker
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 

@@ -53,6 +53,7 @@ public class SearchIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public SearchIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

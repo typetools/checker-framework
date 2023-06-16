@@ -40,6 +40,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the associated checker
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public SubstringIndexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

@@ -158,6 +158,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   private final IndexMethodIdentifier imf;
 
   /** Create a new UpperBoundAnnotatedTypeFactory. */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

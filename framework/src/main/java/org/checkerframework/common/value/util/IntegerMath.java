@@ -1,6 +1,5 @@
 package org.checkerframework.common.value.util;
 
-
 public class IntegerMath extends NumberMath<Integer> {
   int number;
 

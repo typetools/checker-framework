@@ -115,6 +115,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

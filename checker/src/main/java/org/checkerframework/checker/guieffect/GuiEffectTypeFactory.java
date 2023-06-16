@@ -69,6 +69,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    */
   protected final Set<TypeElement> uiAnonClasses = new HashSet<>();
 
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
     // use true to enable flow inference, false to disable it
     super(checker, false);

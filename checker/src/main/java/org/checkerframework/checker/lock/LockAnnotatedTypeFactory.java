@@ -137,6 +137,7 @@ public class LockAnnotatedTypeFactory
   protected final @Nullable Class<? extends Annotation> javaxGuardedBy;
 
   /** Create a new LockAnnotatedTypeFactory. */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 

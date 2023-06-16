@@ -1,6 +1,5 @@
 package org.checkerframework.common.value.util;
 
-
 public class DoubleMath extends NumberMath<Double> {
   double number;
 

@@ -110,6 +110,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker assocated with this type factory
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

@@ -118,6 +118,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    *
    * @param checker the type-checker
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also

@@ -50,8 +50,7 @@ public class TypeInformationPresenter {
    * instance of GenericAnnotatedTypeFactory; otherwise, factory and genFactory refer to the same
    * object.
    */
-  private final
-      @Nullable GenericAnnotatedTypeFactory<
+  private final @Nullable GenericAnnotatedTypeFactory<
           ? extends CFAbstractValue<?>,
           ? extends CFAbstractStore<? extends CFAbstractValue<?>, ?>,
           ? extends CFAbstractTransfer<?, ?, ?>,

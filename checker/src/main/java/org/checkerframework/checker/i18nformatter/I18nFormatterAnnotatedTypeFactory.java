@@ -76,6 +76,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
   /** Create a new I18nFormatterAnnotatedTypeFactory. */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

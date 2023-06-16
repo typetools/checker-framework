@@ -1,6 +1,5 @@
 package org.checkerframework.common.value.util;
 
-
 public class ByteMath extends NumberMath<Byte> {
   byte number;
 

@@ -1,6 +1,5 @@
 package org.checkerframework.common.value.util;
 
-
 public class FloatMath extends NumberMath<Float> {
   float number;
 

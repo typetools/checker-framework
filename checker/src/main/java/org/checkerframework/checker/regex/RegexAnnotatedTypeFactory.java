@@ -132,6 +132,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

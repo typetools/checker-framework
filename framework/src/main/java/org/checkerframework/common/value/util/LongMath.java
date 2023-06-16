@@ -1,6 +1,5 @@
 package org.checkerframework.common.value.util;
 
-
 public class LongMath extends NumberMath<Long> {
   long number;
 
