@@ -138,8 +138,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(tree)) {
-          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotations().iterator().next();
-          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotations().iterator().next();
+          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotation();
+          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotation();
 
           TypeMirror leftOpTM = leftOpType.getUnderlyingType();
           TypeMirror rightOpTM = rightOpType.getUnderlyingType();
@@ -314,7 +314,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           if (TypesUtils.isCharOrCharacter(exprTM)) {
             break;
           }
-          AnnotationMirror anno = exprType.getEffectiveAnnotations().iterator().next();
+          AnnotationMirror anno = exprType.getEffectiveAnnotation();
           if (!qualHierarchy.isSubtype(anno, atypeFactory.SIGNED)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
           }
