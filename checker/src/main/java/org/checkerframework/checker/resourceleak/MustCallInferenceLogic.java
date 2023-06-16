@@ -30,6 +30,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.BlockWithObligations;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -45,8 +47,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -614,8 +614,9 @@ public class MustCallInferenceLogic {
       return false;
     }
 
-    CFStore cmStoreAfter = typeFactory.getStoreAfter(mNode);
-    CFValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
+    AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(mNode);
+    @Nullable AccumulationValue cmValue =
+        cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
     AnnotationMirror cmAnno = null;
     if (cmValue != null) {
       for (AnnotationMirror anno : cmValue.getAnnotations()) {

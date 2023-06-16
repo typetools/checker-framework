@@ -83,12 +83,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When we
-   * enable -Ainfer for the Resource Leak Checker, whole-program inference (wpi) is performed for
-   * all the sub-checkers. However, our mechanism for inferring annotations for the resource leak
-   * checker is different. It relies on pattern matching instead. The wpi results for this inference
-   * are not useful and only end up slowing down the convergence of the algorithm for Resource Leak
-   * Inference.
+   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When
+   * -Ainfer flag is enabled for the Resource Leak Checker, whole-program inference (wpi) is
+   * performed for all the sub-checkers. However, the mechanism for inferring annotations for the
+   * resource leak checker is different. It relies on pattern matching instead. The wpi results for
+   * this inference are not useful and only end up slowing down the convergence of the algorithm for
+   * Resource Leak Inference.
    *
    * @param expressionTree a tree
    * @param lhsTree its element
