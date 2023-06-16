@@ -1,14 +1,12 @@
 package org.checkerframework.framework.type;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Converts an AnnotatedTypeMirror mirror into a formatted string. For converting AnnotationMirrors:
  *
  * @see org.checkerframework.javacutil.AnnotationFormatter
  */
-@AnnotatedFor("nullness")
 public interface AnnotatedTypeFormatter {
   /**
    * Formats type into a String. Uses an implementation specific default for printing "invisible

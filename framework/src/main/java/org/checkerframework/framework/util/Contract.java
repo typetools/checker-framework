@@ -6,7 +6,6 @@ import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -25,7 +24,6 @@ import org.checkerframework.javacutil.BugInCF;
  * @see Postcondition
  * @see ConditionalPostcondition
  */
-@AnnotatedFor("nullness")
 public abstract class Contract {
 
   /**

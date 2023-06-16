@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -23,7 +22,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * Infers type arguments by using the Greatest Lower Bound computation on the subtype relationships
  * in a constraint map.
  */
-@AnnotatedFor("nullness")
 public class SubtypesSolver {
 
   /**

@@ -66,7 +66,6 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.UnaryOperation;
 import org.checkerframework.dataflow.expression.ValueLiteral;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesError;
 import org.checkerframework.javacutil.BugInCF;
@@ -85,7 +84,6 @@ import org.plumelib.util.StringsPlume;
  * @checker_framework.manual #dependent-types Annotations whose argument is a Java expression
  *     (dependent type annotations)
  */
-@AnnotatedFor("nullness")
 public class JavaExpressionParseUtil {
 
   /** Regular expression for a formal parameter use. */

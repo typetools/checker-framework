@@ -58,7 +58,6 @@ import org.plumelib.util.StringsPlume;
  *
  * @see org.checkerframework.framework.qual.DefaultQualifier
  */
-@AnnotatedFor("nullness")
 public class QualifierDefaults {
 
   // TODO add visitor state to get the default annotations from the top down?

@@ -6,7 +6,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.Element;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -14,7 +13,6 @@ import org.checkerframework.framework.util.element.ElementAnnotationUtil.Unexpec
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Apply annotations to a declared type based on its declaration. */
-@AnnotatedFor("nullness")
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
   public static void apply(

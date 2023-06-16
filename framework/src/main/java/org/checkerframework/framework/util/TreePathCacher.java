@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target Tree.
@@ -17,7 +16,6 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * intermediate TreePaths that are generated. The intermediate TreePaths are reused when other
  * targets have overlapping paths.
  */
-@AnnotatedFor("nullness")
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
   private final Map<Tree, @Nullable TreePath> foundPaths = new HashMap<>(32);

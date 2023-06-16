@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
 import java.util.Set;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * AFReducer implementations reduce AFConstraints into one or more "simpler" AFConstraints until
@@ -11,7 +10,6 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *     org.checkerframework.framework.util.typeinference.constraint.AFConstraint#isIrreducible(java.util.Set)
  *     <p>There is one AFReducer for each type of AFConstraint.
  */
-@AnnotatedFor("nullness")
 public interface AFReducer {
 
   /**

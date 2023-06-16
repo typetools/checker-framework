@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
@@ -9,7 +8,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  *
  * @see org.checkerframework.framework.util.typeinference.constraint.TUConstraint
  */
-@AnnotatedFor("nullness")
 public class TIsU extends TUConstraint {
   public TIsU(AnnotatedTypeVariable typeVariable, AnnotatedTypeMirror relatedType) {
     this(typeVariable, relatedType, false);

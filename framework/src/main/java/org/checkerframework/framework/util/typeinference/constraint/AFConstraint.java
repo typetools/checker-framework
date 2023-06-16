@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
@@ -32,7 +31,6 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
  * <p>A 《 F and F 》 A are represented by class A2F F 《 A and A 》 F are represented by class F2A F =
  * A is represented by class FIsA
  */
-@AnnotatedFor("nullness")
 public abstract class AFConstraint {
   /** The argument type. */
   public final AnnotatedTypeMirror argument;

@@ -31,7 +31,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.ErrorTypeKindException;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -62,7 +61,6 @@ import org.plumelib.util.DeepCopyable;
  *
  * @see TypeMirror
  */
-@AnnotatedFor("nullness")
 public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeMirror> {
 
   /** An EqualityAtmComparer. */

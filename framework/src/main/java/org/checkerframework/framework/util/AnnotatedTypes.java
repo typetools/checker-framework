@@ -38,7 +38,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -64,7 +63,6 @@ import org.plumelib.util.StringsPlume;
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
  * Types}.
  */
-@AnnotatedFor("nullness")
 public class AnnotatedTypes {
   /** Class cannot be instantiated. */
   private AnnotatedTypes() {

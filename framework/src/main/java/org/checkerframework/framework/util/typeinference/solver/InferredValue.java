@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference.solver;
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
@@ -20,7 +19,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  *   <li>The target was inferred to be equal to another target
  * </ul>
  */
-@AnnotatedFor("nullness")
 public class InferredValue {
   /**
    * Indicates that a corresponding target was inferred to be the field "type" in all hierarchies.

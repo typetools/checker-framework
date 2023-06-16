@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -41,7 +40,6 @@ import org.plumelib.util.CollectionsPlume;
  * @see org.checkerframework.framework.type.TypeVariableSubstitutor
  * @see org.checkerframework.framework.type.AnnotatedTypeCopierWithReplacement
  */
-@AnnotatedFor("nullness")
 public class AnnotatedTypeCopier
     implements AnnotatedTypeVisitor<
         AnnotatedTypeMirror, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>> {

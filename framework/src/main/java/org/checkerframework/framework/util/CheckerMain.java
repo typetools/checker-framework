@@ -23,7 +23,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
@@ -53,7 +52,6 @@ import org.plumelib.util.CollectionsPlume;
  * because its functionality is not available to users who choose not to use the Checker Framework
  * javac script.
  */
-@AnnotatedFor("nullness")
 public class CheckerMain {
 
   /**

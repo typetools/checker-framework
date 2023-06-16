@@ -18,7 +18,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -39,7 +38,6 @@ import org.plumelib.util.CollectionsPlume;
  *
  * @see Types#directSupertypes(TypeMirror)
  */
-@AnnotatedFor("nullness")
 final class SupertypeFinder {
 
   /** Do not instantiate. */

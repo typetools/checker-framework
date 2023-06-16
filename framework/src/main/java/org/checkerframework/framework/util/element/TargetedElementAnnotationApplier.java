@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
@@ -28,7 +27,6 @@ import org.plumelib.util.StringsPlume;
  * <p>Note: Subtypes of this class likely want to implement the handleTargeted and handleValid
  * methods though they have default empty implementations for brevity.
  */
-@AnnotatedFor("nullness")
 abstract class TargetedElementAnnotationApplier {
   /**
    * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().

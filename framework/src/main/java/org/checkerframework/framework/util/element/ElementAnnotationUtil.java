@@ -20,7 +20,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -41,7 +40,6 @@ import org.plumelib.util.StringsPlume;
  * represents that element (or a use of that Element). This class also contains package private
  * methods used by the ElementAnnotationAppliers that do most of the work.
  */
-@AnnotatedFor("nullness")
 public class ElementAnnotationUtil {
 
   /**

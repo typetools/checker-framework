@@ -5,10 +5,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** Utilities for executing external processes. */
-@AnnotatedFor("nullness")
 public class ExecUtil {
 
   public static int execute(String[] cmd, OutputStream std, OutputStream err) {

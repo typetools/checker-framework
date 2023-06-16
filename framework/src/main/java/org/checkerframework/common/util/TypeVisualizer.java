@@ -16,7 +16,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -51,7 +50,6 @@ import org.plumelib.util.StringsPlume;
  *
  * Be sure to remove such statements before committing your changes.
  */
-@AnnotatedFor("nullness")
 public class TypeVisualizer {
 
   /**

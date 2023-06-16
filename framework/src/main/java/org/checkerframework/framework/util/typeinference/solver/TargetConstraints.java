@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -16,7 +15,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  *
  * @see org.checkerframework.framework.util.typeinference.solver.ConstraintMap
  */
-@AnnotatedFor("nullness")
 public class TargetConstraints {
   /**
    * The type parameter for which we are inferring a type argument. All constraints in this object

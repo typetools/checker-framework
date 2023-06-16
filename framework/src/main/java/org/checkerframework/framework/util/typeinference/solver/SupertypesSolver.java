@@ -12,7 +12,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -31,7 +30,6 @@ import org.checkerframework.javacutil.BugInCF;
  * Infers type arguments by using the Least Upper Bound computation on the supertype relationships
  * in a constraint map.
  */
-@AnnotatedFor("nullness")
 public class SupertypesSolver {
 
   /**

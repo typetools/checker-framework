@@ -13,7 +13,6 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
@@ -22,7 +21,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.IPair;
 
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
-@AnnotatedFor("nullness")
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
   /**

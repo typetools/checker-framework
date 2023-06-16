@@ -1,8 +1,6 @@
 package org.checkerframework.common.value.util;
 
-import org.checkerframework.framework.qual.AnnotatedFor;
 
-@AnnotatedFor("nullness")
 public class ByteMath extends NumberMath<Byte> {
   byte number;
 

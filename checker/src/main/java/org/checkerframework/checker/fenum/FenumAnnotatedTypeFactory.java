@@ -41,6 +41,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker checker
    */
+  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

@@ -1,9 +1,7 @@
 package org.checkerframework.common.value.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 
-@AnnotatedFor("nullness")
 public abstract class NumberMath<T extends Number> {
   public static NumberMath<?> getNumberMath(Number number) {
     if (number instanceof Byte) {

@@ -12,7 +12,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -38,7 +37,6 @@ import org.plumelib.util.IPair;
  */
 // TODO: This class assumes that most annotations have a field named "expression". If not, issue a
 // more helpful error message.
-@AnnotatedFor("nullness")
 public class ContractsFromMethod {
 
   /** The QualifierArgument.value field/element. */

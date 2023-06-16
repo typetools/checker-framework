@@ -25,7 +25,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
 import javax.tools.Diagnostic;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -64,7 +63,6 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * This e.g. influences the output of "method return", which is only valid
  * for type annotations for non-void methods.
  */
-@AnnotatedFor("nullness")
 @SupportedOptions({"nolocations", "annotations", "annotationserror", "annotationsummaryonly"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationStatistics extends SourceChecker {

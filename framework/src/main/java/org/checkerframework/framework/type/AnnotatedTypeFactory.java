@@ -175,7 +175,6 @@ import org.plumelib.util.SystemPlume;
  *
  * @checker_framework.manual #creating-a-checker How to write a checker plug-in
  */
-@AnnotatedFor("nullness")
 public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /** Whether to output verbose, low-level debugging messages about {@link #getAnnotatedType}. */

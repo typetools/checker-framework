@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference.constraint;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -25,7 +24,6 @@ import org.plumelib.util.StringsPlume;
  * <p>Generally reductions should map to corresponding rules in
  * https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.12.2.7
  */
-@AnnotatedFor("nullness")
 public class FIsAReducer implements AFReducer {
 
   protected final FIsAReducingVisitor visitor;

@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.defaults;
 import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -14,7 +13,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * <p>It also has a handy toString method that is useful for debugging.
  */
-@AnnotatedFor("nullness")
 public class Default implements Comparable<Default> {
   // please remember to add any fields to the hashcode calculation
   /** The default annotation mirror. */

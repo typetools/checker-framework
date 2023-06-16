@@ -8,7 +8,6 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
@@ -16,7 +15,6 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
  */
-@AnnotatedFor("nullness")
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
   /** Apply annotations from {@code element} to {@code type}. */

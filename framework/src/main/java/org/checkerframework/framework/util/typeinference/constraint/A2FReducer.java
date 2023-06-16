@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
 import java.util.Set;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -12,7 +11,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * <p>Generally reductions should map to corresponding rules in
  * https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.12.2.7
  */
-@AnnotatedFor("nullness")
 public class A2FReducer implements AFReducer {
 
   protected final A2FReducingVisitor visitor;

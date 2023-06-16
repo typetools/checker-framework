@@ -22,7 +22,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.AbstractElementVisitor8;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -66,7 +65,6 @@ import org.plumelib.reflection.Signatures;
  *       -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java
  * }</pre>
  */
-@AnnotatedFor("nullness")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("*")
 @SupportedOptions("checker")

@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.Map;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -36,7 +35,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * <p>Note: It appears that Java 8 greatly improved the type argument inference and related error
  * messaging but I have found it useful to consult the JLS 7 as well.
  */
-@AnnotatedFor("nullness")
 public interface TypeArgumentInference {
 
   /**

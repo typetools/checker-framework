@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
-import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -24,7 +23,6 @@ import org.plumelib.util.StringsPlume;
  * Adds annotations from element to the return type, formal parameter types, type parameters, and
  * throws clauses of the AnnotatedExecutableType type.
  */
-@AnnotatedFor("nullness")
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
   /** Apply annotations from {@code element} to {@code type}. */
