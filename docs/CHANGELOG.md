@@ -15,6 +15,7 @@ call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
  * `getAnnotation*()` => `getPrimaryAnnotation*()`.
  * `hasAnnotation*()` => `hasPrimaryAnnotation()`.
  * `removeAnnotation*()` => `removePrimaryAnnotation*()`.
+ * `isAnnotatedInHierarchy()` => `hasPrimaryAnnotationInHierarchy()`
  * `removeNonTopAnnotationInHierarchy()` should not be used.
 
 Dataflow Framework:

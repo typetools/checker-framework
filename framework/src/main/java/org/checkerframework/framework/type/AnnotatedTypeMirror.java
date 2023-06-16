@@ -2690,4 +2690,20 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public boolean removeAnnotationInHierarchy(AnnotationMirror a) {
     return removePrimaryAnnotationInHierarchy(a);
   }
+
+  /**
+   * Returns true if this type has a primary annotation in the same hierarchy as {@code annotation}.
+   *
+   * <p><annotation>It doesn't account for annotations in deep types (type arguments, array
+   * components, etc).
+   *
+   * @param annotation the qualifier hierarchy to check for
+   * @return true iff this type has a primary annotation in the same hierarchy as {@code
+   *     annotation}.
+   * @deprecated use {@link #hasPrimaryAnnotationInHierarchy(AnnotationMirror)}
+   */
+  @Deprecated // 2023-06-15
+  public boolean isAnnotatedInHierarchy(AnnotationMirror annotation) {
+    return hasPrimaryAnnotationInHierarchy(annotation);
+  }
 }
