@@ -704,9 +704,19 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public void addMissingAnnotations(Iterable<? extends AnnotationMirror> annotations) {
     for (AnnotationMirror a : annotations) {
-      if (!this.hasPrimaryAnnotationInHierarchy(a)) {
-        this.addAnnotation(a);
-      }
+      addMissingAnnotation(a);
+    }
+  }
+
+  /**
+   * Add {@code a} to the current type, only if no annotation from the same qualifier hierarchy is
+   * present.
+   *
+   * @param a the annotation to add
+   */
+  public void addMissingAnnotation(AnnotationMirror a) {
+    if (!this.isAnnotatedInHierarchy(a)) {
+      this.addAnnotation(a);
     }
   }
 

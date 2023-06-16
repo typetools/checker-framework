@@ -579,9 +579,7 @@ public class NullnessAnnotatedTypeFactory
         // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
         // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
         // "annotations.on.use" error.
-        if (!type.hasPrimaryAnnotationInHierarchy(NONNULL)) {
-          type.addAnnotation(NONNULL);
-        }
+        type.addMissingAnnotation(NONNULL);
       }
       return super.visitTypeCast(tree, type);
     }
@@ -606,10 +604,8 @@ public class NullnessAnnotatedTypeFactory
     public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromDeclaration(tree);
       if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-        if (!type.hasPrimaryAnnotationInHierarchy(NONNULL)) {
-          // case 9. exception parameter
-          type.addAnnotation(NONNULL);
-        }
+        // case 9. exception parameter
+        type.addMissingAnnotation(NONNULL);
       }
       return null;
     }
@@ -662,9 +658,7 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
       // The result of newly allocated structures is always non-null.
-      if (!type.hasPrimaryAnnotationInHierarchy(NONNULL)) {
-        type.replaceAnnotation(NONNULL);
-      }
+      type.replaceAnnotation(NONNULL);
 
       // The most precise element type for `new Object[] {null}` is @FBCBottom, but
       // the most useful element type is @Initialized (which is also accurate).
