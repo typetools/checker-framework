@@ -1253,13 +1253,12 @@ public class AnnotationUtils {
    * <p>To test containment, use {@link #annotationValueContains(AnnotationValue, String)} or {@link
    * #annotationValueContainsToString(AnnotationValue, String)}.
    *
-   * @param avList an AnnotationValue that is null or a list of Strings
+   * @param avList an AnnotationValue that is a list of Strings
    * @param expectedType the component type of the argument and of the return type, an enum
    * @param <T> the class of the type
    * @return the annotation value, converted to a list
    */
-  public static <T> List<T> annotationValueToList(
-      @Nullable AnnotationValue avList, Class<T> expectedType) {
+  public static <T> List<T> annotationValueToList(AnnotationValue avList, Class<T> expectedType) {
     @SuppressWarnings("unchecked")
     List<? extends AnnotationValue> list = (List<? extends AnnotationValue>) avList.getValue();
     return annotationValueToList(list, expectedType);
