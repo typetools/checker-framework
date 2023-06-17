@@ -427,8 +427,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param annoClass annotation class
    * @return the annotation mirror whose class is {@code annoClass} or null
    */
-  public @Nullable @Nullable AnnotationMirror getPrimaryAnnotation(
-      Class<? extends Annotation> annoClass) {
+  public @Nullable AnnotationMirror getPrimaryAnnotation(Class<? extends Annotation> annoClass) {
     for (AnnotationMirror annoMirror : primaryAnnotations) {
       if (atypeFactory.areSameByClass(annoMirror, annoClass)) {
         return annoMirror;
