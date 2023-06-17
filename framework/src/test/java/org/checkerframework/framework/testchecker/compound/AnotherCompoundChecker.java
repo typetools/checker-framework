@@ -1,6 +1,7 @@
 package org.checkerframework.framework.testchecker.compound;
 
 import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
