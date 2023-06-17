@@ -1,5 +1,6 @@
 package org.checkerframework.checker.testchecker.ainfer;
 
+import java.util.Set;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
