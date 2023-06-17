@@ -1,6 +1,5 @@
 package org.checkerframework.checker.testchecker.ainfer;
 
-import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
@@ -18,9 +17,8 @@ public class AinferTestChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(ValueChecker.class);
     return checkers;
   }

@@ -1297,7 +1297,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return the value of effectively final local variables
    */
-  public HashMap<VariableElement, Value> getFinalLocalValues() {
+  public Map<VariableElement, Value> getFinalLocalValues() {
     return flowResult.getFinalLocalValues();
   }
 
