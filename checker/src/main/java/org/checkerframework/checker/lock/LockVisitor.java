@@ -170,14 +170,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
       VariableTree receiver = tree.getReceiverParameter();
       if (receiver != null) {
-        if (atypeFactory.getAnnotatedType(receiver).hasAnnotation(checkerGuardSatisfiedClass)) {
+        if (atypeFactory
+            .getAnnotatedType(receiver)
+            .hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
           issueGSwithMRLWarning = true;
         }
       }
 
       if (!issueGSwithMRLWarning) { // Skip loop if we already decided to issue the warning.
         for (VariableTree vt : tree.getParameters()) {
-          if (atypeFactory.getAnnotatedType(vt).hasAnnotation(checkerGuardSatisfiedClass)) {
+          if (atypeFactory.getAnnotatedType(vt).hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
             issueGSwithMRLWarning = true;
             break;
           }
@@ -194,7 +196,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     if (methodElement != null && methodElement.getKind() != ElementKind.CONSTRUCTOR) {
       AnnotatedTypeMirror returnTypeATM = atypeFactory.getAnnotatedType(tree).getReturnType();
 
-      if (returnTypeATM != null && returnTypeATM.hasAnnotation(GuardSatisfied.class)) {
+      if (returnTypeATM != null && returnTypeATM.hasPrimaryAnnotation(GuardSatisfied.class)) {
         int returnGuardSatisfiedIndex = atypeFactory.getGuardSatisfiedIndex(returnTypeATM);
 
         if (returnGuardSatisfiedIndex == -1) {
@@ -271,7 +273,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
       AnnotatedTypeMirror methodCallReceiver) {
 
     AnnotationMirror primaryGb =
-        methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        methodCallReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     AnnotationMirror effectiveGb =
         methodCallReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
 
@@ -280,7 +282,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // effectiveGb.
     if (primaryGb != null && atypeFactory.areSameByClass(primaryGb, checkerGuardSatisfiedClass)) {
       AnnotationMirror primaryGbOnMethodDefinition =
-          methodDefinitionReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+          methodDefinitionReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
       if (primaryGbOnMethodDefinition != null
           && atypeFactory.areSameByClass(primaryGbOnMethodDefinition, checkerGuardSatisfiedClass)) {
         return true;
@@ -288,7 +290,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     if (atypeFactory.areSameByClass(effectiveGb, checkerGuardedByClass)) {
-      AnnotationMirrorSet annos = methodDefinitionReceiver.getAnnotations();
+      AnnotationMirrorSet annos = methodDefinitionReceiver.getPrimaryAnnotations();
       AnnotationMirror guardSatisfied =
           atypeFactory.getAnnotationByClass(annos, checkerGuardSatisfiedClass);
       if (guardSatisfied != null) {
@@ -325,7 +327,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // Newly created objects are guarded by nothing, so allow @GuardedBy({}) on constructor
     // results.
     AnnotationMirror anno =
-        constructorType.getReturnType().getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        constructorType
+            .getReturnType()
+            .getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
     if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)
         || AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYBOTTOM)) {
       checker.reportWarning(constructorElement, "inconsistent.constructor.type", anno, null);
@@ -348,10 +352,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     // for more details.
 
     boolean result = true;
-    if (varType.hasAnnotation(GuardSatisfied.class)) {
-      if (valueType.hasAnnotation(GuardedBy.class)) {
-        return checkLock(valueTree, valueType.getAnnotation(GuardedBy.class));
-      } else if (valueType.hasAnnotation(GuardSatisfied.class)) {
+    if (varType.hasPrimaryAnnotation(GuardSatisfied.class)) {
+      if (valueType.hasPrimaryAnnotation(GuardedBy.class)) {
+        return checkLock(valueTree, valueType.getPrimaryAnnotation(GuardedBy.class));
+      } else if (valueType.hasPrimaryAnnotation(GuardSatisfied.class)) {
         // TODO: Find a cleaner, non-abstraction-breaking way to know whether method actual
         // parameters are being assigned to formal parameters.
 
@@ -635,7 +639,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         && invokedMethod.getElement().getKind() != ElementKind.CONSTRUCTOR) {
       methodDefinitionReceiver = invokedMethod.getReceiverType();
       if (methodDefinitionReceiver != null
-          && methodDefinitionReceiver.hasAnnotation(checkerGuardSatisfiedClass)) {
+          && methodDefinitionReceiver.hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
         guardSatisfiedIndex[0] = atypeFactory.getGuardSatisfiedIndex(methodDefinitionReceiver);
         methodCallReceiver = atypeFactory.getReceiverType(methodInvocationTree);
       }
@@ -648,7 +652,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
       AnnotatedTypeMirror paramType = paramTypes.get(i);
 
-      if (paramType.hasAnnotation(checkerGuardSatisfiedClass)) {
+      if (paramType.hasPrimaryAnnotation(checkerGuardSatisfiedClass)) {
         guardSatisfiedIndex[i + 1] = atypeFactory.getGuardSatisfiedIndex(paramType);
       }
     }
@@ -659,12 +663,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     passedArgAnnotations.add(
         methodCallReceiver == null
             ? null
-            : methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+            : methodCallReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
     for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
       passedArgAnnotations.add(
           atypeFactory
               .getAnnotatedType(argTree)
-              .getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+              .getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
     }
 
     // Perform the validity check and issue an error if not valid.
@@ -1055,7 +1059,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
               || ((MemberSelectTree) parent).getExpression() == tree)
           && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
         AnnotationMirror guardedBy =
-            atypeFactory.getSelfType(tree).getAnnotationInHierarchy(atypeFactory.GUARDEDBY);
+            atypeFactory.getSelfType(tree).getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBY);
         checkLockOfImplicitThis(tree, guardedBy);
       }
     }

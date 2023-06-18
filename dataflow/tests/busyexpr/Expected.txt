@@ -208,13 +208,13 @@ Process order: 14
 AnalysisResult#29
 Before:   busy expressions = none
 ~~~~~~~~~
-marker (start of catch block for ArithmeticException #0)   [ Marker ]
+marker (start of catch block for ArithmeticException #0)   [ CatchMarker ]
 e   [ VariableDeclaration ]
 d   [ LocalVariable ]
 10000000   [ IntegerLiteral ]
 d = 10000000   [ Assignment ]
 expression statement d = 10000000   [ ExpressionStatement ]
-marker (end of catch block for ArithmeticException #0)   [ Marker ]
+marker (end of catch block for ArithmeticException #0)   [ CatchMarker ]
 ~~~~~~~~~
 TransferInput#10
 After:   busy expressions = none

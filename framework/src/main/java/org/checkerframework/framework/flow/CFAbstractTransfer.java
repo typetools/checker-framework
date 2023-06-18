@@ -884,35 +884,6 @@ public abstract class CFAbstractTransfer<
     return n.getResult().accept(this, in);
   }
 
-  @Override
-  @Deprecated // 2022-03-22
-  public TransferResult<V, S> visitStringConcatenateAssignment(
-      org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode n,
-      TransferInput<V, S> in) {
-    // This gets the type of LHS + RHS
-    TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
-    Node lhs = n.getLeftOperand();
-    Node rhs = n.getRightOperand();
-
-    // update the results store if the assignment target is something we can process
-    S store = result.getRegularStore();
-    // ResultValue is the type of LHS + RHS
-    V resultValue = result.getResultValue();
-
-    if (lhs instanceof FieldAccessNode
-        && shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
-      // Updates inferred field type
-      analysis
-          .atypeFactory
-          .getWholeProgramInference()
-          .updateFromFieldAssignment((FieldAccessNode) lhs, rhs);
-    }
-
-    processCommonAssignment(in, lhs, rhs, store, resultValue);
-
-    return new RegularTransferResult<>(finishValue(resultValue, store), store);
-  }
-
   /**
    * Determine abstract value of right-hand side and update the store accordingly.
    *
@@ -998,10 +969,10 @@ public abstract class CFAbstractTransfer<
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getAnnotations().equals(expType.getAnnotations())
-          && !expType.getAnnotations().isEmpty()) {
+          && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
+          && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
-        for (AnnotationMirror anno : refType.getAnnotations()) {
+        for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           in.getRegularStore().insertOrRefine(expr, anno);
         }
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
@@ -1012,7 +983,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getAnnotations()) {
+      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }

@@ -162,7 +162,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
           funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
         return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
       }
-      lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
+      lambdaParam.addMissingAnnotations(funcTypeParam.getPrimaryAnnotations());
       return lambdaParam;
     }
     return null;

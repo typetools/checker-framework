@@ -558,7 +558,7 @@ public class LockAnnotatedTypeFactory
    * @return the index on the GuardSatisfied annotation
    */
   /*package-private*/ int getGuardSatisfiedIndex(AnnotatedTypeMirror atm) {
-    return getGuardSatisfiedIndex(atm.getAnnotation(GuardSatisfied.class));
+    return getGuardSatisfiedIndex(atm.getPrimaryAnnotation(GuardSatisfied.class));
   }
 
   /**
@@ -596,7 +596,7 @@ public class LockAnnotatedTypeFactory
     AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
 
     if (methodDefinitionReturn == null
-        || !methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
+        || !methodDefinitionReturn.hasPrimaryAnnotation(GuardSatisfied.class)) {
       return mType;
     }
 
@@ -619,7 +619,7 @@ public class LockAnnotatedTypeFactory
             methodDefinitionReturn,
             invokedMethod.getReceiverType() /* the method definition receiver*/,
             returnGuardSatisfiedIndex,
-            receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+            receiverType.getPrimaryAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
       return mType;
     }
 
@@ -665,7 +665,7 @@ public class LockAnnotatedTypeFactory
       int matchingGuardSatisfiedIndex,
       AnnotationMirror annotationInGuardedByHierarchy) {
     if (atm == null
-        || !atm.hasAnnotation(GuardSatisfied.class)
+        || !atm.hasPrimaryAnnotation(GuardSatisfied.class)
         || getGuardSatisfiedIndex(atm) != matchingGuardSatisfiedIndex) {
       return false;
     }

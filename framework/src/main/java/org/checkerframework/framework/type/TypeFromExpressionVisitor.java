@@ -41,6 +41,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -182,7 +183,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
   @Override
   public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
-    if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
+    if (SystemUtil.jreVersion >= 14 && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
       return visitSwitchExpressionTree17(tree, f);
     }
     return super.defaultAction(tree, f);
@@ -322,7 +323,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     boolean hasInit = tree.getInitializers() != null;
     AnnotatedTypeMirror typeElem = descendBy(result, hasInit ? 1 : tree.getDimensions().size());
     while (true) {
-      typeElem.addAnnotations(treeElem.getAnnotations());
+      typeElem.addAnnotations(treeElem.getPrimaryAnnotations());
       if (!(treeElem instanceof AnnotatedArrayType)) {
         break;
       }
@@ -366,7 +367,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType.getReturnType();
     // Clear the annotations on the return type, so that the explicit annotations can be added
     // first, then the annotations from the return type are added as needed.
-    AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getAnnotations());
+    AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getPrimaryAnnotations());
     returnType.clearPrimaryAnnotations();
     returnType.addAnnotations(f.getExplicitNewClassAnnos(tree));
     returnType.addMissingAnnotations(fromReturn);

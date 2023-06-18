@@ -353,7 +353,7 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
-      return mcAtf.getAnnotatedType(typeElt).getAnnotationInHierarchy(mcAtf.TOP);
+      return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
@@ -1158,7 +1158,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
@@ -1348,7 +1349,7 @@ class MustCallConsistencyAnalyzer {
         MustCallAnnotatedTypeFactory mcTypeFactory =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
             AnnotationUtils.getElementValueArray(
                 mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1387,6 +1388,44 @@ class MustCallConsistencyAnalyzer {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
+    // The following code handles a special case where the field being assigned is itself getting
+    // passed in an owning position to another method on the RHS of the assignment.
+    // For example, if the field's type is a class whose constructor takes another instance
+    // of itself (such as a node in a linked list) in an owning position, re-assigning the field
+    // to a new instance that takes the field's value as an owning parameter is safe (the new value
+    // has taken responsibility for closing the old value). In such a case, it is not required
+    // that the must-call obligation of the field be satisfied via method calls before the
+    // assignment, since the invoked method will take ownership of the object previously
+    // referenced by the field and handle the obligation. This fixes the false positive in
+    // https://github.com/typetools/checker-framework/issues/5971.
+    Node rhs = node.getExpression();
+    if (!noLightweightOwnership
+        && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
+
+      List<Node> arguments = getArgumentsOfInvocation(rhs);
+      List<? extends VariableElement> parameters = getParametersOfInvocation(rhs);
+
+      if (arguments.size() == parameters.size()) {
+        for (int i = 0; i < arguments.size(); i++) {
+          VariableElement param = parameters.get(i);
+          if (typeFactory.hasOwning(param)) {
+            Node argument = arguments.get(i);
+            if (argument.equals(lhs)) {
+              return;
+            }
+          }
+        }
+      } else {
+        // This could happen, e.g., with varargs, or with strange cases like generated Enum
+        // constructors. In the varargs case (i.e. if the varargs parameter is owning),
+        // only the first of the varargs arguments will actually get transferred: the second
+        // and later varargs arguments will continue to be tracked at the call-site.
+        // For now, just skip this case - the worst that will happen is a false positive in
+        // cases like the varargs one described above.
+        // TODO allow for ownership transfer here if needed in future, but for now do nothing
+      }
+    }
+
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
@@ -1400,7 +1439,8 @@ class MustCallConsistencyAnalyzer {
     }
     if (mcAnno == null) {
       // No stored value (or the stored value is Poly/top), so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
@@ -1413,7 +1453,6 @@ class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    Node rhs = node.getExpression();
     AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;

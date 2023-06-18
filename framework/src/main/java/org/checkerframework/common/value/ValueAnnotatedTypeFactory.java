@@ -361,11 +361,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type1.replaceAnnotation(
                 convertToUnknown(
                     convertSpecialIntRangeToStandardIntRange(
-                        type1.getAnnotationInHierarchy(UNKNOWNVAL))));
+                        type1.getPrimaryAnnotationInHierarchy(UNKNOWNVAL))));
             type2.replaceAnnotation(
                 convertToUnknown(
                     convertSpecialIntRangeToStandardIntRange(
-                        type2.getAnnotationInHierarchy(UNKNOWNVAL))));
+                        type2.getPrimaryAnnotationInHierarchy(UNKNOWNVAL))));
 
             return super.arePrimeAnnosEqual(type1, type2);
           }
@@ -456,7 +456,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     TypeMirror type = atm.getUnderlyingType();
     long defaultValue = TypeKindUtils.minValue(toPrimitiveIntegralTypeKind(type));
 
-    AnnotationMirror intRangeAnno = atm.getAnnotation(IntRange.class);
+    AnnotationMirror intRangeAnno = atm.getPrimaryAnnotation(IntRange.class);
     return getIntRangeFromValue(intRangeAnno, defaultValue);
   }
 
@@ -472,7 +472,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     TypeMirror type = atm.getUnderlyingType();
     long defaultValue = TypeKindUtils.maxValue(toPrimitiveIntegralTypeKind(type));
 
-    AnnotationMirror intRangeAnno = atm.getAnnotation(IntRange.class);
+    AnnotationMirror intRangeAnno = atm.getPrimaryAnnotation(IntRange.class);
     return getIntRangeToValue(intRangeAnno, defaultValue);
   }
 
@@ -657,7 +657,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *     type}.
    */
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
-    AnnotationMirror arrayAnno = type.getAnnotationInHierarchy(UNKNOWNVAL);
+    AnnotationMirror arrayAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);
     switch (AnnotationUtils.annotationName(arrayAnno)) {
       case ARRAYLEN_NAME:
         // array.length, where array : @ArrayLen(x)
@@ -1467,7 +1467,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   public int getMinLenValue(AnnotatedTypeMirror atm) {
-    return getMinLenValue(atm.getAnnotationInHierarchy(UNKNOWNVAL));
+    return getMinLenValue(atm.getPrimaryAnnotationInHierarchy(UNKNOWNVAL));
   }
 
   /**
@@ -1565,7 +1565,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return the smallest possible integral for which the {@code atm} could be the type
    */
   public Long getMinimumIntegralValue(AnnotatedTypeMirror atm) {
-    AnnotationMirror anm = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+    AnnotationMirror anm = atm.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);
     if (AnnotationUtils.areSameByName(anm, INTVAL_NAME)) {
       List<Long> possibleValues = getIntValues(anm);
       return Collections.min(possibleValues);
