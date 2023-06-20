@@ -153,7 +153,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected boolean currentPrintVerboseGenerics;
 
     /** Whether the visitor is currently printing a raw type. */
-    protected boolean currentPrintingRaw;
+    protected boolean currentlyPrintingRaw;
 
     public FormattingVisitor(
         AnnotationFormatter annoFormatter,
@@ -164,7 +164,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       this.currentPrintVerboseGenerics = printVerboseGenerics;
       this.defaultInvisiblesSetting = defaultInvisiblesSetting;
       this.currentPrintInvisibleSetting = false;
-      this.currentPrintingRaw = false;
+      this.currentlyPrintingRaw = false;
     }
 
     /** Set the current verbose settings to use while printing. */
@@ -243,16 +243,16 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
               type.getPrimaryAnnotations(), currentPrintInvisibleSetting));
       sb.append(smpl);
 
-      boolean oldPrintingRaw = currentPrintingRaw;
+      boolean oldPrintingRaw = currentlyPrintingRaw;
       if (type.isUnderlyingTypeRaw()) {
-        currentPrintingRaw = true;
+        currentlyPrintingRaw = true;
       }
       if (type.typeArgs != null) {
         // getTypeArguments sets the field if it does not already exist.
         List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
         if (!typeArgs.isEmpty()) {
           StringJoiner sj = new StringJoiner(", ", "<", ">");
-          if (!currentPrintVerboseGenerics && currentPrintingRaw) {
+          if (!currentPrintVerboseGenerics && currentlyPrintingRaw) {
             sj.add("/*RAW*/");
           } else {
             for (AnnotatedTypeMirror typeArg : typeArgs) {
@@ -262,7 +262,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           sb.append(sj);
         }
       }
-      currentPrintingRaw = oldPrintingRaw;
+      currentlyPrintingRaw = oldPrintingRaw;
       return sb.toString();
     }
 
@@ -444,7 +444,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
       if (type.isUninferredTypeArgument()) {
-        if (currentPrintingRaw) {
+        if (currentlyPrintingRaw) {
           sb.append("/*RAW TYPE ARGUMENT:*/ ");
         } else {
           sb.append("/*INFERENCE FAILED for:*/ ");
