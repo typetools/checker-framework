@@ -155,6 +155,13 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     /** Whether the visitor is currently printing a raw type. */
     protected boolean currentPrintingRaw;
 
+    /**
+     * Creates the visitor.
+     *
+     * @param annoFormatter formatter used for {@code AnnotationMirror}s
+     * @param printVerboseGenerics whether to verbosely print type variables and wildcards
+     * @param defaultInvisiblesSetting whether to print invisible qualifiers
+     */
     public FormattingVisitor(
         AnnotationFormatter annoFormatter,
         boolean printVerboseGenerics,
