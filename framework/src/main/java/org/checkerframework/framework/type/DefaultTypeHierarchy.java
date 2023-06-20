@@ -162,13 +162,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return error message for the case when two types shouldn't be compared
    */
   @Override
-  protected String defaultErrorMessage(
+  public String defaultErrorMessage(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, Void p) {
-    return "Incomparable types ("
-        + subtype
-        + ", "
-        + supertype
-        + ") visitHistory = "
+    return super.defaultErrorMessage(subtype, supertype, p)
+        + System.lineSeparator()
+        + "  visitHistory = "
         + isSubtypeVisitHistory;
   }
 
