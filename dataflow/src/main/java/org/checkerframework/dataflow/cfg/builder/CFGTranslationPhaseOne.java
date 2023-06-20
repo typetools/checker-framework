@@ -3326,9 +3326,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitNewClass(NewClassTree tree, Void p) {
     // see JLS 15.9
 
+    DeclaredType classType = (DeclaredType) TreeUtils.typeOf(tree);
+    TypeMirror enclosingType = classType.getEnclosingType();
     Tree enclosingExpr = tree.getEnclosingExpression();
+    Node enclosingExprNode;
     if (enclosingExpr != null) {
-      scan(enclosingExpr, p);
+      enclosingExprNode = scan(enclosingExpr, p);
+    } else if (enclosingType.getKind() == TypeKind.DECLARED) {
+      // This is an inner class (instance nested class).
+      // As there is no explicit enclosing expression, create a node for the implicit this
+      // argument.
+      enclosingExprNode = new ImplicitThisNode(enclosingType);
+      extendWithNode(enclosingExprNode);
+    } else {
+      // For static nested classes, the kind would be Typekind.None.
+
+      enclosingExprNode = null;
     }
 
     // Convert constructor arguments
@@ -3347,8 +3360,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Note that getClassBody() and therefore classbody can be null.
     ClassDeclarationNode classbody = (ClassDeclarationNode) scan(tree.getClassBody(), p);
 
-    Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
-
+    Node node =
+        new ObjectCreationNode(tree, enclosingExprNode, constructorNode, arguments, classbody);
     List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
     Set<TypeMirror> thrownSet =
         ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());

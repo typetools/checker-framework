@@ -72,17 +72,15 @@ public class FIsAReducer implements AFReducer {
    */
   private class FIsAReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
     @Override
-    protected String defaultErrorMessage(
+    public String defaultErrorMessage(
         AnnotatedTypeMirror argument,
         AnnotatedTypeMirror parameter,
         Set<AFConstraint> afConstraints) {
-      return StringsPlume.joinLines(
-          "Unexpected FIsA Combination:",
-          "argument=" + argument,
-          "parameter=" + parameter,
-          "constraints=[",
-          StringsPlume.join(", ", afConstraints),
-          "]");
+      return super.defaultErrorMessage(argument, parameter, afConstraints)
+          + System.lineSeparator()
+          + "  constraints = ["
+          + StringsPlume.join(", ", afConstraints)
+          + "]";
     }
 
     // ------------------------------------------------------------------------

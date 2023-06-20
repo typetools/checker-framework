@@ -32,7 +32,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
           exprType.getEffectiveAnnotations(), varType.getEffectiveAnnotations())) {
         checker.reportError(tree, "compound.assignment", varType, exprType);
       }
-    } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
+    } else if (!exprType.hasPrimaryAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
       checker.reportError(tree, "compound.assignment", varType, exprType);
     }

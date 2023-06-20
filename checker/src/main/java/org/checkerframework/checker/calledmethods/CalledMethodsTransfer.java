@@ -203,10 +203,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private @Nullable AnnotationMirror getUpdatedCalledMethodsType(
       AnnotatedTypeMirror currentType, List<String> methodNames) {
     AnnotationMirror type;
-    if (currentType == null || !currentType.isAnnotatedInHierarchy(atypeFactory.top)) {
+    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.top)) {
       type = atypeFactory.top;
     } else {
-      type = currentType.getAnnotationInHierarchy(atypeFactory.top);
+      type = currentType.getPrimaryAnnotationInHierarchy(atypeFactory.top);
     }
 
     // Don't attempt to strengthen @CalledMethodsPredicate annotations, because that would

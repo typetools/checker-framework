@@ -311,7 +311,7 @@ public class ReflectiveEvaluator {
   }
 
   public List<?> evaluteConstructorCall(
-      ArrayList<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
+      List<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
     Constructor<?> constructor;
     try {
       // get the constructor

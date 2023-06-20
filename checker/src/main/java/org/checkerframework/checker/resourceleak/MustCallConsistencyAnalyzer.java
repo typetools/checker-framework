@@ -361,7 +361,7 @@ class MustCallConsistencyAnalyzer {
         return mcAtf.BOTTOM;
       }
 
-      return mcAtf.getAnnotatedType(typeElt).getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+      return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
@@ -1166,7 +1166,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
@@ -1356,7 +1357,7 @@ class MustCallConsistencyAnalyzer {
         MustCallAnnotatedTypeFactory mcTypeFactory =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
             AnnotationUtils.getElementValueArray(
                 mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1446,7 +1447,8 @@ class MustCallConsistencyAnalyzer {
     }
     if (mcAnno == null) {
       // No stored value (or the stored value is Poly/top), so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(

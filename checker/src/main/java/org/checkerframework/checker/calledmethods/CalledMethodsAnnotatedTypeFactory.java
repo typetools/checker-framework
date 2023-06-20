@@ -296,7 +296,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       if (returnsThis(tree)) {
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
         methodName = adjustMethodNameUsingValueChecker(methodName, tree);
-        AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
+        AnnotationMirror oldAnno = type.getPrimaryAnnotationInHierarchy(top);
         AnnotationMirror newAnno =
             qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName));
         type.replaceAnnotation(newAnno);

@@ -24,7 +24,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    */
   public Set<TypeVariable> getRemainingTargets(
       Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
-    LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
+    Set<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
 
     if (inferredTypesOnly) {
 
@@ -119,8 +119,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @param subordinate a result which we wish to merge into this result
    */
   public void mergeSubordinate(InferenceResult subordinate) {
-    LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
-    LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
+    Set<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
+    Set<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
     remainingSubKeys.removeAll(keySet());
 
     for (TypeVariable target : previousKeySet) {
@@ -153,7 +153,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
           InferredValue subValue = subordinate.get(target);
           if (subValue instanceof InferredType) {
             AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
-            copy.replaceAnnotations(newType.type.getAnnotations());
+            copy.replaceAnnotations(newType.type.getPrimaryAnnotations());
             newType = new InferredType(copy);
           }
         }

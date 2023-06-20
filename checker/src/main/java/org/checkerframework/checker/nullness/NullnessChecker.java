@@ -1,7 +1,7 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.LinkedHashSet;
 import java.util.NavigableSet;
+import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -74,9 +74,8 @@ public class NullnessChecker extends InitializationChecker {
   public NullnessChecker() {}
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!hasOptionNoSubcheckers("assumeKeyFor")) {
       checkers.add(KeyForSubchecker.class);
     }

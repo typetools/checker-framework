@@ -68,7 +68,7 @@ public class AliasingTransfer extends CFTransfer {
     Tree treeRhs = rhs.getTree();
     AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
 
-    if (rhsType.hasAnnotation(Unique.class)
+    if (rhsType.hasPrimaryAnnotation(Unique.class)
         && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
       return super.visitAssignment(n, in); // Do normal refinement.
     }
@@ -89,8 +89,8 @@ public class AliasingTransfer extends CFTransfer {
   @Override
   protected void processPostconditions(
       Node n, CFStore store, ExecutableElement executableElement, ExpressionTree tree) {
-    // TODO: Process ObjectCreationNode here after finish the pull request:
-    // https://github.com/eisop/checker-framework/pull/314
+    // TODO: Process ObjectCreationNode here after fixing issue:
+    // https://github.com/eisop/checker-framework/issues/400
     if (!(n instanceof MethodInvocationNode)) {
       return;
     }
@@ -113,8 +113,8 @@ public class AliasingTransfer extends CFTransfer {
     for (int i = 0; i < args.size(); i++) {
       Node arg = args.get(i);
       AnnotatedTypeMirror paramType = paramTypes.get(i);
-      if (!paramType.hasAnnotation(NonLeaked.class)
-          && !paramType.hasAnnotation(LeakedToResult.class)) {
+      if (!paramType.hasPrimaryAnnotation(NonLeaked.class)
+          && !paramType.hasPrimaryAnnotation(LeakedToResult.class)) {
         store.clearValue(JavaExpression.fromNode(arg));
       }
     }
@@ -123,8 +123,8 @@ public class AliasingTransfer extends CFTransfer {
     Node receiver = ((MethodInvocationNode) n).getTarget().getReceiver();
     AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
     if (receiverType != null
-        && !receiverType.hasAnnotation(LeakedToResult.class)
-        && !receiverType.hasAnnotation(NonLeaked.class)) {
+        && !receiverType.hasPrimaryAnnotation(LeakedToResult.class)
+        && !receiverType.hasPrimaryAnnotation(NonLeaked.class)) {
       store.clearValue(JavaExpression.fromNode(receiver));
     }
   }
@@ -157,7 +157,7 @@ public class AliasingTransfer extends CFTransfer {
       for (int i = 0; i < args.size(); i++) {
         Node arg = args.get(i);
         VariableElement param = params.get(i);
-        if (factory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class)) {
+        if (factory.getAnnotatedType(param).hasPrimaryAnnotation(LeakedToResult.class)) {
           // If argument can leak to result, and parent is not a
           // single statement, remove that node from store.
           store.clearValue(JavaExpression.fromNode(arg));
@@ -168,7 +168,7 @@ public class AliasingTransfer extends CFTransfer {
       Node receiver = n.getTarget().getReceiver();
       AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
       AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
-      if (receiverType != null && receiverType.hasAnnotation(LeakedToResult.class)) {
+      if (receiverType != null && receiverType.hasPrimaryAnnotation(LeakedToResult.class)) {
         store.clearValue(JavaExpression.fromNode(receiver));
       }
     }

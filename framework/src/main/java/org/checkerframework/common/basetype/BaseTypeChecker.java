@@ -201,7 +201,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * @return the subchecker classes on which this checker depends; will be modified by callees
    */
   // This is never looked up in, but it is iterated over (and added to, which does a lookup).
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     // This must return a modifiable set because clients modify it.
     // Most checkers have 1 or fewer subcheckers.
     LinkedHashSet<Class<? extends BaseTypeChecker>> result =
@@ -451,7 +451,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    */
   private List<BaseTypeChecker> instantiateSubcheckers(
       Map<Class<? extends BaseTypeChecker>, BaseTypeChecker> alreadyInitializedSubcheckerMap) {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> classesOfImmediateSubcheckers =
+    Set<Class<? extends BaseTypeChecker>> classesOfImmediateSubcheckers =
         getImmediateSubcheckerClasses();
     if (classesOfImmediateSubcheckers.isEmpty()) {
       return Collections.emptyList();

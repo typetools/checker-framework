@@ -115,8 +115,8 @@ public final class Opt {
   }
 
   /**
-   * Return primary if it is non-null. If primary is null, invoke {@code other} and return the
-   * result of that invocation.
+   * Return {@code primary} if it is non-null. If {@code primary} is null, invoke {@code other} and
+   * return the result of that invocation.
    *
    * @see java.util.Optional#orElseGet(Supplier)
    */

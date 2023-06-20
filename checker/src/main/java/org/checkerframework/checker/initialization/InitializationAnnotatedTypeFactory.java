@@ -709,7 +709,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     // not necessary if there is an explicit UnknownInitialization
     // annotation on the field
     if (AnnotationUtils.containsSameByName(
-        fieldAnnotations.getAnnotations(), UNKNOWN_INITIALIZATION)) {
+        fieldAnnotations.getPrimaryAnnotations(), UNKNOWN_INITIALIZATION)) {
       return;
     }
     if (isUnknownInitialization(receiverType) || isUnderInitialization(receiverType)) {
@@ -892,9 +892,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected AnnotationMirror leastUpperBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
-      if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
-        return null;
-      }
+      assert isInitializationAnnotation(anno1);
+      assert isInitializationAnnotation(anno2);
 
       // Handle the case where one is a subtype of the other.
       if (isSubtypeInitialization(anno1, qual1, anno2, qual2)) {
