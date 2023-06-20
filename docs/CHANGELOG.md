@@ -29,6 +29,12 @@ Dataflow Framework:
  * Renamed `getTypeFactoryOfSubchecker()` to `getTypeFactoryOfSubcheckerOrNull`.
  * Added new `getTypeFactoryOfSubchecker()` that never returns null.
 
+Return types changed:
+ * `GenericAnnotatedTypeFactory.getFinalLocalValues()` return type changed to
+   `Map`, though the returned value is still a `HashMap`.
+ * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
+   `Set`, though the returned value is still a `LinkedHashSet`.
+
 **Closed issues:**
 
 
