@@ -2065,11 +2065,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /**
      * Returns the lower bound of this wildcard. If no lower bound is explicitly declared, returns
-     * {@code null}.
+     * an {@link AnnotatedNullType}.
      *
-     * @return the lower bound of this wildcard, or null if none is explicitly declared
+     * @return the lower bound of this wildcard, or an {@link AnnotatedNullType} if none is
+     *     explicitly declared
      */
-    public @Nullable AnnotatedTypeMirror getSuperBound() {
+    public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
         BoundsInitializer.initializeSuperBound(this);
         fixupBoundAnnotations();
