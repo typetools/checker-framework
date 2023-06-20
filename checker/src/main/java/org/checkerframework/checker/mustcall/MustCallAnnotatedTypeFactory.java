@@ -116,7 +116,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @param checker the checker associated with this type factory
    */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public MustCallAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallUnknown.class);

@@ -59,7 +59,6 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param checker the type-checker associated with this type factory
    */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();

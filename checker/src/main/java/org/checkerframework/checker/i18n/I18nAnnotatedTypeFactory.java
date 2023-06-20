@@ -21,7 +21,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public I18nAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

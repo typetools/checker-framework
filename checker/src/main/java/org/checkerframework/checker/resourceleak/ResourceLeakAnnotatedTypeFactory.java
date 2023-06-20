@@ -95,7 +95,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    *
    * @param checker the checker associated with this type factory
    */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public ResourceLeakAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.noResourceAliases = checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES);

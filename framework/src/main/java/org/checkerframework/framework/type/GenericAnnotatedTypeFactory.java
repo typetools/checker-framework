@@ -44,6 +44,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -393,7 +394,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  protected void postInit() {
+  protected void postInit(
+      @UnderInitialization(GenericAnnotatedTypeFactory.class) GenericAnnotatedTypeFactory<Value, Store, TransferFunction, FlowAnalysis> this) {
     super.postInit();
 
     this.dependentTypesHelper = createDependentTypesHelper();

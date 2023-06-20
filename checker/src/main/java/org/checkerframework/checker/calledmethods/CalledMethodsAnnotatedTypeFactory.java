@@ -77,7 +77,6 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param checker the checker
    */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public CalledMethodsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
 

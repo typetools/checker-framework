@@ -64,7 +64,6 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final FormatterTreeUtil treeUtil = new FormatterTreeUtil(checker);
 
   /** Creates a FormatterAnnotatedTypeFactory. */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

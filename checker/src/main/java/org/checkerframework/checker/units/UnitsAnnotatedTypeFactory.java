@@ -99,7 +99,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
     // use true to enable flow inference, false to disable it
     super(checker, false);

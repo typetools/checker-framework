@@ -89,7 +89,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final IndexMethodIdentifier imf = new IndexMethodIdentifier(this);
 
   /** Create a new SameLenAnnotatedTypeFactory. */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

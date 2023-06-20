@@ -82,7 +82,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker to use
    */
-  @SuppressWarnings("nullness:method.invocation") // #979: inference failed
   public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
