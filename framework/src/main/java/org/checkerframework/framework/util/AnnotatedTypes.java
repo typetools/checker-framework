@@ -527,7 +527,7 @@ public class AnnotatedTypes {
     DeclaredType enclosingType = (DeclaredType) enclosingClassOfMember.asType();
     Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
-    // Look for all enclosing classes that have type variables
+    // Look for all enclosing types that have type variables
     // and collect type to be substituted for those type variables
     while (enclosingType != null) {
       TypeElement enclosingTypeElement = (TypeElement) enclosingType.asElement();
