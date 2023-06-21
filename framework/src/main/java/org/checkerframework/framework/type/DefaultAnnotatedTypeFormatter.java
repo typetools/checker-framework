@@ -152,6 +152,16 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
      */
     protected boolean currentPrintVerboseGenerics;
 
+    /** Whether the visitor is currently printing a raw type. */
+    protected boolean currentlyPrintingRaw;
+
+    /**
+     * Creates the visitor.
+     *
+     * @param annoFormatter formatter used for {@code AnnotationMirror}s
+     * @param printVerboseGenerics whether to verbosely print type variables and wildcards
+     * @param defaultInvisiblesSetting whether to print invisible qualifiers
+     */
     public FormattingVisitor(
         AnnotationFormatter annoFormatter,
         boolean printVerboseGenerics,
@@ -161,6 +171,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       this.currentPrintVerboseGenerics = printVerboseGenerics;
       this.defaultInvisiblesSetting = defaultInvisiblesSetting;
       this.currentPrintInvisibleSetting = false;
+      this.currentlyPrintingRaw = false;
     }
 
     /** Set the current verbose settings to use while printing. */
@@ -222,6 +233,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       if (type.isDeclaration() && currentPrintInvisibleSetting) {
         sb.append("/*DECL*/ ");
       }
+
       if (type.getEnclosingType() != null) {
         sb.append(this.visit(type.getEnclosingType(), visiting));
         sb.append('.');
@@ -238,17 +250,26 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
               type.getPrimaryAnnotations(), currentPrintInvisibleSetting));
       sb.append(smpl);
 
+      boolean oldPrintingRaw = currentlyPrintingRaw;
+      if (type.isUnderlyingTypeRaw()) {
+        currentlyPrintingRaw = true;
+      }
       if (type.typeArgs != null) {
         // getTypeArguments sets the field if it does not already exist.
         List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
         if (!typeArgs.isEmpty()) {
           StringJoiner sj = new StringJoiner(", ", "<", ">");
-          for (AnnotatedTypeMirror typeArg : typeArgs) {
-            sj.add(visit(typeArg, visiting));
+          if (!currentPrintVerboseGenerics && currentlyPrintingRaw) {
+            sj.add("/*RAW*/");
+          } else {
+            for (AnnotatedTypeMirror typeArg : typeArgs) {
+              sj.add(visit(typeArg, visiting));
+            }
           }
           sb.append(sj);
         }
       }
+      currentlyPrintingRaw = oldPrintingRaw;
       return sb.toString();
     }
 
@@ -430,7 +451,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
       if (type.isUninferredTypeArgument()) {
-        sb.append("/*INFERENCE FAILED for:*/ ");
+        if (currentlyPrintingRaw) {
+          sb.append("/*RAW TYPE ARGUMENT:*/ ");
+        } else {
+          sb.append("/*INFERENCE FAILED for:*/ ");
+        }
       }
 
       sb.append(
