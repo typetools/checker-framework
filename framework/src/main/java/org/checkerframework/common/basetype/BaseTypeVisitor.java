@@ -902,7 +902,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         TypeMirror fieldTM = fieldType.getUnderlyingType();
-        if (!qualHierarchy.isSubtypeShallow(invariantAnno, fieldTM, declaredAnno, fieldTM)) {
+        if (!qualHierarchy.isSubtypeShallowEffective(invariantAnno, fieldType)) {
           // Checks #3
           checker.reportError(
               errorTree, "field.invariant.not.subtype", fieldName, invariantAnno, declaredAnno);
@@ -1862,11 +1862,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (AnnotationMirror topAnno : topAnnotations) {
       AnnotationMirror superAnno = superType.getAnnotationInHierarchy(topAnno);
       AnnotationMirror constructorReturnAnno = returnType.getAnnotationInHierarchy(topAnno);
-      if (!qualHierarchy.isSubtypeShallow(
-          superAnno,
-          superType.getUnderlyingType(),
-          constructorReturnAnno,
-          returnType.getUnderlyingType())) {
+      if (!qualHierarchy.isSubtypeShallowEffective(superType, returnType, topAnno)) {
         checker.reportError(call, errorKey, constructorReturnAnno, call, superAnno);
       }
     }
@@ -2010,7 +2006,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return false;
     }
     TypeMirror exprTM = expr.getType();
-    return qualHierarchy.isSubtypeShallow(inferredAnnotation, exprTM, necessaryAnnotation, exprTM);
+    return qualHierarchy.isSubtypeShallow(inferredAnnotation, necessaryAnnotation, exprTM);
   }
 
   /**
@@ -2536,16 +2532,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (!isTypeCastSafe(castType, exprType)) {
       return false;
     }
-    AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
-    TypeMirror castTM = castType.getUnderlyingType();
-    AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
-    TypeMirror exprTM = exprType.getUnderlyingType();
 
     if (atypeFactory.hasQualifierParameterInHierarchy(exprType, top)) {
       // The isTypeCastSafe call above checked that the exprType is a subtype of castType,
       // so just check the reverse to check that the qualifiers are equivalent.
-      return qualHierarchy.isSubtypeShallow(castTypeAnno, castTM, exprTypeAnno, exprTM);
+      return qualHierarchy.isSubtypeShallowEffective(castType, exprType, top);
     }
+    AnnotationMirror castTypeAnno = castType.getEffectiveAnnotationInHierarchy(top);
+    AnnotationMirror exprTypeAnno = exprType.getEffectiveAnnotationInHierarchy(top);
     // Otherwise the cast is unsafe, unless the qualifiers on both cast and expr are bottom.
     AnnotationMirror bottom = qualHierarchy.getBottomAnnotation(top);
     return AnnotationUtils.areSame(castTypeAnno, bottom)
@@ -2786,12 +2780,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotationMirrorSet requiredAnnotations = getExceptionParameterLowerBoundAnnotationsCached();
     VariableTree excParamTree = tree.getParameter();
     AnnotatedTypeMirror excParamType = atypeFactory.getAnnotatedType(excParamTree);
-    TypeMirror excParamTM = excParamType.getUnderlyingType();
 
     for (AnnotationMirror required : requiredAnnotations) {
       AnnotationMirror found = excParamType.getAnnotationInHierarchy(required);
       assert found != null;
-      if (!qualHierarchy.isSubtypeShallow(required, excParamTM, found, excParamTM)) {
+      if (!qualHierarchy.isSubtypeShallowEffective(required, excParamType)) {
         checker.reportError(excParamTree, "exception.parameter", found, required);
       }
 
@@ -2799,9 +2792,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedUnionType aut = (AnnotatedUnionType) excParamType;
         for (AnnotatedTypeMirror alternativeType : aut.getAlternatives()) {
           AnnotationMirror alternativeAnno = alternativeType.getAnnotationInHierarchy(required);
-          TypeMirror alternativeTM = alternativeType.getUnderlyingType();
-          if (!qualHierarchy.isSubtypeShallow(
-              required, alternativeTM, alternativeAnno, alternativeTM)) {
+          if (!qualHierarchy.isSubtypeShallowEffective(required, alternativeType)) {
             checker.reportError(excParamTree, "exception.parameter", alternativeAnno, required);
           }
         }
