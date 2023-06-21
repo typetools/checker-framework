@@ -245,7 +245,7 @@ public class AnnotatedTypes {
    * @param type a type
    * @param superType a type
    */
-  private static @Nullable AnnotatedTypeMirror asOuterSuper(
+  private static AnnotatedTypeMirror asOuterSuper(
       Types types,
       AnnotatedTypeFactory atypeFactory,
       AnnotatedTypeMirror type,
