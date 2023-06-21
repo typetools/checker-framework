@@ -326,9 +326,6 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param checker the checker to which this type factory belongs
    * @param useFlow whether flow analysis should be performed
    */
-  @SuppressWarnings("nullness:method.invocation" // inference failed at createCFGVisualizer(),
-  // createTransferFunction()
-  )
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker);
 
