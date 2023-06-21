@@ -290,11 +290,11 @@ public class ValueCheckerUtils {
    */
   public static Range getPossibleValues(
       AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
-    if (valueAnnotatedTypeFactory.isIntRange(valueType.getAnnotations())) {
-      return valueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
+    if (valueAnnotatedTypeFactory.isIntRange(valueType.getPrimaryAnnotations())) {
+      return valueAnnotatedTypeFactory.getRange(valueType.getPrimaryAnnotation(IntRange.class));
     } else {
       List<Long> values =
-          valueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+          valueAnnotatedTypeFactory.getIntValues(valueType.getPrimaryAnnotation(IntVal.class));
       if (values != null) {
         return Range.create(values);
       } else {
@@ -345,8 +345,8 @@ public class ValueCheckerUtils {
    */
   public static String getExactStringValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-    if (valueType.hasAnnotation(StringVal.class)) {
-      AnnotationMirror valueAnno = valueType.getAnnotation(StringVal.class);
+    if (valueType.hasPrimaryAnnotation(StringVal.class)) {
+      AnnotationMirror valueAnno = valueType.getPrimaryAnnotation(StringVal.class);
       List<String> possibleValues =
           AnnotationUtils.getElementValueArray(
               valueAnno, factory.stringValValueElement, String.class);

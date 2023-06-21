@@ -271,9 +271,7 @@ public class ElementAnnotationUtil {
         // This will be false if we've defaulted the bounds and are reading them again.
         // In that case, we will have already created an annotation for the extends bound
         // that should be honored and NOT overwritten.
-        if (!extendsBound.isAnnotatedInHierarchy(anno)) {
-          extendsBound.addAnnotation(anno);
-        }
+        extendsBound.addMissingAnnotation(anno);
       }
     }
   }

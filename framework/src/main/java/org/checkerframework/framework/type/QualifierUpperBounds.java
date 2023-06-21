@@ -138,7 +138,7 @@ public class QualifierUpperBounds {
    * @return the explicit annotations on the element
    */
   protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
-    return atypeFactory.fromElement(element).getAnnotations();
+    return atypeFactory.fromElement(element).getPrimaryAnnotations();
   }
 
   /**

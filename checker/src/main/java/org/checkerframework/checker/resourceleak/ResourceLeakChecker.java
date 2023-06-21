@@ -1,6 +1,6 @@
 package org.checkerframework.checker.resourceleak;
 
-import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -50,9 +50,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   private int numMustCallFailed = 0;
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
 
     if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       checkers.add(MustCallNoCreatesMustCallForChecker.class);
