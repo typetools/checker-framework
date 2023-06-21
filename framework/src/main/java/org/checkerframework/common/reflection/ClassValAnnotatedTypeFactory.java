@@ -62,7 +62,6 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
-  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

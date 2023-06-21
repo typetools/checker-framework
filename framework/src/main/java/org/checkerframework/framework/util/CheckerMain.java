@@ -130,7 +130,6 @@ public class CheckerMain {
    * Construct all the relevant file locations and Java version given the path to this jar and a set
    * of directories in which to search for jars.
    */
-  @SuppressWarnings("nullness:method.invocation") // call instance method within  constructor
   public CheckerMain(File checkerJar, List<String> args) {
 
     this.checkerJar = checkerJar;

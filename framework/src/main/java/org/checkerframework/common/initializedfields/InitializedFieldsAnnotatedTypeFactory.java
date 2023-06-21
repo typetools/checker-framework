@@ -43,7 +43,6 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    *
    * @param checker the checker
    */
-  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 

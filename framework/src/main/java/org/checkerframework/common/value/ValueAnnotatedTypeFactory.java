@@ -222,10 +222,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
-  @SuppressWarnings({
-    "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
-    "nullness:method.invocation" // inference failed at postInit()
-  })
+  @SuppressWarnings("StaticAssignmentInConstructor") // static Range.ignoreOverflow is gross
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 

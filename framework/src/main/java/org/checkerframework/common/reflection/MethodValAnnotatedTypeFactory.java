@@ -83,7 +83,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
-  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == MethodValAnnotatedTypeFactory.class) {

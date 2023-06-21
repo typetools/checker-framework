@@ -13,7 +13,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 public class BaseAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {
 
-  @SuppressWarnings("nullness:method.invocation") // inference failed at postInit()
   public BaseAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker, useFlow);
 

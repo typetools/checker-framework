@@ -75,7 +75,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param annotations the annotations in this abstract value
    * @param underlyingType the underlying (Java) type in this abstract value
    */
-  @SuppressWarnings("nullness:method.invocation") // inference failed at getAnnotations()
   protected CFAbstractValue(
       CFAbstractAnalysis<V, ?, ?> analysis,
       AnnotationMirrorSet annotations,
