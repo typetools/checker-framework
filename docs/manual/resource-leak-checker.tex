@@ -486,26 +486,15 @@ checker unsound:  the Resource Leak Checker will not warn if the constructor
 and initializers set a field more than once.  The amount of leakage is
 limited to how many times the field is set.
 
-\sectionAndLabel{Errors about unknown must call obligations of type variables}{resource-leak-generic-unknown}
-
-% Arguably, this is working around a bug in the Must Call checker, which could
-% use a different defaulting scheme for generic type uses.
+\sectionAndLabel{Errors about unknown must call obligations}{resource-leak-generic-unknown}
 
 The Resource Leak Checker issues a \<required.method.not.known> error
-when an unannotated variable with a generic type has a must call obligation.
-For example, consider the following code:
-\begin{verbatim}
-public <T extends java.io.Closeable> void foo(
-      @Owning @MustCall("close") T value) {
-    ...
-  }
-\end{verbatim}
-
-Without the \<@MustCall("close")> annotation, the checker is unable to
-determine \<value>'s must call obligation, and so conservatively issues an
-error. If you encounter such an error, you can almost always resolve it by
-adding a new
-\<@MustCall> annotation.
+when a variable with the type \<@MustCallUnknown> has a must call obligation.
+\<@MustCallUnknown> rarely occurs, but if you encounter this error usually
+the right thing to do is to write an explicit \<@MustCall> annotation
+on the indicated expression (e.g., as a cast), because the Must Call Checker
+will only use \<@MustCallUnknown> as a default when encountering a language
+feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
@@ -528,8 +517,8 @@ type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
 which prevents many false positives in code with type variables that makes
 no use of resources --- an important design principle.
 However, this defaulting rule does have an unfortunate consequence: it is
-an error to write \code{List<Socket>} and any other use of a type variable
-where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
+an error to write \code{List<Socket>} or any other type with a concrete
+type argument where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
 needs to write such a type while using the Resource Leak Checker has a few
 choices, all of which have some downsides:
 
