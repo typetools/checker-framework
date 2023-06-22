@@ -183,8 +183,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     TypeMirror subTM = subtype.getUnderlyingType();
     TypeMirror superTM = supertype.getUnderlyingType();
 
-    AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
-    AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+    AnnotationMirror subtypeAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop);
+    AnnotationMirror supertypeAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop);
     if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
         && checker.getTypeFactory().hasQualifierParameterInHierarchy(subtype, currentTop)) {
       // If the types have a class qualifier parameter, the qualifiers must be equivalent.
@@ -877,13 +877,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, supertype);
         AnnotationMirror superLB = qualHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
         return qualHierarchy.isSubtypeShallow(
-            subtype.getAnnotationInHierarchy(currentTop), subTM, superLB, superTM);
+            subtype.getPrimaryAnnotationInHierarchy(currentTop), subTM, superLB, superTM);
       } else if (!subtypeHasAnno && supertypeHasAnno) {
         // This is the case "T <: @A T" where T is a type variable.
         return qualHierarchy.isSubtypeShallow(
             subtype.getEffectiveAnnotationInHierarchy(currentTop),
             subTM,
-            supertype.getAnnotationInHierarchy(currentTop),
+            supertype.getPrimaryAnnotationInHierarchy(currentTop),
             superTM);
       }
     }
@@ -947,10 +947,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // @Nullable String, then it is safe to return true. However if the supertype is
         // @NullableList<@NonNull String> then it's not possible to decide if it is a
         // subtype of the wildcard.
-        AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-        AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
-        return qualHierarchy.isSubtypeShallow(
-            subtypeAnno, subtype.getUnderlyingType(), supertypeAnno, supertype.getUnderlyingType());
+        return qualHierarchy.isSubtypeShallowEffective(subtype, supertype, currentTop);
       }
     }
     return visitWildcard_Type(subtype, supertype);
@@ -966,10 +963,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitWildcard_Primitive(
       AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, Void p) {
     if (subtype.isUninferredTypeArgument()) {
-      AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-      AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
-      return qualHierarchy.isSubtypeShallow(
-          subtypeAnno, subtype.getUnderlyingType(), supertypeAnno, supertype.getUnderlyingType());
+      return qualHierarchy.isSubtypeShallowEffective(subtype, supertype, currentTop);
     }
     return visitWildcard_Type(subtype, supertype);
   }

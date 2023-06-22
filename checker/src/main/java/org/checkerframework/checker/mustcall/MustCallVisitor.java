@@ -166,7 +166,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           // Issue an error if there is an inconsistent, user-written @MustCall annotation
           // here.
-          AnnotationMirror effectiveMCAnno = type.getAnnotation();
+          AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
           TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
               && !qualHierarchy.isSubtypeShallow(inheritedMCAnno, effectiveMCAnno, tm)) {
@@ -309,8 +309,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
-      AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror varAnno = varType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
       if (qualHierarchy.isSubtypeShallow(
           atypeFactory.withoutClose(valueAnno),
           valueType.getUnderlyingType(),
@@ -344,7 +344,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
     AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
-    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     if (!qualHierarchy.isSubtypeShallow(
         defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(

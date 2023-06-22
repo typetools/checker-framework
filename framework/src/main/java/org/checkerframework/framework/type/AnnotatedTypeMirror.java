@@ -419,28 +419,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the single "effective" annotation on this type, i.e. the annotations on the type
-   * itself, or on the upper/extends bound of a type variable/wildcard (recursively, until a class
-   * type is reached). If this is fully-annotated, this method will not return {@code null}
-   *
-   * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
-   * {@link #getEffectiveAnnotationInHierarchy(AnnotationMirror)}.
-   *
-   * @return a set of the annotations on this
-   */
-  public final AnnotationMirror getEffectiveAnnotation() {
-    AnnotationMirrorSet effectiveAnnotations = getEffectiveAnnotations();
-    if (effectiveAnnotations.isEmpty()) {
-      // This AnnotatedTypeMirror must be a type variable or wildcard.
-      return null;
-    }
-    if (effectiveAnnotations.size() != 1) {
-      throw new BugInCF("Bad annotation size for getPrimaryAnnotation(): " + this);
-    }
-    return effectiveAnnotations.iterator().next();
-  }
-
-  /**
    * Returns the primary annotation on this type whose class is {@code annoClass}. For {@link
    * AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code null} may be returned when
    * the upper bound may have an annotation with that class, so {@link

@@ -241,7 +241,10 @@ public abstract class QualifierHierarchy {
             ? supertype.getUnderlyingType()
             : erasedSupertype.getUnderlyingType();
     return isSubtypeShallow(
-        erasedSubtype.getAnnotations(), subTM, erasedSupertype.getAnnotations(), superTM);
+        erasedSubtype.getPrimaryAnnotations(),
+        subTM,
+        erasedSupertype.getPrimaryAnnotations(),
+        superTM);
   }
 
   public boolean isSubtypeShallowEffective(
@@ -257,9 +260,9 @@ public abstract class QualifierHierarchy {
             ? supertype.getUnderlyingType()
             : erasedSupertype.getUnderlyingType();
     return isSubtypeShallow(
-        erasedSubtype.getAnnotationInHierarchy(hierarchy),
+        erasedSubtype.getPrimaryAnnotationInHierarchy(hierarchy),
         subTM,
-        erasedSupertype.getAnnotationInHierarchy(hierarchy),
+        erasedSupertype.getPrimaryAnnotationInHierarchy(hierarchy),
         superTM);
   }
 
@@ -270,7 +273,17 @@ public abstract class QualifierHierarchy {
         erasedSubtype.getKind() == subtype.getKind()
             ? subtype.getUnderlyingType()
             : erasedSubtype.getUnderlyingType();
-    return isSubtypeShallow(erasedSubtype.getAnnotations(), supertype, subTM);
+    return isSubtypeShallow(erasedSubtype.getPrimaryAnnotations(), supertype, subTM);
+  }
+
+  public boolean isSubtypeShallowEffective(
+      Collection<? extends AnnotationMirror> subtype, AnnotatedTypeMirror supertype) {
+    AnnotatedTypeMirror erasedSupertype = supertype.getErased();
+    TypeMirror superTM =
+        erasedSupertype.getKind() == supertype.getKind()
+            ? supertype.getUnderlyingType()
+            : erasedSupertype.getUnderlyingType();
+    return isSubtypeShallow(subtype, erasedSupertype.getPrimaryAnnotations(), superTM);
   }
 
   public boolean isSubtypeShallowEffective(
@@ -280,7 +293,8 @@ public abstract class QualifierHierarchy {
         erasedSubtype.getKind() == subtype.getKind()
             ? subtype.getUnderlyingType()
             : erasedSubtype.getUnderlyingType();
-    return isSubtypeShallow(erasedSubtype.getAnnotationInHierarchy(supertype), supertype, subTM);
+    return isSubtypeShallow(
+        erasedSubtype.getPrimaryAnnotationInHierarchy(supertype), supertype, subTM);
   }
 
   public boolean isSubtypeShallowEffective(
@@ -290,7 +304,7 @@ public abstract class QualifierHierarchy {
         erasedSuper.getKind() == supertype.getKind()
             ? supertype.getUnderlyingType()
             : erasedSuper.getUnderlyingType();
-    return isSubtypeShallow(subtype, erasedSuper.getAnnotationInHierarchy(subtype), subTM);
+    return isSubtypeShallow(subtype, erasedSuper.getPrimaryAnnotationInHierarchy(subtype), subTM);
   }
 
   public final boolean isSubtypeShallow(

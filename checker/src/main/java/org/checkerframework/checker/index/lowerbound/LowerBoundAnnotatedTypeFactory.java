@@ -13,7 +13,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
@@ -168,7 +167,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       }
       return;
     }
-    TypeMirror valueTM = valueType.getUnderlyingType();
     if (qualHierarchy.isSubtypeShallowEffective(anm, type)) {
       type.replaceAnnotation(anm);
     }
@@ -357,8 +355,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBoundShallow(
-                leftType.getAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
-                rightType.getAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
+                leftType.getPrimaryAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
+                rightType.getPrimaryAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
       }
       return super.visitMethodInvocation(tree, type);
     }

@@ -577,11 +577,11 @@ public class WholeProgramInferenceScenesStorage
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
-      if (upperAnnos.size() == rhsATM.getAnnotations().size()
+      if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
           && atypeFactory
               .getQualifierHierarchy()
               .isSubtypeShallow(
-                  rhsATM.getAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
+                  rhsATM.getPrimaryAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
         return;
       }
     }

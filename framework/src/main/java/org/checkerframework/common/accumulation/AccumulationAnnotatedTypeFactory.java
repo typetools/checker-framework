@@ -292,14 +292,14 @@ public abstract class AccumulationAnnotatedTypeFactory
       if (returnsThis(tree)) {
         // There is a @This annotation on the return type of the invoked method.
         ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree.getMethodSelect());
-        AnnotationMirror returnAnno = type.getAnnotationInHierarchy(top);
+        AnnotationMirror returnAnno = type.getPrimaryAnnotationInHierarchy(top);
         AnnotationMirror glbAnno;
         if (receiverTree == null) {
           glbAnno = returnAnno;
         } else {
           AnnotatedTypeMirror receiverType = getAnnotatedType(receiverTree);
           // The current type of the receiver, or top if none exists.
-          AnnotationMirror receiverAnno = receiverType.getAnnotationInHierarchy(top);
+          AnnotationMirror receiverAnno = receiverType.getPrimaryAnnotationInHierarchy(top);
           glbAnno =
               qualHierarchy.greatestLowerBoundShallow(
                   returnAnno,

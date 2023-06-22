@@ -109,8 +109,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   /** Return true if type1 and type2 have the same set of annotations. */
   protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (currentTop != null) {
-      AnnotationMirror anno1 = type1.getAnnotationInHierarchy(currentTop);
-      AnnotationMirror anno2 = type2.getAnnotationInHierarchy(currentTop);
+      AnnotationMirror anno1 = type1.getPrimaryAnnotationInHierarchy(currentTop);
+      AnnotationMirror anno2 = type2.getPrimaryAnnotationInHierarchy(currentTop);
       TypeMirror typeMirror1 = type1.underlyingType;
       TypeMirror typeMirror2 = type2.underlyingType;
       QualifierHierarchy qh = type1.atypeFactory.getQualifierHierarchy();

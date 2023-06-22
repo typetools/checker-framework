@@ -164,9 +164,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       TypeMirror contextCTM = contextComponentType.getUnderlyingType();
       boolean prevIsSubtype = true;
       for (AnnotationMirror am : prev) {
-        if (contextComponentType.isAnnotatedInHierarchy(am)
+        if (contextComponentType.hasPrimaryAnnotationInHierarchy(am)
             && !this.qualHierarchy.isSubtypeShallow(
-                am, contextCTM, contextComponentType.getAnnotationInHierarchy(am), contextCTM)) {
+                am,
+                contextCTM,
+                contextComponentType.getPrimaryAnnotationInHierarchy(am),
+                contextCTM)) {
           prevIsSubtype = false;
         }
       }

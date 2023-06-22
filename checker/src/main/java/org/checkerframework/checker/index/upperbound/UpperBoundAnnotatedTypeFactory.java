@@ -493,9 +493,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBoundShallow(
-                leftType.getAnnotationInHierarchy(UNKNOWN),
+                leftType.getPrimaryAnnotationInHierarchy(UNKNOWN),
                 leftType.getUnderlyingType(),
-                rightType.getAnnotationInHierarchy(UNKNOWN),
+                rightType.getPrimaryAnnotationInHierarchy(UNKNOWN),
                 rightType.getUnderlyingType()));
       }
       if (isRandomNextInt(tree)) {

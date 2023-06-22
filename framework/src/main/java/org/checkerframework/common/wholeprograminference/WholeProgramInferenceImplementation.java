@@ -1012,7 +1012,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
         AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
         if (qualHierarchy.isSubtypeShallow(anno, rhsTM, upperAnno, declTM)) {
-          rhsATM.removeAnnotation(anno);
+          rhsATM.removePrimaryAnnotation(anno);
         }
       }
       if (rhsATM.getPrimaryAnnotations().isEmpty()) {

@@ -145,7 +145,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnTM, returnType.getAnnotations(), returnTM, factory);
+      returnLub = lub(returnLub, returnTM, returnType.getPrimaryAnnotations(), returnTM, factory);
 
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
@@ -161,7 +161,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       } else {
         TypeMirror receiverTM = receiverType.getUnderlyingType();
         receiverGlb =
-            glb(receiverGlb, receiverTM, receiverType.getAnnotations(), receiverTM, factory);
+            glb(receiverGlb, receiverTM, receiverType.getPrimaryAnnotations(), receiverTM, factory);
       }
 
       // Glb parameter types.  All formal parameter types get combined together because
@@ -169,7 +169,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
         TypeMirror mirrorTM = mirror.getUnderlyingType();
-        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getAnnotations(), mirrorTM, factory);
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getPrimaryAnnotations(), mirrorTM, factory);
       }
     }
 
@@ -294,12 +294,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnTM, returnType.getAnnotations(), returnTM, factory);
+      returnLub = lub(returnLub, returnTM, returnType.getPrimaryAnnotations(), returnTM, factory);
 
       // Glb parameter types
       for (AnnotatedTypeMirror mirror : executableType.getParameterTypes()) {
         TypeMirror mirrorTM = mirror.getUnderlyingType();
-        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getAnnotations(), mirrorTM, factory);
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getPrimaryAnnotations(), mirrorTM, factory);
       }
     }
     if (returnLub == null) {

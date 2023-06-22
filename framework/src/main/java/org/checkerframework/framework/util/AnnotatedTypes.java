@@ -1519,7 +1519,7 @@ public class AnnotatedTypes {
       AnnotatedIntersectionType isect, AnnotationMirror top, QualifierHierarchy qualHierarchy) {
     AnnotationMirror anno = isect.getPrimaryAnnotationInHierarchy(top);
     for (AnnotatedTypeMirror bound : isect.getBounds()) {
-      AnnotationMirror boundAnno = bound.getAnnotationInHierarchy(top);
+      AnnotationMirror boundAnno = bound.getPrimaryAnnotationInHierarchy(top);
       if (boundAnno != null
           && (anno == null
               || qualHierarchy.isSubtypeShallow(
