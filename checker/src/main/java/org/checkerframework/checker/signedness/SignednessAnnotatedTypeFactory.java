@@ -182,9 +182,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
         // These annotations are trusted rather than checked.  Maybe have an option to
         // disable using them?
-        if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-            && type.hasAnnotation(SIGNED)) {
+        if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
+            && type.hasPrimaryAnnotation(SIGNED)) {
           type.replaceAnnotation(SIGNEDNESS_GLB);
         } else {
           Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
@@ -318,7 +318,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotation(SIGNEDNESS_GLB);
           } else {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
-            type.replaceAnnotations(lht.getAnnotations());
+            type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
           break;
         case PLUS:
@@ -352,7 +352,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
+      if (type.getPrimaryAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
             && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
@@ -446,12 +446,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // TODO: Return a TypeKind rather than a PrimitiveTypeTree?
   /**
-   * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
+   * Returns the type of a primitive cast, or null if the argument is not a cast to a primitive.
    *
    * @param tree a tree that might be a cast to a primitive
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
-  private PrimitiveTypeTree primitiveTypeCast(Tree tree) {
+  private @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
     if (tree.getKind() != Tree.Kind.TYPE_CAST) {
       return null;
     }

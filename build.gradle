@@ -717,7 +717,7 @@ subprojects {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    ext.errorproneVersion = '2.19.1'
+    ext.errorproneVersion = '2.20.0'
     errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
@@ -907,6 +907,8 @@ subprojects {
       tasks.create(name: "${junitClassName}", type: Test) {
         description "Run ${junitClassName} tests."
         include "**/${name}.class"
+        testClassesDirs = testing.suites.test.sources.output.classesDirs
+        classpath = testing.suites.test.sources.runtimeClasspath
       }
     }
 

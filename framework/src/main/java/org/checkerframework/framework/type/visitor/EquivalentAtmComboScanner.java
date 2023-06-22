@@ -2,6 +2,7 @@ package org.checkerframework.framework.type.visitor;
 
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -143,17 +144,19 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
   }
 
   @Override
-  public RETURN_TYPE visitNone_None(AnnotatedNoType type1, AnnotatedNoType type2, PARAM param) {
+  public @Nullable RETURN_TYPE visitNone_None(
+      AnnotatedNoType type1, AnnotatedNoType type2, PARAM param) {
     return null;
   }
 
   @Override
-  public RETURN_TYPE visitNull_Null(AnnotatedNullType type1, AnnotatedNullType type2, PARAM param) {
+  public @Nullable RETURN_TYPE visitNull_Null(
+      AnnotatedNullType type1, AnnotatedNullType type2, PARAM param) {
     return null;
   }
 
   @Override
-  public RETURN_TYPE visitPrimitive_Primitive(
+  public @Nullable RETURN_TYPE visitPrimitive_Primitive(
       AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, PARAM param) {
     return null;
   }
@@ -214,7 +217,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
       return recordFor1 != null && recordFor1.containsKey(type2);
     }
 
-    public RETURN_TYPE getResult(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    public @Nullable RETURN_TYPE getResult(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
       IdentityHashMap<AnnotatedTypeMirror, RETURN_TYPE> recordFor1 = visits.get(type1);
       if (recordFor1 == null) {
         return null;

@@ -191,11 +191,11 @@ public abstract class CFAbstractAnalysis<
   public @Nullable V createAbstractValue(AnnotatedTypeMirror type) {
     AnnotationMirrorSet annos;
     if (type.getKind() == TypeKind.WILDCARD) {
-      annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
+      annos = ((AnnotatedWildcardType) type).getExtendsBound().getPrimaryAnnotations();
     } else if (TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())) {
-      annos = ((AnnotatedTypeVariable) type).getUpperBound().getAnnotations();
+      annos = ((AnnotatedTypeVariable) type).getUpperBound().getPrimaryAnnotations();
     } else {
-      annos = type.getAnnotations();
+      annos = type.getPrimaryAnnotations();
     }
     return createAbstractValue(annos, type.getUnderlyingType());
   }
@@ -212,7 +212,7 @@ public abstract class CFAbstractAnalysis<
       AnnotationMirrorSet annotations, TypeMirror underlyingType);
 
   /** Default implementation for {@link #createAbstractValue(AnnotationMirrorSet, TypeMirror)}. */
-  public CFValue defaultCreateAbstractValue(
+  public @Nullable CFValue defaultCreateAbstractValue(
       CFAbstractAnalysis<CFValue, ?, ?> analysis,
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {

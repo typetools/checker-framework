@@ -10,6 +10,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
@@ -34,7 +35,7 @@ public class GlbUtil {
    * @param typeFactory the type factory
    * @return the greatest lower bound of typeMirrors
    */
-  public static AnnotatedTypeMirror glbAll(
+  public static @Nullable AnnotatedTypeMirror glbAll(
       Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors, AnnotatedTypeFactory typeFactory) {
     QualifierHierarchy qualHierarchy = typeFactory.getQualifierHierarchy();
     if (typeMirrors.isEmpty()) {
@@ -183,8 +184,8 @@ public class GlbUtil {
      * @return the comparison of type1 and type2
      */
     private int compareAnnotations(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-      AnnotationMirrorSet annos1 = type1.getAnnotations();
-      AnnotationMirrorSet annos2 = type2.getAnnotations();
+      AnnotationMirrorSet annos1 = type1.getPrimaryAnnotations();
+      AnnotationMirrorSet annos2 = type2.getPrimaryAnnotations();
       if (AnnotationUtils.areSame(annos1, annos2)) {
         return 0;
       } else if (qualHierarchy.isSubtype(annos1, annos2)) {

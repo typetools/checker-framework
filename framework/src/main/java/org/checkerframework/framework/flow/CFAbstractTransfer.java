@@ -24,6 +24,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -747,7 +748,7 @@ public abstract class CFAbstractTransfer<
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison.
-   * @return the conditional transfer result (if information has been added), or {@code null}
+   * @return the conditional transfer result (if information has been added), or {@code res}
    */
   protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
       TransferResult<V, S> res,
@@ -969,10 +970,10 @@ public abstract class CFAbstractTransfer<
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getAnnotations().equals(expType.getAnnotations())
-          && !expType.getAnnotations().isEmpty()) {
+          && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
+          && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
-        for (AnnotationMirror anno : refType.getAnnotations()) {
+        for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           in.getRegularStore().insertOrRefine(expr, anno);
         }
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
@@ -983,7 +984,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getAnnotations()) {
+      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
@@ -998,7 +999,7 @@ public abstract class CFAbstractTransfer<
    * @return whether to perform whole-program inference on the tree
    */
   private boolean shouldPerformWholeProgramInference(Tree tree) {
-    @Nullable TreePath path = this.analysis.atypeFactory.getPath(tree);
+    TreePath path = this.analysis.atypeFactory.getPath(tree);
     return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
   }
 
@@ -1254,7 +1255,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
   @SideEffectFree
-  protected V getNarrowedValue(TypeMirror type, V annotatedValue) {
+  protected @PolyNull V getNarrowedValue(TypeMirror type, @PolyNull V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }
@@ -1277,7 +1278,7 @@ public abstract class CFAbstractTransfer<
    *     annotatedValue}; returns null if {@code annotatedValue} is null
    */
   @SideEffectFree
-  protected V getWidenedValue(TypeMirror type, V annotatedValue) {
+  protected @PolyNull V getWidenedValue(TypeMirror type, @PolyNull V annotatedValue) {
     if (annotatedValue == null) {
       return null;
     }

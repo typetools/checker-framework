@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -63,7 +64,7 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
     if (qualifierKind1 == qualifierKind2) {
       List<String> a1Values = valuesStringList(a1);
       List<String> a2Values = valuesStringList(a2);
-      LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+      Set<String> set = new LinkedHashSet<>(a1Values);
       set.retainAll(a2Values);
       return createAnnotationMirrorWithValue(lubKind, set);
     } else if (lubKind == qualifierKind1) {
@@ -85,7 +86,7 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
     if (qualifierKind1 == qualifierKind2) {
       List<String> a1Values = valuesStringList(a1);
       List<String> a2Values = valuesStringList(a2);
-      LinkedHashSet<String> set = new LinkedHashSet<>(a1Values);
+      Set<String> set = new LinkedHashSet<>(a1Values);
       set.addAll(a2Values);
       return createAnnotationMirrorWithValue(glbKind, set);
     } else if (glbKind == qualifierKind1) {
@@ -117,8 +118,7 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
    * @param values the annotation's {@code values} element/argument
    * @return an annotation of the given kind and values
    */
-  private AnnotationMirror createAnnotationMirrorWithValue(
-      QualifierKind kind, LinkedHashSet<String> values) {
+  private AnnotationMirror createAnnotationMirrorWithValue(QualifierKind kind, Set<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
     builder.setValue("value", values.toArray());
     return builder.build();

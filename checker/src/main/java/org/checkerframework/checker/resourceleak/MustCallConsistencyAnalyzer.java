@@ -353,7 +353,7 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
-      return mcAtf.getAnnotatedType(typeElt).getAnnotationInHierarchy(mcAtf.TOP);
+      return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
@@ -738,9 +738,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -1158,7 +1158,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
@@ -1348,7 +1349,7 @@ class MustCallConsistencyAnalyzer {
         MustCallAnnotatedTypeFactory mcTypeFactory =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
             AnnotationUtils.getElementValueArray(
                 mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1438,7 +1439,15 @@ class MustCallConsistencyAnalyzer {
     }
     if (mcAnno == null) {
       // No stored value (or the stored value is Poly/top), so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
+    }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(

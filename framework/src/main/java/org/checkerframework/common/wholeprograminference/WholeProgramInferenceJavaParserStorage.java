@@ -517,7 +517,7 @@ public class WholeProgramInferenceJavaParserStorage
       // fields with a type variable as their type.
       AnnotatedTypeMirror asExpectedType =
           AnnotatedTypeMirror.createType(typeMirror, atypeFactory, false);
-      asExpectedType.replaceAnnotations(storageLocation.getAnnotations());
+      asExpectedType.replaceAnnotations(storageLocation.getPrimaryAnnotations());
       return asExpectedType;
     } else {
       return storageLocation;
@@ -533,15 +533,15 @@ public class WholeProgramInferenceJavaParserStorage
       boolean ignoreIfAnnotated) {
     // Only update the AnnotatedTypeMirror if there are no explicit annotations
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
-      for (AnnotationMirror am : newATM.getAnnotations()) {
+      for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         typeToUpdate.replaceAnnotation(am);
       }
     } else if (curATM.getKind() == TypeKind.TYPEVAR) {
       // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly
       // annotated.  So instead, only insert the annotation if there is not primary annotation
       // of the same hierarchy.
-      for (AnnotationMirror am : newATM.getAnnotations()) {
-        if (curATM.getAnnotationInHierarchy(am) != null) {
+      for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
+        if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
           // Don't insert if the type is already has a primary annotation
           // in the same hierarchy.
           break;
@@ -1582,8 +1582,8 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred declaration annotations on this executable, or null if there are no
-     * annotations.
+     * Returns the inferred declaration annotations on this executable. Returns an empty set if
+     * there are no annotations.
      *
      * @return the declaration annotations for this callable declaration
      */
@@ -1786,7 +1786,7 @@ public class WholeProgramInferenceJavaParserStorage
         if (param.isVarArgs()) {
           NodeList<AnnotationExpr> varArgsAnnoExprs =
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorSetToAnnotationExprList(
-                  inferredType.getAnnotations());
+                  inferredType.getPrimaryAnnotations());
           param.setVarArgsAnnotations(varArgsAnnoExprs);
 
           AnnotatedTypeMirror inferredComponentType =
@@ -1819,8 +1819,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param orig the map to copy
    * @return a deep copy of the map
    */
-  private static Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-      deepCopyMapOfStringToPair(
+  private static @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> deepCopyMapOfStringToPair(
           @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
     if (orig == null) {
       return null;

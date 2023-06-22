@@ -1,7 +1,9 @@
 package org.checkerframework.common.value.util;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public abstract class NumberMath<T extends Number> {
-  public static NumberMath<?> getNumberMath(Number number) {
+  public static @Nullable NumberMath<?> getNumberMath(Number number) {
     if (number instanceof Byte) {
       return new ByteMath(number.byteValue());
     }
@@ -33,13 +35,13 @@ public abstract class NumberMath<T extends Number> {
    * Returns the result of dividing the {@code this} by {@code right}. If {@code right} is zero and
    * this is an integer division, {@code null} is returned.
    */
-  public abstract Number divide(Number right);
+  public abstract @Nullable Number divide(Number right);
 
   /**
    * Returns the result of {@code this % right}. If {@code right} is zero and this is an integer
    * remainder, {@code null} is returned.
    */
-  public abstract Number remainder(Number right);
+  public abstract @Nullable Number remainder(Number right);
 
   public abstract Number shiftLeft(Number right);
 
