@@ -422,7 +422,7 @@ public final class TreeUtils {
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the {@link Symbol} for the given tree, or null if one could not be found
-   * @deprecated use elementFromDeclaration
+   * @deprecated use {@link #elementFromDeclaration(ClassTree)}
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
@@ -435,7 +435,7 @@ public final class TreeUtils {
    *
    * @param tree the {@link Tree} node to get the symbol for
    * @return the {@link Symbol} for the given tree, or null if one could not be found
-   * @deprecated use elementFromDeclaration
+   * @deprecated use {@link #elementFromDeclaration(ClassTree)}
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
@@ -448,7 +448,8 @@ public final class TreeUtils {
    *
    * @param tree the tree corresponding to a use of an element
    * @return the element for the corresponding declaration, {@code null} otherwise
-   * @deprecated use elementFromUse or elementFromTree
+   * @deprecated use {@link #elementFromUse(ExpressionTree)} or {@link
+   *     #elementFromTree(ExpressionTree)}
    */
   @Pure
   @Deprecated // not for removal; retain to prevent calls to this overload
@@ -476,7 +477,7 @@ public final class TreeUtils {
    * might be the first place someone looks for this functionality.
    *
    * @param tree the tree, which must be a use of an element
-   * @return the element for the corresponding declaration, {@code null} otherwise
+   * @return the element for the corresponding declaration
    */
   @Pure
   public static Element elementFromUse(ExpressionTree tree) {
@@ -492,7 +493,7 @@ public final class TreeUtils {
    * Returns the VariableElement corresponding to the given use.
    *
    * @param tree the tree corresponding to a use of a VariableElement
-   * @return the element for the corresponding declaration, {@code null} otherwise
+   * @return the element for the corresponding declaration
    */
   @Pure
   public static VariableElement variableElementFromUse(ExpressionTree tree) {
@@ -512,7 +513,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static Element elementFromDeclaration(MemberSelectTree tree) {
+  public static @Nullable Element elementFromDeclaration(MemberSelectTree tree) {
     return TreeUtils.elementFromUse(tree);
   }
 
@@ -525,7 +526,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static Element elementFromTree(MemberSelectTree tree) {
+  public static @Nullable Element elementFromTree(MemberSelectTree tree) {
     return TreeUtils.elementFromUse(tree);
   }
 
@@ -553,7 +554,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static ExecutableElement elementFromDeclaration(MethodInvocationTree tree) {
+  public static @Nullable ExecutableElement elementFromDeclaration(MethodInvocationTree tree) {
     return TreeUtils.elementFromUse(tree);
   }
 
@@ -566,7 +567,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static ExecutableElement elementFromTree(MethodInvocationTree tree) {
+  public static @Nullable ExecutableElement elementFromTree(MethodInvocationTree tree) {
     return TreeUtils.elementFromUse(tree);
   }
 
@@ -632,9 +633,9 @@ public final class TreeUtils {
    * Returns the ExecutableElement for the given constructor invocation.
    *
    * @param tree the {@link Tree} node to get the symbol for
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
-   * @return the {@link Symbol} for the given tree, or null if one could not be found
    * @deprecated use elementFromUse
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
@@ -647,9 +648,9 @@ public final class TreeUtils {
    * Gets the ExecutableElement for the called constructor, from a constructor invocation.
    *
    * @param tree the {@link Tree} node to get the symbol for
+   * @return the {@link Symbol} for the given tree, or null if one could not be found
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
-   * @return the {@link Symbol} for the given tree, or null if one could not be found
    * @deprecated use elementFromUse
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
@@ -722,9 +723,9 @@ public final class TreeUtils {
    * Returns the {@link VariableElement} for the given Tree API node.
    *
    * @param tree the {@link Tree} node to get the symbol for
+   * @return the {@link Symbol} for the given tree
    * @throws IllegalArgumentException if {@code tree} is null or is not a valid javac-internal tree
    *     (JCTree)
-   * @return the {@link Symbol} for the given tree
    */
   @Pure
   public static VariableElement variableElementFromTree(Tree tree) {
@@ -743,8 +744,8 @@ public final class TreeUtils {
    * an element.
    *
    * @param tree the {@link Tree} node to get the symbol for
-   * @throws BugInCF if {@code tree} is null or is not a valid javac-internal tree (JCTree)
    * @return the {@link Symbol} for the given tree, or null if one could not be found
+   * @throws BugInCF if {@code tree} is null or is not a valid javac-internal tree (JCTree)
    */
   @Pure
   public static @Nullable Element elementFromTree(Tree tree) {

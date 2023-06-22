@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
@@ -89,7 +90,7 @@ public class ValueCheckerUtils {
   }
 
   /** Get the minimum and maximum of a list and return a range bounded by them. */
-  public static Range getRangeFromValues(List<? extends Number> values) {
+  public static @Nullable Range getRangeFromValues(List<? extends Number> values) {
     if (values == null) {
       return null;
     } else if (values.isEmpty()) {
@@ -141,7 +142,8 @@ public class ValueCheckerUtils {
    * @return a list of all the values in the range, or null if there would be more than {@link
    *     ValueAnnotatedTypeFactory#MAX_VALUES}
    */
-  public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+  public static <T> @Nullable List<T> getValuesFromRange(
+      @Nullable Range range, Class<T> expectedType) {
     if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
       return null;
     }
@@ -172,7 +174,8 @@ public class ValueCheckerUtils {
    * @return a list of the formatted objects
    */
   @SuppressWarnings("mustcall:methodref.receiver") // generics; #979 ?
-  private static List<?> convertToStringVal(List<? extends @MustCallUnknown Object> origValues) {
+  private static @Nullable List<?> convertToStringVal(
+      List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }
@@ -227,7 +230,7 @@ public class ValueCheckerUtils {
    * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
    *     {@code List<char[]>}
    */
-  private static List<?> convertIntVal(
+  private static @Nullable List<?> convertIntVal(
       List<Long> longs, Class<?> newClass, TypeMirror newType, boolean isUnsigned) {
     if (longs == null) {
       return null;
@@ -252,7 +255,7 @@ public class ValueCheckerUtils {
    * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
    * @return the {@code value} of a {@code @DoubleVal} annotation
    */
-  private static List<?> convertDoubleVal(
+  private static @Nullable List<?> convertDoubleVal(
       AnnotationMirror anno,
       Class<?> newClass,
       TypeMirror newType,
@@ -288,7 +291,7 @@ public class ValueCheckerUtils {
    * AnnotatedTypeMirror}. If the passed {@code AnnotatedTypeMirror} does not contain an {@code
    * IntRange} annotation or an {@code IntVal} annotation, returns null.
    */
-  public static Range getPossibleValues(
+  public static @Nullable Range getPossibleValues(
       AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
     if (valueAnnotatedTypeFactory.isIntRange(valueType.getPrimaryAnnotations())) {
       return valueAnnotatedTypeFactory.getRange(valueType.getPrimaryAnnotation(IntRange.class));
@@ -309,7 +312,7 @@ public class ValueCheckerUtils {
    * exactly one value -- such as the LBC's binary operator rules -- and not by those that need to
    * know whether a valueType belongs to a particular qualifier.
    */
-  public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null && possibleValues.from == possibleValues.to) {
@@ -327,7 +330,7 @@ public class ValueCheckerUtils {
    * @param factory a ValueAnnotatedTypeFactory used for annotation accessing
    * @return the exact value of the element if it is constant, or null otherwise
    */
-  public static Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(element);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null && possibleValues.from == possibleValues.to) {
@@ -343,7 +346,7 @@ public class ValueCheckerUtils {
    * who need exactly one value and not by those that need to know whether a valueType belongs to a
    * particular qualifier.
    */
-  public static String getExactStringValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable String getExactStringValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     if (valueType.hasPrimaryAnnotation(StringVal.class)) {
       AnnotationMirror valueAnno = valueType.getPrimaryAnnotation(StringVal.class);
@@ -362,7 +365,7 @@ public class ValueCheckerUtils {
    * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
    * in the list of possible values.
    */
-  public static Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null) {
@@ -377,7 +380,7 @@ public class ValueCheckerUtils {
    * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
    * in the list of possible values.
    */
-  public static Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null) {
@@ -390,7 +393,7 @@ public class ValueCheckerUtils {
   /**
    * Looks up the minlen of a member select tree. The tree must be an access to a sequence length.
    */
-  public static Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
+  public static @Nullable Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
     AnnotatedTypeMirror minLenType = valueATF.getAnnotatedType(tree);
     Long min = valueATF.getMinimumIntegralValue(minLenType);
     if (min == null) {

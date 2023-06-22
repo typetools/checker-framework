@@ -715,7 +715,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -726,7 +726,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -1076,7 +1076,7 @@ public final class TypesUtils {
    * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code type};
    *     otherwise, null
    */
-  public static TypeMirror asSuper(
+  public static @Nullable TypeMirror asSuper(
       TypeMirror type, TypeMirror superType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);

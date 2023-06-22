@@ -315,7 +315,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    private AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
+    private @Nullable AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
       if (backupSet == null) {
         // If there is no back up value, but one is required then the resulting set will
         // not be the most specific.  Indicate this with the error.
@@ -706,9 +706,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Returns the primary annotation that result from of combining the two {@link
-     * AnnotatedTypeVariable}. If the result has not primary annotation, the {@code null} is
-     * returned. This method is called when no annotation exists in either sets for the hierarchy
-     * whose top is {@code top}.
+     * AnnotatedTypeVariable}. If the result has no primary annotation, {@code null} is returned.
+     * This method is called when no annotation exists in either sets for the hierarchy whose top is
+     * {@code top}.
      *
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy

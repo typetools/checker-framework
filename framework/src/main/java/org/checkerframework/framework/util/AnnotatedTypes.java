@@ -677,7 +677,7 @@ public class AnnotatedTypes {
     Map<AnnotatedDeclaredType, ExecutableElement> overrides = new LinkedHashMap<>();
 
     for (AnnotatedDeclaredType supertype : supertypes) {
-      @Nullable TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
+      TypeElement superElement = (TypeElement) supertype.getUnderlyingType().asElement();
       assert superElement != null;
       // For all method in the supertype, add it to the set if
       // it overrides the given method.
@@ -1354,11 +1354,12 @@ public class AnnotatedTypes {
    *
    * @param top the top of the hierarchy for which you are searching
    * @param canBeEmpty whether or not the effective type can have NO annotation in the hierarchy
-   *     specified by top If this param is false, an exception will be thrown if no annotation is
-   *     found Otherwise the result is null
-   * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
+   *     specified by top. If this param is false, an exception will be thrown if no annotation is
+   *     found. Otherwise the result is null.
+   * @return the AnnotationMirror that represents the type of {@code toSearch} in the hierarchy of
+   *     {@code top}
    */
-  public static AnnotationMirror findEffectiveAnnotationInHierarchy(
+  public static @Nullable AnnotationMirror findEffectiveAnnotationInHierarchy(
       QualifierHierarchy qualHierarchy,
       AnnotatedTypeMirror toSearch,
       AnnotationMirror top,

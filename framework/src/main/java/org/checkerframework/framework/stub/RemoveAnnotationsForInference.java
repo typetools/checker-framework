@@ -521,7 +521,7 @@ public class RemoveAnnotationsForInference {
    * @param n an annotation
    * @return the (effective) arguments to {@code @SuppressWarnings}, or null
    */
-  private static List<String> suppressWarningsStrings(AnnotationExpr n) {
+  private static @Nullable List<String> suppressWarningsStrings(AnnotationExpr n) {
     String name = n.getNameAsString();
 
     if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {

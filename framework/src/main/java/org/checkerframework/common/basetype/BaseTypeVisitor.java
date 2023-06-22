@@ -280,7 +280,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param checker the type-checker associated with this visitor
    * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
    */
-  protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
+  protected BaseTypeVisitor(BaseTypeChecker checker, @Nullable Factory typeFactory) {
     super(checker);
 
     this.checker = checker;
@@ -3067,7 +3067,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected final void commonAssignmentCheckEndDiagnostic(
       boolean success,
-      String extraMessage,
+      @Nullable String extraMessage,
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueExpTree) {
@@ -3091,7 +3091,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
    * customizing the message that is printed.
    *
-   * @param message the result, plus information about why the result is what it is; may be null
+   * @param message the result, plus information about why the result is what it is
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
    * @param valueExpTree the location to use when reporting the error message
@@ -4529,7 +4529,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the enclosing member select, or null if the identifier is not the field in a member
    *     selection
    */
-  protected MemberSelectTree enclosingMemberSelect() {
+  protected @Nullable MemberSelectTree enclosingMemberSelect() {
     TreePath path = this.getCurrentPath();
     assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER
         : "expected identifier, found: " + path.getLeaf();
@@ -4546,7 +4546,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree an AST node that is on the current path
    * @return the statement that encloses the given one
    */
-  protected Tree enclosingStatement(@FindDistinct Tree tree) {
+  protected @Nullable Tree enclosingStatement(@FindDistinct Tree tree) {
     TreePath path = this.getCurrentPath();
     while (path != null && path.getLeaf() != tree) {
       path = path.getParentPath();
@@ -4604,7 +4604,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param accessTree the access expression
    */
   protected void checkAccessAllowed(
-      Element field, AnnotatedTypeMirror receiverType, @FindDistinct ExpressionTree accessTree) {
+      Element field,
+      @Nullable AnnotatedTypeMirror receiverType,
+      @FindDistinct ExpressionTree accessTree) {
     AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
     if (unused == null) {
       return;

@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
 
   /** If top != null we replace only the annotations in the hierarchy of top. */
-  private AnnotationMirror top;
+  private @Nullable AnnotationMirror top;
 
   /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
   public AnnotatedTypeReplacer() {
@@ -37,9 +37,9 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * Construct an AnnotatedTypeReplacer that will only replace annotations in {@code top}'s
    * hierarchy.
    *
-   * @param top if top != null, then only annotation in the hierarchy of top are affected
+   * @param top if top != null, then only annotations in the hierarchy of top are affected
    */
-  public AnnotatedTypeReplacer(AnnotationMirror top) {
+  public AnnotatedTypeReplacer(@Nullable AnnotationMirror top) {
     this.top = top;
   }
 

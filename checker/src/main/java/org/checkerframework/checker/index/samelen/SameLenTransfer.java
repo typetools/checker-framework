@@ -12,6 +12,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -64,7 +65,7 @@ public class SameLenTransfer extends CFTransfer {
    * Gets the receiver sequence of a length access node, or null if {@code lengthNode} is not a
    * length access.
    */
-  private Node getLengthReceiver(Node lengthNode) {
+  private @Nullable Node getLengthReceiver(Node lengthNode) {
     if (isArrayLengthAccess(lengthNode)) {
       // lengthNode is a.length
       FieldAccessNode lengthFieldAccessNode = (FieldAccessNode) lengthNode;

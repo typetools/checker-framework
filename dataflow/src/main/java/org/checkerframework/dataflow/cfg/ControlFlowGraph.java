@@ -280,7 +280,7 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
-   * the CFG or null otherwise.
+   * the CFG, or null otherwise.
    *
    * @param t a tree that might correspond to a node in the CFG
    * @return the method that contains {@code t}'s Node, or null

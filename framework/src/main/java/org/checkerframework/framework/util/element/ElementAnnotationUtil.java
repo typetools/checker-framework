@@ -19,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -389,7 +390,7 @@ public class ElementAnnotationUtil {
   private static AnnotatedTypeMirror getTypeAtLocation(
       AnnotatedTypeMirror type,
       List<TypeAnnotationPosition.TypePathEntry> location,
-      TypeCompound anno,
+      @Nullable TypeCompound anno,
       boolean isComponentTypeOfArray)
       throws UnexpectedAnnotationLocationException {
     if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {

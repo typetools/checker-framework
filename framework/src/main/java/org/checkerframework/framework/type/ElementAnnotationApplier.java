@@ -10,6 +10,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -185,7 +186,7 @@ public final class ElementAnnotationApplier {
    * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
    *     otherwise null
    */
-  public static IPair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
+  public static @Nullable IPair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
       VariableElement varEle, AnnotatedTypeFactory typeFactory) {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
