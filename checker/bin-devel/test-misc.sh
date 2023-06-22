@@ -40,9 +40,9 @@ if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
 else
   (./gradlew requireJavadoc --console=plain --warning-mode=all > /tmp/warnings-rjp.txt 2>&1) || true
-  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-rjp.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff --debug /tmp/warnings-rjp.txt || status=1
   (./gradlew javadocDoclintAll --console=plain --warning-mode=all > /tmp/warnings-jda.txt 2>&1) || true
-  "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-jda.txt || status=1
+  "$PLUME_SCRIPTS"/ci-lint-diff --debug /tmp/warnings-jda.txt || status=1
 fi
 if [ $status -ne 0 ]; then exit $status; fi
 
