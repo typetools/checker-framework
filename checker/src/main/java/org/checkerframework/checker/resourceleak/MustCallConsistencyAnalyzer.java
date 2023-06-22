@@ -1450,6 +1450,13 @@ class MustCallConsistencyAnalyzer {
       mcAnno =
           mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
     }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
+    }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
