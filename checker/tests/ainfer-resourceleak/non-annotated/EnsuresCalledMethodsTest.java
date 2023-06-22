@@ -10,10 +10,6 @@ class EnsuresCalledMethodsTest {
   private class ECM {
     Foo foo;
 
-    //    private ECM() {
-    //      foo = new Foo();
-    //    }
-
     private void closePrivate() {
       if (foo != null) {
         foo.a();
@@ -28,14 +24,4 @@ class EnsuresCalledMethodsTest {
       }
     }
   }
-
-  //  void testECM() {
-  //    ECM e = new ECM();
-  //    e.close();
-  //  }
-  //
-  //  void testECMWrong() {
-  //    // :: warning: (required.method.not.called)
-  //    ECM e = new ECM();
-  //  }
 }

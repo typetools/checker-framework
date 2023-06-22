@@ -55,15 +55,21 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * This class contains the Resource Leak Checker's annotation inference algorithm. It contains
- * inference logic for owning annotations on final owning fields. It adds an @Owning annotation on a
- * field if it finds a method that satisfies the @MustCall obligation of the field along some path
- * to the regular exit point.
+ * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
+ * responsible for inferring annotations such as @Owning on owning fields and
+ * parameters, @EnsuresCalledMethods on methods, and @InheritableMustCall on class declarations.
+ * Each instance of this class corresponds to a single control flow graph (CFG), typically
+ * representing a method. The algorithm determines if the @MustCall obligation of a field is
+ * fulfilled along some path leading to the regular exit point of the method. If the obligation is
+ * satisfied, it adds an @Owning annotation on the field and an @EnsuresCalledMethods annotation on
+ * the method being analyzed by this instance. Additionally, if the current method being analyzed
+ * fulfills the must-call obligation of all the enclosed owning fields, it adds
+ * a @InheritableMustCall annotation on the enclosing class.
  */
 public class MustCallInferenceLogic {
 
-  /** The set of owning fields that are released within the enMethodElt element. */
-  private Set<VariableElement> owningFieldToECM = new HashSet<>();
+  /** The set of owning fields that are released within the CFG currently under analysis. */
+  private final Set<VariableElement> owningFieldToECM = new HashSet<>();
 
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
@@ -151,7 +157,7 @@ public class MustCallInferenceLogic {
    * Returns a set of obligations representing the non-empty MustCall parameters of the current
    * method.
    *
-   * @param cfg the ControlFlowGraph for the current method
+   * @param cfg the control flow graph of the method to check
    * @return a set of obligations representing the non-empty MustCall parameters of the current
    *     method
    */
@@ -207,7 +213,7 @@ public class MustCallInferenceLogic {
    * Checks if the given node is a field and if it is a new Owning field.
    *
    * @param node the possible owning field
-   * @param mNode method invocation node
+   * @param mNode method invoked on the possible owning field
    */
   private void isOwningField(@Nullable Node node, MethodInvocationNode mNode) {
     if (node == null) {
@@ -291,8 +297,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Adds owning fields to the method's parameters, if its alias referred to by the right-hand side
-   * of the assignment is disposed of during the assignment.
+   * Adds owning fields to the method's parameters, if the must-call obligation of its alias
+   * referred to by the right-hand side of the assignment is fulfilled during the assignment.
    *
    * @param obligations The set of obligations to update.
    * @param rhsObligation The obligation associated with the right-hand side of the assignment.
@@ -343,12 +349,11 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Adds the InheritableMustCall annotation on the enclosing class of the current method. If the
-   * class already has a non-empty MustCall type, if it's inherited from one its superclass, this
-   * method does nothing. Otherwise, adds the current InheritableMustCall annotation to avoid
-   * infinite iteration. If the class does not have a MustCall annotation, and the current method is
-   * not private and satisfies must-call obligation of all the enclosing owning fields, this method
-   * adds an InheritableMustCall annotation with the current method name to the enclosing class.
+   * Adds an InheritableMustCall annotation on the enclosing class. If the class already has a
+   * non-empty MustCall type, if it's inherited from one of its superclasses, this method does
+   * nothing to avoid infinite iteration. Otherwise, if the method being analyzed by {@code this} is
+   * not private and satisfies must-call obligation of all the enclosed owning fields, it adds an
+   * InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enMethodTree));
@@ -381,7 +386,7 @@ public class MustCallInferenceLogic {
     }
 
     // if the enclosing method is not private and satisfies the must-call obligation of all owning
-    // fields, add an InheritableMustCall annotation with the current method name
+    // fields, add an InheritableMustCall annotation with the name of this method
     if (!enMethodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
       if (!owningFieldToECM.isEmpty()
           && owningFieldToECM.size() == getEnclosedOwningFields().size()) {
@@ -695,7 +700,7 @@ public class MustCallInferenceLogic {
     List<Block> successors = getNormalSuccessors(curBlock);
 
     for (Block b : successors) {
-      // If b is a special block, it must be the regular exit, since we do not propagate to
+      // If b is a special block, it must be the regular exit, since it does not propagate to
       // exceptional successors.
       if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
