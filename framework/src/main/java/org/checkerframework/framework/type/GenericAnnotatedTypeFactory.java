@@ -2158,6 +2158,34 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns the type factory used by a subchecker. Throws an exception if no matching subchecker
+   * was found or if the type factory is null. The caller must know the exact checker class to
+   * request.
+   *
+   * <p>Because the visitor path is copied, call this method each time a subfactory is needed rather
+   * than store the returned subfactory in a field.
+   *
+   * @param subCheckerClass the exact class of the subchecker
+   * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
+   * @return the AnnotatedTypeFactory of the subchecker; never null
+   * @see #getTypeFactoryOfSubcheckerOrNull
+   */
+  @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
+  public final <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfSubchecker(
+      Class<? extends BaseTypeChecker> subCheckerClass) {
+    T result = getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
+    if (result == null) {
+      throw new TypeSystemError(
+          "In "
+              + this.getClass().getSimpleName()
+              + ", no type factory found for "
+              + subCheckerClass.getSimpleName()
+              + ".");
+    }
+    return result;
+  }
+
+  /**
    * Returns the type factory used by a subchecker. Returns null if no matching subchecker was found
    * or if the type factory is null. The caller must know the exact checker class to request.
    *
@@ -2167,10 +2195,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param subCheckerClass the exact class of the subchecker
    * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
    * @return the AnnotatedTypeFactory of the subchecker or null if no subchecker exists
+   * @see #getTypeFactoryOfSubchecker
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
-      Class<? extends BaseTypeChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
     BaseTypeChecker subchecker = checker.getSubchecker(subCheckerClass);
     if (subchecker == null) {
       return null;

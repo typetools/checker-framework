@@ -424,7 +424,7 @@ public class ValueCheckerUtils {
   public static JavaExpression optimize(JavaExpression je, AnnotatedTypeFactory factory) {
     ValueAnnotatedTypeFactory vatf =
         ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
-            .getTypeFactoryOfSubchecker(ValueChecker.class);
+            .getTypeFactoryOfSubcheckerOrNull(ValueChecker.class);
     return new JavaExpressionOptimizer(vatf == null ? factory : vatf).convert(je);
   }
 }
