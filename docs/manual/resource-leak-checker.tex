@@ -501,52 +501,54 @@ public <T extends java.io.Closeable> void foo(
   }
 \end{verbatim}
 
-Without the \<@MustCall("close")> annotation, the checker is unable to determine
-\<value>'s must call obligation, and so conservatively issues an error. If you
-encounter such an error, you can almost always resolve it by adding a
-new \<@MustCall> annotation.
+Without the \<@MustCall("close")> annotation, the checker is unable to
+determine \<value>'s must call obligation, and so conservatively issues an
+error. If you encounter such an error, you can almost always resolve it by
+adding a new
+\<@MustCall> annotation.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
-The Resource Leak Checker cannot verify code that stores a collection of resources
-in a generic collection (e.g., \<java.util.List>) and then resolves the obligations
-of each element of the collection at once (e.g., by iterating over the \<List>).
-This restriction is a technical one, and the checker should support doing so in the future.
-The remainder of this section explains the technical issues; most users can skip it.
+The Resource Leak Checker cannot verify code that stores a collection of
+resources in a generic collection (e.g., \<java.util.List>) and then
+resolves the obligations of each element of the collection at once (e.g.,
+by iterating over the \<List>).  In the future, the checker will support
+this.  The remainder of this section explains the implementation issues;
+most users can skip it.
 
-There are two related technical issues at play. The first is that \<@Owning> and \<@NotOwning>
-are declaration annotations and are not backed by a type system, meaning that they cannot be
-written on type arguments. So, it is possible under the current design to have an
-\code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
-The problem with the former is that the \<@Owning> annotation applies to the \<List> itself:
-it means that if the \<List> somehow has must-call obligations, they must be fulfilled.
-It does not mean that the \emph{contents} of the \<List> have must-call obligations.
-However, making \<@Owning> a type annotation would come with its own set of problems:
-it is not clear what the right design for a type system to enforce that it is used correctly
-looks like.
+The first implementation issue is that \<@Owning> and \<@NotOwning> are
+declaration annotations rather than type qualifiers, so they cannot be
+written on type arguments. It is possible under the current design to have
+an \code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
+It would be better to make \<@Owning> a type annotation, but this is a
+challenging design problem.
 
-The second technical issue is the defaulting rule for \<@MustCall> on type variable upper bounds.
-Currently, this default is \<@MustCall(\{\})>, which prevents many false positives in code that
-makes no use of resources (but does use type variables). A design principle of the Resource Leak
-Checker is that the difficulty of verifying code should scale with the complexity of its resource
-use. This defaulting rule helps the checker embody this design principle in practice. However, this
-defaulting rule does have an unfortunate consequence: it is an error to write List<Socket> and any
-other use of a type variable where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
-needs to write such a type while using the Resource Leak Checker has a few choices, all of which have some
-downsides:
+The second implementation issue is the defaulting rule for \<@MustCall> on
+type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
+which prevents many false positives in code with type variables that makes
+no use of resources --- an important design principle.
+However, this defaulting rule does have an unfortunate consequence: it is
+an error to write \code{List<Socket>} and any other use of a type variable
+where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
+needs to write such a type while using the Resource Leak Checker has a few
+choices, all of which have some downsides:
+
 \begin{itemize}
-\item write \code{List<@MustCall Socket>}. This makes it an error to actually add a
-Socket to the list, since the type of the Socket is \<@MustCall("close")> but the list requires an
-empty \<@MustCall>.
-\item write \code{List<? extends Socket>}. This precludes calls to \<add()> or other methods that require an
-instance of the type variable, but it preserves some of the behavior (e.g., calls to \<remove()>).
-This is the best choice most of the time if the \<List> is not intended to be owning.
-\item suppress one or more warnings.
+\item Write \code{List<? extends Socket>}. This rejects calls to \<add()>
+or other methods that require an instance of the type variable, but it
+preserves some of the behavior (e.g., calls to \<remove()> are permitted).
+This is the best choice most of the time if the \<List> is not intended to
+be owning.
+\item Write \code{List<@MustCall Socket>}. This makes it an error to
+add a Socket to the list, since the type of the Socket is
+\<@MustCall("close")> but the list requires \<@MustCall()>.
+\item Suppress one or more warnings.
 \end{itemize}
 
-The recommended way to use the Resource Leak Checker in this situation is to 1) if possible, rewrite
-the code to avoid a \<List> of owning resources. If 1) is not possible, the programmer will probably need
-to suppress a warning and then verify the code using a method other than the Resource Leak Checker.
+The recommended way to use the Resource Leak Checker in this situation is
+to rewrite the code to avoid a \<List> of owning resources. If rewriting is
+not possible, the programmer will probably need to suppress a warning and
+then verify the code using a method other than the Resource Leak Checker.
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
