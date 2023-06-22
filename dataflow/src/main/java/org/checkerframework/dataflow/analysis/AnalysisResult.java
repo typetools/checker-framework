@@ -445,7 +445,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       Analysis.BeforeOrAfter preOrPost,
       TransferInput<V, S> transferInput,
       IdentityHashMap<Node, V> nodeValues,
-      Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
     if (transferInput.analysis == null) {
       throw new BugInCF("Analysis in transferInput cannot be null.");
     }

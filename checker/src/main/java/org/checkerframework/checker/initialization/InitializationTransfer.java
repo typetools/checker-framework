@@ -39,8 +39,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>More precisely, the following refinements are performed:
  *
  * <ol>
- *   <li>After the call to a constructor ("this()" call), all non-null fields of the current class
- *       can safely be considered initialized.
+ *   <li>After the call to a constructor ({@code this()} call), all non-null fields of the current
+ *       class can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
  *       InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).

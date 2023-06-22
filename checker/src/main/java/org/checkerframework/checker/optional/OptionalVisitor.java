@@ -68,7 +68,7 @@ public class OptionalVisitor
   private final @Nullable ExecutableElement optionalOrElseThrow;
 
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
-  private final ExecutableElement optionalOrElseThrowSupplier;
+  private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
 
   /** Create an OptionalVisitor. */
   public OptionalVisitor(BaseTypeChecker checker) {
@@ -114,7 +114,8 @@ public class OptionalVisitor
    *     Optional.isPresent} or to {@code Optional.isEmpty}) and its receiver; or null if not a call
    *     to either of the methods
    */
-  private @Nullable IPair<Boolean, ExpressionTree> isCallToIsPresent(ExpressionTree expression) {
+  private @Nullable IPair<Boolean, @Nullable ExpressionTree> isCallToIsPresent(
+      ExpressionTree expression) {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     boolean negate = false;
     while (true) {

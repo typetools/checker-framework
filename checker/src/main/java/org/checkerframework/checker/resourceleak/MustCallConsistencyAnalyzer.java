@@ -746,9 +746,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression

@@ -24,6 +24,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -44,10 +45,10 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   /** The tree kinds that should be reported; may be null. */
-  private final EnumSet<Tree.Kind> treeKinds;
+  private final @Nullable EnumSet<Tree.Kind> treeKinds;
 
   /** The modifiers that should be reported; may be null. */
-  private final EnumSet<Modifier> modifiers;
+  private final @Nullable EnumSet<Modifier> modifiers;
 
   public ReportVisitor(BaseTypeChecker checker) {
     super(checker);

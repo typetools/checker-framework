@@ -34,6 +34,10 @@ Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
 
+`GenericAnnotatedTypeFactory`:
+ * Renamed `getTypeFactoryOfSubchecker()` to `getTypeFactoryOfSubcheckerOrNull`.
+ * Added new `getTypeFactoryOfSubchecker()` that never returns null.
+
 Return types changed:
  * `GenericAnnotatedTypeFactory.getFinalLocalValues()` return type changed to
    `Map`, though the returned value is still a `HashMap`.

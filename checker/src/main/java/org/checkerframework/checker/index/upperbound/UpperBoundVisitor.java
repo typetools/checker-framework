@@ -18,6 +18,7 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -340,7 +341,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * <p>This is useful for expressions like "n+1", for which {@link #parseJavaExpressionString}
    * returns null because the whole expression is not a receiver.
    */
-  static IPair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+  static @Nullable IPair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
 
     IPair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
@@ -359,7 +360,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    *
    * <p>This wraps GenericAnnotatedTypeFactory#parseJavaExpressionString.
    */
-  static JavaExpression parseJavaExpressionString(
+  static @Nullable JavaExpression parseJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
     JavaExpression result;
     try {

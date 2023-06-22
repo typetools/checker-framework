@@ -15,6 +15,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -73,8 +74,10 @@ public class ReflectiveEvaluator {
    * @return all possible values that the method may return, or null if the method could not be
    *     evaluated
    */
-  public List<?> evaluateMethodCall(
-      List<List<?>> allArgValues, List<?> receiverValues, MethodInvocationTree tree) {
+  public @Nullable List<?> evaluateMethodCall(
+      @Nullable List<List<?>> allArgValues,
+      @Nullable List<?> receiverValues,
+      MethodInvocationTree tree) {
     Method method = getMethodObject(tree);
     if (method == null) {
       return null;
@@ -180,7 +183,7 @@ public class ReflectiveEvaluator {
    * @param tree a method invocation tree
    * @return the Method object corresponding to the method invocation tree
    */
-  private Method getMethodObject(MethodInvocationTree tree) {
+  private @Nullable Method getMethodObject(MethodInvocationTree tree) {
     ExecutableElement ele = TreeUtils.elementFromUse(tree);
     List<Class<?>> paramClasses = null;
     try {
@@ -283,7 +286,7 @@ public class ReflectiveEvaluator {
    *     IdentifierTree and is used for diagnostics.
    * @return the value of the static field access, or null if it cannot be determined
    */
-  public Object evaluateStaticFieldAccess(
+  public @Nullable Object evaluateStaticFieldAccess(
       @ClassGetName String classname, String fieldName, ExpressionTree tree) {
     try {
       Class<?> recClass = Class.forName(classname);
@@ -310,7 +313,7 @@ public class ReflectiveEvaluator {
     }
   }
 
-  public List<?> evaluteConstructorCall(
+  public @Nullable List<?> evaluteConstructorCall(
       List<List<?>> argValues, NewClassTree tree, TypeMirror typeToCreate) {
     Constructor<?> constructor;
     try {

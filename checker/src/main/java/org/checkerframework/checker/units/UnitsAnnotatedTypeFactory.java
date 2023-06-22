@@ -536,23 +536,20 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
 
-    private AnnotationMirror useUnitsRelation(
+    private @Nullable AnnotationMirror useUnitsRelation(
         Tree.Kind kind, UnitsRelations ur, AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
 
-      AnnotationMirror res = null;
       if (ur != null) {
         switch (kind) {
           case DIVIDE:
-            res = ur.division(lht, rht);
-            break;
+            return ur.division(lht, rht);
           case MULTIPLY:
-            res = ur.multiplication(lht, rht);
-            break;
+            return ur.multiplication(lht, rht);
           default:
             // Do nothing
         }
       }
-      return res;
+      return null;
     }
   }
 
@@ -614,11 +611,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
+    @SuppressWarnings("nullness:return")
     @Override
-    @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
-    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
-    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,
