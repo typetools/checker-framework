@@ -1,6 +1,7 @@
 package org.checkerframework.framework.testchecker.compound;
 
 import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -8,7 +9,7 @@ import org.checkerframework.common.value.ValueChecker;
 
 public class AnotherCompoundChecker extends BaseTypeChecker {
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     // Make sure that options can be accessed by sub-checkers to determine
     // which subcheckers to run.
     @SuppressWarnings("unused")

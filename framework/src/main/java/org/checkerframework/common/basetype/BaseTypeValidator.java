@@ -185,7 +185,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   protected List<DiagMessage> isTopLevelValidType(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     // multiple annotations from the same hierarchy
-    AnnotationMirrorSet annotations = type.getAnnotations();
+    AnnotationMirrorSet annotations = type.getPrimaryAnnotations();
     AnnotationMirrorSet seenTops = new AnnotationMirrorSet();
     for (AnnotationMirror anno : annotations) {
       AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
@@ -208,7 +208,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   protected void reportValidityResult(
       @CompilerMessageKey String errorType, AnnotatedTypeMirror type, Tree p) {
-    checker.reportError(p, errorType, type.getAnnotations(), type.toString());
+    checker.reportError(p, errorType, type.getPrimaryAnnotations(), type.toString());
     isValid = false;
   }
 
@@ -224,7 +224,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       @CompilerMessageKey String errorType, AnnotatedTypeMirror type, Tree p) {
     TypeMirror underlying =
         TypeAnnotationUtils.unannotatedType(type.getErased().getUnderlyingType());
-    checker.reportError(p, errorType, type.getAnnotations(), underlying.toString());
+    checker.reportError(p, errorType, type.getPrimaryAnnotations(), underlying.toString());
     isValid = false;
   }
 

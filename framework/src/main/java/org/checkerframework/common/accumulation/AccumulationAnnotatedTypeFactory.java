@@ -236,7 +236,7 @@ public abstract class AccumulationAnnotatedTypeFactory
     ExecutableElement methodEle = TreeUtils.elementFromUse(tree);
     AnnotatedExecutableType methodAtm = rrATF.getAnnotatedType(methodEle);
     AnnotatedTypeMirror rrType = methodAtm.getReturnType();
-    return rrType != null && rrType.hasAnnotation(This.class);
+    return rrType != null && rrType.hasPrimaryAnnotation(This.class);
   }
 
   /**
@@ -354,7 +354,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    */
   public Collection<String> getAccumulatedValues(Tree tree) {
     AnnotatedTypeMirror type = getAnnotatedType(tree);
-    AnnotationMirror anno = type.getAnnotationInHierarchy(top);
+    AnnotationMirror anno = type.getPrimaryAnnotationInHierarchy(top);
     if (anno != null && isAccumulatorAnnotation(anno)) {
       return getAccumulatedValues(anno);
     } else if (anno == null) {

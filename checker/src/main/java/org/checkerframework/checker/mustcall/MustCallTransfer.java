@@ -99,7 +99,8 @@ public class MustCallTransfer extends CFTransfer {
       this.defaultStringType =
           atypeFactory
               .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
-              .getAnnotationInHierarchy(atypeFactory.TOP);
+              .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      assert this.defaultStringType != null : "@AssumeAssertion(nullness): same hierarchy";
     }
     return this.defaultStringType;
   }
@@ -140,7 +141,7 @@ public class MustCallTransfer extends CFTransfer {
         AnnotationMirror defaultType =
             atypeFactory
                 .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
-                .getAnnotationInHierarchy(atypeFactory.TOP);
+                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
 
         if (result.containsTwoStores()) {
           CFStore thenStore = result.getThenStore();
@@ -222,7 +223,7 @@ public class MustCallTransfer extends CFTransfer {
         AnnotationMirror anm =
             atypeFactory
                 .getAnnotatedType(node.getTree())
-                .getAnnotationInHierarchy(atypeFactory.TOP);
+                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
         insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
       }
     }

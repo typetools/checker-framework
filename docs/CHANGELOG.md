@@ -19,9 +19,30 @@ The Initialization Checker issues a `cast.unsafe` warning instead of an
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
+Renamed methods in `AnnotatedTypeMirror`.
+The old versions are deprecated.  Because the `*PrimaryAnnotation*` methods
+might not return an annotation of a type variable or wildcard, it is better to
+call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
+ * `clearAnnotations*()` => `clearPrimaryAnnotations()`
+ * `getAnnotation*()` => `getPrimaryAnnotation*()`.
+ * `hasAnnotation*()` => `hasPrimaryAnnotation()`.
+ * `removeAnnotation*()` => `removePrimaryAnnotation*()`.
+ * `isAnnotatedInHierarchy()` => `hasPrimaryAnnotationInHierarchy()`
+ * `removeNonTopAnnotationInHierarchy()` should not be used.
+
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
+
+`GenericAnnotatedTypeFactory`:
+ * Renamed `getTypeFactoryOfSubchecker()` to `getTypeFactoryOfSubcheckerOrNull`.
+ * Added new `getTypeFactoryOfSubchecker()` that never returns null.
+
+Return types changed:
+ * `GenericAnnotatedTypeFactory.getFinalLocalValues()` return type changed to
+   `Map`, though the returned value is still a `HashMap`.
+ * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
+   `Set`, though the returned value is still a `LinkedHashSet`.
 
 **Closed issues:**
 

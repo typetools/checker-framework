@@ -168,7 +168,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return getMustCallValues(mustCallAnnotation);
   }
 
@@ -190,7 +191,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType =
         mustCallAnnotatedTypeFactory.getAnnotatedType(element);
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return getMustCallValues(mustCallAnnotation);
   }
 
@@ -335,14 +337,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
-      Class<? extends BaseTypeChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
     if (subCheckerClass == MustCallChecker.class) {
       if (!canCreateObligations()) {
-        return super.getTypeFactoryOfSubchecker(MustCallNoCreatesMustCallForChecker.class);
+        return super.getTypeFactoryOfSubcheckerOrNull(MustCallNoCreatesMustCallForChecker.class);
       }
     }
-    return super.getTypeFactoryOfSubchecker(subCheckerClass);
+    return super.getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
   }
 
   /**

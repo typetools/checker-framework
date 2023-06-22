@@ -130,7 +130,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   @Override
   public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-
     for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
       if (!isSubtype(subtype, supertype, top)) {
         return false;
@@ -163,13 +162,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return error message for the case when two types shouldn't be compared
    */
   @Override
-  protected String defaultErrorMessage(
+  public String defaultErrorMessage(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, Void p) {
-    return "Incomparable types ("
-        + subtype
-        + ", "
-        + supertype
-        + ") visitHistory = "
+    return super.defaultErrorMessage(subtype, supertype, p)
+        + System.lineSeparator()
+        + "  visitHistory = "
         + isSubtypeVisitHistory;
   }
 
@@ -863,8 +860,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // The underlying types of subtype and supertype are uses of the same type parameter,
       // but they
       // may have different primary annotations.
-      boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
-      boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
+      boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+      boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
         // If both have primary annotations then just check the primary annotations
@@ -1179,8 +1176,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // visitWildcard_Type is called when checking the method call `method(x)`,
       // and also when checking lambdas.
 
-      boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
-      boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
+      boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+      boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
         // If both have primary annotations then just check the primary annotations

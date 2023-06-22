@@ -151,7 +151,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         //     an @InheritableMustCall annotation on a supertype.
 
         // Check for problem 1.
-        AnnotationMirror explicitMustCall = atypeFactory.fromElement(classEle).getAnnotation();
+        AnnotationMirror explicitMustCall =
+            atypeFactory.fromElement(classEle).getPrimaryAnnotation();
         if (explicitMustCall != null) {
           // There is a @MustCall annotation here.
 
@@ -202,7 +203,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             }
             AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(inheritedMustCallVal);
 
-            AnnotationMirror effectiveMCAnno = type.getAnnotation();
+            AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
 
             TypeMirror tm = type.getUnderlyingType();
 
@@ -341,7 +342,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
-    AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
     AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
     if (!qualHierarchy.isSubtypeShallow(

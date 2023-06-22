@@ -39,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.Invoke;
 import org.checkerframework.common.reflection.qual.MethodVal;
@@ -615,7 +616,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * @return the lub of the two types
    */
   private Set<? extends AnnotationMirror> lub(
-      Set<? extends AnnotationMirror> set1,
+      @Nullable Set<? extends AnnotationMirror> set1,
       TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
       TypeMirror tm2,
@@ -641,7 +642,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * @return the glb of the two types
    */
   private Set<? extends AnnotationMirror> glb(
-      Set<? extends AnnotationMirror> set1,
+      @Nullable Set<? extends AnnotationMirror> set1,
       TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
       TypeMirror tm2,

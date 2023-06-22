@@ -282,7 +282,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param checker the type-checker associated with this visitor
    * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
    */
-  protected BaseTypeVisitor(BaseTypeChecker checker, Factory typeFactory) {
+  protected BaseTypeVisitor(BaseTypeChecker checker, @Nullable Factory typeFactory) {
     super(checker);
 
     this.checker = checker;
@@ -753,7 +753,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       for (AnnotationMirror poly : polys) {
-        if (type.hasAnnotationRelaxed(poly)) {
+        if (type.hasPrimaryAnnotationRelaxed(poly)) {
           return Collections.singletonList(
               DiagMessage.error("invalid.polymorphic.qualifier.use", poly));
         }
@@ -1155,7 +1155,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     AnnotatedTypeMirror returnType = constructorType.getReturnType();
-    AnnotationMirrorSet constructorAnnotations = returnType.getAnnotations();
+    AnnotationMirrorSet constructorAnnotations = returnType.getPrimaryAnnotations();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
 
     for (AnnotationMirror top : tops) {
@@ -1501,7 +1501,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           TreeUtils.annotationsFromTree((AnnotatedTypeTree) boundTree);
       for (AnnotationMirror explictAnno : explictAnnos) {
         if (atypeFactory.isSupportedQualifier(explictAnno)) {
-          AnnotationMirror anno = intersection.getAnnotationInHierarchy(explictAnno);
+          AnnotationMirror anno = intersection.getPrimaryAnnotationInHierarchy(explictAnno);
           if (!AnnotationUtils.areSame(anno, explictAnno)) {
             checker.reportWarning(
                 boundTree, "explicit.annotation.ignored", explictAnno, anno, explictAnno, anno);
@@ -1567,7 +1567,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     AnnotatedTypeMirror defaultAtm = atypeFactory.getDefaultAnnotationsForWarnRedundant(tree, type);
     for (AnnotationMirror explicitAnno : explicitAnnos) {
-      AnnotationMirror defaultAm = defaultAtm.getAnnotationInHierarchy(explicitAnno);
+      AnnotationMirror defaultAm = defaultAtm.getPrimaryAnnotationInHierarchy(explicitAnno);
       if (defaultAm != null && AnnotationUtils.areSame(defaultAm, explicitAnno)) {
         checker.reportWarning(tree, "redundant.anno", defaultAtm);
       }
@@ -2439,7 +2439,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotationMirrorSet bounds =
           atypeFactory.getTypeDeclarationBounds(castDeclared.getUnderlyingType());
 
-      if (AnnotationUtils.areSame(castDeclared.getAnnotations(), bounds)) {
+      if (AnnotationUtils.areSame(castDeclared.getPrimaryAnnotations(), bounds)) {
         return true;
       }
     }
@@ -2501,7 +2501,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // type of the expression is a subtype of the lower bound.
         castAnnos = AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, castType);
       } else {
-        castAnnos = castType.getAnnotations();
+        castAnnos = castType.getPrimaryAnnotations();
       }
     }
 
@@ -2589,7 +2589,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
         if (atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-            && !refType.getAnnotations().equals(expType.getAnnotations())) {
+            && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())) {
           checker.reportWarning(tree, "instanceof.unsafe", expType, refType);
         }
       }
@@ -2782,7 +2782,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedTypeMirror excParamType = atypeFactory.getAnnotatedType(excParamTree);
 
     for (AnnotationMirror required : requiredAnnotations) {
-      AnnotationMirror found = excParamType.getAnnotationInHierarchy(required);
+      AnnotationMirror found = excParamType.getPrimaryAnnotationInHierarchy(required);
       assert found != null;
       if (!qualHierarchy.isSubtypeShallowEffective(required, excParamType)) {
         checker.reportError(excParamTree, "exception.parameter", found, required);
@@ -3024,7 +3024,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // TODO: integrate with subtype test.
     if (result) {
       for (Class<? extends Annotation> mono : atypeFactory.getSupportedMonotonicTypeQualifiers()) {
-        if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
+        if (valueType.hasPrimaryAnnotation(mono) && varType.hasPrimaryAnnotation(mono)) {
           checker.reportError(
               valueExpTree,
               "monotonic",
@@ -3088,7 +3088,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected final void commonAssignmentCheckEndDiagnostic(
       boolean success,
-      String extraMessage,
+      @Nullable String extraMessage,
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueExpTree) {
@@ -3112,7 +3112,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * AnnotatedTypeMirror, AnnotatedTypeMirror, Tree)}. The purpose of this method is to permit
    * customizing the message that is printed.
    *
-   * @param message the result, plus information about why the result is what it is; may be null
+   * @param message the result, plus information about why the result is what it is
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
    * @param valueExpTree the location to use when reporting the error message
@@ -4115,7 +4115,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           receiverArg = atypeFactory.getAnnotatedType(memberTree.getQualifierExpression());
 
           AnnotatedTypeMirror selfType = atypeFactory.getSelfType(memberTree);
-          receiverArg.replaceAnnotations(selfType.getAnnotations());
+          receiverArg.replaceAnnotations(selfType.getPrimaryAnnotations());
           break;
         case BOUND:
           receiverDecl = overrider.getReceiverType();
@@ -4554,7 +4554,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the enclosing member select, or null if the identifier is not the field in a member
    *     selection
    */
-  protected MemberSelectTree enclosingMemberSelect() {
+  protected @Nullable MemberSelectTree enclosingMemberSelect() {
     TreePath path = this.getCurrentPath();
     assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER
         : "expected identifier, found: " + path.getLeaf();
@@ -4571,7 +4571,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param tree an AST node that is on the current path
    * @return the statement that encloses the given one
    */
-  protected Tree enclosingStatement(@FindDistinct Tree tree) {
+  protected @Nullable Tree enclosingStatement(@FindDistinct Tree tree) {
     TreePath path = this.getCurrentPath();
     while (path != null && path.getLeaf() != tree) {
       path = path.getParentPath();
@@ -4629,7 +4629,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param accessTree the access expression
    */
   protected void checkAccessAllowed(
-      Element field, AnnotatedTypeMirror receiverType, @FindDistinct ExpressionTree accessTree) {
+      Element field,
+      @Nullable AnnotatedTypeMirror receiverType,
+      @FindDistinct ExpressionTree accessTree) {
     AnnotationMirror unused = atypeFactory.getDeclAnnotation(field, Unused.class);
     if (unused == null) {
       return;
@@ -4642,7 +4644,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // system being checked.)
 
     // TODO: This requires exactly the same type qualifier, but it should permit subqualifiers.
-    if (!AnnotationUtils.containsSameByName(receiverType.getAnnotations(), when)) {
+    if (!AnnotationUtils.containsSameByName(receiverType.getPrimaryAnnotations(), when)) {
       return;
     }
 

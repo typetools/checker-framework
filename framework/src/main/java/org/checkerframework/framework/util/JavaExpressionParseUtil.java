@@ -49,8 +49,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.BinaryOperation;
@@ -90,13 +93,14 @@ public class JavaExpressionParseUtil {
    * Anchored pattern for a formal parameter use; matches a string that is exactly a formal
    * parameter use.
    */
-  protected static final Pattern ANCHORED_PARAMETER_PATTERN =
+  protected static final @Regex(1) Pattern ANCHORED_PARAMETER_PATTERN =
       Pattern.compile("^" + PARAMETER_REGEX + "$");
 
   /**
    * Unanchored pattern for a formal parameter use; can be used to find all formal parameter uses.
    */
-  protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
+  protected static final @Regex(1) Pattern UNANCHORED_PARAMETER_PATTERN =
+      Pattern.compile(PARAMETER_REGEX);
 
   /**
    * Parsable replacement for formal parameter references. It is parsable because it is a Java
@@ -301,6 +305,7 @@ public class JavaExpressionParseUtil {
      * Initializes the {@code resolver} field if necessary. Does nothing on invocations after the
      * first.
      */
+    @EnsuresNonNull("resolver")
     private void setResolverField() {
       if (resolver == null) {
         resolver = new Resolver(env);
@@ -552,6 +557,8 @@ public class JavaExpressionParseUtil {
         searchType = getTypeOfEnclosingClass(searchDeclaredType);
       }
 
+      setResolverField();
+
       if (enclosingType.getKind() == TypeKind.DECLARED) {
         // Is identifier in the same package as this?
         PackageSymbol packageSymbol =
@@ -600,6 +607,7 @@ public class JavaExpressionParseUtil {
      */
     protected @Nullable FieldAccess getIdentifierAsFieldAccess(
         JavaExpression receiverExpr, String identifier) {
+      setResolverField();
       // Find the field element.
       TypeMirror enclosingTypeOfField = receiverExpr.getType();
       VariableElement fieldElem;
@@ -846,7 +854,7 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
-      List<JavaExpression> dimensions =
+      List<@Nullable JavaExpression> dimensions =
           CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
@@ -1059,7 +1067,10 @@ public class JavaExpressionParseUtil {
   public static int parameterIndex(String s) {
     Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
     if (matcher.find()) {
-      return Integer.parseInt(matcher.group(1));
+      @SuppressWarnings(
+          "nullness:assignment") // group 1 is non-null due to the structure of the regex
+      @NonNull String group1 = matcher.group(1);
+      return Integer.parseInt(group1);
     }
     return -1;
   }

@@ -98,7 +98,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
                     prev, componentTM, annos, initType.getUnderlyingType());
       }
     } else {
-      prev = componentType.getAnnotations();
+      prev = componentType.getPrimaryAnnotations();
     }
 
     assert prev != null
@@ -174,8 +174,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
       // It fails for array initializer expressions. Those should be handled nicer.
       if (contextComponentType.getKind() == componentType.getKind()
           && (prev.isEmpty()
-              || (!contextComponentType.getAnnotations().isEmpty() && prevIsSubtype))) {
-        post = contextComponentType.getAnnotations();
+              || (!contextComponentType.getPrimaryAnnotations().isEmpty() && prevIsSubtype))) {
+        post = contextComponentType.getPrimaryAnnotations();
       } else {
         // The type of the array initializers is incompatible with the context type!
         // Somebody else will complain.
@@ -253,7 +253,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     }
 
     AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(tree.getExpression());
-    type.addMissingAnnotations(exp.getAnnotations());
+    type.addMissingAnnotations(exp.getPrimaryAnnotations());
     return null;
   }
 
@@ -287,7 +287,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     if (type.getKind() == TypeKind.TYPEVAR) {
       if (exprType.getKind() == TypeKind.TYPEVAR) {
         // If both types are type variables, take the direct annotations.
-        type.addMissingAnnotations(exprType.getAnnotations());
+        type.addMissingAnnotations(exprType.getPrimaryAnnotations());
       }
       // else do nothing.
     } else {

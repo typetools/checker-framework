@@ -117,7 +117,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotationMirrorSet lubs = null;
       for (AnnotatedDeclaredType altern : annotatedUnionType.getAlternatives()) {
         if (lubs == null) {
-          lubs = altern.getAnnotations();
+          lubs = altern.getPrimaryAnnotations();
         } else {
           TypeMirror typeMirror = type.getUnderlyingType();
           AnnotationMirrorSet newLubs = new AnnotationMirrorSet();
@@ -132,15 +132,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       }
       type.replaceAnnotations(lubs);
     }
-  }
-
-  @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
-    return String.format(
-        "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%n"
-            + "type: %s%nsuperType: %s",
-        type.getKind(), superType.getKind(), type, superType);
   }
 
   private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
@@ -160,16 +151,16 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private AnnotatedTypeMirror copyPrimaryAnnos(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     // There may have been annotations added by a recursive call to asSuper, so replace existing
     // annotations
-    to.replaceAnnotations(new ArrayList<>(from.getAnnotations()));
+    to.replaceAnnotations(new ArrayList<>(from.getPrimaryAnnotations()));
     // if to is a Typevar or Wildcard, then replaceAnnotations also sets primary annotations on
-    // the bounds to from.getAnnotations()
+    // the bounds to from.getPrimaryAnnotations()
 
     if (to.getKind() == TypeKind.UNION) {
       // Make sure that the alternatives have a primary annotations
       // Alternatives cannot have type arguments, so asSuper isn't called recursively
       AnnotatedUnionType unionType = (AnnotatedUnionType) to;
       for (AnnotatedDeclaredType altern : unionType.getAlternatives()) {
-        altern.addMissingAnnotations(unionType.getAnnotations());
+        altern.addMissingAnnotations(unionType.getPrimaryAnnotations());
       }
     }
     return to;

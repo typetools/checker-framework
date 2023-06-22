@@ -18,6 +18,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.ClassBound;
@@ -141,7 +142,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * obtained by combining the values of both annotations.
      */
     @Override
-    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeQualifiers(a1, a2)) {
@@ -164,7 +166,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
       } else if (isSubtypeQualifiers(a1, a2)) {
@@ -303,7 +306,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return getDeclAnnotation(TreeUtils.elementFromUse(tree), GetClass.class) != null;
     }
 
-    private List<String> getStringValues(ExpressionTree arg) {
+    private @Nullable List<String> getStringValues(ExpressionTree arg) {
       ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
       AnnotationMirror annotation = valueATF.getAnnotationMirror(arg, StringVal.class);
       if (annotation == null) {

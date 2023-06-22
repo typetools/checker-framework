@@ -159,14 +159,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     ClassValAnnotatedTypeFactory classValATF = getTypeFactoryOfSubchecker(ClassValChecker.class);
     AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
 
-    AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
+    AnnotationMirror classValAnno = classAnno.getPrimaryAnnotation(ClassVal.class);
     if (classValAnno != null) {
       return AnnotationUtils.getElementValueArray(classValAnno, classValValueElement, String.class);
     } else if (mustBeExact) {
       return Collections.emptyList();
     }
 
-    AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
+    AnnotationMirror classBoundAnno = classAnno.getPrimaryAnnotation(ClassBound.class);
     if (classBoundAnno != null) {
       return AnnotationUtils.getElementValueArray(
           classBoundAnno, classBoundValueElement, String.class);
@@ -185,7 +185,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private List<String> getMethodNamesFromStringArg(ExpressionTree arg) {
     ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
     AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
-    AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
+    AnnotationMirror annotation = valueAnno.getPrimaryAnnotation(StringVal.class);
     if (annotation != null) {
       return AnnotationUtils.getElementValueArray(annotation, stringValValueElement, String.class);
     } else {
@@ -398,7 +398,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * if getMethod(Object receiver, Object... params) or getConstrutor(Object... params) have one
+     * If getMethod(Object receiver, Object... params) or getConstrutor(Object... params) have one
      * argument for params, then the number of parameters in the underlying method or constructor
      * must be:
      *
@@ -420,11 +420,11 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         case ARRAY:
           ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
           AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
-          AnnotationMirror arrayLenAnno = valueType.getAnnotation(ArrayLen.class);
+          AnnotationMirror arrayLenAnno = valueType.getPrimaryAnnotation(ArrayLen.class);
           if (arrayLenAnno != null) {
             return AnnotationUtils.getElementValueArray(
                 arrayLenAnno, arrayLenValueElement, Integer.class);
-          } else if (valueType.getAnnotation(BottomVal.class) != null) {
+          } else if (valueType.getPrimaryAnnotation(BottomVal.class) != null) {
             // happens in this case: (Class[]) null
             return ZERO_LIST;
           }

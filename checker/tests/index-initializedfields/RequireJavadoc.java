@@ -409,7 +409,7 @@ public class RequireJavadoc {
      * Return the PropertyKind for the given method, or null if it isn't a property accessor method.
      *
      * @param md the method to check
-     * @return the PropertyKind for the given method, or null
+     * @return the PropertyKind for the given method
      */
     static PropertyKind fromMethodDeclaration(MethodDeclaration md) {
       String methodName = md.getNameAsString();
