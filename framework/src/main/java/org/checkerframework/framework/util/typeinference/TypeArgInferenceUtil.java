@@ -288,7 +288,7 @@ public class TypeArgInferenceUtil {
 
   /**
    * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
-   * Rational:
+   * Rationale:
    *
    * <p>For example:
    *
