@@ -711,11 +711,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     if (TypesUtils.isString(resultType)) {
-      @SuppressWarnings("mustcall:lambda.param") // generics; #979 ?
       List<String> stringVals = CollectionsPlume.mapList((Object o) -> (String) o, values);
       return createStringAnnotation(stringVals);
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
-      @SuppressWarnings("mustcall:lambda.param") // generics; #979 ?
       List<String> stringVals =
           CollectionsPlume.mapList(
               (Object o) -> {
@@ -740,7 +738,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     switch (primitiveKind) {
       case BOOLEAN:
-        @SuppressWarnings("mustcall:lambda.param") // generics; #979 ?
         List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
       case DOUBLE:
