@@ -124,6 +124,38 @@ public abstract class QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
+   *
+   * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
+   * override this method (if needed).
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  protected abstract boolean isSubtypeQualifiers(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
+   *
+   * <p>This method just calls {@code isSubtypeQualifiers()}. However, {@code isSubtypeQualifiers()}
+   * is not public. A client that wishes to call {@code isSubtypeQualifiers()} should instead call
+   * this method. This makes it obvious where code outside QualifierHierarchy is ignoring Java
+   * basetypes.
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  public final boolean isSubtypeQualifiersOnly(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+    return isSubtypeQualifiers(subQualifier, superQualifier);
+  }
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
@@ -154,34 +186,23 @@ public abstract class QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy, ignoring Java basetypes.
+   * according to the type qualifier hierarchy. The type {@code typeMirror} is only used by this
+   * method for special cases when qualifier subtyping depends on the Java basetype.
    *
-   * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
-   * override this method (if needed).
-   *
-   * @param subQualifier possible subqualifier
-   * @param superQualifier possible superqualifier
-   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
-   */
-  protected abstract boolean isSubtypeQualifiers(
-      AnnotationMirror subQualifier, AnnotationMirror superQualifier);
-
-  /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy, ignoring Java basetypes.
-   *
-   * <p>This method just calls {@code isSubtypeQualifiers()}. However, {@code isSubtypeQualifiers()}
-   * is not public. A client that wishes to call {@code isSubtypeQualifiers()} should instead call
-   * this method. This makes it obvious where code outside QualifierHierarchy is ignoring Java
-   * basetypes.
+   * <p>Clients should call {@code isSubtypeShallow()} (this method), or, rarely, {@link
+   * #isSubtypeQualifiersOnly}, for clients who want to ignore the Java basetype. Subtypes should
+   * override {@link #isSubtypeQualifiers} (not this method), unless qualifier subtyping depends on
+   * Java basetypes.
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
+   * @param typeMirror the Java basetype associated with both {@code subQualifier} and {@code
+   *     superQualifier}
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  public final boolean isSubtypeQualifiersOnly(
-      AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
-    return isSubtypeQualifiers(subQualifier, superQualifier);
+  public final boolean isSubtypeShallow(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier, TypeMirror typeMirror) {
+    return isSubtypeShallow(subQualifier, typeMirror, superQualifier, typeMirror);
   }
 
   /**
@@ -221,6 +242,20 @@ public abstract class QualifierHierarchy {
     return true;
   }
 
+  /**
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
+   * used by this method for special cases when qualifier subtyping depends on the Java basetype.
+   *
+   * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
+   * AnnotationMirror, TypeMirror)} than this method.
+   *
+   * @param subQualifiers set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers set of qualifiers; exactly one per hierarchy
+   * @param typeMirror the type associated with {@code subQualifiers} and {@code superQualifiers}
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   *     qualifier in the same hierarchy in {@code superQualifiers}
+   */
   public boolean isSubtypeShallow(
       Collection<? extends AnnotationMirror> subQualifiers,
       Collection<? extends AnnotationMirror> superQualifiers,
@@ -228,88 +263,68 @@ public abstract class QualifierHierarchy {
     return isSubtypeShallow(subQualifiers, typeMirror, superQualifiers, typeMirror);
   }
 
+  private static class ShallowType {
+    AnnotationMirrorSet annos;
+    TypeMirror typeMirror;
+
+    private ShallowType(AnnotationMirrorSet annos, TypeMirror typeMirror) {
+      this.annos = annos;
+      this.typeMirror = typeMirror;
+    }
+
+    public static ShallowType create(AnnotatedTypeMirror type) {
+      AnnotatedTypeMirror erasedType = type.getErased();
+      TypeMirror typeMirror =
+          erasedType.getKind() == type.getKind()
+              ? type.getUnderlyingType()
+              : erasedType.getUnderlyingType();
+      return new ShallowType(erasedType.getPrimaryAnnotations(), typeMirror);
+    }
+  }
+
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    AnnotatedTypeMirror erasedSubtype = subtype.getErased();
-    AnnotatedTypeMirror erasedSupertype = supertype.getErased();
-    TypeMirror subTM =
-        erasedSubtype.getKind() == subtype.getKind()
-            ? subtype.getUnderlyingType()
-            : erasedSubtype.getUnderlyingType();
-    TypeMirror superTM =
-        erasedSupertype.getKind() == supertype.getKind()
-            ? supertype.getUnderlyingType()
-            : erasedSupertype.getUnderlyingType();
+    ShallowType subSType = ShallowType.create(subtype);
+    ShallowType superSType = ShallowType.create(supertype);
     return isSubtypeShallow(
-        erasedSubtype.getPrimaryAnnotations(),
-        subTM,
-        erasedSupertype.getPrimaryAnnotations(),
-        superTM);
+        subSType.annos, subSType.typeMirror, superSType.annos, superSType.typeMirror);
   }
 
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror hierarchy) {
-    AnnotatedTypeMirror erasedSubtype = subtype.getErased();
-    AnnotatedTypeMirror erasedSupertype = supertype.getErased();
-    TypeMirror subTM =
-        erasedSubtype.getKind() == subtype.getKind()
-            ? subtype.getUnderlyingType()
-            : erasedSubtype.getUnderlyingType();
-    TypeMirror superTM =
-        erasedSupertype.getKind() == supertype.getKind()
-            ? supertype.getUnderlyingType()
-            : erasedSupertype.getUnderlyingType();
+    ShallowType subSType = ShallowType.create(subtype);
+    ShallowType superSType = ShallowType.create(supertype);
     return isSubtypeShallow(
-        erasedSubtype.getPrimaryAnnotationInHierarchy(hierarchy),
-        subTM,
-        erasedSupertype.getPrimaryAnnotationInHierarchy(hierarchy),
-        superTM);
+        findAnnotationInHierarchy(subSType.annos, hierarchy),
+        subSType.typeMirror,
+        findAnnotationInSameHierarchy(superSType.annos, hierarchy),
+        superSType.typeMirror);
   }
 
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, Collection<? extends AnnotationMirror> supertype) {
-    AnnotatedTypeMirror erasedSubtype = subtype.getErased();
-    TypeMirror subTM =
-        erasedSubtype.getKind() == subtype.getKind()
-            ? subtype.getUnderlyingType()
-            : erasedSubtype.getUnderlyingType();
-    return isSubtypeShallow(erasedSubtype.getPrimaryAnnotations(), supertype, subTM);
+    ShallowType subSType = ShallowType.create(subtype);
+    return isSubtypeShallow(subSType.annos, supertype, subSType.typeMirror);
   }
 
   public boolean isSubtypeShallowEffective(
       Collection<? extends AnnotationMirror> subtype, AnnotatedTypeMirror supertype) {
-    AnnotatedTypeMirror erasedSupertype = supertype.getErased();
-    TypeMirror superTM =
-        erasedSupertype.getKind() == supertype.getKind()
-            ? supertype.getUnderlyingType()
-            : erasedSupertype.getUnderlyingType();
-    return isSubtypeShallow(subtype, erasedSupertype.getPrimaryAnnotations(), superTM);
+    ShallowType superSType = ShallowType.create(supertype);
+    return isSubtypeShallow(subtype, superSType.annos, superSType.typeMirror);
   }
 
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotationMirror supertype) {
-    AnnotatedTypeMirror erasedSubtype = subtype.getErased();
-    TypeMirror subTM =
-        erasedSubtype.getKind() == subtype.getKind()
-            ? subtype.getUnderlyingType()
-            : erasedSubtype.getUnderlyingType();
+    ShallowType subSType = ShallowType.create(subtype);
     return isSubtypeShallow(
-        erasedSubtype.getPrimaryAnnotationInHierarchy(supertype), supertype, subTM);
+        findAnnotationInSameHierarchy(subSType.annos, supertype), supertype, subSType.typeMirror);
   }
 
   public boolean isSubtypeShallowEffective(
       AnnotationMirror subtype, AnnotatedTypeMirror supertype) {
-    AnnotatedTypeMirror erasedSuper = supertype.getErased();
-    TypeMirror subTM =
-        erasedSuper.getKind() == supertype.getKind()
-            ? supertype.getUnderlyingType()
-            : erasedSuper.getUnderlyingType();
-    return isSubtypeShallow(subtype, erasedSuper.getPrimaryAnnotationInHierarchy(subtype), subTM);
-  }
-
-  public final boolean isSubtypeShallow(
-      AnnotationMirror subQualifier, AnnotationMirror superQualifier, TypeMirror typeMirror) {
-    return isSubtypeShallow(subQualifier, typeMirror, superQualifier, typeMirror);
+    ShallowType superSType = ShallowType.create(supertype);
+    return isSubtypeShallow(
+        subtype, findAnnotationInSameHierarchy(superSType.annos, subtype), superSType.typeMirror);
   }
 
   /**
