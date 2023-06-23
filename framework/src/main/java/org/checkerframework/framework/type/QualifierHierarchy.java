@@ -264,6 +264,7 @@ public abstract class QualifierHierarchy {
   }
 
   /** A set of annotations and a {@link TypeMirror}. */
+  @AnnotatedFor("nullness")
   private static class ShallowType {
 
     /** A set of annotations. */
@@ -290,6 +291,7 @@ public abstract class QualifierHierarchy {
      * @param type an annotated type to convert to a {@code ShallowType}
      * @return a shallow type created from {@code type}
      */
+    @SuppressWarnings("nullness") // AnnotatedTypeMirror isn't annotated for nullness.
     public static ShallowType create(AnnotatedTypeMirror type) {
       AnnotatedTypeMirror erasedType = type.getErased();
       TypeMirror typeMirror =
@@ -345,9 +347,9 @@ public abstract class QualifierHierarchy {
     ShallowType subSType = ShallowType.create(subtype);
     ShallowType superSType = ShallowType.create(supertype);
     return isSubtypeShallow(
-        findAnnotationInHierarchy(subSType.annos, hierarchy),
+        findAnnotationInSameHierarchyNonNull(subSType.annos, hierarchy),
         subSType.typeMirror,
-        findAnnotationInSameHierarchy(superSType.annos, hierarchy),
+        findAnnotationInSameHierarchyNonNull(superSType.annos, hierarchy),
         superSType.typeMirror);
   }
 
@@ -405,7 +407,7 @@ public abstract class QualifierHierarchy {
       AnnotatedTypeMirror subtype, AnnotationMirror superQualifier) {
     ShallowType subSType = ShallowType.create(subtype);
     return isSubtypeShallow(
-        findAnnotationInSameHierarchy(subSType.annos, superQualifier),
+        findAnnotationInSameHierarchyNonNull(subSType.annos, superQualifier),
         superQualifier,
         subSType.typeMirror);
   }
@@ -427,7 +429,7 @@ public abstract class QualifierHierarchy {
     ShallowType superSType = ShallowType.create(supertype);
     return isSubtypeShallow(
         subQualifier,
-        findAnnotationInSameHierarchy(superSType.annos, subQualifier),
+        findAnnotationInSameHierarchyNonNull(superSType.annos, subQualifier),
         superSType.typeMirror);
   }
 
@@ -710,6 +712,26 @@ public abstract class QualifierHierarchy {
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror qualifier) {
     AnnotationMirror top = this.getTopAnnotation(qualifier);
     return findAnnotationInHierarchy(qualifiers, top);
+  }
+
+  /**
+   * Same as {@link #findAnnotationInSameHierarchy(Collection, AnnotationMirror)}, but throws an
+   * {@link BugInCF} if there isn't an annotation in the same hierarchy.
+   *
+   * @param qualifiers set of annotations to search
+   * @param qualifier annotation that is in the same hierarchy as the returned annotation
+   * @return annotation in the same hierarchy as qualifier, or null if one is not found
+   */
+  private AnnotationMirror findAnnotationInSameHierarchyNonNull(
+      Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror qualifier) {
+    AnnotationMirror top = this.getTopAnnotation(qualifier);
+    AnnotationMirror result = findAnnotationInHierarchy(qualifiers, top);
+    if (result == null) {
+      throw new BugInCF(
+          "Annotation not found in same hierarchy: %s, %s",
+          qualifier, StringsPlume.join(",", qualifiers));
+    }
+    return result;
   }
 
   /**
