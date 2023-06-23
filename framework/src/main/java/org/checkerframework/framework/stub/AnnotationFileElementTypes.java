@@ -401,7 +401,7 @@ public class AnnotationFileElementTypes {
    * @deprecated use {@link #getDeclAnnotations}
    */
   @Deprecated // 2021-06-26
-  public AnnotationMirrorSet getDeclAnnotation(Element elt) {
+  public @Nullable AnnotationMirrorSet getDeclAnnotation(Element elt) {
     return getDeclAnnotations(elt);
   }
 
@@ -415,7 +415,7 @@ public class AnnotationFileElementTypes {
    *     the annotation file and in the element. {@code null} is returned if {@code element} does
    *     not appear in an annotation file.
    */
-  public AnnotationMirrorSet getDeclAnnotations(Element elt) {
+  public @Nullable AnnotationMirrorSet getDeclAnnotations(Element elt) {
     if (isParsing()) {
       return AnnotationMirrorSet.emptySet();
     }
@@ -653,7 +653,7 @@ public class AnnotationFileElementTypes {
    * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if no
    *     class encloses {@code e}
    */
-  private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
+  private @Nullable @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(e);
     if (enclosingClass == null) {
       return null;

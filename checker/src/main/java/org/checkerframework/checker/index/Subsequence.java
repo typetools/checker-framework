@@ -43,7 +43,7 @@ public class Subsequence {
    * @param factory an AnnotatedTypeFactory
    * @return null or a new Subsequence from the declaration of {@code varTree}
    */
-  public static Subsequence getSubsequenceFromTree(
+  public static @Nullable Subsequence getSubsequenceFromTree(
       Tree varTree, BaseAnnotatedTypeFactoryForIndexChecker factory) {
 
     if (!(varTree.getKind() == Tree.Kind.IDENTIFIER
@@ -64,7 +64,7 @@ public class Subsequence {
    * @param factory the type factory
    * @return a new Subsequence object representing {@code hasSub} or null
    */
-  private static Subsequence createSubsequence(
+  private static @Nullable Subsequence createSubsequence(
       AnnotationMirror hasSub, BaseAnnotatedTypeFactoryForIndexChecker factory) {
     if (hasSub == null) {
       return null;

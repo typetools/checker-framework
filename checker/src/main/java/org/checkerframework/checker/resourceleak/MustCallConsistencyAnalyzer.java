@@ -738,9 +738,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -1441,6 +1441,13 @@ class MustCallConsistencyAnalyzer {
       // No stored value (or the stored value is Poly/top), so use the declared type.
       mcAnno =
           mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
+    }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(

@@ -337,14 +337,13 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubchecker(
-      Class<? extends BaseTypeChecker> subCheckerClass) {
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends BaseTypeChecker> subCheckerClass) {
     if (subCheckerClass == MustCallChecker.class) {
       if (!canCreateObligations()) {
-        return super.getTypeFactoryOfSubchecker(MustCallNoCreatesMustCallForChecker.class);
+        return super.getTypeFactoryOfSubcheckerOrNull(MustCallNoCreatesMustCallForChecker.class);
       }
     }
-    return super.getTypeFactoryOfSubchecker(subCheckerClass);
+    return super.getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
   }
 
   /**

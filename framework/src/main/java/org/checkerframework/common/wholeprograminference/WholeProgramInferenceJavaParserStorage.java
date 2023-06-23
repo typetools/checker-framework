@@ -1553,8 +1553,8 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /**
-     * Returns the inferred declaration annotations on this executable, or null if there are no
-     * annotations.
+     * Returns the inferred declaration annotations on this executable. Returns an empty set if
+     * there are no annotations.
      *
      * @return the declaration annotations for this callable declaration
      */
@@ -1790,8 +1790,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param orig the map to copy
    * @return a deep copy of the map
    */
-  private static Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>>
-      deepCopyMapOfStringToPair(
+  private static @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> deepCopyMapOfStringToPair(
           @Nullable Map<String, IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>> orig) {
     if (orig == null) {
       return null;

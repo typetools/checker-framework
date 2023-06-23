@@ -14,6 +14,7 @@ import org.checkerframework.checker.index.qual.LTEqLengthOf;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LTOMLengthOf;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
@@ -56,7 +57,7 @@ public abstract class UBQualifier {
    *     optional offset)
    */
   public static UBQualifier createUBQualifier(
-      AnnotationMirror am, String offset, UpperBoundChecker ubChecker) {
+      AnnotationMirror am, @Nullable String offset, UpperBoundChecker ubChecker) {
     switch (AnnotationUtils.annotationName(am)) {
       case "org.checkerframework.checker.index.qual.UpperBoundUnknown":
         return UpperBoundUnknownQualifier.UNKNOWN;
@@ -196,7 +197,7 @@ public abstract class UBQualifier {
    * @return a UBQualifier created from the @LTOMLengthOf annotation
    */
   private static UBQualifier parseLTOMLengthOf(
-      AnnotationMirror am, String extraOffset, UpperBoundChecker ubChecker) {
+      AnnotationMirror am, @Nullable String extraOffset, UpperBoundChecker ubChecker) {
     List<String> sequences =
         AnnotationUtils.getElementValueArray(am, ubChecker.ltOMLengthOfValueElement, String.class);
     if (sequences.isEmpty()) {
@@ -251,7 +252,7 @@ public abstract class UBQualifier {
    * @return an {@link UBQualifier} for the sequences with the given offsets
    */
   public static UBQualifier createUBQualifier(
-      List<String> sequences, List<String> offsets, String extraOffset) {
+      List<String> sequences, List<String> offsets, @Nullable String extraOffset) {
     assert !sequences.isEmpty();
 
     OffsetEquation extraEq;
@@ -460,7 +461,7 @@ public abstract class UBQualifier {
      * @return the map representation of a {@link UBQualifier}, or null if there is an error
      */
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
-        List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
+        List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
 
       Map<String, Set<OffsetEquation>> map = new HashMap<>(CollectionsPlume.mapCapacity(sequences));
       if (offsets.isEmpty()) {
@@ -524,7 +525,7 @@ public abstract class UBQualifier {
      */
     private static SequencesOffsetsAndClass mapToSequencesAndOffsets(
         Map<String, Set<OffsetEquation>> map, boolean buildSubstringIndexAnnotation) {
-      List<String> sortedSequences = new ArrayList<>(map.keySet());
+      List<@KeyFor("map") String> sortedSequences = new ArrayList<>(map.keySet());
       Collections.sort(sortedSequences);
       List<String> sequences = new ArrayList<>();
       List<String> offsets = new ArrayList<>();
@@ -576,7 +577,8 @@ public abstract class UBQualifier {
      * @param offsets list of offset, if empty, an offset of 0 is used
      * @param extraEq offset to add to each element of offsets; may be null
      */
-    private LessThanLengthOf(List<String> sequences, List<String> offsets, OffsetEquation extraEq) {
+    private LessThanLengthOf(
+        List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
       this(sequencesAndOffsetsToMap(sequences, offsets, extraEq));
     }
 
@@ -1255,7 +1257,7 @@ public abstract class UBQualifier {
        * @param eq current offset equation
        * @return the result of the computation or null if the passed equation should be removed
        */
-      OffsetEquation compute(OffsetEquation eq);
+      @Nullable OffsetEquation compute(OffsetEquation eq);
     }
 
     /**

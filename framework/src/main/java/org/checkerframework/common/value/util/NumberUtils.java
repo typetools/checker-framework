@@ -3,6 +3,7 @@ package org.checkerframework.common.value.util;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -35,7 +36,7 @@ public class NumberUtils {
    * @return a list of numbers of the given type
    */
   @SuppressWarnings("unchecked")
-  public static List<? extends Number> castNumbers(
+  public static @Nullable List<? extends Number> castNumbers(
       TypeMirror type, boolean isUnsigned, List<? extends Number> numbers) {
     if (numbers == null) {
       return null;
