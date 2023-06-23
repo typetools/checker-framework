@@ -239,11 +239,26 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Return the base type of type or any of its outer types that starts with the given type. If none
-   * exists, return null.
+   * Returns the result of calling {@link #asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
+   * AnnotatedTypeMirror)} on {@code type} and {@code superType} or an enclosing type of {@code
+   * type}.
    *
+   * <p>If the underlying type of {@code type} is a subtype of the underlying type of {@code
+   * superType}, then this method returns the result of calling {@code asSuper(atypeFactory, type,
+   * superType)}.
+   *
+   * <p>If the underlying type of an enclosing of {@code type} is a subtype of the underlying type
+   * of {@code superType}, then this method returns the result of calling {@code
+   * asSuper(atypeFactory, type.getEnclosingType(), superType)}.
+   *
+   * <p>Otherwise, throws {@link BugInCF}.
+   *
+   * @param types types utils
+   * @param atypeFactory the type factory
    * @param type a type
-   * @param superType a type
+   * @param superType a supertype of {@code type} or a supertype of an enclosing type of {@code
+   *     type}
+   * @return {@code type} or an enclosing type of {@code type} as {@code superType}
    */
   private static AnnotatedTypeMirror asOuterSuper(
       Types types,
@@ -263,13 +278,7 @@ public class AnnotatedTypes {
         enclosingType = enclosingType.getEnclosingType();
       }
       if (enclosingType == null) {
-        // TODO: https://github.com/typetools/checker-framework/issues/724
-        // testcase javacheck -processor nullness src/java/util/AbstractMap.java
-        //                SourceChecker checker =  atypeFactory.getChecker().getChecker();
-        //                String msg = (String.format("OuterAsSuper did not find outer
-        // class. type: %s superType: %s", type, superType));
-        //                checker.message(Kind.WARNING, msg);
-        return superType;
+        throw new BugInCF("Enclosing type not found %s %s", dt, superType);
       }
       return asSuper(atypeFactory, dt, superType);
     }
@@ -515,14 +524,20 @@ public class AnnotatedTypes {
     //      supertype of passed type)
     // 3. Substitute for type variables if any exist
     TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
+    DeclaredType enclosingType = (DeclaredType) enclosingClassOfMember.asType();
     Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
 
-    // Look for all enclosing classes that have type variables
+    // Look for all enclosing types that have type variables
     // and collect type to be substituted for those type variables
-    while (enclosingClassOfMember != null) {
-      addTypeVarMappings(types, atypeFactory, receiverType, enclosingClassOfMember, mappings);
-      enclosingClassOfMember =
-          ElementUtils.enclosingTypeElement(enclosingClassOfMember.getEnclosingElement());
+    while (enclosingType != null) {
+      TypeElement enclosingTypeElement = (TypeElement) enclosingType.asElement();
+      addTypeVarMappings(types, atypeFactory, receiverType, enclosingTypeElement, mappings);
+      if (enclosingType.getEnclosingType() != null
+          && enclosingType.getEnclosingType().getKind() == TypeKind.DECLARED) {
+        enclosingType = (DeclaredType) enclosingType.getEnclosingType();
+      } else {
+        enclosingType = null;
+      }
     }
 
     if (!mappings.isEmpty()) {
