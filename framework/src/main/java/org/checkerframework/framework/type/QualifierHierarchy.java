@@ -263,15 +263,33 @@ public abstract class QualifierHierarchy {
     return isSubtypeShallow(subQualifiers, typeMirror, superQualifiers, typeMirror);
   }
 
+  /** A set of annotations and a {@link TypeMirror}. */
   private static class ShallowType {
+
+    /** A set of annotations. */
     AnnotationMirrorSet annos;
+
+    /** A TypeMirror. */
     TypeMirror typeMirror;
 
+    /**
+     * Creates a {@code SHallowType}
+     *
+     * @param annos a set of annotations
+     * @param typeMirror a type mirror
+     */
     private ShallowType(AnnotationMirrorSet annos, TypeMirror typeMirror) {
       this.annos = annos;
       this.typeMirror = typeMirror;
     }
 
+    /**
+     * Creates a {@code ShallowType} where the annotations are the effect annotations on {@code
+     * type} and the type mirror is the underlying type of {@code type}.
+     *
+     * @param type an annotated type to convert to a {@code ShallowType}
+     * @return a shallow type created from {@code type}
+     */
     public static ShallowType create(AnnotatedTypeMirror type) {
       AnnotatedTypeMirror erasedType = type.getErased();
       TypeMirror typeMirror =
@@ -282,6 +300,20 @@ public abstract class QualifierHierarchy {
     }
   }
 
+  /**
+   * Tests whether the effective annotations of {@code subtype} are equal to or are sub-qualifiers
+   * of the effective annotations of {@code supertype}, according to the type qualifier hierarchy.
+   * Other annotations in {@code subtype} and {@code supertype} are ignored.
+   *
+   * <p>The underlying types of {@code subtype} and {@code supertype} are not necessarily in a Java
+   * subtyping relationship with one another and are only used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param subtype possible subtype
+   * @param supertype possible supertype
+   * @return true iff the effective annotations of {@code subtype} are equal to or are
+   *     sub-qualifiers of the effective annotations of {@code supertype}
+   */
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
     ShallowType subSType = ShallowType.create(subtype);
@@ -290,6 +322,24 @@ public abstract class QualifierHierarchy {
         subSType.annos, subSType.typeMirror, superSType.annos, superSType.typeMirror);
   }
 
+  /**
+   * Tests whether the effective annotation in the same hierarchy as {@code hierarchy} of {@code
+   * subtype} are equal to or are sub-qualifiers of the effective annotation of {@code supertype} in
+   * the same hierarchy as {@code hierarchy}, according to the type qualifier hierarchy. Other
+   * annotations in {@code subtype} and {@code supertype} are ignored.
+   *
+   * <p>The underlying types of {@code subtype} and {@code supertype} are not necessarily in a Java
+   * subtyping relationship with one another and are only used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param subtype possible subtype
+   * @param supertype possible supertype
+   * @param hierarchy an annotation whose hierarchy is used to compare {@code subtype} and {@code
+   *     supertype}
+   * @return true iff the effective annotation in the same hierarchy as {@code hierarchy} of {@code
+   *     subtype} are equal to or are sub-qualifiers of the effective annotation of {@code
+   *     supertype} in the same hierarchy as {@code hierarchy}
+   */
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror hierarchy) {
     ShallowType subSType = ShallowType.create(subtype);
@@ -301,30 +351,84 @@ public abstract class QualifierHierarchy {
         superSType.typeMirror);
   }
 
+  /**
+   * Tests whether the effective annotations of {@code subtype} are equal to or are sub-qualifiers
+   * of {@code superQualifiers}, according to the type qualifier hierarchy. Other annotations in
+   * {@code subtype}are ignored.
+   *
+   * <p>The underlying type of {@code subtype} is only used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param subtype possible subtype
+   * @param superQualifiers possible superQualifiers
+   * @return true iff the effective annotations of {@code subtype} are equal to or are
+   *     sub-qualifiers of {@code superQualifiers}
+   */
   public boolean isSubtypeShallowEffective(
-      AnnotatedTypeMirror subtype, Collection<? extends AnnotationMirror> supertype) {
+      AnnotatedTypeMirror subtype, Collection<? extends AnnotationMirror> superQualifiers) {
     ShallowType subSType = ShallowType.create(subtype);
-    return isSubtypeShallow(subSType.annos, supertype, subSType.typeMirror);
+    return isSubtypeShallow(subSType.annos, superQualifiers, subSType.typeMirror);
   }
 
+  /**
+   * Tests whether {@code subQualifiers} are equal to or are sub-qualifiers of the effective
+   * annotations of {@code supertype}, according to the type qualifier hierarchy. Other annotations
+   * in {@code supertype} are ignored.
+   *
+   * <p>The underlying type of {@code supertype} is used by this method for special cases when
+   * qualifier subtyping depends on the Java basetype.
+   *
+   * @param subQualifiers possible subQualifiers
+   * @param supertype possible supertype
+   * @return true iff {@code subQualifiers} are equal to or are sub-qualifiers of the effective
+   *     annotations of {@code supertype}
+   */
   public boolean isSubtypeShallowEffective(
-      Collection<? extends AnnotationMirror> subtype, AnnotatedTypeMirror supertype) {
+      Collection<? extends AnnotationMirror> subQualifiers, AnnotatedTypeMirror supertype) {
     ShallowType superSType = ShallowType.create(supertype);
-    return isSubtypeShallow(subtype, superSType.annos, superSType.typeMirror);
+    return isSubtypeShallow(subQualifiers, superSType.annos, superSType.typeMirror);
   }
 
+  /**
+   * Tests whether the effective annotation of {@code subtype} in the same hierarchy as {@code
+   * superQualifier} is equal to or sub-qualifier of {@code superQualifier}, according to the type
+   * qualifier hierarchy. The underlying types of {@code subtype} is only used by this method for
+   * special cases when qualifier subtyping depends on the Java basetype. Other annotations in
+   * {@code subtype} are ignored.
+   *
+   * @param subtype possible subtype
+   * @param superQualifier possible super qualifier
+   * @return true iffhe effective annotation of {@code subtype} in the same hierarchy as {@code
+   *     superQualifier} is equal to or sub-qualifier of {@code superQualifier}
+   */
   public boolean isSubtypeShallowEffective(
-      AnnotatedTypeMirror subtype, AnnotationMirror supertype) {
+      AnnotatedTypeMirror subtype, AnnotationMirror superQualifier) {
     ShallowType subSType = ShallowType.create(subtype);
     return isSubtypeShallow(
-        findAnnotationInSameHierarchy(subSType.annos, supertype), supertype, subSType.typeMirror);
+        findAnnotationInSameHierarchy(subSType.annos, superQualifier),
+        superQualifier,
+        subSType.typeMirror);
   }
 
+  /**
+   * Tests whether {@code subQualifier} is equal to or sub-qualifier of the effective annotation of
+   * {@code supertype} in the same hierarchy as {@code subQualifier} according to the type qualifier
+   * hierarchy. The underlying types of {@code supertype} is only used by this method for special
+   * cases when qualifier subtyping depends on the Java basetype. Other annotations in {@code
+   * supertype} are ignored.
+   *
+   * @param subQualifier possible subQualifier
+   * @param supertype possible supertype
+   * @return true {@code subQualifier} is equal to or sub-qualifier of the effective annotation of
+   *     {@code supertype} in the same hierarchy as {@code subQualifier}
+   */
   public boolean isSubtypeShallowEffective(
-      AnnotationMirror subtype, AnnotatedTypeMirror supertype) {
+      AnnotationMirror subQualifier, AnnotatedTypeMirror supertype) {
     ShallowType superSType = ShallowType.create(supertype);
     return isSubtypeShallow(
-        subtype, findAnnotationInSameHierarchy(superSType.annos, subtype), superSType.typeMirror);
+        subQualifier,
+        findAnnotationInSameHierarchy(superSType.annos, subQualifier),
+        superSType.typeMirror);
   }
 
   /**
