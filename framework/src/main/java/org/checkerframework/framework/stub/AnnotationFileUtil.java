@@ -450,18 +450,21 @@ public class AnnotationFileUtil {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        Enumeration<JarEntry> entries = file.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (isAnnotationFile(entry.getName(), fileType)) {
-            resources.add(new JarEntryAnnotationFileResource(file, entry));
-          }
-        }
+      JarFile file;
+      try {
+        file = new JarFile(location);
       } catch (IOException e) {
         System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
         return;
       }
+      Enumeration<JarEntry> entries = file.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = entries.nextElement();
+        if (isAnnotationFile(entry.getName(), fileType)) {
+          resources.add(new JarEntryAnnotationFileResource(file, entry));
+        }
+      }
+
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));

@@ -284,24 +284,26 @@ public class AnnotationFileElementTypes {
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          try (InputStream annotationFileStream = resource.getInputStream()) {
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
+          InputStream annotationFileStream;
+          try {
+            annotationFileStream = resource.getInputStream();
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
             continue;
           }
+          // We use parseStubFile here even for ajava files because at this stage
+          // ajava files are parsed as stub files. The extra annotation data in an
+          // ajava file is parsed when type-checking the ajava file's corresponding
+          // Java file.
+          AnnotationFileParser.parseStubFile(
+              resource.getDescription(),
+              annotationFileStream,
+              factory,
+              processingEnv,
+              annotationFileAnnos,
+              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
