@@ -243,7 +243,6 @@ public class ReflectiveEvaluator {
    * @param whichArg pass {@code allArgValues.size() - 1}
    * @return all combinations of the elements of the given lists
    */
-  @SuppressWarnings("mustcall") // I cannot type cartesianProduct() for @MustCall
   private List<Object[]> cartesianProduct(List<List<?>> allArgValues, int whichArg) {
     List<?> argValues = allArgValues.get(whichArg);
     List<Object[]> tuples = new ArrayList<>(argValues.size());
