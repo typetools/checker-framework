@@ -769,7 +769,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
    */
-  private void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
+  protected void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
     Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
@@ -1214,7 +1214,7 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode})
    */
-  private void updateObligationsForPseudoAssignment(
+  protected void updateObligationsForPseudoAssignment(
       Set<Obligation> obligations, Node node, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.

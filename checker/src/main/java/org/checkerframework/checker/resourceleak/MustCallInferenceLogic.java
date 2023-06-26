@@ -140,7 +140,7 @@ public class MustCallInferenceLogic {
 
       for (Node node : current.block.getNodes()) {
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          updateMethodInvocationOrObjectCreationNode(obligations, node);
+          mcca.updateObligationsWithInvocationResult(obligations, node);
           if (node instanceof MethodInvocationNode) {
             checkMethodInvocation(obligations, (MethodInvocationNode) node);
           }
@@ -281,18 +281,7 @@ public class MustCallInferenceLogic {
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
-      Obligation lhsObligation =
-          MustCallConsistencyAnalyzer.getObligationForVar(obligations, lhsVar);
-      if (lhsObligation == null) {
-        Set<ResourceAlias> newResourceAliasesForObligation =
-            new LinkedHashSet<>(rhsObligation.resourceAliases);
-        newResourceAliasesForObligation.add(
-            new ResourceAlias(new LocalVariable(lhsVar), lhs.getTree()));
-        obligations.remove(rhsObligation);
-        obligations.add(new Obligation(newResourceAliasesForObligation));
-      } else {
-        obligations.remove(rhsObligation);
-      }
+      mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
 
@@ -644,41 +633,6 @@ public class MustCallInferenceLogic {
       return true;
     }
     return false;
-  }
-
-  /**
-   * Updates the set of obligations any must-call-alias parameters passed to the given method
-   * invocation or object creation node.
-   *
-   * @param obligations the set of obligations to update
-   * @param node the node representing the method invocation or object creation
-   */
-  private void updateMethodInvocationOrObjectCreationNode(Set<Obligation> obligations, Node node) {
-    List<Node> arguments = mcca.getArgumentsOfInvocation(node);
-    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(node);
-
-    for (int i = 0; i < arguments.size(); i++) {
-      Node tempVar = mcca.getTempVarOrNode(arguments.get(i));
-      if (!(tempVar instanceof LocalVariableNode)) {
-        continue;
-      }
-
-      Obligation obligation =
-          MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) tempVar);
-      if (obligation == null) {
-        continue;
-      }
-
-      Node method = mcca.getTempVarOrNode(node);
-      if (typeFactory.hasMustCallAlias(parameters.get(i))) {
-        Set<ResourceAlias> newResourceAliasesForObligation =
-            new LinkedHashSet<>(obligation.resourceAliases);
-        newResourceAliasesForObligation.add(
-            new ResourceAlias(new LocalVariable((LocalVariableNode) method), node.getTree()));
-        obligations.remove(obligation);
-        obligations.add(new Obligation(newResourceAliasesForObligation));
-      }
-    }
   }
 
   /**

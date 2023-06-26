@@ -76,7 +76,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    if (isResourceLeakCheckerEnabled()) {
+    if (!isWPIEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(tree);
@@ -97,7 +97,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    if (isResourceLeakCheckerEnabled()) {
+    if (!isWPIEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);

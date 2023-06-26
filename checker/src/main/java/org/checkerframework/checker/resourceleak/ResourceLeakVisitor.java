@@ -187,6 +187,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
   }
 
+  @Override
+  protected boolean shouldPerformContractInference() {
+    // TODO: should be "false whenever running MustCallInferenceLogic", probably
+    return false;
+  }
+
   // Overwritten to check that destructors (i.e. methods responsible for resolving
   // the must-call obligations of owning fields) enforce a stronger version of
   // @EnsuresCalledMethods: that the claimed @CalledMethods annotation is true on

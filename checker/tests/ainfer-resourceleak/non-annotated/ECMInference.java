@@ -1,3 +1,4 @@
+// @skip-test if -AenableWPIForRLC flag is not passed
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 
 public class ECMInference {

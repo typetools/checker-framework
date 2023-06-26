@@ -67,8 +67,6 @@ public class CalledMethodsChecker extends AccumulationChecker {
   /** Never access this boolean directly. Call {@link #isReturnsReceiverDisabled()} instead. */
   private @MonotonicNonNull Boolean returnsReceiverDisabled = null;
 
-  //  public static final String RESOURCE_LEAK_INFERENCE_PATTERN_M
-
   /**
    * Was the Returns Receiver Checker disabled on the command line?
    *

@@ -19,6 +19,7 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions({
   "permitStaticOwning",
   "permitInitializationLeak",
+  "enableWPIForRLC",
   ResourceLeakChecker.COUNT_MUST_CALL,
   MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
