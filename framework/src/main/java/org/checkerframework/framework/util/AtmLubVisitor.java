@@ -116,11 +116,11 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror upperBound = otherAsLub.getEffectiveAnnotationInHierarchy(lowerBound);
       if (qualHierarchy.isSubtypeShallow(upperBound, otherTM, nullAnno, nullTM)) {
         // @L <: @U <: @N
-        lub.replaceAnnotation(qualHierarchy.lowestQualifier(nullAnno, upperBound));
+        lub.replaceAnnotation(nullAnno);
       } else if (qualHierarchy.isSubtypeShallow(lowerBound, otherTM, nullAnno, nullTM)
           && !qualHierarchy.isSubtypeShallow(nullAnno, nullTM, lowerBound, otherTM)) {
         // @L <: @N <:@U && @N != @L
-        lub.replaceAnnotation(qualHierarchy.lowestQualifier(nullAnno, lowerBound));
+        lub.replaceAnnotation(upperBound);
       } // else @N <: @L <: @U
     }
     return lub;
