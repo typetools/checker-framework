@@ -173,4 +173,9 @@ public class DefaultsSignedness {
   public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
     boolean testBool = unsigned == 1 || signed > 1;
   }
+
+  void method(Object[] obj_tags, int field_num) {
+    Object o = new DefaultsSignedness();
+    obj_tags[field_num] = o;
+  }
 }

@@ -341,9 +341,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           return b;
         }
       } else if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)) {
-        return a;
+        return qualHierarchy.lowestQualifier(a, b);
       } else if (qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
-        return b;
+        return qualHierarchy.lowestQualifier(a, b);
       }
       return getBackUpAnnoIn(top);
     }
@@ -389,7 +389,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // no anno is more specific than anno
         return null;
       } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
-        return annotation;
+        return qualHierarchy.lowestQualifier(annotation, lowerBound);
       } else {
         return getBackUpAnnoIn(top);
       }
