@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -284,13 +285,18 @@ public class AnnotationFileElementTypes {
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          InputStream annotationFileStream;
+          BufferedInputStream annotationFileStream;
           try {
-            annotationFileStream = resource.getInputStream();
+            annotationFileStream = new BufferedInputStream(resource.getInputStream());
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
+            continue;
+          }
+          // Is it necessary to also skip files that consist only of Java comments?
+          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
             continue;
           }
           // We use parseStubFile here even for ajava files because at this stage
