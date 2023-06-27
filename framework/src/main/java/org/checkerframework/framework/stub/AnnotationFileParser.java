@@ -726,11 +726,9 @@ public class AnnotationFileParser {
    * @param inputStream the stream from which to read an annotation file
    */
   private void parseStubUnit(InputStream inputStream) {
-    if (debugAnnotationFileParser) {
-      stubDebug(
-          "started parsing annotation file %s for %s",
-          filename, atypeFactory.getClass().getSimpleName());
-    }
+    stubDebug(
+        "AFP.parseStubUnit(%s) annotation file %s for %s",
+        inputStream, filename, atypeFactory.getClass().getSimpleName());
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
@@ -3032,7 +3030,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * If {@code warning} hasn't been printed yet, and {@code debugAnnotationFileParser} is true,
+   * If {@code warning} hasn't been printed yet, and {@link #debugAnnotationFileParser} is true,
    * prints the given warning as a diagnostic message.
    *
    * @param fmt format string
@@ -3047,6 +3045,25 @@ public class AnnotationFileParser {
             .getMessager()
             .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       }
+    }
+  }
+
+  /**
+   * If {@code warning} hasn't been printed yet, prints the given warning as a diagnostic message.
+   * Ignores {@code debugAnnotationFileParser}.
+   *
+   * @param processingEnv the processing environment
+   * @param fmt format string
+   * @param args arguments to the format string
+   */
+  @FormatMethod
+  /*package-private*/ static void stubDebugStatic(
+      ProcessingEnvironment processingEnv, String fmt, Object... args) {
+    String warning = String.format(fmt, args);
+    if (warnings.add(warning)) {
+      processingEnv
+          .getMessager()
+          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
     }
   }
 
