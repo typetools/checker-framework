@@ -45,6 +45,10 @@ Return types changed:
  * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
    `Set`, though the returned value is still a `LinkedHashSet`.
 
+Renamed methods in `CFAbstractValue`:
+ * `combineOneAnnotation()` => `combineAnnotationWithTypeVar()`
+ * `combineNoAnnotations()` => `combineTwoTypeVars()`
+
 **Closed issues:**
 
 
