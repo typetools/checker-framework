@@ -101,6 +101,9 @@ public class AnnotationFileElementTypes {
   /** True if -Aignorejdkastub was passed on the command line. */
   private final boolean ignorejdkastub;
 
+  /** True if -AstubDebug was passed on the command line. */
+  private final boolean stubDebug;
+
   /**
    * Creates an empty annotation source.
    *
@@ -117,6 +120,7 @@ public class AnnotationFileElementTypes {
     this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
     this.permitMissingJdk = factory.getChecker().hasOption("permitMissingJdk");
     this.ignorejdkastub = factory.getChecker().hasOption("ignorejdkastub");
+    this.stubDebug = factory.getChecker().hasOption("stubDebug");
   }
 
   /**
@@ -209,6 +213,14 @@ public class AnnotationFileElementTypes {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     try (InputStream jdkVersionStubIn = checkerClass.getResourceAsStream(stubFileName)) {
       if (jdkVersionStubIn != null) {
+        if (stubDebug) {
+          AnnotationFileParser.stubDebugStatic(
+              processingEnv,
+              "parseOneStubFile(%s, %s): jdkVersionStubIn = %s%n",
+              checkerClass.getSimpleName(),
+              stubFileName,
+              jdkVersionStubIn);
+        }
         AnnotationFileParser.parseStubFile(
             checkerClass.getResource(stubFileName).toString(),
             jdkVersionStubIn,
@@ -256,6 +268,15 @@ public class AnnotationFileElementTypes {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     try (InputStream in = new FileInputStream(ajavaPath)) {
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv,
+            "parseAjavaFileWithTree(%s, %s): checker = %s, in = %s%n",
+            ajavaPath,
+            System.identityHashCode(root),
+            checker.getClass().getSimpleName(),
+            in);
+      }
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
@@ -279,6 +300,10 @@ public class AnnotationFileElementTypes {
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+    if (stubDebug) {
+      AnnotationFileParser.stubDebugStatic(
+          processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
+    }
     for (String path : annotationFiles) {
       // Special case when running in jtreg.
       String base = System.getProperty("test.src");
