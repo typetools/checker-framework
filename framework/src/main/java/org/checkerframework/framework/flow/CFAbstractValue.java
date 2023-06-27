@@ -308,7 +308,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    private @Nullable AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
+    private @Nullable AnnotationMirror getBackupAnnoIn(AnnotationMirror top) {
       if (backupSet == null) {
         // If there is no back up value, but one is required then the resulting set will
         // not be the most specific.  Indicate this with the error.
@@ -345,7 +345,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       } else if (qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
         return qualHierarchy.lowestQualifier(a, b);
       }
-      return getBackUpAnnoIn(top);
+      return getBackupAnnoIn(top);
     }
 
     @Override
@@ -391,7 +391,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
         return qualHierarchy.lowestQualifier(annotation, lowerBound);
       } else {
-        return getBackUpAnnoIn(top);
+        return getBackupAnnoIn(top);
       }
     }
   }
