@@ -287,7 +287,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     boolean error = false;
 
     /** Set of annotations to use if a most specific value cannot be found. */
-    final AnnotationMirrorSet backupSet;
+    final AnnotationMirrorSet backupAMSet;
 
     /**
      * Create a {@link MostSpecificVisitor}.
@@ -298,24 +298,24 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      */
     public MostSpecificVisitor(TypeMirror aTypeMirror, TypeMirror bTypeMirror, V backup) {
       if (backup != null) {
-        this.backupSet = backup.getAnnotations();
+        this.backupAMSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();
         // this.backupAtv = getEffectiveTypeVar(backupTypeMirror);
       } else {
         // this.backupAtv = null;
         // this.backupTypeMirror = null;
-        this.backupSet = null;
+        this.backupAMSet = null;
       }
     }
 
     private @Nullable AnnotationMirror getBackupAnnoIn(AnnotationMirror top) {
-      if (backupSet == null) {
+      if (backupAMSet == null) {
         // If there is no back up value, but one is required then the resulting set will
         // not be the most specific.  Indicate this with the error.
         error = true;
         return null;
       }
-      return qualHierarchy.findAnnotationInHierarchy(backupSet, top);
+      return qualHierarchy.findAnnotationInHierarchy(backupAMSet, top);
     }
 
     @Override
