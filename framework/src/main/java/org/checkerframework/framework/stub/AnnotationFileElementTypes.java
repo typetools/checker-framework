@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -293,6 +294,13 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
+  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
+  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
+  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
+  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
+  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
+  // leak resources.
+  )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
@@ -309,24 +317,31 @@ public class AnnotationFileElementTypes {
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          try (InputStream annotationFileStream = resource.getInputStream()) {
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
+          BufferedInputStream annotationFileStream;
+          try {
+            annotationFileStream = new BufferedInputStream(resource.getInputStream());
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
             continue;
           }
+          // Is it necessary to also skip files that consist only of Java comments?
+          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+            continue;
+          }
+          // We use parseStubFile here even for ajava files because at this stage
+          // ajava files are parsed as stub files. The extra annotation data in an
+          // ajava file is parsed when type-checking the ajava file's corresponding
+          // Java file.
+          AnnotationFileParser.parseStubFile(
+              resource.getDescription(),
+              annotationFileStream,
+              factory,
+              processingEnv,
+              annotationFileAnnos,
+              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
