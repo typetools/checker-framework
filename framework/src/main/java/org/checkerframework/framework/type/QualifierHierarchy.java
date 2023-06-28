@@ -130,6 +130,11 @@ public abstract class QualifierHierarchy {
    * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
    * override this method (if needed).
    *
+   * <p>This method behaves the same as {@link #isSubtypeQualifiersOnly()}, which calls this method.
+   * This method is for clients inside the framework, and it has {@code protected} access to prevent
+   * use by clients outside the framework. This makes it easy to find places where code outside
+   * QualifierHierarchy is ignoring Java basetypes -- at calls to {@link #isSubtypeQualifiersOnly}.
+   *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
@@ -141,10 +146,7 @@ public abstract class QualifierHierarchy {
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
-   * <p>This method just calls {@code isSubtypeQualifiers()}. However, {@code isSubtypeQualifiers()}
-   * is not public. A client that wishes to call {@code isSubtypeQualifiers()} should instead call
-   * this method. This makes it obvious where code outside QualifierHierarchy is ignoring Java
-   * basetypes.
+   * <p>This method is for clients outside the framework, and should not be used by framework code.
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
@@ -157,9 +159,8 @@ public abstract class QualifierHierarchy {
 
   /**
    * Returns the qualifier that is the lowest in the hierarchy. If the two qualifiers are not
-   * comparable, then the qualifier that is first when compared with {@link
-   * AnnotationUtils#compareAnnotationMirrors(AnnotationMirror, AnnotationMirror)}. then the
-   * qualifier that is first in A
+   * comparable, then returns the qualifier that is ordered first by {@link
+   * AnnotationUtils#compareAnnotationMirrors(AnnotationMirror, AnnotationMirror)}.
    *
    * @param qual1 a qualifier
    * @param qual2 a qualifier
@@ -186,10 +187,11 @@ public abstract class QualifierHierarchy {
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
    *
-   * <p>Clients should call {@code isSubtypeShallow()} (this method), or, rarely, {@link
-   * #isSubtypeQualifiersOnly}, for clients who want to ignore the Java basetype. Subtypes should
-   * override {@link #isSubtypeQualifiers} (not this method), unless qualifier subtyping depends on
-   * Java basetypes.
+   * <p>Clients should usually call {@code isSubtypeShallow()} (this method). Rarely, to ignore the
+   * Java basetype, a client can call {@link #isSubtypeQualifiersOnly}.
+   *
+   * <p>Subtypes should override {@link #isSubtypeQualifiers} (not this method), unless qualifier
+   * subtyping depends on Java basetypes.
    *
    * @param subQualifier possible subqualifier
    * @param subType the Java basetype associated with {@code subQualifier}
@@ -215,10 +217,13 @@ public abstract class QualifierHierarchy {
    * according to the type qualifier hierarchy. The type {@code typeMirror} is only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
    *
-   * <p>Clients should call {@code isSubtypeShallow()} (this method), or, rarely, {@link
-   * #isSubtypeQualifiersOnly}, for clients who want to ignore the Java basetype. Subtypes should
-   * override {@link #isSubtypeQualifiers} (not this method), unless qualifier subtyping depends on
-   * Java basetypes.
+   * <p>Clients should usually call {@link #isSubtypeShallow(AnnotationMirror, AnnotationMirror,
+   * TypeMirror)} (this method) or {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
+   * AnnotationMirror, TypeMirror)}. Rarely, to ignore the Java basetype, a client can call {@link
+   * #isSubtypeQualifiersOnly}.
+   *
+   * <p>Subtypes should override {@link #isSubtypeQualifiers} (not this method), unless qualifier
+   * subtyping depends on Java basetypes.
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
@@ -276,9 +281,9 @@ public abstract class QualifierHierarchy {
    * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
    * AnnotationMirror, TypeMirror)} than this method.
    *
-   * @param subQualifiers set of qualifiers; exactly one per hierarchy
-   * @param superQualifiers set of qualifiers; exactly one per hierarchy
-   * @param typeMirror the type associated with {@code subQualifiers} and {@code superQualifiers}
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param typeMirror the type associated with both sets of qualifiers
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
@@ -300,7 +305,7 @@ public abstract class QualifierHierarchy {
     TypeMirror typeMirror;
 
     /**
-     * Creates a {@code SHallowType}
+     * Creates a {@code ShallowType}.
      *
      * @param annos a set of annotations
      * @param typeMirror a type mirror
@@ -311,8 +316,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Creates a {@code ShallowType} where the annotations are the effect annotations on {@code
-     * type} and the type mirror is the underlying type of {@code type}.
+     * Creates a {@code ShallowType} from {@code type}: the annotations are the effective
+     * annotations on {@code type} and the type mirror is the underlying type of {@code type}.
      *
      * @param type an annotated type to convert to a {@code ShallowType}
      * @return a shallow type created from {@code type}
