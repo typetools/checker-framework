@@ -622,10 +622,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
 
-          if (!(qualHierarchy.isSubtypeShallowEffective(
-                  wildcard.getSuperBound(), wildcard.getExtendsBound())
-              && qualHierarchy.isSubtypeShallowEffective(
-                  wildcard.getExtendsBound(), wildcard.getSuperBound()))) {
+          if (!(atypeFactory
+                  .getTypeHierarchy()
+                  .isSubtypeShallowEffective(wildcard.getSuperBound(), wildcard.getExtendsBound())
+              && atypeFactory
+                  .getTypeHierarchy()
+                  .isSubtypeShallowEffective(
+                      wildcard.getExtendsBound(), wildcard.getSuperBound()))) {
             checker.reportError(
                 tree.getTypeArguments().get(i),
                 "super.wildcard",
@@ -688,7 +691,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         AnnotatedTypes.findEffectiveAnnotations(qualHierarchy, lowerBound);
 
     if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
-      return qualHierarchy.isSubtypeShallowEffective(lowerBound, upperBound);
+      return atypeFactory.getTypeHierarchy().isSubtypeShallowEffective(lowerBound, upperBound);
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
       // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report

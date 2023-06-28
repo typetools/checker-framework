@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type;
 
+import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -9,6 +10,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.Covariant;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -137,6 +139,100 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     return true;
+  }
+
+  /** A set of annotations and a {@link TypeMirror}. */
+  @AnnotatedFor("nullness")
+  private static class ShallowType {
+
+    /** A set of annotations. */
+    AnnotationMirrorSet annos;
+
+    /** A TypeMirror. */
+    TypeMirror typeMirror;
+
+    /**
+     * Creates a {@code ShallowType}.
+     *
+     * @param annos a set of annotations
+     * @param typeMirror a type mirror
+     */
+    private ShallowType(AnnotationMirrorSet annos, TypeMirror typeMirror) {
+      this.annos = annos;
+      this.typeMirror = typeMirror;
+    }
+
+    /**
+     * Creates a {@code ShallowType} from {@code type}: the annotations are the effective
+     * annotations on {@code type} and the type mirror is the underlying type of {@code type}.
+     *
+     * @param type an annotated type to convert to a {@code ShallowType}
+     * @return a shallow type created from {@code type}
+     */
+    @SuppressWarnings("nullness") // AnnotatedTypeMirror isn't annotated for nullness.
+    public static ShallowType create(AnnotatedTypeMirror type) {
+      AnnotatedTypeMirror erasedType = type.getErased();
+      TypeMirror typeMirror =
+          erasedType.getKind() == type.getKind()
+              ? type.getUnderlyingType()
+              : erasedType.getUnderlyingType();
+      return new ShallowType(erasedType.getPrimaryAnnotations(), typeMirror);
+    }
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+    ShallowType subSType = ShallowType.create(subtype);
+    ShallowType superSType = ShallowType.create(supertype);
+    return qualHierarchy.isSubtypeShallow(
+        subSType.annos, subSType.typeMirror, superSType.annos, superSType.typeMirror);
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror hierarchy) {
+    ShallowType subSType = ShallowType.create(subtype);
+    ShallowType superSType = ShallowType.create(supertype);
+    return qualHierarchy.isSubtypeShallow(
+        qualHierarchy.findAnnotationInSameHierarchy(subSType.annos, hierarchy),
+        subSType.typeMirror,
+        qualHierarchy.findAnnotationInSameHierarchy(superSType.annos, hierarchy),
+        superSType.typeMirror);
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      AnnotatedTypeMirror subtype, Collection<? extends AnnotationMirror> superQualifiers) {
+    ShallowType subSType = ShallowType.create(subtype);
+    return qualHierarchy.isSubtypeShallow(subSType.annos, superQualifiers, subSType.typeMirror);
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      Collection<? extends AnnotationMirror> subQualifiers, AnnotatedTypeMirror supertype) {
+    ShallowType superSType = ShallowType.create(supertype);
+    return qualHierarchy.isSubtypeShallow(subQualifiers, superSType.annos, superSType.typeMirror);
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      AnnotatedTypeMirror subtype, AnnotationMirror superQualifier) {
+    ShallowType subSType = ShallowType.create(subtype);
+    return qualHierarchy.isSubtypeShallow(
+        qualHierarchy.findAnnotationInSameHierarchy(subSType.annos, superQualifier),
+        superQualifier,
+        subSType.typeMirror);
+  }
+
+  @Override
+  public boolean isSubtypeShallowEffective(
+      AnnotationMirror subQualifier, AnnotatedTypeMirror supertype) {
+    ShallowType superSType = ShallowType.create(supertype);
+    return qualHierarchy.isSubtypeShallow(
+        subQualifier,
+        qualHierarchy.findAnnotationInSameHierarchy(superSType.annos, subQualifier),
+        superSType.typeMirror);
   }
 
   /**
@@ -947,7 +1043,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // @Nullable String, then it is safe to return true. However if the supertype is
         // @NullableList<@NonNull String> then it's not possible to decide if it is a
         // subtype of the wildcard.
-        return qualHierarchy.isSubtypeShallowEffective(subtype, supertype, currentTop);
+        return isSubtypeShallowEffective(subtype, supertype, currentTop);
       }
     }
     return visitWildcard_Type(subtype, supertype);
@@ -963,7 +1059,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitWildcard_Primitive(
       AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, Void p) {
     if (subtype.isUninferredTypeArgument()) {
-      return qualHierarchy.isSubtypeShallowEffective(subtype, supertype, currentTop);
+      return isSubtypeShallowEffective(subtype, supertype, currentTop);
     }
     return visitWildcard_Type(subtype, supertype);
   }
