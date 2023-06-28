@@ -246,6 +246,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     switch (ElementUtils.getKindRecordAsClass(elt)) {
       case METHOD:
+      case CONSTRUCTOR: // x0.super() in anoymous classes
       case PACKAGE: // "java.lang" in new java.lang.Short("2")
       case CLASS: // o instanceof MyClass.InnerClass
       case ENUM:
@@ -260,6 +261,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // Tree is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
       // outer type.
       return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
+    } else if (tree.getIdentifier().contentEquals("super")) {
+      // Tree is "MyClass.super", where "MyClass" may be the innermost enclosing type or any
+      // outer type.
+      return f.getEnclosingSuperType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
     } else {
       // tree must be a field access, so get the type of the expression, and then call
       // asMemberOf.
