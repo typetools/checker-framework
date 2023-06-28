@@ -11,7 +11,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -156,30 +155,6 @@ public abstract class QualifierHierarchy {
   public final boolean isSubtypeQualifiersOnly(
       AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
     return isSubtypeQualifiers(subQualifier, superQualifier);
-  }
-
-  /**
-   * Returns the qualifier that is the lowest in the hierarchy. If the two qualifiers are not
-   * comparable, then returns the qualifier that is ordered first by {@link
-   * AnnotationUtils#compareAnnotationMirrors(AnnotationMirror, AnnotationMirror)}.
-   *
-   * @param qual1 a qualifier
-   * @param qual2 a qualifier
-   * @return the qualifier that is the lowest in the hierarchy.
-   */
-  public final AnnotationMirror lowestQualifier(AnnotationMirror qual1, AnnotationMirror qual2) {
-    if (isSubtypeQualifiersOnly(qual1, qual2)) {
-      return qual1;
-    } else if (isSubtypeQualifiersOnly(qual2, qual1)) {
-      return qual2;
-    } else {
-      int i = AnnotationUtils.compareAnnotationMirrors(qual1, qual2);
-      if (i > 0) {
-        return qual2;
-      } else {
-        return qual1;
-      }
-    }
   }
 
   /**

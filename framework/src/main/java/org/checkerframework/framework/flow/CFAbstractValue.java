@@ -341,11 +341,42 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           return b;
         }
       } else if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)) {
-        return qualHierarchy.lowestQualifier(a, b);
+        // `a` may not be a subtype of `b`, if one of the type mirror isn't relevant,
+        // so return the lower of the two.
+        return lowestQualifier(a, b);
       } else if (qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
-        return qualHierarchy.lowestQualifier(a, b);
+        // `b` may not be a subtype of `a`, if one of the type mirror isn't relevant,
+        // so return the lower of the two.
+        return lowestQualifier(a, b);
       }
       return getBackupAnnoIn(top);
+    }
+
+    /**
+     * Returns the qualifier that is the lowest in the hierarchy. If the two qualifiers are not
+     * comparable, then returns the qualifier that is ordered first by {@link
+     * AnnotationUtils#compareAnnotationMirrors(AnnotationMirror, AnnotationMirror)}.
+     *
+     * <p>This is basically glb, but if the two qualifiers are not comparable, then one of the two
+     * qualifiers is returned rather than bottom.
+     *
+     * @param qual1 a qualifier
+     * @param qual2 a qualifier
+     * @return the qualifier that is the lowest in the hierarchy.
+     */
+    private final AnnotationMirror lowestQualifier(AnnotationMirror qual1, AnnotationMirror qual2) {
+      if (qualHierarchy.isSubtypeQualifiersOnly(qual1, qual2)) {
+        return qual1;
+      } else if (qualHierarchy.isSubtypeQualifiersOnly(qual2, qual1)) {
+        return qual2;
+      } else {
+        int i = AnnotationUtils.compareAnnotationMirrors(qual1, qual2);
+        if (i > 0) {
+          return qual2;
+        } else {
+          return qual1;
+        }
+      }
     }
 
     @Override
