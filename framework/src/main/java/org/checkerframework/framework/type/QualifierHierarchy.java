@@ -130,10 +130,11 @@ public abstract class QualifierHierarchy {
    * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
    * override this method (if needed).
    *
-   * <p>This method behaves the same as {@link #isSubtypeQualifiersOnly()}, which calls this method.
-   * This method is for clients inside the framework, and it has {@code protected} access to prevent
-   * use by clients outside the framework. This makes it easy to find places where code outside
-   * QualifierHierarchy is ignoring Java basetypes -- at calls to {@link #isSubtypeQualifiersOnly}.
+   * <p>This method behaves the same as {@link #isSubtypeQualifiersOnly(AnnotationMirror,
+   * AnnotationMirror)}, which calls this method. This method is for clients inside the framework,
+   * and it has {@code protected} access to prevent use by clients outside the framework. This makes
+   * it easy to find places where code outside QualifierHierarchy is ignoring Java basetypes -- at
+   * calls to {@link #isSubtypeQualifiersOnly}.
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
