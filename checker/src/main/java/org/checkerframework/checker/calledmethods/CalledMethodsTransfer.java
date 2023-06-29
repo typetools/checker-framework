@@ -12,6 +12,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -51,6 +52,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private final ExecutableElement calledMethodsValueElement;
 
+  /** True if -AenableWPIForRLC was passed on the command line. */
+  private final boolean enableWPIForRLC;
+
   /**
    * Create a new CalledMethodsTransfer.
    *
@@ -60,6 +64,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
+    enableWPIForRLC = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
   }
 
   /**
@@ -267,5 +272,14 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
 
     return atypeFactory.createAccumulatorAnnotation(newList);
+  }
+
+  /**
+   * Checks if wpi is enabled for the Resource Leak Checker inference.
+   *
+   * @return returns true if wpi is enabled for the Resource Leak Checker
+   */
+  protected boolean isWPIEnabledForRLC() {
+    return enableWPIForRLC;
   }
 }

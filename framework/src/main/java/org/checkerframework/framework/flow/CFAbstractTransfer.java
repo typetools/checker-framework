@@ -113,9 +113,6 @@ public abstract class CFAbstractTransfer<
   /** Indicates that the whole-program inference is on. */
   private final boolean infer;
 
-  /** Indicates that the resource leak checker is enabled. */
-  private final boolean enableWPIForRLC;
-
   /**
    * Create a CFAbstractTransfer.
    *
@@ -139,7 +136,6 @@ public abstract class CFAbstractTransfer<
     this.analysis = analysis;
     this.sequentialSemantics =
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
-    this.enableWPIForRLC = analysis.checker.hasOption("enableWPIForRLC");
     this.infer = analysis.checker.hasOption("infer");
   }
 
@@ -992,15 +988,6 @@ public abstract class CFAbstractTransfer<
       }
     }
     return result;
-  }
-
-  /**
-   * Checks if Resource Leak Checker is running.
-   *
-   * @return returns true if the Resource Leak Checker is running
-   */
-  protected boolean isWPIEnabledForRLC() {
-    return enableWPIForRLC;
   }
 
   /**

@@ -49,6 +49,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   /** True if -AnoLightweightOwnership was supplied on the command line. */
   private final boolean noLightweightOwnership;
 
+  /** True if -AenableWPIForRLC was passed on the command line. */
+  private final boolean enableWPIForRLC;
+
   /**
    * Create the visitor.
    *
@@ -59,6 +62,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     rlTypeFactory = (ResourceLeakAnnotatedTypeFactory) atypeFactory;
     permitStaticOwning = checker.hasOption("permitStaticOwning");
     noLightweightOwnership = checker.hasOption("noLightweightOwnership");
+    enableWPIForRLC = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
   }
 
   @Override
@@ -189,8 +193,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   @Override
   protected boolean shouldPerformContractInference() {
-    // TODO: should be "false whenever running MustCallInferenceLogic", probably
-    return false;
+    return isWPIEnabledForRLC();
   }
 
   // Overwritten to check that destructors (i.e. methods responsible for resolving
@@ -430,5 +433,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           field.asType().toString(),
           error);
     }
+  }
+
+  /**
+   * Checks if wpi is enabled for the Resource Leak Checker inference.
+   *
+   * @return returns true if wpi is enabled for the Resource Leak Checker
+   */
+  protected boolean isWPIEnabledForRLC() {
+    return enableWPIForRLC;
   }
 }

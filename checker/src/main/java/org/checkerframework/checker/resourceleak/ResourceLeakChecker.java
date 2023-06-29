@@ -19,11 +19,11 @@ import org.checkerframework.framework.source.SupportedOptions;
 @SupportedOptions({
   "permitStaticOwning",
   "permitInitializationLeak",
-  "enableWPIForRLC",
   ResourceLeakChecker.COUNT_MUST_CALL,
   MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
-  MustCallChecker.NO_RESOURCE_ALIASES
+  MustCallChecker.NO_RESOURCE_ALIASES,
+  ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
 })
 @StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
@@ -37,6 +37,9 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * for a research paper. Not of interest to most users.
    */
   public static final String COUNT_MUST_CALL = "countMustCall";
+
+  /** Command-line option for enabling wpi for the Resource Leak Checker. */
+  public static final String ENABLE_WPI_FOR_RLC = "enableWPIForRLC";
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the

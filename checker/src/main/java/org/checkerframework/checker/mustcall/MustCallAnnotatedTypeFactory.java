@@ -28,6 +28,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -111,6 +112,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
+  /** True if -AenableWPIForRLC was passed on the command line. */
+  private final boolean enableWPIForRLC;
+
   /**
    * Creates a MustCallAnnotatedTypeFactory.
    *
@@ -127,6 +131,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    enableWPIForRLC = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
   }
 
@@ -222,7 +227,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // as their @MustCall obligation is set to Top in this method. However, this computation is not
     // desirable for RLC inference in unannotated programs, where the goal is to infer and add
     // @Owning annotations to owning parameters.
-    if (getWholeProgramInference() != null) {
+    if (getWholeProgramInference() != null && !isWPIEnabledForRLC()) {
       return;
     }
     List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
@@ -449,5 +454,14 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public @Nullable LocalVariableNode getTempVar(Node node) {
     return tempVars.get(node.getTree());
+  }
+
+  /**
+   * Checks if wpi is enabled for the Resource Leak Checker inference.
+   *
+   * @return returns true if wpi is enabled for the Resource Leak Checker
+   */
+  protected boolean isWPIEnabledForRLC() {
+    return enableWPIForRLC;
   }
 }

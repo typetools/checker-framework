@@ -138,7 +138,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     // finalizer methods and @InheritableMustCall annotations for the class declarations
     if (getWholeProgramInference() != null) {
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInferenceLogic.runMustCallInferenceLogic(this,cfg, mustCallConsistencyAnalyzer);
+        MustCallInferenceLogic.runMustCallInferenceLogic(this, cfg, mustCallConsistencyAnalyzer);
       }
     }
 

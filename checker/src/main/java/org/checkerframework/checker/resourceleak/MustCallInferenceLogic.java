@@ -68,16 +68,16 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. This
  * limitation should be taken into account while using the class. Must-call set with more than one
- * element may also be supported in the future. </p>
+ * element may also be supported in the future.
  *
  * @see <a href="https://arxiv.org/pdf/2306.11953.pdf">Automatic Inference of Resource Leak
- * Specifications</a>
+ *     Specifications</a>
  */
 public class MustCallInferenceLogic {
 
   /**
-   * The set of owning fields that have been inferred to be released within the CFG currently
-   * under analysis.
+   * The set of owning fields that have been inferred to be released within the CFG currently under
+   * analysis.
    */
   private final Set<VariableElement> owningFieldToECM = new HashSet<>();
 
@@ -130,8 +130,11 @@ public class MustCallInferenceLogic {
    * @param mcca the MustCallConsistencyAnalyzer
    */
   protected static void runMustCallInferenceLogic(
-      ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg, MustCallConsistencyAnalyzer mcca) {
-    MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(typeFactory, cfg, mcca);
+      ResourceLeakAnnotatedTypeFactory typeFactory,
+      ControlFlowGraph cfg,
+      MustCallConsistencyAnalyzer mcca) {
+    MustCallInferenceLogic mustCallInferenceLogic =
+        new MustCallInferenceLogic(typeFactory, cfg, mcca);
     mustCallInferenceLogic.runInference();
   }
 
@@ -183,7 +186,7 @@ public class MustCallInferenceLogic {
    *
    * @param cfg the control flow graph of the method to check
    * @return a set of obligations representing the non-empty MustCall parameters of the method
-   * corresponding to a CFG.
+   *     corresponding to a CFG.
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
