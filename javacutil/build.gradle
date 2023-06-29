@@ -15,10 +15,8 @@ dependencies {
   implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
 
   // External dependencies:
-  // If you add an external dependency, you must shadow its packages both in checker.jar and
-  // and dataflow-shaded.jar.
-  // See the comment in ../build.gradle in the shadowJar block and ../dataflow/build.gradle in
-  // shadowJar block.
+  // If you add an external dependency, you must shadow its packages.
+  // Add lines in the shadowJar block below and in ../build.gradle.
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
