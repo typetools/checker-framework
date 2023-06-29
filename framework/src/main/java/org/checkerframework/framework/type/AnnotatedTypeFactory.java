@@ -131,6 +131,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -825,24 +826,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the names of the annotation processors that are being run
    */
   @SuppressWarnings("JdkObsolete") // ClassLoader.getResources returns an Enumeration
-  public String[] getCheckerNames() {
+  public List<String> getCheckerNames() {
     com.sun.tools.javac.util.Context context =
         ((JavacProcessingEnvironment) processingEnv).getContext();
     String processorArg = Options.instance(context).get("-processor");
     if (processorArg != null) {
-      return processorArg.split(",");
+      return SystemUtil.commaSplitter.splitToList(processorArg);
     }
     try {
       String filename = "META-INF/services/javax.annotation.processing.Processor";
-      List<String> lines = new ArrayList<>();
+      List<String> result = new ArrayList<>();
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-          lines.addAll(in.lines().collect(Collectors.toList()));
+          result.addAll(in.lines().collect(Collectors.toList()));
         }
       }
-      String[] result = lines.toArray(new String[lines.size()]);
       return result;
     } catch (IOException e) {
       throw new BugInCF(e);
@@ -969,7 +969,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               + "-"
               + checker.getClass().getCanonicalName()
               + ".ajava";
-      for (String ajavaLocation : checker.getOption("ajava").split(File.pathSeparator)) {
+      for (String ajavaLocation : checker.getStringsOption("ajava", File.pathSeparator)) {
         // ajavaLocation might either be (1) a directory, or (2) the name of a specific
         // ajava file. This code must handle both possible cases.
         // Case (1): ajavaPath is a directory

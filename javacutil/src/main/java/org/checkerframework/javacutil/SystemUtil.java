@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.google.common.base.Splitter;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -8,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -19,6 +22,34 @@ public class SystemUtil {
   /** Do not instantiate. */
   private SystemUtil() {
     throw new Error("Do not instantiate.");
+  }
+
+  /** A splitter that splits on periods. The result contains no empty strings. */
+  public static final Splitter dotSplitter = Splitter.on('.').omitEmptyStrings();
+
+  /** A splitter that splits on commas. The result contains no empty strings. */
+  public static final Splitter commaSplitter = Splitter.on(',').omitEmptyStrings();
+
+  /** A splitter that splits on colons. The result contains no empty strings. */
+  public static final Splitter colonSplitter = Splitter.on(':').omitEmptyStrings();
+
+  /** A splitter that splits on {@code File.pathSeparator}. The result contains no empty strings. */
+  public static final Splitter pathSeparatorSplitter =
+      Splitter.on(File.pathSeparator).omitEmptyStrings();
+
+  /**
+   * Like {@code System.getProperty}, but splits on the path separator and never returns null.
+   *
+   * @param propName a system property name
+   * @return the paths in the system property; may be an empty array
+   */
+  public static final List<String> getPathsProperty(String propName) {
+    String propValue = System.getProperty(propName);
+    if (propValue == null) {
+      return Collections.emptyList();
+    } else {
+      return pathSeparatorSplitter.splitToList(propValue);
+    }
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.checkerframework.framework.source;
 
+import com.google.common.base.Splitter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -75,6 +76,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -479,6 +481,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
+
+  /** True if {@link #suppressWarningsStringsFromOption} has been computed. */
+  private boolean computedSuppressWarningsStringsFromOption = false;
 
   /**
    * If true, use the "allcheckers:" warning string prefix.
@@ -1471,8 +1476,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    String[] lintStrings = lintString.split(",");
-    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.length);
+    List<String> lintStrings = SystemUtil.commaSplitter.splitToList(lintString);
+    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.size());
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
           && !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1)))
@@ -1532,6 +1537,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new UserError("Illegal lint option: " + name);
     }
 
+    // This is only needed if initChecker() has not yet been called.
     if (activeLints == null) {
       activeLints = createActiveLints(getOptions());
     }
@@ -1743,6 +1749,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   @Override
+  public Map<String, String> getOptions() {
+    if (activeOptions == null) {
+      activeOptions = createActiveOptions(processingEnv.getOptions());
+    }
+    return activeOptions;
+  }
+
+  @Override
   public final boolean hasOption(String name) {
     return getOptions().containsKey(name);
   }
@@ -1755,6 +1769,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public final String getOption(String name) {
     return getOption(name, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final String getOption(String name, String defaultValue) {
+
+    if (!this.getSupportedOptions().contains(name)) {
+      throw new UserError("Illegal option: " + name);
+    }
+
+    if (activeOptions == null) {
+      activeOptions = createActiveOptions(processingEnv.getOptions());
+    }
+
+    if (activeOptions.isEmpty()) {
+      return defaultValue;
+    }
+
+    if (activeOptions.containsKey(name)) {
+      return activeOptions.get(name);
+    } else {
+      return defaultValue;
+    }
   }
 
   /**
@@ -1788,12 +1829,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         String.format("Value of %s option should be a boolean, but is \"%s\".", name, value));
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
   @Override
-  public Map<String, String> getOptions() {
-    if (activeOptions == null) {
-      activeOptions = createActiveOptions(processingEnv.getOptions());
+  public final List<String> getStringsOption(
+      String name, char separator, List<String> defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
     }
-    return activeOptions;
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
   /**
@@ -1802,31 +1850,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
-  public final String getOption(String name, String defaultValue) {
-
-    if (!this.getSupportedOptions().contains(name)) {
-      throw new UserError("Illegal option: " + name);
-    }
-
-    if (activeOptions == null) {
-      activeOptions = createActiveOptions(processingEnv.getOptions());
-    }
-
-    if (activeOptions.isEmpty()) {
+  public final List<String> getStringsOption(
+      String name, String separator, List<String> defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
       return defaultValue;
     }
-
-    if (activeOptions.containsKey(name)) {
-      return activeOptions.get(name);
-    } else {
-      return defaultValue;
-    }
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
-  /**
-   * Map the Checker Framework version of {@link SupportedOptions} to the standard annotation
-   * provided version {@link javax.annotation.processing.SupportedOptions}.
-   */
   @Override
   public Set<String> getSupportedOptions() {
     Set<String> options = new HashSet<>();
@@ -1917,17 +1949,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     argument
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
-    if (this.suppressWarningsStringsFromOption == null) {
+    if (!computedSuppressWarningsStringsFromOption) {
       Map<String, String> options = getOptions();
-      if (!options.containsKey("suppressWarnings")) {
-        return null;
+      if (options.containsKey("suppressWarnings")) {
+        String swStrings = options.get("suppressWarnings");
+        if (swStrings != null) {
+          String[] swStringsArray = swStrings.split(",");
+          if (swStringsArray != null) {
+            this.suppressWarningsStringsFromOption = swStringsArray;
+          }
+        }
       }
-
-      String swStrings = options.get("suppressWarnings");
-      if (swStrings == null) {
-        return null;
-      }
-      this.suppressWarningsStringsFromOption = swStrings.split(",");
+      computedSuppressWarningsStringsFromOption = true;
     }
 
     return this.suppressWarningsStringsFromOption;
@@ -2164,14 +2197,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public boolean useConservativeDefault(String kindOfCode) {
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
-    String option = this.getOption("useConservativeDefaultsForUncheckedCode");
-    // Temporary, for backward compatibility.
-    if (option == null) {
-      this.getOption("useDefaultsForUncheckedCode");
-    }
-
-    String[] args = option != null ? option.split(",") : new String[0];
-    for (String arg : args) {
+    for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
       boolean value = arg.indexOf("-") != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {
@@ -2328,7 +2354,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    // None of the SuppressWarnings strings suppress this error.
+    // None of the SuppressWarnings strings suppresses this error.
     return false;
   }
 

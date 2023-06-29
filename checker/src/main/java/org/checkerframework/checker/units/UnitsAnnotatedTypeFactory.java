@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -210,22 +211,19 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private void loadAllExternalUnits() {
     // load external individually named units
-    String qualNames = checker.getOption("units");
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier name \"%s\" in -Aunits=%s", qualName, qualNames);
-        }
-        loadExternalUnit(qualName);
+    for (String qualName : checker.getStringsOption("units", '.')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier name \"%s\" in -Aunits", qualName);
       }
+      loadExternalUnit(qualName);
     }
 
     // load external directories of units
-    String qualDirectories = checker.getOption("unitsDirs");
-    if (qualDirectories != null) {
-      for (String directoryName : qualDirectories.split(":")) {
-        loadExternalDirectory(directoryName);
+    for (String directoryName : checker.getStringsOption("unitsDirs", ':')) {
+      if (!new File(directoryName).exists()) {
+        throw new UserError("Nonexistent directory in -AunitsDirs: " + directoryName);
       }
+      loadExternalDirectory(directoryName);
     }
   }
 

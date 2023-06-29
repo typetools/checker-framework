@@ -16,6 +16,8 @@ number of false positive warnings in code that uses type variables but not
 resources.  However, it makes some code that uses type variables and resources
 unverifiable with any annotation.
 
+Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
+
 **Implementation details:**
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.

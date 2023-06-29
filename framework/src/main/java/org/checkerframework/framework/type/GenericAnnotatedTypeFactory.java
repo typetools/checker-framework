@@ -2253,13 +2253,12 @@ public abstract class GenericAnnotatedTypeFactory<
       res.init(args);
       return res;
     } else if (checker.hasOption("cfgviz")) {
-      String cfgviz = checker.getOption("cfgviz");
-      if (cfgviz == null) {
+      List<String> opts = checker.getStringsOption("cfgviz", ',');
+      if (opts.isEmpty()) {
         throw new UserError(
             "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
       }
-      String[] opts = cfgviz.split(",");
-      String vizClassName = opts[0];
+      String vizClassName = opts.get(0);
       if (!Signatures.isBinaryName(vizClassName)) {
         throw new UserError(
             "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
@@ -2298,11 +2297,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param opts the CFG visualization options
    * @return a map that represents the options
    */
-  private Map<String, Object> processCFGVisualizerOption(String[] opts) {
-    Map<String, Object> res = new HashMap<>(opts.length - 1);
+  private Map<String, Object> processCFGVisualizerOption(List<String> opts) {
+    Map<String, Object> res = new HashMap<>(CollectionsPlume.mapCapacity(opts.size() - 1));
     // Index 0 is the visualizer class name and can be ignored.
-    for (int i = 1; i < opts.length; ++i) {
-      String opt = opts[i];
+    for (int i = 1; i < opts.size(); ++i) {
+      String opt = opts.get(i);
       String[] split = opt.split("=");
       switch (split.length) {
         case 1:
