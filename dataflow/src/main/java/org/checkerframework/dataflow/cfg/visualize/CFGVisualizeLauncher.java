@@ -223,7 +223,9 @@ public final class CFGVisualizeLauncher {
     JavaCompiler javac = new JavaCompiler(context);
 
     JavaFileObject l;
-    try (JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
+    // The @MustCall annotation is required to avoid a warning about incompatible generic types
+    try (JavacFileManager fileManager =
+        (JavacFileManager) context.<@MustCall({}) JavaFileManager>get(JavaFileManager.class)) {
       l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
     } catch (IOException e) {
       throw new Error(e);

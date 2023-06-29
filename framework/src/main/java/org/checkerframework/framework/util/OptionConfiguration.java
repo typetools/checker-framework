@@ -2,6 +2,7 @@ package org.checkerframework.framework.util;
 
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Provides methods for querying the Checker's options. */
 public interface OptionConfiguration {
@@ -34,7 +35,7 @@ public interface OptionConfiguration {
    * @return the value of the option with the given name
    * @see #getOption(String,String)
    */
-  String getOption(String name);
+  @Nullable String getOption(String name);
 
   /**
    * Determines the boolean value of the option with the given name. Returns {@code defaultValue} if

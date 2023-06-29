@@ -43,7 +43,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   @Override
-  protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+  public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
     if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
       // If one of the types is the NULL type, compare main qualifiers only.
       return arePrimeAnnosEqual(type1, type2);
@@ -62,13 +62,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    * @return error message explaining the two types' classes are not the same
    */
   @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    return StringsPlume.joinLines(
-        "AnnotatedTypeMirrors aren't structurally equal.",
-        "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
-        "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
-        "  visitHistory = " + visitHistory);
+  public String defaultErrorMessage(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+    return super.defaultErrorMessage(type1, type2, p)
+        + System.lineSeparator()
+        + "  visitHistory = "
+        + visitHistory;
   }
 
   /**
@@ -112,7 +110,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (currentTop != null) {
       return AnnotationUtils.areSame(
-          type1.getAnnotationInHierarchy(currentTop), type2.getAnnotationInHierarchy(currentTop));
+          type1.getPrimaryAnnotationInHierarchy(currentTop),
+          type2.getPrimaryAnnotationInHierarchy(currentTop));
     } else {
       throw new BugInCF("currentTop null");
     }
@@ -415,7 +414,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   public Boolean visitDeclared_Primitive(
       AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, Void p) {
     if (!TypesUtils.isBoxOf(type1.getUnderlyingType(), type2.getUnderlyingType())) {
-      defaultErrorMessage(type1, type2, p);
+      throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
     return arePrimeAnnosEqual(type1, type2);
@@ -425,7 +424,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   public Boolean visitPrimitive_Declared(
       AnnotatedPrimitiveType type1, AnnotatedDeclaredType type2, Void p) {
     if (!TypesUtils.isBoxOf(type2.getUnderlyingType(), type1.getUnderlyingType())) {
-      defaultErrorMessage(type1, type2, p);
+      throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
     return arePrimeAnnosEqual(type1, type2);

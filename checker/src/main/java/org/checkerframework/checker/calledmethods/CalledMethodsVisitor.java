@@ -83,9 +83,9 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
   protected void reportMethodInvocabilityError(
       MethodInvocationTree tree, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
 
-    AnnotationMirror expectedCM = expected.getAnnotation(CalledMethods.class);
+    AnnotationMirror expectedCM = expected.getPrimaryAnnotation(CalledMethods.class);
     if (expectedCM != null) {
-      AnnotationMirror foundCM = found.getAnnotation(CalledMethods.class);
+      AnnotationMirror foundCM = found.getPrimaryAnnotation(CalledMethods.class);
       Set<String> foundMethods =
           foundCM == null
               ? Collections.emptySet()

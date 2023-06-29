@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
@@ -24,7 +25,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    */
   public Set<TypeVariable> getRemainingTargets(
       Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
-    LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
+    Set<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
 
     if (inferredTypesOnly) {
 
@@ -119,8 +120,8 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
    * @param subordinate a result which we wish to merge into this result
    */
   public void mergeSubordinate(InferenceResult subordinate) {
-    LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
-    LinkedHashSet<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
+    Set<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
+    Set<TypeVariable> remainingSubKeys = new LinkedHashSet<>(subordinate.keySet());
     remainingSubKeys.removeAll(keySet());
 
     for (TypeVariable target : previousKeySet) {
@@ -135,7 +136,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
   }
 
   /** Performs a merge for a specific target, we keep only results that lead to a concrete type. */
-  protected InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
+  protected @Nullable InferredType mergeTarget(TypeVariable target, InferenceResult subordinate) {
     InferredValue inferred = this.get(target);
     if (inferred instanceof InferredTarget) {
       InferredType newType = mergeTarget(((InferredTarget) inferred).target, subordinate);
@@ -153,7 +154,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
           InferredValue subValue = subordinate.get(target);
           if (subValue instanceof InferredType) {
             AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
-            copy.replaceAnnotations(newType.type.getAnnotations());
+            copy.replaceAnnotations(newType.type.getPrimaryAnnotations());
             newType = new InferredType(copy);
           }
         }

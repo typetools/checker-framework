@@ -336,6 +336,13 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
+      AnnotationMirror result =
+          mcAtf
+              .getAnnotatedType(reference.getElement())
+              .getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+      if (result != null) {
+        return result;
+      }
       // There wasn't an @MustCall annotation for it in the store, so fall back to the default
       // must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
@@ -353,7 +360,8 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
-      return mcAtf.getAnnotatedType(typeElt).getAnnotationInHierarchy(mcAtf.TOP);
+
+      return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
@@ -738,9 +746,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -866,8 +874,8 @@ class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
-          || !typeFactory.getMustCallValue(typeElt).isEmpty()
-          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
+          || !typeFactory.hasEmptyMustCallValue(typeElt)
+          || !typeFactory.hasEmptyMustCallValue(newClassTree);
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -1158,7 +1166,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
@@ -1348,7 +1357,7 @@ class MustCallConsistencyAnalyzer {
         MustCallAnnotatedTypeFactory mcTypeFactory =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
             AnnotationUtils.getElementValueArray(
                 mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1438,7 +1447,15 @@ class MustCallConsistencyAnalyzer {
     }
     if (mcAnno == null) {
       // No stored value (or the stored value is Poly/top), so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
+    }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
@@ -1688,8 +1705,8 @@ class MustCallConsistencyAnalyzer {
     TypeElement typeElt = TypesUtils.getTypeElement(type);
     // no need to track if type has no possible @MustCall obligation
     if (typeElt != null
-        && typeFactory.getMustCallValue(typeElt).isEmpty()
-        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+        && typeFactory.hasEmptyMustCallValue(typeElt)
+        && typeFactory.hasEmptyMustCallValue(methodInvocationTree)) {
       return false;
     }
     // check for absence of @NotOwning annotation
@@ -2056,8 +2073,28 @@ class MustCallConsistencyAnalyzer {
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+
+    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
+    if (mustCallValue == null) {
+      // Report the error at the first alias' definition. This choice is arbitrary but
+      // consistent.
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.known",
+              firstAlias.reference.toString(),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
+        }
+      }
+      return;
+    }
     // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue == null || mustCallValue.isEmpty()) {
+    if (mustCallValue.isEmpty()) {
       return;
     }
 

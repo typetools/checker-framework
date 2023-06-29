@@ -82,15 +82,12 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
    * do not appear together in a constraint.
    */
   @Override
-  protected String defaultErrorMessage(
+  public String defaultErrorMessage(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, Set<AFConstraint> constraints) {
-    return StringsPlume.joinLines(
-        "Unexpected " + reducerType.getSimpleName() + " + Combination:",
-        "subtype=" + subtype,
-        "supertype=" + supertype,
-        "constraints=[",
-        StringsPlume.join(", ", constraints),
-        "]");
+    return super.defaultErrorMessage(subtype, supertype, constraints)
+        + System.lineSeparator()
+        + "  constraints = "
+        + StringsPlume.join(", ", constraints);
   }
 
   // ------------------------------------------------------------------------

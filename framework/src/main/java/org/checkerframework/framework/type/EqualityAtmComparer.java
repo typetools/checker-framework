@@ -3,7 +3,6 @@ package org.checkerframework.framework.type;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
@@ -22,22 +21,14 @@ import org.plumelib.util.StringsPlume;
 public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void> {
 
   /**
-   * Called when a visit method is called on two types that do not have the same class, i.e. when
-   * !type1.getClass().equals(type2.getClass())
+   * Return true if {@code type1} and {@code type2} have equivalent sets of annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if {@code type1} and {@code type2} have equivalent sets of annotations
    */
-  @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
-    throw new UnsupportedOperationException(
-        StringsPlume.joinLines(
-            "Comparing two different subclasses of AnnotatedTypeMirror.",
-            "type1=" + type1,
-            "type2=" + type2));
-  }
-
-  /** Return true if type1 and type2 have equivalent sets of annotations. */
   protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-    return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
+    return AnnotationUtils.areSame(type1.getPrimaryAnnotations(), type2.getPrimaryAnnotations());
   }
 
   /**

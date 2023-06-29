@@ -18,13 +18,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
-  private final Map<Tree, TreePath> foundPaths = new HashMap<>(32);
+  private final Map<Tree, @Nullable TreePath> foundPaths = new HashMap<>(32);
 
   /**
    * The TreePath of the previous tree scanned. It is always set back to null after a scan has
    * completed.
    */
-  private TreePath path;
+  private @Nullable TreePath path;
 
   /**
    * Returns true if the tree is cached.
@@ -105,12 +105,13 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
   @Override
   public TreePath scan(Tree tree, Tree target) {
     TreePath prev = path;
-    if (tree != null && foundPaths.get(tree) == null) {
-      TreePath current = new TreePath(path, tree);
-      foundPaths.put(tree, current);
-      this.path = current;
-    } else {
-      this.path = foundPaths.get(tree);
+    if (tree != null) {
+      TreePath foundPath = foundPaths.get(tree);
+      if (foundPath == null) {
+        foundPath = new TreePath(path, tree);
+        foundPaths.put(tree, foundPath);
+      }
+      this.path = foundPath;
     }
 
     if (tree == target) {

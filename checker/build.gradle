@@ -286,6 +286,12 @@ task allCalledMethodsTests(type: Test, group: 'Verification') {
   }
 }
 
+task allResourceLeakTests(type: Test, group: 'Verification') {
+  description 'Run all Junit tests for the Resource Leak Checker.'
+  include '**/ResourceLeak*.class'
+  include '**/MustCall*.class'
+}
+
 // These are tests that should only be run with JDK 11+.
 task jtregJdk11Tests(group: 'Verification') {
   description 'Run the jtreg tests made for JDK 11+.'

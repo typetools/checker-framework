@@ -197,7 +197,7 @@ public class AnnotationFileParser {
    * parsing the file. (TODO: Should the Checker Framework just halt in that case?)
    */
   // Not final in order to accommodate a default value.
-  private StubUnit stubUnit;
+  private @Nullable StubUnit stubUnit;
 
   private final ProcessingEnvironment processingEnv;
   private final AnnotatedTypeFactory atypeFactory;
@@ -236,7 +236,7 @@ public class AnnotationFileParser {
    * The annotations on the declared package of the complation unit being processed. Contains null
    * if not processing a compilation unit or if the file has no declared package.
    */
-  @Nullable List<AnnotationExpr> packageAnnos;
+  @Nullable List<@Nullable AnnotationExpr> packageAnnos;
 
   // The following variables are stored in the AnnotationFileParser because otherwise they would
   // need to be passed through everywhere, which would be verbose.
@@ -726,11 +726,9 @@ public class AnnotationFileParser {
    * @param inputStream the stream from which to read an annotation file
    */
   private void parseStubUnit(InputStream inputStream) {
-    if (debugAnnotationFileParser) {
-      stubDebug(
-          "started parsing annotation file %s for %s",
-          filename, atypeFactory.getClass().getSimpleName());
-    }
+    stubDebug(
+        "AFP.parseStubUnit(%s) annotation file %s for %s",
+        inputStream, filename, atypeFactory.getClass().getSimpleName());
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
@@ -885,15 +883,15 @@ public class AnnotationFileParser {
    * removed after processing the type's members. Otherwise, this method removes them.
    *
    * @param typeDecl the type declaration to process
-   * @param outertypeName the name of the containing class, when processing a nested class;
+   * @param outerTypeName the name of the containing class, when processing a nested class;
    *     otherwise null
    * @param classTree the tree corresponding to typeDecl if processing an ajava file, null otherwise
    * @return a list of types variables for {@code typeDecl}. Only non-null if processing an ajava
    *     file, in which case the contents should be removed from {@link #typeParameters} after
    *     processing the type declaration's members
    */
-  private List<AnnotatedTypeVariable> processTypeDecl(
-      TypeDeclaration<?> typeDecl, String outertypeName, @Nullable ClassTree classTree) {
+  private @Nullable List<AnnotatedTypeVariable> processTypeDecl(
+      TypeDeclaration<?> typeDecl, @Nullable String outerTypeName, @Nullable ClassTree classTree) {
     assert typeBeingParsed != null;
     if (skipNode(typeDecl)) {
       return null;
@@ -907,7 +905,7 @@ public class AnnotationFileParser {
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
       fqTypeName = typeBeingParsed.toString();
     } else {
-      String packagePrefix = outertypeName == null ? "" : outertypeName + ".";
+      String packagePrefix = outerTypeName == null ? "" : outerTypeName + ".";
       innerName = packagePrefix + typeDecl.getNameAsString();
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
       fqTypeName = typeBeingParsed.toString();
@@ -1223,7 +1221,7 @@ public class AnnotationFileParser {
    * @param elt the method or constructor's element
    * @return type variables for the method
    */
-  private List<AnnotatedTypeVariable> processCallableDeclaration(
+  private @Nullable List<AnnotatedTypeVariable> processCallableDeclaration(
       CallableDeclaration<?> decl, ExecutableElement elt) {
     if (!isAnnotatedForThisChecker(decl.getAnnotations())) {
       return null;
@@ -1398,7 +1396,7 @@ public class AnnotationFileParser {
     // TODO: only produce output if the removed annotation isn't the top or default
     // annotation in the type hierarchy.  See https://tinyurl.com/cfissue/2759 .
     /*
-    if (!atype.getAnnotations().isEmpty()) {
+    if (!atype.getPrimaryAnnotations().isEmpty()) {
         stubWarnOverwritesBytecode(
                 String.format(
                         "in file %s at line %s removed existing annotations on type: %s",
@@ -1451,7 +1449,7 @@ public class AnnotationFileParser {
     }
   }
 
-  private ClassOrInterfaceType unwrapDeclaredType(Type type) {
+  private @Nullable ClassOrInterfaceType unwrapDeclaredType(Type type) {
     if (type instanceof ClassOrInterfaceType) {
       return (ClassOrInterfaceType) type;
     } else if (type instanceof ReferenceType && type.getArrayLevel() == 0) {
@@ -2159,7 +2157,7 @@ public class AnnotationFileParser {
    * @param typeElt an element where nested type element should be looked for
    * @param ciDecl class or interface declaration which name should be found among nested elements
    *     of the typeElt
-   * @return nested in typeElt element with the name of the class or interface or null if nested
+   * @return nested in typeElt element with the name of the class or interface, or null if nested
    *     element is not found
    */
   private @Nullable Element findElement(TypeElement typeElt, ClassOrInterfaceDeclaration ciDecl) {
@@ -2188,7 +2186,7 @@ public class AnnotationFileParser {
    * @param typeElt an element where nested enum element should be looked for
    * @param enumDecl enum declaration which name should be found among nested elements of the
    *     typeElt
-   * @return nested in typeElt enum element with the name of the provided enum or null if nested
+   * @return nested in typeElt enum element with the name of the provided enum, or null if nested
    *     element is not found
    */
   private @Nullable Element findElement(TypeElement typeElt, EnumDeclaration enumDecl) {
@@ -2216,7 +2214,7 @@ public class AnnotationFileParser {
    * @param typeElt type element where enum constant element should be looked for
    * @param enumConstDecl the declaration of the enum constant
    * @param astNode where to report errors
-   * @return enum constant element in typeElt with the provided name or null if enum constant
+   * @return enum constant element in typeElt with the provided name, or null if enum constant
    *     element is not found
    */
   private @Nullable VariableElement findElement(
@@ -2381,7 +2379,7 @@ public class AnnotationFileParser {
    * @param astNode where to report errors
    * @return the type element for the given fully-qualified type name, or null
    */
-  private TypeElement getTypeElement(
+  private @Nullable TypeElement getTypeElement(
       @FullyQualifiedName String typeName, String msg, NodeWithRange<?> astNode) {
     TypeElement classElement = elements.getTypeElement(typeName);
     if (classElement == null) {
@@ -3032,7 +3030,7 @@ public class AnnotationFileParser {
   }
 
   /**
-   * If {@code warning} hasn't been printed yet, and {@code debugAnnotationFileParser} is true,
+   * If {@code warning} hasn't been printed yet, and {@link #debugAnnotationFileParser} is true,
    * prints the given warning as a diagnostic message.
    *
    * @param fmt format string
@@ -3047,6 +3045,25 @@ public class AnnotationFileParser {
             .getMessager()
             .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
       }
+    }
+  }
+
+  /**
+   * If {@code warning} hasn't been printed yet, prints the given warning as a diagnostic message.
+   * Ignores {@code debugAnnotationFileParser}.
+   *
+   * @param processingEnv the processing environment
+   * @param fmt format string
+   * @param args arguments to the format string
+   */
+  @FormatMethod
+  /*package-private*/ static void stubDebugStatic(
+      ProcessingEnvironment processingEnv, String fmt, Object... args) {
+    String warning = String.format(fmt, args);
+    if (warnings.add(warning)) {
+      processingEnv
+          .getMessager()
+          .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
     }
   }
 
@@ -3167,7 +3184,7 @@ public class AnnotationFileParser {
      * @param className unqualified name of the type, including outer class names if any. May be
      *     null.
      */
-    public FqName(String packageName, @Nullable String className) {
+    public FqName(@Nullable String packageName, @Nullable String className) {
       this.packageName = packageName;
       this.className = className;
     }

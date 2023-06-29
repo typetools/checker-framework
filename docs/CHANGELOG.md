@@ -3,13 +3,51 @@ Version 3.36.0 (July 5, 2023)
 
 **User-visible changes:**
 
+The Initialization Checker issues a `cast.unsafe` warning instead of an
+`initialization.cast` error.
+
+The Resource Leak Checker now issues a `required.method.not.known` error
+when an expression with type `@MustCallUnknown` has a must-call obligation
+(e.g., because it is a parameter annotated as `@Owning`).
+
+The Resource Leak Checker's default MustCall type for type variables has been
+changed from `@MustCallUnknown` to `@MustCall({})`.  This change reduces the
+number of false positive warnings in code that uses type variables but not
+resources.  However, it makes some code that uses type variables and resources
+unverifiable with any annotation.
+
 **Implementation details:**
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
+Renamed methods in `AnnotatedTypeMirror`.
+The old versions are deprecated.  Because the `*PrimaryAnnotation*` methods
+might not return an annotation of a type variable or wildcard, it is better to
+call `getEffectiveAnnotation*` or `hasEffectiveAnnotation*` instead.
+ * `clearAnnotations*()` => `clearPrimaryAnnotations()`
+ * `getAnnotation*()` => `getPrimaryAnnotation*()`.
+ * `hasAnnotation*()` => `hasPrimaryAnnotation()`.
+ * `removeAnnotation*()` => `removePrimaryAnnotation*()`.
+ * `isAnnotatedInHierarchy()` => `hasPrimaryAnnotationInHierarchy()`
+ * `removeNonTopAnnotationInHierarchy()` should not be used.
+
 Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
+
+`GenericAnnotatedTypeFactory`:
+ * Renamed `getTypeFactoryOfSubchecker()` to `getTypeFactoryOfSubcheckerOrNull`.
+ * Added new `getTypeFactoryOfSubchecker()` that never returns null.
+
+Return types changed:
+ * `GenericAnnotatedTypeFactory.getFinalLocalValues()` return type changed to
+   `Map`, though the returned value is still a `HashMap`.
+ * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
+   `Set`, though the returned value is still a `LinkedHashSet`.
+
+Renamed methods in `CFAbstractValue`:
+ * `combineOneAnnotation()` => `combineAnnotationWithTypeVar()`
+ * `combineNoAnnotations()` => `combineTwoTypeVars()`
 
 **Closed issues:**
 
