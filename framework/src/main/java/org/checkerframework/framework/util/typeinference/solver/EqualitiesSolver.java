@@ -25,6 +25,7 @@ import org.checkerframework.javacutil.BugInCF;
  * ConstraintMap. When a type is inferred, it rewrites the remaining equality/supertype constraints
  */
 public class EqualitiesSolver {
+
   private boolean dirty = false;
 
   /**
