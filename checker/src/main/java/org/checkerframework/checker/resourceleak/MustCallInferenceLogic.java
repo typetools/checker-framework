@@ -62,13 +62,23 @@ import org.checkerframework.javacutil.TypesUtils;
  * representing a method. The algorithm determines if the @MustCall obligation of a field is
  * fulfilled along some path leading to the regular exit point of the method. If the obligation is
  * satisfied, it adds an @Owning annotation on the field and an @EnsuresCalledMethods annotation on
- * the method being analyzed by this instance. Additionally, if the current method being analyzed
- * fulfills the must-call obligation of all the enclosed owning fields, it adds
- * a @InheritableMustCall annotation on the enclosing class.
+ * the method being analyzed by this instance. Additionally, if the method being analyzed fulfills
+ * the must-call obligation of all the enclosed owning fields, it adds a @InheritableMustCall
+ * annotation on the enclosing class.
+ *
+ * <p>Note: This class makes the assumption that the must-call set has only one element. This
+ * limitation should be taken into account while using the class. Must-call set with more than one
+ * element may also be supported in the future. </p>
+ *
+ * @see <a href="https://arxiv.org/pdf/2306.11953.pdf">Automatic Inference of Resource Leak
+ * Specifications</a>
  */
 public class MustCallInferenceLogic {
 
-  /** The set of owning fields that are released within the CFG currently under analysis. */
+  /**
+   * The set of owning fields that have been inferred to be released within the CFG currently
+   * under analysis.
+   */
   private final Set<VariableElement> owningFieldToECM = new HashSet<>();
 
   /**
@@ -86,15 +96,13 @@ public class MustCallInferenceLogic {
   private final MustCallConsistencyAnalyzer mcca;
 
   /** The MethodTree of the cfg. */
-  private MethodTree enMethodTree;
+  private MethodTree enclosingMethodTree;
 
   /** The element for the enMethodTree. */
-  private ExecutableElement enMethodElt;
+  private ExecutableElement enclosingMethodElt;
 
   /**
-   * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled, its
-   * postAnalyze method should instantiate a new MustCallInferenceLogic using this constructor and
-   * then call {@link #runInference()}.
+   * Creates a MustCallInferenceLogic instance.
    *
    * @param typeFactory the type factory
    * @param cfg the control flow graph of the method to check
@@ -108,8 +116,23 @@ public class MustCallInferenceLogic {
     this.mcca = mcca;
     this.cfg = cfg;
     OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
-    enMethodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
-    enMethodElt = TreeUtils.elementFromDeclaration(enMethodTree);
+    enclosingMethodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+    enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethodTree);
+  }
+
+  /**
+   * Creates a MustCallInferenceLogic instance, runs the inference algorithm. If the type factory
+   * has whole program inference enabled, its postAnalyze method should execute the inference
+   * algorithm using this method.
+   *
+   * @param typeFactory the type factory
+   * @param cfg the control flow graph of the method to check
+   * @param mcca the MustCallConsistencyAnalyzer
+   */
+  protected static void runMustCallInferenceLogic(
+      ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg, MustCallConsistencyAnalyzer mcca) {
+    MustCallInferenceLogic mustCallInferenceLogic = new MustCallInferenceLogic(typeFactory, cfg, mcca);
+    mustCallInferenceLogic.runInference();
   }
 
   /**
@@ -121,7 +144,7 @@ public class MustCallInferenceLogic {
    * adds @Owning to the formal parameter if it discovers their must-call obligations were satisfied
    * along one of the checked paths.
    */
-  /*package-private*/ void runInference() {
+  private void runInference() {
 
     Set<BlockWithObligations> visited = new HashSet<>();
 
@@ -154,12 +177,13 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Returns a set of obligations representing the non-empty MustCall parameters of the current
-   * method.
+   * Returns a set of obligations representing the non-empty MustCall parameters of the method that
+   * corresponds to the given cfg, or an empty set if the given CFG doesn't correspond to a method
+   * body.
    *
    * @param cfg the control flow graph of the method to check
-   * @return a set of obligations representing the non-empty MustCall parameters of the current
-   *     method
+   * @return a set of obligations representing the non-empty MustCall parameters of the method
+   * corresponding to a CFG.
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
@@ -167,7 +191,7 @@ public class MustCallInferenceLogic {
       return Collections.emptySet();
     }
     Set<Obligation> result = new LinkedHashSet<>(1);
-    for (VariableTree param : enMethodTree.getParameters()) {
+    for (VariableTree param : enclosingMethodTree.getParameters()) {
       VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
       if (typeFactory.declaredTypeHasMustCall(param)) {
         result.add(
@@ -179,13 +203,13 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * This function returns a set of all owning fields that have been inferred in the current or
+   * This function returns a set of all owning fields that have been inferred in the current or any
    * previous iteration
    *
    * @return set of owning fields
    */
   private Set<VariableElement> getEnclosedOwningFields() {
-    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enMethodTree));
+    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enclosingMethodTree));
     TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
     Set<VariableElement> enOwningFields = new HashSet<>();
     for (Element memberElt : classElt.getEnclosedElements()) {
@@ -206,16 +230,17 @@ public class MustCallInferenceLogic {
    */
   private void addOwningOnParams(int index) {
     WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-    wpi.addDeclarationAnnotationToFormalParameter(enMethodElt, index, OWNING);
+    wpi.addDeclarationAnnotationToFormalParameter(enclosingMethodElt, index, OWNING);
   }
 
   /**
-   * Checks if the given node is a field and if it is a new Owning field.
+   * Infers @Owning annotation for the given node if it is a field and its must-call obligation is
+   * fulfilled via the given method call. If so, it adds the node to the owningFieldToECM set.
    *
    * @param node the possible owning field
    * @param mNode method invoked on the possible owning field
    */
-  private void isOwningField(@Nullable Node node, MethodInvocationNode mNode) {
+  private void inferOwningField(@Nullable Node node, MethodInvocationNode mNode) {
     if (node == null) {
       return;
     }
@@ -268,7 +293,7 @@ public class MustCallInferenceLogic {
         return;
       }
 
-      if (TreeUtils.isConstructor(enMethodTree)) {
+      if (TreeUtils.isConstructor(enclosingMethodTree)) {
         addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
       } else {
         if (owningFieldToECM.contains((VariableElement) lhsElement)) {
@@ -298,7 +323,7 @@ public class MustCallInferenceLogic {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
     for (ResourceAlias rl : rhsAliases) {
       Element rhdElt = rl.reference.getElement();
-      List<? extends VariableTree> params = enMethodTree.getParameters();
+      List<? extends VariableTree> params = enclosingMethodTree.getParameters();
       for (int i = 0; i < params.size(); i++) {
         VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i));
         if (paramElt.equals(rhdElt)) {
@@ -333,7 +358,7 @@ public class MustCallInferenceLogic {
       builder.setValue("methods", new String[] {mustCallValue});
       AnnotationMirror am = builder.build();
       WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-      wpi.addMethodDeclarationAnnotation(enMethodElt, am);
+      wpi.addMethodDeclarationAnnotation(enclosingMethodElt, am);
     }
   }
 
@@ -345,7 +370,7 @@ public class MustCallInferenceLogic {
    * InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
-    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enMethodTree));
+    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enclosingMethodTree));
     TypeElement typeElement = TreeUtils.elementFromDeclaration(classTree);
     if (typeElement == null) {
       return;
@@ -376,12 +401,12 @@ public class MustCallInferenceLogic {
 
     // if the enclosing method is not private and satisfies the must-call obligation of all owning
     // fields, add an InheritableMustCall annotation with the name of this method
-    if (!enMethodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
+    if (!enclosingMethodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
       if (!owningFieldToECM.isEmpty()
           && owningFieldToECM.size() == getEnclosedOwningFields().size()) {
         AnnotationBuilder builder =
             new AnnotationBuilder(typeFactory.getProcessingEnv(), InheritableMustCall.class);
-        String[] methodArray = new String[] {enMethodTree.getName().toString()};
+        String[] methodArray = new String[] {enclosingMethodTree.getName().toString()};
         Arrays.sort(methodArray);
         builder.setValue("value", methodArray);
         wpi.addClassDeclarationAnnotation(typeElement, builder.build());
@@ -453,7 +478,7 @@ public class MustCallInferenceLogic {
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
     if (receiverEl != null) {
       if (receiverEl.getKind().isField()) {
-        isOwningField(receiver, mNode);
+        inferOwningField(receiver, mNode);
         return;
       }
     }
@@ -521,11 +546,11 @@ public class MustCallInferenceLogic {
             continue;
           }
           if (nElt.getKind().isField()) {
-            isOwningField(n, mNode);
+            inferOwningField(n, mNode);
           }
         }
       } else if (argElt != null && argElt.getKind().isField()) {
-        isOwningField(arg, mNode);
+        inferOwningField(arg, mNode);
       }
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
@@ -577,11 +602,11 @@ public class MustCallInferenceLogic {
    * @param mNode the MethodInvocationNode
    */
   private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode mNode) {
-    if (enMethodElt == null) {
+    if (enclosingMethodElt == null) {
       return;
     }
 
-    List<? extends VariableTree> paramsOfEnclosingMethod = enMethodTree.getParameters();
+    List<? extends VariableTree> paramsOfEnclosingMethod = enclosingMethodTree.getParameters();
 
     checkArgsOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
     checkReceiverOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
