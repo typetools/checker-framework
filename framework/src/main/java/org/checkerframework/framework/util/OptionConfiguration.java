@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.source.SupportedOptions;
 
 /** Provides methods for querying the Checker's options. */
 public interface OptionConfiguration {
