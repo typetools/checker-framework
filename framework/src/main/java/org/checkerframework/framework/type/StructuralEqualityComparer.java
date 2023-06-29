@@ -246,14 +246,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                   || wildcardType2.isUninferredTypeArgument())) {
             result = true;
           } else {
-            AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
-            AnnotatedTypeMirror capturedType2Arg = capturedType2Args.get(i);
-            result =
-                visitWildcard_WildcardCapture(
-                    wildcardType1,
-                    wildcardType2,
-                    (AnnotatedTypeVariable) capturedType1Arg,
-                    (AnnotatedTypeVariable) capturedType2Arg);
+            AnnotatedTypeVariable capturedType1Arg =
+                (AnnotatedTypeVariable) capturedType1Args.get(i);
+            AnnotatedTypeVariable capturedType2Arg =
+                (AnnotatedTypeVariable) capturedType2Args.get(i);
+            result = areEqual(capturedType1Arg.getErased(), capturedType2Arg.getErased());
           }
         }
       }
@@ -264,40 +261,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     visitHistory.put(capturedType1, capturedType2, currentTop, result);
     visitHistory.put(type1, type2, currentTop, result);
-    return result;
-  }
-
-  public boolean visitWildcard_WildcardCapture(
-      AnnotatedWildcardType type1,
-      AnnotatedWildcardType type2,
-      AnnotatedTypeVariable captureType1,
-      AnnotatedTypeVariable captureType2) {
-    Boolean pastResult = visitHistory.get(type1, type2, currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-    pastResult = visitHistory.get(captureType1, captureType2, currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-
-    if (type1.atypeFactory.ignoreUninferredTypeArguments
-        && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
-      return true;
-    }
-    pastResult = visitHistory.get(type1.getExtendsBound(), type2.getExtendsBound(), currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-    visitHistory.put(type1.getExtendsBound(), type2.getExtendsBound(), currentTop, true);
-
-    boolean result =
-        areEqual(captureType1.getUpperBound(), captureType2.getUpperBound())
-            && areEqual(type1.getSuperBound(), type2.getSuperBound());
-    visitHistory.put(type1, type2, currentTop, result);
-    visitHistory.put(captureType1, captureType2, currentTop, result);
-    visitHistory.put(type1.getExtendsBound(), type2.getExtendsBound(), currentTop, result);
-
     return result;
   }
 
