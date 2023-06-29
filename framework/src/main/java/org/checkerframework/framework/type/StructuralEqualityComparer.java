@@ -213,7 +213,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     List<AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
 
     // Capture the types because the wildcards are only not equal if they are provably distinct.
-    // Provably distinct is computed using the captured upper bounds of wildcards.
+    // Provably distinct is computed using the captured and erased upper bounds of wildcards.
     // See JLS 4.5.1. Type Arguments of Parameterized Types.
     AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
     AnnotatedDeclaredType capturedType1 =
@@ -246,10 +246,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                   || wildcardType2.isUninferredTypeArgument())) {
             result = true;
           } else {
-            AnnotatedTypeVariable capturedType1Arg =
-                (AnnotatedTypeVariable) capturedType1Args.get(i);
-            AnnotatedTypeVariable capturedType2Arg =
-                (AnnotatedTypeVariable) capturedType2Args.get(i);
+            AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
+            AnnotatedTypeMirror capturedType2Arg = capturedType2Args.get(i);
             result = areEqual(capturedType1Arg.getErased(), capturedType2Arg.getErased());
           }
         }
