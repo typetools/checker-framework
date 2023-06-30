@@ -6,6 +6,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Covariant;
@@ -161,13 +162,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * @return error message for the case when two types shouldn't be compared
    */
   @Override
-  protected String defaultErrorMessage(
+  public String defaultErrorMessage(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, Void p) {
-    return "Incomparable types ("
-        + subtype
-        + ", "
-        + supertype
-        + ") visitHistory = "
+    return super.defaultErrorMessage(subtype, supertype, p)
+        + System.lineSeparator()
+        + "  visitHistory = "
         + isSubtypeVisitHistory;
   }
 
@@ -181,8 +180,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     for the current top.
    */
   protected boolean isPrimarySubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    AnnotationMirror subtypeAnno = subtype.getAnnotationInHierarchy(currentTop);
-    AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+    AnnotationMirror subtypeAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop);
+    AnnotationMirror supertypeAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop);
     if (checker.getTypeFactory().hasQualifierParameterInHierarchy(supertype, currentTop)
         && checker.getTypeFactory().hasQualifierParameterInHierarchy(subtype, currentTop)) {
       // If the types have a class qualifier parameter, the qualifiers must be equivalent.
@@ -562,14 +561,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitDeclared_Primitive(
       AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Void p) {
-    // We do an asSuper first because in some cases unboxing implies a more specific annotation
-    // e.g. @UnknownInterned Integer => @Interned int  because primitives are always interned
-    AnnotatedPrimitiveType subAsSuper =
-        AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
-    if (subAsSuper == null) {
-      return isPrimarySubtype(subtype, supertype);
+    AnnotatedTypeMirror unboxedType;
+    try {
+      unboxedType = subtype.atypeFactory.getUnboxedType(subtype);
+    } catch (IllegalArgumentException ex) {
+      throw new BugInCF(
+          "DefaultTypeHierarchy: subtype isn't a boxed type: subtype: %s superType: %s",
+          subtype, supertype);
     }
-    return isPrimarySubtype(subAsSuper, supertype);
+    return isPrimarySubtype(unboxedType, supertype);
   }
 
   @Override
@@ -716,13 +716,18 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Declared(
       AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Void p) {
-    // see comment in visitDeclared_Primitive
-    AnnotatedDeclaredType subAsSuper =
-        AnnotatedTypes.castedAsSuper(subtype.atypeFactory, subtype, supertype);
-    if (subAsSuper == null) {
-      return isPrimarySubtype(subtype, supertype);
+    AnnotatedTypeFactory atypeFactory = subtype.atypeFactory;
+    Types types = atypeFactory.types;
+    AnnotatedPrimitiveType narrowedType = subtype;
+    if (TypesUtils.isBoxedPrimitive(supertype.getUnderlyingType())) {
+      TypeMirror unboxedSuper = types.unboxedType(supertype.getUnderlyingType());
+      if (unboxedSuper.getKind() != subtype.getKind()
+          && TypesUtils.canBeNarrowingPrimitiveConversion(unboxedSuper, types)) {
+        narrowedType = atypeFactory.getNarrowedPrimitive(subtype, unboxedSuper);
+      }
     }
-    return isPrimarySubtype(subAsSuper, supertype);
+    AnnotatedTypeMirror boxedSubtype = atypeFactory.getBoxedType(narrowedType);
+    return isPrimarySubtype(boxedSubtype, supertype);
   }
 
   @Override
@@ -845,12 +850,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitTypevar_Typevar(
       AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, Void p) {
 
+    TypeMirror subTM = subtype.getUnderlyingType();
+    TypeMirror superTM = supertype.getUnderlyingType();
+
     if (AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
       // The underlying types of subtype and supertype are uses of the same type parameter,
       // but they
       // may have different primary annotations.
-      boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
-      boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
+      boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+      boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
         // If both have primary annotations then just check the primary annotations
@@ -865,12 +873,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         AnnotationMirrorSet superLBs =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, supertype);
         AnnotationMirror superLB = qualHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
-        return qualHierarchy.isSubtype(subtype.getAnnotationInHierarchy(currentTop), superLB);
+        return qualHierarchy.isSubtype(
+            subtype.getPrimaryAnnotationInHierarchy(currentTop), superLB);
       } else if (!subtypeHasAnno && supertypeHasAnno) {
         // This is the case "T <: @A T" where T is a type variable.
         return qualHierarchy.isSubtype(
             subtype.getEffectiveAnnotationInHierarchy(currentTop),
-            supertype.getAnnotationInHierarchy(currentTop));
+            supertype.getPrimaryAnnotationInHierarchy(currentTop));
       }
     }
 
@@ -881,8 +890,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     }
 
-    if (TypesUtils.isCapturedTypeVariable(subtype.getUnderlyingType())
-        && TypesUtils.isCapturedTypeVariable(supertype.getUnderlyingType())) {
+    if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
       // This should be removed when 979 is fixed.
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.
@@ -934,7 +942,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         // @NullableList<@NonNull String> then it's not possible to decide if it is a
         // subtype of the wildcard.
         AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-        AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+        AnnotationMirror supertypeAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop);
         return qualHierarchy.isSubtype(subtypeAnno, supertypeAnno);
       }
     }
@@ -952,7 +960,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, Void p) {
     if (subtype.isUninferredTypeArgument()) {
       AnnotationMirror subtypeAnno = subtype.getEffectiveAnnotationInHierarchy(currentTop);
-      AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(currentTop);
+      AnnotationMirror supertypeAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop);
       return qualHierarchy.isSubtype(subtypeAnno, supertypeAnno);
     }
     return visitWildcard_Type(subtype, supertype);
@@ -1160,8 +1168,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       // visitWildcard_Type is called when checking the method call `method(x)`,
       // and also when checking lambdas.
 
-      boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
-      boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
+      boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+      boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
 
       if (subtypeHasAnno && supertypeHasAnno) {
         // If both have primary annotations then just check the primary annotations

@@ -68,13 +68,8 @@ public abstract class Node implements UniqueId {
   private static final AtomicLong nextUid = new AtomicLong(0);
 
   /** The unique ID of this object. */
-  private final long uid = nextUid.getAndIncrement();
+  private final transient long uid = nextUid.getAndIncrement();
 
-  /**
-   * Returns the unique ID of this object.
-   *
-   * @return the unique ID of this object
-   */
   @Override
   @Pure
   public long getUid(@UnknownInitialization Node this) {

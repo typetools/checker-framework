@@ -113,7 +113,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     if (!fc.isValidArgument(formatCat, argType)) {
                       // II.3
                       ExecutableElement method = TreeUtils.elementFromUse(tree);
-                      CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+                      CharSequence methodName = ElementUtils.getSimpleDescription(method);
                       ftu.failure(
                           arg, "argument", "in varargs position", methodName, argType, formatCat);
                     }
@@ -266,8 +266,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     boolean result =
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
-    AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
-    AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
     // From the manual: "It is legal to use a format string with fewer format specifiers
     // than required, but a warning is issued."

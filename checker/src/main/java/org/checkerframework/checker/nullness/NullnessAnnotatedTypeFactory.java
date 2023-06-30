@@ -73,11 +73,11 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -415,7 +415,7 @@ public class NullnessAnnotatedTypeFactory
    * @param context tree used to get dataflow value
    */
   protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
-    if (lhsType.hasAnnotation(PolyNull.class)) {
+    if (lhsType.hasPrimaryAnnotation(PolyNull.class)) {
       NullnessValue inferred = getInferredValueFor(context);
       if (inferred != null) {
         if (inferred.isPolyNullNonNull) {
@@ -428,12 +428,12 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
       NullnessStore store,
       TreePath path,
       boolean isStatic,
       Collection<? extends AnnotationMirror> receiverAnnotations) {
-    Pair<List<VariableTree>, List<VariableTree>> result =
+    IPair<List<VariableTree>, List<VariableTree>> result =
         super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
     // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
     // warning when they are not initialized.
@@ -580,9 +580,7 @@ public class NullnessAnnotatedTypeFactory
         // If a @Nullable expression is cast to a primitive, then an unboxing.of.nullable
         // error is issued.  Treat the cast as if it were annotated as @NonNull to avoid an
         // "annotations.on.use" error.
-        if (!type.isAnnotatedInHierarchy(NONNULL)) {
-          type.addAnnotation(NONNULL);
-        }
+        type.addMissingAnnotation(NONNULL);
       }
       return super.visitTypeCast(tree, type);
     }
@@ -607,10 +605,8 @@ public class NullnessAnnotatedTypeFactory
     public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromDeclaration(tree);
       if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-        if (!type.isAnnotatedInHierarchy(NONNULL)) {
-          // case 9. exception parameter
-          type.addAnnotation(NONNULL);
-        }
+        // case 9. exception parameter
+        type.addMissingAnnotation(NONNULL);
       }
       return null;
     }
@@ -663,9 +659,7 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
       // The result of newly allocated structures is always non-null.
-      if (!type.isAnnotatedInHierarchy(NONNULL)) {
-        type.replaceAnnotation(NONNULL);
-      }
+      type.replaceAnnotation(NONNULL);
 
       // The most precise element type for `new Object[] {null}` is @FBCBottom, but
       // the most useful element type is @Initialized (which is also accurate).
@@ -693,7 +687,7 @@ public class NullnessAnnotatedTypeFactory
             // Maybe this call is only necessary if argNullness is @NonNull.
             ((AnnotatedArrayType) type)
                 .getComponentType()
-                .replaceAnnotations(arrayArgComponentType.getAnnotations());
+                .replaceAnnotations(arrayArgComponentType.getPrimaryAnnotations());
           }
         }
       }
@@ -817,7 +811,7 @@ public class NullnessAnnotatedTypeFactory
    * @return true if some annotation is a nullness annotation
    */
   protected boolean containsNullnessAnnotation(
-      List<? extends AnnotationTree> annoTrees, Tree typeTree) {
+      @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
     List<? extends AnnotationTree> annos =
         TreeUtils.getExplicitAnnotationTrees(annoTrees, typeTree);
     return containsNullnessAnnotation(annos);
@@ -894,7 +888,7 @@ public class NullnessAnnotatedTypeFactory
   @Override
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
     AnnotatedTypeMirror result = super.getDefaultValueAnnotatedType(typeMirror);
-    if (getAnnotationByClass(result.getAnnotations(), Nullable.class) != null) {
+    if (getAnnotationByClass(result.getPrimaryAnnotations(), Nullable.class) != null) {
       result.replaceAnnotation(MONOTONIC_NONNULL);
     }
     return result;
@@ -915,7 +909,7 @@ public class NullnessAnnotatedTypeFactory
   public void wpiAdjustForUpdateField(
       Tree lhsTree, Element element, String fieldName, AnnotatedTypeMirror rhsATM) {
     // Synthetic variable names contain "#". Ignore them.
-    if (!rhsATM.hasAnnotation(Nullable.class) || fieldName.contains("#")) {
+    if (!rhsATM.hasPrimaryAnnotation(Nullable.class) || fieldName.contains("#")) {
       return;
     }
     TreePath lhsPath = getPath(lhsTree);
@@ -932,7 +926,7 @@ public class NullnessAnnotatedTypeFactory
   // then change rhs to @Nullable
   @Override
   public void wpiAdjustForUpdateNonField(AnnotatedTypeMirror rhsATM) {
-    if (rhsATM.hasAnnotation(MonotonicNonNull.class)) {
+    if (rhsATM.hasPrimaryAnnotation(MonotonicNonNull.class)) {
       rhsATM.replaceAnnotation(NULLABLE);
     }
   }
@@ -957,14 +951,14 @@ public class NullnessAnnotatedTypeFactory
       @Nullable List<AnnotationMirror> preconds) {
     // TODO: This does not handle the possibility that the user set a different default
     // annotation.
-    if (!(declaredType.hasAnnotation(NULLABLE)
-        || declaredType.hasAnnotation(POLYNULL)
-        || declaredType.hasAnnotation(MONOTONIC_NONNULL))) {
+    if (!(declaredType.hasPrimaryAnnotation(NULLABLE)
+        || declaredType.hasPrimaryAnnotation(POLYNULL)
+        || declaredType.hasPrimaryAnnotation(MONOTONIC_NONNULL))) {
       return null;
     }
 
     if (preOrPost == BeforeOrAfter.AFTER
-        && declaredType.hasAnnotation(MONOTONIC_NONNULL)
+        && declaredType.hasPrimaryAnnotation(MONOTONIC_NONNULL)
         && preconds.contains(requiresNonNullAnno(expression))) {
       // The postcondition is implied by the precondition and the field being
       // @MonotonicNonNull.

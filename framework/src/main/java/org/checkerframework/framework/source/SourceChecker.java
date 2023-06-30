@@ -61,6 +61,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -440,24 +441,30 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
-   * #fullMessageOf} or {@link #processArg}.
+   * #fullMessageOf} or {@link #processArg}. Is set in {@link #initChecker}.
    */
-  protected @MonotonicNonNull Properties messagesProperties;
+  protected Properties messagesProperties;
 
-  /** Used to report error messages and warnings via the compiler. */
-  protected @MonotonicNonNull Messager messager;
+  /**
+   * Used to report error messages and warnings via the compiler. Is set in {@link
+   * #typeProcessingStart}.
+   */
+  protected Messager messager;
 
   /** Element utilities. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Elements elements;
 
   /** Tree utilities; used as a helper for the {@link SourceVisitor}. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Trees trees;
 
   /** Type utilities. */
+  @SuppressWarnings("nullness:initialization.field.uninitialized") // initialized in init()
   protected Types types;
 
-  /** The source tree that is being scanned. */
-  protected @InternedDistinct CompilationUnitTree currentRoot;
+  /** The source tree that is being scanned. Is set in {@link #setRoot}. */
+  protected @MonotonicNonNull @InternedDistinct CompilationUnitTree currentRoot;
 
   /** The visitor to use. */
   protected SourceVisitor<?, ?> visitor;
@@ -520,8 +527,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** The supported lint options. */
   private @MonotonicNonNull Set<String> supportedLints;
 
-  /** The enabled lint options. */
-  private @MonotonicNonNull Set<String> activeLints;
+  /** The enabled lint options. Is set in {@link #initChecker}. */
+  private Set<String> activeLints;
 
   /**
    * The active options for this checker. This is a processed version of {@link
@@ -669,7 +676,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       SourceChecker checker = this;
 
       while (checker != null) {
-        upstreamCheckerNames.add(checker.getClass().getCanonicalName());
+        @NonNull String className = checker.getClass().getCanonicalName();
+        assert className != null : "@AssumeAssertion(nullness): checker classes have names";
+        upstreamCheckerNames.add(className);
         checker = checker.parentChecker;
       }
     }
@@ -761,6 +770,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     while (currClass != AbstractTypeProcessor.class) {
       checkers.addFirst(currClass);
       currClass = currClass.getSuperclass();
+      assert currClass != null : "@AssumeAssertion(nullness): won't encounter Object.class";
     }
 
     for (Class<?> checker : checkers) {
@@ -798,8 +808,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   private Pattern getPattern(
       String patternName, Map<String, String> options, String defaultPattern) {
-    String pattern = "";
-
+    String pattern;
     if (options.containsKey(patternName)) {
       pattern = options.get(patternName);
       if (pattern == null) {
@@ -808,10 +817,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             "The " + patternName + " property is empty; please fix your command line");
         pattern = "";
       }
-    } else if (System.getProperty("checkers." + patternName) != null) {
+    } else {
       pattern = System.getProperty("checkers." + patternName);
-    } else if (System.getenv(patternName) != null) {
-      pattern = System.getenv(patternName);
+      if (pattern == null) {
+        pattern = System.getenv(patternName);
+      }
+      if (pattern == null) {
+        pattern = "";
+      }
     }
 
     if (pattern.indexOf("/") != -1) {
@@ -907,7 +920,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public void initChecker() {
     // Grab the Trees and Messager instances now; other utilities
     // (like Types and Elements) can be retrieved by subclasses.
-    @Nullable Trees trees = Trees.instance(processingEnv);
+    Trees trees = Trees.instance(processingEnv);
     assert trees != null;
     this.trees = trees;
 
@@ -1056,7 +1069,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
+  public void reportError(
+      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     report(source, Diagnostic.Kind.ERROR, messageKey, args);
   }
 
@@ -1067,7 +1081,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
-  public void reportWarning(Object source, @CompilerMessageKey String messageKey, Object... args) {
+  public void reportWarning(
+      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     report(source, Diagnostic.Kind.MANDATORY_WARNING, messageKey, args);
   }
 
@@ -1075,12 +1090,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Reports a diagnostic message. By default, prints it to the screen via the compiler's internal
    * messager.
    *
-   * <p>Most clients should use {@link #reportError} or {@link #reportWarning}.
+   * <p>It is rare to use this method. Most clients should use {@link #reportError} or {@link
+   * #reportWarning}.
    *
    * @param source the source position information; may be an Element, a Tree, or null
    * @param d the diagnostic message
    */
-  public void report(Object source, DiagMessage d) {
+  public void report(@Nullable Object source, DiagMessage d) {
     report(source, d.getKind(), d.getMessageKey(), d.getArgs());
   }
 
@@ -1098,7 +1114,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
-      Object source, Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+      @Nullable Object source,
+      Diagnostic.Kind kind,
+      @CompilerMessageKey String messageKey,
+      Object... args) {
     assert messagesProperties != null : "null messagesProperties";
 
     if (shouldSuppressWarnings(source, messageKey)) {
@@ -1276,8 +1295,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     String key = messageKey;
 
     do {
-      if (messagesProperties.containsKey(key)) {
-        return messagesProperties.getProperty(key);
+      String messageForKey = messagesProperties.getProperty(key);
+      if (messageForKey != null) {
+        return messageForKey;
       }
 
       int dot = key.indexOf('.');
@@ -1320,7 +1340,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param args arguments for interpolation in the string corresponding to the given message key
    * @return the first part of the message format output by {@code -Adetailedmsgtext}
    */
-  private String detailedMsgTextPrefix(Object source, String defaultFormat, Object[] args) {
+  private String detailedMsgTextPrefix(
+      @Nullable Object source, String defaultFormat, Object[] args) {
     StringJoiner sj = new StringJoiner(DETAILS_SEPARATOR);
 
     // The parts, separated by " $$ " (DETAILS_SEPARATOR), are:
@@ -1418,7 +1439,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return a tuple string representing the range of characters that tree occupies in the source
    *     file, or the empty string if {@code tree} is null
    */
-  private String detailedMsgTextPositionString(Tree tree, CompilationUnitTree currentRoot) {
+  private String detailedMsgTextPositionString(
+      @Nullable Tree tree, CompilationUnitTree currentRoot) {
     if (tree == null) {
       return "";
     }
@@ -1597,7 +1619,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param name the lint key whose parest to find
    * @return the parent of the lint key
    */
-  private String parentOfOption(String name) {
+  private @Nullable String parentOfOption(String name) {
     if (name.equals("all")) {
       return null;
     }
@@ -1624,7 +1646,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** Compute the set of supported lint options. */
   protected Set<String> createSupportedLintOptions() {
-    @Nullable SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
+    SupportedLintOptions sl = this.getClass().getAnnotation(SupportedLintOptions.class);
 
     if (sl == null) {
       return Collections.emptySet();
@@ -2064,7 +2086,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     // trees.getPath might be slow, but this is only used in error reporting
-    @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
+    TreePath path = trees.getPath(this.currentRoot, tree);
 
     return shouldSuppressWarnings(path, errKey);
   }
@@ -2086,7 +2108,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     // iterate through the path; continue until path contains no declarations
-    for (@Nullable TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
+    for (TreePath declPath = TreePathUtil.enclosingDeclarationPath(path);
         declPath != null;
         declPath = TreePathUtil.enclosingDeclarationPath(declPath.getParentPath())) {
 
@@ -2324,7 +2346,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return false;
     }
 
-    @Nullable AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
+    AnnotatedFor anno = elt.getAnnotation(AnnotatedFor.class);
 
     String[] userAnnotatedFors = (anno == null ? null : anno.value());
 
@@ -2515,8 +2537,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the type system error to output
    */
   private void logTypeSystemError(TypeSystemError ce) {
-    String msg = ce.getMessage();
-    printMessage(msg);
+    logBug(
+        ce, "A type system implementation is buggy.  Please report the crash to the maintainer.");
   }
 
   /**
@@ -2525,6 +2547,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
+    logBug(ce, "The Checker Framework crashed.  Please report the crash.");
+  }
+
+  /**
+   * Log (that is, print) an internal error in the framework or a checker.
+   *
+   * @param ce the internal error to output
+   * @param culprit a message to print about the cause
+   */
+  private void logBug(Throwable ce, String culprit) {
     StringJoiner msg = new StringJoiner(System.lineSeparator());
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
@@ -2540,7 +2572,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               && processingEnv.getOptions() != null
               && processingEnv.getOptions().containsKey("noPrintErrorStack"));
 
-      msg.add("; The Checker Framework crashed.  Please report the crash.");
+      msg.add("; " + culprit);
       if (noPrintErrorStack) {
         msg.add(" To see the full stack trace, don't invoke the compiler with -AnoPrintErrorStack");
       } else {
@@ -2563,19 +2595,21 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-    boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-    Throwable cause = ce.getCause().getCause();
-    while (cause != null) {
-      msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-      printClasspath |= cause instanceof NoClassDefFoundError;
-      cause = cause.getCause();
-    }
+    if (ce.getCause() != null) {
+      msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
+      boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
+      Throwable cause = ce.getCause().getCause();
+      while (cause != null) {
+        msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+        printClasspath |= cause instanceof NoClassDefFoundError;
+        cause = cause.getCause();
+      }
 
-    if (printClasspath) {
-      msg.add("Classpath:");
-      for (URI uri : new ClassGraph().getClasspathURIs()) {
-        msg.add(uri.toString());
+      if (printClasspath) {
+        msg.add("Classpath:");
+        for (URI uri : new ClassGraph().getClasspathURIs()) {
+          msg.add(uri.toString());
+        }
       }
     }
 
@@ -2713,13 +2747,19 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new BugInCF("Could not find the version in git.properties");
     }
     String branch = gitProperties.getProperty("git.branch");
-    if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
+    // git.dirty indicates modified tracked files and staged changes.  Untracked content doesn't
+    // count, so not being dirty doesn't mean that exactly the printed commit is being run.
+    String dirty = gitProperties.getProperty("git.dirty");
+    if (version.endsWith("-SNAPSHOT") || !branch.equals("master") || dirty.equals("true")) {
       // Sometimes the branch is HEAD, which is not informative.
       // How does that happen, and how can I fix it?
       version += ", branch " + branch;
       // For brevity, only date but not time of day.
       version += ", " + gitProperties.getProperty("git.commit.time").substring(0, 10);
       version += ", commit " + gitProperties.getProperty("git.commit.id.abbrev");
+      if (dirty.equals("true")) {
+        version += ", dirty=true";
+      }
     }
     return version;
   }

@@ -44,6 +44,9 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
@@ -68,19 +71,19 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -162,7 +165,7 @@ class MustCallConsistencyAnalyzer {
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
    * node. The cache prevents repeatedly computing least upper bounds on stores
    */
-  private final IdentityHashMap<Node, CFStore> cmStoreAfter = new IdentityHashMap<>();
+  private final IdentityHashMap<Node, AccumulationStore> cmStoreAfter = new IdentityHashMap<>();
 
   /**
    * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
@@ -174,7 +177,7 @@ class MustCallConsistencyAnalyzer {
   private final ResourceLeakChecker checker;
 
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final CFAnalysis analysis;
+  private final AccumulationAnalysis analysis;
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
@@ -299,10 +302,11 @@ class MustCallConsistencyAnalyzer {
       // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
       // method was called on just one of the aliases then they all need to be treated as if
       // they need to call the relevant methods.
+      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = mustCallAnnotatedTypeFactory.getQualifierHierarchy().leastUpperBound(mcLub, mcAnno);
+        mcLub = qualHierarchy.leastUpperBound(mcLub, mcAnno);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
@@ -332,6 +336,13 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
+      AnnotationMirror result =
+          mcAtf
+              .getAnnotatedType(reference.getElement())
+              .getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+      if (result != null) {
+        return result;
+      }
       // There wasn't an @MustCall annotation for it in the store, so fall back to the default
       // must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
@@ -349,7 +360,8 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
-      return mcAtf.getAnnotatedType(typeElt).getAnnotationInHierarchy(mcAtf.TOP);
+
+      return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
@@ -396,7 +408,7 @@ class MustCallConsistencyAnalyzer {
     /** A local variable defined in the source code or a temporary variable for an expression. */
     public final LocalVariable reference;
 
-    /** The tree at which {@code reference} was assigned, for the purpose of error reporting */
+    /** The tree at which {@code reference} was assigned, for the purpose of error reporting. */
     public final Tree tree;
 
     /**
@@ -472,7 +484,7 @@ class MustCallConsistencyAnalyzer {
    *     so this constructor cannot get it directly.
    */
   /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, CFAnalysis analysis) {
+      ResourceLeakAnnotatedTypeFactory typeFactory, AccumulationAnalysis analysis) {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
@@ -734,9 +746,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -862,8 +874,8 @@ class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
-          || !typeFactory.getMustCallValue(typeElt).isEmpty()
-          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
+          || !typeFactory.hasEmptyMustCallValue(typeElt)
+          || !typeFactory.hasEmptyMustCallValue(newClassTree);
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -1154,7 +1166,8 @@ class MustCallConsistencyAnalyzer {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation = mustCallAnnotatedType.getAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation =
+        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
     return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
@@ -1344,7 +1357,7 @@ class MustCallConsistencyAnalyzer {
         MustCallAnnotatedTypeFactory mcTypeFactory =
             typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
-            mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+            mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
             AnnotationUtils.getElementValueArray(
                 mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1383,6 +1396,44 @@ class MustCallConsistencyAnalyzer {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
+    // The following code handles a special case where the field being assigned is itself getting
+    // passed in an owning position to another method on the RHS of the assignment.
+    // For example, if the field's type is a class whose constructor takes another instance
+    // of itself (such as a node in a linked list) in an owning position, re-assigning the field
+    // to a new instance that takes the field's value as an owning parameter is safe (the new value
+    // has taken responsibility for closing the old value). In such a case, it is not required
+    // that the must-call obligation of the field be satisfied via method calls before the
+    // assignment, since the invoked method will take ownership of the object previously
+    // referenced by the field and handle the obligation. This fixes the false positive in
+    // https://github.com/typetools/checker-framework/issues/5971.
+    Node rhs = node.getExpression();
+    if (!noLightweightOwnership
+        && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
+
+      List<Node> arguments = getArgumentsOfInvocation(rhs);
+      List<? extends VariableElement> parameters = getParametersOfInvocation(rhs);
+
+      if (arguments.size() == parameters.size()) {
+        for (int i = 0; i < arguments.size(); i++) {
+          VariableElement param = parameters.get(i);
+          if (typeFactory.hasOwning(param)) {
+            Node argument = arguments.get(i);
+            if (argument.equals(lhs)) {
+              return;
+            }
+          }
+        }
+      } else {
+        // This could happen, e.g., with varargs, or with strange cases like generated Enum
+        // constructors. In the varargs case (i.e. if the varargs parameter is owning),
+        // only the first of the varargs arguments will actually get transferred: the second
+        // and later varargs arguments will continue to be tracked at the call-site.
+        // For now, just skip this case - the worst that will happen is a false positive in
+        // cases like the varargs one described above.
+        // TODO allow for ownership transfer here if needed in future, but for now do nothing
+      }
+    }
+
     MustCallAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
@@ -1396,7 +1447,15 @@ class MustCallConsistencyAnalyzer {
     }
     if (mcAnno == null) {
       // No stored value (or the stored value is Poly/top), so use the declared type.
-      mcAnno = mcTypeFactory.getAnnotatedType(lhs.getElement()).getAnnotation(MustCall.class);
+      mcAnno =
+          mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
+    }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
     }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
@@ -1409,9 +1468,8 @@ class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    Node rhs = node.getExpression();
-    CFStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
-    CFValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
+    AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
+    AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
     if (cmValue != null) {
       for (AnnotationMirror anno : cmValue.getAnnotations()) {
@@ -1647,8 +1705,8 @@ class MustCallConsistencyAnalyzer {
     TypeElement typeElt = TypesUtils.getTypeElement(type);
     // no need to track if type has no possible @MustCall obligation
     if (typeElt != null
-        && typeFactory.getMustCallValue(typeElt).isEmpty()
-        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+        && typeFactory.hasEmptyMustCallValue(typeElt)
+        && typeFactory.hasEmptyMustCallValue(methodInvocationTree)) {
       return false;
     }
     // check for absence of @NotOwning annotation
@@ -1664,14 +1722,15 @@ class MustCallConsistencyAnalyzer {
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
    *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
    */
-  private Set<Pair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(Block block) {
+  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
+      Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(Pair.of(regularSucc, null));
+        result.add(IPair.of(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
@@ -1679,15 +1738,15 @@ class MustCallConsistencyAnalyzer {
         TypeMirror exceptionType = entry.getKey();
         if (!isIgnoredExceptionType(((Type) exceptionType).tsym.getQualifiedName())) {
           for (Block exSucc : entry.getValue()) {
-            result.add(Pair.of(exSucc, exceptionType));
+            result.add(IPair.of(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<Pair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(Pair.of(b, null));
+        result.add(IPair.of(b, null));
       }
       return result;
     }
@@ -1707,7 +1766,7 @@ class MustCallConsistencyAnalyzer {
    * then the Obligation is passed forward to the successor ("propagated") with any definitely
    * out-of-scope aliases removed from its resource alias set.
    *
-   * @param obligations Obligations for the current block
+   * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
@@ -1722,7 +1781,7 @@ class MustCallConsistencyAnalyzer {
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (Pair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
       Block successor = successorAndExceptionType.first;
       // If nonnull, currentBlock is an ExceptionBlock.
@@ -1746,7 +1805,7 @@ class MustCallConsistencyAnalyzer {
                   + " with exception type "
                   + exceptionType;
       // Computed outside the Obligation loop for efficiency.
-      CFStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+      AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
       for (Obligation obligation : obligations) {
         // This boolean is true if there is no evidence that the Obligation does not go out
         // of scope - that is, if there is definitely a resource alias that is in scope in
@@ -1843,7 +1902,8 @@ class MustCallConsistencyAnalyzer {
           //        path.
           //    2b. in all other cases, use the MC store from after the last node in
           //        the block.
-          CFStore mcStore, cmStore;
+          CFStore mcStore;
+          AccumulationStore cmStore;
           if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
             cmStore =
                 obligationGoesOutOfScopeBeforeSuccessor
@@ -1908,7 +1968,7 @@ class MustCallConsistencyAnalyzer {
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
    */
-  private boolean aliasInScopeInSuccessor(CFStore successorStore, ResourceAlias alias) {
+  private boolean aliasInScopeInSuccessor(AccumulationStore successorStore, ResourceAlias alias) {
     return successorStore.getValue(alias.reference) != null;
   }
 
@@ -2010,11 +2070,31 @@ class MustCallConsistencyAnalyzer {
    *     explanation to include in the error message
    */
   private void checkMustCall(
-      Obligation obligation, CFStore cmStore, CFStore mcStore, String outOfScopeReason) {
+      Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+
+    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
+    if (mustCallValue == null) {
+      // Report the error at the first alias' definition. This choice is arbitrary but
+      // consistent.
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.known",
+              firstAlias.reference.toString(),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
+        }
+      }
+      return;
+    }
     // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue == null || mustCallValue.isEmpty()) {
+    if (mustCallValue.isEmpty()) {
       return;
     }
 
@@ -2023,14 +2103,19 @@ class MustCallConsistencyAnalyzer {
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
-      CFValue aliasCFValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
+      AccumulationValue cmValue = cmStore != null ? cmStore.getValue(alias.reference) : null;
       AnnotationMirror cmAnno = null;
 
-      if (aliasCFValue != null) { // When store contains the lhs
-        for (AnnotationMirror anno : aliasCFValue.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-            cmAnno = anno;
+      if (cmValue != null) { // When store contains the lhs
+        Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+        if (accumulatedValues != null) { // type variable or wildcard type
+          cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+        } else {
+          for (AnnotationMirror anno : cmValue.getAnnotations()) {
+            if (AnnotationUtils.areSameByName(
+                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+              cmAnno = anno;
+            }
           }
         }
       }

@@ -1,6 +1,6 @@
-public class BasicTest {
+public class AggregateBasicTest {
   // Random code just to make sure that the aggregate design pattern
-  // does not throw any exceptions
+  // does not throw any exceptions.
   Object field = new Object();
   String[] array = {"hello", "world"};
 

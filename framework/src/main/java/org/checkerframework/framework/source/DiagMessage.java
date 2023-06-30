@@ -46,6 +46,17 @@ public class DiagMessage {
   }
 
   /**
+   * Create a DiagMessage with kind ERROR.
+   *
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   * @return a new DiagMessage
+   */
+  public static DiagMessage error(@CompilerMessageKey String messageKey, Object... args) {
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
    * Returns the kind of this DiagMessage.
    *
    * @return the kind of this DiagMessage
@@ -108,7 +119,8 @@ public class DiagMessage {
    * @param list2 a list of DiagMessage, or null
    * @return the concatenation of the lists
    */
-  public static List<DiagMessage> mergeLists(List<DiagMessage> list1, List<DiagMessage> list2) {
+  public static @Nullable List<DiagMessage> mergeLists(
+      @Nullable List<DiagMessage> list1, @Nullable List<DiagMessage> list2) {
     if (list1 == null || list1.isEmpty()) {
       return list2;
     } else if (list2 == null || list2.isEmpty()) {

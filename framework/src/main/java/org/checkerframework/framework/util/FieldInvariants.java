@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -35,11 +35,11 @@ public class FieldInvariants {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
+   * Creates a new FieldInvariants object. The result is well-formed if the length of qualifiers is
    * either 1 or equal to length of {@code fields}.
    *
    * @param fields list of fields
-   * @param qualifiers list of qualifiers
+   * @param qualifiers list of qualifiers, or a single qualifier that applies to all fields
    * @param factory the type factory
    */
   public FieldInvariants(
@@ -49,8 +49,8 @@ public class FieldInvariants {
 
   /**
    * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
-   * fields} and {@code qualifiers}. The result is well-formed if length of qualifiers is either 1
-   * or equal to length of {@code fields}.
+   * fields} and {@code qualifiers}. The result is well-formed if the length of qualifiers is either
+   * 1 or equal to length of {@code fields}.
    *
    * @param other other invariant object, may be null
    * @param fields list of fields
@@ -58,7 +58,7 @@ public class FieldInvariants {
    * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other,
+      @Nullable FieldInvariants other,
       List<String> fields,
       List<AnnotationMirror> qualifiers,
       AnnotatedTypeFactory factory) {
@@ -117,20 +117,20 @@ public class FieldInvariants {
   }
 
   /**
-   * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
+   * Returns null if this is stronger than the given FieldInvariants, otherwise returns the error
+   * message. This is stronger if each of its qualifiers is a subtype of (or equal to) the
+   * respective qualfier in the given FieldInvariants.
    *
-   * @param superInvar the value to check for being a super invariant
-   * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
+   * @param superInvar the value to check for being a weaker invariant
+   * @return null if this is stronger, otherwise returns an error message
    */
-  public DiagMessage isSuperInvariant(FieldInvariants superInvar) {
+  public @Nullable DiagMessage isStrongerThan(FieldInvariants superInvar) {
     QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
-      return new DiagMessage(
-          Diagnostic.Kind.ERROR,
-          "field.invariant.not.found.superclass",
-          String.join(", ", missingFields));
+      return DiagMessage.error(
+          "field.invariant.not.found.superclass", String.join(", ", missingFields));
     }
 
     for (String field : superInvar.fields) {
@@ -139,8 +139,7 @@ public class FieldInvariants {
       for (AnnotationMirror superA : superQualifiers) {
         AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
         if (sub == null || !qualHierarchy.isSubtype(sub, superA)) {
-          return new DiagMessage(
-              Diagnostic.Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+          return DiagMessage.error("field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }
     }

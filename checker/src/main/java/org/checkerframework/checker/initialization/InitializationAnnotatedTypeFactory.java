@@ -41,6 +41,7 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.NullnessChecker;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -59,10 +60,10 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /**
  * The annotated type factory for the freedom-before-commitment type-system. The
@@ -441,7 +442,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   @Override
-  public AnnotatedDeclaredType getSelfType(Tree tree) {
+  public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
     AnnotatedDeclaredType selfType = super.getSelfType(tree);
 
     TreePath path = getPath(tree);
@@ -471,7 +472,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @return path to a top-level member containing the leaf of {@code path}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparison
-  private TreePath findTopLevelClassMemberForTree(TreePath path) {
+  private @Nullable TreePath findTopLevelClassMemberForTree(TreePath path) {
     if (TreeUtils.isClassTree(path.getLeaf())) {
       path = path.getParentPath();
       if (path == null) {
@@ -575,7 +576,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that are not yet initialized in a given store (a pair of lists)
    */
-  public Pair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
       Store store,
       TreePath path,
       boolean isStatic,
@@ -601,7 +602,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
       }
     }
-    return Pair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
+    return IPair.of(uninitWithInvariantAnno, uninitWithoutInvariantAnno);
   }
 
   /**
@@ -712,7 +713,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     // not necessary if there is an explicit UnknownInitialization
     // annotation on the field
     if (AnnotationUtils.containsSameByName(
-        fieldAnnotations.getAnnotations(), UNKNOWN_INITIALIZATION)) {
+        fieldAnnotations.getPrimaryAnnotations(), UNKNOWN_INITIALIZATION)) {
       return;
     }
     if (isUnknownInitialization(receiverType) || isUnderInitialization(receiverType)) {
@@ -901,9 +902,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     protected AnnotationMirror leastUpperBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
-      if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
-        return null;
-      }
+      assert isInitializationAnnotation(anno1);
+      assert isInitializationAnnotation(anno2);
 
       // Handle the case where one is a subtype of the other.
       if (isSubtypeInitialization(anno1, qual1, anno2, qual2)) {
@@ -963,7 +963,7 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param qual2 a qualifier kind
      * @return the glb of anno1 and anno2
      */
-    protected AnnotationMirror greatestLowerBoundInitialization(
+    protected @Nullable AnnotationMirror greatestLowerBoundInitialization(
         AnnotationMirror anno1, QualifierKind qual1, AnnotationMirror anno2, QualifierKind qual2) {
       if (!isInitializationAnnotation(anno1) || !isInitializationAnnotation(anno2)) {
         return null;

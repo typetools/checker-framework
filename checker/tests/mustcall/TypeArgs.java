@@ -4,11 +4,9 @@ public class TypeArgs {
 
   static class A<Q extends @MustCall({"carly"}) Object> {}
 
-  // :: error: (type.argument)
   static class B<S> extends A<S> {}
 
   public <T> void f1(Generic<T> real, Generic<? super T> other, boolean flag) {
-    // :: error: (type.arguments.not.inferred)
     f2(flag ? real : other);
   }
 

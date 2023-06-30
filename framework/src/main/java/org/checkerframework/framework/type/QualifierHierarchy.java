@@ -32,7 +32,7 @@ public interface QualifierHierarchy {
   /**
    * Determine whether this is valid.
    *
-   * @return whether this is valid
+   * @return true if this is valid
    */
   default boolean isValid() {
     return true;
@@ -149,6 +149,7 @@ public interface QualifierHierarchy {
   /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
    *
    * <p>Examples:
    *
@@ -255,13 +256,12 @@ public interface QualifierHierarchy {
    */
   default AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-    AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
-    if (widenUpperBound == null) {
+    AnnotationMirror widenedUpperBound = leastUpperBound(newQualifier, previousQualifier);
+    if (widenedUpperBound == null) {
       throw new BugInCF(
-          "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
-          newQualifier, previousQualifier);
+          "widenedUpperBound(%s, %s): unrelated qualifiers", newQualifier, previousQualifier);
     }
-    return widenUpperBound;
+    return widenedUpperBound;
   }
 
   /**
@@ -270,8 +270,8 @@ public interface QualifierHierarchy {
    *
    * @param qualifier1 first qualifier
    * @param qualifier2 second qualifier
-   * @return greatest lower bound of the two annotations or null if the two annotations are not from
-   *     the same hierarchy
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
@@ -333,12 +333,12 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   * fewer qualifiers than the width of the QualifierHierarchy.
+   * Returns true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   * set with fewer qualifiers than the width of the QualifierHierarchy.
    *
    * @param type the type to test
-   * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   *     fewer qualifiers than the width of the QualifierHierarchy
+   * @return true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   *     set with fewer qualifiers than the width of the QualifierHierarchy
    */
   static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
     return type.getKind() == TypeKind.TYPEVAR

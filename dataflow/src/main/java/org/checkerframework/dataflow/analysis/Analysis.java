@@ -33,7 +33,7 @@ public interface Analysis<
    * In calls to {@code Analysis#runAnalysisFor}, whether to return the store before or after the
    * given node.
    */
-  public static enum BeforeOrAfter {
+  public enum BeforeOrAfter {
     /** Return the pre-store. */
     BEFORE,
     /** Return the post-store. */
@@ -91,7 +91,8 @@ public interface Analysis<
       Analysis.BeforeOrAfter preOrPost,
       TransferInput<V, S> blockTransferInput,
       IdentityHashMap<Node, V> nodeValues,
-      Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches);
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches);
 
   /**
    * The result of running the analysis. This is only available once the analysis finished running.

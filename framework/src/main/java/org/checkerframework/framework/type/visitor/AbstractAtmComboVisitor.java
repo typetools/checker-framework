@@ -12,7 +12,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AtmCombo;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Implements all methods from AtmComboVisitor. By default all methods throw an exception. Implement
@@ -22,35 +21,6 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
     implements AtmComboVisitor<RETURN_TYPE, PARAM> {
-
-  /**
-   * Formats type1, type2 and param into an error message used by all methods of
-   * AbstractAtmComboVisitor that are not overridden. Normally, this method should indicate that the
-   * given method (and therefore the given pair of type mirror classes) is not supported by this
-   * class.
-   *
-   * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
-   * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
-   * @param param subtype specific parameter passed to every visit method
-   * @return an error message
-   */
-  protected abstract String defaultErrorMessage(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
-
-  /**
-   * Called by the default implementation of every AbstractAtmComboVisitor visit method. This
-   * methodnS issues a runtime exception by default. In general, it should handle the case where a
-   * visit method has been called with a pair of type mirrors that should never be passed to this
-   * particular visitor.
-   *
-   * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
-   * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
-   * @param param subtype specific parameter passed to every visit method
-   */
-  protected RETURN_TYPE defaultAction(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
-    throw new BugInCF(defaultErrorMessage(type1, type2, param));
-  }
 
   /**
    * Dispatches to a more specific {@code visit*} method.

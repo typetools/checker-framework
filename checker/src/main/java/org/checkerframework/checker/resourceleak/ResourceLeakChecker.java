@@ -1,11 +1,12 @@
 package org.checkerframework.checker.resourceleak;
 
-import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
@@ -50,9 +51,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   private int numMustCallFailed = 0;
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
 
     if (this.processingEnv.getOptions().containsKey(MustCallChecker.NO_CREATES_MUSTCALLFOR)) {
       checkers.add(MustCallNoCreatesMustCallForChecker.class);
@@ -69,7 +69,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   }
 
   @Override
-  public void reportError(Object source, @CompilerMessageKey String messageKey, Object... args) {
+  public void reportError(
+      @Nullable Object source, @CompilerMessageKey String messageKey, Object... args) {
     if (messageKey.equals("required.method.not.called")) {
       // This is safe because of the message key.
       String qualifiedTypeName = (String) args[1];

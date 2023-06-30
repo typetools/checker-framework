@@ -11,7 +11,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a array type used in an expression such as a field access.
+ * A node representing an array type used in an expression such as a field access.
  *
  * <p><em>type</em> .class
  */

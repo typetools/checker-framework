@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
@@ -14,6 +14,7 @@ import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.ArraySet;
@@ -28,7 +29,7 @@ public class CFGTranslationPhaseTwo {
    * Perform phase two of the translation.
    *
    * @param in the result of phase one
-   * @return a control flow graph that might still contain degenerate basic block (such as empty
+   * @return a control flow graph that might still contain degenerate basic blocks (such as empty
    *     regular basic blocks or conditional blocks with the same block as 'then' and 'else'
    *     successor)
    */
@@ -36,7 +37,7 @@ public class CFGTranslationPhaseTwo {
   public static ControlFlowGraph process(PhaseOneResult in) {
 
     Map<Label, Integer> bindings = in.bindings;
-    ArrayList<ExtendedNode> nodeList = in.nodeList;
+    List<ExtendedNode> nodeList = in.nodeList;
     // A leader is an extended node which will give rise to a basic block in phase two.
     Set<Integer> leaders = in.leaders;
 
@@ -170,7 +171,7 @@ public class CFGTranslationPhaseTwo {
             TypeMirror cause = entry.getKey();
             for (Label label : entry.getValue()) {
               Integer target = bindings.get(label);
-              // TODO: This is sometimes null; is this a problem?
+              // TODO: `target` is sometimes null; is this a problem?
               // assert target != null;
               missingExceptionalEdges.add(new MissingEdge(e, target, cause));
             }
@@ -205,6 +206,14 @@ public class CFGTranslationPhaseTwo {
         // edge to specific target
         ExtendedNode extendedNode = nodeList.get(index);
         BlockImpl target = extendedNode.getBlock();
+        List<Node> targetNodes = target.getNodes();
+        Node firstNode = targetNodes.isEmpty() ? null : targetNodes.get(0);
+        if (firstNode instanceof CatchMarkerNode) {
+          TypeMirror catchType = ((CatchMarkerNode) firstNode).getCatchType();
+          if (in.types.isSubtype(catchType, cause)) {
+            cause = catchType;
+          }
+        }
         source.addExceptionalSuccessor(target, cause);
       }
     }

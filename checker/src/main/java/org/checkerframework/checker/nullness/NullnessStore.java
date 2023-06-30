@@ -2,6 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.InitializationStore;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -24,18 +25,13 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   protected boolean isPolyNullNull;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
 
   /** The unique ID of this object. */
-  final long uid = nextUid.getAndIncrement();
+  private final transient long uid = nextUid.getAndIncrement();
 
-  /**
-   * Returns the unique ID of this object.
-   *
-   * @return the unique ID of this object
-   */
   @Override
-  public long getUid() {
+  public long getUid(@UnknownInitialization NullnessStore this) {
     return uid;
   }
 

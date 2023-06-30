@@ -39,8 +39,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>More precisely, the following refinements are performed:
  *
  * <ol>
- *   <li>After the call to a constructor ("this()" call), all non-null fields of the current class
- *       can safely be considered initialized.
+ *   <li>After the call to a constructor ({@code this()} call), all non-null fields of the current
+ *       class can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
  *       InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
@@ -147,7 +147,6 @@ public class InitializationTransfer<
   @Override
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitAssignment(n, in);
-    assert result instanceof RegularTransferResult;
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.
@@ -178,7 +177,7 @@ public class InitializationTransfer<
       AnnotatedTypeMirror fieldAnno = analysis.getTypeFactory().getAnnotatedType(n.getElement());
       // Only if the field has the type system's invariant annotation,
       // such as @NonNull.
-      if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
+      if (fieldAnno.hasPrimaryAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
         AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
         V oldResultValue = result.getResultValue();
         V refinedResultValue =

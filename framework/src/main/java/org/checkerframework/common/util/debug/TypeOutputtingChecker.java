@@ -234,13 +234,6 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(
-          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
-        throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
-      }
-
-      // Not needed - raises error.
-      @Override
       public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
         throw new BugInCF("GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
       }

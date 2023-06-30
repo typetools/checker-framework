@@ -121,7 +121,7 @@ checklink:
 
 .PHONY: checklink-via-file
 checklink-via-file:
-	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
+	${CHECKLINK}/checklink -q -e $(grep -v '^#' ${CHECKLINK}/checklink-args.txt) manual.html
 
 # Example invocation:
 #   CHECKLINK=$HOME/bin/src/checklink make checklink-via-http

@@ -8,6 +8,8 @@ import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -17,8 +19,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer function for the resource-leak extension to the called-methods type system. */
@@ -42,9 +42,10 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitTernaryExpression(
-      TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
+  public TransferResult<AccumulationValue, AccumulationStore> visitTernaryExpression(
+      TernaryExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitTernaryExpression(node, input);
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
@@ -54,9 +55,10 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
-      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+  public TransferResult<AccumulationValue, AccumulationStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitSwitchExpressionNode(node, input);
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       // Add the synthetic variable created during CFG construction to the temporary
       // variable map (rather than creating a redundant temp var)
@@ -66,10 +68,11 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+  public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
 
-    TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, input);
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitMethodInvocation(node, input);
 
     handleCreatesMustCallFor(node, result);
     updateStoreWithTempVar(result, node);
@@ -110,7 +113,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * @param result the transfer result whose stores should be cleared of information
    */
   private void handleCreatesMustCallFor(
-      MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
+      MethodInvocationNode n, TransferResult<AccumulationValue, AccumulationStore> result) {
     if (!rlTypeFactory.canCreateObligations()) {
       return;
     }
@@ -120,7 +123,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
             n, rlTypeFactory, rlTypeFactory);
     AnnotationMirror defaultType = rlTypeFactory.top;
     for (JavaExpression targetExpr : targetExprs) {
-      CFValue defaultTypeValue =
+      AccumulationValue defaultTypeValue =
           analysis.createSingleAnnotationValue(defaultType, targetExpr.getType());
       if (result.containsTwoStores()) {
         result.getThenStore().replaceValue(targetExpr, defaultTypeValue);
@@ -132,9 +135,10 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitObjectCreation(
-      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> result = super.visitObjectCreation(node, input);
+  public TransferResult<AccumulationValue, AccumulationStore> visitObjectCreation(
+      ObjectCreationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+    TransferResult<AccumulationValue, AccumulationStore> result =
+        super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
     return result;
   }
@@ -148,7 +152,8 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
    */
-  public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {
+  public void updateStoreWithTempVar(
+      TransferResult<AccumulationValue, AccumulationStore> result, Node node) {
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       MustCallAnnotatedTypeFactory mcAtf =
@@ -160,8 +165,16 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
         AnnotationMirror anm =
             rlTypeFactory
                 .getAnnotatedType(node.getTree())
-                .getAnnotationInHierarchy(rlTypeFactory.top);
-        insertIntoStores(result, localExp, anm == null ? rlTypeFactory.top : anm);
+                .getPrimaryAnnotationInHierarchy(rlTypeFactory.top);
+        if (anm == null) {
+          anm = rlTypeFactory.top;
+        }
+        if (result.containsTwoStores()) {
+          result.getThenStore().insertValue(localExp, anm);
+          result.getElseStore().insertValue(localExp, anm);
+        } else {
+          result.getRegularStore().insertValue(localExp, anm);
+        }
       }
     }
   }

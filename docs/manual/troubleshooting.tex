@@ -766,8 +766,8 @@ In a startup file, write:
 \begin{Verbatim}
 brew update
 brew install git ant hevea maven mercurial librsvg unzip make
-brew tap AdoptOpenJDK/openjdk
-brew install --cask adoptopenjdk17
+brew tap homebrew/cask-versions
+brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
 
@@ -793,7 +793,7 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-17.jdk/Contents/
 
 
 \item[Windows]
-  To build on Windows 10,
+  To build on Windows 10 or later,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
@@ -814,7 +814,7 @@ Obtain the latest source code from the version control repository:
 
 \begin{Verbatim}
 git clone https://github.com/typetools/checker-framework.git checker-framework
-export CHECKERFRAMEWORK=`pwd`/checker-framework
+export CHECKERFRAMEWORK=$(pwd)/checker-framework
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -834,11 +834,11 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \begin{enumerate}
 
 \item
-Run \code{./gradlew assembleForJavac} to build the Checker Framework for \<javac>:
+As with any Gradle project, run \code{./gradlew assemble} to build the Checker Framework:
 
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
-  ./gradlew assembleForJavac
+  ./gradlew assemble
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 

@@ -640,13 +640,38 @@ public final class TypesUtils {
    * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
    *
    * @param type possible functional interface type
-   * @param env ProcessingEnvironment
+   * @param env the processing environment
    * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     return javacTypes.isFunctionalInterface((Type) type);
+  }
+
+  /**
+   * Returns true if the given type is a compound type.
+   *
+   * @param type a type
+   * @return true if the given type is a compound type
+   */
+  public static boolean isCompoundType(TypeMirror type) {
+    switch (type.getKind()) {
+      case ARRAY:
+      case EXECUTABLE:
+      case INTERSECTION:
+      case UNION:
+      case TYPEVAR:
+      case WILDCARD:
+        return true;
+
+      case DECLARED:
+        DeclaredType declaredType = (DeclaredType) type;
+        return !declaredType.getTypeArguments().isEmpty();
+
+      default:
+        return false;
+    }
   }
 
   /**
@@ -694,7 +719,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -705,7 +730,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -1073,7 +1098,7 @@ public final class TypesUtils {
    * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code type};
    *     otherwise, null
    */
-  public static TypeMirror asSuper(
+  public static @Nullable TypeMirror asSuper(
       TypeMirror type, TypeMirror superType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
@@ -1386,5 +1411,22 @@ public final class TypesUtils {
     assert lowerBound == null || nonObjectUpperBound == null;
     WildcardType wildcardType = types.getWildcardType(nonObjectUpperBound, lowerBound);
     return com.sun.tools.javac.util.List.of((Type) wildcardType).head;
+  }
+
+  /**
+   * Returns true if the type is byte, short, char, Byte, Short, or Character. All other narrowings
+   * require a cast. See JLS 5.1.3.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if assignment to the type may be a narrowing
+   */
+  public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
+    // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
+    TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
+    TypeKind unboxedKind = unboxedType.getKind();
+    return unboxedKind == TypeKind.BYTE
+        || unboxedKind == TypeKind.SHORT
+        || unboxedKind == TypeKind.CHAR;
   }
 }

@@ -49,8 +49,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
 import org.checkerframework.dataflow.expression.BinaryOperation;
@@ -90,13 +93,14 @@ public class JavaExpressionParseUtil {
    * Anchored pattern for a formal parameter use; matches a string that is exactly a formal
    * parameter use.
    */
-  protected static final Pattern ANCHORED_PARAMETER_PATTERN =
+  protected static final @Regex(1) Pattern ANCHORED_PARAMETER_PATTERN =
       Pattern.compile("^" + PARAMETER_REGEX + "$");
 
   /**
    * Unanchored pattern for a formal parameter use; can be used to find all formal parameter uses.
    */
-  protected static final Pattern UNANCHORED_PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEX);
+  protected static final @Regex(1) Pattern UNANCHORED_PARAMETER_PATTERN =
+      Pattern.compile(PARAMETER_REGEX);
 
   /**
    * Parsable replacement for formal parameter references. It is parsable because it is a Java
@@ -232,7 +236,7 @@ public class JavaExpressionParseUtil {
      * Create a new ExpressionToJavaExpressionVisitor.
      *
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse a formal parameter reference such
      *     as "#2", or null if parameters should not appear in the expression
@@ -263,7 +267,7 @@ public class JavaExpressionParseUtil {
      *
      * @param expr the JavaParser {@link Expression} to convert
      * @param enclosingType type of the class that encloses the JavaExpression
-     * @param thisReference JavaExpression to which to parse "this", or null if "this" should not
+     * @param thisReference a JavaExpression to which to parse "this", or null if "this" should not
      *     appear in the expression
      * @param parameters list of JavaExpressions to which to parse parameters, or null if parameters
      *     should not appear in the expression
@@ -301,6 +305,7 @@ public class JavaExpressionParseUtil {
      * Initializes the {@code resolver} field if necessary. Does nothing on invocations after the
      * first.
      */
+    @EnsuresNonNull("resolver")
     private void setResolverField() {
       if (resolver == null) {
         resolver = new Resolver(env);
@@ -552,6 +557,8 @@ public class JavaExpressionParseUtil {
         searchType = getTypeOfEnclosingClass(searchDeclaredType);
       }
 
+      setResolverField();
+
       if (enclosingType.getKind() == TypeKind.DECLARED) {
         // Is identifier in the same package as this?
         PackageSymbol packageSymbol =
@@ -600,6 +607,7 @@ public class JavaExpressionParseUtil {
      */
     protected @Nullable FieldAccess getIdentifierAsFieldAccess(
         JavaExpression receiverExpr, String identifier) {
+      setResolverField();
       // Find the field element.
       TypeMirror enclosingTypeOfField = receiverExpr.getType();
       VariableElement fieldElem;
@@ -624,7 +632,8 @@ public class JavaExpressionParseUtil {
         }
       }
 
-      // Construct a FieldAccess expression.
+      // `fieldElem` is now set.  Construct a FieldAccess expression.
+
       if (ElementUtils.isStatic(fieldElem)) {
         Element classElem = fieldElem.getEnclosingElement();
         JavaExpression staticClassReceiver = new ClassName(ElementUtils.getType(classElem));
@@ -782,8 +791,11 @@ public class JavaExpressionParseUtil {
       throw constructJavaExpressionParseError(methodName, "no such method");
     }
 
-    // expr is a field access, a fully qualified class name, or a class name qualified with
-    // another class name (e.g. {@code OuterClass.InnerClass})
+    // `expr` should be a field access, a fully qualified class name, or a class name qualified with
+    // another class name (e.g. {@code OuterClass.InnerClass}).
+    // If the expression refers to a class that is not available to the resolver (the class wasn't
+    // passed to javac on the command line), then the argument can be "outerpackage.innerpackage",
+    // which will lead to a confusing error message.
     @Override
     public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
       setResolverField();
@@ -842,7 +854,7 @@ public class JavaExpressionParseUtil {
 
     @Override
     public JavaExpression visit(ArrayCreationExpr expr, Void aVoid) {
-      List<JavaExpression> dimensions =
+      List<@Nullable JavaExpression> dimensions =
           CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
                   dimension.getDimension().isPresent()
@@ -1055,7 +1067,10 @@ public class JavaExpressionParseUtil {
   public static int parameterIndex(String s) {
     Matcher matcher = ANCHORED_PARAMETER_PATTERN.matcher(s);
     if (matcher.find()) {
-      return Integer.parseInt(matcher.group(1));
+      @SuppressWarnings(
+          "nullness:assignment") // group 1 is non-null due to the structure of the regex
+      @NonNull String group1 = matcher.group(1);
+      return Integer.parseInt(group1);
     }
     return -1;
   }

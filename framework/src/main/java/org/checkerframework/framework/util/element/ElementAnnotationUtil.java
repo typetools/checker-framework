@@ -19,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -271,9 +272,7 @@ public class ElementAnnotationUtil {
         // This will be false if we've defaulted the bounds and are reading them again.
         // In that case, we will have already created an annotation for the extends bound
         // that should be honored and NOT overwritten.
-        if (!extendsBound.isAnnotatedInHierarchy(anno)) {
-          extendsBound.addAnnotation(anno);
-        }
+        extendsBound.addMissingAnnotation(anno);
       }
     }
   }
@@ -391,7 +390,7 @@ public class ElementAnnotationUtil {
   private static AnnotatedTypeMirror getTypeAtLocation(
       AnnotatedTypeMirror type,
       List<TypeAnnotationPosition.TypePathEntry> location,
-      TypeCompound anno,
+      @Nullable TypeCompound anno,
       boolean isComponentTypeOfArray)
       throws UnexpectedAnnotationLocationException {
     if (location.isEmpty() && type.getKind() != TypeKind.DECLARED) {

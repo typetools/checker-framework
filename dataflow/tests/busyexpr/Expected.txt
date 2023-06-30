@@ -1,0 +1,238 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 8 THEN_TO_BOTH
+4 -> 14 ELSE_TO_BOTH
+8 -> 9 EACH_TO_EACH
+14 -> 15 EACH_TO_EACH
+9 -> 11 EACH_TO_EACH
+9 -> 1 ClassCircularityError
+9 -> 1 ClassFormatError
+9 -> 1 NoClassDefFoundError
+9 -> 1 OutOfMemoryError
+15 -> 16 EACH_TO_EACH
+15 -> 1 RuntimeException
+15 -> 1 Error
+11 -> 12 EACH_TO_EACH
+11 -> 1 RuntimeException
+11 -> 1 Error
+16 -> 17 EACH_TO_EACH
+12 -> 17 EACH_TO_EACH
+17 -> 18 EACH_TO_EACH
+18 -> 19 EACH_TO_EACH
+18 -> 21 ArithmeticException
+19 -> 23 EACH_TO_EACH
+21 -> 23 EACH_TO_EACH
+23 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+AnalysisResult#1
+Before:   busy expressions = none
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+AnalysisResult#3
+Before:   busy expressions = none
+~~~~~~~~~
+a   [ VariableDeclaration ]
+2   [ IntegerLiteral ]
+a = 2   [ Assignment ]
+b   [ VariableDeclaration ]
+3   [ IntegerLiteral ]
+b = 3   [ Assignment ]
+x   [ VariableDeclaration ]
+1   [ IntegerLiteral ]
+x = 1   [ Assignment ]
+y   [ VariableDeclaration ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a != b)   [ NotEqual ]
+~~~~~~~~~
+TransferInput#80
+After:   busy expressions = (b >> a)
+
+4:
+Process order: 3
+AnalysisResult#5
+Before:   busy expressions = (b >> a)
+~~~~~~~~~
+ConditionalBlock: then: 8, else: 14
+
+8:
+Process order: 4
+AnalysisResult#7
+Before:   busy expressions = (b >> a)
+~~~~~~~~~
+x   [ LocalVariable ]
+b   [ LocalVariable ]
+a   [ LocalVariable ]
+(b >> a)   [ SignedRightShift ]
+x = (b >> a)   [ Assignment ]
+expression statement x = b >> a   [ ExpressionStatement ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a - b)   [ NumericalSubtraction ]
+~~~~~~~~~
+TransferInput#68
+After:   busy expressions = none
+
+14:
+Process order: 8
+AnalysisResult#9
+Before:   busy expressions = (b >> a)
+~~~~~~~~~
+y   [ LocalVariable ]
+b   [ LocalVariable ]
+a   [ LocalVariable ]
+(b >> a)   [ SignedRightShift ]
+y = (b >> a)   [ Assignment ]
+expression statement y = b >> a   [ ExpressionStatement ]
+a   [ LocalVariable ]
+0   [ IntegerLiteral ]
+a = 0   [ Assignment ]
+expression statement a = 0   [ ExpressionStatement ]
+(this)   [ ImplicitThis ]
+(this).test   [ MethodAccess ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a - b)   [ NumericalSubtraction ]
+~~~~~~~~~
+TransferInput#40
+After:   busy expressions = (a - b)
+
+9:
+Process order: 5
+AnalysisResult#11
+Before:   busy expressions = none
+~~~~~~~~~
+Test   [ ClassName ]
+~~~~~~~~~
+TransferInput#2
+After:   busy expressions = none
+
+15:
+Process order: 9
+AnalysisResult#13
+Before:   busy expressions = (a - b)
+~~~~~~~~~
+(this).test((a - b))   [ MethodInvocation ]
+~~~~~~~~~
+TransferInput#4
+After:   busy expressions = none
+
+11:
+Process order: 6
+AnalysisResult#15
+Before:   busy expressions = (a - b)
+~~~~~~~~~
+new Test((a - b))   [ ObjectCreation ]
+~~~~~~~~~
+TransferInput#3
+After:   busy expressions = none
+
+1:
+Process order: 17
+AnalysisResult#17
+Before:   busy expressions = none
+~~~~~~~~~
+<exceptional-exit>
+
+16:
+Process order: 10
+AnalysisResult#19
+Before:   busy expressions = none
+~~~~~~~~~
+expression statement test(a - b)   [ ExpressionStatement ]
+~~~~~~~~~
+TransferInput#35
+After:   busy expressions = none
+
+12:
+Process order: 7
+AnalysisResult#21
+Before:   busy expressions = (a + b)
+~~~~~~~~~
+expression statement new Test(a - b)   [ ExpressionStatement ]
+y   [ LocalVariable ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a + b)   [ NumericalAddition ]
+y = (a + b)   [ Assignment ]
+expression statement y = a + b   [ ExpressionStatement ]
+~~~~~~~~~
+TransferInput#36
+After:   busy expressions = none
+
+17:
+Process order: 11
+AnalysisResult#23
+Before:   busy expressions = none
+~~~~~~~~~
+d   [ VariableDeclaration ]
+marker (start of try statement #0)   [ Marker ]
+marker (start of try block #0)   [ Marker ]
+d   [ LocalVariable ]
+y   [ LocalVariable ]
+x   [ LocalVariable ]
+~~~~~~~~~
+TransferInput#27
+After:   busy expressions = none
+
+18:
+Process order: 12
+AnalysisResult#25
+Before:   busy expressions = (y / x)
+~~~~~~~~~
+(y / x)   [ IntegerDivision ]
+~~~~~~~~~
+TransferInput#25
+After:   busy expressions = (y / x)
+
+19:
+Process order: 13
+AnalysisResult#27
+Before:   busy expressions = (y / x)
+~~~~~~~~~
+(y / x)   [ IntegerDivision ]
+d = (y / x)   [ Assignment ]
+expression statement d = y / x   [ ExpressionStatement ]
+marker (end of try block #0)   [ Marker ]
+~~~~~~~~~
+TransferInput#9
+After:   busy expressions = none
+
+21:
+Process order: 14
+AnalysisResult#29
+Before:   busy expressions = none
+~~~~~~~~~
+marker (start of catch block for ArithmeticException #0)   [ CatchMarker ]
+e   [ VariableDeclaration ]
+d   [ LocalVariable ]
+10000000   [ IntegerLiteral ]
+d = 10000000   [ Assignment ]
+expression statement d = 10000000   [ ExpressionStatement ]
+marker (end of catch block for ArithmeticException #0)   [ CatchMarker ]
+~~~~~~~~~
+TransferInput#10
+After:   busy expressions = none
+
+23:
+Process order: 15
+AnalysisResult#31
+Before:   busy expressions = none
+~~~~~~~~~
+d   [ LocalVariable ]
+return d   [ Return ]
+~~~~~~~~~
+TransferInput#5
+After:   busy expressions = none
+
+0:
+Process order: 16
+AnalysisResult#33
+Before:   busy expressions = none
+~~~~~~~~~
+<exit>

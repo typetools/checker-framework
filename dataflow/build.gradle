@@ -54,130 +54,103 @@ createDataflowShaded('shaded')
 createDataflowShaded('nullaway')
 createDataflowShaded('errorprone')
 
-task liveVariableTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-  description 'Test the live variable analysis test for dataflow framework.'
-  inputs.file('tests/live-variable/Expected.txt')
-  inputs.file('tests/live-variable/Test.java')
-
-  outputs.file('tests/live-variable/Out.txt')
-  outputs.file('tests/live-variable/Test.class')
-
-  delete('tests/live-variable/Out.txt')
-  delete('tests/live-variable/Test.class')
+task manual(group: 'Documentation') {
+  description 'Build the manual'
   doLast {
-    javaexec {
-      workingDir = 'tests/live-variable'
-      jvmArgs += [
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      ]
-
-      classpath = sourceSets.test.runtimeClasspath
-      classpath += sourceSets.test.output
-      mainClass = 'livevar.LiveVariable'
-    }
     exec {
-      workingDir = 'tests/live-variable'
-      executable 'diff'
-      args = [
-        '-u',
-        'Expected.txt',
-        'Out.txt'
-      ]
+      commandLine 'make', '-C', 'manual'
     }
   }
 }
 
-task issue3447Test(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-  description 'Test issue 3447 test case for backward analysis.'
-  inputs.file('tests/issue3447/Test.java')
-  delete('tests/issue3447/Out.txt')
-  delete('tests/issue3447/Test.class')
-  doLast {
-    javaexec {
-      workingDir = 'tests/issue3447'
-      jvmArgs += [
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      ]
-
-      classpath = sourceSets.test.runtimeClasspath
-      classpath += sourceSets.test.output
-
-      mainClass = 'livevar.LiveVariable'
-    }
-  }
+tasks.withType(Test) {
+  dependsOn('allDataflowTests')
 }
 
-task constantPropagationTest(dependsOn: [assemble, compileTestJava], group: 'Verification') {
-  description 'Test the constant propagation analysis of the dataflow framework.'
-  inputs.file('tests/constant-propagation/Expected.txt')
-  inputs.file('tests/constant-propagation/Test.java')
+tasks.create(name: 'allDataflowTests', group: 'Verification') {
+  description 'Run all dataflow analysis tests'
+  // 'allDataflowTests' is automatically populated by testDataflowAnalysis().
+}
 
-  outputs.file('tests/constant-propagation/Out.txt')
-  outputs.file('tests/constant-propagation/Test.class')
-
-  delete('tests/constant-propagation/Out.txt')
-  delete('tests/constant-propagation/Test.class')
-  doLast {
-    javaexec {
-      workingDir = 'tests/constant-propagation'
-      jvmArgs += [
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-        '--add-opens',
-        'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      ]
-
-      classpath = sourceSets.test.runtimeClasspath
-      classpath += sourceSets.test.output
-      mainClass = 'constantpropagation.ConstantPropagation'
+/**
+ * Create a task to run a dataflow analysis test case.
+ * To add a new dataflow analysis test, you need to provide the
+ * task name, the directory which contains the test files, and the fully-qualified class
+ * name of the test class.
+ * Optionally, when option {@code diff} is true, the output is compared against a
+ * {@code Expected.txt} file.
+ * See org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher for more details.
+ * @param taskName the task name for the new task
+ * @param dirName the directory name of the directory that contains the test files
+ * @param className the fully-qualified name of the test class
+ * @param diff whether to compare the generated output with a {@code Expected.txt} file
+ * @return
+ */
+def testDataflowAnalysis(taskName, dirName, className, diff) {
+  tasks.create(name: taskName, dependsOn: [assemble, compileTestJava], group: 'Verification') {
+    description "Run the ${dirName} dataflow framework test."
+    if (diff) {
+      inputs.file("tests/${dirName}/Expected.txt")
     }
-    exec {
-      workingDir = 'tests/constant-propagation'
-      executable 'diff'
-      args = [
-        '-u',
-        'Expected.txt',
-        'Out.txt'
-      ]
+    inputs.file("tests/${dirName}/Test.java")
+
+    outputs.file("tests/${dirName}/Out.txt")
+    outputs.file("tests/${dirName}/Test.class")
+
+    delete("tests/${dirName}/Out.txt")
+    delete("tests/${dirName}/Test.class")
+    doLast {
+      javaexec {
+        workingDir = "tests/${dirName}"
+        if (!JavaVersion.current().java9Compatible) {
+          jvmArgs += "-Xbootclasspath/p:${configurations.javacJar.asPath}".toString()
+        }
+        else if (JavaVersion.current() > JavaVersion.VERSION_11) {
+          jvmArgs += [
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+            '--add-opens',
+            'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+          ]
+        }
+
+        classpath = sourceSets.test.runtimeClasspath
+        classpath += sourceSets.test.output
+        mainClass = "${className}"
+      }
+      if (diff) {
+        exec {
+          workingDir = "tests/${dirName}"
+          executable 'diff'
+          args = [
+            '-u',
+            'Expected.txt',
+            'Out.txt'
+          ]
+        }
+      }
     }
   }
+
+  allDataflowTests.dependsOn << taskName
 }
+
+// When adding a new test case, don't forget to add the temporary files to `../.gitignore`.
+testDataflowAnalysis("busyExpressionTest", "busyexpr", "busyexpr.BusyExpression", true)
+testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constantpropagation.ConstantPropagation", true)
+testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
+testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)
+testDataflowAnalysis("reachingDefinitionTest", "reachingdef", "reachingdef.ReachingDefinition", true)
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
 

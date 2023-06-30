@@ -5,6 +5,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -13,7 +14,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -54,7 +54,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
   protected IdentityHashMap<UnaryTree, BinaryTree> postfixLookup;
 
   /** Map from (effectively final) local variable elements to their abstract value. */
-  protected final HashMap<VariableElement, V> finalLocalValues;
+  protected final Map<VariableElement, V> finalLocalValues;
 
   /** The stores before every method call. */
   protected final IdentityHashMap<Block, TransferInput<V, S>> stores;
@@ -93,7 +93,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       IdentityHashMap<Block, TransferInput<V, S>> stores,
       IdentityHashMap<Tree, Set<Node>> treeLookup,
       IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
-      HashMap<VariableElement, V> finalLocalValues,
+      Map<VariableElement, V> finalLocalValues,
       Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
     this.nodeValues = UnmodifiableIdentityHashMap.wrap(nodeValues);
     this.treeLookup = UnmodifiableIdentityHashMap.wrap(treeLookup);
@@ -118,7 +118,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       IdentityHashMap<Block, TransferInput<V, S>> stores,
       IdentityHashMap<Tree, Set<Node>> treeLookup,
       IdentityHashMap<UnaryTree, BinaryTree> postfixLookup,
-      HashMap<VariableElement, V> finalLocalValues) {
+      Map<VariableElement, V> finalLocalValues) {
     this(nodeValues, stores, treeLookup, postfixLookup, finalLocalValues, new IdentityHashMap<>());
   }
 
@@ -186,7 +186,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
    *
    * @return the value of effectively final local variables
    */
-  public HashMap<VariableElement, V> getFinalLocalValues() {
+  public Map<VariableElement, V> getFinalLocalValues() {
     return finalLocalValues;
   }
 
@@ -316,23 +316,15 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       case FORWARD:
         return transferInput.getRegularStore();
       case BACKWARD:
-        Node firstNode;
-        switch (block.getType()) {
-          case REGULAR_BLOCK:
-            firstNode = block.getNodes().get(0);
-            break;
-          case EXCEPTION_BLOCK:
-            firstNode = ((ExceptionBlock) block).getNode();
-            break;
-          default:
-            firstNode = null;
-        }
-        if (firstNode == null) {
-          // This block doesn't contains any node, return the store in the transfer input
+        List<Node> nodes = block.getNodes();
+        if (nodes.isEmpty()) {
+          // This block doesn't contain any node, return the store in the transfer input.
           return transferInput.getRegularStore();
+        } else {
+          Node firstNode = nodes.get(0);
+          return analysis.runAnalysisFor(
+              firstNode, Analysis.BeforeOrAfter.BEFORE, transferInput, nodeValues, analysisCaches);
         }
-        return analysis.runAnalysisFor(
-            firstNode, Analysis.BeforeOrAfter.BEFORE, transferInput, nodeValues, analysisCaches);
       default:
         throw new BugInCF("Unknown direction: " + analysis.getDirection());
     }
@@ -352,7 +344,7 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       case FORWARD:
         Node lastNode = block.getLastNode();
         if (lastNode == null) {
-          // This block doesn't contain any node, return the store in the transfer input
+          // This block doesn't contain any node, return the store in the transfer input.
           return transferInput.getRegularStore();
         } else {
           return analysis.runAnalysisFor(
@@ -453,7 +445,8 @@ public class AnalysisResult<V extends AbstractValue<V>, S extends Store<S>> impl
       Analysis.BeforeOrAfter preOrPost,
       TransferInput<V, S> transferInput,
       IdentityHashMap<Node, V> nodeValues,
-      Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
     if (transferInput.analysis == null) {
       throw new BugInCF("Analysis in transferInput cannot be null.");
     }

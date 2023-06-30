@@ -36,15 +36,13 @@ ext {
   // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
 
-  errorproneJavacVersion = '9+181-r4173-1'
-
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.2"
+  stubparserVersion = "3.25.3"
   stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -107,7 +105,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.34.1-SNAPSHOT'
+  version '3.35.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -137,9 +135,9 @@ allprojects {
   }
 
   dependencies {
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
-    errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
   }
@@ -176,7 +174,8 @@ allprojects {
 
     hashmapUtilVersion = '0.0.1'
     reflectionUtilVersion = '1.1.0'
-    plumeUtilVersion = '1.7.0'
+    plumeUtilVersion = '1.8.1'
+    lombokVersion = '1.18.28'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -447,7 +446,7 @@ task maybeCloneAndBuildDependencies() {
         executable 'ls'
         ignoreExitValue = true
       }
-      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar)
+      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar + '; are you using an out-of-date Checker Framework or Stubparser?')
     }
   }
 }
@@ -718,7 +717,7 @@ subprojects {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    ext.errorproneVersion = '2.19.1'
+    ext.errorproneVersion = '2.20.0'
     errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
@@ -763,7 +762,7 @@ subprojects {
   if (!project.name.startsWith('checker-qual-android')) {
     task tags(type: Exec) {
       description 'Create Emacs TAGS table'
-      commandLine 'bash', '-c', "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
     }
   }
 
@@ -908,6 +907,8 @@ subprojects {
       tasks.create(name: "${junitClassName}", type: Test) {
         description "Run ${junitClassName} tests."
         include "**/${name}.class"
+        testClassesDirs = testing.suites.test.sources.output.classesDirs
+        classpath = testing.suites.test.sources.runtimeClasspath
       }
     }
 
@@ -955,9 +956,7 @@ subprojects {
       }
 
       if (project.name.is('dataflow')) {
-        dependsOn('liveVariableTest')
-        dependsOn('issue3447Test')
-        dependsOn('constantPropagationTest')
+        dependsOn('allDataflowTests')
       }
     }
 
@@ -1021,10 +1020,11 @@ subprojects {
   }
 }
 
+// The `assembleForJavac` task is faster than the `assemble` task, if you only
+// care about running `javac`.
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
-
 assemble.dependsOn(':checker:assembleForJavac')
 
 assemble.mustRunAfter(clean)
@@ -1065,7 +1065,7 @@ jar.onlyIf {false}
 
 /**
  * Adds the shared pom information to the given publication.
- * @param publication MavenPublication
+ * @param publication the MavenPublication
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {

@@ -44,6 +44,7 @@ Before:   constant propagation = {a=0}
 b   [ LocalVariable ]
 a   [ LocalVariable ]
 b = a   [ Assignment ]
+expression statement b = a   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#3
 After:   constant propagation = {a=0, b=0}
@@ -56,13 +57,14 @@ Before:   constant propagation = {a=0}
 b   [ LocalVariable ]
 4   [ IntegerLiteral ]
 b = 4   [ Assignment ]
+expression statement b = 4   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#5
 After:   constant propagation = {a=0, b=4}
 
 11:
 Process order: 6
-TransferInput#23
+TransferInput#25
 Before:   constant propagation = {a=0, b=T}
 ~~~~~~~~~
 b   [ LocalVariable ]
@@ -73,7 +75,7 @@ After:   constant propagation = {a=0, b=T}
 
 0:
 Process order: 7
-TransferInput#27
+TransferInput#29
 Before:   constant propagation = {a=0, b=T}
 ~~~~~~~~~
 <exit>

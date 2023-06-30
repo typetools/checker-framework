@@ -16,7 +16,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.javacutil.Pair;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.plumelib.util.IPair;
 
 /**
  * Records any mapping between the type parameters of a subtype to the corresponding type parameters
@@ -64,12 +65,12 @@ public class TypeArgumentMapper {
    * Returns a mapping from subtype's type parameter indices to the indices of corresponding type
    * parameters in supertype.
    */
-  public static Set<Pair<Integer, Integer>> mapTypeArgumentIndices(
+  public static Set<IPair<Integer, Integer>> mapTypeArgumentIndices(
       TypeElement subtype, TypeElement supertype, Types types) {
-    Set<Pair<Integer, Integer>> result = new HashSet<>();
+    Set<IPair<Integer, Integer>> result = new HashSet<>();
     if (subtype.equals(supertype)) {
       for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
-        result.add(Pair.of(Integer.valueOf(i), Integer.valueOf(i)));
+        result.add(IPair.of(Integer.valueOf(i), Integer.valueOf(i)));
       }
 
     } else {
@@ -84,7 +85,7 @@ public class TypeArgumentMapper {
         Set<TypeParameterElement> correspondingSuperArgs = subToSuperElements.get(subtypeParam);
         if (correspondingSuperArgs != null) {
           for (TypeParameterElement supertypeParam : subToSuperElements.get(subtypeParam)) {
-            result.add(Pair.of(subtypeIndex, supertypeIndexes.get(supertypeParam)));
+            result.add(IPair.of(subtypeIndex, supertypeIndexes.get(supertypeParam)));
           }
         }
       }
@@ -263,7 +264,7 @@ public class TypeArgumentMapper {
    * @return a list of type records that extends pathFromRoot (a sequence of directSupertypes) to
    *     target
    */
-  private static List<TypeRecord> recursiveDepthFirstSearch(
+  private static @Nullable List<TypeRecord> recursiveDepthFirstSearch(
       ArrayDeque<TypeRecord> pathFromRoot, TypeElement target, Types types) {
     if (pathFromRoot.isEmpty()) {
       return null;

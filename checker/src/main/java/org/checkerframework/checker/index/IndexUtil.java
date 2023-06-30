@@ -7,6 +7,7 @@ import com.sun.source.tree.Tree;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -18,7 +19,7 @@ public class IndexUtil {
   }
 
   /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
-  public static ExpressionTree getLengthSequenceTree(
+  public static @Nullable ExpressionTree getLengthSequenceTree(
       Tree lengthTree, IndexMethodIdentifier imf, ProcessingEnvironment processingEnv) {
     if (TreeUtils.isArrayLengthAccess(lengthTree)) {
       return ((MemberSelectTree) lengthTree).getExpression();

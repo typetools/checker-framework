@@ -10,6 +10,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -25,7 +26,7 @@ import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -185,14 +186,14 @@ public final class ElementAnnotationApplier {
    * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
    *     otherwise null
    */
-  public static Pair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
+  public static @Nullable IPair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
       VariableElement varEle, AnnotatedTypeFactory typeFactory) {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
     if (paramDecl != null) {
       Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
       if (parentTree != null && parentTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-        return Pair.of(paramDecl, (LambdaExpressionTree) parentTree);
+        return IPair.of(paramDecl, (LambdaExpressionTree) parentTree);
       }
     }
 
@@ -219,8 +220,8 @@ public final class ElementAnnotationApplier {
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
 
-      if (type.getAnnotations().isEmpty()
-          && type.getUpperBound().getAnnotations().isEmpty()
+      if (type.getPrimaryAnnotations().isEmpty()
+          && type.getUpperBound().getPrimaryAnnotations().isEmpty()
           && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
         try {
           ElementAnnotationApplier.applyInternal(type, tpelt, factory);
