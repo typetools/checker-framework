@@ -1,6 +1,6 @@
+// @below-java17-jdk-skip-test
 package issue6069;
 
-// @below-java17-jdk-skip-test
 public class Issue6069 {
   public interface MyInterface {
     Record foo();
