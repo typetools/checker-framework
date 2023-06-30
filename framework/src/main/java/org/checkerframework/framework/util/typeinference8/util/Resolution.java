@@ -35,9 +35,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
- * <p>Entry point is two static methods, {@link #resolveSmallestSet(LinkedHashSet, BoundSet)} and
- * {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution}
- * objects that actually preform the resolution.
+ * <p>Entry point is two static methods, {@link #resolveSmallestSet(Set, BoundSet)} and {@link
+ * #resolve(Variable, BoundSet, Java8InferenceContext)}, which create {@link Resolution} objects
+ * that actually preform the resolution.
  */
 public class Resolution {
 
@@ -128,8 +128,7 @@ public class Resolution {
     while (!unresolvedVars.isEmpty()) {
       assert !boundSet.containsFalse();
 
-      LinkedHashSet<Variable> smallestDependencySet =
-          getSmallestDependecySet(resolvedVars, unresolvedVars);
+      Set<Variable> smallestDependencySet = getSmallestDependecySet(resolvedVars, unresolvedVars);
 
       // Resolve the smallest unresolved dependency set.
       boundSet = resolveSmallestSet(smallestDependencySet, boundSet);
@@ -148,12 +147,12 @@ public class Resolution {
    * @param unresolvedVars variables that have not been resolved
    * @return the smallest set of unresolved variable
    */
-  private LinkedHashSet<Variable> getSmallestDependecySet(
+  private Set<Variable> getSmallestDependecySet(
       List<Variable> resolvedVars, Queue<Variable> unresolvedVars) {
-    LinkedHashSet<Variable> smallestDependencySet = null;
+    Set<Variable> smallestDependencySet = null;
     // This loop is looking for the smallest set of dependencies that have not been resolved.
     for (Variable alpha : unresolvedVars) {
-      LinkedHashSet<Variable> alphasDependencySet = dependencies.get(alpha);
+      Set<Variable> alphasDependencySet = dependencies.get(alpha);
       alphasDependencySet.removeAll(resolvedVars);
 
       if (smallestDependencySet == null
@@ -179,7 +178,7 @@ public class Resolution {
    * @param boundSet current bounds set
    * @return current bound set
    */
-  private BoundSet resolveSmallestSet(LinkedHashSet<Variable> as, BoundSet boundSet) {
+  private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
     assert !boundSet.containsFalse();
 
     BoundSet resolvedBounds;
@@ -238,7 +237,7 @@ public class Resolution {
   }
 
   /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
-  private BoundSet resolveNoCapture(LinkedHashSet<Variable> as, BoundSet boundSet) {
+  private BoundSet resolveNoCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
     for (Variable ai : as) {
       assert !ai.getBounds().hasInstantiation();
@@ -255,7 +254,7 @@ public class Resolution {
   /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
   private void resolveNoCapture(Variable ai) {
     assert !ai.getBounds().hasInstantiation();
-    LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+    Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
 
     if (!lowerBounds.isEmpty()) {
       ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
@@ -267,13 +266,14 @@ public class Resolution {
             new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
         if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
           Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBounds(lubAnnos, lubProperType.getAnnotatedType().getAnnotations());
+              qh.leastUpperBounds(
+                  lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
           lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
         } else {
 
           AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
           Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBounds(lubAnnos, lubTV.getLowerBound().getAnnotations());
+              qh.leastUpperBounds(lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
           lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
         }
       }
@@ -281,7 +281,7 @@ public class Resolution {
       return;
     }
 
-    LinkedHashSet<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
+    Set<ProperType> upperBounds = ai.getBounds().findProperUpperBounds();
     if (!upperBounds.isEmpty()) {
       ProperType ti = null;
       boolean useRuntimeEx = false;
@@ -309,7 +309,7 @@ public class Resolution {
 
   /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-B */
   private static BoundSet resolveWithCapture(
-      LinkedHashSet<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
+      Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     assert !boundSet.containsFalse();
     boundSet.removeCaptures(as);
     BoundSet resolvedBoundSet = new BoundSet(context);
@@ -325,7 +325,7 @@ public class Resolution {
         continue;
       }
       asList.add(ai);
-      LinkedHashSet<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+      Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
 
       Set<? extends AnnotationMirror> lowerBoundAnnos;
@@ -338,13 +338,13 @@ public class Resolution {
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
                 qh.leastUpperBounds(
-                    lowerBoundAnnos, lowerBound.getAnnotatedType().getAnnotations());
+                    lowerBoundAnnos, lowerBound.getAnnotatedType().getPrimaryAnnotations());
             lowerBound.getAnnotatedType().replaceAnnotations(newLubAnnos);
             lowerBoundAnnos = newLubAnnos;
           } else {
             AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lowerBound.getAnnotatedType();
             Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBounds(lowerBoundAnnos, lubTV.getLowerBound().getAnnotations());
+                qh.leastUpperBounds(lowerBoundAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
             lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
             lowerBoundAnnos = newLubAnnos;
           }
@@ -353,7 +353,7 @@ public class Resolution {
         lowerBoundAnnos = Collections.emptySet();
       }
 
-      LinkedHashSet<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<Set<AnnotationMirror>> qualifierUpperBounds =
@@ -367,7 +367,7 @@ public class Resolution {
                   .typeFactory
                   .getQualifierHierarchy()
                   .greatestLowerBounds(
-                      upperBoundAnnos, upperBound.getAnnotatedType().getAnnotations());
+                      upperBoundAnnos, upperBound.getAnnotatedType().getPrimaryAnnotations());
           upperBound.getAnnotatedType().replaceAnnotations(upperBoundAnnos);
         }
       } else {

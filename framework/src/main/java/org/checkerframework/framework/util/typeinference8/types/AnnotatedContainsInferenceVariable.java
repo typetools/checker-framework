@@ -28,7 +28,7 @@ public class AnnotatedContainsInferenceVariable {
   }
 
   /** Returns the type variables in {@code typeVariables} that appear in {@code type}. */
-  public static LinkedHashSet<TypeVariable> getMentionedTypeVariables(
+  public static Set<TypeVariable> getMentionedTypeVariables(
       Collection<? extends TypeVariable> typeVariables, AnnotatedTypeMirror type) {
     Visitor visitor = new Visitor(typeVariables);
     visitor.visit(type);

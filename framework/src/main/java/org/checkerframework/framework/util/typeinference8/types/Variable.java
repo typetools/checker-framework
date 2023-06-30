@@ -104,7 +104,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
     }
 
     variableBounds.addQualifierBound(
-        BoundKind.LOWER, typeVariable.getLowerBound().getAnnotations());
+        BoundKind.LOWER, typeVariable.getLowerBound().getPrimaryAnnotations());
   }
 
   public ExpressionTree getInvocation() {

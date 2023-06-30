@@ -14,8 +14,8 @@ import org.checkerframework.framework.util.typeinference8.constraint.QualifierTy
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** Data structure to stores the bounds of a variable. */
 public class VariableBounds {
@@ -290,7 +290,7 @@ public class VariableBounds {
    * @return the constraints between the type arguments to {@code s} and {@code t}.
    */
   private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
-    Pair<AbstractType, AbstractType> pair =
+    IPair<AbstractType, AbstractType> pair =
         context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
@@ -317,7 +317,7 @@ public class VariableBounds {
    *
    * @return all lower bounds that are proper types
    */
-  public LinkedHashSet<ProperType> findProperLowerBounds() {
+  public Set<ProperType> findProperLowerBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
     for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
       if (bound.isProper()) {
@@ -332,7 +332,7 @@ public class VariableBounds {
    *
    * @return all upper bounds that are proper types
    */
-  public LinkedHashSet<ProperType> findProperUpperBounds() {
+  public Set<ProperType> findProperUpperBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
     for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
       if (bound.isProper()) {
@@ -347,7 +347,7 @@ public class VariableBounds {
    *
    * @return all upper bounds
    */
-  public LinkedHashSet<AbstractType> upperBounds() {
+  public Set<AbstractType> upperBounds() {
     LinkedHashSet<AbstractType> set = new LinkedHashSet<>();
     for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
       if (!bound.isUseOfVariable()) {
@@ -471,7 +471,7 @@ public class VariableBounds {
       AbstractType s1 = parameteredTypes.get(i);
       for (int j = i + 1; j < parameteredTypes.size(); j++) {
         AbstractType s2 = parameteredTypes.get(j);
-        Pair<AbstractType, AbstractType> supers =
+        IPair<AbstractType, AbstractType> supers =
             context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
         if (supers == null) {
           continue;

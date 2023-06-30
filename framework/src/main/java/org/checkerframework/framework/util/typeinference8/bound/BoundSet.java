@@ -213,7 +213,7 @@ public class BoundSet implements ReductionResult {
 
     for (CaptureBound capture : captures) {
       List<? extends CaptureVariable> lhsVars = capture.getAllVariablesOnLHS();
-      LinkedHashSet<Variable> rhsVars = capture.getAllVariablesOnRHS();
+      Set<Variable> rhsVars = capture.getAllVariablesOnRHS();
       for (Variable var : lhsVars) {
         // An inference variable alpha appearing on the left-hand side of a bound of the
         // form G<..., alpha, ...> = capture(G<...>) depends on the resolution of every
@@ -304,7 +304,7 @@ public class BoundSet implements ReductionResult {
   }
 
   /** Remove any capture bound that mentions any variable in {@code as}. */
-  public void removeCaptures(LinkedHashSet<Variable> as) {
+  public void removeCaptures(Set<Variable> as) {
     captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
   }
 

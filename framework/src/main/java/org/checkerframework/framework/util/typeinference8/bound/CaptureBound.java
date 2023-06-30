@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
@@ -129,7 +130,7 @@ public class CaptureBound {
    *
    * @return all variables on the right-hand side of this capture
    */
-  public LinkedHashSet<Variable> getAllVariablesOnRHS() {
+  public Set<Variable> getAllVariablesOnRHS() {
     return new LinkedHashSet<>(capturedType.getInferenceVariables());
   }
 

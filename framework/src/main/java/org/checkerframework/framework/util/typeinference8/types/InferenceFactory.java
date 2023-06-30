@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,12 +61,12 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
 
 /** Factory that creates AbstractTypes. */
 public class InferenceFactory {
@@ -742,7 +741,7 @@ public class InferenceFactory {
         compileTimeType, compileTimeType.getUnderlyingType(), memRef, context);
   }
 
-  public Pair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
+  public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
@@ -754,7 +753,7 @@ public class InferenceFactory {
     Type asSuperOfA = context.types.asSuper((Type) aTypeMirror, ((Type) lubResult).asElement());
     Type asSuperOfB = context.types.asSuper((Type) bTypeMirror, ((Type) lubResult).asElement());
 
-    return Pair.of(a.asSuper(asSuperOfA), b.asSuper(asSuperOfB));
+    return IPair.of(a.asSuper(asSuperOfA), b.asSuper(asSuperOfB));
   }
 
   /**
@@ -804,7 +803,7 @@ public class InferenceFactory {
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}
    */
-  public ProperType lub(LinkedHashSet<ProperType> properTypes) {
+  public ProperType lub(Set<ProperType> properTypes) {
     if (properTypes.isEmpty()) {
       return null;
     }
@@ -830,7 +829,7 @@ public class InferenceFactory {
    * @param abstractTypes types to glb
    * @return the greatest upper bounds of {@code abstractTypes}
    */
-  public AbstractType glb(LinkedHashSet<AbstractType> abstractTypes) {
+  public AbstractType glb(Set<AbstractType> abstractTypes) {
     AbstractType ti = null;
     for (AbstractType liProperType : abstractTypes) {
       AbstractType li = liProperType;
