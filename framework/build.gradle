@@ -24,7 +24,7 @@ sourcesJar {
 }
 
 def versions = [
-  autoValue       : '1.10.1',
+  autoValue       : '1.10.2',
   lombok          : "${lombokVersion}",
 ]
 
