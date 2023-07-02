@@ -211,7 +211,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private void loadAllExternalUnits() {
     // load external individually named units
-    for (String qualName : checker.getStringsOption("units", '.')) {
+    for (String qualName : checker.getStringsOption("units", ',')) {
       if (!Signatures.isBinaryName(qualName)) {
         throw new UserError("Malformed qualifier name \"%s\" in -Aunits", qualName);
       }
