@@ -28,6 +28,7 @@ import com.sun.source.tree.WildcardTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -264,7 +265,11 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     } else if (tree.getIdentifier().contentEquals("super")) {
       // Tree is "MyClass.super", where "MyClass" may be the innermost enclosing type or any
       // outer type.
-      return f.getEnclosingSuperType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
+      TypeMirror superTypeMirror = TreeUtils.typeOf(tree);
+      TypeElement superTypeElement = TypesUtils.getTypeElement(superTypeMirror);
+      AnnotatedDeclaredType thisType = f.getEnclosingSubType(superTypeElement, tree);
+      return AnnotatedTypes.asSuper(
+          f, thisType, AnnotatedTypeMirror.createType(superTypeMirror, f, false));
     } else {
       // tree must be a field access, so get the type of the expression, and then call
       // asMemberOf.

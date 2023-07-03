@@ -2184,22 +2184,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the super {@link AnnotatedTypeMirror} of the enclosing type at the location of {@code
-   * tree} that is the same type as {@code typeElement}.
+   * Returns the {@link AnnotatedTypeMirror} of the enclosing type at the location of {@code tree}
+   * that is a subtype of {@code typeElement}.
    *
-   * @param typeElement type of the enclosing type to return
+   * @param typeElement super type of the enclosing type to return
    * @param tree location to use
-   * @return the super enclosing type at the location of {@code tree} that is the same type as
-   *     {@code typeElement}
+   * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
+   *     typeElement}
    */
-  public AnnotatedDeclaredType getEnclosingSuperType(TypeElement typeElement, Tree tree) {
+  public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
     while (!isSubtype(thisType.getUnderlyingType(), typeElement.asType())) {
       thisType = thisType.getEnclosingType();
     }
-    return (AnnotatedDeclaredType)
-        AnnotatedTypes.asSuper(
-            this, thisType, AnnotatedTypeMirror.createType(typeElement.asType(), this, false));
+    return thisType;
   }
 
   /**
