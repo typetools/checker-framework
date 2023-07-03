@@ -920,7 +920,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link java.lang.Record}.
+   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@code java.lang.Record}.
    * It includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
    *
    * @param atypeFactory type factory to use
