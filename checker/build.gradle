@@ -48,18 +48,18 @@ dependencies {
   // As of 2019-12-16, the version of reflection-util in the Annotation
   // File Utilities takes priority over this version, in the fat jar
   // file. :-( So update it and re-build it locally when updating this.
-  implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
+  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
+  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
   shadow project(':checker-qual')
   shadow project(':checker-util')
 
   // Called Methods Checker AutoValue + Lombok support
-  testImplementation 'com.google.auto.value:auto-value-annotations:1.10.2'
-  testImplementation 'com.google.auto.value:auto-value:1.10.2'
+  testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
+  testImplementation "com.google.auto.value:auto-value:${versions.autoValue}}"
   testImplementation 'com.ryanharter.auto.value:auto-value-parcel:0.2.9'
-  testImplementation "org.projectlombok:lombok:${lombokVersion}"
+  testImplementation "org.projectlombok:lombok:${versions.lombok}"
   // Called Methods Checker support for detecting misuses of AWS APIs
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
