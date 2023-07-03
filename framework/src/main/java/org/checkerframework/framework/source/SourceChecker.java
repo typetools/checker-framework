@@ -2775,7 +2775,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // git.dirty indicates modified tracked files and staged changes.  Untracked content doesn't
     // count, so not being dirty doesn't mean that exactly the printed commit is being run.
     String dirty = gitProperties.getProperty("git.dirty");
-    if (version.endsWith("-SNAPSHOT") || !branch.equals("master") || dirty.equals("true")) {
+    if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
       // Sometimes the branch is HEAD, which is not informative.
       // How does that happen, and how can I fix it?
       version += ", branch " + branch;
