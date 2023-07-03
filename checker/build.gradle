@@ -409,6 +409,9 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     delete('tests/ainfer-testchecker/annotated/UsesAnonymous.java')
     delete('tests/ainfer-testchecker/annotated/AnonymousClassWithField.java')
 
+    // This test outputs a warning about records.
+    delete('tests/ainfer-testchecker/annotated/all-systems/java17/Issue6069.java')
+
     // This test causes an error when its corresponding stub file is read, because the test
     // contains an annotation definition. The stub file parser does not support reading
     // files that define annotations; this test can be reinstated if the stub parser
