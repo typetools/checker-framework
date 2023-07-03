@@ -45,7 +45,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
 
     // load individually named qualifiers
-    for (String qualName : checker.getStringsOption("quals", '.')) {
+    for (String qualName : checker.getStringsOption("quals", ',')) {
       if (!Signatures.isBinaryName(qualName)) {
         throw new UserError("Malformed qualifier \"%s\" in -Aquals", qualName);
       }
