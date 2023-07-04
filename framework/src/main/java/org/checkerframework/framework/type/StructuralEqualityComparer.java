@@ -43,7 +43,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   @Override
-  protected Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+  public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
     if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
       // If one of the types is the NULL type, compare main qualifiers only.
       return arePrimeAnnosEqual(type1, type2);
@@ -62,13 +62,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    * @return error message explaining the two types' classes are not the same
    */
   @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    return StringsPlume.joinLines(
-        "AnnotatedTypeMirrors aren't structurally equal.",
-        "  type1 = " + type1.getClass().getSimpleName() + "( " + type1 + " )",
-        "  type2 = " + type2.getClass().getSimpleName() + "( " + type2 + " )",
-        "  visitHistory = " + visitHistory);
+  public String defaultErrorMessage(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
+    return super.defaultErrorMessage(type1, type2, p)
+        + System.lineSeparator()
+        + "  visitHistory = "
+        + visitHistory;
   }
 
   /**
@@ -208,37 +206,56 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     if (!arePrimeAnnosEqual(type1, type2)) {
       return false;
     }
-
     // Prevent infinite recursion e.g. in Issue1587b
     visitHistory.put(type1, type2, currentTop, true);
 
-    boolean result = visitTypeArgs(type1, type2);
+    List<AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
+    List<AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
+
+    // Capture the types because the wildcards are only not equal if they are provably distinct.
+    // Provably distinct is computed using the captured and erased upper bounds of wildcards.
+    // See JLS 4.5.1. Type Arguments of Parameterized Types.
+    AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
+    AnnotatedDeclaredType capturedType1 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1);
+    AnnotatedDeclaredType capturedType2 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type2);
+    visitHistory.put(capturedType1, capturedType2, currentTop, true);
+
+    List<AnnotatedTypeMirror> capturedType1Args = capturedType1.getTypeArguments();
+    List<AnnotatedTypeMirror> capturedType2Args = capturedType2.getTypeArguments();
+    boolean result = true;
+    for (int i = 0; i < type1.getTypeArguments().size(); i++) {
+      AnnotatedTypeMirror type1Arg = type1Args.get(i);
+      AnnotatedTypeMirror type2Arg = type2Args.get(i);
+      Boolean pastResultTA = visitHistory.get(type1Arg, type2Arg, currentTop);
+      if (pastResultTA != null) {
+        result = pastResultTA;
+      } else {
+        if (type1Arg.getKind() != TypeKind.WILDCARD || type2Arg.getKind() != TypeKind.WILDCARD) {
+          result = areEqual(type1Arg, type2Arg);
+        } else {
+          AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
+          AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
+          if (type1.atypeFactory.ignoreUninferredTypeArguments
+              && (wildcardType1.isUninferredTypeArgument()
+                  || wildcardType2.isUninferredTypeArgument())) {
+            result = true;
+          } else {
+            AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
+            AnnotatedTypeMirror capturedType2Arg = capturedType2Args.get(i);
+            result = areEqual(capturedType1Arg.getErased(), capturedType2Arg.getErased());
+          }
+        }
+      }
+      if (!result) {
+        break;
+      }
+    }
+
+    visitHistory.put(capturedType1, capturedType2, currentTop, result);
     visitHistory.put(type1, type2, currentTop, result);
     return result;
-  }
-
-  /**
-   * A helper class for visitDeclared_Declared. There are subtypes of DefaultTypeHierarchy that need
-   * to customize the handling of type arguments. This method provides a convenient extension point.
-   */
-  protected boolean visitTypeArgs(AnnotatedDeclaredType type1, AnnotatedDeclaredType type2) {
-
-    // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
-    // ignoreRawTypes
-    List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
-    List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
-
-    if (type1Args.isEmpty() && type2Args.isEmpty()) {
-      return true;
-    }
-
-    if (type1Args.size() == type2Args.size()) {
-      return areAllEqual(type1Args, type2Args);
-    } else {
-      throw new BugInCF(
-          "Mismatching type argument sizes:%n    type 1: %s (%d)%n    type 2: %s (%d)",
-          type1, type1Args.size(), type2, type2Args.size());
-    }
   }
 
   /**
@@ -354,7 +371,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   public Boolean visitDeclared_Primitive(
       AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, Void p) {
     if (!TypesUtils.isBoxOf(type1.getUnderlyingType(), type2.getUnderlyingType())) {
-      defaultErrorMessage(type1, type2, p);
+      throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
     return arePrimeAnnosEqual(type1, type2);
@@ -364,7 +381,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   public Boolean visitPrimitive_Declared(
       AnnotatedPrimitiveType type1, AnnotatedDeclaredType type2, Void p) {
     if (!TypesUtils.isBoxOf(type2.getUnderlyingType(), type1.getUnderlyingType())) {
-      defaultErrorMessage(type1, type2, p);
+      throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
     return arePrimeAnnosEqual(type1, type2);

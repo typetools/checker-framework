@@ -116,7 +116,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
    * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
    */
-  private CFValue changeLockAnnoToTop(JavaExpression je, CFValue currentValue) {
+  private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
       AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(atypeFactory.GUARDEDBYUNKNOWN);

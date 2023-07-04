@@ -72,7 +72,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
    * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
    */
   public RegularTransferResult(
-      @Nullable V value, S resultStore, Map<TypeMirror, S> exceptionalStores) {
+      @Nullable V value, S resultStore, @Nullable Map<TypeMirror, S> exceptionalStores) {
     this(value, resultStore, exceptionalStores, false);
   }
 

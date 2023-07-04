@@ -6,6 +6,9 @@ abstract class EditLogInputStream implements Closeable {
 }
 
 interface JournalSet extends Closeable {
-  static final Comparator<EditLogInputStream> LOCAL_LOG_PREFERENCE_COMPARATOR =
+  static final Comparator<? extends EditLogInputStream> LOCAL_LOG_PREFERENCE_COMPARATOR =
+      // This is an undesirable false positive that occurs because of the defaulting
+      // that the Must Call Checker uses for generics.
+      // :: error: type.argument
       Comparator.comparing(EditLogInputStream::isLocalLog).reversed();
 }

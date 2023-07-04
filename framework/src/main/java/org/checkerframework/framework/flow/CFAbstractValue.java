@@ -315,7 +315,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
-    private AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
+    private @Nullable AnnotationMirror getBackUpAnnoIn(AnnotationMirror top) {
       if (backupSet == null) {
         // If there is no back up value, but one is required then the resulting set will
         // not be the most specific.  Indicate this with the error.
@@ -351,7 +351,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineNoAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVars(
         AnnotatedTypeVariable aAtv,
         AnnotatedTypeVariable bAtv,
         AnnotationMirror top,
@@ -366,7 +366,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineOneAnnotation(
+    protected @Nullable AnnotationMirror combineAnnotationWithTypeVar(
         AnnotationMirror annotation,
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
@@ -483,7 +483,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineNoAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVars(
         AnnotatedTypeVariable aAtv,
         AnnotatedTypeVariable bAtv,
         AnnotationMirror top,
@@ -499,7 +499,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineOneAnnotation(
+    protected @Nullable AnnotationMirror combineAnnotationWithTypeVar(
         AnnotationMirror annotation,
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
@@ -581,7 +581,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineNoAnnotations(
+    protected @Nullable AnnotationMirror combineTwoTypeVars(
         AnnotatedTypeVariable aAtv,
         AnnotatedTypeVariable bAtv,
         AnnotationMirror top,
@@ -597,7 +597,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     @Override
-    protected @Nullable AnnotationMirror combineOneAnnotation(
+    protected @Nullable AnnotationMirror combineAnnotationWithTypeVar(
         AnnotationMirror annotation,
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,
@@ -634,8 +634,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * <ol>
    *   <li>{@link #combineTwoAnnotations}
-   *   <li>{@link #combineOneAnnotation}
-   *   <li>{@link #combineNoAnnotations}
+   *   <li>{@link #combineAnnotationWithTypeVar}
+   *   <li>{@link #combineTwoTypeVars}
    * </ol>
    *
    * If a set is missing an annotation in a hierarchy, and if the combined set can be missing an
@@ -679,11 +679,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         if (a != null && b != null) {
           result = combineTwoAnnotations(a, b, top);
         } else if (a != null) {
-          result = combineOneAnnotation(a, bAtv, top, canCombinedSetBeMissingAnnos);
+          result = combineAnnotationWithTypeVar(a, bAtv, top, canCombinedSetBeMissingAnnos);
         } else if (b != null) {
-          result = combineOneAnnotation(b, aAtv, top, canCombinedSetBeMissingAnnos);
+          result = combineAnnotationWithTypeVar(b, aAtv, top, canCombinedSetBeMissingAnnos);
         } else {
-          result = combineNoAnnotations(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
+          result = combineTwoTypeVars(aAtv, bAtv, top, canCombinedSetBeMissingAnnos);
         }
         if (result != null) {
           combinedSets.add(result);
@@ -706,9 +706,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Returns the primary annotation that result from of combining the two {@link
-     * AnnotatedTypeVariable}. If the result has not primary annotation, the {@code null} is
-     * returned. This method is called when no annotation exists in either sets for the hierarchy
-     * whose top is {@code top}.
+     * AnnotatedTypeVariable}. If the result has no primary annotation, {@code null} is returned.
+     * This method is called when no annotation exists in either sets for the hierarchy whose top is
+     * {@code top}.
      *
      * @param aAtv a type variable that does not have a primary annotation in {@code top} hierarchy
      * @param bAtv a type variable that does not have a primary annotation in {@code top} hierarchy
@@ -716,7 +716,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param canCombinedSetBeMissingAnnos whether or not
      * @return the result of combining the two type variables, which may be null
      */
-    protected abstract @Nullable AnnotationMirror combineNoAnnotations(
+    protected abstract @Nullable AnnotationMirror combineTwoTypeVars(
         AnnotatedTypeVariable aAtv,
         AnnotatedTypeVariable bAtv,
         AnnotationMirror top,
@@ -733,7 +733,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * @param canCombinedSetBeMissingAnnos whether or not
      * @return the result of combining {@code annotation} with {@code typeVar}
      */
-    protected abstract @Nullable AnnotationMirror combineOneAnnotation(
+    protected abstract @Nullable AnnotationMirror combineAnnotationWithTypeVar(
         AnnotationMirror annotation,
         AnnotatedTypeVariable typeVar,
         AnnotationMirror top,

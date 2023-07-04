@@ -24,6 +24,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.common.value.qual.ArrayLen;
@@ -225,7 +226,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /** Convert a char array to a String. Return null if unable to convert. */
-  private String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
+  private @Nullable String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
     boolean allLiterals = true;
     StringBuilder stringVal = new StringBuilder();
     for (ExpressionTree e : initializers) {
@@ -314,7 +315,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
    * @param castTo the type to cast to
    * @return the Value Checker annotation's value, casted to the given type
    */
-  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
+  private @Nullable List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
     return getValues(type, castTo, false);
   }
 
@@ -328,7 +329,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
    * @param isUnsigned if true, treat {@code castTo} as unsigned
    * @return the Value Checker annotation's value, casted to the given type
    */
-  private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
+  private @Nullable List<?> getValues(
+      AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
     AnnotationMirror anno = type.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
     if (anno == null) {
       // If type is an AnnotatedTypeVariable (or other type without a primary annotation)
@@ -392,7 +394,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
    * @return the Range of the Math.min or Math.max method, or null if the argument is none of these
    *     methods or their arguments are not annotated in ValueChecker hierarchy
    */
-  private Range getRangeForMathMinMax(MethodInvocationTree tree) {
+  private @Nullable Range getRangeForMathMinMax(MethodInvocationTree tree) {
     if (atypeFactory.getMethodIdentifier().isMathMin(tree, atypeFactory.getProcessingEnv())) {
       AnnotatedTypeMirror arg1 = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
       AnnotatedTypeMirror arg2 = atypeFactory.getAnnotatedType(tree.getArguments().get(1));

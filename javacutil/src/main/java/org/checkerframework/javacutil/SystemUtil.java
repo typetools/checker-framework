@@ -5,6 +5,9 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -16,6 +19,104 @@ public class SystemUtil {
   /** Do not instantiate. */
   private SystemUtil() {
     throw new Error("Do not instantiate.");
+  }
+
+  /**
+   * Calls {@code InputStream.available()}, but returns null instead of throwing an IOException.
+   *
+   * @param is an input stream
+   * @return {@code is.available()}, or null if that throws an exception
+   */
+  public static @Nullable Integer available(InputStream is) {
+    try {
+      return is.available();
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the first {@code readLimit} bytes of the input stream consist only of
+   * whitespace.
+   *
+   * @param is an input stream
+   * @param readLimit how many bytes to look ahead in the input stream
+   * @return null if {@code !is.markSupported()}; otherwise, true if the first {@code readLimit}
+   *     characters of the input stream consist only of whitespace
+   */
+  public static @Nullable Boolean isWhitespaceOnly(InputStream is, int readLimit) {
+    if (!is.markSupported()) {
+      return null;
+    }
+    try {
+      is.mark(readLimit * 4); // each character is at most 4 bytes, usually much less
+      for (int bytesRead = 0; bytesRead < readLimit; bytesRead++) {
+        int nextCodePoint = readCodePoint(is);
+        if (nextCodePoint == -1) {
+          return true;
+        } else if (Character.isWhitespace(nextCodePoint)) {
+          // do nothing, continue loop
+        } else {
+          return false;
+        }
+      }
+      return true;
+    } finally {
+      try {
+        is.reset();
+      } catch (IOException e) {
+        // Do nothing.
+      }
+    }
+  }
+
+  // From https://stackoverflow.com/a/54513347 .
+  /**
+   * Reads a Unicode code point from an input stream.
+   *
+   * @param is an input stream
+   * @return the Unicode code point for the next character in the input stream
+   */
+  public static int readCodePoint(InputStream is) {
+    try {
+      int nextByte = is.read();
+      if (nextByte == -1) {
+        return -1;
+      }
+      byte firstByte = (byte) nextByte;
+      int byteCount = getByteCount(firstByte);
+      if (byteCount == 1) {
+        return nextByte;
+      }
+      byte[] utf8Bytes = new byte[byteCount];
+      utf8Bytes[0] = (byte) nextByte;
+      for (int i = 1; i < byteCount; i++) { // Get any subsequent bytes for this UTF-8 character.
+        nextByte = is.read();
+        utf8Bytes[i] = (byte) nextByte;
+      }
+      int codePoint = new String(utf8Bytes, StandardCharsets.UTF_8).codePointAt(0);
+      return codePoint;
+    } catch (IOException e) {
+      throw new Error("input stream = " + is, e);
+    }
+  }
+
+  // From https://stackoverflow.com/a/54513347 .
+  /**
+   * Returns the number of bytes in a UTF-8 character based on the bit pattern of the supplied byte.
+   * The only valid values are 1, 2 3 or 4. If the byte has an invalid bit pattern an
+   * IllegalArgumentException is thrown.
+   *
+   * @param b The first byte of a UTF-8 character.
+   * @return The number of bytes for this UTF-* character.
+   * @throws IllegalArgumentException if the bit pattern is invalid.
+   */
+  private static int getByteCount(byte b) throws IllegalArgumentException {
+    if ((b >= 0)) return 1; // Pattern is 0xxxxxxx.
+    if ((b >= (byte) 0b11000000) && (b <= (byte) 0b11011111)) return 2; // Pattern is 110xxxxx.
+    if ((b >= (byte) 0b11100000) && (b <= (byte) 0b11101111)) return 3; // Pattern is 1110xxxx.
+    if ((b >= (byte) 0b11110000) && (b <= (byte) 0b11110111)) return 4; // Pattern is 11110xxx.
+    throw new IllegalArgumentException(); // Invalid first byte for UTF-8 character.
   }
 
   /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */

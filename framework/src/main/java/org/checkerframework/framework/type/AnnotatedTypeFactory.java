@@ -74,8 +74,10 @@ import javax.tools.Diagnostic;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -415,7 +417,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String aliasName,
         AnnotationMirror canonical,
         boolean copyElements,
-        @CanonicalName String canonicalName,
+        @Nullable @CanonicalName String canonicalName,
         String[] ignorableElements) {
       this.canonical = canonical;
       this.copyElements = copyElements;
@@ -547,22 +549,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private final TypeInformationPresenter typeInformationPresenter;
 
   /**
-   * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
-   * root. (These parameters are required so that the factory may conduct the appropriate
-   * annotation-gathering analyses on certain tree types.)
-   *
-   * <p>Root can be {@code null} if the factory does not operate on trees.
+   * Constructs a factory from the given checker.
    *
    * <p>A subclass must call postInit at the end of its constructor. postInit must be the last call
    * in the constructor or else types from stub files may not be created as expected.
    *
    * @param checker the {@link SourceChecker} to which this factory belongs
-   * @throws IllegalArgumentException if either argument is {@code null}
    */
   public AnnotatedTypeFactory(BaseTypeChecker checker) {
     uid = ++uidCounter;
     this.processingEnv = checker.getProcessingEnvironment();
-    // this.root = root;
     this.checker = checker;
     this.assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
@@ -768,7 +764,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * constructor has completed. In particular, {@link AnnotationFileElementTypes#parseStubFiles()}
    * may try to do type resolution with this AnnotatedTypeFactory.
    */
-  protected void postInit() {
+  protected void postInit(
+      @UnderInitialization(AnnotatedTypeFactory.class) AnnotatedTypeFactory this) {
     this.qualHierarchy = createQualifierHierarchy();
     if (qualHierarchy == null) {
       throw new TypeSystemError(
@@ -875,7 +872,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @return the WholeProgramInference instance, or null
    */
-  public WholeProgramInference getWholeProgramInference() {
+  public @Nullable WholeProgramInference getWholeProgramInference() {
     return wholeProgramInference;
   }
 
@@ -1001,7 +998,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (candidateAjavaFiles.size() == 1) {
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-        String ajavaPath = candidateAjavaFiles.toArray(new String[1])[0];
+        String ajavaPath = candidateAjavaFiles.toArray(new String[candidateAjavaFiles.size()])[0];
         try {
           currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
         } catch (Throwable e) {
@@ -1859,7 +1856,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param element class for which to get invariants
    * @return field invariants for {@code element}
    */
-  public FieldInvariants getFieldInvariants(TypeElement element) {
+  public @Nullable FieldInvariants getFieldInvariants(TypeElement element) {
     if (element == null) {
       return null;
     }
@@ -1918,7 +1915,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     one isn't found
    */
   public @Nullable AnnotationTree getFieldInvariantAnnotationTree(
-      List<? extends AnnotationTree> annoTrees) {
+      @Nullable List<? extends AnnotationTree> annoTrees) {
     List<AnnotationMirror> annos = TreeUtils.annotationsFromTypeAnnotationTrees(annoTrees);
     for (int i = 0; i < annos.size(); i++) {
       for (Class<? extends Annotation> clazz : getFieldInvariantDeclarationAnnotations()) {
@@ -2187,6 +2184,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns the {@link AnnotatedTypeMirror} of the enclosing type at the location of {@code tree}
+   * that is a subtype of {@code typeElement}.
+   *
+   * @param typeElement super type of the enclosing type to return
+   * @param tree location to use
+   * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
+   *     typeElement}
+   */
+  public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
+    AnnotatedDeclaredType thisType = getSelfType(tree);
+    while (!isSubtype(thisType.getUnderlyingType(), typeElement.asType())) {
+      thisType = thisType.getEnclosingType();
+    }
+    return thisType;
+  }
+
+  /**
    * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
    *
    * @param type1 a type
@@ -2217,7 +2231,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param expression the expression for which to determine the receiver type
    * @return the type of the receiver of expression
    */
-  public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
+  public final @Nullable AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
     ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
     if (receiver != null) {
       return getAnnotatedType(receiver);
@@ -3285,6 +3299,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return true if that annotation is part of the type system under which this type factory
    *     operates, false otherwise
    */
+  @EnsuresNonNullIf(expression = "#1", result = true)
   public boolean isSupportedQualifier(@Nullable AnnotationMirror a) {
     if (a == null) {
       return false;
@@ -3772,7 +3787,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree the {@link Tree} to get the enclosing method for
    * @return the method {@link Element} enclosing the argument, or null if none has been recorded
    */
-  public final Element getEnclosingElementForArtificialTree(Tree tree) {
+  public final @Nullable Element getEnclosingElementForArtificialTree(Tree tree) {
     return artificialTreeToEnclosingElementMap.get(tree);
   }
 
@@ -3883,7 +3898,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param anno annotation class
    * @return the annotation mirror for anno
    */
-  public final AnnotationMirror getDeclAnnotationNoAliases(
+  public final @Nullable AnnotationMirror getDeclAnnotationNoAliases(
       Element elt, Class<? extends Annotation> anno) {
     return getDeclAnnotation(elt, anno, false);
   }
@@ -3934,12 +3949,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * method.
    *
    * @param elt the element to retrieve the annotation from
-   * @param annoClass the class the annotation to retrieve
+   * @param annoClass the class of the annotation to retrieve
    * @param checkAliases whether to return an annotation mirror for an alias of the requested
    *     annotation class name
    * @return the annotation mirror for the requested annotation, or null if not found
    */
-  private AnnotationMirror getDeclAnnotation(
+  private @Nullable AnnotationMirror getDeclAnnotation(
       Element elt, Class<? extends Annotation> annoClass, boolean checkAliases) {
     AnnotationMirrorSet declAnnos = getDeclAnnotations(elt);
 

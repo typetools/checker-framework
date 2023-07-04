@@ -31,7 +31,7 @@ public class ReachingDefinitionStore implements Store<ReachingDefinitionStore> {
    * @param reachingDefSet a set of reaching definition nodes. The parameter is captured and the
    *     caller should not retain an alias.
    */
-  public ReachingDefinitionStore(LinkedHashSet<ReachingDefinitionNode> reachingDefSet) {
+  public ReachingDefinitionStore(Set<ReachingDefinitionNode> reachingDefSet) {
     this.reachingDefSet = reachingDefSet;
   }
 

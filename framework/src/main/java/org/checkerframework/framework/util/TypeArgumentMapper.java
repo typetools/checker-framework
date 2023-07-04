@@ -16,6 +16,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.plumelib.util.IPair;
 
 /**
@@ -263,7 +264,7 @@ public class TypeArgumentMapper {
    * @return a list of type records that extends pathFromRoot (a sequence of directSupertypes) to
    *     target
    */
-  private static List<TypeRecord> recursiveDepthFirstSearch(
+  private static @Nullable List<TypeRecord> recursiveDepthFirstSearch(
       ArrayDeque<TypeRecord> pathFromRoot, TypeElement target, Types types) {
     if (pathFromRoot.isEmpty()) {
       return null;

@@ -19,6 +19,7 @@ import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.LessThanBottom;
 import org.checkerframework.checker.index.qual.LessThanUnknown;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -299,7 +300,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @param expression an expression
    * @return expressions that {@code expression} is less than
    */
-  public List<String> getLessThanExpressions(ExpressionTree expression) {
+  public @Nullable List<String> getLessThanExpressions(ExpressionTree expression) {
     AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
     return getLessThanExpressions(
         annotatedTypeMirror.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN));
@@ -314,7 +315,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @param expressions a list of expressions
    * @return a @LessThan qualifier with the given arguments
    */
-  public AnnotationMirror createLessThanQualifier(List<String> expressions) {
+  public AnnotationMirror createLessThanQualifier(@Nullable List<String> expressions) {
     if (expressions == null) {
       return LESS_THAN_BOTTOM;
     } else if (expressions.isEmpty()) {
@@ -339,7 +340,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @param annotation an annotation from the same hierarchy as LessThan
    * @return the list of expressions in the annotation
    */
-  public List<String> getLessThanExpressions(AnnotationMirror annotation) {
+  public @Nullable List<String> getLessThanExpressions(AnnotationMirror annotation) {
     if (AnnotationUtils.areSameByName(
         annotation, "org.checkerframework.checker.index.qual.LessThanBottom")) {
       return null;
