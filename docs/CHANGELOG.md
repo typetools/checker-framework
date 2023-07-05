@@ -1,3 +1,15 @@
+Version 3.36.0 (August 1, 2023)
+-------------------------------
+
+**User-visible changes:**
+
+Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
+
+**Implementation details:**
+
+**Closed issues:**
+
+
 Version 3.36.0 (July 3, 2023)
 -----------------------------
 
@@ -15,8 +27,6 @@ changed from `@MustCallUnknown` to `@MustCall({})`.  This change reduces the
 number of false positive warnings in code that uses type variables but not
 resources.  However, it makes some code that uses type variables and resources
 unverifiable with any annotation.
-
-Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
 
 **Implementation details:**
 
