@@ -261,6 +261,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     if (elt instanceof TypeElement) {
       TypeElement typeElt = (TypeElement) elt;
       int idx = typeElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(typeElt.getTypeParameters(), tpe);
+      }
       ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
       if (cls == null || cls.getTypeParameters().isEmpty()) {
         // The type parameters in the source tree were already erased. The element already
@@ -299,6 +302,20 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else {
       throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
     }
+  }
+
+  private int findIndex(
+      List<? extends TypeParameterElement> typeParameters, TypeParameterElement type) {
+
+    TypeVariable typeVariable = (TypeVariable) type.asType();
+
+    for (int i = 0; i < typeParameters.size(); i++) {
+      TypeVariable typeVariable1 = (TypeVariable) typeParameters.get(i).asType();
+      if (TypesUtils.sames(typeVariable1, typeVariable)) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   @Override

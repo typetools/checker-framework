@@ -34,6 +34,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -1265,5 +1266,17 @@ public final class TypesUtils {
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;
+  }
+
+  @EqualsMethod
+  public static boolean sames(TypeVariable key, TypeVariable other) {
+    if (key == other) {
+      return true;
+    }
+    Name otherName = other.asElement().getSimpleName();
+    Element otherEnclosingElement = other.asElement().getEnclosingElement();
+
+    return key.asElement().getSimpleName().contentEquals(otherName)
+        && otherEnclosingElement.equals(key.asElement().getEnclosingElement());
   }
 }
