@@ -143,21 +143,21 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param names a list of property files, separated by {@link File#pathSeparator}
+   * @param propfiles a list of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String names) {
-    String[] namesArr = names.split(File.pathSeparator);
+  private Set<String> keysOfPropertyFiles(String propfiles) {
+    String[] propfilesArr = propfiles.split(File.pathSeparator);
 
-    if (namesArr == null) {
+    if (propfilesArr == null) {
       checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
+          Diagnostic.Kind.WARNING, "Couldn't parse the properties files: <" + propfiles + ">");
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(propfilesArr.length);
 
-    for (String name : namesArr) {
+    for (String propfile : propfilesArr) {
       try {
         Properties prop = new Properties();
 
@@ -167,18 +167,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           cl = ClassLoader.getSystemClassLoader();
         }
 
-        try (InputStream in = cl.getResourceAsStream(name)) {
+        try (InputStream in = cl.getResourceAsStream(propfile)) {
           if (in != null) {
             prop.load(in);
           } else {
             // If the classloader didn't manage to load the file, try whether a
             // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = new FileInputStream(name)) {
+            try (InputStream fis = new FileInputStream(propfile)) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
               checker.message(
-                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + name);
-              // report(null, "propertykeychecker.filenotfound", name);
+                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + propfile);
+              // report(null, "propertykeychecker.filenotfound", propfile);
               // return Collections.emptySet();
               continue;
             }
@@ -200,18 +200,24 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
+  /**
+   * Returns the keys for the given resource bundles.
+   *
+   * @param bundleNames names of resource bundles
+   * @return the keys for the given resource bundles
+   */
   private Set<String> keysOfResourceBundle(String bundleNames) {
-    String[] namesArr = bundleNames.split(":");
+    String[] bundleNamesArr = bundleNames.split(":");
 
-    if (namesArr == null) {
+    if (bundleNamesArr == null) {
       checker.message(
           Diagnostic.Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(bundleNamesArr.length);
 
-    for (String bundleName : namesArr) {
+    for (String bundleName : bundleNamesArr) {
       if (!Signatures.isBinaryName(bundleName)) {
         System.err.println(
             "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
