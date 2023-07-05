@@ -2186,6 +2186,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns the {@link AnnotatedTypeMirror} of the enclosing type at the location of {@code tree}
+   * that is a subtype of {@code typeElement}.
+   *
+   * @param typeElement super type of the enclosing type to return
+   * @param tree location to use
+   * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
+   *     typeElement}
+   */
+  public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
+    AnnotatedDeclaredType thisType = getSelfType(tree);
+    while (!isSubtype(thisType.getUnderlyingType(), typeElement.asType())) {
+      thisType = thisType.getEnclosingType();
+    }
+    return thisType;
+  }
+
+  /**
    * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
    *
    * @param type1 a type

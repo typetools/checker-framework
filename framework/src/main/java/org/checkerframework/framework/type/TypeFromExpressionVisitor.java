@@ -28,6 +28,7 @@ import com.sun.source.tree.WildcardTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -246,6 +247,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     switch (ElementUtils.getKindRecordAsClass(elt)) {
       case METHOD:
+      case CONSTRUCTOR: // x0.super() in anoymous classes
       case PACKAGE: // "java.lang" in new java.lang.Short("2")
       case CLASS: // o instanceof MyClass.InnerClass
       case ENUM:
@@ -260,6 +262,14 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // Tree is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
       // outer type.
       return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
+    } else if (tree.getIdentifier().contentEquals("super")) {
+      // Tree is "MyClass.super", where "MyClass" may be the innermost enclosing type or any
+      // outer type.
+      TypeMirror superTypeMirror = TreeUtils.typeOf(tree);
+      TypeElement superTypeElement = TypesUtils.getTypeElement(superTypeMirror);
+      AnnotatedDeclaredType thisType = f.getEnclosingSubType(superTypeElement, tree);
+      return AnnotatedTypes.asSuper(
+          f, thisType, AnnotatedTypeMirror.createType(superTypeMirror, f, false));
     } else {
       // tree must be a field access, so get the type of the expression, and then call
       // asMemberOf.

@@ -924,6 +924,20 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
+   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@code java.lang.Record}.
+   * It includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+   *
+   * @param atypeFactory type factory to use
+   * @return AnnotatedDeclaredType for Record
+   */
+  protected static AnnotatedDeclaredType createTypeOfRecord(AnnotatedTypeFactory atypeFactory) {
+    AnnotatedDeclaredType recordType =
+        atypeFactory.fromElement(atypeFactory.elements.getTypeElement("java.lang.Record"));
+    recordType.declaration = false;
+    return recordType;
+  }
+
+  /**
    * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
    * the result in a field so that it isn't recomputed each time.
    *

@@ -327,7 +327,11 @@ final class SupertypeFinder {
                 atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
         supertypes.add(adt);
       } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
-        supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        if (classTree.getKind().name().contentEquals("RECORD")) {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfRecord(atypeFactory));
+        } else {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        }
       }
 
       for (Tree implemented : classTree.getImplementsClause()) {
