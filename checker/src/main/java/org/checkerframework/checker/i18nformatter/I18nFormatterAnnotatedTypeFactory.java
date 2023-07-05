@@ -94,13 +94,13 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     Map<String, String> result = new HashMap<>();
 
     if (checker.hasOption("propfiles")) {
-      String names = checker.getOption("propfiles");
-      String[] namesArr = names.split(File.pathSeparator);
+      String propfiles = checker.getOption("propfiles");
+      String[] propfilesArr = propfiles.split(File.pathSeparator);
 
-      if (namesArr == null) {
-        System.err.println("Couldn't parse the properties files: <" + names + ">");
+      if (propfilesArr == null) {
+        System.err.println("Couldn't parse the properties files: <" + propfiles + ">");
       } else {
-        for (String name : namesArr) {
+        for (String propfile : propfilesArr) {
           try {
             Properties prop = new Properties();
 
@@ -109,17 +109,17 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
               // The class loader is null if the system class loader was used.
               cl = ClassLoader.getSystemClassLoader();
             }
-            try (InputStream in = cl.getResourceAsStream(name)) {
+            try (InputStream in = cl.getResourceAsStream(propfile)) {
               if (in != null) {
                 prop.load(in);
               } else {
                 // If the classloader didn't manage to load the file, try whether a
                 // FileInputStream works. For absolute paths this might help.
-                try (InputStream fis = new FileInputStream(name)) {
+                try (InputStream fis = new FileInputStream(propfile)) {
                   prop.load(fis);
                 } catch (FileNotFoundException e) {
-                  System.err.println("Couldn't find the properties file: " + name);
-                  // report(null, "propertykeychecker.filenotfound", name);
+                  System.err.println("Couldn't find the properties file: " + propfile);
+                  // report(null, "propertykeychecker.filenotfound", propfile);
                   // return Collections.emptySet();
                   continue;
                 }
@@ -134,7 +134,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             // an AST node?  One cannot use `report`, because it needs a node.
             System.err.println(
                 "Exception in PropertyKeyChecker.keysOfPropertyFile while processing "
-                    + name
+                    + propfile
                     + ": "
                     + e);
             e.printStackTrace();
@@ -145,12 +145,12 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     if (checker.hasOption("bundlenames")) {
       String bundleNames = checker.getOption("bundlenames");
-      String[] namesArr = bundleNames.split(":");
+      String[] bundleNamesArr = bundleNames.split(":");
 
-      if (namesArr == null) {
+      if (bundleNamesArr == null) {
         System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
       } else {
-        for (String bundleName : namesArr) {
+        for (String bundleName : bundleNamesArr) {
           if (!Signatures.isBinaryName(bundleName)) {
             System.err.println(
                 "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
