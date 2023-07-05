@@ -144,18 +144,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param propfiles a list of property files, separated by {@link File#pathSeparator}
+   * @param propfilesArr an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String[] propfiles) {
+  private Set<String> keysOfPropertyFiles(String[] propfilesArr) {
 
-    if (propfiles.length == 0) {
+    if (propfilesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfiles.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfilesArr.length));
 
-    for (String propfile : propfiles) {
+    for (String propfile : propfilesArr) {
       try {
         Properties prop = new Properties();
 
@@ -198,15 +198,21 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
-  private Set<String> keysOfResourceBundle(String[] bundleNames) {
+  /**
+   * Returns the keys for the given resource bundles.
+   *
+   * @param bundleNamesArr names of resource bundles
+   * @return the keys for the given resource bundles
+   */
+  private Set<String> keysOfResourceBundle(String[] bundleNamesArr) {
 
-    if (bundleNames.length == 0) {
+    if (bundleNamesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNames.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNamesArr.length));
 
-    for (String bundleName : bundleNames) {
+    for (String bundleName : bundleNamesArr) {
       if (!Signatures.isBinaryName(bundleName)) {
         System.err.println(
             "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
