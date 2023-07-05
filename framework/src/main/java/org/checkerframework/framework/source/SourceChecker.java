@@ -1950,6 +1950,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
     if (!computedSuppressWarningsStringsFromOption) {
+      computedSuppressWarningsStringsFromOption = true;
       Map<String, String> options = getOptions();
       if (options.containsKey("suppressWarnings")) {
         String swStrings = options.get("suppressWarnings");
@@ -1960,7 +1961,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           }
         }
       }
-      computedSuppressWarningsStringsFromOption = true;
     }
 
     return this.suppressWarningsStringsFromOption;

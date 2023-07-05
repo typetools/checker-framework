@@ -57,7 +57,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     // load directories of qualifiers
-    for (String dirName : checker.getStringsOption("quals", ':')) {
+    for (String dirName : checker.getStringsOption("quals", ',')) {
       if (!new File(dirName).exists()) {
         throw new UserError("Directory specified in -AqualsDir does not exist: %s", dirName);
       }
