@@ -7,11 +7,12 @@ dependencies {
   api project(':checker-qual')
 
   // Node implements org.plumelib.util.UniqueId, so this dependency must be "api".
-  api "org.plumelib:plume-util:${plumeUtilVersion}"
+  api "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // External dependencies:
-  // If you add an external dependency, you must shadow its packages.
-  // See the comment in ../build.gradle in the shadowJar block.
+  // If you add an external dependency, you must shadow its packages both in the dataflow-shaded
+  // artifact (see shadowJar block below) and also in checker.jar (see the comment in
+  // ../build.gradle in the createDataflowShaded task).
 }
 
 // Shadowing Test Sources and Dependencies
