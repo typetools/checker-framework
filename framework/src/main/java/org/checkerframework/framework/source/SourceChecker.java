@@ -1535,6 +1535,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new UserError("Illegal lint option: " + name);
     }
 
+    // This is only needed if initChecker() has not yet been called.
     if (activeLints == null) {
       activeLints = createActiveLints(getOptions());
     }
@@ -1824,6 +1825,34 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     throw new UserError(
         String.format("Value of %s option should be a boolean, but is \"%s\".", name, value));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final String[] getStringsOption(String name, char separator, String[] defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return value.split(Pattern.quote(Character.toString(separator)));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final String[] getStringsOption(String name, String separator, String[] defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return value.split(separator);
   }
 
   @Override
@@ -2161,9 +2190,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public boolean useConservativeDefault(String kindOfCode) {
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
-    String option = this.getOption("useConservativeDefaultsForUncheckedCode");
-    String[] args = option != null ? option.split(",") : new String[0];
-    for (String arg : args) {
+    for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
       boolean value = arg.indexOf("-") != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {
