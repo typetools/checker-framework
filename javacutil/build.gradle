@@ -19,6 +19,9 @@ dependencies {
   // and dataflow-shaded.jar.
   // See the comment in ../build.gradle in the shadowJar block and ../dataflow/build.gradle
   // createDataflowShaded task.
+
+  // https://mvnrepository.com/artifact/com.google.guava/guava
+  implementation "com.google.guava:guava:32.0.1-jre"
 }
 
 

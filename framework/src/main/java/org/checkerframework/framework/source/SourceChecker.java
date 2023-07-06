@@ -1955,10 +1955,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (options.containsKey("suppressWarnings")) {
         String swStrings = options.get("suppressWarnings");
         if (swStrings != null) {
-          String[] swStringsArray = swStrings.split(",");
-          if (swStringsArray != null) {
-            this.suppressWarningsStringsFromOption = swStringsArray;
-          }
+          this.suppressWarningsStringsFromOption = swStrings.split(",");
         }
       }
     }

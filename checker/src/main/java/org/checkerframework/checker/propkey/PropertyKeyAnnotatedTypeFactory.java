@@ -199,6 +199,12 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
+  /**
+   * Returns the keys for the given resource bundles.
+   *
+   * @param bundleNames names of resource bundles
+   * @return the keys for the given resource bundles
+   */
   private Set<String> keysOfResourceBundle(List<String> bundleNames) {
 
     if (bundleNames.isEmpty()) {
