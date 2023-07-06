@@ -1779,8 +1779,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public final String getOption(String name, String defaultValue) {
 
-    if (!this.getSupportedOptions().contains(name)) {
-      throw new UserError("Illegal option: " + name);
+    // TODO: Should supportedOptions be cached?
+    Set<String> supportedOptions = this.getSupportedOptions();
+    if (!supportedOptions.contains(name)) {
+      throw new UserError(
+          "Illegal option: "
+              + name
+              + "; supported options = "
+              + String.join(",", supportedOptions));
     }
 
     if (activeOptions == null) {
