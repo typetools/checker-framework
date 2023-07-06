@@ -114,7 +114,7 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.36.0'
+  version '3.36.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
