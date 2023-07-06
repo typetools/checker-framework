@@ -3,7 +3,6 @@ package issue6076;
 import java.util.Collection;
 import java.util.Set;
 
-
 public class Issue6076 {
 
   public SSTableReaderLoadingBuilder<BtiTableReader, BtiTableReader.Builder> loadingBuilder(
@@ -34,6 +33,7 @@ public class Issue6076 {
         extends SSTableReader.Builder<R, B> {}
   }
 
+  @SuppressWarnings("all") // Just check for crashes.
   public abstract static class SSTable {
     public static class Builder<S extends SSTable, B extends Builder<S, B>> {
       public Builder() {}

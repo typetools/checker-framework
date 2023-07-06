@@ -1268,15 +1268,24 @@ public final class TypesUtils {
         || unboxedKind == TypeKind.CHAR;
   }
 
+  /**
+   * Returns true if the two type variables are the same type variable. Meaning they have the same
+   * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
+   * they do not have to be the same object.
+   *
+   * @param typeVariable1 a type variable
+   * @param typeVariable2 a type variable
+   * @return if the two type variables are the same type variable
+   */
   @EqualsMethod
-  public static boolean sames(TypeVariable key, TypeVariable other) {
-    if (key == other) {
+  public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
+    if (typeVariable1 == typeVariable2) {
       return true;
     }
-    Name otherName = other.asElement().getSimpleName();
-    Element otherEnclosingElement = other.asElement().getEnclosingElement();
+    Name otherName = typeVariable2.asElement().getSimpleName();
+    Element otherEnclosingElement = typeVariable2.asElement().getEnclosingElement();
 
-    return key.asElement().getSimpleName().contentEquals(otherName)
-        && otherEnclosingElement.equals(key.asElement().getEnclosingElement());
+    return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
+        && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
   }
 }

@@ -311,7 +311,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     for (int i = 0; i < typeParameters.size(); i++) {
       TypeVariable typeVariable1 = (TypeVariable) typeParameters.get(i).asType();
-      if (TypesUtils.sames(typeVariable1, typeVariable)) {
+      if (TypesUtils.areSame(typeVariable1, typeVariable)) {
         return i;
       }
     }
