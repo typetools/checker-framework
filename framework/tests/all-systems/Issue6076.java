@@ -3,6 +3,7 @@ package issue6076;
 import java.util.Collection;
 import java.util.Set;
 
+
 public class Issue6076 {
 
   public SSTableReaderLoadingBuilder<BtiTableReader, BtiTableReader.Builder> loadingBuilder(
@@ -39,10 +40,12 @@ public class Issue6076 {
 
       public Builder(Descriptor descriptor) {}
 
+      @SuppressWarnings("unchecked")
       public B setTableMetadataRef(TableMetadataRef ref) {
         return (B) this;
       }
 
+      @SuppressWarnings("unchecked")
       public B setComponents(Collection<Component> components) {
         return (B) this;
       }
