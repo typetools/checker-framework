@@ -279,6 +279,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else if (elt instanceof ExecutableElement) {
       ExecutableElement exElt = (ExecutableElement) elt;
       int idx = exElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(exElt.getTypeParameters(), tpe);
+      }
       MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
       if (meth == null || (idx == -1 && exElt.isVarArgs())) {
         // meth can be null when no source code was found for it.
@@ -304,6 +307,15 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
   }
 
+  /**
+   * Finds the index of {@code type} in {@code typeParameters} using {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} instead of {@link Object#equals(Object)}.
+   *
+   * @param typeParameters a list of type parameters
+   * @param type a type parameter
+   * @return the index of {@code type} in {@code typeParameters} using {@link
+   *     TypesUtils#areSame(TypeVariable, TypeVariable)} or -1 if it does not exist
+   */
   private int findIndex(
       List<? extends TypeParameterElement> typeParameters, TypeParameterElement type) {
 
