@@ -1273,6 +1273,10 @@ public final class TypesUtils {
    * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
    * they do not have to be the same object.
    *
+   * <p>This method is needed when a type has some through type variable substitution, but only some
+   * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
+   * the type of a tree created by {@link org.checkerframework.javacutil.trees.TreeBuilder}.
+   *
    * @param typeVariable1 a type variable
    * @param typeVariable2 a type variable
    * @return if the two type variables are the same type variable
