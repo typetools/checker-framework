@@ -1,4 +1,4 @@
-Version 3.36.0 (August 1, 2023)
+Version 3.36.1 (July ?, 2023)
 -------------------------------
 
 **User-visible changes:**
