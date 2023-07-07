@@ -196,18 +196,17 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    // get all the loaded annotations
+    // Get all the loaded annotations.
     Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
-    // load all the external units
+    // Load all the units specified on the command line.
     loadAllExternalUnits();
-
-    // copy all loaded external Units to qual set
     qualSet.addAll(externalQualsMap.values());
 
     return qualSet;
   }
 
+  /** Loads all the externnal units specified on the command line. */
   private void loadAllExternalUnits() {
     // load external individually named units
     String qualNames = checker.getOption("units");

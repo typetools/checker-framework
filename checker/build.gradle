@@ -165,7 +165,6 @@ task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
   description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
   archivesBaseName = 'checker'
-  archiveClassifier = ''
 
   from shadowJar.source
   configurations = shadowJar.configurations
@@ -190,7 +189,7 @@ shadowJar {
   description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
-
+  archiveClassifier = 'all'
   doLast{
     copy {
       from archiveFile.get()
@@ -1060,6 +1059,10 @@ publishing {
   publications {
     checker(MavenPublication) {
       project.shadow.component it
+      // reset the artifacts because of project.shadow.component changes
+      // the classifier from 'all' to '' because of
+      // https://github.com/johnrengelman/shadow/issues/860
+      artifacts = [shadowJar]
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar
