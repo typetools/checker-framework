@@ -1271,7 +1271,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Create a new array argument if the actuals outnumber the formals, or if the last
       // actual is not assignable to the last formal.
       int lastArgIndex = numFormals - 1;
-      TypeMirror lastParamType = formals.get(lastArgIndex);
+      TypeMirror lastParamType;
+      if (lastArgIndex == -1) {
+        numFormals = method.getParameters().size();
+        lastArgIndex = 0;
+        lastParamType = method.getParameters().get(numFormals - 1).asType();
+      } else {
+        lastParamType = formals.get(lastArgIndex);
+      }
       if (numActuals == numFormals
           && types.isAssignable(TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
         // Normal call with no array creation, apply method
