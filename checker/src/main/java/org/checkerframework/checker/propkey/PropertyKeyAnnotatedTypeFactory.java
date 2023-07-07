@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -131,10 +132,10 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     Set<String> result = new HashSet<>();
 
     if (checker.hasOption("propfiles")) {
-      result.addAll(keysOfPropertyFiles(checker.getOption("propfiles")));
+      result.addAll(keysOfPropertyFiles(checker.getStringsOption("propfiles", File.pathSeparator)));
     }
     if (checker.hasOption("bundlenames")) {
-      result.addAll(keysOfResourceBundle(checker.getOption("bundlenames")));
+      result.addAll(keysOfResourceBundle(checker.getStringsOption("bundlenames", ':')));
     }
 
     return result;
@@ -143,19 +144,16 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param propfiles a list of property files, separated by {@link File#pathSeparator}
+   * @param propfilesArr an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String propfiles) {
-    String[] propfilesArr = propfiles.split(File.pathSeparator);
+  private Set<String> keysOfPropertyFiles(String[] propfilesArr) {
 
-    if (propfilesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the properties files: <" + propfiles + ">");
+    if (propfilesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(propfilesArr.length);
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfilesArr.length));
 
     for (String propfile : propfilesArr) {
       try {
@@ -203,19 +201,16 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the keys for the given resource bundles.
    *
-   * @param bundleNames names of resource bundles
+   * @param bundleNamesArr names of resource bundles
    * @return the keys for the given resource bundles
    */
-  private Set<String> keysOfResourceBundle(String bundleNames) {
-    String[] bundleNamesArr = bundleNames.split(":");
+  private Set<String> keysOfResourceBundle(String[] bundleNamesArr) {
 
-    if (bundleNamesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
+    if (bundleNamesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(bundleNamesArr.length);
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNamesArr.length));
 
     for (String bundleName : bundleNamesArr) {
       if (!Signatures.isBinaryName(bundleName)) {
