@@ -1,4 +1,14 @@
-Version 3.36.0 (July 5, 2023)
+Version 3.36.1 (July ?, 2023)
+
+-----------------------------
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.36.0 (July 3, 2023)
 -----------------------------
 
 **User-visible changes:**
@@ -54,7 +64,12 @@ Return types changed:
  * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
    `Set`, though the returned value is still a `LinkedHashSet`.
 
+Renamed methods in `CFAbstractValue`:
+ * `combineOneAnnotation()` => `combineAnnotationWithTypeVar()`
+ * `combineNoAnnotations()` => `combineTwoTypeVars()`
+
 **Closed issues:**
+#5908, #5936, #5971, #6019, #6025, #6028, #6030, #6039, #6053, #6060, #6069.
 
 
 Version 3.35.0 (June 1, 2023)

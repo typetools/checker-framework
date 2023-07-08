@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -131,10 +132,10 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     Set<String> result = new HashSet<>();
 
     if (checker.hasOption("propfiles")) {
-      result.addAll(keysOfPropertyFiles(checker.getOption("propfiles")));
+      result.addAll(keysOfPropertyFiles(checker.getStringsOption("propfiles", File.pathSeparator)));
     }
     if (checker.hasOption("bundlenames")) {
-      result.addAll(keysOfResourceBundle(checker.getOption("bundlenames")));
+      result.addAll(keysOfResourceBundle(checker.getStringsOption("bundlenames", ':')));
     }
 
     return result;
@@ -143,21 +144,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param names a list of property files, separated by {@link File#pathSeparator}
+   * @param propfilesArr an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String names) {
-    String[] namesArr = names.split(File.pathSeparator);
+  private Set<String> keysOfPropertyFiles(String[] propfilesArr) {
 
-    if (namesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
+    if (propfilesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfilesArr.length));
 
-    for (String name : namesArr) {
+    for (String propfile : propfilesArr) {
       try {
         Properties prop = new Properties();
 
@@ -167,18 +165,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           cl = ClassLoader.getSystemClassLoader();
         }
 
-        try (InputStream in = cl.getResourceAsStream(name)) {
+        try (InputStream in = cl.getResourceAsStream(propfile)) {
           if (in != null) {
             prop.load(in);
           } else {
             // If the classloader didn't manage to load the file, try whether a
             // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = new FileInputStream(name)) {
+            try (InputStream fis = new FileInputStream(propfile)) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
               checker.message(
-                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + name);
-              // report(null, "propertykeychecker.filenotfound", name);
+                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + propfile);
+              // report(null, "propertykeychecker.filenotfound", propfile);
               // return Collections.emptySet();
               continue;
             }
@@ -200,18 +198,21 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
-  private Set<String> keysOfResourceBundle(String bundleNames) {
-    String[] namesArr = bundleNames.split(":");
+  /**
+   * Returns the keys for the given resource bundles.
+   *
+   * @param bundleNamesArr names of resource bundles
+   * @return the keys for the given resource bundles
+   */
+  private Set<String> keysOfResourceBundle(String[] bundleNamesArr) {
 
-    if (namesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
+    if (bundleNamesArr.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNamesArr.length));
 
-    for (String bundleName : namesArr) {
+    for (String bundleName : bundleNamesArr) {
       if (!Signatures.isBinaryName(bundleName)) {
         System.err.println(
             "Malformed resource bundle: <" + bundleName + "> should be a binary name.");

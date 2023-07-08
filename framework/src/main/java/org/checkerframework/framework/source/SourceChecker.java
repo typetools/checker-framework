@@ -480,6 +480,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
+  /** True if {@link #suppressWarningsStringsFromOption} has been computed. */
+  private boolean computedSuppressWarningsStringsFromOption = false;
+
   /**
    * If true, use the "allcheckers:" warning string prefix.
    *
@@ -1532,6 +1535,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new UserError("Illegal lint option: " + name);
     }
 
+    // This is only needed if initChecker() has not yet been called.
     if (activeLints == null) {
       activeLints = createActiveLints(getOptions());
     }
@@ -1743,6 +1747,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   @Override
+  public Map<String, String> getOptions() {
+    if (activeOptions == null) {
+      activeOptions = createActiveOptions(processingEnv.getOptions());
+    }
+    return activeOptions;
+  }
+
+  @Override
   public final boolean hasOption(String name) {
     return getOptions().containsKey(name);
   }
@@ -1755,6 +1767,39 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public final String getOption(String name) {
     return getOption(name, null);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final String getOption(String name, String defaultValue) {
+
+    // TODO: Should supportedOptions be cached?
+    Set<String> supportedOptions = this.getSupportedOptions();
+    if (!supportedOptions.contains(name)) {
+      throw new UserError(
+          "Illegal option: "
+              + name
+              + "; supported options = "
+              + String.join(",", supportedOptions));
+    }
+
+    if (activeOptions == null) {
+      activeOptions = createActiveOptions(processingEnv.getOptions());
+    }
+
+    if (activeOptions.isEmpty()) {
+      return defaultValue;
+    }
+
+    if (activeOptions.containsKey(name)) {
+      return activeOptions.get(name);
+    } else {
+      return defaultValue;
+    }
   }
 
   /**
@@ -1788,12 +1833,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         String.format("Value of %s option should be a boolean, but is \"%s\".", name, value));
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
   @Override
-  public Map<String, String> getOptions() {
-    if (activeOptions == null) {
-      activeOptions = createActiveOptions(processingEnv.getOptions());
+  public final String[] getStringsOption(String name, char separator, String[] defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
     }
-    return activeOptions;
+    return value.split(Pattern.quote(Character.toString(separator)));
   }
 
   /**
@@ -1802,31 +1853,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
-  public final String getOption(String name, String defaultValue) {
-
-    if (!this.getSupportedOptions().contains(name)) {
-      throw new UserError("Illegal option: " + name);
-    }
-
-    if (activeOptions == null) {
-      activeOptions = createActiveOptions(processingEnv.getOptions());
-    }
-
-    if (activeOptions.isEmpty()) {
+  public final String[] getStringsOption(String name, String separator, String[] defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
       return defaultValue;
     }
-
-    if (activeOptions.containsKey(name)) {
-      return activeOptions.get(name);
-    } else {
-      return defaultValue;
-    }
+    return value.split(separator);
   }
 
-  /**
-   * Map the Checker Framework version of {@link SupportedOptions} to the standard annotation
-   * provided version {@link javax.annotation.processing.SupportedOptions}.
-   */
   @Override
   public Set<String> getSupportedOptions() {
     Set<String> options = new HashSet<>();
@@ -1917,17 +1951,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *     argument
    */
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
-    if (this.suppressWarningsStringsFromOption == null) {
+    if (!computedSuppressWarningsStringsFromOption) {
+      computedSuppressWarningsStringsFromOption = true;
       Map<String, String> options = getOptions();
-      if (!options.containsKey("suppressWarnings")) {
-        return null;
+      if (options.containsKey("suppressWarnings")) {
+        String swStrings = options.get("suppressWarnings");
+        if (swStrings != null) {
+          this.suppressWarningsStringsFromOption = swStrings.split(",");
+        }
       }
-
-      String swStrings = options.get("suppressWarnings");
-      if (swStrings == null) {
-        return null;
-      }
-      this.suppressWarningsStringsFromOption = swStrings.split(",");
     }
 
     return this.suppressWarningsStringsFromOption;
@@ -2164,14 +2196,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public boolean useConservativeDefault(String kindOfCode) {
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
-    String option = this.getOption("useConservativeDefaultsForUncheckedCode");
-    // Temporary, for backward compatibility.
-    if (option == null) {
-      this.getOption("useDefaultsForUncheckedCode");
-    }
-
-    String[] args = option != null ? option.split(",") : new String[0];
-    for (String arg : args) {
+    for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
       boolean value = arg.indexOf("-") != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {
@@ -2328,7 +2353,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    // None of the SuppressWarnings strings suppress this error.
+    // None of the SuppressWarnings strings suppresses this error.
     return false;
   }
 
@@ -2749,7 +2774,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // git.dirty indicates modified tracked files and staged changes.  Untracked content doesn't
     // count, so not being dirty doesn't mean that exactly the printed commit is being run.
     String dirty = gitProperties.getProperty("git.dirty");
-    if (version.endsWith("-SNAPSHOT") || !branch.equals("master") || dirty.equals("true")) {
+    if (version.endsWith("-SNAPSHOT") || !branch.equals("master")) {
       // Sometimes the branch is HEAD, which is not informative.
       // How does that happen, and how can I fix it?
       version += ", branch " + branch;

@@ -48,23 +48,23 @@ dependencies {
   // As of 2019-12-16, the version of reflection-util in the Annotation
   // File Utilities takes priority over this version, in the fat jar
   // file. :-( So update it and re-build it locally when updating this.
-  implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
+  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
+  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
 
   // Dependencies added to "shadow" appear as dependencies in Maven Central.
   shadow project(':checker-qual')
   shadow project(':checker-util')
 
   // Called Methods Checker AutoValue + Lombok support
-  testImplementation 'com.google.auto.value:auto-value-annotations:1.10.1'
-  testImplementation 'com.google.auto.value:auto-value:1.10.1'
+  testImplementation "com.google.auto.value:auto-value-annotations:${versions.autoValue}"
+  testImplementation "com.google.auto.value:auto-value:${versions.autoValue}"
   testImplementation 'com.ryanharter.auto.value:auto-value-parcel:0.2.9'
-  testImplementation "org.projectlombok:lombok:${lombokVersion}"
+  testImplementation "org.projectlombok:lombok:${versions.lombok}"
   // Called Methods Checker support for detecting misuses of AWS APIs
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.479')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.500')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -164,8 +164,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
   description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
-  archivesBaseName = 'checker'
-  archiveClassifier = ''
 
   from shadowJar.source
   configurations = shadowJar.configurations
@@ -190,7 +188,7 @@ shadowJar {
   description 'Creates checker-VERSION-all.jar and copies it to dist/checker.jar.'
   // To see what files are incorporated into the shadow jar file:
   // doFirst { println sourceSets.main.runtimeClasspath.asPath }
-
+  archiveClassifier = 'all'
   doLast{
     copy {
       from archiveFile.get()
@@ -408,6 +406,9 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     // inside anonymous classes.
     delete('tests/ainfer-testchecker/annotated/UsesAnonymous.java')
     delete('tests/ainfer-testchecker/annotated/AnonymousClassWithField.java')
+
+    // This test outputs a warning about records.
+    delete('tests/ainfer-testchecker/annotated/all-systems/java17/Issue6069.java')
 
     // This test causes an error when its corresponding stub file is read, because the test
     // contains an annotation definition. The stub file parser does not support reading
@@ -1053,6 +1054,10 @@ publishing {
   publications {
     checker(MavenPublication) {
       project.shadow.component it
+      // reset the artifacts because of project.shadow.component changes
+      // the classifier from 'all' to '' because of
+      // https://github.com/johnrengelman/shadow/issues/860
+      artifacts = [shadowJar]
       checkerPom it
       artifact checkerJar
       artifact allSourcesJar
