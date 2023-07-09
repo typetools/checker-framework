@@ -1,7 +1,9 @@
 Version 3.36.1 (July ?, 2023)
-
 -----------------------------
+
 **User-visible changes:**
+
+Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
 
 **Implementation details:**
 
