@@ -734,7 +734,7 @@ subprojects {
     // If you add an external dependency, then do the following:
     //  * On the master branch and on the modified branch, run:
     //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^org/checkerframework/' | grep -v '^META-INF/' | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
-    //  * Compare the contents, and add relocate lines below.
+    //  * Compare the files, and add relocate lines below.
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
