@@ -93,41 +93,43 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   private Map<String, String> buildLookup() {
     Map<String, String> result = new HashMap<>();
 
-    for (String propfile : checker.getStringsOption("propfiles", File.pathSeparator)) {
-      Properties prop = new Properties();
-      ClassLoader cl = this.getClass().getClassLoader();
-      if (cl == null) {
-        // The class loader is null if the system class loader was used.
-        cl = ClassLoader.getSystemClassLoader();
-      }
-      try (InputStream in = cl.getResourceAsStream(propfile)) {
-        if (in != null) {
-          prop.load(in);
-        } else {
-          // If the classloader didn't manage to load the file, try whether a
-          // FileInputStream works. For absolute paths this might help.
-          try (InputStream fis = new FileInputStream(propfile)) {
-            prop.load(fis);
-          } catch (FileNotFoundException e) {
-            System.err.println("Couldn't find the properties file: " + propfile);
-            // report(null, "propertykeychecker.filenotfound", propfile);
-            // return Collections.emptySet();
-            continue;
+    if (checker.hasOption("propfiles")) {
+      for (String propfile : checker.getStringsOption("propfiles", File.pathSeparator)) {
+        Properties prop = new Properties();
+        ClassLoader cl = this.getClass().getClassLoader();
+        if (cl == null) {
+          // The class loader is null if the system class loader was used.
+          cl = ClassLoader.getSystemClassLoader();
+        }
+        try (InputStream in = cl.getResourceAsStream(propfile)) {
+          if (in != null) {
+            prop.load(in);
+          } else {
+            // If the classloader didn't manage to load the file, try whether a
+            // FileInputStream works. For absolute paths this might help.
+            try (InputStream fis = new FileInputStream(propfile)) {
+              prop.load(fis);
+            } catch (FileNotFoundException e) {
+              System.err.println("Couldn't find the properties file: " + propfile);
+              // report(null, "propertykeychecker.filenotfound", propfile);
+              // return Collections.emptySet();
+              continue;
+            }
           }
-        }
 
-        for (String key : prop.stringPropertyNames()) {
-          result.put(key, prop.getProperty(key));
+          for (String key : prop.stringPropertyNames()) {
+            result.put(key, prop.getProperty(key));
+          }
+        } catch (Exception e) {
+          // TODO: is there a nicer way to report messages, that are not connected to
+          // an AST node?  One cannot use `report`, because it needs a node.
+          System.err.println(
+              "Exception in PropertyKeyChecker.keysOfPropertyFile while processing "
+                  + propfile
+                  + ": "
+                  + e);
+          e.printStackTrace();
         }
-      } catch (Exception e) {
-        // TODO: is there a nicer way to report messages, that are not connected to
-        // an AST node?  One cannot use `report`, because it needs a node.
-        System.err.println(
-            "Exception in PropertyKeyChecker.keysOfPropertyFile while processing "
-                + propfile
-                + ": "
-                + e);
-        e.printStackTrace();
       }
     }
 
