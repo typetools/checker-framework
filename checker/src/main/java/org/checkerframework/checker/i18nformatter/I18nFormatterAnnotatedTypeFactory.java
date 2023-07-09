@@ -95,7 +95,6 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     for (String propfile : checker.getStringsOption("propfiles", File.pathSeparator)) {
       Properties prop = new Properties();
-
       ClassLoader cl = this.getClass().getClassLoader();
       if (cl == null) {
         // The class loader is null if the system class loader was used.

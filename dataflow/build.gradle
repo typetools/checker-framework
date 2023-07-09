@@ -28,7 +28,7 @@ def createDataflowShaded(shadedPkgName) {
   tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     description "Builds dataflow-${shadedPkgName}.jar."
     includeEmptyDirs = false
-    archivesBaseName = "dataflow-${shadedPkgName}"
+    archiveBaseName.set("dataflow-${shadedPkgName}")
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set('')
 
