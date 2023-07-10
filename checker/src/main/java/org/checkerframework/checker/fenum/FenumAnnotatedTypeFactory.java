@@ -69,24 +69,18 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             PolyFenum.class);
 
     // Load externally defined quals given in the -Aquals and/or -AqualDirs options
-    String qualNames = checker.getOption("quals");
-    String qualDirectories = checker.getOption("qualDirs");
 
     // load individually named qualifiers
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier \"%s\" in -Aquals=%s", qualName, qualNames);
-        }
-        qualSet.add(loader.loadExternalAnnotationClass(qualName));
+    for (String qualName : checker.getStringsOption("quals", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier \"%s\" in -Aquals", qualName);
       }
+      qualSet.add(loader.loadExternalAnnotationClass(qualName));
     }
 
     // load directories of qualifiers
-    if (qualDirectories != null) {
-      for (String dirName : qualDirectories.split(":")) {
-        qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
-      }
+    for (String dirName : checker.getStringsOption("qualDirs", ',')) {
+      qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
     }
 
     // TODO: warn if no qualifiers given?
