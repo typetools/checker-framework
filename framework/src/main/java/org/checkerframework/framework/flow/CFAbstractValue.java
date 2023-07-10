@@ -311,7 +311,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Returns the backup annotation that is in the same hierarchy as {@code top}.
      *
-     * @top an annotation
+     * @param top an annotation
      * @return the backup annotation that is in the same hierarchy as {@code top}
      */
     private @Nullable AnnotationMirror getBackupAnnoIn(AnnotationMirror top) {
