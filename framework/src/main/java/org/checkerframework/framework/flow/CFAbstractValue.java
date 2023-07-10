@@ -341,11 +341,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
           return b;
         }
       } else if (qualHierarchy.isSubtypeShallow(a, aTypeMirror, b, bTypeMirror)) {
-        // `a` may not be a subtype of `b`, if one of the type mirror isn't relevant,
+        // `a` may not be a subtype of `b`, if one of the type mirrors isn't relevant,
         // so return the lower of the two.
         return lowestQualifier(a, b);
       } else if (qualHierarchy.isSubtypeShallow(b, bTypeMirror, a, aTypeMirror)) {
-        // `b` may not be a subtype of `a`, if one of the type mirror isn't relevant,
+        // `b` may not be a subtype of `a`, if one of the type mirrors isn't relevant,
         // so return the lower of the two.
         return lowestQualifier(a, b);
       }
@@ -357,8 +357,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * comparable, then returns the qualifier that is ordered first by {@link
      * AnnotationUtils#compareAnnotationMirrors(AnnotationMirror, AnnotationMirror)}.
      *
-     * <p>This is basically glb, but if the two qualifiers are not comparable, then one of the two
-     * qualifiers is returned rather than bottom.
+     * <p>This is similar to glb, but one of the given qualifiers is always returned.
      *
      * @param qual1 a qualifier
      * @param qual2 a qualifier

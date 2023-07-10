@@ -7,6 +7,16 @@ Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
 
 **Implementation details:**
 
+`QualifierHierarchy`:
+ * The constructor takes an `AnnotatedTypeFactory`.
+ * Changes to `isSubtype()`:
+    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
+      or, rarely, new method `isSubtypeQualifiersOnly()`.
+    * New public method `isSubtypeShallow()' that takes two more arguments than
+      `isSubypeQualifiers()`.
+ * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
+
 **Closed issues:**
 
 
@@ -29,15 +39,6 @@ resources.  However, it makes some code that uses type variables and resources
 unverifiable with any annotation.
 
 **Implementation details:**
-
-`QualifierHierarchy`:
- * The constructor takes an `AnnotatedTypeFactory`.
- * Changes to `isSubtype()`:
-    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
-      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
-      or, rarely, new method `isSubtypeQualifiersOnly()`.
-    * New public method `isSubtypeShallow()' that takes two more arguments than
-      `isSubypeQualifiers()`.
 
 Deprecated `ElementUtils.getSimpleNameOrDescription()` in favor of `getSimpleDescription()`.
 
@@ -86,8 +87,6 @@ Signedness Checker:
  * The receiver type of `Object.hashCode()` is now `@UnknownSignedness`.
 
 **Implementation details:**
-
- * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;

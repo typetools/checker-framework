@@ -955,7 +955,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getReturnType());
       warnRedundantAnnotations(tree.getReturnType(), methodType.getReturnType());
     } else if (TreeUtils.isConstructor(tree)) {
-      reportAnnoOnIrrelevant(
+      maybeReportAnnoOnIrrelevant(
           tree.getModifiers(),
           methodType.getReturnType().getUnderlyingType(),
           tree.getModifiers().getAnnotations());
@@ -2683,12 +2683,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // Base cases
         case PRIMITIVE_TYPE:
         case IDENTIFIER:
-          reportAnnoOnIrrelevant(t, TreeUtils.typeOf(t), annoTrees);
+          maybeReportAnnoOnIrrelevant(t, TreeUtils.typeOf(t), annoTrees);
           return;
         case ANNOTATED_TYPE:
           AnnotatedTypeTree at = (AnnotatedTypeTree) t;
           ExpressionTree underlying = at.getUnderlyingType();
-          reportAnnoOnIrrelevant(t, TreeUtils.typeOf(underlying), at.getAnnotations());
+          maybeReportAnnoOnIrrelevant(t, TreeUtils.typeOf(underlying), at.getAnnotations());
           return;
 
         default:
@@ -2705,7 +2705,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param type the Java basetype
    * @param annos the annotation on the type
    */
-  private void reportAnnoOnIrrelevant(
+  private void maybeReportAnnoOnIrrelevant(
       Tree errorLocation, TypeMirror type, List<? extends AnnotationTree> annos) {
     List<AnnotationTree> supportedAnnoTrees = supportedAnnoTrees(annos);
     if (!supportedAnnoTrees.isEmpty() && !atypeFactory.isRelevant(type)) {
