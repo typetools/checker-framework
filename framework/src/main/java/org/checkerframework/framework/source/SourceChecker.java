@@ -165,8 +165,6 @@ import org.plumelib.util.UtilPlume;
   // sections in the manual for more details
   // org.checkerframework.framework.source.SourceChecker.useConservativeDefault
   "useConservativeDefaultsForUncheckedCode",
-  // Temporary, for backward compatibility
-  "useDefaultsForUncheckedCode",
 
   // Whether to assume sound concurrent semantics or
   // simplified sequential semantics
