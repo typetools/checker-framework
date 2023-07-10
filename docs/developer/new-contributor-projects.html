@@ -50,6 +50,7 @@
     </ul></li>
   <li><a href="#cf-other">Enhance the toolset</a>
     <ul>
+      <li><a href="#hint-about-annotated-library-methods">Indicate library methods that should be used instead</a></li>
       <li><a href="#index-errors">Improving error messages</a></li>
       <li><a href="#java-expression-parser">Java expression parser</a></li>
       <li><a href="#dataflow">Dataflow enhancements</a></li>
@@ -1312,6 +1313,50 @@ differences from the real Nullness checker:
 <h1 id="cf-other">Enhance the toolset</h1>
 
 
+<h2 id="hint-about-annotated-library-methods">Indicate library methods that should be used instead</h2>
+
+<p>
+  Sometimes, the best way to avoid a checker warning is to use an annotated
+  library method.  Consider this code:
+</p>
+
+<pre>
+@FqBinaryName String fqBinaryName = ...;
+@ClassGetName String componentType = fqBinaryName.substring(0, fqBinaryName.indexOf('['));
+</pre>
+
+<p>
+The <a href="https://checkerframework.org/manual/#signature-checker">Signature
+String Checker</a> issues a warning, because it does not reason about
+arbitrary string manipulations.  The code is correct, but it is in bad
+style.  It is confusing to perform string manipulations to convert between
+different string representations.  It is clearer and less error-prone (the
+above code is buggy when <code>fqBinaryName</code> is not an array type!)
+to use a library method, and the checker accepts this code because the
+library method is appropriately annotated:
+</p>
+
+<pre>
+import org.plumelib.reflection.Signatures;
+...
+@ClassGetName String componentType = Signatures.getArrayElementType(fqBinaryName);
+</pre>
+
+<p>
+However, users may not know about the library method.  Therefore, the
+Checker Framework should issue a warning message, along with the error
+message, notifying users of the library method.  For example, the Signature
+String Checker would heuristically mention
+the <a href="http://plumelib.org/reflection-util/api/org/plumelib/reflection/Signatures.html#getArrayElementType(java.lang.String)"><code>Signatures.getArrayElementType()</code></a>
+method when it issues an error about string manipulation where some input
+is
+a <a href="https://checkerframework.org/api/org/checkerframework/checker/signature/qual/FqBinaryName.html"><code>FqBinaryName</code></a>
+and the output is annotated
+as <a href="https://checkerframework.org/api/org/checkerframework/checker/signature/qual/ClassGetName.html"><code>ClassGetName</code></a>.
+It would behave similarly for other library methods.
+</p>
+
+
 <h2 id="index-errors">Improving error messages</h2>
 
 <p>
@@ -1700,7 +1745,7 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  unsoundnesses nondeterministic nondeterministically ASM
  -->
-<!--  LocalWords:  deterministically prototyped Stateful plugins plugin
+<!--  LocalWords:  deterministically prototyped Stateful plugins plugin '
  -->
 <!--  LocalWords:  PDFs Stubparser JLint NullnessLight bytecodes YourKit
  -->
@@ -1720,5 +1765,11 @@ thought about the problem nor tried to solve it.
  -->
 <!--  LocalWords:  SupportsAllOperations asList emptyList JavaExpression
  -->
-<!--  LocalWords:  MightSupportNothing
+<!--  LocalWords:  MightSupportNothing Waataja Siwakorn Srisakaokul Papi
+ -->
+<!--  LocalWords:  Quinonez Mah Telmo Correa rdf4j Doop FqBinaryName
+ -->
+<!--  LocalWords:  fqBinaryName ClassGetName componentType substring
+ -->
+<!--  LocalWords:  indexOf getArrayElementType
  -->
