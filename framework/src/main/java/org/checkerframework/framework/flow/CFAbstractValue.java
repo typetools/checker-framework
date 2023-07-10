@@ -308,9 +308,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       }
     }
 
+    /**
+     * Returns the backup annotation that is in the same hierarchy as {@code top}.
+     *
+     * @top an annotation
+     * @return the backup annotation that is in the same hierarchy as {@code top}
+     */
     private @Nullable AnnotationMirror getBackupAnnoIn(AnnotationMirror top) {
       if (backupAMSet == null) {
-        // If there is no back up value, but one is required then the resulting set will
+        // If there is no backup value, but one is required, then the resulting set will
         // not be the most specific.  Indicate this with the error.
         error = true;
         return null;
