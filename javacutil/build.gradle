@@ -17,8 +17,9 @@ dependencies {
   // External dependencies:
   // If you add an external dependency, you must shadow its packages both in checker.jar and
   // and dataflow-shaded.jar.
-  // See the comment in ../build.gradle in the shadowJar block and ../dataflow/build.gradle
-  // createDataflowShaded task.
+  // See these comments:
+  //   * in ../build.gradle in the shadowJar block.
+  //   * in ../dataflow/build.gradle in the createDataflowShaded task.  TODO: I don't see why one needs to read this comment.
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
