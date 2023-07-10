@@ -188,6 +188,7 @@ allprojects {
 
     def doNotFormat = [
       'checker/tests/ainfer-*/annotated/*',
+      'framework/tests/all-systems*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
       '**/calledmethods-delomboked/*',
