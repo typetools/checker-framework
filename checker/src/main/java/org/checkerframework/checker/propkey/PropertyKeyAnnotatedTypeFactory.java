@@ -144,18 +144,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param propfilesArr an array of property files, separated by {@link File#pathSeparator}
+   * @param propfiles an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String[] propfilesArr) {
+  private Set<String> keysOfPropertyFiles(String[] propfiles) {
 
-    if (propfilesArr.length == 0) {
+    if (propfiles.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfilesArr.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfiles.length));
 
-    for (String propfile : propfilesArr) {
+    for (String propfile : propfiles) {
       try {
         Properties prop = new Properties();
 
@@ -201,18 +201,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns the keys for the given resource bundles.
    *
-   * @param bundleNamesArr names of resource bundles
+   * @param bundleNames names of resource bundles
    * @return the keys for the given resource bundles
    */
-  private Set<String> keysOfResourceBundle(String[] bundleNamesArr) {
+  private Set<String> keysOfResourceBundle(String[] bundleNames) {
 
-    if (bundleNamesArr.length == 0) {
+    if (bundleNames.length == 0) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNamesArr.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNames.length));
 
-    for (String bundleName : bundleNamesArr) {
+    for (String bundleName : bundleNames) {
       if (!Signatures.isBinaryName(bundleName)) {
         System.err.println(
             "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
