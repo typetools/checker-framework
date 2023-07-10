@@ -10,5 +10,5 @@ public class Issue6078 {
   }
 
   @SafeVarargs
-  private final  <T> void foo(T... ts) {}
+  private final <T> void foo(T... ts) {}
 }
