@@ -1274,11 +1274,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       int lastArgIndex = numFormals - 1;
       TypeMirror lastParamType;
       if (lastArgIndex == -1) {
-        // Sometimes when the method type is viewpoint-adapt, the vararg parameter disappears, so
-        // just use the declared type.
-        numFormals = method.getParameters().size();
-        lastArgIndex = 0;
-        lastParamType = method.getParameters().get(numFormals - 1).asType();
+        // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
+        // just return no arguments
+        // For example,
+        // static void call(MethodHandle methodHandle) throws Throwable {
+        //   methodHandle.invoke();
+        // }
+        return convertedNodes;
       } else {
         lastParamType = formals.get(lastArgIndex);
       }
