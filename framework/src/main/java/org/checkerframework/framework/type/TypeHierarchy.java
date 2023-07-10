@@ -106,7 +106,7 @@ public interface TypeHierarchy {
   /**
    * Tests whether the effective annotations of {@code subtype} are equal to or are sub-qualifiers
    * of {@code superQualifiers}, according to the type qualifier hierarchy. Other annotations in
-   * {@code subtype}are ignored.
+   * {@code subtype} are ignored.
    *
    * <p>The underlying type of {@code subtype} is only used by this method for special cases when
    * qualifier subtyping depends on the Java basetype.

@@ -132,8 +132,8 @@ public abstract class QualifierHierarchy {
    * <p>This method behaves the same as {@link #isSubtypeQualifiersOnly(AnnotationMirror,
    * AnnotationMirror)}, which calls this method. This method is for clients inside the framework,
    * and it has {@code protected} access to prevent use by clients outside the framework. This makes
-   * it easy to find places where code outside QualifierHierarchy is ignoring Java basetypes -- at
-   * calls to {@link #isSubtypeQualifiersOnly}.
+   * it easy to find places where code outside the framework is ignoring Java basetypes -- at calls
+   * to {@link #isSubtypeQualifiersOnly}.
    *
    * @param subQualifier possible subqualifier
    * @param superQualifier possible superqualifier
@@ -250,7 +250,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
    * used by this method for special cases when qualifier subtyping depends on the Java basetype.
    *
@@ -321,7 +321,7 @@ public abstract class QualifierHierarchy {
    * <p>Examples:
    *
    * <ul>
-   *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+   *   <li>leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
    * </ul>
    *
    * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
@@ -342,7 +342,7 @@ public abstract class QualifierHierarchy {
       return leastUpperBoundQualifiers(qualifier1, qualifier2);
     } else if (tm1IsRelevant) {
       return qualifier1;
-    } else { // if(tm2IsRelevant) {
+    } else { // if (tm2IsRelevant) {
       return qualifier2;
     }
   }
@@ -475,7 +475,7 @@ public abstract class QualifierHierarchy {
       return greatestLowerBoundQualifiers(qualifier1, qualifier2);
     } else if (tm1IsRelevant) {
       return qualifier1;
-    } else { // if(tm2IsRelevant) {
+    } else { // if (tm2IsRelevant) {
       return qualifier2;
     }
   }
