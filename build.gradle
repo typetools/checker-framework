@@ -733,7 +733,7 @@ subprojects {
   shadowJar {
     // If you add an external dependency, then do the following:
     //  * On the master branch and on the modified branch, run:
-    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^org/checkerframework/' | grep -v '^META-INF/' | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
     //  * Compare the files, and add relocate lines below.
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
@@ -747,7 +747,7 @@ subprojects {
     relocate 'nonapi.io.github.classgraph', 'org.checkerframework.nonapi.io.github.classgraph'
     // relocate 'sun', 'org.checkerframework.sun'
     relocate 'com.google', 'org.checkerframework.com.google'
-    relocate 'javax', 'org.checkerframework.javax'
+    relocate 'javax.annotation', 'org.checkerframework.javax.annotation'
     relocate 'plume', 'org.checkerframework.plume'
 
     exclude '**/module-info.class'
