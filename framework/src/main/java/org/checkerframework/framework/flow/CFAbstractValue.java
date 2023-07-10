@@ -419,7 +419,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         // no anno is more specific than anno
         return null;
       } else if (qualHierarchy.isSubtypeShallow(annotation, typeVarTM, lowerBound, lowerBoundTM)) {
-        return qualHierarchy.lowestQualifier(annotation, lowerBound);
+        return lowestQualifier(annotation, lowerBound);
       } else {
         return getBackupAnnoIn(top);
       }
