@@ -27,6 +27,18 @@ public class IndexMode {
     return null;
   }
 
+  // This copy of getMode() adds an explicit `@MustCall` annotation to the String and to
+  // the local variable. This version currently works as expected, unlike getMode2().
+  public static Object getMode2a(Map<String, @MustCall("hashCode") String> indexOptions) {
+    try {
+      // :: error: required.method.not.called
+      @MustCall("hashCode") String literalOption = indexOptions.get("is_literal");
+    } catch (Exception e) {
+    }
+
+    return null;
+  }
+
   // This copy of getMode() adds an explicit `@MustCall` annotation to the String and removes
   // the try-catch.
   public static Object getMode3(Map<String, @MustCall("hashCode") String> indexOptions) {
