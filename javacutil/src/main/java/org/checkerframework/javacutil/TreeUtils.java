@@ -848,7 +848,18 @@ public final class TreeUtils {
               + " invocation should be ExecutableType. Found: %s",
           type);
     }
-    return (ExecutableType) type;
+    ExecutableType executableType = (ExecutableType) type;
+    if (((ExecutableType) type).getParameterTypes().isEmpty() && elementFromUse(tree).isVarArgs()) {
+      // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
+      // just return the declared type.
+      // For example,
+      // static void call(MethodHandle methodHandle) throws Throwable {
+      //   methodHandle.invoke();
+      // }
+      ExecutableElement ele = elementFromUse(tree);
+      return (ExecutableType) ele.asType();
+    }
+    return executableType;
   }
 
   /**

@@ -1272,18 +1272,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Create a new array argument if the actuals outnumber the formals, or if the last
       // actual is not assignable to the last formal.
       int lastArgIndex = numFormals - 1;
-      TypeMirror lastParamType;
-      if (lastArgIndex == -1) {
-        // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
-        // just return no arguments
-        // For example,
-        // static void call(MethodHandle methodHandle) throws Throwable {
-        //   methodHandle.invoke();
-        // }
-        return convertedNodes;
-      } else {
-        lastParamType = formals.get(lastArgIndex);
-      }
+      TypeMirror lastParamType = formals.get(lastArgIndex);
       if (numActuals == numFormals
           && types.isAssignable(TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
         // Normal call with no array creation, apply method
