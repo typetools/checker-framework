@@ -38,43 +38,31 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // load externally declared annotations
     loader = createAnnotationClassLoader();
 
-    String qualNames = checker.getOption("quals");
-    String qualDirectories = checker.getOption("qualDirs");
-
-    if (qualNames == null && qualDirectories == null) {
-      throw new UserError("SubtypingChecker: missing required option. Use -Aquals or -AqualDirs.");
-    }
-
     Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<>();
 
     // load individually named qualifiers
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier \"%s\" in -Aquals=%s", qualName, qualNames);
-        }
-        Class<? extends Annotation> anno = loader.loadExternalAnnotationClass(qualName);
-        if (anno == null) {
-          throw new UserError("Qualifier specified in -Aquals not found: " + qualName);
-        }
-        qualSet.add(anno);
+    for (String qualName : checker.getStringsOption("quals", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier \"%s\" in -Aquals", qualName);
       }
+      Class<? extends Annotation> anno = loader.loadExternalAnnotationClass(qualName);
+      if (anno == null) {
+        throw new UserError("Qualifier specified in -Aquals not found: " + qualName);
+      }
+      qualSet.add(anno);
     }
 
     // load directories of qualifiers
-    if (qualDirectories != null) {
-      for (String dirName : qualDirectories.split(":")) {
-        if (!new File(dirName).exists()) {
-          throw new UserError("Directory specified in -AqualsDir does not exist: %s", dirName);
-        }
-        Set<Class<? extends Annotation>> annos =
-            loader.loadExternalAnnotationClassesFromDirectory(dirName);
-        if (annos.isEmpty()) {
-          throw new UserError(
-              "Directory specified in -AqualsDir contains no qualifiers: " + dirName);
-        }
-        qualSet.addAll(annos);
+    for (String dirName : checker.getStringsOption("qualDirs", ':')) {
+      if (!new File(dirName).exists()) {
+        throw new UserError("Directory specified in -AqualsDir does not exist: %s", dirName);
       }
+      Set<Class<? extends Annotation>> annos =
+          loader.loadExternalAnnotationClassesFromDirectory(dirName);
+      if (annos.isEmpty()) {
+        throw new UserError("Directory specified in -AqualsDir contains no qualifiers: " + dirName);
+      }
+      qualSet.addAll(annos);
     }
 
     if (qualSet.isEmpty()) {
