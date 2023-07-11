@@ -176,6 +176,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
           erasedType.getKind() == type.getKind()
               ? type.getUnderlyingType()
               : erasedType.getUnderlyingType();
+      // The effective annotations are the primary annotations on the erased type.
       return new ShallowType(erasedType.getPrimaryAnnotations(), typeMirror);
     }
   }
@@ -183,56 +184,61 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-    ShallowType subSType = ShallowType.create(subtype);
-    ShallowType superSType = ShallowType.create(supertype);
+    ShallowType subShallowType = ShallowType.create(subtype);
+    ShallowType superShallowType = ShallowType.create(supertype);
     return qualHierarchy.isSubtypeShallow(
-        subSType.annos, subSType.typeMirror, superSType.annos, superSType.typeMirror);
+        subShallowType.annos,
+        subShallowType.typeMirror,
+        superShallowType.annos,
+        superShallowType.typeMirror);
   }
 
   @Override
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror hierarchy) {
-    ShallowType subSType = ShallowType.create(subtype);
-    ShallowType superSType = ShallowType.create(supertype);
+    ShallowType subShallowType = ShallowType.create(subtype);
+    ShallowType superShallowType = ShallowType.create(supertype);
     return qualHierarchy.isSubtypeShallow(
-        qualHierarchy.findAnnotationInSameHierarchy(subSType.annos, hierarchy),
-        subSType.typeMirror,
-        qualHierarchy.findAnnotationInSameHierarchy(superSType.annos, hierarchy),
-        superSType.typeMirror);
+        qualHierarchy.findAnnotationInSameHierarchy(subShallowType.annos, hierarchy),
+        subShallowType.typeMirror,
+        qualHierarchy.findAnnotationInSameHierarchy(superShallowType.annos, hierarchy),
+        superShallowType.typeMirror);
   }
 
   @Override
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, Collection<? extends AnnotationMirror> superQualifiers) {
-    ShallowType subSType = ShallowType.create(subtype);
-    return qualHierarchy.isSubtypeShallow(subSType.annos, superQualifiers, subSType.typeMirror);
+    ShallowType subShallowType = ShallowType.create(subtype);
+    return qualHierarchy.isSubtypeShallow(
+        subShallowType.annos, superQualifiers, subShallowType.typeMirror);
   }
 
   @Override
   public boolean isSubtypeShallowEffective(
       Collection<? extends AnnotationMirror> subQualifiers, AnnotatedTypeMirror supertype) {
-    ShallowType superSType = ShallowType.create(supertype);
-    return qualHierarchy.isSubtypeShallow(subQualifiers, superSType.annos, superSType.typeMirror);
+    ShallowType superShallowType = ShallowType.create(supertype);
+    return qualHierarchy.isSubtypeShallow(
+        subQualifiers, superShallowType.annos, superShallowType.typeMirror);
   }
 
   @Override
   public boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotationMirror superQualifier) {
-    ShallowType subSType = ShallowType.create(subtype);
+    ShallowType subShallowType = ShallowType.create(subtype);
     return qualHierarchy.isSubtypeShallow(
-        qualHierarchy.findAnnotationInSameHierarchy(subSType.annos, superQualifier),
+        qualHierarchy.findAnnotationInSameHierarchy(subShallowType.annos, superQualifier),
         superQualifier,
-        subSType.typeMirror);
+        subShallowType.typeMirror);
   }
 
   @Override
   public boolean isSubtypeShallowEffective(
       AnnotationMirror subQualifier, AnnotatedTypeMirror supertype) {
-    ShallowType superSType = ShallowType.create(supertype);
+    ShallowType superShallowType = ShallowType.create(supertype);
     return qualHierarchy.isSubtypeShallow(
         subQualifier,
-        qualHierarchy.findAnnotationInSameHierarchy(superSType.annos, subQualifier),
-        superSType.typeMirror);
+        qualHierarchy.findAnnotationInSameHierarchy(superShallowType.annos, subQualifier),
+        superShallowType.typeMirror);
   }
 
   /**
