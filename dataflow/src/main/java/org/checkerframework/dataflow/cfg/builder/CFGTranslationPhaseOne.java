@@ -1445,7 +1445,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Look up method to invoke and possibly throw NullPointerException
     Node receiver = getReceiver(methodSelect);
 
-    MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
     if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
