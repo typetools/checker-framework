@@ -32,11 +32,13 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
    *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param processingEnv processing environment
+   * @param atypeFactory the associated type factory
    */
   public SubtypeIsSupersetQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
-      ProcessingEnvironment processingEnv) {
-    super(qualifierClasses, processingEnv.getElementUtils());
+      ProcessingEnvironment processingEnv,
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
     this.processingEnv = processingEnv;
   }
 

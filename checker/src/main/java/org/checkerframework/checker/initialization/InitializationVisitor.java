@@ -167,7 +167,7 @@ public class InitializationVisitor<
     // also use the information about initialized fields to check contracts
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
-    if (!qualHierarchy.isSubtype(invariantAnno, necessaryAnnotation)
+    if (!qualHierarchy.isSubtypeShallow(invariantAnno, necessaryAnnotation, expr.getType())
         || !(expr instanceof FieldAccess)) {
       return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
     }
