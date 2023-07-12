@@ -1248,8 +1248,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * method applies to both method invocations and constructor calls.
    *
    * @param method an ExecutableElement representing a method to be called
-   * @param methodType an ExecutableType representing the type of the method call; viewpoint-adapt
-   *     to the call
+   * @param methodType an ExecutableType representing the type of the method call; the type must be
+   *     viewpoint-adapted to the call
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
    *     this method
