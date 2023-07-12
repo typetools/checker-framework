@@ -191,8 +191,10 @@ public class AnnotationFileElementTypes {
     parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.BUILTIN_STUB);
 
     // 5. Stub files provided via -Astubs command-line option
-    List<String> stubsOption = checker.getStringsOption("stubs", File.pathSeparator);
-    parseAnnotationFiles(stubsOption, AnnotationFileType.COMMAND_LINE_STUB);
+    if (checker.hasOption("stubs")) {
+      List<String> stubsOption = checker.getStringsOption("stubs", File.pathSeparator);
+      parseAnnotationFiles(stubsOption, AnnotationFileType.COMMAND_LINE_STUB);
+    }
 
     parsing = false;
   }
