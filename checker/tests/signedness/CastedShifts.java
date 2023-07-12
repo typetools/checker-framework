@@ -35,27 +35,6 @@ public class CastedShifts {
     byteRes = (@Signed byte) (signed >>> 0);
     byteRes = (@Signed byte) (signed >> 0);
 
-    // Cast to char.
-    char charRes;
-
-    // Shifting right by 23, the introduced bits are cast away
-    charRes = (@Unsigned char) (unsigned >>> 23);
-    charRes = (@Unsigned char) (unsigned >> 23);
-
-    // Shifting right by 24, the introduced bits are still cast away.
-    charRes = (@Unsigned char) (unsigned >>> 24);
-    charRes = (@Unsigned char) (unsigned >> 24);
-
-    // Shifting right by 25, now the MSB matters.
-    charRes = (@Unsigned char) (unsigned >>> 25);
-
-    // :: error: (shift.signed)
-    charRes = (@Unsigned char) (unsigned >> 25);
-
-    // Shifting right by zero should behave as assignment
-    charRes = (@Unsigned char) (unsigned >>> 0);
-    charRes = (@Unsigned char) (unsigned >> 0);
-
     // Cast to short.
     @UnknownSignedness short shortRes;
 
@@ -228,22 +207,22 @@ public class CastedShifts {
     char charRes;
 
     // Shifting right by 55, the introduced bits are cast away
-    charRes = (@Unsigned char) (unsigned >>> 55);
-    charRes = (@Unsigned char) (unsigned >> 55);
+    charRes = (char) (unsigned >>> 55);
+    charRes = (char) (unsigned >> 55);
 
     // Shifting right by 56, the introduced bits are still cast away.
-    charRes = (@Unsigned char) (unsigned >>> 56);
-    charRes = (@Unsigned char) (unsigned >> 56);
+    charRes = (char) (unsigned >>> 56);
+    charRes = (char) (unsigned >> 56);
 
     // Shifting right by 57, now the MSB matters.
-    charRes = (@Unsigned char) (unsigned >>> 57);
+    charRes = (char) (unsigned >>> 57);
 
     // :: error: (shift.signed)
-    charRes = (@Unsigned char) (unsigned >> 57);
+    charRes = (char) (unsigned >> 57);
 
     // Shifting right by zero should behave as assignment
-    charRes = (@Unsigned char) (unsigned >>> 0);
-    charRes = (@Unsigned char) (unsigned >> 0);
+    charRes = (char) (unsigned >>> 0);
+    charRes = (char) (unsigned >> 0);
 
     // Cast to short.
     @UnknownSignedness short shortRes;

@@ -63,6 +63,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     } else if (a2 == null) {
       return a1;
     }
-    return qualHierarchy.leastUpperBound(a1, a2);
+    return qualHierarchy.leastUpperBoundQualifiersOnly(a1, a2);
   }
 }

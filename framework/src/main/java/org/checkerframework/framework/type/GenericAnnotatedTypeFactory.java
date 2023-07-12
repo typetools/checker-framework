@@ -2514,6 +2514,11 @@ public abstract class GenericAnnotatedTypeFactory<
         }
         return false;
 
+      case EXECUTABLE:
+      case MODULE:
+      case PACKAGE:
+        return false;
+
       default:
         throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }

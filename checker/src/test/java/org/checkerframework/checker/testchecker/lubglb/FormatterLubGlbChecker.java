@@ -73,7 +73,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
   private void glbAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
     QualifierHierarchy qualHierarchy =
         ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
-    AnnotationMirror result = qualHierarchy.greatestLowerBound(arg1, arg2);
+    AnnotationMirror result = qualHierarchy.greatestLowerBoundQualifiersOnly(arg1, arg2);
     if (!AnnotationUtils.areSame(expected, result)) {
       throw new AssertionError(
           String.format("GLB of %s and %s should be %s, but is %s", arg1, arg2, expected, result));
@@ -90,7 +90,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
   private void lubAssert(AnnotationMirror arg1, AnnotationMirror arg2, AnnotationMirror expected) {
     QualifierHierarchy qualHierarchy =
         ((BaseTypeVisitor<?>) visitor).getTypeFactory().getQualifierHierarchy();
-    AnnotationMirror result = qualHierarchy.leastUpperBound(arg1, arg2);
+    AnnotationMirror result = qualHierarchy.leastUpperBoundQualifiersOnly(arg1, arg2);
     if (!AnnotationUtils.areSame(expected, result)) {
       throw new AssertionError(
           String.format("LUB of %s and %s should be %s, but is %s", arg1, arg2, expected, result));

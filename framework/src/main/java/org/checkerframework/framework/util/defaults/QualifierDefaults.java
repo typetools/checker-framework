@@ -371,7 +371,7 @@ public class QualifierDefaults {
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
         AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-        if (qualHierarchy.isSubtype(newAnno, previousTop)) {
+        if (qualHierarchy.isSubtypeQualifiersOnly(newAnno, previousTop)) {
           return true;
         }
       }

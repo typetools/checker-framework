@@ -53,25 +53,17 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
   public ReportVisitor(BaseTypeChecker checker) {
     super(checker);
 
-    if (checker.hasOption("reportTreeKinds")) {
-      String trees = checker.getOption("reportTreeKinds");
-      treeKinds = EnumSet.noneOf(Tree.Kind.class);
-      for (String treeKind : trees.split(",")) {
-        treeKinds.add(Tree.Kind.valueOf(treeKind.toUpperCase(Locale.getDefault())));
-      }
-    } else {
-      treeKinds = null;
+    EnumSet<Tree.Kind> treeKindsTmp = EnumSet.noneOf(Tree.Kind.class);
+    for (String treeKind : checker.getStringsOption("reportTreeKinds", ',')) {
+      treeKindsTmp.add(Tree.Kind.valueOf(treeKind.toUpperCase(Locale.getDefault())));
     }
+    treeKinds = treeKindsTmp.isEmpty() ? null : treeKindsTmp;
 
-    if (checker.hasOption("reportModifiers")) {
-      String mods = checker.getOption("reportModifiers");
-      modifiers = EnumSet.noneOf(Modifier.class);
-      for (String modifier : mods.split(",")) {
-        modifiers.add(Modifier.valueOf(modifier.toUpperCase(Locale.getDefault())));
-      }
-    } else {
-      modifiers = null;
+    EnumSet<Modifier> modifiersTmp = EnumSet.noneOf(Modifier.class);
+    for (String modifier : checker.getStringsOption("reportModifiers", ',')) {
+      modifiersTmp.add(Modifier.valueOf(modifier.toUpperCase(Locale.getDefault())));
     }
+    modifiers = modifiersTmp.isEmpty() ? null : modifiersTmp;
   }
 
   @SuppressWarnings("compilermessages") // These warnings are not translated.

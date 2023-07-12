@@ -188,7 +188,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private RegexQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, RegexAnnotatedTypeFactory.this);
       REGEX_KIND = getQualifierKind(REGEX);
       PARTIALREGEX_KIND = getQualifierKind(PARTIALREGEX);
     }

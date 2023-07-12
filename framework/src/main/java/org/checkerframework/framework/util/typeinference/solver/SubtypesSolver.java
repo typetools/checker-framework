@@ -113,7 +113,8 @@ public class SubtypesSolver {
               if (currentAnno == null) {
                 glbType.addAnnotation(glb);
               } else if (glb != null) {
-                glbType.replaceAnnotation(qualHierarchy.greatestLowerBound(glb, currentAnno));
+                glbType.replaceAnnotation(
+                    qualHierarchy.greatestLowerBoundQualifiersOnly(glb, currentAnno));
               }
             }
           }
@@ -167,7 +168,7 @@ public class SubtypesSolver {
     AnnotationMirror glb = annoIter.next();
 
     while (annoIter.hasNext()) {
-      glb = qualHierarchy.greatestLowerBound(glb, annoIter.next());
+      glb = qualHierarchy.greatestLowerBoundQualifiersOnly(glb, annoIter.next());
     }
 
     return glb;
