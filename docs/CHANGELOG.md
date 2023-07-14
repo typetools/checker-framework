@@ -5,6 +5,9 @@ Version 3.37.0 (July ?, 2023)
 
 Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
 
+The Signedness Checker no longer allows (nor needs) `@UnknownSignedness`
+to be written on a non-integral type.
+
 **Implementation details:**
 
 `QualifierHierarchy`:
