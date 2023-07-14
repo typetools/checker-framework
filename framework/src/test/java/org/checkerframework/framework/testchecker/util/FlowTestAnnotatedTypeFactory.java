@@ -64,7 +64,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public FlowQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, FlowTestAnnotatedTypeFactory.this);
       this.VALUE_KIND = getQualifierKind(VALUE);
     }
 

@@ -167,7 +167,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       }
       return;
     }
-    if (qualHierarchy.isSubtype(anm, type.getPrimaryAnnotationInHierarchy(UNKNOWN))) {
+    if (typeHierarchy.isSubtypeShallowEffective(anm, type)) {
       type.replaceAnnotation(anm);
     }
   }
@@ -354,9 +354,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         AnnotatedTypeMirror leftType = getAnnotatedType(left);
         AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(
-                leftType.getPrimaryAnnotationInHierarchy(POS),
-                rightType.getPrimaryAnnotationInHierarchy(POS)));
+            qualHierarchy.greatestLowerBoundShallow(
+                leftType.getPrimaryAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
+                rightType.getPrimaryAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
       }
       return super.visitMethodInvocation(tree, type);
     }

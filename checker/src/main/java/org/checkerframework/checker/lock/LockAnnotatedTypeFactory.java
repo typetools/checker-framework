@@ -301,7 +301,7 @@ public class LockAnnotatedTypeFactory
      */
     public LockQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, LockAnnotatedTypeFactory.this);
       GUARDEDBYUNKNOWN_KIND = getQualifierKind(GUARDEDBYUNKNOWN);
       GUARDEDBY_KIND = getQualifierKind(GUARDEDBY);
       GUARDSATISFIED_KIND = getQualifierKind(GUARDSATISFIED);
