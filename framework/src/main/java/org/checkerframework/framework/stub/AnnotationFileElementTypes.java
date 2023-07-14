@@ -240,7 +240,9 @@ public class AnnotationFileElementTypes {
     parsing = true;
     try {
       // TODO: Error if this is called more than once?
-      List<String> ajavaFiles = factory.getChecker().getStringsOption("ajava", File.pathSeparator);
+      SourceChecker checker = factory.getChecker();
+      List<String> ajavaFiles = checker.getStringsOption("ajava", File.pathSeparator);
+      System.out.printf("ajavaFiles = %s%n", ajavaFiles);
       parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     } finally {
       parsing = false;
