@@ -247,7 +247,7 @@ public class AnnotationFileElementTypes {
       if (ajavaOption != null) {
         Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
       }
-
+      System.out.printf("ajavaFiles = %s%n", ajavaFiles);
       parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     } finally {
       parsing = false;
@@ -302,6 +302,10 @@ public class AnnotationFileElementTypes {
   // leak resources.
   )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
+    if (annotationFiles.isEmpty()) {
+      return;
+    }
+
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     if (stubDebug) {
