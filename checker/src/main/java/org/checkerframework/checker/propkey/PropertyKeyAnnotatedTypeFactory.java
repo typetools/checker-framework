@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -147,13 +148,13 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param propfiles an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String[] propfiles) {
+  private Set<String> keysOfPropertyFiles(List<String> propfiles) {
 
-    if (propfiles.length == 0) {
+    if (propfiles.isEmpty()) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfiles.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfiles));
 
     for (String propfile : propfiles) {
       try {
@@ -204,13 +205,13 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param bundleNames names of resource bundles
    * @return the keys for the given resource bundles
    */
-  private Set<String> keysOfResourceBundle(String[] bundleNames) {
+  private Set<String> keysOfResourceBundle(List<String> bundleNames) {
 
-    if (bundleNames.length == 0) {
+    if (bundleNames.isEmpty()) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNames.length));
+    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNames));
 
     for (String bundleName : bundleNames) {
       if (!Signatures.isBinaryName(bundleName)) {

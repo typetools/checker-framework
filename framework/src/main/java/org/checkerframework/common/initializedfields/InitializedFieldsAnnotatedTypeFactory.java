@@ -46,7 +46,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-    String[] checkerNames = getCheckerNames();
+    List<String> checkerNames = getCheckerNames();
 
     // There are usually few subcheckers.
     defaultValueAtypeFactories = new ArrayList<>(2);
