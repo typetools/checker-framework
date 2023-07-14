@@ -306,7 +306,8 @@ class MustCallConsistencyAnalyzer {
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = qualHierarchy.leastUpperBound(mcLub, mcAnno);
+        TypeMirror aliasTm = alias.reference.getType();
+        mcLub = qualHierarchy.leastUpperBoundShallow(mcLub, aliasTm, mcAnno, aliasTm);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
@@ -2215,7 +2216,9 @@ class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
+    return typeFactory
+        .getQualifierHierarchy()
+        .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
 
   /**

@@ -52,7 +52,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
      */
     public FlowExpressionQualifierHierarchy(
         Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, FlowExpressionAnnotatedTypeFactory.this);
     }
 
     @Override

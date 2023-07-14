@@ -69,7 +69,6 @@ public class EqualitiesSolver {
           solution.put(target, inferred);
         }
       }
-
     } while (dirty);
 
     solution.resolveChainedTargets();

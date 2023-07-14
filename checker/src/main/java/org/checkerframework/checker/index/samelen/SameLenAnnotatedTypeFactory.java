@@ -168,7 +168,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public SameLenQualifierHierarchy(
         Set<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, SameLenAnnotatedTypeFactory.this);
     }
 
     @Override
@@ -210,7 +210,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // The GLB of two SameLen annotations is the union of the two sets of arrays, or is bottom
     // if the sets do not intersect.
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
         List<String> a1Val =
             AnnotationUtils.getElementValueArray(a1, sameLenValueElement, String.class);
@@ -238,7 +238,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // The LUB of two SameLen annotations is the intersection of the two sets of arrays, or is
     // top if they do not intersect.
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (areSameByClass(a1, SameLen.class) && areSameByClass(a2, SameLen.class)) {
         List<String> a1Val =
             AnnotationUtils.getElementValueArray(a1, sameLenValueElement, String.class);
@@ -267,7 +267,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (areSameByClass(subAnno, SameLenBottom.class)) {
         return true;
       } else if (areSameByClass(superAnno, SameLenUnknown.class)) {

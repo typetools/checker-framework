@@ -206,7 +206,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected AinferTestQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, AinferTestAnnotatedTypeFactory.this);
       SIBLING_WITH_FIELDS_KIND = getQualifierKind(AinferSiblingWithFields.class.getCanonicalName());
     }
 

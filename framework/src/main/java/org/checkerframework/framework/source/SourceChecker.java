@@ -1472,8 +1472,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    String[] lintStrings = lintString.split(",");
-    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.length);
+    List<String> lintStrings = Arrays.asList(lintString.split(","));
+    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.size());
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
           && !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1)))
@@ -1837,12 +1837,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
-  public final String[] getStringsOption(String name, char separator, String[] defaultValue) {
+  public final List<String> getStringsOption(
+      String name, char separator, List<String> defaultValue) {
     String value = getOption(name);
     if (value == null) {
       return defaultValue;
     }
-    return value.split(Pattern.quote(Character.toString(separator)));
+    return Arrays.asList(value.split(Pattern.quote(Character.toString(separator))));
   }
 
   /**
@@ -1851,12 +1852,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @see SourceChecker#getLintOption(String,boolean)
    */
   @Override
-  public final String[] getStringsOption(String name, String separator, String[] defaultValue) {
+  public final List<String> getStringsOption(
+      String name, String separator, List<String> defaultValue) {
     String value = getOption(name);
     if (value == null) {
       return defaultValue;
     }
-    return value.split(separator);
+    return Arrays.asList(value.split(separator));
   }
 
   @Override

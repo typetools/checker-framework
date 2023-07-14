@@ -119,10 +119,13 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (lubs == null) {
           lubs = altern.getPrimaryAnnotations();
         } else {
+          TypeMirror typeMirror = type.getUnderlyingType();
           AnnotationMirrorSet newLubs = new AnnotationMirrorSet();
           for (AnnotationMirror lub : lubs) {
             AnnotationMirror anno = altern.getPrimaryAnnotationInHierarchy(lub);
-            newLubs.add(qualHierarchy.leastUpperBound(anno, lub));
+            newLubs.add(
+                qualHierarchy.leastUpperBoundShallow(
+                    anno, altern.getUnderlyingType(), lub, typeMirror));
           }
           lubs = newLubs;
         }
