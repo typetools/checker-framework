@@ -194,7 +194,8 @@ public class AnnotationFileElementTypes {
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
       parseAnnotationFiles(
-          SystemUtil.pathSeparatorSplitter(stubsOption), AnnotationFileType.COMMAND_LINE_STUB);
+          SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
+          AnnotationFileType.COMMAND_LINE_STUB);
     }
 
     parsing = false;
