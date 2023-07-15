@@ -167,7 +167,7 @@ public class InitializationVisitor<
     // also use the information about initialized fields to check contracts
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
-    if (!qualHierarchy.isSubtype(invariantAnno, necessaryAnnotation)
+    if (!qualHierarchy.isSubtypeShallow(invariantAnno, necessaryAnnotation, expr.getType())
         || !(expr instanceof FieldAccess)) {
       return super.checkContract(expr, necessaryAnnotation, inferredAnnotation, store);
     }
@@ -305,16 +305,12 @@ public class InitializationVisitor<
     // Note that we cannot use the receiver type from AnnotatedExecutableType, because that
     // would only have the nullness annotations; here we want to see all annotations on the
     // receiver.
-    List<? extends AnnotationMirror> rcvannos = null;
     if (TreeUtils.isConstructor(tree)) {
       com.sun.tools.javac.code.Symbol meth =
           (com.sun.tools.javac.code.Symbol) TreeUtils.elementFromDeclaration(tree);
-      rcvannos = meth.getRawTypeAttributes();
-      if (rcvannos == null) {
-        rcvannos = Collections.emptyList();
-      }
+      return meth.getRawTypeAttributes();
     }
-    return rcvannos;
+    return Collections.emptyList();
   }
 
   /**

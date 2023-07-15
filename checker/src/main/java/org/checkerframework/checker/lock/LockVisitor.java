@@ -39,6 +39,7 @@ import org.checkerframework.checker.lock.qual.GuardedByBottom;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -659,16 +660,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     // Combine all of the actual parameters into one list of AnnotationMirrors.
 
-    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
-    passedArgAnnotations.add(
-        methodCallReceiver == null
-            ? null
-            : methodCallReceiver.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+    ArrayList<AnnotatedTypeMirror> passedArgTypes = new ArrayList<>(guardSatisfiedIndex.length);
+    passedArgTypes.add(methodCallReceiver);
     for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
+      passedArgTypes.add(atypeFactory.getAnnotatedType(argTree));
+    }
+    ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<>(guardSatisfiedIndex.length);
+    for (AnnotatedTypeMirror atm : passedArgTypes) {
       passedArgAnnotations.add(
-          atypeFactory
-              .getAnnotatedType(argTree)
-              .getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
+          atm == null ? null : atm.getPrimaryAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
     }
 
     // Perform the validity check and issue an error if not valid.
@@ -696,9 +696,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
               }
 
+              TypeMirror arg1TM = passedArgTypes.get(i).getUnderlyingType();
+              TypeMirror arg2TM = passedArgTypes.get(j).getUnderlyingType();
+
               if (bothAreGSwithNoIndex
-                  || !(qualHierarchy.isSubtype(arg1Anno, arg2Anno)
-                      || qualHierarchy.isSubtype(arg2Anno, arg1Anno))) {
+                  || !(qualHierarchy.isSubtypeShallow(arg1Anno, arg1TM, arg2Anno, arg2TM)
+                      || qualHierarchy.isSubtypeShallow(arg2Anno, arg2TM, arg1Anno, arg1TM))) {
 
                 String formalParam1;
                 if (i == 0) {
@@ -735,7 +738,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @param lockExpression the receiver tree for the method call to unlock(). Can be null.
    */
   private void ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(
-      ExecutableElement methodElement, ExpressionTree lockExpression) {
+      ExecutableElement methodElement, @Nullable ExpressionTree lockExpression) {
     if (lockExpression == null) {
       // Implicit this, or class name receivers, are null. But they are also final. So nothing
       // to be checked for them.
@@ -984,7 +987,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
    * @return a TreePath that can be passed to methods in the Resolver class to locate local
    *     variables
    */
-  private TreePath getPathForLocalVariableRetrieval(TreePath path) {
+  private @Nullable TreePath getPathForLocalVariableRetrieval(TreePath path) {
     assert path.getLeaf() instanceof AnnotationTree;
 
     // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this

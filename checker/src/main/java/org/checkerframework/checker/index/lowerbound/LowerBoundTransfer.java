@@ -342,7 +342,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     JavaExpression leftJe = JavaExpression.fromNode(left);
 
     AnnotationMirror newLBType =
-        atypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
+        atypeFactory
+            .getQualifierHierarchy()
+            .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
     store.insertValue(leftJe, newLBType);
   }

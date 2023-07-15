@@ -306,7 +306,8 @@ class MustCallConsistencyAnalyzer {
       AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = qualHierarchy.leastUpperBound(mcLub, mcAnno);
+        TypeMirror aliasTm = alias.reference.getType();
+        mcLub = qualHierarchy.leastUpperBoundShallow(mcLub, aliasTm, mcAnno, aliasTm);
       }
       if (AnnotationUtils.areSameByName(
           mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
@@ -336,6 +337,13 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
+      AnnotationMirror result =
+          mcAtf
+              .getAnnotatedType(reference.getElement())
+              .getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+      if (result != null) {
+        return result;
+      }
       // There wasn't an @MustCall annotation for it in the store, so fall back to the default
       // must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
@@ -353,6 +361,7 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
+
       return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
@@ -738,9 +747,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
-   * one of them, with two exceptions: the second expression can be null, and "this" references are
-   * compared using their underlying type. (ThisReference#equals always returns true, which is
-   * probably a bug and isn't accurate in the case of nested classes.)
+   * one of them, with two exceptions: the second expression can be null, and {@code this}
+   * references are compared using their underlying type. (ThisReference#equals always returns true,
+   * which is probably a bug and isn't accurate in the case of nested classes.)
    *
    * @param target a JavaExpression
    * @param enclosingTarget another, possibly null, JavaExpression
@@ -866,8 +875,8 @@ class MustCallConsistencyAnalyzer {
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
-          || !typeFactory.getMustCallValue(typeElt).isEmpty()
-          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
+          || !typeFactory.hasEmptyMustCallValue(typeElt)
+          || !typeFactory.hasEmptyMustCallValue(newClassTree);
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
@@ -1442,6 +1451,13 @@ class MustCallConsistencyAnalyzer {
       mcAnno =
           mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
     }
+    // if mcAnno is still null, then the declared type must be something other than
+    // @MustCall (probably @MustCallUnknown). Do nothing in this case: a warning
+    // about the field will be issued elsewhere (it will be impossible to satisfy its
+    // obligations!).
+    if (mcAnno == null) {
+      return;
+    }
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
@@ -1690,8 +1706,8 @@ class MustCallConsistencyAnalyzer {
     TypeElement typeElt = TypesUtils.getTypeElement(type);
     // no need to track if type has no possible @MustCall obligation
     if (typeElt != null
-        && typeFactory.getMustCallValue(typeElt).isEmpty()
-        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+        && typeFactory.hasEmptyMustCallValue(typeElt)
+        && typeFactory.hasEmptyMustCallValue(methodInvocationTree)) {
       return false;
     }
     // check for absence of @NotOwning annotation
@@ -2058,8 +2074,28 @@ class MustCallConsistencyAnalyzer {
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+
+    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
+    if (mustCallValue == null) {
+      // Report the error at the first alias' definition. This choice is arbitrary but
+      // consistent.
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.known",
+              firstAlias.reference.toString(),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
+        }
+      }
+      return;
+    }
     // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue == null || mustCallValue.isEmpty()) {
+    if (mustCallValue.isEmpty()) {
       return;
     }
 
@@ -2180,7 +2216,9 @@ class MustCallConsistencyAnalyzer {
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
         typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
+    return typeFactory
+        .getQualifierHierarchy()
+        .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
 
   /**

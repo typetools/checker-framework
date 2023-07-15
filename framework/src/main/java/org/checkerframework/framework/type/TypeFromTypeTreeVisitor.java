@@ -261,6 +261,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     if (elt instanceof TypeElement) {
       TypeElement typeElt = (TypeElement) elt;
       int idx = typeElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(typeElt.getTypeParameters(), tpe);
+      }
       ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
       if (cls == null || cls.getTypeParameters().isEmpty()) {
         // The type parameters in the source tree were already erased. The element already
@@ -276,14 +279,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else if (elt instanceof ExecutableElement) {
       ExecutableElement exElt = (ExecutableElement) elt;
       int idx = exElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(exElt.getTypeParameters(), tpe);
+      }
       MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
-      if (meth == null || (idx == -1 && exElt.isVarArgs())) {
+      if (meth == null) {
         // meth can be null when no source code was found for it.
-        // idx can be -1 when we have a type variable vararg in the parameters and
-        // the method invocation doesn't provide enough information about the type
-        // to substitute for it. In this situation, the `tpe` is an unbounded symbol
-        // created by the compiler, and it doesn't match any type parameters in `exElt`.
-        // Please check `CFGTranslationPhaseOne#convertCallArguments` for details.
         return type.asUse();
       }
       // This works the same as the case above.  Even though `meth` itself is not a
@@ -299,6 +300,29 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else {
       throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
     }
+  }
+
+  /**
+   * Finds the index of {@code type} in {@code typeParameters} using {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} instead of {@link Object#equals(Object)}.
+   *
+   * @param typeParameters a list of type parameters
+   * @param type a type parameter
+   * @return the index of {@code type} in {@code typeParameters} using {@link
+   *     TypesUtils#areSame(TypeVariable, TypeVariable)} or -1 if it does not exist
+   */
+  private int findIndex(
+      List<? extends TypeParameterElement> typeParameters, TypeParameterElement type) {
+
+    TypeVariable typeVariable = (TypeVariable) type.asType();
+
+    for (int i = 0; i < typeParameters.size(); i++) {
+      TypeVariable typeVariable1 = (TypeVariable) typeParameters.get(i).asType();
+      if (TypesUtils.areSame(typeVariable1, typeVariable)) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   @Override

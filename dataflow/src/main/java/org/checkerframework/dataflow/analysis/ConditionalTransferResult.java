@@ -77,7 +77,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
    */
   public ConditionalTransferResult(
-      V value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
+      V value, S thenStore, S elseStore, @Nullable Map<TypeMirror, S> exceptionalStores) {
     this(value, thenStore, elseStore, exceptionalStores, false);
   }
 

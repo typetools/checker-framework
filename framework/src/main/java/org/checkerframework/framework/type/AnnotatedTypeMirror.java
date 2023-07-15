@@ -27,6 +27,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -223,7 +224,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @return a primitive type kind if this is a primitive type or boxed primitive type; otherwise
    *     null
    */
-  public TypeKind getPrimitiveKind() {
+  public @Nullable TypeKind getPrimitiveKind() {
     return TypeKindUtils.primitiveOrBoxedToTypeKind(getUnderlyingType());
   }
 
@@ -305,7 +306,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * @param annotation an annotation in the qualifier hierarchy to check for
    * @return an annotation from the same hierarchy as {@code annotation} if present
    */
-  public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror annotation) {
+  public @Nullable AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror annotation) {
     AnnotationMirror canonical = annotation;
     if (!atypeFactory.isSupportedQualifier(canonical)) {
       canonical = atypeFactory.canonicalAnnotation(annotation);
@@ -919,6 +920,20 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
+   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@code java.lang.Record}.
+   * It includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+   *
+   * @param atypeFactory type factory to use
+   * @return AnnotatedDeclaredType for Record
+   */
+  protected static AnnotatedDeclaredType createTypeOfRecord(AnnotatedTypeFactory atypeFactory) {
+    AnnotatedDeclaredType recordType =
+        atypeFactory.fromElement(atypeFactory.elements.getTypeElement("java.lang.Record"));
+    recordType.declaration = false;
+    return recordType;
+  }
+
+  /**
    * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
    * the result in a field so that it isn't recomputed each time.
    *
@@ -1202,20 +1217,23 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** Represents a type of an executable. An executable is a method, constructor, or initializer. */
   public static class AnnotatedExecutableType extends AnnotatedTypeMirror {
 
-    private ExecutableElement element;
+    private @MonotonicNonNull ExecutableElement element;
 
     private AnnotatedExecutableType(ExecutableType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
 
     /** The parameter types; an unmodifiable list. */
-    private List<AnnotatedTypeMirror> paramTypes;
+    private @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
 
     /** Whether {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
 
-    /** The receiver type. */
-    private AnnotatedDeclaredType receiverType;
+    /**
+     * The receiver type of this executable type; null for static methods and constructors of
+     * top-level classes.
+     */
+    private @Nullable AnnotatedDeclaredType receiverType;
 
     /** Whether {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
@@ -1363,7 +1381,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      *
      * @param receiverType the receiver type
      */
-    /*package-private*/ void setReceiverType(AnnotatedDeclaredType receiverType) {
+    /*package-private*/ void setReceiverType(@Nullable AnnotatedDeclaredType receiverType) {
       this.receiverType = receiverType;
       receiverTypeComputed = true;
     }
@@ -2031,7 +2049,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * The type variable to which this wildcard is an argument. Used to initialize the upper bound
      * of unbounded wildcards and wildcards in raw types.
      */
-    private TypeVariable typeVariable = null;
+    @SuppressWarnings("nullness") // is reset during initialization
+    private @NonNull TypeVariable typeVariable = null;
 
     private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
       super(type, factory);
@@ -2060,9 +2079,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /**
      * Returns the lower bound of this wildcard. If no lower bound is explicitly declared, returns
-     * {@code null}.
+     * an {@link AnnotatedNullType}.
      *
-     * @return the lower bound of this wildcard, or null if none is explicitly declared
+     * @return the lower bound of this wildcard, or an {@link AnnotatedNullType} if none is
+     *     explicitly declared
      */
     public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {

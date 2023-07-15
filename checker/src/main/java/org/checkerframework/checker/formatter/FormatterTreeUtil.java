@@ -136,7 +136,8 @@ public class FormatterTreeUtil {
     return anno != null;
   }
 
-  private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
+  private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
+      MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
     if (!(vararg instanceof ArrayCreationNode)) {
       return null;
@@ -256,7 +257,7 @@ public class FormatterTreeUtil {
      * @return an error description if the format string is not annotated as {@code @Format}, or
      *     null if it is
      */
-    public final Result<String> errMissingFormatAnnotation() {
+    public final @Nullable Result<String> errMissingFormatAnnotation() {
       if (!formatStringType.hasPrimaryAnnotation(Format.class)) {
         String msg = "(is a @Format annotation missing?)";
         AnnotationMirror inv = formatStringType.getPrimaryAnnotation(InvalidFormat.class);

@@ -74,19 +74,13 @@ public class WideningConversion {
 
     char c;
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (c1 + i2);
-    // :: warning: (cast.unsafe)
     c = (char) (i1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (i1 + i2);
 
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (c1 + si2);
-    // :: warning: (cast.unsafe)
     c = (char) (si1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (si1 + si2);
 
     c = (char) (c1 + c2);

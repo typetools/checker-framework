@@ -25,7 +25,7 @@ public class AinferTestCheckerJaifsValidationTest extends AinferValidatePerDirec
         AinferTestCheckerJaifsGenerationTest.class,
         "-Awarns",
         // The AFU's JAIF reading/writing libraries don't support records.
-        "-AskipDefs=TestPure|SimpleRecord");
+        "-AskipDefs=TestPure|SimpleRecord|MyRecord");
   }
 
   @Parameters

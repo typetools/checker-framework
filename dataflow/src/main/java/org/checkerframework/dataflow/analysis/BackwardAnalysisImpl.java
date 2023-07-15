@@ -332,7 +332,8 @@ public class BackwardAnalysisImpl<
       Analysis.BeforeOrAfter preOrPost,
       TransferInput<V, S> blockTransferInput,
       IdentityHashMap<Node, V> nodeValues,
-      Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
     Block block = node.getBlock();
     assert block != null : "@AssumeAssertion(nullness): invariant";
     Node oldCurrentNode = currentNode;

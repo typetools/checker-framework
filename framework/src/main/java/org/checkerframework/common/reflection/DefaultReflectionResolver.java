@@ -39,6 +39,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.Invoke;
 import org.checkerframework.common.reflection.qual.MethodVal;
@@ -49,6 +50,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExe
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -65,6 +67,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
+
   /** Message prefix added to verbose reflection messages. */
   public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";
 
@@ -139,9 +142,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       ParameterizedExecutableType resolvedResult = factory.methodFromUse(resolvedTree);
 
       AnnotatedTypeMirror returnType = resolvedResult.executableType.getReturnType();
+      TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnType.getPrimaryAnnotations(), factory);
+      returnLub = lub(returnLub, returnTM, returnType.getPrimaryAnnotations(), returnTM, factory);
 
       // Glb receiver types (actual method receiver is passed as first
       // argument to invoke(Object, Object[]))
@@ -150,17 +154,22 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       if (receiverType == null) {
         // If the method is static the first argument to Method.invoke isn't used, so assume
         // top.
-        receiverGlb =
-            glb(receiverGlb, factory.getQualifierHierarchy().getTopAnnotations(), factory);
+        if (receiverGlb == null) {
+          receiverGlb =
+              new AnnotationMirrorSet(factory.getQualifierHierarchy().getTopAnnotations());
+        }
       } else {
-        receiverGlb = glb(receiverGlb, receiverType.getPrimaryAnnotations(), factory);
+        TypeMirror receiverTM = receiverType.getUnderlyingType();
+        receiverGlb =
+            glb(receiverGlb, receiverTM, receiverType.getPrimaryAnnotations(), receiverTM, factory);
       }
 
       // Glb parameter types.  All formal parameter types get combined together because
       // Method#invoke takes as argument an array of parameter types, so there is no way to
       // distinguish the types of different formal parameters.
       for (AnnotatedTypeMirror mirror : resolvedResult.executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getPrimaryAnnotations(), factory);
+        TypeMirror mirrorTM = mirror.getUnderlyingType();
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getPrimaryAnnotations(), mirrorTM, factory);
       }
     }
 
@@ -282,13 +291,15 @@ public class DefaultReflectionResolver implements ReflectionResolver {
       ParameterizedExecutableType resolvedResult = factory.constructorFromUse(resolvedTree);
       AnnotatedExecutableType executableType = resolvedResult.executableType;
       AnnotatedTypeMirror returnType = executableType.getReturnType();
+      TypeMirror returnTM = returnType.getUnderlyingType();
 
       // Lub return types
-      returnLub = lub(returnLub, returnType.getPrimaryAnnotations(), factory);
+      returnLub = lub(returnLub, returnTM, returnType.getPrimaryAnnotations(), returnTM, factory);
 
       // Glb parameter types
       for (AnnotatedTypeMirror mirror : executableType.getParameterTypes()) {
-        paramsGlb = glb(paramsGlb, mirror.getPrimaryAnnotations(), factory);
+        TypeMirror mirrorTM = mirror.getUnderlyingType();
+        paramsGlb = glb(paramsGlb, mirrorTM, mirror.getPrimaryAnnotations(), mirrorTM, factory);
       }
     }
     if (returnLub == null) {
@@ -598,18 +609,22 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
    * @param set1 the first type
+   * @param tm1 the type that is annotated by qualifier1
    * @param set2 the second type
+   * @param tm2 the type that is annotated by qualifier2
    * @param atypeFactory the type factory
    * @return the lub of the two types
    */
   private Set<? extends AnnotationMirror> lub(
-      Set<? extends AnnotationMirror> set1,
+      @Nullable Set<? extends AnnotationMirror> set1,
+      TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
+      TypeMirror tm2,
       AnnotatedTypeFactory atypeFactory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return atypeFactory.getQualifierHierarchy().leastUpperBounds(set1, set2);
+      return atypeFactory.getQualifierHierarchy().leastUpperBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 
@@ -620,18 +635,22 @@ public class DefaultReflectionResolver implements ReflectionResolver {
    * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
    *
    * @param set1 the first type
+   * @param tm1 the type that is annotated by qualifier1
    * @param set2 the second type
+   * @param tm2 the type that is annotated by qualifier2
    * @param atypeFactory the type factory
    * @return the glb of the two types
    */
   private Set<? extends AnnotationMirror> glb(
-      Set<? extends AnnotationMirror> set1,
+      @Nullable Set<? extends AnnotationMirror> set1,
+      TypeMirror tm1,
       Set<? extends AnnotationMirror> set2,
+      TypeMirror tm2,
       AnnotatedTypeFactory atypeFactory) {
     if (set1 == null || set1.isEmpty()) {
       return set2;
     } else {
-      return atypeFactory.getQualifierHierarchy().greatestLowerBounds(set1, set2);
+      return atypeFactory.getQualifierHierarchy().greatestLowerBoundsShallow(set1, tm1, set2, tm2);
     }
   }
 

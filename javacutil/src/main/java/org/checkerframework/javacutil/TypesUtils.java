@@ -34,6 +34,7 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -715,7 +716,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -726,7 +727,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field This field is
+   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
    * sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
@@ -1076,7 +1077,7 @@ public final class TypesUtils {
    * @return {@code type} as {@code superType} if {@code superType} is a super type of {@code type};
    *     otherwise, null
    */
-  public static TypeMirror asSuper(
+  public static @Nullable TypeMirror asSuper(
       TypeMirror type, TypeMirror superType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
@@ -1265,5 +1266,30 @@ public final class TypesUtils {
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;
+  }
+
+  /**
+   * Returns true if the two type variables are the same type variable. Meaning they have the same
+   * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
+   * they do not have to be the same object.
+   *
+   * <p>This method is needed when a type has gone through type variable substitution, but only some
+   * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
+   * the type of a tree created by {@link org.checkerframework.javacutil.trees.TreeBuilder}.
+   *
+   * @param typeVariable1 a type variable
+   * @param typeVariable2 a type variable
+   * @return if the two type variables are the same type variable
+   */
+  @EqualsMethod
+  public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
+    if (typeVariable1 == typeVariable2) {
+      return true;
+    }
+    Name otherName = typeVariable2.asElement().getSimpleName();
+    Element otherEnclosingElement = typeVariable2.asElement().getEnclosingElement();
+
+    return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
+        && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
   }
 }

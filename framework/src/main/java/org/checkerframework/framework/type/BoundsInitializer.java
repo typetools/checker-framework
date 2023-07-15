@@ -163,7 +163,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeBounds(
-      AnnotatedTypeVariable typeVar, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedTypeVariable typeVar, @Nullable Map<TypeVariable, AnnotatedTypeMirror> map) {
     AnnotationMirrorSet annos = saveAnnotations(typeVar);
 
     InitializerVisitor visitor = new InitializerVisitor(new TypeVariableStructure(typeVar), map);
@@ -228,7 +228,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeSuperBound(
-      AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedWildcardType wildcard, @Nullable Map<TypeVariable, AnnotatedTypeMirror> map) {
     AnnotationMirrorSet annos = saveAnnotations(wildcard);
 
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
@@ -256,7 +256,7 @@ public class BoundsInitializer {
    * @param map a mapping of type parameters to type arguments. May be null.
    */
   private static void initializeExtendsBound(
-      AnnotatedWildcardType wildcard, Map<TypeVariable, AnnotatedTypeMirror> map) {
+      AnnotatedWildcardType wildcard, @Nullable Map<TypeVariable, AnnotatedTypeMirror> map) {
     AnnotationMirrorSet annos = saveAnnotations(wildcard);
     InitializerVisitor visitor = new InitializerVisitor(new RecursiveTypeStructure(), map);
     visitor.initializeExtendsBound(wildcard);
@@ -916,7 +916,7 @@ public class BoundsInitializer {
      *
      * @return the leaf node or null if the path is empty
      */
-    public TypePathNode getLeaf() {
+    public @Nullable TypePathNode getLeaf() {
       if (this.isEmpty()) {
         return null;
       }

@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -196,36 +197,32 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    // get all the loaded annotations
+    // Get all the loaded annotations.
     Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
-    // load all the external units
+    // Load all the units specified on the command line.
     loadAllExternalUnits();
-
-    // copy all loaded external Units to qual set
     qualSet.addAll(externalQualsMap.values());
 
     return qualSet;
   }
 
+  /** Loads all the externnal units specified on the command line. */
   private void loadAllExternalUnits() {
     // load external individually named units
-    String qualNames = checker.getOption("units");
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier name \"%s\" in -Aunits=%s", qualName, qualNames);
-        }
-        loadExternalUnit(qualName);
+    for (String qualName : checker.getStringsOption("units", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier name \"%s\" in -Aunits", qualName);
       }
+      loadExternalUnit(qualName);
     }
 
     // load external directories of units
-    String qualDirectories = checker.getOption("unitsDirs");
-    if (qualDirectories != null) {
-      for (String directoryName : qualDirectories.split(":")) {
-        loadExternalDirectory(directoryName);
+    for (String directoryName : checker.getStringsOption("unitsDirs", ':')) {
+      if (!new File(directoryName).exists()) {
+        throw new UserError("Nonexistent directory in -AunitsDirs: " + directoryName);
       }
+      loadExternalDirectory(directoryName);
     }
   }
 
@@ -536,23 +533,20 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return null;
     }
 
-    private AnnotationMirror useUnitsRelation(
+    private @Nullable AnnotationMirror useUnitsRelation(
         Tree.Kind kind, UnitsRelations ur, AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
 
-      AnnotationMirror res = null;
       if (ur != null) {
         switch (kind) {
           case DIVIDE:
-            res = ur.division(lht, rht);
-            break;
+            return ur.division(lht, rht);
           case MULTIPLY:
-            res = ur.multiplication(lht, rht);
-            break;
+            return ur.multiplication(lht, rht);
           default:
             // Do nothing
         }
       }
-      return res;
+      return null;
     }
   }
 
@@ -567,7 +561,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class UnitsQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
     /** Constructor. */
     public UnitsQualifierHierarchy() {
-      super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          UnitsAnnotatedTypeFactory.this);
     }
 
     @Override
@@ -614,11 +611,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
+    @SuppressWarnings("nullness:return")
     @Override
-    @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
-    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
-    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,

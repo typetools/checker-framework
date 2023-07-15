@@ -58,7 +58,7 @@ public class FieldInvariants {
    * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other,
+      @Nullable FieldInvariants other,
       List<String> fields,
       List<AnnotationMirror> qualifiers,
       AnnotatedTypeFactory factory) {
@@ -138,7 +138,7 @@ public class FieldInvariants {
       List<AnnotationMirror> subQualifiers = this.getQualifiersFor(field);
       for (AnnotationMirror superA : superQualifiers) {
         AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        if (sub == null || !qualHierarchy.isSubtype(sub, superA)) {
+        if (sub == null || !qualHierarchy.isSubtypeQualifiersOnly(sub, superA)) {
           return DiagMessage.error("field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }

@@ -1,10 +1,45 @@
-Version 3.36.0 (July 5, 2023)
+Version 3.37.0 (July ?, 2023)
+-----------------------------
+
+**User-visible changes:**
+
+Removed support for deprecated option `-AuseDefaultsForUncheckedCode`.
+
+The Signedness Checker no longer allows (nor needs) `@UnknownSignedness`
+to be written on a non-integral type.
+
+**Implementation details:**
+
+`QualifierHierarchy`:
+ * The constructor takes an `AnnotatedTypeFactory`.
+ * Changes to `isSubtype()`:
+    * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+      Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
+      or, rarely, new method `isSubtypeQualifiersOnly()`.
+    * New public method `isSubtypeShallow()' that takes two more arguments than
+      `isSubypeQualifiers()`.
+ * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
+
+**Closed issues:**
+
+
+Version 3.36.0 (July 3, 2023)
 -----------------------------
 
 **User-visible changes:**
 
 The Initialization Checker issues a `cast.unsafe` warning instead of an
 `initialization.cast` error.
+
+The Resource Leak Checker now issues a `required.method.not.known` error
+when an expression with type `@MustCallUnknown` has a must-call obligation
+(e.g., because it is a parameter annotated as `@Owning`).
+
+The Resource Leak Checker's default MustCall type for type variables has been
+changed from `@MustCallUnknown` to `@MustCall({})`.  This change reduces the
+number of false positive warnings in code that uses type variables but not
+resources.  However, it makes some code that uses type variables and resources
+unverifiable with any annotation.
 
 **Implementation details:**
 
@@ -25,13 +60,22 @@ Dataflow Framework:
  * New `ExpressionStatementNode` marks an expression that is used as a statement.
  * Removed class `StringConcatenateAssignmentNode`, which is now desugared.
 
+`GenericAnnotatedTypeFactory`:
+ * Renamed `getTypeFactoryOfSubchecker()` to `getTypeFactoryOfSubcheckerOrNull`.
+ * Added new `getTypeFactoryOfSubchecker()` that never returns null.
+
 Return types changed:
  * `GenericAnnotatedTypeFactory.getFinalLocalValues()` return type changed to
    `Map`, though the returned value is still a `HashMap`.
  * `BaseTypeChecker.getImmediateSubcheckerClasses()` return type changed to
    `Set`, though the returned value is still a `LinkedHashSet`.
 
+Renamed methods in `CFAbstractValue`:
+ * `combineOneAnnotation()` => `combineAnnotationWithTypeVar()`
+ * `combineNoAnnotations()` => `combineTwoTypeVars()`
+
 **Closed issues:**
+#5908, #5936, #5971, #6019, #6025, #6028, #6030, #6039, #6053, #6060, #6069.
 
 
 Version 3.35.0 (June 1, 2023)
@@ -49,7 +93,7 @@ Signedness Checker:
 
 Instead of overriding `isRelevant()`, a type factory implementation should
 override `isRelevantImpl()`.  Clients should continue to call `isRelevant()`;
-never call `isRelevantImpl()`.
+never call `isRelevantImpl()` except as `super.isRelevantImpl()`.
 
 Methods that now return a `boolean` rather than `void`:
  * `commonAssignmentCheck()`
