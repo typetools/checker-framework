@@ -114,7 +114,8 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.36.1-SNAPSHOT'
+  // To make a snapshot release: ./gradlew publish
+  version '3.37.0-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
