@@ -825,24 +825,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the names of the annotation processors that are being run
    */
   @SuppressWarnings("JdkObsolete") // ClassLoader.getResources returns an Enumeration
-  public String[] getCheckerNames() {
+  public List<String> getCheckerNames() {
     com.sun.tools.javac.util.Context context =
         ((JavacProcessingEnvironment) processingEnv).getContext();
     String processorArg = Options.instance(context).get("-processor");
     if (processorArg != null) {
-      return processorArg.split(",");
+      return Arrays.asList(processorArg.split(","));
     }
     try {
       String filename = "META-INF/services/javax.annotation.processing.Processor";
-      List<String> lines = new ArrayList<>();
+      List<String> result = new ArrayList<>();
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
         try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-          lines.addAll(in.lines().collect(Collectors.toList()));
+          result.addAll(in.lines().collect(Collectors.toList()));
         }
       }
-      String[] result = lines.toArray(new String[lines.size()]);
       return result;
     } catch (IOException e) {
       throw new BugInCF(e);
