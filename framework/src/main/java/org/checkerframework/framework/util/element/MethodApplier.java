@@ -90,7 +90,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         // TODO: Test case from Issue 3277 produces invalid position.
         // Ignore until this javac bug is fixed:
         // https://bugs.openjdk.org/browse/JDK-8233945
-        TargetType.UNKNOWN
+        TargetType.UNKNOWN,
+        // Records.
+        TargetType.FIELD
       };
 
   /**

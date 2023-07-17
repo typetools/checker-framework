@@ -121,7 +121,12 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
   /** The annotated targets. */
   private static final TargetType[] annotatedTargets =
-      new TargetType[] {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER};
+      new TargetType[] {
+        TargetType.METHOD_FORMAL_PARAMETER,
+        TargetType.METHOD_RECEIVER,
+        // Records.
+        TargetType.FIELD
+      };
 
   /**
    * Returns {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER}.
