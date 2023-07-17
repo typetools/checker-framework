@@ -47,7 +47,7 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
     } else {
       skipComment = null;
     }
-    if (skipComment == null) {
+    if (skipComment != null) {
       List<File> removeFiles = new ArrayList<>();
       for (File testFile : testFiles) {
         if (hasSkipComment(testFile, skipComment)) {
