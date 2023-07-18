@@ -61,7 +61,7 @@ The process takes around 2 hours (including manual steps) when all goes accordin
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration tests</a></li>
       <li><a href="#maven_local">Deploy to local Maven repository</a></li>
-      <li><a href="#snapshot_release_maven_central">Snapshot release to Maven Central</a></li>
+      <li><a href="#snapshot_release">Snapshot release</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
         <ul>
@@ -242,7 +242,7 @@ TreeAnnotator
 
   <h2 id="maven_local">Deploy to local Maven repository</h2>
   <p>
-    To deploy to a local Maven repository, run <code>./gradlew
+    To deploy to a <b>local</b> Maven repository, run <code>./gradlew
     PublishToMavenLocal</code> in <code>checker-framework</code>.
   </p>
 
@@ -263,9 +263,8 @@ TreeAnnotator
   </p>
 
 
-  <h2 id="snapshot_release_maven_central">Snapshot release to Maven Central</h2>
-  <p>This section explains how to release the Maven artifacts to the Maven
-  Central <b>snapshot</b> repository.</p>
+  <h2 id="snapshot_release">Snapshot release</h2>
+  <p>To release the Maven artifacts to the Maven Central <b>snapshot</b> repository:</p>
   <ol>
     <li>
       Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
