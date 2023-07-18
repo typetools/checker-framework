@@ -2048,6 +2048,29 @@ be used with \code{-Ainfer}; see Section~\ref{whole-program-inference}.
 
 \end{itemize}
 
+If the Checker Framework is in an infinite loop, you can use
+\code{-Afilenames} and \code{-Ashowchecks} (which is \emph{very} verbose)
+to determine what source code triggers the infinite loop.
+
+While the Checker Framework is in its infinite loop (no more progress is
+being made), get a traceback (stack trace) from from each Java thread,
+using any of the following four techniques:
+
+\begin{itemize}
+  \item From a different shell than the Checker Framework is running in
+    (running just \<jcmd> gives a list of pids or process ids):
+  \begin{itemize}
+    \item \<jstack \emph{pid}>
+    \item \<jcmd \emph{pid} Thread.print>
+    \item \<kill -QUIT \emph{pid}>
+  \end{itemize}
+  \item From the same shell that the Checker Framework is running in:
+  \begin{itemize}
+    \item Press \<ctrl-\textbackslash>
+  \end{itemize}
+\end{itemize}
+
+
 \subsectionAndLabel{Saving the command-line arguments to a file}{creating-debugging-options-output-args}
 
 \begin{itemize}
@@ -2609,7 +2632,7 @@ without warnings or errors.
 %%  LocalWords:  getTypeFactoryOfSubchecker checkername inference'' Werror
 %%  LocalWords:  AnnotationMirror AnnotationMirrorMap AnnotationMirrorSet
 %%  LocalWords:  processorpath CheckerName EnsuresNonNullIf reportError
-%%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk
+%%  LocalWords:  reportWarning AnnotatedFor AdumpOnErrors AparseAllJdk pid
 % LocalWords:  createTreeAnnotator ListTreeAnnotator TypeAnnotator upcasts
 % LocalWords:  createTypeAnnotator ListTypeAnnotator CFGVisualizeLauncher
 % LocalWords:  PropagationTreeAnnotator checkerName cfgvisualizelauncher
@@ -2617,7 +2640,8 @@ without warnings or errors.
 % LocalWords:  DefaultQualifierPolymorphism createQualifierPolymorphism
 % LocalWords:  representation'' stubfilename commonAssignmentCheck foreach
 % LocalWords:  AshowWpiFailedInferences CheckerMain wrapper'' typechecker
-% LocalWords:  AatfDoNotCache AatfCacheSize PolyPresent Subinterface
+% LocalWords:  AatfDoNotCache AatfCacheSize PolyPresent Subinterface jcmd
 % LocalWords:  UnionType subpackage distributable DefaultFor FormatMethod
 % LocalWords:  AnoWarnMemoryConstraints JCDiagnostic DiagnosticPosition
-% LocalWords:  LineMap
+% LocalWords:  LineMap SomeAnn getTypeFactoryOfSubcheckerOrNull traceback
+% LocalWords:  pids jstack ctrl

@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.value.qual.IntVal;
 
 /** This file contains basic utility functions. */
 public class SystemUtil {
@@ -111,7 +112,7 @@ public class SystemUtil {
    * @return The number of bytes for this UTF-* character.
    * @throws IllegalArgumentException if the bit pattern is invalid.
    */
-  private static int getByteCount(byte b) throws IllegalArgumentException {
+  private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) throws IllegalArgumentException {
     if ((b >= 0)) return 1; // Pattern is 0xxxxxxx.
     if ((b >= (byte) 0b11000000) && (b <= (byte) 0b11011111)) return 2; // Pattern is 110xxxxx.
     if ((b >= (byte) 0b11100000) && (b <= (byte) 0b11101111)) return 3; // Pattern is 1110xxxx.
