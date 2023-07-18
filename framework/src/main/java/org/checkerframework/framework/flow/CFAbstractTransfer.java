@@ -216,7 +216,11 @@ public abstract class CFAbstractTransfer<
   /** The fixed initial store. */
   private @Nullable S fixedInitialStore = null;
 
-  /** Set a fixed initial Store. */
+  /**
+   * Set a fixed initial Store.
+   *
+   * @param s initial store; possible null
+   */
   public void setFixedInitialStore(@Nullable S s) {
     fixedInitialStore = s;
   }
