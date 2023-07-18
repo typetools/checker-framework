@@ -1395,8 +1395,8 @@ public final class TreeUtils {
       return methods.get(0);
     }
     throw new BugInCF(
-        "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d",
-        typeName, methodName, params, methods.size());
+        "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d: %s",
+        typeName, methodName, params, methods.size(), methods);
   }
 
   /**
