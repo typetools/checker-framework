@@ -60,7 +60,7 @@ The process takes around 2 hours (including manual steps) when all goes accordin
     <ul>
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration tests</a></li>
-      <li><a href="#snapshot_release">Snapshot release to local Maven repository</a></li>
+      <li><a href="#maven_local">Deploy to local Maven repository</a></li>
       <li><a href="#snapshot_release_maven_central">Snapshot release to Maven Central</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
@@ -240,43 +240,32 @@ TreeAnnotator
     <li>Daikon: <a href="https://dev.azure.com/mernstdaikon/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/mernstdaikon/daikon/_apis/build/status%2Fcodespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
   </ul>
 
-  <h2 id="snapshot_release">Snapshot release to local Maven repository</h2>
-  <p>This section explains how to release the Maven artifacts to a local Maven repository.</p>
-  <ol>
-    <li>
-      Ensure that the version number in <code>checker-framework/build.gradle</code> (in <code>allprojects { version ... }</code>) ends in <code>-SNAPSHOT</code>.
-    </li>
-    <li>
-      Run <code>./gradlew PublishToMavenLocal</code> in <code>checker-framework</code>.
-    </li>
-    <li>
-      In the <code>build.gradle</code> file of a project that you want
-      to use the snapshot version of the Checker Framework:
-      <pre>
-repositories {
-  ...
-  mavenLocal()
-}
+  <h2 id="maven_local">Deploy to local Maven repository</h2>
+  <p>
+    To deploy to a local Maven repository, run <code>./gradlew
+    PublishToMavenLocal</code> in <code>checker-framework</code>.
+  </p>
 
-ext.checkerFrameworkVersion = '3.28.1-SNAPSHOT'
-dependencies {
-  compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-  testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
-}
-configurations.all {
-  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
-      </pre>
-    </li>
-    <p>
-      Maven automatically looks in the local Maven repository, so it does not
-      require the <code>mavenLocal()</code> that Gradle does.
-    </p>
-  </ol>
+  <p>
+    Then, update your project's buildfile.  For Maven,
+    just <a href="https://checkerframework.org/manual/#maven-locally-built">update
+    the Checker Framework version number</a>.  For Gradle,
+    also <a href="https://github.com/kelloggm/checkerframework-gradle-plugin#specifying-a-checker-framework-version">add <code>repositories
+    { mavenLocal() }</code></a>.
+  </p>
+
+  <p>
+    Usually, the version number in <code>checker-framework/build.gradle</code>
+    (in <code>allprojects { version ... }</code>) will end
+    in <code>-SNAPSHOT</code>.  Beware that you may get different results than
+    on other computers that have not deployed the same commit of the Checker
+    Framework to their local Maven repository.
+  </p>
+
 
   <h2 id="snapshot_release_maven_central">Snapshot release to Maven Central</h2>
-  <p>This section explains how to release the Maven artifacts to the Maven Central snapshot repository.</p>
+  <p>This section explains how to release the Maven artifacts to the Maven
+  Central <b>snapshot</b> repository.</p>
   <ol>
     <li>
       Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
