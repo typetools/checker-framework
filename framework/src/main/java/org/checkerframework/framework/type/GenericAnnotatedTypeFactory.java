@@ -1348,7 +1348,8 @@ public abstract class GenericAnnotatedTypeFactory<
       initializationStaticStore = capturedStore;
       initializationStore = capturedStore;
 
-      Queue<IPair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
+      // The store is null if the lambda is unreachable.
+      Queue<IPair<LambdaExpressionTree, @Nullable Store>> lambdaQueue = new ArrayDeque<>();
 
       // Queue up classes (for top-level `while` loop) and methods (for within this `try`
       // construct); analyze top-level blocks and variable initializers as they are
@@ -1455,7 +1456,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         while (!lambdaQueue.isEmpty()) {
-          IPair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+          IPair<LambdaExpressionTree, @Nullable Store> lambdaPair = lambdaQueue.poll();
           MethodTree mt =
               (MethodTree)
                   TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Tree.Kind.METHOD);
@@ -1526,7 +1527,7 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isInitializationCode,
       boolean updateInitializationStore,
       boolean isStatic,
-      Store capturedStore) {
+      @Nullable Store capturedStore) {
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
 
     if (isInitializationCode) {
