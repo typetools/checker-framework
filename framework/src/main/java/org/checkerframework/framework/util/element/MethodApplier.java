@@ -91,7 +91,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         // Ignore until this javac bug is fixed:
         // https://bugs.openjdk.org/browse/JDK-8233945
         TargetType.UNKNOWN,
-        // Records.
+        // Annotations on parameters to record constructors are marked as fields.
         TargetType.FIELD
       };
 

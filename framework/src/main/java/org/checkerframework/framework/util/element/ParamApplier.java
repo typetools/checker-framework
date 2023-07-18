@@ -124,7 +124,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
       new TargetType[] {
         TargetType.METHOD_FORMAL_PARAMETER,
         TargetType.METHOD_RECEIVER,
-        // Records.
+        // Annotations on parameters to record constructors are marked as fields.
         TargetType.FIELD
       };
 

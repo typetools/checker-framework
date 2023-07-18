@@ -48,6 +48,8 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
     int i = 0;
     while (i < targeted.size()) {
       Attribute.TypeCompound target = targeted.get(i);
+      // Annotations on parameters to record constructors are marked as fields so
+      // getTypeCompoundIndex does not return paramIndex.
       if (target.position.type != TargetType.FIELD && getTypeCompoundIndex(target) != paramIndex) {
         valid.add(targeted.remove(i));
       } else {
