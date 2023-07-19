@@ -287,7 +287,11 @@ public final class TreePathUtil {
       case NEW_ARRAY:
       case NEW_CLASS:
       case RETURN:
+        return parent;
       case VARIABLE:
+        if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parent)) {
+          return null;
+        }
         return parent;
       case CONDITIONAL_EXPRESSION:
         ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
