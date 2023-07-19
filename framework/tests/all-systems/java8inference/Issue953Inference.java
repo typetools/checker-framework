@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Issue953 {
+public class Issue953Inference {
   public static void test() {
     List<String> initial = new ArrayList<>();
     List<Integer> counts =
