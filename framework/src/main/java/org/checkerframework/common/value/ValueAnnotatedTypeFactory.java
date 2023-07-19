@@ -742,7 +742,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     switch (primitiveKind) {
       case BOOLEAN:
-        @SuppressWarnings("mustcall:lambda.param") // generics; #979 ?
         List<Boolean> boolVals = CollectionsPlume.mapList((Object o) -> (Boolean) o, values);
         return createBooleanAnnotation(boolVals);
       case DOUBLE:
