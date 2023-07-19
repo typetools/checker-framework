@@ -58,15 +58,15 @@ public class QualifierTyping implements Constraint {
   }
 
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
-    if (context.typeFactory.getQualifierHierarchy().isSubtype(Q, R)
-        && context.typeFactory.getQualifierHierarchy().isSubtype(R, Q)) {
+    if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(Q, R)
+        && context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(R, Q)) {
       return ConstraintSet.TRUE;
     }
     return ConstraintSet.TRUE_ANNO_FAIL;
   }
 
   private ReductionResult reduceEquality(Java8InferenceContext context) {
-    if (context.typeFactory.getQualifierHierarchy().isSubtype(Q, R)) {
+    if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(Q, R)) {
       return ConstraintSet.TRUE;
     }
     return ConstraintSet.TRUE_ANNO_FAIL;

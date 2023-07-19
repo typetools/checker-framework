@@ -1248,7 +1248,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * method applies to both method invocations and constructor calls.
    *
    * @param method an ExecutableElement representing a method to be called
-   * @param methodType an ExecutableType representing the type of the method call
+   * @param methodType an ExecutableType representing the type of the method call; the type must be
+   *     viewpoint-adapted to the call
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
    *     this method
@@ -1294,18 +1295,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
 
-        // NOTE: When the last parameter is a type variable vararg and the compiler
-        // cannot find a specific type use to substitute for it, the compiler will
-        // create an unbounded component type instead. For example,
-        // for the following method declaration:
-        // <T> void foo(T... ts) {}
-        // consider this method invocation:
-        // foo();
-        //
-        // At the call site, the compiler doesn't have enough information about the
-        // type to substitute for type variable T. So the component type we are going
-        // to get is simply "T", which is NOT EQUAL to any of the "T"s in the method
-        // declaration if we compare them using the equals() method.
         TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
 
         List<ExpressionTree> inits = new ArrayList<>(numActuals - lastArgIndex);
@@ -1456,7 +1445,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Look up method to invoke and possibly throw NullPointerException
     Node receiver = getReceiver(methodSelect);
 
-    MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
     if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node

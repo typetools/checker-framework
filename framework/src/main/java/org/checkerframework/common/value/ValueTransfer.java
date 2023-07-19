@@ -71,6 +71,7 @@ import org.plumelib.util.CollectionsPlume;
 
 /** The transfer class for the Value Checker. */
 public class ValueTransfer extends CFTransfer {
+
   /** The Value type factory. */
   protected final ValueAnnotatedTypeFactory atypeFactory;
 
@@ -589,7 +590,9 @@ public class ValueTransfer extends CFTransfer {
     if (oldRecAnno == null) {
       combinedRecAnno = newRecAnno;
     } else {
-      combinedRecAnno = qualHierarchy.greatestLowerBound(oldRecAnno, newRecAnno);
+      TypeMirror receiverTM = receiverJE.getType();
+      combinedRecAnno =
+          qualHierarchy.greatestLowerBoundShallow(oldRecAnno, receiverTM, newRecAnno, receiverTM);
     }
     store.insertValue(receiverJE, combinedRecAnno);
   }
@@ -1369,7 +1372,8 @@ public class ValueTransfer extends CFTransfer {
               : getValueAnnotation(currentValueFromStore));
       // Combine the new annotations based on the results of the comparison with the existing
       // type.
-      AnnotationMirror newAnno = qualHierarchy.greatestLowerBound(anno, currentAnno);
+      AnnotationMirror newAnno =
+          qualHierarchy.greatestLowerBoundShallow(anno, je.getType(), currentAnno, je.getType());
       store.insertValue(je, newAnno);
 
       if (node instanceof FieldAccessNode) {

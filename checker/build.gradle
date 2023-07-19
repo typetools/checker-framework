@@ -164,7 +164,6 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
   description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
-  archivesBaseName = 'checker'
 
   from shadowJar.source
   configurations = shadowJar.configurations

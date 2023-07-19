@@ -165,8 +165,6 @@ import org.plumelib.util.UtilPlume;
   // sections in the manual for more details
   // org.checkerframework.framework.source.SourceChecker.useConservativeDefault
   "useConservativeDefaultsForUncheckedCode",
-  // Temporary, for backward compatibility
-  "useDefaultsForUncheckedCode",
 
   // Whether to assume sound concurrent semantics or
   // simplified sequential semantics
@@ -1475,8 +1473,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    String[] lintStrings = lintString.split(",");
-    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.length);
+    List<String> lintStrings = Arrays.asList(lintString.split(","));
+    Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.size());
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
           && !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1)))
@@ -1536,6 +1534,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       throw new UserError("Illegal lint option: " + name);
     }
 
+    // This is only needed if initChecker() has not yet been called.
     if (activeLints == null) {
       activeLints = createActiveLints(getOptions());
     }
@@ -1777,8 +1776,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   @Override
   public final String getOption(String name, String defaultValue) {
 
-    if (!this.getSupportedOptions().contains(name)) {
-      throw new UserError("Illegal option: " + name);
+    // TODO: Should supportedOptions be cached?
+    Set<String> supportedOptions = this.getSupportedOptions();
+    if (!supportedOptions.contains(name)) {
+      throw new UserError(
+          "Illegal option: "
+              + name
+              + "; supported options = "
+              + String.join(",", supportedOptions));
     }
 
     if (activeOptions == null) {
@@ -1825,6 +1830,36 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
     throw new UserError(
         String.format("Value of %s option should be a boolean, but is \"%s\".", name, value));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final List<String> getStringsOption(
+      String name, char separator, List<String> defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return Arrays.asList(value.split(Pattern.quote(Character.toString(separator))));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see SourceChecker#getLintOption(String,boolean)
+   */
+  @Override
+  public final List<String> getStringsOption(
+      String name, String separator, List<String> defaultValue) {
+    String value = getOption(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return Arrays.asList(value.split(separator));
   }
 
   @Override
@@ -2162,9 +2197,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   public boolean useConservativeDefault(String kindOfCode) {
     boolean useUncheckedDefaultsForSource = false;
     boolean useUncheckedDefaultsForByteCode = false;
-    String option = this.getOption("useConservativeDefaultsForUncheckedCode");
-    String[] args = option != null ? option.split(",") : new String[0];
-    for (String arg : args) {
+    for (String arg : this.getStringsOption("useConservativeDefaultsForUncheckedCode", ',')) {
       boolean value = arg.indexOf("-") != 0;
       arg = value ? arg : arg.substring(1);
       if (arg.equals(kindOfCode)) {

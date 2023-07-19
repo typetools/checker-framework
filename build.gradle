@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.19.0'
+  id 'com.diffplug.spotless' version '6.20.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -114,7 +114,8 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.36.1-SNAPSHOT'
+  // To make a snapshot release: ./gradlew publish
+  version '3.37.0-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -732,12 +733,10 @@ subprojects {
 
   shadowJar {
     // If you add an external dependency, then do the following:
-    // 1. Before adding the dependency, run ./gradlew assembleForJavac.
-    // 2. Copy checker/dist/checker.jar elsewhere.
-    // 3. Add the dependency, then run ./gradlew clean assembleForJavac.
-    // 4. Unzip both jars and compare the contents.
-    // 5. Add relocate lines below for the packages.
-    // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+    //  * On the master branch and on the modified branch, run:
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //  * Compare the files, and add relocate lines below.
+    //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
     relocate 'org.apache', 'org.checkerframework.org.apache'

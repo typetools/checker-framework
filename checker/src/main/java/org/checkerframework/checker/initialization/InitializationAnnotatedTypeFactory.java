@@ -854,7 +854,10 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /** Create an InitializationQualifierHierarchy. */
     protected InitializationQualifierHierarchy() {
-      super(InitializationAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          InitializationAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          InitializationAnnotatedTypeFactory.this);
       UNKNOWN_INIT = getQualifierKind(UNKNOWN_INITIALIZATION);
       UNDER_INIT = getQualifierKind(UNDER_INITALIZATION);
     }

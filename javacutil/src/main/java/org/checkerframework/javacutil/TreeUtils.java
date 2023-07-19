@@ -87,6 +87,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
@@ -836,6 +837,11 @@ public final class TreeUtils {
    * Determines the type for a method invocation at its call site, which has all type variables
    * substituted with the type arguments at the call site.
    *
+   * <p>{@link javax.lang.model.type.TypeVariable} in the returned type should be compared using
+   * {@link TypesUtils#areSame(TypeVariable, TypeVariable)} because the {@code TypeVariable} will be
+   * freshly created by this method and will not be the same using {@link Object#equals(Object)} or
+   * {@link javax.lang.model.util.Types#isSameType(TypeMirror, TypeMirror)}.
+   *
    * @param tree the method invocation
    * @return the {@link ExecutableType} corresponding to the method invocation at its call site
    */
@@ -848,7 +854,18 @@ public final class TreeUtils {
               + " invocation should be ExecutableType. Found: %s",
           type);
     }
-    return (ExecutableType) type;
+    ExecutableType executableType = (ExecutableType) type;
+    if (((ExecutableType) type).getParameterTypes().isEmpty() && elementFromUse(tree).isVarArgs()) {
+      // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
+      // just return the declared type.
+      // For example,
+      // static void call(MethodHandle methodHandle) throws Throwable {
+      //   methodHandle.invoke();
+      // }
+      ExecutableElement ele = elementFromUse(tree);
+      return (ExecutableType) ele.asType();
+    }
+    return executableType;
   }
 
   /**
@@ -1397,8 +1414,8 @@ public final class TreeUtils {
       return methods.get(0);
     }
     throw new BugInCF(
-        "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d",
-        typeName, methodName, params, methods.size());
+        "TreeUtils.getMethod(%s, %s, %d): expected 1 match, found %d: %s",
+        typeName, methodName, params, methods.size(), methods);
   }
 
   /**

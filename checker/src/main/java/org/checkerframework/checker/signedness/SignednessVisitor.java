@@ -6,9 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.InterningVisitor;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.signedness.qual.PolySigned;
@@ -21,7 +19,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -138,16 +135,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(tree)) {
-          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotation();
-          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotation();
-
-          TypeMirror leftOpTM = leftOpType.getUnderlyingType();
-          TypeMirror rightOpTM = rightOpType.getUnderlyingType();
-          if (!TypesUtils.isCharOrCharacter(leftOpTM)
-              && !qualHierarchy.isSubtype(leftAnno, atypeFactory.SIGNED)) {
+          if (!typeHierarchy.isSubtypeShallowEffective(leftOpType, atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (!TypesUtils.isCharOrCharacter(rightOpTM)
-              && !qualHierarchy.isSubtype(rightAnno, atypeFactory.SIGNED)) {
+          } else if (!typeHierarchy.isSubtypeShallowEffective(rightOpType, atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
@@ -310,12 +300,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
-          TypeMirror exprTM = exprType.getUnderlyingType();
-          if (TypesUtils.isCharOrCharacter(exprTM)) {
-            break;
-          }
-          AnnotationMirror anno = exprType.getEffectiveAnnotation();
-          if (!qualHierarchy.isSubtype(anno, atypeFactory.SIGNED)) {
+          if (!typeHierarchy.isSubtypeShallowEffective(exprType, atypeFactory.SIGNED)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
           }
           break;
@@ -362,9 +347,4 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   @Override
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-
-  @Override
-  protected boolean shouldWarnAboutIrrelevantJavaTypes() {
-    return true;
-  }
 }

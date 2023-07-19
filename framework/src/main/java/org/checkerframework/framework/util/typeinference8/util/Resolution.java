@@ -263,17 +263,18 @@ public class Resolution {
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> lubAnnos =
-            new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
+            new AnnotationMirrorSet(qh.leastUpperBoundsQualifiersOnly(qualifierLowerBounds));
         if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
           Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBounds(
+              qh.leastUpperBoundsQualifiersOnly(
                   lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
           lubProperType.getAnnotatedType().replaceAnnotations(newLubAnnos);
         } else {
 
           AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lubProperType.getAnnotatedType();
           Set<? extends AnnotationMirror> newLubAnnos =
-              qh.leastUpperBounds(lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
+              qh.leastUpperBoundsQualifiersOnly(
+                  lubAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
           lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
         }
       }
@@ -333,18 +334,20 @@ public class Resolution {
           ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        lowerBoundAnnos = new AnnotationMirrorSet(qh.leastUpperBounds(qualifierLowerBounds));
+        lowerBoundAnnos =
+            new AnnotationMirrorSet(qh.leastUpperBoundsQualifiersOnly(qualifierLowerBounds));
         if (lowerBound != null) {
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBounds(
+                qh.leastUpperBoundsQualifiersOnly(
                     lowerBoundAnnos, lowerBound.getAnnotatedType().getPrimaryAnnotations());
             lowerBound.getAnnotatedType().replaceAnnotations(newLubAnnos);
             lowerBoundAnnos = newLubAnnos;
           } else {
             AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lowerBound.getAnnotatedType();
             Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBounds(lowerBoundAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
+                qh.leastUpperBoundsQualifiersOnly(
+                    lowerBoundAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
             lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
             lowerBoundAnnos = newLubAnnos;
           }
@@ -360,13 +363,16 @@ public class Resolution {
           ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos =
-            context.typeFactory.getQualifierHierarchy().greatestLowerBounds(qualifierUpperBounds);
+            context
+                .typeFactory
+                .getQualifierHierarchy()
+                .greatestLowerBoundsQualifiersOnly(qualifierUpperBounds);
         if (upperBound != null) {
           upperBoundAnnos =
               context
                   .typeFactory
                   .getQualifierHierarchy()
-                  .greatestLowerBounds(
+                  .greatestLowerBoundsQualifiersOnly(
                       upperBoundAnnos, upperBound.getAnnotatedType().getPrimaryAnnotations());
           upperBound.getAnnotatedType().replaceAnnotations(upperBoundAnnos);
         }
