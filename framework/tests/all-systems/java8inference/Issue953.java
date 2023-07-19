@@ -1,7 +1,8 @@
 // Test case that was submitted in Issue 953, but was combined with Issue 979
 // https://github.com/typetools/checker-framework/issues/979
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Issue953 {
