@@ -1759,37 +1759,49 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleDescription(method);
+    try {
+      checkTypeArguments(
+          tree,
+          paramBounds,
+          typeargs,
+          tree.getTypeArguments(),
+          methodName,
+          invokedMethod.getTypeVariables());
+      List<AnnotatedTypeMirror> params =
+          AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments());
+      checkArguments(params, tree.getArguments(), methodName, method.getParameters());
+      checkVarargs(invokedMethod, tree);
 
-    checkTypeArguments(
-        tree,
-        paramBounds,
-        typeargs,
-        tree.getTypeArguments(),
-        methodName,
-        invokedMethod.getTypeVariables());
-    List<AnnotatedTypeMirror> params =
-        AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments());
-    checkArguments(params, tree.getArguments(), methodName, method.getParameters());
-    checkVarargs(invokedMethod, tree);
+      if (ElementUtils.isMethod(
+          invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
+        typeCheckVectorCopyIntoArgument(tree, params);
+      }
 
-    if (ElementUtils.isMethod(
-        invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
-      typeCheckVectorCopyIntoArgument(tree, params);
-    }
+      ExecutableElement invokedMethodElement = invokedMethod.getElement();
+      if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperConstructorCall(tree)) {
+        checkMethodInvocability(invokedMethod, tree);
+      }
 
-    ExecutableElement invokedMethodElement = invokedMethod.getElement();
-    if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperConstructorCall(tree)) {
-      checkMethodInvocability(invokedMethod, tree);
-    }
+      // check precondition annotations
+      checkPreconditions(
+          tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
-    // check precondition annotations
-    checkPreconditions(
-        tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
-
-    if (TreeUtils.isSuperConstructorCall(tree)) {
-      checkSuperConstructorCall(tree);
-    } else if (TreeUtils.isThisConstructorCall(tree)) {
-      checkThisConstructorCall(tree);
+      if (TreeUtils.isSuperConstructorCall(tree)) {
+        checkSuperConstructorCall(tree);
+      } else if (TreeUtils.isThisConstructorCall(tree)) {
+        checkThisConstructorCall(tree);
+      }
+    } catch (RuntimeException t) {
+      // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once
+      // #979 is fixed this should be removed and crashes should be reported normally.
+      if (tree.getTypeArguments().size() == typeargs.size()) {
+        // They type arguments were explicitly written.
+        throw t;
+      }
+      if (!atypeFactory.ignoreUninferredTypeArguments) {
+        checker.reportError(
+            tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
+      } // else ignore the crash.
     }
 
     // Do not call super, as that would observe the arguments without
