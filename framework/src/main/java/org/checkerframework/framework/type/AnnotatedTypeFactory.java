@@ -2400,7 +2400,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             processingEnv, this, tree, methodElt, methodType, inferTypeArgs);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = pair.first;
     if (!typeParamToTypeArg.isEmpty()) {
-      typeParamToTypeArg = captureMethodTypeArgs(typeParamToTypeArg, methodType.getTypeVariables());
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           throw new BugInCF(
@@ -2427,68 +2426,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     return new ParameterizedExecutableType(methodType, typeargs);
-  }
-
-  /**
-   * Apply capture conversion to the type arguments of a method invocation.
-   *
-   * @param typeVarToAnnotatedTypeArg mapping from type variable in the method declaration to the
-   *     corresponding (annotated) type argument at the method invocation
-   * @param declTypeVar list of the (annotated) type variable declarations in the method
-   * @return a mapping from type variable in the method declaration to its captured type argument.
-   *     Its keys are the same as in {@code typeVarToAnnotatedTypeArg}, and the values are their
-   *     captures (for a non-wildcard, capture conversion is the identity).
-   */
-  // TODO: This should happen as part of Java 8 inference and this method should be removed when
-  // #979 is fixed.
-  private Map<TypeVariable, AnnotatedTypeMirror> captureMethodTypeArgs(
-      Map<TypeVariable, AnnotatedTypeMirror> typeVarToAnnotatedTypeArg,
-      List<AnnotatedTypeVariable> declTypeVar) {
-    Map<TypeVariable, AnnotatedTypeVariable> typeParameter = new HashMap<>();
-    for (AnnotatedTypeVariable t : declTypeVar) {
-      typeParameter.put(t.getUnderlyingType(), t);
-    }
-    // `newTypeVarToAnnotatedTypeArg` is the result of this method.
-    Map<TypeVariable, AnnotatedTypeMirror> newTypeVarToAnnotatedTypeArg = new HashMap<>();
-    Map<TypeVariable, AnnotatedTypeVariable> capturedTypeVarToAnnotatedTypeVar = new HashMap<>();
-
-    // The first loop replaces each wildcard by a fresh type variable.
-    for (Map.Entry<TypeVariable, AnnotatedTypeMirror> entry :
-        typeVarToAnnotatedTypeArg.entrySet()) {
-      TypeVariable typeVariable = entry.getKey();
-      AnnotatedTypeMirror originalTypeArg = entry.getValue();
-      if (originalTypeArg.containsUninferredTypeArguments()) {
-        // Don't capture uninferred type arguments; return the argument.
-        return typeVarToAnnotatedTypeArg;
-      }
-      if (originalTypeArg.getKind() == TypeKind.WILDCARD) {
-        TypeMirror cap =
-            TypesUtils.freshTypeVariable(originalTypeArg.getUnderlyingType(), processingEnv);
-        AnnotatedTypeMirror capturedArg = AnnotatedTypeMirror.createType(cap, this, false);
-        newTypeVarToAnnotatedTypeArg.put(typeVariable, capturedArg);
-        capturedTypeVarToAnnotatedTypeVar.put(
-            (TypeVariable) cap, (AnnotatedTypeVariable) capturedArg);
-      } else {
-        newTypeVarToAnnotatedTypeArg.put(typeVariable, originalTypeArg);
-      }
-    }
-
-    // The second loop captures: it side-effects the new type variables.
-    List<TypeVariable> order = TypesUtils.order(typeVarToAnnotatedTypeArg.keySet(), types);
-    for (TypeVariable typeVariable : order) {
-      AnnotatedTypeMirror originalTypeArg = typeVarToAnnotatedTypeArg.get(typeVariable);
-      AnnotatedTypeMirror newTypeArg = newTypeVarToAnnotatedTypeArg.get(typeVariable);
-      if (TypesUtils.isCapturedTypeVariable(newTypeArg.getUnderlyingType())
-          && originalTypeArg.getKind() == TypeKind.WILDCARD) {
-        annotateCapturedTypeVar(
-            newTypeVarToAnnotatedTypeArg,
-            capturedTypeVarToAnnotatedTypeVar,
-            (AnnotatedWildcardType) originalTypeArg,
-            typeParameter.get(typeVariable),
-            (AnnotatedTypeVariable) newTypeArg);
-      }
-    }
-    return newTypeVarToAnnotatedTypeArg;
   }
 
   /**
