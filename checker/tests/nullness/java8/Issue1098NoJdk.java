@@ -13,7 +13,6 @@ class Issue1098NoJdk {
 
   void use2(MyObject ths) {
     // TODO: false positive, because type argument inference does not account for @Covariant.
-    // See https://github.com/typetools/checker-framework/issues/979.
     // :: error: (argument)
     cls2(ths.getMyClass(), null);
   }
