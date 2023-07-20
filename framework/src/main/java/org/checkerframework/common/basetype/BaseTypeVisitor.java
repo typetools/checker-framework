@@ -1518,16 +1518,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getType());
 
-    AnnotatedTypeMirror variableType;
-    if (getCurrentPath().getParentPath() != null
-        && getCurrentPath().getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-      // Calling getAnnotatedTypeLhs on a lambda parameter tree is possibly expensive
-      // because caching is turned off.  This should be fixed by #979.
-      // See https://github.com/typetools/checker-framework/issues/2853 for an example.
-      variableType = atypeFactory.getAnnotatedType(tree);
-    } else {
-      variableType = atypeFactory.getAnnotatedTypeLhs(tree);
-    }
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedTypeLhs(tree);
 
     atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, tree);
     // If there's no assignment in this variable declaration, skip it.
