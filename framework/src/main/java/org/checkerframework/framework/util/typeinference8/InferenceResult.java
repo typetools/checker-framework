@@ -7,15 +7,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeVariable;
-import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.javacutil.TypesUtils;
 
 public class InferenceResult {
   @SuppressWarnings("interning:assignment")
@@ -82,23 +80,11 @@ public class InferenceResult {
     for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
-        if (sames(t, typeVariable)) {
+        if (TypesUtils.areSame(t, typeVariable)) {
           map.put(typeVariable, map.remove(t));
         }
       }
     }
     return this;
-  }
-
-  @EqualsMethod
-  public static boolean sames(TypeVariable key, TypeVariable other) {
-    if (key == other) {
-      return true;
-    }
-    Name otherName = other.asElement().getSimpleName();
-    Element otherEnclosingElement = other.asElement().getEnclosingElement();
-
-    return key.asElement().getSimpleName().contentEquals(otherName)
-        && otherEnclosingElement.equals(key.asElement().getEnclosingElement());
   }
 }
