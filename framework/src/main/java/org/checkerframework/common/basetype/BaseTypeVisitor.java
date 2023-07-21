@@ -31,6 +31,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
@@ -1687,7 +1688,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
-    commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
+    if (tree.getExpression().getKind() == Kind.CONDITIONAL_EXPRESSION) {
+      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) tree;
+      commonAssignmentCheck(tree.getVariable(), condExprTree.getTrueExpression(), "assignment");
+      commonAssignmentCheck(tree.getVariable(), condExprTree.getFalseExpression(), "assignment");
+    } else {
+      commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
+    }
     return super.visitAssignment(tree, p);
   }
 
@@ -2285,6 +2292,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
+    if (TreeUtils.isPolyExpression(tree)) {
+      // Poly expressions are checked for compatibility with their target types in
+      // visitAssignment and visitMethodInvocation.
+      // From the JLS:
+      // A poly reference conditional expression is compatible with a target type T if its second
+      // and third operand expressions are compatible with T.
+      return super.visitConditionalExpression(tree, p);
+    }
+
     AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
     this.commonAssignmentCheck(cond, tree.getTrueExpression(), "conditional");
     this.commonAssignmentCheck(cond, tree.getFalseExpression(), "conditional");
@@ -3578,14 +3594,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             listToString(paramNames));
 
     for (int i = 0; i < size; ++i) {
-      commonAssignmentCheck(
-          requiredArgs.get(i),
-          passedArgs.get(i),
-          "argument",
-          // TODO: for expanded varargs parameters, maybe adjust the name
-          paramNames.get(Math.min(i, maxParamNamesIndex)),
-          executableName);
-      // Also descend into the argument within the correct assignment context.
+      if (passedArgs.get(i).getKind() == Kind.CONDITIONAL_EXPRESSION) {
+        ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) passedArgs.get(i);
+        commonAssignmentCheck(
+            requiredArgs.get(i),
+            condExprTree.getTrueExpression(),
+            "argument",
+            // TODO: for expanded varargs parameters, maybe adjust the name
+            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            executableName);
+        commonAssignmentCheck(
+            requiredArgs.get(i),
+            condExprTree.getFalseExpression(),
+            "argument",
+            // TODO: for expanded varargs parameters, maybe adjust the name
+            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            executableName);
+
+      } else {
+        commonAssignmentCheck(
+            requiredArgs.get(i),
+            passedArgs.get(i),
+            "argument",
+            // TODO: for expanded varargs parameters, maybe adjust the name
+            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            executableName);
+      }
       scan(passedArgs.get(i), null);
     }
   }

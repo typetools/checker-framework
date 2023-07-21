@@ -10,6 +10,7 @@ import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -44,11 +45,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   @Override
   public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
-      // If one of the types is the NULL type, compare main qualifiers only.
-      return arePrimeAnnosEqual(type1, type2);
-    }
-
     if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
       return type1.atypeFactory.ignoreUninferredTypeArguments;
     }
@@ -298,6 +294,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitPrimitive_Primitive(
       AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, Void p) {
+    return arePrimeAnnosEqual(type1, type2);
+  }
+
+  @Override
+  public Boolean visitNull_Null(AnnotatedNullType type1, AnnotatedNullType type2, Void unused) {
     return arePrimeAnnosEqual(type1, type2);
   }
 
