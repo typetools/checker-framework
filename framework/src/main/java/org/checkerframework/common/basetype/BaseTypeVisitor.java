@@ -1805,10 +1805,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // They type arguments were explicitly written.
         throw t;
       }
-      if (!atypeFactory.ignoreUninferredTypeArguments) {
-        checker.reportError(
-            tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
-      } // else ignore the crash.
+      checker.reportError(
+          tree, "type.arguments.not.inferred.error", invokedMethod.getElement().getSimpleName());
+      // else ignore the crash.
     }
 
     // Do not call super, as that would observe the arguments without
