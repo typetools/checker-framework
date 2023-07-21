@@ -1689,7 +1689,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
     if (tree.getExpression().getKind() == Kind.CONDITIONAL_EXPRESSION) {
-      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) tree;
+      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) tree.getExpression();
       commonAssignmentCheck(tree.getVariable(), condExprTree.getTrueExpression(), "assignment");
       commonAssignmentCheck(tree.getVariable(), condExprTree.getFalseExpression(), "assignment");
     } else {
