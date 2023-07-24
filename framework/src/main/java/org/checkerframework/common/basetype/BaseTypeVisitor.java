@@ -1810,6 +1810,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           "type.arguments.not.inferred.error",
           invokedMethod.getElement().getSimpleName(),
           t.getMessage());
+      t.printStackTrace();
       // else ignore the crash.
     }
 
