@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
 import java.util.Collection;
@@ -46,11 +45,8 @@ public class ProperType extends AbstractType {
   public ProperType(ExpressionTree tree, Java8InferenceContext context) {
     super(context);
     AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(tree);
-    TypeMirror properType = TreeUtils.typeOf(tree);
-    if (tree.getKind() == Tree.Kind.ARRAY_ACCESS) {
-      // For some reason,  TreeUtils.typeOf(tree) doesn't return a captured type, but that's needed.
-      properType = type.getUnderlyingType();
-    }
+    TypeMirror properType = type.getUnderlyingType();
+
     this.type = verifyTypeKinds(type, properType);
     this.properType = properType;
   }

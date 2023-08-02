@@ -12,7 +12,7 @@ public class Issue6046 {
 
   public interface Result<R extends Record> extends List<R>, Formattable {}
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "nullness:new.array"})
   public static <K, V extends Record, R extends Record>
       Collector<R, ?, Map<K, Result<V>>> intoResultGroups(
           Function<? super R, ? extends K> keyMapper) {
