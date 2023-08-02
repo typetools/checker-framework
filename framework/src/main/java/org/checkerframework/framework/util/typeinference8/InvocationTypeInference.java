@@ -25,6 +25,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Expression;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
@@ -180,6 +181,13 @@ public class InvocationTypeInference {
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
     ProperType target = context.inferenceTypeFactory.getTargetType();
+    AbstractType target1 =
+        InferenceType.create(
+            target.getAnnotatedType(),
+            target.getJavaType(),
+            context.maps.get(context.pathToExpression.getParentPath().getLeaf()),
+            context);
+    target = (ProperType) target1.applyInstantiations();
     if (target == null) {
       throw new BugInCF("Target of method reference should not be null: %s", invocation);
     }

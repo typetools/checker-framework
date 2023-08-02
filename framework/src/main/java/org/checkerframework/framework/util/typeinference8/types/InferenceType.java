@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
@@ -64,7 +65,10 @@ public class InferenceType extends AbstractType {
    * mapped in an inference variable, a {@link ProperType} is returned.
    */
   public static AbstractType create(
-      AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
+      AnnotatedTypeMirror type,
+      TypeMirror typeMirror,
+      @Nullable Theta map,
+      Java8InferenceContext context) {
     assert type != null;
     if (map == null) {
       return new ProperType(type, typeMirror, context);

@@ -32,7 +32,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class Java8InferenceContext {
 
   /** Path to the top level expression whose type arguments are inferred. */
-  public final TreePath pathToExpression;
+  public TreePath pathToExpression;
 
   /** javax.annotation.processing.ProcessingEnvironment */
   public final ProcessingEnvironment env;

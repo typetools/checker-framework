@@ -83,7 +83,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
         return java8Inference.infer((MemberReferenceTree) outerTree);
       } else {
-        return java8Inference.infer(outerTree, outerMethodType).swap(methodType, expressionTree);
+        InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
+        if (!result.getResults().containsKey(expressionTree)
+            && expressionTree.getKind() == Kind.MEMBER_REFERENCE) {
+          java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
+          return java8Inference.infer((MemberReferenceTree) expressionTree);
+        }
+        return result.swap(methodType, expressionTree);
       }
     } catch (FalseBoundException ex) {
       // TODO: For now, rethrow the exception so that the tests crash.
