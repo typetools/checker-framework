@@ -66,10 +66,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
-// Error Prone is warning on calls to classSym.getEnclosedElements()
-// which can cause a crash when code is complied using JDK 17 -source 11 -target 11 and then
-// run using JDK 11.  The Checker Framework is compiled using -source 8 -target 8, so this
-// is not currently a problem. See https://github.com/google/error-prone/issues/3895.
+// Error Prone is warning on calls to ClassSymbol#getEnclosedElements() because the JDK 11 return
+// type is java.util.List, but the JDK 17 returns com.sun.tools.javac.util.List.
+// All the calls in this class are to Symbol#getEnclosedElements(), so just suppress the warning.
 @SuppressWarnings("ASTHelpersSuggestions")
 public class DefaultReflectionResolver implements ReflectionResolver {
 
@@ -522,7 +521,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     List<Symbol> result = new ArrayList<>();
     ClassSymbol classSym = (ClassSymbol) sym;
     while (classSym != null) {
-      for (Symbol s : classSym.getEnclosedElements()) {
+      for (Symbol s : sym.getEnclosedElements()) {
         // check all member methods
         if (s.getKind() == ElementKind.METHOD) {
           // Check for method name and number of arguments
