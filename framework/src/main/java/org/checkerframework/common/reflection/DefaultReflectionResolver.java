@@ -66,6 +66,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
+@SuppressWarnings("ASTHelpersSuggestions")
 public class DefaultReflectionResolver implements ReflectionResolver {
 
   /** Message prefix added to verbose reflection messages. */
