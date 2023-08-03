@@ -66,6 +66,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
+// Error Prone is warning on calls to classSym.getEnclosedElements()
+// which can cause a crash when code is complied using JDK 17 -source 11 -target 11 and then
+// run using JDK 11.  The Checker Framework is compiled using -source 8 -target 8, so this
+// is not currently a problem. See https://github.com/google/error-prone/issues/3895.
 @SuppressWarnings("ASTHelpersSuggestions")
 public class DefaultReflectionResolver implements ReflectionResolver {
 
