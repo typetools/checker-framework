@@ -521,7 +521,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     List<Symbol> result = new ArrayList<>();
     ClassSymbol classSym = (ClassSymbol) sym;
     while (classSym != null) {
-      for (Symbol s : sym.getEnclosedElements()) {
+      // Upcast to Symbol to avoid bytecode incompatibility; see comment on the
+      // @SuppressWarnings("ASTHelpersSuggestions") on the class.
+      for (Symbol s : ((Symbol) classSym).getEnclosedElements()) {
         // check all member methods
         if (s.getKind() == ElementKind.METHOD) {
           // Check for method name and number of arguments
