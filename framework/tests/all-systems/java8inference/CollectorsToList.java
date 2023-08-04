@@ -8,6 +8,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class CollectorsToList {
 
+  // See checker/tests/i18n-formatter/I18nFormatCollectorsToList.java
+  @SuppressWarnings("i18n:methodref.param") // true postive
   void m(List<String> strings) {
     Stream<String> s = strings.stream();
 
