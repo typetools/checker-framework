@@ -750,12 +750,10 @@ public class WholeProgramInferenceJavaParserStorage
               className = ElementUtils.getBinaryName(classElt);
               for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
                 String supertypeName = ElementUtils.getBinaryName(supertypeElement);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> supertypeSet =
+                Set<@BinaryName String> supertypeSet =
                     supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
                 supertypeSet.add(supertypeName);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> subtypeSet =
+                Set<@BinaryName String> subtypeSet =
                     subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
                 subtypeSet.add(className);
               }
