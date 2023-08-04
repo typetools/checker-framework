@@ -597,23 +597,33 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * If the receiver of {@code mNode} is a candidate owning field and the method invocation
-   * satisfies the field's must-call obligation, then adds that field to the {@link
-   * #owningFieldToECM} set.
+   * This method performs three checks related to method invocation node and compute @Owning
+   * annotations to the enclosing formal parameter or fields:
+   *
+   * <ul>
+   *   <li>It calls {@link #checkArgsOfMethodCall} to inspect the arguments of a method invocation
+   *       and identify if any of them are passed as an owning parameter. If found, it adds the
+   *       "owning" attribute to the corresponding parameters of the enclosing method.
+   *   <li>It calls {@link #checkReceiverOfMethodCall} to verify if the receiver of the method
+   *       represented by {@code mNode} qualifies as a candidate owning field, and if the method
+   *       invocation satisfies the field's must-call obligation. If these conditions are met, the
+   *       field is added to the {@link #owningFieldToECM} set.
+   *   <li>It calls {@link #checkIndirectCalls} to inspect the method represented by the given
+   *       MethodInvocationNode for any indirect calls within it. The method analyzes the
+   *       called-methods set of each argument after the call and computes the @Owning annotation to
+   *       the field or parameter passed as an argument to this call.
+   * </ul>
    *
    * @param obligations the set of obligations to search in
    * @param mNode the MethodInvocationNode
    */
   private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode mNode) {
-    if (enclosingMethodElt == null) {
-      return;
+    if (enclosingMethodElt != null) {
+      List<? extends VariableTree> paramsOfEnclosingMethod = enclosingMethodTree.getParameters();
+      checkArgsOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
+      checkReceiverOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
+      checkIndirectCalls(obligations, mNode, paramsOfEnclosingMethod);
     }
-
-    List<? extends VariableTree> paramsOfEnclosingMethod = enclosingMethodTree.getParameters();
-
-    checkArgsOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
-    checkReceiverOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
-    checkIndirectCalls(obligations, mNode, paramsOfEnclosingMethod);
   }
 
   /**
