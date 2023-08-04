@@ -1000,57 +1000,6 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
-\item If using JDK 8, use a Maven property to hold the location of the
-  Error Prone \<javac.jar>.
-To set the value of these properties automatically, you will use the Maven Dependency plugin.
-
-Add a dependency:
-
-\begin{alltt}
-  <dependencies>
-    ... existing <dependency> items ...
-
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>javac</artifactId>
-      <version>9+181-r4173-1</version>
-    </dependency>
-  </dependencies>
-\end{alltt}
-
-Java 11 and later do not need the \<com.google.errorprone:javac>
-dependency, but it does no harm.
-The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{javac-jdk8}.
-
-Create the property in the \code{properties} section of the POM:
-
-\begin{alltt}
-<properties>
-  <!-- These properties will be set by the Maven Dependency plugin -->
-  <errorProneJavac>$\{com.google.errorprone:javac:jar\}</errorProneJavac>
-</properties>
-\end{alltt}
-
-Change the reference to the \code{maven-dependency-plugin} within the \code{<plugins>}
-section, or add it if it is not present.
-
-% Use of 4 initial spaces improves pasteability into existing pom.xml files.
-\begin{alltt}
-    <plugin>
-      <!-- This plugin will set properties values using dependency information -->
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-dependency-plugin</artifactId>
-      <executions>
-        <execution>
-          <goals>
-            <goal>properties</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-\end{alltt}
-
 \item Direct the Maven compiler plugin to use the desired checkers by
   creating three new profiles as shown below (the example uses the Nullness
   Checker).  If you do not use Java 8, then you only need two of the
@@ -1085,10 +1034,6 @@ section, or add it if it is not present.
             <version>3.10.1</version>
             <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <compilerArguments>
-                <Xmaxerrs>10000</Xmaxerrs>
-                <Xmaxwarns>10000</Xmaxwarns>
-              </compilerArguments>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
@@ -1101,19 +1046,16 @@ section, or add it if it is not present.
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
               <compilerArgs>
+                <arg>-Xmaxerrs</arg>
+                <arg>10000</arg>
+                <arg>-Xmaxwarns</arg>
+                <arg>10000</arg>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
               </compilerArgs>
             </configuration>
           </plugin>
         </plugins>
       </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.checkerframework</groupId>
-          <artifactId>checker</artifactId>
-          <version>\ReleaseVersion{}</version>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>
@@ -1125,22 +1067,33 @@ section, or add it if it is not present.
       <properties>
         <javac.version>9+181-r4173-1</javac.version>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>javac</artifactId>
-          <version>9+181-r4173-1</version>
-        </dependency>
-      </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <!-- This plugin execution will copy the com.google.errorprone:javac jar file to
+                 your project's output directory without adding that jar as an explicit
+                 dependency. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>process-sources</phase>
+                <configuration>
+                  <artifact>com.google.errorprone:javac:\$\{javac.version\}:jar</artifact>
+                  <outputDirectory>\$\{project.build.directory\}/javac</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <fork>true</fork>
               <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
+                <arg>-J-Xbootclasspath/p:\$\{project.build.directory\}/javac/javac-\$\{javac.version\}.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
@@ -1159,7 +1112,6 @@ section, or add it if it is not present.
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <fork>true</fork>
               <compilerArgs combine.children="append">
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
@@ -1175,14 +1127,13 @@ section, or add it if it is not present.
           </plugin>
         </plugins>
       </build>
-      <properties>
-        <!-- Needed for animal-sniffer-maven-plugin version 1.19 which is broken (version 1.20 is fixed). -->
-        <animal.sniffer.skip>true</animal.sniffer.skip>
-      </properties>
     </profile>
   </profiles>
 \end{alltt}
 \end{mysmall}
+
+The need for the \<com.google.errorprone:javac> artifact when running under
+JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 Now, building with Maven will run the checkers during every compilation
 that uses JDK 8 or higher.
@@ -1200,7 +1151,7 @@ tests, wrap the \code{<configuration>...</configuration>} within
 \end{Verbatim}
 
 To compile without using the Checker Framework, pass
-\<-P !checkerframework>
+\<-P '!checkerframework'>
 on the Maven command line.
 %% Per GitHub user danibs in
 %% https://github.com/typetools/checker-framework/issues/5086,
@@ -1224,6 +1175,20 @@ may suppress warnings from the stub parser.
 
 \end{enumerate}
 
+If you use \<animal-sniffer-maven-plugin>, you must upgrade to version 1.20
+or later.  Version 1.19 and earlier are broken.  If necessary, you can
+disable animal sniffer by modifying your POM file's properties:
+
+\begin{mysmall}
+\begin{alltt}
+  <properties>
+    ... existing <property> items ...
+
+    <!-- Needed for animal-sniffer-maven-plugin version 1.19 which is broken (version 1.20 is fixed). -->
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+  </properties>
+\end{alltt}
+\end{mysmall}
 
 \subsectionAndLabel{Maven, with a locally-built version of the Checker Framework}{maven-locally-built}
 
