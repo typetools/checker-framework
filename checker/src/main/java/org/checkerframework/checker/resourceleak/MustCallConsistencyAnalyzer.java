@@ -1034,7 +1034,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return the temporary for node, or node if no temporary exists
    */
-  protected Node getTempVarOrNode(final Node node) {
+  protected Node getTempVarOrNode(Node node) {
     Node temp = typeFactory.getTempVarForNode(node);
     if (temp != null) {
       return temp;
