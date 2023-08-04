@@ -96,10 +96,10 @@ public class MustCallInferenceLogic {
   private final MustCallConsistencyAnalyzer mcca;
 
   /** The MethodTree of the cfg. */
-  private MethodTree enclosingMethodTree;
+  private final MethodTree enclosingMethodTree;
 
   /** The element for the enMethodTree. */
-  private ExecutableElement enclosingMethodElt;
+  private final ExecutableElement enclosingMethodElt;
 
   /**
    * Creates a MustCallInferenceLogic instance.
@@ -299,9 +299,7 @@ public class MustCallInferenceLogic {
       if (TreeUtils.isConstructor(enclosingMethodTree)) {
         addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
       } else {
-        if (owningFieldToECM.contains((VariableElement) lhsElement)) {
-          owningFieldToECM.remove((VariableElement) lhsElement);
-        }
+        owningFieldToECM.remove((VariableElement) lhsElement);
         addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
       }
 
@@ -395,7 +393,7 @@ public class MustCallInferenceLogic {
       // necessary when there are multiple candidates for the must-call obligation.
       AnnotationBuilder builder =
           new AnnotationBuilder(typeFactory.getProcessingEnv(), InheritableMustCall.class);
-      String[] methodArray = new String[] {currentMustCallValues.get(0).toString()};
+      String[] methodArray = new String[] {currentMustCallValues.get(0)};
       Arrays.sort(methodArray);
       builder.setValue("value", methodArray);
       wpi.addClassDeclarationAnnotation(typeElement, builder.build());
@@ -650,12 +648,17 @@ public class MustCallInferenceLogic {
     @Nullable AccumulationValue cmValue =
         cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
     AnnotationMirror cmAnno = null;
-    if (cmValue != null) {
-      for (AnnotationMirror anno : cmValue.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          cmAnno = anno;
-          break;
+
+    if (cmValue != null) { // When store contains the lhs
+      Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+      if (accumulatedValues != null) { // type variable or wildcard type
+        cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+      } else {
+        for (AnnotationMirror anno : cmValue.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            cmAnno = anno;
+          }
         }
       }
     }
@@ -664,13 +667,7 @@ public class MustCallInferenceLogic {
       cmAnno = typeFactory.top;
     }
 
-    AnnotationMirror cmAnnoForMustCallMethods =
-        typeFactory.createCalledMethods(mustCallValues.toArray(new String[0]));
-    if (!mustCallValues.isEmpty()
-        && typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods)) {
-      return true;
-    }
-    return false;
+    return mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno);
   }
 
   /**

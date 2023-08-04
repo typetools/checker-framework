@@ -2178,7 +2178,7 @@ class MustCallConsistencyAnalyzer {
    * @return true iff cmAnno is a subtype of a called-methods annotation with the same values as
    *     mustCallValues
    */
-  private boolean calledMethodsSatisfyMustCall(
+  protected boolean calledMethodsSatisfyMustCall(
       List<String> mustCallValues, AnnotationMirror cmAnno) {
     // Create this annotation and use a subtype test because there's no guarantee that
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
