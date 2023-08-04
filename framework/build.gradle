@@ -23,10 +23,6 @@ sourcesJar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-def versions = [
-  autoValue       : '1.10.1',
-  lombok          : "${lombokVersion}",
-]
 
 configurations {
   implementation.extendsFrom(annotatedGuava)
@@ -46,10 +42,10 @@ dependencies {
   // External dependencies:
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
-  implementation "org.plumelib:hashmap-util:${hashmapUtilVersion}"
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
-  implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
-  implementation 'io.github.classgraph:classgraph:4.8.160'
+  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
+  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
+  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
+  implementation 'io.github.classgraph:classgraph:4.8.161'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')

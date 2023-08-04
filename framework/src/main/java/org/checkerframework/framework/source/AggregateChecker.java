@@ -66,9 +66,9 @@ public abstract class AggregateChecker extends SourceChecker {
   }
 
   /**
-   * processingEnv needs to be set on each checker since we are not calling init on the checker,
-   * which leaves it null. If one of checkers is an AggregateChecker, its visitors will try use
-   * checker's processing env which should not be null.
+   * {@code processingEnv} needs to be set on each checker since we are not calling init on the
+   * checker, which leaves it null. If one of checkers is an AggregateChecker, its visitors will try
+   * use checker's processing env which should not be null.
    */
   @Override
   protected void setProcessingEnvironment(ProcessingEnvironment env) {

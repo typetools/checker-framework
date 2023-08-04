@@ -577,8 +577,11 @@ public class WholeProgramInferenceScenesStorage
           ((AnnotatedTypeVariable) lhsATM).getUpperBound().getEffectiveAnnotations();
       // If the inferred type is a subtype of the upper bounds of the
       // current type on the source code, halt.
-      if (upperAnnos.size() == rhsATM.getAnnotations().size()
-          && atypeFactory.getQualifierHierarchy().isSubtype(rhsATM.getAnnotations(), upperAnnos)) {
+      if (upperAnnos.size() == rhsATM.getPrimaryAnnotations().size()
+          && atypeFactory
+              .getQualifierHierarchy()
+              .isSubtypeShallow(
+                  rhsATM.getPrimaryAnnotations(), rhsTM, upperAnnos, lhsATM.getUnderlyingType())) {
         return;
       }
     }
@@ -631,12 +634,19 @@ public class WholeProgramInferenceScenesStorage
 
     // LUB primary annotations
     AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
-    for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
-      AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
+    for (AnnotationMirror amSource : sourceCodeATM.getPrimaryAnnotations()) {
+      AnnotationMirror amJaif = jaifATM.getPrimaryAnnotationInHierarchy(amSource);
       // amJaif only contains annotations from the jaif, so it might be missing
       // an annotation in the hierarchy
       if (amJaif != null) {
-        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amJaif);
+        amSource =
+            atypeFactory
+                .getQualifierHierarchy()
+                .leastUpperBoundShallow(
+                    amSource,
+                    sourceCodeATM.getUnderlyingType(),
+                    amJaif,
+                    jaifATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }
@@ -896,7 +906,7 @@ public class WholeProgramInferenceScenesStorage
 
     // Only update the ATypeElement if there are no explicit annotations.
     if (curATM.getExplicitAnnotations().isEmpty() || !ignoreIfAnnotated) {
-      for (AnnotationMirror am : newATM.getAnnotations()) {
+      for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
         addAnnotationsToATypeElement(
             newATM, typeToUpdate, defLoc, am, curATM.hasEffectiveAnnotation(am));
       }
@@ -905,8 +915,8 @@ public class WholeProgramInferenceScenesStorage
       // annotated.  So instead, only insert the annotation if there is not primary annotation
       // of the same hierarchy.  #shouldIgnore prevent annotations that are subtypes of type
       // vars upper bound from being inserted.
-      for (AnnotationMirror am : newATM.getAnnotations()) {
-        if (curATM.getAnnotationInHierarchy(am) != null) {
+      for (AnnotationMirror am : newATM.getPrimaryAnnotations()) {
+        if (curATM.getPrimaryAnnotationInHierarchy(am) != null) {
           // Don't insert if the type is already has a primary annotation
           // in the same hierarchy.
           break;

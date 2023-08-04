@@ -116,7 +116,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
       AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
-      atm.removeAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
+      atm.removePrimaryAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
     }
   }
 
@@ -165,7 +165,7 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-      if (!type.isAnnotatedInHierarchy(UNKNOWNFORMAT)) {
+      if (!type.hasPrimaryAnnotationInHierarchy(UNKNOWNFORMAT)) {
         String format = null;
         if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
           format = (String) tree.getValue();
@@ -197,7 +197,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Creates a {@link FormatterQualifierHierarchy}. */
     public FormatterQualifierHierarchy() {
-      super(FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          FormatterAnnotatedTypeFactory.this);
       FORMAT_KIND = getQualifierKind(FORMAT_NAME);
       INVALIDFORMAT_KIND = getQualifierKind(INVALIDFORMAT_NAME);
     }

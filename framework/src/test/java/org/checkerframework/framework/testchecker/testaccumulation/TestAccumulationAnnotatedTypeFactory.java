@@ -2,6 +2,7 @@ package org.checkerframework.framework.testchecker.testaccumulation;
 
 import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -64,10 +65,12 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
       // returns receiver methods; it does not support automatically accumulating at the same
       // time.
       if (returnsThis(tree)) {
+        TypeMirror tm = type.getUnderlyingType();
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
-        AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
+        AnnotationMirror oldAnno = type.getPrimaryAnnotationInHierarchy(top);
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName)));
+            qualHierarchy.greatestLowerBoundShallow(
+                oldAnno, tm, createAccumulatorAnnotation(methodName), tm));
       }
       return super.visitMethodInvocation(tree, type);
     }

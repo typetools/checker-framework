@@ -152,7 +152,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         //     an @InheritableMustCall annotation on a supertype.
 
         // Check for problem 1.
-        AnnotationMirror explicitMustCall = atypeFactory.fromElement(classEle).getAnnotation();
+        AnnotationMirror explicitMustCall =
+            atypeFactory.fromElement(classEle).getPrimaryAnnotation();
         if (explicitMustCall != null) {
           // There is a @MustCall annotation here.
 
@@ -166,9 +167,10 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
           // Issue an error if there is an inconsistent, user-written @MustCall annotation
           // here.
-          AnnotationMirror effectiveMCAnno = type.getAnnotation();
+          AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
+          TypeMirror tm = type.getUnderlyingType();
           if (effectiveMCAnno != null
-              && !qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
+              && !qualHierarchy.isSubtypeShallow(inheritedMCAnno, effectiveMCAnno, tm)) {
 
             checker.reportError(
                 tree,
@@ -202,9 +204,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             }
             AnnotationMirror inheritedMCAnno = atypeFactory.createMustCall(inheritedMustCallVal);
 
-            AnnotationMirror effectiveMCAnno = type.getAnnotation();
+            AnnotationMirror effectiveMCAnno = type.getPrimaryAnnotation();
 
-            if (!qualHierarchy.isSubtype(inheritedMCAnno, effectiveMCAnno)) {
+            TypeMirror tm = type.getUnderlyingType();
+
+            if (!qualHierarchy.isSubtypeShallow(inheritedMCAnno, effectiveMCAnno, tm)) {
 
               checker.reportError(
                   tree,
@@ -319,10 +323,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
       // check; instead do a check that does not include "close".
-      AnnotationMirror varAnno = varType.getAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotationMirror valueAnno = valueType.getAnnotationInHierarchy(atypeFactory.TOP);
-      if (qualHierarchy.isSubtype(
-          atypeFactory.withoutClose(valueAnno), atypeFactory.withoutClose(varAnno))) {
+      AnnotationMirror varAnno = varType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotationMirror valueAnno = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      if (qualHierarchy.isSubtypeShallow(
+          atypeFactory.withoutClose(valueAnno),
+          valueType.getUnderlyingType(),
+          atypeFactory.withoutClose(varAnno),
+          varType.getUnderlyingType())) {
         return true;
       }
       // Note that in this case, the rest of the common assignment check should fail (barring
@@ -349,10 +356,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     AnnotatedTypeMirror defaultType =
         atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
-    AnnotationMirror defaultAnno = defaultType.getAnnotationInHierarchy(atypeFactory.TOP);
+    AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
-    AnnotationMirror resultAnno = resultType.getAnnotationInHierarchy(atypeFactory.TOP);
-    if (!qualHierarchy.isSubtype(defaultAnno, resultAnno)) {
+    AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+    if (!qualHierarchy.isSubtypeShallow(
+        defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(
           constructorElement, "inconsistent.constructor.type", resultAnno, defaultAnno);
     }

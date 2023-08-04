@@ -11,6 +11,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
@@ -45,7 +46,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-    String[] checkerNames = getCheckerNames();
+    List<String> checkerNames = getCheckerNames();
 
     // There are usually few subcheckers.
     defaultValueAtypeFactories = new ArrayList<>(2);
@@ -74,7 +75,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * @param processorName the fully-qualified class name of an annotation processor
    * @return the type factory for the given annotation processor, or null if it's not a checker
    */
-  private GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+  private @Nullable GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
       @BinaryName String processorName) {
     try {
       Class<?> checkerClass = Class.forName(processorName);
@@ -210,7 +211,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   }
 
   /**
-   * Returns true if the default field value (0, false, or null) is consistent with the field's
+   * Returns true if the default field value (0, 0.0, false, or null) is consistent with the field's
    * declared type.
    *
    * @param field a field

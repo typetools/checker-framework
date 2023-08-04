@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class CFGTranslationPhaseTwo {
   public static ControlFlowGraph process(PhaseOneResult in) {
 
     Map<Label, Integer> bindings = in.bindings;
-    ArrayList<ExtendedNode> nodeList = in.nodeList;
+    List<ExtendedNode> nodeList = in.nodeList;
     // A leader is an extended node which will give rise to a basic block in phase two.
     Set<Integer> leaders = in.leaders;
 

@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -117,27 +118,21 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       AnnotationMirrorSet lubs = null;
       for (AnnotatedDeclaredType altern : annotatedUnionType.getAlternatives()) {
         if (lubs == null) {
-          lubs = altern.getAnnotations();
+          lubs = altern.getPrimaryAnnotations();
         } else {
+          TypeMirror typeMirror = type.getUnderlyingType();
           AnnotationMirrorSet newLubs = new AnnotationMirrorSet();
           for (AnnotationMirror lub : lubs) {
-            AnnotationMirror anno = altern.getAnnotationInHierarchy(lub);
-            newLubs.add(qualHierarchy.leastUpperBound(anno, lub));
+            AnnotationMirror anno = altern.getPrimaryAnnotationInHierarchy(lub);
+            newLubs.add(
+                qualHierarchy.leastUpperBoundShallow(
+                    anno, altern.getUnderlyingType(), lub, typeMirror));
           }
           lubs = newLubs;
         }
       }
       type.replaceAnnotations(lubs);
     }
-  }
-
-  @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
-    return String.format(
-        "AsSuperVisitor: Unexpected combination: type: %s superType: %s.%n"
-            + "type: %s%nsuperType: %s",
-        type.getKind(), superType.getKind(), type, superType);
   }
 
   private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
@@ -157,16 +152,16 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private AnnotatedTypeMirror copyPrimaryAnnos(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     // There may have been annotations added by a recursive call to asSuper, so replace existing
     // annotations
-    to.replaceAnnotations(new ArrayList<>(from.getAnnotations()));
+    to.replaceAnnotations(new ArrayList<>(from.getPrimaryAnnotations()));
     // if to is a Typevar or Wildcard, then replaceAnnotations also sets primary annotations on
-    // the bounds to from.getAnnotations()
+    // the bounds to from.getPrimaryAnnotations()
 
     if (to.getKind() == TypeKind.UNION) {
       // Make sure that the alternatives have a primary annotations
       // Alternatives cannot have type arguments, so asSuper isn't called recursively
       AnnotatedUnionType unionType = (AnnotatedUnionType) to;
       for (AnnotatedDeclaredType altern : unionType.getAlternatives()) {
-        altern.addMissingAnnotations(unionType.getAnnotations());
+        altern.addMissingAnnotations(unionType.getPrimaryAnnotations());
       }
     }
     return to;
@@ -635,7 +630,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitTypevar_Wildcard(
       AnnotatedTypeVariable type, AnnotatedWildcardType superType, Void p) {
-    AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getExtendsBound(), p);
+    AnnotatedTypeMirror upperBound;
+    if (superType.getExtendsBound().getUnderlyingType().getKind() == TypeKind.TYPEVAR
+        && TypesUtils.areSame(
+            type.getUnderlyingType(),
+            (TypeVariable) superType.getExtendsBound().getUnderlyingType())) {
+      upperBound = visit(type, superType.getExtendsBound(), p);
+    } else {
+      upperBound = visit(type.getUpperBound(), superType.getExtendsBound(), p);
+    }
     superType.setExtendsBound(upperBound);
 
     AnnotatedTypeMirror lowerBound;

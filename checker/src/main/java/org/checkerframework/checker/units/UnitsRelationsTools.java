@@ -64,7 +64,7 @@ public class UnitsRelationsTools {
     Prefix result = null;
 
     // go through each Annotation of an Annotated Type, find the prefix and return it
-    for (AnnotationMirror mirror : annoType.getAnnotations()) {
+    for (AnnotationMirror mirror : annoType.getPrimaryAnnotations()) {
       // try to get a prefix
       result = getPrefix(mirror);
       // if it is not null, then return the retrieved prefix immediately
@@ -111,7 +111,7 @@ public class UnitsRelationsTools {
    * @return true if it has no prefix, false otherwise
    */
   public static boolean hasNoPrefix(AnnotatedTypeMirror annoType) {
-    for (AnnotationMirror mirror : annoType.getAnnotations()) {
+    for (AnnotationMirror mirror : annoType.getPrimaryAnnotations()) {
       // if any Annotation has a prefix, return false
       if (!hasNoPrefix(mirror)) {
         return false;
@@ -169,8 +169,7 @@ public class UnitsRelationsTools {
    * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
    * @return the base SI Unit's AnnotationMirror, or null if the base SI Unit cannot be constructed
    */
-  public static @Nullable AnnotationMirror removePrefix(
-      Elements elements, AnnotationMirror unitsAnnotation) {
+  public static AnnotationMirror removePrefix(Elements elements, AnnotationMirror unitsAnnotation) {
     if (hasNoPrefix(unitsAnnotation)) {
       // Optimization, though the else case would also work.
       return unitsAnnotation;
@@ -198,7 +197,7 @@ public class UnitsRelationsTools {
     AnnotatedTypeMirror result = annoType.deepCopy(false);
 
     // get all of the original Annotations in the Annotated Type
-    AnnotationMirrorSet annos = annoType.getAnnotations();
+    AnnotationMirrorSet annos = annoType.getPrimaryAnnotations();
 
     // loop through all the Annotations to see if they use Prefix.one, remove Prefix.one if it
     // does
@@ -229,7 +228,7 @@ public class UnitsRelationsTools {
    * @return true if the Type has no units, false otherwise
    */
   public static boolean hasNoUnits(AnnotatedTypeMirror annoType) {
-    return (annoType.getAnnotation(UnknownUnits.class) != null);
+    return (annoType.getPrimaryAnnotation(UnknownUnits.class) != null);
   }
 
   /**
@@ -242,7 +241,7 @@ public class UnitsRelationsTools {
    */
   public static boolean hasSpecificUnit(
       AnnotatedTypeMirror annoType, AnnotationMirror unitsAnnotation) {
-    return AnnotationUtils.containsSame(annoType.getAnnotations(), unitsAnnotation);
+    return AnnotationUtils.containsSame(annoType.getPrimaryAnnotations(), unitsAnnotation);
   }
 
   /**
@@ -255,7 +254,7 @@ public class UnitsRelationsTools {
    */
   public static boolean hasSpecificUnitIgnoringPrefix(
       AnnotatedTypeMirror annoType, AnnotationMirror unitsAnnotation) {
-    return AnnotationUtils.containsSameByName(annoType.getAnnotations(), unitsAnnotation);
+    return AnnotationUtils.containsSameByName(annoType.getPrimaryAnnotations(), unitsAnnotation);
   }
 
   /**

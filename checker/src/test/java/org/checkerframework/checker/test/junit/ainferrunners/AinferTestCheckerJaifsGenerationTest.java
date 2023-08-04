@@ -25,8 +25,6 @@ public class AinferTestCheckerJaifsGenerationTest extends AinferGeneratePerDirec
         AinferTestChecker.class,
         "ainfer-testchecker/non-annotated",
         "-Ainfer=jaifs",
-        // The AFU's JAIF reading/writing libraries don't support records.
-        "-AskipDefs=SimpleRecord",
         // Use a stub file here, even though this is a JAIF test. This test can't pass
         // without an external file that specifies that a method is pure, and there is no
         // way to directly pass a JAIF file (in a real WPI run, the JAIF file's annotations

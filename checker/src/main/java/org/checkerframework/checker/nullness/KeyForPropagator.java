@@ -195,10 +195,10 @@ public class KeyForPropagator {
   private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-      AnnotationMirror fromKeyFor = from.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+      AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);
       if (fromKeyFor != null) {
-        if (to.hasAnnotation(UNKNOWN_KEYFOR)
-            || to.getAnnotationInHierarchy(UNKNOWN_KEYFOR) == null) {
+        if (to.hasPrimaryAnnotation(UNKNOWN_KEYFOR)
+            || to.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR) == null) {
           to.replaceAnnotation(fromKeyFor);
         }
       }

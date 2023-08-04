@@ -53,6 +53,7 @@ import org.checkerframework.checker.index.substringindex.SubstringIndexChecker;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundLiteralQualifier;
 import org.checkerframework.checker.index.upperbound.UBQualifier.UpperBoundUnknownQualifier;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -269,7 +270,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    */
   private void addUpperBoundTypeFromValueType(
       AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
-    if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+    if (containsSameByClass(valueType.getPrimaryAnnotations(), BottomVal.class)) {
       type.replaceAnnotation(BOTTOM);
     }
   }
@@ -293,7 +294,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     protected Void scan(AnnotatedTypeMirror type, Void aVoid) {
       // If there is an LTLengthOf annotation whose argument lengths don't match, replace it
       // with bottom.
-      AnnotationMirror anm = type.getAnnotation(LTLengthOf.class);
+      AnnotationMirror anm = type.getPrimaryAnnotation(LTLengthOf.class);
       if (anm != null) {
         List<String> sequences =
             AnnotationUtils.getElementValueArray(anm, ltLengthOfValueElement, String.class);
@@ -323,9 +324,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
    * given tree.
    */
-  public AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
+  public @Nullable AnnotationMirror sameLenAnnotationFromTree(Tree tree) {
     AnnotatedTypeMirror sameLenType = getSameLenAnnotatedTypeFactory().getAnnotatedType(tree);
-    return sameLenType.getAnnotation(SameLen.class);
+    return sameLenType.getPrimaryAnnotation(SameLen.class);
   }
 
   // Wrapper methods for accessing the IndexMethodIdentifier.
@@ -388,7 +389,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return areSameByClass(
         getLowerBoundAnnotatedTypeFactory()
             .getAnnotatedType(node.getTree())
-            .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
+            .getPrimaryAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
         classOfType);
   }
 
@@ -407,11 +408,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     UpperBoundQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, UpperBoundAnnotatedTypeFactory.this);
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       UBQualifier a1Obj = UBQualifier.createUBQualifier(a1, (IndexChecker) checker);
       UBQualifier a2Obj = UBQualifier.createUBQualifier(a2, (IndexChecker) checker);
       UBQualifier glb = a1Obj.glb(a2Obj);
@@ -426,7 +427,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * @return the least upper bound of a1 and a2
      */
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       UBQualifier a1Obj = UBQualifier.createUBQualifier(a1, (IndexChecker) checker);
       UBQualifier a2Obj = UBQualifier.createUBQualifier(a2, (IndexChecker) checker);
       UBQualifier lub = a1Obj.lub(a2Obj);
@@ -455,7 +456,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * element of lhs.
      */
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       UBQualifier subtypeQual = UBQualifier.createUBQualifier(subAnno, (IndexChecker) checker);
       UBQualifier supertypeQual = UBQualifier.createUBQualifier(superAnno, (IndexChecker) checker);
       return subtypeQual.isSubtype(supertypeQual);
@@ -491,13 +492,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         AnnotatedTypeMirror rightType = getAnnotatedType(tree.getArguments().get(1));
 
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(
-                leftType.getAnnotationInHierarchy(UNKNOWN),
-                rightType.getAnnotationInHierarchy(UNKNOWN)));
+            qualHierarchy.greatestLowerBoundShallow(
+                leftType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                leftType.getUnderlyingType(),
+                rightType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                rightType.getUnderlyingType()));
       }
       if (isRandomNextInt(tree)) {
         AnnotatedTypeMirror argType = getAnnotatedType(tree.getArguments().get(0));
-        AnnotationMirror anno = argType.getAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror anno = argType.getPrimaryAnnotationInHierarchy(UNKNOWN);
         UBQualifier qualifier = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
         qualifier = qualifier.plusOffset(1);
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
@@ -522,7 +525,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
             || definitelyIsNotTheEmptyString(receiverType, vatf)) {
           String receiverName = JavaExpression.getReceiver(tree).toString();
           UBQualifier ltLengthOfReceiver = UBQualifier.createUBQualifier(receiverName, "0");
-          AnnotationMirror currentReturnAnno = type.getAnnotationInHierarchy(UNKNOWN);
+          AnnotationMirror currentReturnAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWN);
           UBQualifier currentUBQualifier =
               UBQualifier.createUBQualifier(currentReturnAnno, (IndexChecker) checker);
           UBQualifier result = currentUBQualifier.glb(ltLengthOfReceiver);
@@ -544,7 +547,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private boolean definitelyIsNotTheEmptyString(
         AnnotatedTypeMirror atm, ValueAnnotatedTypeFactory vatf) {
-      AnnotationMirrorSet annos = atm.getAnnotations();
+      AnnotationMirrorSet annos = atm.getPrimaryAnnotations();
       for (AnnotationMirror anno : annos) {
         switch (AnnotationUtils.annotationName(anno)) {
           case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
@@ -617,7 +620,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private void addAnnotationForBitwiseComplement(
         AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-      AnnotationMirror nif = searchIndexType.getAnnotation(NegativeIndexFor.class);
+      AnnotationMirror nif = searchIndexType.getPrimaryAnnotation(NegativeIndexFor.class);
       if (nif != null) {
         List<String> arrays =
             AnnotationUtils.getElementValueArray(nif, negativeIndexForValueElement, String.class);
@@ -681,7 +684,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
-        AnnotationMirror annotation = getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror annotation =
+            getAnnotatedType(left).getPrimaryAnnotationInHierarchy(UNKNOWN);
         // For non-negative numbers, right shift is equivalent to division by a power of
         // two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
@@ -712,20 +716,25 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotatedTypeMirror leftType = getAnnotatedType(left);
       AnnotationMirror leftResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(left)) {
-        leftResultAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
+        leftResultAnno = leftType.getPrimaryAnnotationInHierarchy(UNKNOWN);
       }
 
       AnnotatedTypeMirror rightType = getAnnotatedType(right);
       AnnotationMirror rightResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(right)) {
-        rightResultAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
+        rightResultAnno = rightType.getPrimaryAnnotationInHierarchy(UNKNOWN);
       }
 
-      type.addAnnotation(qualHierarchy.greatestLowerBound(leftResultAnno, rightResultAnno));
+      type.addAnnotation(
+          qualHierarchy.greatestLowerBoundShallow(
+              leftResultAnno,
+              leftType.getUnderlyingType(),
+              rightResultAnno,
+              rightType.getUnderlyingType()));
     }
 
     /** Gets a sequence tree for a length access tree, or null if it is not a length access. */
-    private ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
+    private @Nullable ExpressionTree getLengthSequenceTree(ExpressionTree lengthTree) {
       return IndexUtil.getLengthSequenceTree(lengthTree, imf, processingEnv);
     }
 
@@ -924,7 +933,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return ltlQualifier.convertToAnnotation(processingEnv);
   }
 
-  UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
+  @Nullable UBQualifier fromLessThan(ExpressionTree tree, TreePath treePath) {
     List<String> lessThanExpressions =
         getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
     if (lessThanExpressions == null) {
@@ -937,7 +946,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return null;
   }
 
-  UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
+  @Nullable UBQualifier fromLessThanOrEqual(ExpressionTree tree, TreePath treePath) {
     List<String> lessThanExpressions =
         getLessThanAnnotatedTypeFactory().getLessThanExpressions(tree);
     if (lessThanExpressions == null) {
@@ -947,7 +956,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return ubQualifier;
   }
 
-  private UBQualifier fromLessThanOrEqual(
+  private @Nullable UBQualifier fromLessThanOrEqual(
       Tree tree, TreePath treePath, List<String> lessThanExpressions) {
     UBQualifier ubQualifier = null;
     for (String expression : lessThanExpressions) {

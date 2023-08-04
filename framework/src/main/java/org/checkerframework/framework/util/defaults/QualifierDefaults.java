@@ -27,6 +27,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -370,7 +371,7 @@ public class QualifierDefaults {
     for (Default previous : previousDefaults) {
       if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
         AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
-        if (qualHierarchy.isSubtype(newAnno, previousTop)) {
+        if (qualHierarchy.isSubtypeQualifiersOnly(newAnno, previousTop)) {
           return true;
         }
       }
@@ -438,7 +439,7 @@ public class QualifierDefaults {
    * @param tree the tree
    * @return the nearest enclosing element for a tree
    */
-  private Element nearestEnclosingExceptLocal(Tree tree) {
+  private @Nullable Element nearestEnclosingExceptLocal(Tree tree) {
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
       Element element = atypeFactory.getEnclosingElementForArtificialTree(tree);
@@ -564,7 +565,7 @@ public class QualifierDefaults {
    * @param dq a @DefaultQualifier annotation
    * @return a DefaultSet corresponding to the @DefaultQualifier annotation
    */
-  private DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
+  private @Nullable DefaultSet fromDefaultQualifier(AnnotationMirror dq) {
     @SuppressWarnings("unchecked")
     Name cls = AnnotationUtils.getElementValueClassName(dq, defaultQualifierValueElement);
     AnnotationMirror anno = AnnotationBuilder.fromName(elements, cls);
@@ -873,10 +874,9 @@ public class QualifierDefaults {
      * @param qual annotation to add
      */
     protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
-      // Add the default annotation, but only if no other
-      // annotation is present.
-      if (!type.isAnnotatedInHierarchy(qual) && type.getKind() != TypeKind.EXECUTABLE) {
-        type.addAnnotation(qual);
+      // Add the default annotation, but only if no other annotation is present.
+      if (type.getKind() != TypeKind.EXECUTABLE) {
+        type.addMissingAnnotation(qual);
       }
     }
 

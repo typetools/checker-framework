@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import com.sun.source.tree.CompilationUnitTree;
 import io.github.classgraph.ClassGraph;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -100,6 +101,9 @@ public class AnnotationFileElementTypes {
   /** True if -Aignorejdkastub was passed on the command line. */
   private final boolean ignorejdkastub;
 
+  /** True if -AstubDebug was passed on the command line. */
+  private final boolean stubDebug;
+
   /**
    * Creates an empty annotation source.
    *
@@ -116,6 +120,7 @@ public class AnnotationFileElementTypes {
     this.parseAllJdkFiles = factory.getChecker().hasOption("parseAllJdk");
     this.permitMissingJdk = factory.getChecker().hasOption("permitMissingJdk");
     this.ignorejdkastub = factory.getChecker().hasOption("ignorejdkastub");
+    this.stubDebug = factory.getChecker().hasOption("stubDebug");
   }
 
   /**
@@ -208,6 +213,14 @@ public class AnnotationFileElementTypes {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     try (InputStream jdkVersionStubIn = checkerClass.getResourceAsStream(stubFileName)) {
       if (jdkVersionStubIn != null) {
+        if (stubDebug) {
+          AnnotationFileParser.stubDebugStatic(
+              processingEnv,
+              "parseOneStubFile(%s, %s): jdkVersionStubIn = %s%n",
+              checkerClass.getSimpleName(),
+              stubFileName,
+              jdkVersionStubIn);
+        }
         AnnotationFileParser.parseStubFile(
             checkerClass.getResource(stubFileName).toString(),
             jdkVersionStubIn,
@@ -255,6 +268,15 @@ public class AnnotationFileElementTypes {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     try (InputStream in = new FileInputStream(ajavaPath)) {
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv,
+            "parseAjavaFileWithTree(%s, %s): checker = %s, in = %s%n",
+            ajavaPath,
+            System.identityHashCode(root),
+            checker.getClass().getSimpleName(),
+            in);
+      }
       AnnotationFileParser.parseAjavaFile(
           ajavaPath, in, root, factory, processingEnv, annotationFileAnnos);
     } catch (IOException e) {
@@ -272,9 +294,20 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
+  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
+  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
+  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
+  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
+  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
+  // leak resources.
+  )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+    if (stubDebug) {
+      AnnotationFileParser.stubDebugStatic(
+          processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
+    }
     for (String path : annotationFiles) {
       // Special case when running in jtreg.
       String base = System.getProperty("test.src");
@@ -284,24 +317,31 @@ public class AnnotationFileElementTypes {
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          try (InputStream annotationFileStream = resource.getInputStream()) {
-            // We use parseStubFile here even for ajava files because at this stage
-            // ajava files are parsed as stub files. The extra annotation data in an
-            // ajava file is parsed when type-checking the ajava file's corresponding
-            // Java file.
-            AnnotationFileParser.parseStubFile(
-                resource.getDescription(),
-                annotationFileStream,
-                factory,
-                processingEnv,
-                annotationFileAnnos,
-                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
+          BufferedInputStream annotationFileStream;
+          try {
+            annotationFileStream = new BufferedInputStream(resource.getInputStream());
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
             continue;
           }
+          // Is it necessary to also skip files that consist only of Java comments?
+          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+            continue;
+          }
+          // We use parseStubFile here even for ajava files because at this stage
+          // ajava files are parsed as stub files. The extra annotation data in an
+          // ajava file is parsed when type-checking the ajava file's corresponding
+          // Java file.
+          AnnotationFileParser.parseStubFile(
+              resource.getDescription(),
+              annotationFileStream,
+              factory,
+              processingEnv,
+              annotationFileAnnos,
+              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
@@ -401,7 +441,7 @@ public class AnnotationFileElementTypes {
    * @deprecated use {@link #getDeclAnnotations}
    */
   @Deprecated // 2021-06-26
-  public AnnotationMirrorSet getDeclAnnotation(Element elt) {
+  public @Nullable AnnotationMirrorSet getDeclAnnotation(Element elt) {
     return getDeclAnnotations(elt);
   }
 
@@ -415,7 +455,7 @@ public class AnnotationFileElementTypes {
    *     the annotation file and in the element. {@code null} is returned if {@code element} does
    *     not appear in an annotation file.
    */
-  public AnnotationMirrorSet getDeclAnnotations(Element elt) {
+  public @Nullable AnnotationMirrorSet getDeclAnnotations(Element elt) {
     if (isParsing()) {
       return AnnotationMirrorSet.emptySet();
     }
@@ -499,7 +539,7 @@ public class AnnotationFileElementTypes {
           if (recordComponentStub != null && !recordComponentStub.hasAccessorInStubs()) {
             memberType
                 .getReturnType()
-                .replaceAnnotations(recordComponentStub.type.getAnnotations());
+                .replaceAnnotations(recordComponentStub.type.getPrimaryAnnotations());
           }
         }
       }
@@ -516,7 +556,8 @@ public class AnnotationFileElementTypes {
               memberType
                   .getParameterTypes()
                   .get(i)
-                  .replaceAnnotations(componentsInCanonicalConstructor.get(i).getAnnotations());
+                  .replaceAnnotations(
+                      componentsInCanonicalConstructor.get(i).getPrimaryAnnotations());
             }
           }
         }
@@ -652,7 +693,7 @@ public class AnnotationFileElementTypes {
    * @return the canonical name of the outermost enclosing class of {@code e} or {@code null} if no
    *     class encloses {@code e}
    */
-  private @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
+  private @Nullable @CanonicalNameOrEmpty String getOutermostEnclosingClass(Element e) {
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(e);
     if (enclosingClass == null) {
       return null;

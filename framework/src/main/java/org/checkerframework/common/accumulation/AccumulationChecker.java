@@ -1,7 +1,7 @@
 package org.checkerframework.common.accumulation;
 
 import java.util.EnumSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
@@ -33,9 +33,8 @@ public abstract class AccumulationChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (isEnabled(AliasAnalysis.RETURNS_RECEIVER)) {
       checkers.add(ReturnsReceiverChecker.class);
     }

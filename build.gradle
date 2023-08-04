@@ -2,7 +2,7 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '8.1.0'
+  id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
   id 'de.undercouch.download' version '5.4.0'
   id 'java'
@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.19.0'
+  id 'com.diffplug.spotless' version '6.20.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -42,7 +42,7 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.2"
+  stubparserVersion = "3.25.3"
   stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -53,6 +53,15 @@ ext {
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = '.git'
+
+  versions = [
+    autoValue       : '1.10.2',
+    lombok          : '1.18.28',
+    hashmapUtil : '0.0.1',
+    reflectionUtil : '1.1.0',
+    plumeUtil : '1.8.1',
+    errorprone : '2.21.0',
+  ]
 }
 
 task setLocalRepo(type:Exec) {
@@ -105,7 +114,8 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.35.1-SNAPSHOT'
+  // To make a snapshot release: ./gradlew publish
+  version '3.37.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -133,7 +143,6 @@ allprojects {
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
     annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
   }
-
   dependencies {
     javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
@@ -171,11 +180,6 @@ allprojects {
       '--add-opens',
       'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
     ]
-
-    hashmapUtilVersion = '0.0.1'
-    reflectionUtilVersion = '1.1.0'
-    plumeUtilVersion = '1.8.1'
-    lombokVersion = '1.18.28'
   }
 
   apply plugin: 'com.diffplug.spotless'
@@ -717,11 +721,10 @@ subprojects {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    ext.errorproneVersion = '2.19.1'
-    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
+    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
-    annotatedGuava "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+    annotatedGuava "com.google.errorprone:error_prone_annotations:${versions.errorprone}"
     annotatedGuava ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: 'org.checkerframework'
@@ -730,12 +733,10 @@ subprojects {
 
   shadowJar {
     // If you add an external dependency, then do the following:
-    // 1. Before adding the dependency, run ./gradlew assembleForJavac.
-    // 2. Copy checker/dist/checker.jar elsewhere.
-    // 3. Add the dependency, then run ./gradlew clean assembleForJavac.
-    // 4. Unzip both jars and compare the contents.
-    // 5. Add relocate lines below for the packages.
-    // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+    //  * On the master branch and on the modified branch, run:
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //  * Compare the files, and add relocate lines below.
+    //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
     relocate 'org.apache', 'org.checkerframework.org.apache'

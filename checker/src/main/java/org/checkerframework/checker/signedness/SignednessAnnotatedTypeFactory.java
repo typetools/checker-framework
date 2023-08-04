@@ -182,9 +182,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
         // These annotations are trusted rather than checked.  Maybe have an option to
         // disable using them?
-        if ((valueATM.hasAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-                || valueATM.hasAnnotation(INT_RANGE_FROM_POSITIVE))
-            && type.hasAnnotation(SIGNED)) {
+        if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+                || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
+            && type.hasPrimaryAnnotation(SIGNED)) {
           type.replaceAnnotation(SIGNEDNESS_GLB);
         } else {
           Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
@@ -289,22 +289,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       super(atypeFactory);
     }
 
-    /**
-     * Change the type of booleans to {@code @UnknownSignedness} so that the {@link
-     * PropagationTreeAnnotator} does not change the type of them.
-     *
-     * @param type a type to change the annotation of, if it is boolean
-     */
-    private void annotateBooleanAsUnknownSignedness(AnnotatedTypeMirror type) {
-      switch (type.getKind()) {
-        case BOOLEAN:
-          type.addAnnotation(SIGNED);
-          break;
-        default:
-          // Nothing for other cases.
-      }
-    }
-
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       switch (tree.getKind()) {
@@ -318,23 +302,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotation(SIGNEDNESS_GLB);
           } else {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
-            type.replaceAnnotations(lht.getAnnotations());
-          }
-          break;
-        case PLUS:
-          if (TreeUtils.isStringConcatenation(tree)) {
-            TypeMirror lht = TreeUtils.typeOf(tree.getLeftOperand());
-            TypeMirror rht = TreeUtils.typeOf(tree.getRightOperand());
-
-            if (TypesUtils.isCharOrCharacter(lht) || TypesUtils.isCharOrCharacter(rht)) {
-              type.replaceAnnotation(SIGNED);
-            }
+            type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
           break;
         default:
           // Do nothing
       }
-      annotateBooleanAsUnknownSignedness(type);
       return null;
     }
 
@@ -345,14 +318,15 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           type.replaceAnnotation(SIGNED);
         }
       }
-      annotateBooleanAsUnknownSignedness(type);
       return null;
     }
 
     @Override
     public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
       // Don't change the annotation on a cast with an explicit annotation.
-      if (type.getAnnotations().isEmpty() && !maybeIntegral(type)) {
+      if (TypesUtils.isCharOrCharacter(type.getUnderlyingType())) {
+        type.replaceAnnotation(UNSIGNED);
+      } else if (type.getPrimaryAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
             && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
@@ -446,12 +420,12 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // TODO: Return a TypeKind rather than a PrimitiveTypeTree?
   /**
-   * Returns the type of a primitive cast, or null the argument is not a cast to a primitive.
+   * Returns the type of a primitive cast, or null if the argument is not a cast to a primitive.
    *
    * @param tree a tree that might be a cast to a primitive
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
-  private PrimitiveTypeTree primitiveTypeCast(Tree tree) {
+  private @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
     if (tree.getKind() != Tree.Kind.TYPE_CAST) {
       return null;
     }
@@ -703,14 +677,6 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   // End of special-case code for shifts that do not depend on the MSB of the first argument.
 
-  @Override
-  public boolean isRelevantImpl(TypeMirror tm) {
-    if (TypesUtils.isFloatingPoint(tm)) {
-      return false;
-    }
-    return true;
-  }
-
   /**
    * Requires that, when two formal parameter types are annotated with {@code @PolySigned}, the two
    * arguments must have the same signedness type annotation.
@@ -746,9 +712,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return a1;
       } else if (AnnotationUtils.areSame(a1, a2)) {
         return a1;
-      } else if (qualHierarchy.isSubtype(a1, a2)) {
+      } else if (qualHierarchy.isSubtypeQualifiersOnly(a1, a2)) {
         return a2;
-      } else if (qualHierarchy.isSubtype(a2, a1)) {
+      } else if (qualHierarchy.isSubtypeQualifiersOnly(a2, a1)) {
         return a1;
       } else
         // The two annotations are incomparable

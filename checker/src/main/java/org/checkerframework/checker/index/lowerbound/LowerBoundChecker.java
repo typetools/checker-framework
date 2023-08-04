@@ -1,7 +1,7 @@
 package org.checkerframework.checker.index.lowerbound;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -58,9 +58,8 @@ public class LowerBoundChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(ValueChecker.class);
     checkers.add(LessThanChecker.class);
     checkers.add(SearchIndexChecker.class);

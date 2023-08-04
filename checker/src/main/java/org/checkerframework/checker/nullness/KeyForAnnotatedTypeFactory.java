@@ -166,7 +166,7 @@ public class KeyForAnnotatedTypeFactory
     }
     Collection<String> maps = null;
     AnnotatedTypeMirror type = getAnnotatedType(tree);
-    AnnotationMirror keyForAnno = type.getAnnotation(KeyFor.class);
+    AnnotationMirror keyForAnno = type.getEffectiveAnnotation(KeyFor.class);
     if (keyForAnno != null) {
       maps = AnnotationUtils.getElementValueArray(keyForAnno, keyForValueElement, String.class);
     } else {
@@ -181,7 +181,8 @@ public class KeyForAnnotatedTypeFactory
 
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
-    return new SubtypeIsSupersetQualifierHierarchy(getSupportedTypeQualifiers(), processingEnv);
+    return new SubtypeIsSupersetQualifierHierarchy(
+        getSupportedTypeQualifiers(), processingEnv, KeyForAnnotatedTypeFactory.this);
   }
 
   /** Returns true if the node is an invocation of Map.containsKey. */

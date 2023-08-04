@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.util.JVMNames;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1005,14 +1006,16 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
       // If the inferred type is a subtype of the upper bounds of the
       // current type in the source code, do nothing.
+      TypeMirror rhsTM = rhsATM.getUnderlyingType();
+      TypeMirror declTM = decl.getUnderlyingType();
       QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
-      for (AnnotationMirror anno : rhsATM.getAnnotations()) {
+      for (AnnotationMirror anno : rhsATM.getPrimaryAnnotations()) {
         AnnotationMirror upperAnno = qualHierarchy.findAnnotationInSameHierarchy(upperAnnos, anno);
-        if (qualHierarchy.isSubtype(anno, upperAnno)) {
-          rhsATM.removeAnnotation(anno);
+        if (qualHierarchy.isSubtypeShallow(anno, rhsTM, upperAnno, declTM)) {
+          rhsATM.removePrimaryAnnotation(anno);
         }
       }
-      if (rhsATM.getAnnotations().isEmpty()) {
+      if (rhsATM.getPrimaryAnnotations().isEmpty()) {
         return;
       }
     }
@@ -1109,12 +1112,19 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // LUB primary annotations
     AnnotationMirrorSet annosToReplace = new AnnotationMirrorSet();
-    for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
-      AnnotationMirror amAjava = ajavaATM.getAnnotationInHierarchy(amSource);
+    for (AnnotationMirror amSource : sourceCodeATM.getPrimaryAnnotations()) {
+      AnnotationMirror amAjava = ajavaATM.getPrimaryAnnotationInHierarchy(amSource);
       // amAjava only contains annotations from the ajava file, so it might be missing
       // an annotation in the hierarchy.
       if (amAjava != null) {
-        amSource = atypeFactory.getQualifierHierarchy().leastUpperBound(amSource, amAjava);
+        amSource =
+            atypeFactory
+                .getQualifierHierarchy()
+                .leastUpperBoundShallow(
+                    amSource,
+                    sourceCodeATM.getUnderlyingType(),
+                    amAjava,
+                    ajavaATM.getUnderlyingType());
       }
       annosToReplace.add(amSource);
     }

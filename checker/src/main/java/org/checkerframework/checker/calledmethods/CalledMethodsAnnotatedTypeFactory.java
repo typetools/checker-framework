@@ -81,13 +81,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     super(checker, CalledMethods.class, CalledMethodsBottom.class, CalledMethodsPredicate.class);
 
     this.builderFrameworkSupports = new ArrayList<>(2);
-    String[] disabledFrameworks;
-    if (checker.hasOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS)) {
-      disabledFrameworks =
-          checker.getOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS).split(",");
-    } else {
-      disabledFrameworks = new String[0];
-    }
+    List<String> disabledFrameworks =
+        checker.getStringsOption(CalledMethodsChecker.DISABLE_BUILDER_FRAMEWORK_SUPPORTS, ',');
     enableFrameworks(disabledFrameworks);
 
     this.useValueChecker = checker.hasOption(CalledMethodsChecker.USE_VALUE_CHECKER);
@@ -115,7 +110,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param disabledFrameworks the disabled builder frameworks
    */
-  private void enableFrameworks(String[] disabledFrameworks) {
+  private void enableFrameworks(List<String> disabledFrameworks) {
     boolean enableAutoValueSupport = true;
     boolean enableLombokSupport = true;
     for (String framework : disabledFrameworks) {
@@ -294,11 +289,13 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
       // Accumulate a method call, by adding the method being invoked to the return type.
       if (returnsThis(tree)) {
+        TypeMirror typeMirror = type.getUnderlyingType();
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
         methodName = adjustMethodNameUsingValueChecker(methodName, tree);
-        AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
+        AnnotationMirror oldAnno = type.getPrimaryAnnotationInHierarchy(top);
         AnnotationMirror newAnno =
-            qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName));
+            qualHierarchy.greatestLowerBoundShallow(
+                oldAnno, typeMirror, createAccumulatorAnnotation(methodName), typeMirror);
         type.replaceAnnotation(newAnno);
       }
 

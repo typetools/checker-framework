@@ -123,7 +123,7 @@ public class AnnotationFileUtil {
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
    *     otherwise.
    */
-  /*package-private*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
     int indexOfDot = className.lastIndexOf('.');
 
@@ -156,7 +156,7 @@ public class AnnotationFileUtil {
     return findDeclaration(type.getQualifiedName().toString(), indexFile);
   }
 
-  /*package-private*/ static FieldDeclaration findDeclaration(
+  /*package-private*/ static @Nullable FieldDeclaration findDeclaration(
       VariableElement field, StubUnit indexFile) {
     TypeDeclaration<?> type = findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
     if (type == null) {
@@ -177,7 +177,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-private*/ static BodyDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable BodyDeclaration<?> findDeclaration(
       ExecutableElement method, StubUnit indexFile) {
     TypeDeclaration<?> type =
         findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
@@ -201,7 +201,7 @@ public class AnnotationFileUtil {
     return null;
   }
 
-  /*package-private*/ static TypeDeclaration<?> findDeclaration(
+  /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String simpleName, CompilationUnit cu) {
     for (TypeDeclaration<?> type : cu.getTypes()) {
       if (simpleName.equals(type.getNameAsString())) {
@@ -234,7 +234,7 @@ public class AnnotationFileUtil {
     return element.getSimpleName().toString();
   }
 
-  /*package-private*/ static String toString(Element element) {
+  /*package-private*/ static @Nullable String toString(Element element) {
     if (element instanceof ExecutableElement) {
       return toString((ExecutableElement) element);
     } else if (element instanceof VariableElement) {
@@ -441,24 +441,32 @@ public class AnnotationFileUtil {
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    */
-  @SuppressWarnings("JdkObsolete") // JarFile.entries()
+  @SuppressWarnings({
+    "JdkObsolete", // JarFile.entries()
+    "nullness:argument", // inference failed in Arrays.sort
+    "builder:required.method.not.called" // ownership passed to list of
+    // JarEntryAnnotationFileResource, where `file` appears in every element of the list
+  })
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        Enumeration<JarEntry> entries = file.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (isAnnotationFile(entry.getName(), fileType)) {
-            resources.add(new JarEntryAnnotationFileResource(file, entry));
-          }
-        }
+      JarFile file;
+      try {
+        file = new JarFile(location);
       } catch (IOException e) {
         System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
         return;
       }
+      Enumeration<JarEntry> entries = file.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = entries.nextElement();
+        if (isAnnotationFile(entry.getName(), fileType)) {
+          resources.add(new JarEntryAnnotationFileResource(file, entry));
+        }
+      }
+
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
