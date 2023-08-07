@@ -19,12 +19,10 @@ jobs:
   dependsOn:
    - junit_jdk17
    - nonjunit_jdk17
-   # - inference_part1_jdk17
-   # - inference_part2_jdk17
+    - inference_part1_jdk17
+    - inference_part2_jdk17
    - typecheck_part1_jdk17
    - typecheck_part2_jdk17
-   - misc_jdk17
-   - misc_jdk20
   pool:
     vmImage: 'ubuntu-latest'
   steps:
