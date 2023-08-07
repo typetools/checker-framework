@@ -193,7 +193,8 @@ There are also method annotations:
 \label{called-methods-ensurescalledmethods}
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
-  guarantees to be called.
+  guarantees to be called. This annotation is repeatable, meaning that you can write
+  multiple copies of it (with different arguments) on the same method, and the checker will check all of them.
 
   For example, this specification:
 
