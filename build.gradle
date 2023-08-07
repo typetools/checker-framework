@@ -60,7 +60,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
-    errorprone : '2.20.0',
+    errorprone : '2.21.1',
   ]
 }
 
@@ -115,7 +115,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.37.0-SNAPSHOT'
+  version '3.37.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true

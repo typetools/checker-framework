@@ -12,9 +12,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!-- These properties will be set by the Maven Dependency plugin -->
-    <errorProneJavac>${com.google.errorprone:javac:jar}</errorProneJavac>
-    <checkerFrameworkVersion><!-- checker-framework-version -->3.36.0<!-- /checker-framework-version --></checkerFrameworkVersion>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <checkerFrameworkVersion><!-- checker-framework-version -->3.37.0<!-- /checker-framework-version --></checkerFrameworkVersion>
   </properties>
 
   <dependencies>
@@ -51,18 +51,6 @@
   <build>
     <plugins>
       <plugin>
-        <!-- This plugin will set properties values using dependency information -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>properties</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
         <version>3.2</version>
@@ -83,10 +71,6 @@
             <version>3.10.1</version>
             <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <compilerArguments>
-                <Xmaxerrs>10000</Xmaxerrs>
-                <Xmaxwarns>10000</Xmaxwarns>
-              </compilerArguments>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
@@ -99,19 +83,16 @@
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
               <compilerArgs>
+                <arg>-Xmaxerrs</arg>
+                <arg>10000</arg>
+                <arg>-Xmaxwarns</arg>
+                <arg>10000</arg>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
               </compilerArgs>
             </configuration>
           </plugin>
         </plugins>
       </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.checkerframework</groupId>
-          <artifactId>checker</artifactId>
-          <version>${checkerFrameworkVersion}</version>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>
@@ -123,25 +104,33 @@
       <properties>
         <javac.version>9+181-r4173-1</javac.version>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>javac</artifactId>
-          <version>9+181-r4173-1</version>
-        </dependency>
-      </dependencies>
       <build>
         <plugins>
           <plugin>
+            <!-- This plugin execution will copy the com.google.errorprone:javac jar file to
+                 your project’s output directory without adding that jar as an explicit
+                 dependency. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>process-sources</phase>
+                <configuration>
+                  <artifact>com.google.errorprone:javac:${javac.version}:jar</artifact>
+                  <outputDirectory>${project.build.directory}/javac</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
             <configuration>
-              <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <source>1.8</source>
-              <target>1.8</target>
               <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:${settings.localRepository}/com/google/errorprone/javac/${javac.version}/javac-${javac.version}.jar</arg>
+                <arg>-J-Xbootclasspath/p:${project.build.directory}/javac/javac-${javac.version}.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
@@ -159,10 +148,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
             <configuration>
-              <fork>true</fork>
-              <release>11</release>
               <compilerArgs combine.children="append">
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
