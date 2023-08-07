@@ -286,14 +286,6 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       AnnotatedTypeMirror t = ((AnnotatedArrayType) type).getComponentType();
       t = f.applyCaptureConversion(t);
       return t;
-    } else if (type.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) type).isUninferredTypeArgument()) {
-      // TODO: #979
-      // Clean-up after Issue #979.
-      AnnotatedTypeMirror wcbound = ((AnnotatedWildcardType) type).getExtendsBound();
-      if (wcbound instanceof AnnotatedArrayType) {
-        return ((AnnotatedArrayType) wcbound).getComponentType();
-      }
     }
     throw new BugInCF("Unexpected type: " + type);
   }
