@@ -345,6 +345,7 @@ final class SupertypeFinder {
                   (TypeParameterElement element) -> {
                     AnnotatedTypeMirror arg =
                         AnnotatedTypeMirror.createType(element.asType(), atypeFactory, false);
+                    // TODO: #979
                     // TODO: After #979 is fixed, calculate the correct type
                     // using inference.
                     return atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);

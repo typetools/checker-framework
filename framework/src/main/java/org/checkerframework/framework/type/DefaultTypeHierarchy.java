@@ -389,6 +389,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
     if ((TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(inside.getUnderlyingType()))) {
+      // TODO: #979
       // TODO: This branch should be removed after #979 is fixed.
       // This workaround is only needed when outside is a captured type variable,
       // but inside is not.
@@ -998,6 +999,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
+      // TODO: #979
       // This should be removed when 979 is fixed.
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.

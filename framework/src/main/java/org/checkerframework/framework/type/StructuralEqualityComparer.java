@@ -358,6 +358,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitWildcard_Typevar(
       AnnotatedWildcardType type1, AnnotatedTypeVariable type2, Void p) {
+    // TODO: #979
     // Once #979 is completed, this should be removed.
     Boolean pastResult = visitHistory.get(type1, type2, currentTop);
     if (pastResult != null) {
