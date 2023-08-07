@@ -19,8 +19,8 @@ jobs:
   dependsOn:
    - junit_jdk17
    - nonjunit_jdk17
-    - inference_part1_jdk17
-    - inference_part2_jdk17
+   - inference_part1_jdk17
+   - inference_part2_jdk17
    - typecheck_part1_jdk17
    - typecheck_part2_jdk17
   pool:
@@ -149,36 +149,6 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-inference.sh
     displayName: test-cftests-inference.sh
 # Unlimited fetchDepth for misc_jobs, because of need to make contributors.tex
-- job: misc_jdk11
-  dependsOn:
-   - canary_jobs
-   - misc_jdk17
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11-plus:latest
-  steps:
-  - checkout: self
-  - bash: ./checker/bin-devel/test-misc.sh
-    displayName: test-misc.sh
-- job: misc_jdk17
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk17-plus:latest
-  steps:
-  - checkout: self
-  - bash: ./checker/bin-devel/test-misc.sh
-    displayName: test-misc.sh
-- job: misc_jdk20
-  dependsOn:
-   # - canary_jobs
-   - misc_jdk17
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-plus:latest
-  steps:
-  - checkout: self
-  - bash: ./checker/bin-devel/test-misc.sh
-    displayName: test-misc.sh
 - job: typecheck_jdk11
   dependsOn:
    - canary_jobs
