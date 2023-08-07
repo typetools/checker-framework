@@ -355,28 +355,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return result;
   }
 
-  @Override
-  public Boolean visitWildcard_Typevar(
-      AnnotatedWildcardType type1, AnnotatedTypeVariable type2, Void p) {
-    // TODO: #979
-    // Once #979 is completed, this should be removed.
-    Boolean pastResult = visitHistory.get(type1, type2, currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-
-    if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
-      return true;
-    }
-
-    Boolean result =
-        areEqual(type1.getExtendsBound(), type2.getUpperBound())
-            && areEqual(type1.getSuperBound(), type2.getLowerBound());
-
-    visitHistory.put(type1, type2, currentTop, result);
-    return result;
-  }
-
   // Since we don't do a boxing conversion between primitive and declared types, in some cases
   // we must compare primitives with their boxed counterparts.
   @Override
