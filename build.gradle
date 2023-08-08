@@ -188,6 +188,7 @@ allprojects {
     // add them to the spotlessPredeclare block.
 
     def doNotFormat = [
+      'checker/bin-devel/.plume-scripts/**',
       'checker/tests/ainfer-*/annotated/*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
