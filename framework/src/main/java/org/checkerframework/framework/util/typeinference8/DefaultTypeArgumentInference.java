@@ -96,9 +96,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
-      //      checker.reportError(invocation, "type.inference.failed");
-      throw ex;
-      //      return null;
+      typeFactory.getChecker().reportError(outerTree, "type.inference.crash", outerTree);
+      //      throw ex;
+      return null;
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();
