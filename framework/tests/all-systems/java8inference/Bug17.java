@@ -3,6 +3,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
+@SupressWarnings("all") // Just check for crashes.
 public abstract class Bug17<KK, VV> implements Map<KK, VV> {
   public MapBug17<KK, VV> asMultimap(MapBug17<KK, VV> multimapView) {
     if (isEmpty()) {

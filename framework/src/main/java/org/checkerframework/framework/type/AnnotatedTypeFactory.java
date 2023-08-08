@@ -4558,13 +4558,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ParameterizedExecutableType exe = this.methodFromUse(method);
         AnnotatedTypeMirror param =
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, index);
-        if (param.getKind() == TypeKind.WILDCARD) {
-          // TODO: #979
-          // param is an uninferred wildcard.
-          TypeMirror typeMirror = TreeUtils.typeOf(tree);
-          param = AnnotatedTypeMirror.createType(typeMirror, this, false);
-          addDefaultAnnotations(param);
-        }
         assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
 
