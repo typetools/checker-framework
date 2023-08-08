@@ -215,8 +215,9 @@ public abstract class AbstractType {
 
     AnnotatedTypeMirror superAnnotatedType =
         AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
+    typeFactory.initializeAtm(superAnnotatedType);
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
-    return create(asSuper, asSuperJava);
+    return create(asSuper, asSuper.getUnderlyingType());
   }
 
   private IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
@@ -327,10 +328,10 @@ public abstract class AbstractType {
    * @return true if the type is a raw type
    */
   public boolean isRaw() {
-    // The annotated type might not be raw because javac uses the erased method type when the
-    // Checker Framework does not.
-    // See /Users/smillst/jsr308/checker-framework/checker/tests/all-systems/Issue2234.java.
-    return TypesUtils.isRaw(getJavaType());
+    if (getAnnotatedType().getKind() == TypeKind.DECLARED) {
+      return ((AnnotatedDeclaredType) getAnnotatedType()).isUnderlyingTypeRaw();
+    }
+    return false;
   }
 
   /**
