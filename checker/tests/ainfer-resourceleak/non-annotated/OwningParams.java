@@ -31,8 +31,8 @@ class OwningParams {
       f.a();
     }
 
-    void passOwnership(Foo f111, Foo f2) {
-      hasECM(f111);
+    void passOwnership(Foo f1, Foo f2) {
+      hasECM(f1);
       owningFoo(f2);
     }
 

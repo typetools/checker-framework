@@ -21,15 +21,15 @@ class EnsuresCalledMethodsVarArgsTest {
   }
 
   private class ECMVA {
-    final Foo fff;
+    final Foo foo;
 
     ECMVA() {
       // :: warning: (required.method.not.called)
-      fff = new Foo();
+      foo = new Foo();
     }
 
     void finalyzer() {
-      Utils.close(fff);
+      Utils.close(foo);
     }
 
     @EnsuresCalledMethods(
