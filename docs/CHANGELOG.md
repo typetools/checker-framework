@@ -1,4 +1,14 @@
-Version 3.37.0 (July ?, 2023)
+Version 3.37.1 (September 1, 2023)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.37.0 (August 1, 2023)
 -----------------------------
 
 **User-visible changes:**
@@ -21,6 +31,8 @@ to be written on a non-integral type.
  * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 **Closed issues:**
+
+#6076, #6077, #6078, #6098, #6100, #6104, #6113.
 
 
 Version 3.36.0 (July 3, 2023)

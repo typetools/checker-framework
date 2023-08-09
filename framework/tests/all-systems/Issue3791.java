@@ -11,7 +11,8 @@ public class Issue3791 {
 
   void method(MyInterfaceMyClass<?, ?> param) {
     // TODO: Should we open an issue for this?
-    // See code is reject by Eclipse and should be reject by javac.
+    // This code is reject by Eclipse and should be reject by javac.
+    // See the javac bug report https://bugs.openjdk.org/browse/JDK-8265255.
     @SuppressWarnings({"unchecked", "type.argument"})
     MyInterfaceMyClass<?, SubMyClass<?>> local = (MyInterfaceMyClass<?, SubMyClass<?>>) param;
   }
