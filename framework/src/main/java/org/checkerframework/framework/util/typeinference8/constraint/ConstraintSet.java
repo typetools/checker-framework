@@ -28,6 +28,11 @@ public class ConstraintSet implements ReductionResult {
         }
       };
 
+  /**
+   * The Java types are correct, but the qualifiers are not in the correct relationship. Return this
+   * rather than throwing an exception so that type arguments with the correct Java type are still
+   * inferred.
+   */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE_ANNO_FAIL =
       new ConstraintSet(true) {
