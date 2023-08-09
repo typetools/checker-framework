@@ -1534,7 +1534,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, tree);
     // If there's no assignment in this variable declaration, skip it.
-    if (tree.getInitializer() != null) {
+    // Don't check assignments to enum constants.
+    if (tree.getInitializer() != null
+        && TreeUtils.elementFromDeclaration(tree).getKind() != ElementKind.ENUM_CONSTANT) {
       commonAssignmentCheck(tree, tree.getInitializer(), "assignment");
     } else {
       // commonAssignmentCheck validates the type of `tree`,
