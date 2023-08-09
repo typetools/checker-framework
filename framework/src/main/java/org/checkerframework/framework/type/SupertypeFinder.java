@@ -339,15 +339,12 @@ final class SupertypeFinder {
             (AnnotatedDeclaredType) atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
         if (adt.getTypeArguments().size() != adt.getUnderlyingType().getTypeArguments().size()
             && classTree.getSimpleName().contentEquals("")) {
-          // classTree is an anonymous class with a diamond.
+          // classTree is an anonymous class that is a raw type.
           List<AnnotatedTypeMirror> args =
               CollectionsPlume.mapList(
                   (TypeParameterElement element) -> {
                     AnnotatedTypeMirror arg =
                         AnnotatedTypeMirror.createType(element.asType(), atypeFactory, false);
-                    // TODO: #979
-                    // TODO: After #979 is fixed, calculate the correct type
-                    // using inference.
                     return atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
                   },
                   TypesUtils.getTypeElement(adt.getUnderlyingType()).getTypeParameters());
