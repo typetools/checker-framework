@@ -1083,7 +1083,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (typeArgs != null) {
         return typeArgs;
       } else if (isUnderlyingTypeRaw()) {
-        // Initialize the type arguments with uninferred wildcards.
+        // Initialize the type arguments with wildcards marks as type arguments from raw types.
         BoundsInitializer.initializeTypeArgs(this);
         return typeArgs;
       } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
@@ -2038,8 +2038,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** Upper ({@code extends} bound. */
     private AnnotatedTypeMirror extendsBound;
 
-    // Remove the uninferredTypeArgument once method type
-    // argument inference and raw type handling is improved.
     /** Whether this wildcard is a type argument to a raw type. */
     private boolean typeArgOfRawType = false;
 

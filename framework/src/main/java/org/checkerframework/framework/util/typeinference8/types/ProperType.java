@@ -10,7 +10,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
@@ -21,14 +20,6 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
-
-  /**
-   * Exception thrown when the proper type is an uninferred type argument. This should be removed
-   * once Java 8 inference is actually used by the framework.
-   */
-  public static class CantCompute extends RuntimeException {
-    private static final long serialVersionUID = 1;
-  }
 
   private final AnnotatedTypeMirror type;
   private final TypeMirror properType;
@@ -63,15 +54,6 @@ public class ProperType extends AbstractType {
   private static AnnotatedTypeMirror verifyTypeKinds(
       AnnotatedTypeMirror atm, TypeMirror typeMirror) {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
-    if (atm.getKind() == TypeKind.WILDCARD) {
-      AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
-      if (TypesUtils.isCapturedTypeVariable(typeMirror)) {
-        throw new CantCompute();
-      } else if (wildcardType.isTypeArgOfRawType()) {
-        // TODO: Should be removed when inference is corrected
-        throw new CantCompute();
-      }
-    }
 
     if (typeMirror.getKind() != atm.getKind()) {
       throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());

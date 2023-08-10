@@ -4641,7 +4641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
         if (wildcardType.isTypeArgOfRawType()) {
-          // Keep the uninferred type so that it is ignored by later subtyping and
+          // Keep the type arguments from raw types so that it is ignored by later subtyping and
           // containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
@@ -4707,8 +4707,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <ul>
    *   <li>{@code type} and {@code typeMirror} are both declared types.
-   *   <li>{@code type} does not have an uninferred type argument and its underlying type is not
-   *       raw.
+   *   <li>{@code type} its underlying type is not raw.
    *   <li>{@code type} has a wildcard as a type argument and {@code typeMirror} has a captured type
    *       variable as the corresponding type argument.
    * </ul>
@@ -4795,19 +4794,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedTypeMirror applyCaptureConversion(
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
 
-    // If the type contains uninferred type arguments, don't capture, but mark all wildcards that
-    // should have been captured as "uninferred" before it is returned.
+    // If the type contains type arguments of raw types, don't capture, but mark all wildcards that
+    // should have been captured as "raw" before it is returned.
     if (typeMirror.getKind() == TypeKind.DECLARED && type.getKind() == TypeKind.DECLARED) {
-      boolean hasUninfer = false;
+      boolean fromRawType = false;
       AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
       for (AnnotatedTypeMirror typeArg : uncapturedType.getTypeArguments()) {
         if (typeArg.getKind() == TypeKind.WILDCARD
             && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType()) {
-          hasUninfer = true;
+          fromRawType = true;
           break;
         }
       }
-      if (hasUninfer) {
+      if (fromRawType) {
         DeclaredType capturedTypeMirror = (DeclaredType) typeMirror;
         for (int i = 0; i < capturedTypeMirror.getTypeArguments().size(); i++) {
           AnnotatedTypeMirror uncapturedTypeArg = uncapturedType.getTypeArguments().get(i);

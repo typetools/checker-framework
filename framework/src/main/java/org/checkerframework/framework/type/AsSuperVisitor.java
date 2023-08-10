@@ -38,10 +38,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private final QualifierHierarchy qualHierarchy;
 
   /**
-   * Whether or not the type being visited is an uninferred type argument. If true, then the
+   * Whether or not the type being visited is a type argument from a raw type. If true, then the
    * underlying type may not have the correct relationship with the supertype.
    */
-  private boolean isUninferredTypeArgument = false;
+  private boolean isTypeArgumentFromRawType = false;
 
   /**
    * Create a new AsSuperVisitor.
@@ -96,7 +96,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
   /** Resets this. */
   private void reset() {
-    isUninferredTypeArgument = false;
+    isTypeArgumentFromRawType = false;
   }
 
   @Override
@@ -141,7 +141,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       // Any type can be converted to String
       return visit(atypeFactory.getStringType(type), superType, p);
     }
-    if (isUninferredTypeArgument) {
+    if (isTypeArgumentFromRawType) {
       return copyPrimaryAnnos(type, superType);
     }
     throw new BugInCF(
@@ -716,12 +716,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
   private AnnotatedTypeMirror visitWildcard_NotTypvarNorWildcard(
       AnnotatedWildcardType type, AnnotatedTypeMirror superType, Void p) {
-    boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
+    boolean oldIsTypeArgumentFromRawType = isTypeArgumentFromRawType;
     if (type.isTypeArgOfRawType()) {
-      isUninferredTypeArgument = true;
+      isTypeArgumentFromRawType = true;
     }
     AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
-    isUninferredTypeArgument = oldIsUninferredTypeArgument;
+    isTypeArgumentFromRawType = oldIsTypeArgumentFromRawType;
     atypeFactory.addDefaultAnnotations(superType);
 
     return copyPrimaryAnnos(type, asSuper);
@@ -754,9 +754,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitWildcard_Typevar(
       AnnotatedWildcardType type, AnnotatedTypeVariable superType, Void p) {
-    boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
+    boolean oldIsTypeArgumentFromRawType = isTypeArgumentFromRawType;
     if (type.isTypeArgOfRawType()) {
-      isUninferredTypeArgument = true;
+      isTypeArgumentFromRawType = true;
     }
     AnnotatedTypeMirror upperBound = visit(type.getExtendsBound(), superType.getUpperBound(), p);
     superType.setUpperBound(upperBound);
@@ -771,7 +771,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       lowerBound = asSuperTypevarLowerBound(type.getSuperBound(), superType, p);
     }
     superType.setLowerBound(lowerBound);
-    isUninferredTypeArgument = oldIsUninferredTypeArgument;
+    isTypeArgumentFromRawType = oldIsTypeArgumentFromRawType;
     atypeFactory.addDefaultAnnotations(superType);
 
     return copyPrimaryAnnos(type, superType);
@@ -786,9 +786,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitWildcard_Wildcard(
       AnnotatedWildcardType type, AnnotatedWildcardType superType, Void p) {
-    boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
+    boolean oldIsTypeArgumentFromRawType = isTypeArgumentFromRawType;
     if (type.isTypeArgOfRawType()) {
-      isUninferredTypeArgument = true;
+      isTypeArgumentFromRawType = true;
       superType.setTypeArgOfRawType();
     }
     if (types.isSubtype(
@@ -822,7 +822,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       lowerBound = asSuperWildcardLowerBound(type.getSuperBound(), superType, p);
     }
     superType.setSuperBound(lowerBound);
-    isUninferredTypeArgument = oldIsUninferredTypeArgument;
+    isTypeArgumentFromRawType = oldIsTypeArgumentFromRawType;
     atypeFactory.addDefaultAnnotations(superType);
 
     return copyPrimaryAnnos(type, superType);

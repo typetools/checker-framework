@@ -427,7 +427,7 @@ public class AnnotatedTypes {
             memberType);
       case WILDCARD:
         if (((AnnotatedWildcardType) receiverType).isTypeArgOfRawType()) {
-          return substituteUninferredTypeArgs(atypeFactory, member, memberType);
+          return substituteTypeArgsFromRawTypes(atypeFactory, member, memberType);
         }
         return asMemberOf(
             types,
@@ -613,14 +613,14 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Substitutes uninferred type arguments for type variables in {@code memberType}.
+   * Substitutes type arguments from raw types for type variables in {@code memberType}.
    *
    * @param atypeFactory the type factory
    * @param member the element with type {@code memberType}; used to obtain the enclosing type
    * @param memberType the type to side-effect
    * @return memberType, with type arguments substituted for type variables
    */
-  private static AnnotatedTypeMirror substituteUninferredTypeArgs(
+  private static AnnotatedTypeMirror substituteTypeArgsFromRawTypes(
       AnnotatedTypeFactory atypeFactory, Element member, AnnotatedTypeMirror memberType) {
     TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
     Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
