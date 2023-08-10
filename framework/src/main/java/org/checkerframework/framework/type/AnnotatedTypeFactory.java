@@ -4478,10 +4478,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Functional interface
     // This is the target type of "tree"
     AnnotatedTypeMirror functionalInterfaceType = getFunctionalInterfaceType(tree);
-    if (!TreeUtils.isImplicitlyTypedLambda(tree) && tree.getKind() == Kind.LAMBDA_EXPRESSION) {
-      // TODO: #979
-      // TODO: https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.3
-    }
     if (functionalInterfaceType.getKind() == TypeKind.DECLARED) {
       functionalInterfaceType =
           makeGroundTargetType(
