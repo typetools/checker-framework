@@ -67,7 +67,6 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -4367,45 +4366,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   public boolean containsCapturedTypes(AnnotatedTypeMirror type) {
     return containsCapturedTypes.visit(type);
-  }
-
-  /**
-   * Returns a wildcard type to be used as a type argument when the correct type could not be
-   * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
-   * AnnotatedWildcardType#isTypeArgOfRawType()} returns true.
-   *
-   * <p>This method should only be used by type argument inference.
-   * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
-   * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
-   *
-   * @param typeVar the TypeVariable that could not be inferred
-   * @return a wildcard that is marked as an uninferred type argument
-   */
-  public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-    final boolean intersectionType;
-    final TypeMirror boundType;
-    if (typeVar.getUpperBound().getKind() == TypeKind.INTERSECTION) {
-      boundType = typeVar.getUpperBound().directSupertypes().get(0).getUnderlyingType();
-      intersectionType = true;
-    } else {
-      boundType = typeVar.getUnderlyingType().getUpperBound();
-      intersectionType = false;
-    }
-
-    WildcardType wc = types.getWildcardType(boundType, null);
-    AnnotatedWildcardType wctype =
-        (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
-    wctype.setTypeVariable(typeVar.getUnderlyingType());
-    if (!intersectionType) {
-      wctype.setExtendsBound(typeVar.getUpperBound().deepCopy());
-    } else {
-      wctype.getExtendsBound().addAnnotations(typeVar.getUpperBound().getPrimaryAnnotations());
-    }
-    wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
-    wctype.addAnnotations(typeVar.getPrimaryAnnotations());
-    addDefaultAnnotations(wctype);
-    wctype.setTypeArgOfRawType();
-    return wctype;
   }
 
   /**
