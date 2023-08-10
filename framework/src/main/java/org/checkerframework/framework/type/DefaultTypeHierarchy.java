@@ -448,7 +448,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     warnings about uninferred type arguments
    */
   private boolean shouldIgnoreUninferredTypeArgs(AnnotatedTypeMirror type) {
-    return type.atypeFactory.ignoreUninferredTypeArguments
+    return type.atypeFactory.ignoreRawTypeArguments
         && type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
   }
@@ -830,7 +830,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   @Override
   public Boolean visitPrimitive_Wildcard(
       AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, Void p) {
-    if (supertype.atypeFactory.ignoreUninferredTypeArguments && supertype.isTypeArgOfRawType()) {
+    if (supertype.atypeFactory.ignoreRawTypeArguments && supertype.isTypeArgOfRawType()) {
       return true;
     }
     // this can occur when passing a primitive to a method on a raw type (see test
@@ -1011,7 +1011,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   public Boolean visitWildcard_Declared(
       AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, Void p) {
     if (subtype.isTypeArgOfRawType()) {
-      if (subtype.atypeFactory.ignoreUninferredTypeArguments) {
+      if (subtype.atypeFactory.ignoreRawTypeArguments) {
         return true;
       } else if (supertype.getTypeArguments().isEmpty()) {
         // visitWildcard_Type doesn't check uninferred type arguments, because the
@@ -1217,7 +1217,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
     if (supertype.isTypeArgOfRawType()) { // TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
       // Can't call isSubtype because underlying Java types won't be subtypes.
-      return supertype.atypeFactory.ignoreUninferredTypeArguments;
+      return supertype.atypeFactory.ignoreRawTypeArguments;
     }
     return isSubtype(subtype, supertype.getSuperBound(), currentTop);
   }
@@ -1232,7 +1232,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   protected boolean visitWildcard_Type(
       AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype) {
     if (subtype.isTypeArgOfRawType()) {
-      return subtype.atypeFactory.ignoreUninferredTypeArguments;
+      return subtype.atypeFactory.ignoreRawTypeArguments;
     }
 
     if (supertype.getKind() == TypeKind.WILDCARD) {

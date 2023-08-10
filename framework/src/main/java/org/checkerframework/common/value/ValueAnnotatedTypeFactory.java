@@ -351,7 +351,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new DefaultTypeHierarchy(
         checker,
         getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
+        ignoreRawTypeArguments,
         checker.hasOption("invariantArrays")) {
       @Override
       public StructuralEqualityComparer createEqualityComparer() {

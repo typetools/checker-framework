@@ -522,10 +522,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /** Mapping from CFG-generated trees to their enclosing elements. */
   protected final Map<Tree, Element> artificialTreeToEnclosingElementMap;
 
-  /**
-   * Whether to ignore uninferred type arguments. This is a temporary flag to work around Issue 979.
-   */
-  public final boolean ignoreUninferredTypeArguments;
+  /** Whether to ignore type arguments from raw types. */
+  public final boolean ignoreRawTypeArguments;
 
   /** The Object.getClass method. */
   protected final ExecutableElement objectGetClass;
@@ -656,7 +654,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       wholeProgramInference = null;
     }
-    ignoreUninferredTypeArguments = !checker.hasOption("conservativeUninferredTypeArguments");
+    ignoreRawTypeArguments = checker.getBooleanOption("ignoreRawTypeArguments", true);
 
     objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, processingEnv);
 
@@ -1058,7 +1056,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return new DefaultTypeHierarchy(
         checker,
         getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
+        ignoreRawTypeArguments,
         checker.hasOption("invariantArrays"));
   }
 
@@ -2344,7 +2342,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedTypeMirror t = toAnnotatedType(tm, false);
 
       AnnotatedWildcardType wildcard = (AnnotatedWildcardType) method.getReturnType();
-      if (ignoreUninferredTypeArguments) {
+      if (ignoreRawTypeArguments) {
         // Remove the annotations so that default annotations are used instead.
         // (See call to addDefaultAnnotations below.)
         t.clearPrimaryAnnotations();

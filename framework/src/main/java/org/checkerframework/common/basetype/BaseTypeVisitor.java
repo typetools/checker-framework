@@ -1749,17 +1749,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedExecutableType invokedMethod = mType.executableType;
     List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
 
-    if (!atypeFactory.ignoreUninferredTypeArguments) {
-      for (AnnotatedTypeMirror typearg : typeargs) {
-        if (typearg.getKind() == TypeKind.WILDCARD
-            && ((AnnotatedWildcardType) typearg).isTypeArgOfRawType()) {
-          checker.reportError(
-              tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
-          break; // only issue error once per method
-        }
-      }
-    }
-
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsPlume.mapList(
             AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
@@ -3426,7 +3415,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
-    return atypeFactory.ignoreUninferredTypeArguments
+    return atypeFactory.ignoreRawTypeArguments
         && type.getKind() == TypeKind.WILDCARD
         && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
   }
@@ -3871,7 +3860,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
       // In that case, only return false if uninferred type arguments should not be ignored.
-      return !atypeFactory.ignoreUninferredTypeArguments;
+      return !atypeFactory.ignoreRawTypeArguments;
     }
   }
 

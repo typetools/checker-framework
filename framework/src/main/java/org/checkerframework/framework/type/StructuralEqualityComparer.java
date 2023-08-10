@@ -240,7 +240,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         } else {
           AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
           AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
-          if (type1.atypeFactory.ignoreUninferredTypeArguments
+          if (type1.atypeFactory.ignoreRawTypeArguments
               && (wildcardType1.isTypeArgOfRawType() || wildcardType2.isTypeArgOfRawType())) {
             result = true;
           } else {
@@ -339,7 +339,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return pastResult;
     }
 
-    if (type1.atypeFactory.ignoreUninferredTypeArguments
+    if (type1.atypeFactory.ignoreRawTypeArguments
         && (type1.isTypeArgOfRawType() || type2.isTypeArgOfRawType())) {
       return true;
     }
