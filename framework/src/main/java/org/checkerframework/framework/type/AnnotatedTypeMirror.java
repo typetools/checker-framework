@@ -893,17 +893,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public abstract AnnotatedTypeMirror shallowCopy();
 
-  /**
-   * Returns whether this type or any component type is a wildcard type for which Java 7 type
-   * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
-   *
-   * @return whether this type or any component type is a wildcard type for which Java 7 type
-   *     inference is insufficient
-   */
-  public boolean containsUninferredTypeArguments() {
-    return atypeFactory.containsUninferredTypeArguments(this);
-  }
-
   public boolean containsCapturedTypes() {
     return atypeFactory.containsCapturedTypes(this);
   }
@@ -2049,6 +2038,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** Upper ({@code extends} bound. */
     private AnnotatedTypeMirror extendsBound;
 
+    // Remove the uninferredTypeArgument once method type
+    // argument inference and raw type handling is improved.
+    /** Whether this wildcard is a type argument to a raw type. */
+    private boolean typeArgOfRawType = false;
+
     /**
      * The type variable to which this wildcard is an argument. Used to initialize the upper bound
      * of unbounded wildcards and wildcards in raw types.
@@ -2213,27 +2207,18 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return getExtendsBound().getErased();
     }
 
-    // Remove the uninferredTypeArgument once method type
-    // argument inference and raw type handling is improved.
-    private boolean uninferredTypeArgument = false;
-
-    /**
-     * Set that this wildcard is from an uninferred type argument. This method should only be used
-     * within the framework. Once issues that depend on this hack, in particular Issue 979, are
-     * fixed, this must be removed.
-     */
-    public void setUninferredTypeArgument() {
-      uninferredTypeArgument = true;
+    /** Set that this wildcard is a type argument of a raw type. */
+    public void setTypeArgOfRawType() {
+      typeArgOfRawType = true;
     }
 
     /**
-     * Returns whether or not this wildcard is a type argument for which inference failed to infer a
-     * type.
+     * Returns whether this wildcard is a type argument to a raw type
      *
-     * @return true if this wildcard is a type argument for which inference failed
+     * @return true if this wildcard is a type argument to a raw type
      */
-    public boolean isUninferredTypeArgument() {
-      return uninferredTypeArgument;
+    public boolean isTypeArgOfRawType() {
+      return typeArgOfRawType;
     }
   }
 

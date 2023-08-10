@@ -717,7 +717,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   private AnnotatedTypeMirror visitWildcard_NotTypvarNorWildcard(
       AnnotatedWildcardType type, AnnotatedTypeMirror superType, Void p) {
     boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
-    if (type.isUninferredTypeArgument()) {
+    if (type.isTypeArgOfRawType()) {
       isUninferredTypeArgument = true;
     }
     AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
@@ -755,7 +755,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitWildcard_Typevar(
       AnnotatedWildcardType type, AnnotatedTypeVariable superType, Void p) {
     boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
-    if (type.isUninferredTypeArgument()) {
+    if (type.isTypeArgOfRawType()) {
       isUninferredTypeArgument = true;
     }
     AnnotatedTypeMirror upperBound = visit(type.getExtendsBound(), superType.getUpperBound(), p);
@@ -787,9 +787,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   public AnnotatedTypeMirror visitWildcard_Wildcard(
       AnnotatedWildcardType type, AnnotatedWildcardType superType, Void p) {
     boolean oldIsUninferredTypeArgument = isUninferredTypeArgument;
-    if (type.isUninferredTypeArgument()) {
+    if (type.isTypeArgOfRawType()) {
       isUninferredTypeArgument = true;
-      superType.setUninferredTypeArgument();
+      superType.setTypeArgOfRawType();
     }
     if (types.isSubtype(
         type.getExtendsBound().getUnderlyingType(),

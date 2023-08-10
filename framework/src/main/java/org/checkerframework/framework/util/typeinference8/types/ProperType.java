@@ -67,7 +67,7 @@ public class ProperType extends AbstractType {
       AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
       if (TypesUtils.isCapturedTypeVariable(typeMirror)) {
         throw new CantCompute();
-      } else if (wildcardType.isUninferredTypeArgument()) {
+      } else if (wildcardType.isTypeArgOfRawType()) {
         // TODO: Should be removed when inference is corrected
         throw new CantCompute();
       }

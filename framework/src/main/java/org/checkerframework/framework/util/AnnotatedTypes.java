@@ -425,7 +425,7 @@ public class AnnotatedTypes {
             member,
             memberType);
       case WILDCARD:
-        if (((AnnotatedWildcardType) receiverType).isUninferredTypeArgument()) {
+        if (((AnnotatedWildcardType) receiverType).isTypeArgOfRawType()) {
           return substituteUninferredTypeArgs(atypeFactory, member, memberType);
         }
         return asMemberOf(

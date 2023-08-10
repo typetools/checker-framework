@@ -1764,7 +1764,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Adds default annotations to {@code type}. This method should only be used in places where the
    * correct annotations cannot be computed because of uninferred type arguments. (See {@link
-   * AnnotatedWildcardType#isUninferredTypeArgument()}.)
+   * AnnotatedWildcardType#isTypeArgOfRawType()}.)
    *
    * @param type annotated type to which default annotations are added
    */
@@ -2338,7 +2338,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     AnnotatedExecutableType method = result.executableType;
     if (method.getReturnType().getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) method.getReturnType()).isUninferredTypeArgument()) {
+        && ((AnnotatedWildcardType) method.getReturnType()).isTypeArgOfRawType()) {
       // Get the correct Java type from the tree and use it as the upper bound of the
       // wildcard.
       TypeMirror tm = TreeUtils.typeOf(tree);
@@ -4363,7 +4363,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       new SimpleAnnotatedTypeScanner<>(
           (type, p) ->
               type.getKind() == TypeKind.WILDCARD
-                  && ((AnnotatedWildcardType) type).isUninferredTypeArgument(),
+                  && ((AnnotatedWildcardType) type).isTypeArgOfRawType(),
           Boolean::logicalOr,
           false);
 
@@ -4393,7 +4393,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns a wildcard type to be used as a type argument when the correct type could not be
    * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
-   * AnnotatedWildcardType#isUninferredTypeArgument()} returns true.
+   * AnnotatedWildcardType#isTypeArgOfRawType()} returns true.
    *
    * <p>This method should only be used by type argument inference.
    * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
@@ -4425,7 +4425,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
     wctype.addAnnotations(typeVar.getPrimaryAnnotations());
     addDefaultAnnotations(wctype);
-    wctype.setUninferredTypeArgument();
+    wctype.setTypeArgOfRawType();
     return wctype;
   }
 
@@ -4701,7 +4701,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
-        if (wildcardType.isUninferredTypeArgument()) {
+        if (wildcardType.isTypeArgOfRawType()) {
           // Keep the uninferred type so that it is ignored by later subtyping and
           // containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
@@ -4795,7 +4795,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     for (AnnotatedTypeMirror typeArg : uncapturedType.getTypeArguments()) {
       if (typeArg.getKind() == TypeKind.WILDCARD
-          && ((AnnotatedWildcardType) typeArg).isUninferredTypeArgument()) {
+          && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType()) {
         return false;
       }
     }
@@ -4863,7 +4863,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
       for (AnnotatedTypeMirror typeArg : uncapturedType.getTypeArguments()) {
         if (typeArg.getKind() == TypeKind.WILDCARD
-            && ((AnnotatedWildcardType) typeArg).isUninferredTypeArgument()) {
+            && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType()) {
           hasUninfer = true;
           break;
         }
@@ -4876,7 +4876,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           if (uncapturedTypeArg.getKind() == TypeKind.WILDCARD
               && (TypesUtils.isCapturedTypeVariable(capturedTypeArgTM)
                   || capturedTypeArgTM.getKind() != TypeKind.WILDCARD)) {
-            ((AnnotatedWildcardType) uncapturedTypeArg).setUninferredTypeArgument();
+            ((AnnotatedWildcardType) uncapturedTypeArg).setTypeArgOfRawType();
           }
         }
         return type;

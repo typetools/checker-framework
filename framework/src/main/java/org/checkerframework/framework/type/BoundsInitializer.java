@@ -86,7 +86,7 @@ public class BoundsInitializer {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
         wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));
         if (declaredType.isUnderlyingTypeRaw()) {
-          wildcardType.setUninferredTypeArgument();
+          wildcardType.setTypeArgOfRawType();
         }
       }
       typeArgs.add(typeArg);
@@ -592,7 +592,7 @@ public class BoundsInitializer {
         javaExtendsBound = TypesUtils.getObjectTypeMirror(typeFactory.processingEnv);
       }
 
-      if (wildcard.isUninferredTypeArgument()) {
+      if (wildcard.isTypeArgOfRawType()) {
         rawTypeWildcards.put(wildcard.getTypeVariable(), wildcard.getUnderlyingType());
       }
 
@@ -629,7 +629,7 @@ public class BoundsInitializer {
               AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
           typeArgs.add(atmArg);
           if (atmArg.getKind() == TypeKind.WILDCARD && declaredType.isUnderlyingTypeRaw()) {
-            ((AnnotatedWildcardType) atmArg).setUninferredTypeArgument();
+            ((AnnotatedWildcardType) atmArg).setTypeArgOfRawType();
           }
         }
       } else {

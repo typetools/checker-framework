@@ -1752,7 +1752,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (!atypeFactory.ignoreUninferredTypeArguments) {
       for (AnnotatedTypeMirror typearg : typeargs) {
         if (typearg.getKind() == TypeKind.WILDCARD
-            && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
+            && ((AnnotatedWildcardType) typearg).isTypeArgOfRawType()) {
           checker.reportError(
               tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
           break; // only issue error once per method
@@ -3428,7 +3428,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
     return atypeFactory.ignoreUninferredTypeArguments
         && type.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
+        && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
   }
 
   /**

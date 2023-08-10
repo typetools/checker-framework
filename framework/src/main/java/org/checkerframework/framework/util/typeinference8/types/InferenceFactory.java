@@ -103,7 +103,6 @@ public class InferenceFactory {
       if (dummy == null || dummy.containsCapturedTypes()) {
         return null;
       }
-      dummy.containsUninferredTypeArguments();
       return new ProperType(dummy, dummy.getUnderlyingType(), context);
     }
 

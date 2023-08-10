@@ -45,9 +45,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   @Override
   public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
-      return type1.atypeFactory.ignoreUninferredTypeArguments;
-    }
 
     return super.defaultAction(type1, type2, p);
   }
@@ -244,8 +241,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
           AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
           AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
           if (type1.atypeFactory.ignoreUninferredTypeArguments
-              && (wildcardType1.isUninferredTypeArgument()
-                  || wildcardType2.isUninferredTypeArgument())) {
+              && (wildcardType1.isTypeArgOfRawType() || wildcardType2.isTypeArgOfRawType())) {
             result = true;
           } else {
             AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
@@ -344,7 +340,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     if (type1.atypeFactory.ignoreUninferredTypeArguments
-        && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
+        && (type1.isTypeArgOfRawType() || type2.isTypeArgOfRawType())) {
       return true;
     }
 
