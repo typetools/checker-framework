@@ -3358,7 +3358,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
       AnnotatedTypeMirror typeArg = typeargs.get(i);
 
-      if (isIgnoredUninferredWildcard(bounds.getUpperBound())) {
+      if (atypeFactory.ignoreRawTypeArguments
+          && bounds.getUpperBound().getKind() == TypeKind.WILDCARD
+          && ((AnnotatedWildcardType) bounds.getUpperBound()).isTypeArgOfRawType()) {
         continue;
       }
 
@@ -3412,12 +3414,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.reportError(reportError, "type.argument.hasqualparam", top);
       }
     }
-  }
-
-  private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
-    return atypeFactory.ignoreRawTypeArguments
-        && type.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
   }
 
   /**
@@ -3858,8 +3854,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               functionTypeReturnType);
       return overrideChecker.checkOverride();
     } else {
-      // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
-      // In that case, only return false if uninferred type arguments should not be ignored.
+      // If the functionalInterface is not a declared type, it must be from a wildcard from a raw
+      // type.
+      // In that case, only return false if raw types should not be ignored.
       return !atypeFactory.ignoreRawTypeArguments;
     }
   }

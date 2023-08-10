@@ -1760,7 +1760,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Adds default annotations to {@code type}. This method should only be used in places where the
-   * correct annotations cannot be computed because of uninferred type arguments. (See {@link
+   * correct annotations cannot be computed because of type argument of raw types. (See {@link
    * AnnotatedWildcardType#isTypeArgOfRawType()}.)
    *
    * @param type annotated type to which default annotations are added
@@ -4439,7 +4439,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * recursively search for lambdas nested in lambdas.
    *
    * @param tree the tree of the lambda or method reference
-   * @return the functional interface type or an uninferred type argument
+   * @return the functional interface type or a type argument from a raw type
    */
   private AnnotatedTypeMirror getFunctionalInterfaceType(Tree tree) {
     TreePath parentPath = getPath(tree).getParentPath();
@@ -4576,7 +4576,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private void assertIsFunctionalInterface(TypeMirror typeMirror, Tree contextTree, Tree tree) {
     if (typeMirror.getKind() == TypeKind.WILDCARD) {
-      // Ignore wildcards, because they are uninferred type arguments.
+      // Ignore wildcards, because they are type arguments from raw types.
       return;
     }
     Type type = (Type) typeMirror;

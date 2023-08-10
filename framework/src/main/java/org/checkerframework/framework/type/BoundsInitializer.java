@@ -51,7 +51,8 @@ public class BoundsInitializer {
   /**
    * Initializes the type arguments of {@code declaredType}. The upper bound of unbound wildcards is
    * set to the upper bound of the type parameter for which it is an argument. If {@code
-   * declaredType} is raw, then the type arguments are uninferred wildcards.
+   * declaredType} is raw, then the type arguments are wildcards marked as from raw type.({@link
+   * AnnotatedWildcardType#isTypeArgOfRawType()}
    *
    * @param declaredType type whose arguments are initialized
    */
