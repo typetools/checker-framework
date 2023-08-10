@@ -4358,16 +4358,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     annotatedTypeReplacer.setTop(null);
   }
 
-  /** The implementation of the visitor for #containsUninferredTypeArguments. */
-  private final SimpleAnnotatedTypeScanner<Boolean, Void> uninferredTypeArgumentScanner =
-      new SimpleAnnotatedTypeScanner<>(
-          (type, p) ->
-              type.getKind() == TypeKind.WILDCARD
-                  && ((AnnotatedWildcardType) type).isTypeArgOfRawType(),
-          Boolean::logicalOr,
-          false);
-
-  /** The implementation of the visitor for #containsUninferredTypeArguments. */
+  /** The implementation of the visitor for #containsCapturedTypes. */
   private final SimpleAnnotatedTypeScanner<Boolean, Void> containsCapturedTypes =
       new SimpleAnnotatedTypeScanner<>(
           (type, p) -> TypesUtils.isCapturedTypeVariable(type.getUnderlyingType()),
