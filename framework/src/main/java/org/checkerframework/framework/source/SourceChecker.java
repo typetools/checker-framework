@@ -340,11 +340,6 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.common.basetype.BaseTypeVisitor
   "showchecks",
 
-  // Output information about intermediate steps in method type argument inference
-  // org.checkerframework.framework.util.typeinference.OldDefaultTypeArgumentInference
-  // TODO: reimplement this for new inference.
-  "showInferenceSteps",
-
   // Output a stack trace when reporting errors or warnings
   // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
   "dumpOnErrors",
