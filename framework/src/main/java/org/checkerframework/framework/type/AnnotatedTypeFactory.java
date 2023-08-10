@@ -4374,18 +4374,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           Boolean::logicalOr,
           false);
 
-  /**
-   * Returns whether this type or any component type is a wildcard type for which Java 7 type
-   * inference is insufficient. See issue 979, or the documentation on AnnotatedWildcardType.
-   *
-   * @param type type to check
-   * @return whether this type or any component type is a wildcard type for which Java 7 type
-   *     inference is insufficient
-   */
-  public boolean containsUninferredTypeArguments(AnnotatedTypeMirror type) {
-    return uninferredTypeArgumentScanner.visit(type);
-  }
-
   public boolean containsCapturedTypes(AnnotatedTypeMirror type) {
     return containsCapturedTypes.visit(type);
   }
