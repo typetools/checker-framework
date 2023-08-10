@@ -8,10 +8,20 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
+/** Annotated type factory for the Tainting Checker. */
 public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+  /** {@link Untainted} annotation mirror. */
   private final AnnotationMirror UNTAINTED;
+
+  /** A set of containing on the {@link Untainted} annotation mirror. */
   private final AnnotationMirrorSet setOfUntainted;
 
+  /**
+   * Creates a {@link TaintingAnnotatedTypeFactory}.
+   *
+   * @param checker the tainting checker
+   */
   public TaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.UNTAINTED = AnnotationBuilder.fromClass(getElementUtils(), Untainted.class);
