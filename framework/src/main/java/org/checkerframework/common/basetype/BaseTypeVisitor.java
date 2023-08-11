@@ -1741,7 +1741,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ParameterizedExecutableType preI = atypeFactory.methodFromUse(tree, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         && preI.typeArgs.isEmpty()) {
-      if (checkInferredTypeArguments(tree, preI)) {
+      if (checkTypeArgumentInference(tree, preI.executableType)) {
         return null;
       }
     }
@@ -1793,12 +1793,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return null; // super.visitMethodInvocation(tree, p);
   }
 
-  private boolean checkInferredTypeArguments(
-      ExpressionTree tree, ParameterizedExecutableType preI) {
+  /**
+   * Reports a "type.arguments.not.inferred" error if type argument inference fails.
+   *
+   * @param tree a tree that requires type argument inference
+   * @param methodType the type of the method before type argument substitution
+   * @return whether type argument inference succeeds.
+   */
+  private boolean checkTypeArgumentInference(
+      ExpressionTree tree, AnnotatedExecutableType methodType) {
     InferenceResult args =
-        atypeFactory
-            .getTypeArgumentInference()
-            .inferTypeArgs(atypeFactory, tree, preI.executableType);
+        atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, tree, methodType);
     if (args != null && !args.isAnnoInferenceFailed()) {
       return false;
     }
@@ -1812,7 +1817,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checker.reportError(
         tree,
         "type.arguments.not.inferred",
-        preI.executableType.getElement().getSimpleName(),
+        ElementUtils.getSimpleDescription(methodType.getElement()),
         error);
     return true;
   }
@@ -2074,7 +2079,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ParameterizedExecutableType preI = atypeFactory.constructorFromUse(tree, false);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
-      if (checkInferredTypeArguments(tree, preI)) {
+      if (checkTypeArgumentInference(tree, preI.executableType)) {
         return null;
       }
     }
@@ -3799,7 +3804,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.methodFromUseNoTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
-      if (checkInferredTypeArguments(memberReferenceTree, preI)) {
+      if (checkTypeArgumentInference(memberReferenceTree, preI.executableType)) {
         return true;
       }
     }
@@ -3855,8 +3860,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return overrideChecker.checkOverride();
     } else {
       // If the functionalInterface is not a declared type, it must be from a wildcard from a raw
-      // type.
-      // In that case, only return false if raw types should not be ignored.
+      // type. In that case, only return false if raw types should not be ignored.
       return !atypeFactory.ignoreRawTypeArguments;
     }
   }
