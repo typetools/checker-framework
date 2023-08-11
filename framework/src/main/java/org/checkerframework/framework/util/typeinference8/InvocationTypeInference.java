@@ -35,6 +35,8 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Resolution;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -452,7 +454,8 @@ public class InvocationTypeInference {
    * addition to the constraints added in {@link #createC(InvocationType, List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
-   * invocation, new class tree, conditional expression, or parenthesized expression.
+   * invocation, new class tree, conditional expression, switch expression, or parenthesized
+   * expression.
    *
    * <p>If {@code ei} is a method invocation or new class tree, that expression might require type
    * argument inference. In that case the additional variables, bounds, and constraints are added
@@ -516,6 +519,16 @@ public class InvocationTypeInference {
         c.addAll(createAdditionalArgConstraints(conditional.getFalseExpression(), fi, map));
         break;
       default:
+        if (TreeUtils.isSwitchExpression(ei)) {
+          SwitchExpressionScanner<Void, Void> scanner =
+              new FunctionalSwitchExpressionScanner<>(
+                  (ExpressionTree tree, Void unused) -> {
+                    c.addAll(createAdditionalArgConstraints(tree, fi, map));
+                    return null;
+                  },
+                  (c1, c2) -> null);
+          scanner.scanSwitchExpression(ei, null);
+        }
         // no constraints
     }
 
@@ -568,6 +581,15 @@ public class InvocationTypeInference {
         return notPertinentToApplicability(conditional.getTrueExpression(), isTargetVariable)
             || notPertinentToApplicability(conditional.getFalseExpression(), isTargetVariable);
       default:
+        if (TreeUtils.isSwitchExpression(expressionTree)) {
+          SwitchExpressionScanner<Boolean, Void> scanner =
+              new FunctionalSwitchExpressionScanner<>(
+                  (ExpressionTree tree, Void unused) ->
+                      notPertinentToApplicability(tree, isTargetVariable),
+                  (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
+          ;
+          return scanner.scanSwitchExpression(expressionTree, null);
+        }
         return false;
     }
   }

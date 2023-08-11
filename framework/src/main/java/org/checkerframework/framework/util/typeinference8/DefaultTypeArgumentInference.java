@@ -128,7 +128,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     switch (parentTree.getKind()) {
       case PARENTHESIZED:
       case CONDITIONAL_EXPRESSION:
-        // case SWITCH_EXPRESSION:
         ExpressionTree outer =
             outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
         if (outer == parentTree) {
@@ -167,6 +166,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         return tree;
       default:
+        if (TreeUtils.isSwitchExpression(tree)) {
+          // case SWITCH_EXPRESSION:
+          ExpressionTree outerTree =
+              outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+          if (outerTree == parentTree) {
+            return tree;
+          }
+          return outerTree;
+        }
         return tree;
     }
   }

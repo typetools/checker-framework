@@ -12,6 +12,8 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -51,8 +53,8 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * For lambda and method references constraints, input variables are roughly the inference
    * variables mentioned by they function type's parameter types and return types. For conditional
-   * expressions constraints, input variables are the union of the input variables of its
-   * subexpressions. For all other constraints, no input variables exist.
+   * expression constraints and switch expression constraints, input variables are the union of the
+   * input variables of its subexpressions. For all other constraints, no input variables exist.
    *
    * <p>Defined in <a
    * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2.2">JLS section
@@ -134,6 +136,17 @@ public abstract class TypeConstraint implements Constraint {
         inputs.addAll(getInputVariablesForExpression(conditional.getFalseExpression(), T));
         return inputs;
       default:
+        if (TreeUtils.isSwitchExpression(tree)) {
+          List<Variable> inputs2 = new ArrayList<>();
+
+          SwitchExpressionScanner<Boolean, Void> scanner =
+              new FunctionalSwitchExpressionScanner<>(
+                  (ExpressionTree exTree, Void unused) ->
+                      inputs2.addAll(getInputVariablesForExpression(exTree, T)),
+                  (r1, r2) -> null);
+          scanner.scanSwitchExpression(tree, null);
+          return inputs2;
+        }
         return Collections.emptyList();
     }
   }

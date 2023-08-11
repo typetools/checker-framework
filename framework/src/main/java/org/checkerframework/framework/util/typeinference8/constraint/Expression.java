@@ -22,6 +22,8 @@ import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.plumelib.util.IPair;
@@ -93,6 +95,19 @@ public class Expression extends TypeConstraint {
       case MEMBER_REFERENCE:
         return reduceMethodRef(context);
       default:
+        if (TreeUtils.isSwitchExpression(expression)) {
+          ConstraintSet set = new ConstraintSet();
+          SwitchExpressionScanner<Void, Void> scanner =
+              new FunctionalSwitchExpressionScanner<>(
+                  (ExpressionTree valueTree, Void unused) -> {
+                    Constraint c = new Expression(valueTree, T);
+                    set.add(c);
+                    return null;
+                  },
+                  (c1, c2) -> null);
+          scanner.scanSwitchExpression(expression, null);
+          return set;
+        }
         throw new BugInCF(
             "Unexpected expression kind: %s, Expression: %s", expression.getKind(), expression);
     }

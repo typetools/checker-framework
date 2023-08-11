@@ -61,6 +61,8 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SwitchExpressionScanner;
+import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
@@ -292,8 +294,13 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns whether argumentTree is the tree at the leaf of path. if tree is a conditional
-   * expression, isArgument is called recursively on the true and false expressions.
+   * Returns whether argumentTree is the tree at the leaf of path. If tree is a conditional
+   * expression, isArgument is called recursively on the true and false expressions. If tree is a
+   * switch expression isArgument is called recursively on all yielded expressions.
+   *
+   * @param path tree path might contain {@code argumentTree}
+   * @param argumentTree an expression tree that might be in {@code path}
+   * @return whether argumentTree is the tree at the leaf of path
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
@@ -305,6 +312,12 @@ public class InferenceFactory {
           (ConditionalExpressionTree) argumentTree;
       return isArgument(path, conditionalExpressionTree.getTrueExpression())
           || isArgument(path, conditionalExpressionTree.getFalseExpression());
+    } else if (TreeUtils.isSwitchExpression(argumentTree)) {
+      SwitchExpressionScanner<Boolean, Void> scanner =
+          new FunctionalSwitchExpressionScanner<>(
+              (tree, unused) -> isArgument(path, tree),
+              (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
+      return scanner.scanSwitchExpression(argumentTree, null);
     }
     return false;
   }
