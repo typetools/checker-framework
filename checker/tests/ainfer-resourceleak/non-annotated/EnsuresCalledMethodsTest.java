@@ -24,4 +24,13 @@ class EnsuresCalledMethodsTest {
       }
     }
   }
+
+  //  static void test() {
+  //    // :: error: required.method.not.called
+  //    Foo foo = new Foo();
+  //    ECM ecm = new ECM();
+  //    ecm.foo = foo;
+  //    ecm.close();
+  //  }
+
 }

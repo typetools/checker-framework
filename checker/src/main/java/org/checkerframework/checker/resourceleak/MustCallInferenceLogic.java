@@ -323,11 +323,11 @@ public class MustCallInferenceLogic {
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
     for (ResourceAlias rl : rhsAliases) {
-      Element rhdElt = rl.reference.getElement();
+      Element rhsElt = rl.reference.getElement();
       List<? extends VariableTree> params = enclosingMethodTree.getParameters();
       for (int i = 0; i < params.size(); i++) {
         VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i));
-        if (paramElt.equals(rhdElt)) {
+        if (paramElt.equals(rhsElt)) {
           addOwningOnParams(i);
           mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
           break;
@@ -345,6 +345,7 @@ public class MustCallInferenceLogic {
     for (VariableElement owningField : owningFieldToECM) {
       List<String> mustCallValues = typeFactory.getMustCallValue(owningField);
       assert !mustCallValues.isEmpty() : "Must-call obligation of an owning field is deleted.";
+      assert mustCallValues.size() == 1 : "The size of the must-call set is greater than one.";
       // Assume must-call set has one element
       String key = mustCallValues.get(0);
       String value = "this." + owningField.getSimpleName().toString();
@@ -517,8 +518,8 @@ public class MustCallInferenceLogic {
 
   /**
    * Checks for indirect calls within the method represented by the given MethodInvocationNode. It
-   * checks the called-methods set of each argument after the call and adds owning to the field or
-   * parameter passed as an argument to this call.
+   * checks the called-methods set of each argument after the call to infer owning annotation for
+   * the field or parameter passed as an argument to this call.
    *
    * @param obligations Set of obligations associated with the current code block.
    * @param mNode Method invocation node to check.
@@ -538,34 +539,66 @@ public class MustCallInferenceLogic {
     for (int i = 0; i < arguments.size(); i++) {
       Node arg = NodeUtils.removeCasts(arguments.get(i));
       Element argElt = TreeUtils.elementFromTree(arg.getTree());
-      if (argElt == null && arg instanceof ArrayCreationNode) {
-        ArrayCreationNode arrayCreationNode = (ArrayCreationNode) arg;
-        List<Node> arrays = arrayCreationNode.getInitializers();
-        for (Node n : arrays) {
-          Element nElt = TreeUtils.elementFromTree(n.getTree());
-          if (nElt == null) {
-            continue;
-          }
-          if (nElt.getKind().isField()) {
-            inferOwningField(n, mNode);
-          }
-        }
+
+      if (arg instanceof ArrayCreationNode) {
+        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
+        checkCalledMethodsSetForVarArg(obligations, varArgsNode, mNode, paramsOfEnclosingMethod, i);
       } else if (argElt != null && argElt.getKind().isField()) {
         inferOwningField(arg, mNode);
       }
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
-      for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
-        for (ResourceAlias rl : argAliases) {
-          Element argAliasElt = rl.reference.getElement();
-          if (!argAliasElt.equals(paramElt)) {
-            continue;
-          }
-          JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(j));
-          if (mustCallObligationSatisfied(mNode, paramElt, target)) {
-            addOwningOnParams(i);
-          }
+      processArgAliases(mNode, paramsOfEnclosingMethod, i, argAliases);
+    }
+  }
+
+  private void checkCalledMethodsSetForVarArg(
+      Set<Obligation> obligations,
+      ArrayCreationNode varArgsNode,
+      MethodInvocationNode mNode,
+      List<? extends VariableTree> paramsOfEnclosingMethod,
+      int argIndex) {
+
+    for (Node argNode : varArgsNode.getInitializers()) {
+      Element varArgElt = TreeUtils.elementFromTree(argNode.getTree());
+
+      if (varArgElt == null) {
+        continue;
+      }
+
+      if (varArgElt.getKind().isField()) {
+        inferOwningField(argNode, mNode);
+      } else {
+        Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, argNode);
+        processArgAliases(mNode, paramsOfEnclosingMethod, argIndex, argAliases);
+      }
+    }
+  }
+
+  private void processArgAliases(
+      MethodInvocationNode mNode,
+      List<? extends VariableTree> paramsOfEnclosingMethod,
+      int argIndex,
+      Set<ResourceAlias> argAliases) {
+
+    for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
+
+      for (ResourceAlias rl : argAliases) {
+        Element argAliasElt = rl.reference.getElement();
+        if (!argAliasElt.equals(paramElt)) {
+          continue;
+        }
+
+        JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(j));
+        if (mustCallObligationSatisfied(mNode, paramElt, target)) {
+          addOwningOnParams(j);
+          break;
+        }
+
+        if (typeFactory.hasOwning(parameters.get(argIndex))) {
+          addOwningOnParams(j);
+          break;
         }
       }
     }
@@ -601,7 +634,7 @@ public class MustCallInferenceLogic {
    * <ul>
    *   <li>It calls {@link #checkArgsOfMethodCall} to inspect the arguments of a method invocation
    *       and identify if any of them are passed as an owning parameter. If found, it adds the
-   *       "owning" attribute to the corresponding parameters of the enclosing method.
+   *       "owning" annotation to the corresponding parameters of the enclosing method.
    *   <li>It calls {@link #checkReceiverOfMethodCall} to verify if the receiver of the method
    *       represented by {@code mNode} qualifies as a candidate owning field, and if the method
    *       invocation satisfies the field's must-call obligation. If these conditions are met, the

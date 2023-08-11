@@ -40,6 +40,10 @@ class EnsuresCalledMethodsVarArgsTest {
         Utils.close(f);
       }
     }
+
+    void owningParam(Foo f) {
+      Utils.close(f);
+    }
   }
 
   void testCorrect() {
