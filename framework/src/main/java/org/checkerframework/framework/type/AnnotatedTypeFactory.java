@@ -2310,7 +2310,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns the same as {@link #methodFromUse(MethodInvocationTree)}, but without inference type
+   * Returns the same as {@link #methodFromUse(MethodInvocationTree)}, but without inferred type
    * arguments.
    *
    * @param tree a method invocation tree
@@ -2387,11 +2387,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     return methodFromUse(tree, methodElt, receiverType, true);
   }
 
+  /**
+   * Returns the same as {@link #methodFromUse(ExpressionTree, ExecutableElement,
+   * AnnotatedTypeMirror)}, but without inferred type arguments.
+   *
+   * @param tree a method invocation tree
+   * @return the method type being invoked with tree without inferring type arguments.
+   */
   public final ParameterizedExecutableType methodFromUseWithoutTypeArgInference(
       ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
     return methodFromUse(tree, methodElt, receiverType, false);
   }
 
+  /**
+   * The implementation of {@link #methodFromUse(ExpressionTree, ExecutableElement,
+   * AnnotatedTypeMirror)} and {@link #methodFromUseWithoutTypeArgInference(ExpressionTree,
+   * ExecutableElement, AnnotatedTypeMirror)}.
+   *
+   * @param tree
+   * @param inferTypeArgs whether type arguments should be inferred
+   * @return the method type being invoked with tree
+   */
   protected ParameterizedExecutableType methodFromUse(
       ExpressionTree tree,
       ExecutableElement methodElt,
