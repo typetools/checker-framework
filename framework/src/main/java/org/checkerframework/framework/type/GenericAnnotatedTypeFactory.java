@@ -2127,7 +2127,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(
+  protected ParameterizedExecutableType methodFromUse(
       MethodInvocationTree tree, boolean inferTypeArg) {
     ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArg);
     AnnotatedExecutableType method = mType.executableType;

@@ -125,7 +125,7 @@ public class InferenceFactory {
         MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
 
         AnnotatedExecutableType methodType =
-            factory.methodFromUseNoTypeArgInfere(methodInvocation).executableType;
+            factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType;
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
@@ -667,7 +667,7 @@ public class InferenceFactory {
     AnnotatedExecutableType executableType;
     if (invocation.getKind() == Kind.METHOD_INVOCATION) {
       executableType =
-          typeFactory.methodFromUseNoTypeArgInfere((MethodInvocationTree) invocation)
+          typeFactory.methodFromUseWithoutTypeArgInference((MethodInvocationTree) invocation)
               .executableType;
     } else {
       executableType =
@@ -746,7 +746,8 @@ public class InferenceFactory {
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
     AnnotatedExecutableType compileTimeType =
-        typeFactory.methodFromUseNoTypeArgInference(memRef, compileTimeDeclaration, enclosingType)
+        typeFactory.methodFromUseWithoutTypeArgInference(
+                memRef, compileTimeDeclaration, enclosingType)
             .executableType;
 
     return new InvocationType(

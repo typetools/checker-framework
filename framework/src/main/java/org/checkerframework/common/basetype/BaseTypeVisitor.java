@@ -1738,7 +1738,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (shouldSkipUses(tree)) {
       return super.visitMethodInvocation(tree, p);
     }
-    ParameterizedExecutableType preI = atypeFactory.methodFromUse(tree, false);
+    ParameterizedExecutableType preI = atypeFactory.methodFromUseWithoutTypeArgInference(tree);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         && preI.typeArgs.isEmpty()) {
       if (checkTypeArgumentInference(tree, preI.executableType)) {
@@ -3801,7 +3801,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
 
     ParameterizedExecutableType preI =
-        atypeFactory.methodFromUseNoTypeArgInference(
+        atypeFactory.methodFromUseWithoutTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
       if (checkTypeArgumentInference(memberReferenceTree, preI.executableType)) {
