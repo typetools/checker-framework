@@ -90,7 +90,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           java8Inference.context.pathToExpression = typeFactory.getPath(expressionTree);
           return java8Inference.infer((MemberReferenceTree) expressionTree);
         }
-        return result.swap(methodType, expressionTree);
+        return result.swapTypeVariables(methodType, expressionTree);
       }
     } catch (FalseBoundException ex) {
       // TODO: For now, rethrow the exception so that the tests crash.

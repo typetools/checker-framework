@@ -43,17 +43,26 @@ public class InferenceResult {
    */
   private final boolean annoInferenceFailed;
 
-  /** */
+  /** Whether unchecked conversion was necessary to infer the type arguments. */
   private final boolean uncheckedConversion;
 
+  /** If {@code annoInferenceFailed}, then this is the error message to report to the user. */
   private final String errorMsg;
 
+  /**
+   * Creates an inference result.
+   *
+   * @param variables instantiated variables
+   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param annoInferenceFailed whether inference failed because of annotations
+   * @param errorMsg message to report to users if inference failed
+   */
   public InferenceResult(
-      List<Variable> thetaPrime,
+      List<Variable> variables,
       boolean uncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this.results = convert(thetaPrime);
+    this.results = convert(variables);
     this.uncheckedConversion = uncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
@@ -71,6 +80,13 @@ public class InferenceResult {
     return annoInferenceFailed;
   }
 
+  /**
+   * Convert the instantiated variables to a map from expression tree to a map from type variable to
+   * its type argument.
+   *
+   * @param variables instantiated variables
+   * @return a map from expression tree to a map from type variable to its type argument
+   */
   private static Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convert(
       List<Variable> variables) {
     Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> map = new HashMap<>();
@@ -82,6 +98,12 @@ public class InferenceResult {
     return map;
   }
 
+  /**
+   * Returns a mapping from type variable to its type argument for the {@code expressionTree}.
+   *
+   * @param expressionTree a tree for which type arguments were inferred
+   * @return a mapping from type variable to its type argument for the {@code expressionTree}
+   */
   public Map<TypeVariable, AnnotatedTypeMirror> getTypeArgumentsForExpression(
       ExpressionTree expressionTree) {
     if (this == emptyResult || results.isEmpty()) {
@@ -90,11 +112,26 @@ public class InferenceResult {
     return results.get(expressionTree);
   }
 
+  /**
+   * An error message to report to the user.
+   *
+   * @return an error message to report to the user
+   */
   public String getErrorMsg() {
     return errorMsg;
   }
 
-  public InferenceResult swap(AnnotatedExecutableType methodType, ExpressionTree tree) {
+  /**
+   * Switch the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
+   * methodType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} is used to decide which type variables to swap.
+   *
+   * @param methodType annotated method type
+   * @param tree method invocation tree
+   * @return this
+   */
+  /* package-private */ InferenceResult swapTypeVariables(
+      AnnotatedExecutableType methodType, ExpressionTree tree) {
     Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
     for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();

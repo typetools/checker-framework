@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -746,16 +745,6 @@ public class AnnotatedTypes {
    *     invocation
    */
   public static IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
-      ProcessingEnvironment processingEnv,
-      AnnotatedTypeFactory atypeFactory,
-      ExpressionTree expr,
-      ExecutableElement elt,
-      AnnotatedExecutableType preType) {
-    return findTypeArguments(processingEnv, atypeFactory, expr, elt, preType, true);
-  }
-
-  public static IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
-      ProcessingEnvironment processingEnv,
       AnnotatedTypeFactory atypeFactory,
       ExpressionTree expr,
       ExecutableElement elt,

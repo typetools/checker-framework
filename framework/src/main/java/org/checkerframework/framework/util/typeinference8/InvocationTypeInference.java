@@ -166,20 +166,19 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
-
-    if (b4.isUncheckedConversion()) {
-      // If unchecked conversion was necessary for the method to be applicable during
-      // constraint set reduction in 18.5.1, then the parameter types of the invocation type
-      // of m are obtained by applying thetaPrime to the parameter types of m's type, and the
-      // return type and thrown types of the invocation type of m are given by the erasure of
-      // the return type and thrown types of m's type.
-      // TODO: the erasure of the return type should happen were the inferred type arguments
-      // are substituted into the method type.
-    }
     return new InferenceResult(
         b4.getInstantiatedVariables(), b4.isUncheckedConversion(), b4.annoFail, b4.errorMsg);
   }
 
+  /**
+   * Perform invocation type inference on {@code invocation}. See <a
+   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.5.2">JLS
+   * 18.5.2</a>.
+   *
+   * @param invocation member reference tree
+   * @return the result of inference
+   * @throws FalseBoundException if inference fails because of the java types
+   */
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
     ProperType target = context.inferenceTypeFactory.getTargetType();
@@ -210,15 +209,6 @@ public class InvocationTypeInference {
 
     List<Variable> thetaPrime = b3.resolve();
 
-    if (b3.isUncheckedConversion()) {
-      // If unchecked conversion was necessary for the method to be applicable during
-      // constraint set reduction in 18.5.1, then the parameter types of the invocation type
-      // of m are obtained by applying thetaPrime to the parameter types of m's type, and the
-      // return type and thrown types of the invocation type of m are given by the erasure of
-      // the return type and thrown types of m's type.
-      // TODO: the erasure of the return type should happen were the inferred type arguments
-      // are substituted into the method type.
-    }
     return new InferenceResult(thetaPrime, b3.isUncheckedConversion(), b3.annoFail, b3.errorMsg);
   }
 

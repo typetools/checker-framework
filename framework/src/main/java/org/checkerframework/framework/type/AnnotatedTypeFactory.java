@@ -2425,8 +2425,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     List<AnnotatedTypeMirror> typeargs = new ArrayList<>(methodElt.getTypeParameters().size());
 
     IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> pair =
-        AnnotatedTypes.findTypeArguments(
-            processingEnv, this, tree, methodElt, methodType, inferTypeArgs);
+        AnnotatedTypes.findTypeArguments(this, tree, methodElt, methodType, inferTypeArgs);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = pair.first;
     if (!typeParamToTypeArg.isEmpty()) {
       for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
@@ -2745,7 +2744,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
     }
     IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> pair =
-        AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con, shouldInfer);
+        AnnotatedTypes.findTypeArguments(this, tree, ctor, con, shouldInfer);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = new HashMap<>(pair.first);
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
