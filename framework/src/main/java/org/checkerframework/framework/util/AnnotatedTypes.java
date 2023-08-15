@@ -741,8 +741,9 @@ public class AnnotatedTypes {
    * @param elt the element corresponding to the tree
    * @param preType the (partially annotated) type corresponding to the tree - the result of
    *     AnnotatedTypes.asMemberOf with the receiver and elt
+   * @param inferTypeArgs whether the type argument should be inferred
    * @return the mapping of the type variables to type arguments for this method or constructor
-   *     invocation
+   *     invocation and whether unchecked conversion was required to infer the type arguments
    */
   public static IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> findTypeArguments(
       AnnotatedTypeFactory atypeFactory,
