@@ -226,6 +226,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * If the type of any {@code argTrees} requires the type of the parameter it is psuedo-assigned
    * to, then this method returns true.
    *
+   * @param argTrees argument trees
    * @param path path to the method or constructor invocation
    * @return true, if the type of any {@code argTrees} requires the type of the parameter it is
    *     psuedo-assigned to

@@ -2076,7 +2076,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitNewClass(tree, p);
     }
 
-    ParameterizedExecutableType preI = atypeFactory.constructorFromUse(tree, false);
+    ParameterizedExecutableType preI = atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
     if (!preI.executableType.getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
       if (checkTypeArgumentInference(tree, preI.executableType)) {

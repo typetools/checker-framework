@@ -65,7 +65,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       } else if (outerTree.getKind() == Tree.Kind.NEW_CLASS) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType =
-            typeFactory.constructorFromUseNoTypeArgInfere((NewClassTree) outerTree).executableType;
+            typeFactory.constructorFromUseWithoutTypeArgInference((NewClassTree) outerTree)
+                .executableType;
       } else if (outerTree.getKind() == Kind.MEMBER_REFERENCE) {
         pathToExpression = typeFactory.getPath(outerTree);
         outerMethodType = null;

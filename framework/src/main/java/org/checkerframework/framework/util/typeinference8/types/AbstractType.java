@@ -48,6 +48,7 @@ import org.plumelib.util.IPair;
  */
 public abstract class AbstractType {
 
+  /** The kind of {@link AbstractType}. */
   public enum Kind {
     /** {@link ProperType},a type that contains no inference variables* */
     PROPER,
@@ -60,9 +61,17 @@ public abstract class AbstractType {
     INFERENCE_TYPE
   }
 
+  /** The context object. */
   protected final Java8InferenceContext context;
+
+  /** The {@link AnnotatedTypeFactory}. */
   protected final AnnotatedTypeFactory typeFactory;
 
+  /**
+   * Creates an {@link AbstractType}.
+   *
+   * @param context the context object
+   */
   protected AbstractType(Java8InferenceContext context) {
     this.context = context;
     this.typeFactory = context.typeFactory;
@@ -181,6 +190,7 @@ public abstract class AbstractType {
   /**
    * Return a new type that is the capture of this type.
    *
+   * @param context the context object
    * @return a new type that is the capture of this type
    */
   public AbstractType capture(Java8InferenceContext context) {
@@ -220,8 +230,20 @@ public abstract class AbstractType {
     return create(asSuper, asSuper.getUnderlyingType());
   }
 
+  /**
+   * If this {@link AbstractType} is a functional interface type, then {@code functionType} is its
+   * function type. Otherwise, {@code functionType} is null. Initialized by {@link
+   * #getFunctionType()}.
+   */
   private IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
 
+  /**
+   * If this {@link AbstractType} is a functional interface type, then its function type is
+   * returned. Otherwise, returns null.
+   *
+   * @return this {@link AbstractType} is a functional interface type, then its function type is
+   *     returned; otherwise, returns null
+   */
   IPair<AnnotatedExecutableType, ExecutableType> getFunctionType() {
     if (functionType == null) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
@@ -337,6 +359,7 @@ public abstract class AbstractType {
   /**
    * Return a new type that is the same type as this one, but whose type arguments are {@code args}.
    *
+   * @param args a list of type arguments
    * @return a new type that is the same type as this one, but whose type arguments are {@code args}
    */
   public AbstractType replaceTypeArgs(List<AbstractType> args) {

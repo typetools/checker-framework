@@ -2,7 +2,6 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -21,29 +20,23 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 /** Helper class for determining if a type contains an inference variable. */
 public class AnnotatedContainsInferenceVariable {
 
-  /** Returns true if {@code type} contains any of the type variables in {@code typeVariables}. */
+  /**
+   * Returns true if {@code type} contains any of the type variables in {@code typeVariables}.
+   *
+   * @param typeVariables a collection of type variables
+   * @param type a type to check
+   * @return true if {@code type} contains any of the type variables in {@code typeVariables}
+   */
   public static boolean hasAnyTypeVariable(
       Collection<? extends TypeVariable> typeVariables, AnnotatedTypeMirror type) {
     return new Visitor(typeVariables).visit(type);
   }
 
-  /** Returns the type variables in {@code typeVariables} that appear in {@code type}. */
-  public static Set<TypeVariable> getMentionedTypeVariables(
-      Collection<? extends TypeVariable> typeVariables, AnnotatedTypeMirror type) {
-    Visitor visitor = new Visitor(typeVariables);
-    visitor.visit(type);
-    return visitor.foundVariables;
-  }
-
   /** A helper class to find type variables mentioned by a type. */
-  static class Visitor implements AnnotatedTypeVisitor<Boolean, Void> {
+  private static class Visitor implements AnnotatedTypeVisitor<Boolean, Void> {
 
     /** Type variables for which to search. */
     private final Collection<? extends TypeVariable> typeVariables;
-
-    /** Type variables in {@code typeVariables} that have been found. */
-    // default visibility to allow direct access from getMentionedTypeVariables
-    final LinkedHashSet<TypeVariable> foundVariables = new LinkedHashSet<>();
 
     /** A set of types that have been visited. Used to prevent infinite recursion. */
     private final Set<AnnotatedTypeMirror> visitedTypes = new HashSet<>();
@@ -54,11 +47,7 @@ public class AnnotatedContainsInferenceVariable {
 
     /** Returns true if {@code typeVar} is a type variable in {@code typeVariables} */
     private boolean isTypeVariableOfInterest(AnnotatedTypeVariable typeVar) {
-      if (typeVariables.contains(typeVar.getUnderlyingType())) {
-        foundVariables.add(typeVar.getUnderlyingType());
-        return true;
-      }
-      return false;
+      return typeVariables.contains(typeVar.getUnderlyingType());
     }
 
     @Override

@@ -1074,7 +1074,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * TypeArgumentInference infers the method type arguments when they are not explicitly written.
+   * Creates the object that infers type arguments.
+   *
+   * @return the object that infers type arguments
    */
   protected TypeArgumentInference createTypeArgumentInference() {
     return new DefaultTypeArgumentInference();
@@ -2391,7 +2393,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the same as {@link #methodFromUse(ExpressionTree, ExecutableElement,
    * AnnotatedTypeMirror)}, but without inferred type arguments.
    *
-   * @param tree a method invocation tree
+   * @param tree either a MethodInvocationTree or a MemberReferenceTree
+   * @param methodElt the element of the referenced method
+   * @param receiverType the type of the receiver
    * @return the method type being invoked with tree without inferring type arguments.
    */
   public final ParameterizedExecutableType methodFromUseWithoutTypeArgInference(
@@ -2404,7 +2408,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * AnnotatedTypeMirror)} and {@link #methodFromUseWithoutTypeArgInference(ExpressionTree,
    * ExecutableElement, AnnotatedTypeMirror)}.
    *
-   * @param tree method invocation tree or a method reference tree
+   * @param tree either a MethodInvocationTree or a MemberReferenceTree
+   * @param methodElt the element of the referenced method
+   * @param receiverType the type of the receiver
    * @param inferTypeArgs whether type arguments should be inferred
    * @return the method type being invoked with tree
    */
@@ -2662,15 +2668,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the annotated type of the invoked constructor (as an executable type) and the
    *     (inferred) type arguments
    */
-  public final ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
+  public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
     return constructorFromUse(tree, true);
   }
 
-  public ParameterizedExecutableType constructorFromUseNoTypeArgInfere(NewClassTree tree) {
+  /**
+   * The same as {@link #constructorFromUse(NewClassTree)}, but no type arguments are inferred.
+   *
+   * @param tree the constructor invocation tree
+   * @return the annotated type of the invoked constructor (as an executable type) and the explicit
+   *     type arguments
+   */
+  public ParameterizedExecutableType constructorFromUseWithoutTypeArgInference(NewClassTree tree) {
     return constructorFromUse(tree, false);
   }
 
-  public ParameterizedExecutableType constructorFromUse(NewClassTree tree, boolean shouldInfer) {
+  /**
+   * The implementation of {@link #constructorFromUse(NewClassTree)} and {@link
+   * #constructorFromUseWithoutTypeArgInference(NewClassTree)}.
+   *
+   * @param tree the constructor invocation tree
+   * @param inferTypeArgs whether the type arguments should be inferred
+   * @return the annotated type of the invoked constructor (as an executable type) and the type
+   *     arguments
+   */
+  protected ParameterizedExecutableType constructorFromUse(
+      NewClassTree tree, boolean inferTypeArgs) {
     // Get the annotations written on the new class tree.
     AnnotatedDeclaredType type =
         (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(tree), false);
@@ -2744,7 +2767,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       con = AnnotatedTypes.asMemberOf(types, this, type, ctor, con);
     }
     IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> pair =
-        AnnotatedTypes.findTypeArguments(this, tree, ctor, con, shouldInfer);
+        AnnotatedTypes.findTypeArguments(this, tree, ctor, con, inferTypeArgs);
     Map<TypeVariable, AnnotatedTypeMirror> typeParamToTypeArg = new HashMap<>(pair.first);
     List<AnnotatedTypeMirror> typeargs;
     if (typeParamToTypeArg.isEmpty()) {
@@ -4393,6 +4416,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           Boolean::logicalOr,
           false);
 
+  /**
+   * Whether the {@code type} contains any captured type variables.
+   *
+   * @param type type to check
+   * @return whether the {@code type} contains any captured type variables.
+   */
   public boolean containsCapturedTypes(AnnotatedTypeMirror type) {
     return containsCapturedTypes.visit(type);
   }
