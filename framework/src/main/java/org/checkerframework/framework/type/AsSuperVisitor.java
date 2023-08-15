@@ -714,13 +714,21 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
   // <editor-fold defaultstate="collapsed" desc="visitWildCard_Other methods">
 
-  private AnnotatedTypeMirror visitWildcard_NotTypvarNorWildcard(
-      AnnotatedWildcardType type, AnnotatedTypeMirror superType, Void p) {
+  /**
+   * Implementation of asSuper for converting wildcards to super types that are not type variables
+   * or wildcards.
+   *
+   * @param type the type
+   * @param superType the super type
+   * @return {@code type} converted to {@code superType}
+   */
+  private AnnotatedTypeMirror visitWildcard_NotTypevarNorWildcard(
+      AnnotatedWildcardType type, AnnotatedTypeMirror superType) {
     boolean oldIsTypeArgumentFromRawType = isTypeArgumentFromRawType;
     if (type.isTypeArgOfRawType()) {
       isTypeArgumentFromRawType = true;
     }
-    AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
+    AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, null);
     isTypeArgumentFromRawType = oldIsTypeArgumentFromRawType;
     atypeFactory.addDefaultAnnotations(superType);
 
@@ -730,25 +738,25 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitWildcard_Array(
       AnnotatedWildcardType type, AnnotatedArrayType superType, Void p) {
-    return visitWildcard_NotTypvarNorWildcard(type, superType, p);
+    return visitWildcard_NotTypevarNorWildcard(type, superType);
   }
 
   @Override
   public AnnotatedTypeMirror visitWildcard_Declared(
       AnnotatedWildcardType type, AnnotatedDeclaredType superType, Void p) {
-    return visitWildcard_NotTypvarNorWildcard(type, superType, p);
+    return visitWildcard_NotTypevarNorWildcard(type, superType);
   }
 
   @Override
   public AnnotatedTypeMirror visitWildcard_Intersection(
       AnnotatedWildcardType type, AnnotatedIntersectionType superType, Void p) {
-    return visitWildcard_NotTypvarNorWildcard(type, superType, p);
+    return visitWildcard_NotTypevarNorWildcard(type, superType);
   }
 
   @Override
   public AnnotatedTypeMirror visitWildcard_Primitive(
       AnnotatedWildcardType type, AnnotatedPrimitiveType superType, Void p) {
-    return visitWildcard_NotTypvarNorWildcard(type, superType, p);
+    return visitWildcard_NotTypevarNorWildcard(type, superType);
   }
 
   @Override
@@ -780,7 +788,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitWildcard_Union(
       AnnotatedWildcardType type, AnnotatedUnionType superType, Void p) {
-    return visitWildcard_NotTypvarNorWildcard(type, superType, p);
+    return visitWildcard_NotTypevarNorWildcard(type, superType);
   }
 
   @Override

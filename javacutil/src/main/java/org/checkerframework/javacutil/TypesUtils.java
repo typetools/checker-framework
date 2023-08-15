@@ -1354,6 +1354,11 @@ public final class TypesUtils {
   /**
    * Returns the most specific super type of {@code type} that is an array or null if {@code type}
    * is not a subtype of an array.
+   *
+   * @param type a type
+   * @param types TypesUtils
+   * @return the most specific super type of {@code type} that is an array or null if {@code type}
+   *     is not a subtype of an array
    */
   public static @Nullable TypeMirror getMostSpecificArrayType(TypeMirror type, Types types) {
     if (type.getKind() == TypeKind.ARRAY) {
@@ -1400,7 +1405,13 @@ public final class TypesUtils {
 
   /**
    * Creates a wildcard with the given bounds. If upper bound is Object, then the created wildcard
-   * will not have an upper bound.
+   * will not have an upper bound. If {@code upperBound} is {@code null}, the {@code lowerBound}
+   * must not be null.
+   *
+   * @param lowerBound the lower bound for the wildcard
+   * @param upperBound the upper bound for the wilcard
+   * @param types TypesUtils
+   * @return a wildcard with the given bound
    */
   public static TypeMirror createWildcard(
       TypeMirror lowerBound, TypeMirror upperBound, Types types) {

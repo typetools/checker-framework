@@ -1092,6 +1092,7 @@ public final class TreeUtils {
    * Returns true if the tree is of a diamond type. In contrast to the implementation in TreeInfo,
    * this version works on Trees.
    *
+   * @param tree a tree
    * @see com.sun.tools.javac.tree.TreeInfo#isDiamond(JCTree)
    */
   public static boolean isDiamondTree(Tree tree) {
@@ -1107,6 +1108,12 @@ public final class TreeUtils {
     }
   }
 
+  /**
+   * Returns the type arguments to the given new class tree.
+   *
+   * @param tree a new class tree
+   * @return the type arguments to the given new class tree
+   */
   public static List<? extends Tree> getTypeArgumentsToNewClassTree(Tree tree) {
     switch (tree.getKind()) {
       case ANNOTATED_TYPE:
@@ -2891,6 +2898,14 @@ public final class TreeUtils {
     return false;
   }
 
+  /**
+   * Return whether {@code tree} is a method reference that with a raw type to the left of {@code
+   * ::}. For example, {@code Class::getName}.
+   *
+   * @param tree a tree
+   * @return whether {@code tree} is a method reference that with a raw type to the left of {@code
+   *     ::}
+   */
   public static boolean isLikeDiamondMemberReference(ExpressionTree tree) {
     if (tree.getKind() != Tree.Kind.MEMBER_REFERENCE) {
       return false;
@@ -2903,6 +2918,12 @@ public final class TreeUtils {
     return false;
   }
 
+  /**
+   * Returns whether the method reference tree needs type argument inference.
+   *
+   * @param memberReferenceTree a method reference tree
+   * @return whether the method reference tree needs type argument inference
+   */
   public static boolean needsTypeArgInference(MemberReferenceTree memberReferenceTree) {
     if (isDiamondMemberReference(memberReferenceTree)
         || isLikeDiamondMemberReference(memberReferenceTree)) {
