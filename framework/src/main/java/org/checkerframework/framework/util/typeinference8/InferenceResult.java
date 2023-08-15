@@ -15,18 +15,37 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
 
+/** The result of type argument inferrece. */
 public class InferenceResult {
+
+  /** An empty inference result. */
   @SuppressWarnings("interning:assignment")
-  public static @InternedDistinct InferenceResult emptyResult =
+  private static final @InternedDistinct InferenceResult emptyResult =
       new InferenceResult(Collections.emptyList(), false, false, "");
 
+  /**
+   * Returns an empty inference result.
+   *
+   * @return an empty inference result
+   */
   public static InferenceResult emptyResult() {
     return emptyResult;
   }
 
+  /**
+   * A mapping from a tree that needs type argument inference to a map from type parameter to its
+   * inferred annotated type argument. If inference failed, this map will be empty.
+   */
   private final Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results;
+
+  /**
+   * If true, then type argument inference failed because an annotated type could not be inferred.
+   */
   private final boolean annoInferenceFailed;
+
+  /** */
   private final boolean uncheckedConversion;
+
   private final String errorMsg;
 
   public InferenceResult(

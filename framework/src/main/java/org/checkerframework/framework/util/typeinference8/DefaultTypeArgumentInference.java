@@ -24,6 +24,7 @@ import org.checkerframework.framework.util.typeinference8.util.FalseBoundExcepti
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** Implementation of type argument inference. */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** Current inference problem that is being solved. */

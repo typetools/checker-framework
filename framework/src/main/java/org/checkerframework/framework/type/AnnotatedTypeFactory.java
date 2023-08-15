@@ -2325,7 +2325,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * The implementation of {@link #methodFromUse(MethodInvocationTree)} and {@link
    * #methodFromUseWithoutTypeArgInference(MethodInvocationTree)}.
    *
-   * @param tree
+   * @param tree a method invocation tree
    * @param inferTypeArgs whether type arguments should be inferred
    * @return the method type being invoked with tree
    */
@@ -2404,7 +2404,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * AnnotatedTypeMirror)} and {@link #methodFromUseWithoutTypeArgInference(ExpressionTree,
    * ExecutableElement, AnnotatedTypeMirror)}.
    *
-   * @param tree
+   * @param tree method invocation tree or a method reference tree
    * @param inferTypeArgs whether type arguments should be inferred
    * @return the method type being invoked with tree
    */
