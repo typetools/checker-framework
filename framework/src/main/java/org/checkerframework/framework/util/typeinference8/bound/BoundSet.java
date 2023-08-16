@@ -24,7 +24,7 @@ public class BoundSet implements ReductionResult {
    * com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS}
    */
   // TODO: revert to com.sun.tools.javac.comp.Infer#MAX_INCORPORATION_STEPS
-  private static final int MAX_INCORPORATION_STEPS = 100;
+  public static final int MAX_INCORPORATION_STEPS = 1000;
 
   /** All inference variables in this bound set. */
   private final LinkedHashSet<Variable> variables;

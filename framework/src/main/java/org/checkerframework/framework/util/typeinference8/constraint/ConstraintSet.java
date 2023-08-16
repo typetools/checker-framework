@@ -18,6 +18,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 /** A set of constraints and the operations that can be performed on them. */
 public class ConstraintSet implements ReductionResult {
+
+  /** The result given when a constraint set reduces to true. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ConstraintSet TRUE =
       new ConstraintSet() {
@@ -41,6 +43,7 @@ public class ConstraintSet implements ReductionResult {
         }
       };
 
+  /** The result given when a constraint set reduces to false. */
   @SuppressWarnings("interning:assignment")
   public static final @InternedDistinct ReductionResult FALSE =
       new ReductionResult() {
@@ -57,13 +60,25 @@ public class ConstraintSet implements ReductionResult {
    */
   private final List<Constraint> list;
 
+  /** Whether inference failed because the qualifiers where not in the correct relationship. */
   private boolean annotationFailure = false;
 
+  /**
+   * Creates a new constraint set.
+   *
+   * @param annotationFailure inference failed because the qualifiers where not in the correct
+   *     relationship
+   */
   private ConstraintSet(boolean annotationFailure) {
     this();
     this.annotationFailure = annotationFailure;
   }
 
+  /**
+   * Creates a constraint set with {@code constraints}.
+   *
+   * @param constraints constraints to add to the newly created set
+   */
   public ConstraintSet(Constraint... constraints) {
     if (constraints != null) {
       list = new ArrayList<>(constraints.length);
@@ -73,14 +88,22 @@ public class ConstraintSet implements ReductionResult {
     }
   }
 
-  /** Adds {@code c} to this set, if c isn't already in the list. */
+  /**
+   * Adds {@code c} to this set, if c isn't already in the list.
+   *
+   * @param c a constraint to add to this set
+   */
   public void add(Constraint c) {
     if (c != null && !list.contains(c)) {
       list.add(c);
     }
   }
 
-  /** Adds all constraints in {@code constraintSet} to this constraint set. */
+  /**
+   * Adds all constraints in {@code constraintSet} to this constraint set.
+   *
+   * @param constraintSet a set of constraints to add to this set
+   */
   public void addAll(ConstraintSet constraintSet) {
     if (constraintSet.annotationFailure) {
       this.annotationFailure = true;
@@ -88,7 +111,11 @@ public class ConstraintSet implements ReductionResult {
     constraintSet.list.forEach(this::add);
   }
 
-  /** Adds all constraints in {@code constraintSet} to this constraint set. */
+  /**
+   * Adds all constraints in {@code constraintSet} to this constraint set.
+   *
+   * @param constraintSet a collection of constraints to add to this set
+   */
   public void addAll(Collection<? extends Constraint> constraintSet) {
     list.addAll(constraintSet);
   }
@@ -112,7 +139,11 @@ public class ConstraintSet implements ReductionResult {
     return list.remove(0);
   }
 
-  /** Remove all constraints in {@code subset} from this constraint set. */
+  /**
+   * Remove all constraints in {@code subset} from this constraint set.
+   *
+   * @param subset set of constraints to remove from this set
+   */
   @SuppressWarnings("interning:not.interned")
   public void remove(ConstraintSet subset) {
     if (this == subset) {
@@ -122,8 +153,12 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * A subset of constraints is selected in C, satisfying the property that, for each constraint, no
-   * input variable can influence an output variable of another constraint in C. (See JLS 18.5.2.2)
+   * A subset of constraints is selected in this constraint set, satisfying the property that, for
+   * each constraint, no input variable can influence an output variable of another constraint in
+   * this constraint set. (See JLS 18.5.2.2)
+   *
+   * @param dependencies an object describing the dependencies of inference variables
+   * @return s a subset of constraints is this constraint set
    */
   public ConstraintSet getClosedSubset(Dependencies dependencies) {
     ConstraintSet subset = new ConstraintSet();
@@ -242,12 +277,13 @@ public class ConstraintSet implements ReductionResult {
   /**
    * Reduces all the constraints in this set. (See JLS 18.2)
    *
+   * @param context the context
    * @return the bound set produced by reducing this constraint set
    */
   public BoundSet reduce(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
     while (!this.isEmpty()) {
-      if (this.list.size() > 1000) {
+      if (this.list.size() > BoundSet.MAX_INCORPORATION_STEPS) {
         throw new BugInCF("TO MANY CONSTRAINTS: %s", context.pathToExpression.getLeaf());
       }
       boundSet.merge(reduceOneStep(context));
@@ -256,6 +292,12 @@ public class ConstraintSet implements ReductionResult {
     return boundSet;
   }
 
+  /**
+   * Reduce one constraint in this set.
+   *
+   * @param context the context
+   * @return the result of reducing one constraint in this set.
+   */
   public BoundSet reduceOneStep(Java8InferenceContext context) {
     BoundSet boundSet = new BoundSet(context);
 

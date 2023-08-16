@@ -2,6 +2,10 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 
+/**
+ * A constraint. See <a
+ * href="https://docs.oracle.com/javase/specs/jls/se20/html/jls-18.html#jls-18.1.2>JLS </a>.
+ */
 public interface Constraint extends ReductionResult {
 
   /**
@@ -24,6 +28,7 @@ public interface Constraint extends ReductionResult {
    */
   ReductionResult reduce(Java8InferenceContext context);
 
+  /** A kind of Constraint. */
   enum Kind {
     /**
      * {@code < Expression -> T >}: An expression is compatible in a loose invocation context with
