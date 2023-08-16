@@ -1267,6 +1267,16 @@ public final class TypesUtils {
     return types.freshTypeVariables(com.sun.tools.javac.util.List.of((Type) typeMirror)).head;
   }
 
+  /**
+   * Creates a fresh type variable with bounds {@code upper} and {@code lower}.
+   *
+   * @param upper the upper bound to use, or if {@code null}, then {@code Object} is the upper
+   *     bound.
+   * @param lower the lower bound to use, or if {@code null}, then a {@code NullType} is the lower
+   *     bound.
+   * @param env processing environment
+   * @return a fresh type variable
+   */
   public static TypeMirror freshTypeVariable(
       @Nullable TypeMirror upper, @Nullable TypeMirror lower, ProcessingEnvironment env) {
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
