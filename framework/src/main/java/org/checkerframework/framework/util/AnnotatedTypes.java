@@ -7,7 +7,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import java.util.ArrayDeque;
@@ -1600,8 +1599,8 @@ public class AnnotatedTypes {
    * @param wildcard the type to check
    * @return true if the given card is an unbounded wildcard
    */
-  public static boolean hasNoExplicitBound(AnnotatedTypeMirror wildcard) {
-    return ((Type.WildcardType) wildcard.getUnderlyingType()).kind == BoundKind.UNBOUND;
+  public static boolean hasNoExplicitBound(AnnotatedWildcardType wildcard) {
+    return TypesUtils.hasNoExplicitBound(wildcard.getUnderlyingType());
   }
 
   /**
@@ -1609,7 +1608,7 @@ public class AnnotatedTypes {
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
-   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
+   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedWildcardType)}
    */
   @Deprecated
   public static boolean isExplicitlySuperBounded(AnnotatedWildcardType wildcardType) {
@@ -1622,9 +1621,8 @@ public class AnnotatedTypes {
    * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
    */
-  public static boolean hasExplicitSuperBound(AnnotatedTypeMirror wildcard) {
-    return ((Type.WildcardType) wildcard.getUnderlyingType()).isSuperBound()
-        && ((Type.WildcardType) wildcard.getUnderlyingType()).kind != BoundKind.UNBOUND;
+  public static boolean hasExplicitSuperBound(AnnotatedWildcardType wildcard) {
+    return TypesUtils.hasExplicitSuperBound(wildcard.getUnderlyingType());
   }
 
   /**
@@ -1632,7 +1630,7 @@ public class AnnotatedTypes {
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly extends bounded
-   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedTypeMirror)}.
+   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedWildcardType)}.
    */
   @Deprecated
   public static boolean isExplicitlyExtendsBounded(AnnotatedWildcardType wildcardType) {
@@ -1642,32 +1640,31 @@ public class AnnotatedTypes {
   /**
    * Returns true if wildcard type has an explicit extends bound.
    *
-   * @param wildcardType the wildcard type to test
+   * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly extends bounded
    */
-  public static boolean hasExplicitExtendsBound(AnnotatedTypeMirror wildcardType) {
-    return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
-        && ((Type.WildcardType) wildcardType.getUnderlyingType()).kind != BoundKind.UNBOUND;
+  public static boolean hasExplicitExtendsBound(AnnotatedWildcardType wildcard) {
+    return TypesUtils.hasExplicitExtendsBound(wildcard.getUnderlyingType());
   }
 
   /**
    * Returns true if this type is super bounded or unbounded.
    *
-   * @param wildcardType the wildcard type to test
+   * @param wildcard the wildcard type to test
    * @return true if this type is super bounded or unbounded
    */
-  public static boolean isUnboundedOrSuperBounded(AnnotatedWildcardType wildcardType) {
-    return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
+  public static boolean isUnboundedOrSuperBounded(AnnotatedWildcardType wildcard) {
+    return TypesUtils.isUnboundedOrSuperBounded(wildcard.getUnderlyingType());
   }
 
   /**
    * Returns true if this type is extends bounded or unbounded.
    *
-   * @param wildcardType the wildcard type to test
+   * @param wildcard the wildcard type to test
    * @return true if this type is extends bounded or unbounded
    */
-  public static boolean isUnboundedOrExtendsBounded(AnnotatedWildcardType wildcardType) {
-    return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
+  public static boolean isUnboundedOrExtendsBounded(AnnotatedWildcardType wildcard) {
+    return TypesUtils.isUnboundedOrExtendsBounded(wildcard.getUnderlyingType());
   }
 
   /**
