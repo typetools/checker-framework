@@ -1,9 +1,8 @@
-package org.checkerframework.framework.test.junit;
+package org.checkerframework.framework.test.test.junit;
 
 import java.io.File;
-import java.util.List;
 import org.checkerframework.common.value.ValueChecker;
-import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.checkerframework.framework.test.TestRootDirectory;
 import org.checkerframework.framework.test.TypecheckResult;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
@@ -13,13 +12,13 @@ import org.junit.runners.Parameterized.Parameters;
 
 /** Tests the explicit tests root configuration. */
 @TestRootDirectory("tests-alt")
-public class AlternateTestRootPerDirTest extends CheckerFrameworkPerDirectoryTest {
+public class AlternateTestRootPerFileWithDirsTest extends CheckerFrameworkPerFileTest {
 
   /**
-   * @param testFiles the files containing test code, which will be type-checked
+   * @param testFile the files containing test code, which will be type-checked
    */
-  public AlternateTestRootPerDirTest(List<File> testFiles) {
-    super(testFiles, ValueChecker.class, "");
+  public AlternateTestRootPerFileWithDirsTest(File testFile) {
+    super(testFile, ValueChecker.class, "");
   }
 
   @Parameters

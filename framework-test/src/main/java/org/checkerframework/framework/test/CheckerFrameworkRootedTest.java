@@ -1,7 +1,6 @@
 package org.checkerframework.framework.test;
 
 import java.io.File;
-import java.util.Optional;
 
 /** Encapsulates the directory root to search within for test files to compile. */
 abstract class CheckerFrameworkRootedTest {
@@ -16,10 +15,11 @@ abstract class CheckerFrameworkRootedTest {
    * @return the resolved directory
    */
   protected File resolveTestDirectory() {
-    return Optional.ofNullable(getClass().getAnnotation(TestRootDirectory.class))
-        .map(TestRootDirectory::value)
-        .map(File::new)
-        .orElseGet(() -> new File("tests"));
+    TestRootDirectory annotation = getClass().getAnnotation(TestRootDirectory.class);
+    if (annotation != null) {
+      return new File(annotation.value());
+    }
+    return new File("test");
   }
 
   /**

@@ -1,4 +1,4 @@
-package org.checkerframework.framework.test.junit;
+package org.checkerframework.framework.test.test.junit;
 
 import java.io.File;
 import java.util.List;

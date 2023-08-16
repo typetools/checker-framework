@@ -2,7 +2,6 @@ package org.checkerframework.framework.test;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
 import org.junit.runner.Runner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
@@ -13,7 +12,7 @@ import org.junit.runners.model.InitializationError;
 abstract class RootedSuite extends Suite {
 
   /**
-   * Called by this class and subclasses once the runners making up the suite have been determined
+   * Called by this class and subclasses once the runners making up the suite have been determined.
    *
    * @param klass root of the suite
    * @param runners for each class in the suite, a {@link Runner}
@@ -30,9 +29,10 @@ abstract class RootedSuite extends Suite {
    * @return the resolved directory
    */
   protected final File resolveTestDirectory() {
-    return Optional.ofNullable(getTestClass().getAnnotation(TestRootDirectory.class))
-        .map(TestRootDirectory::value)
-        .map(File::new)
-        .orElseGet(() -> new File("tests"));
+    TestRootDirectory annotation = getTestClass().getAnnotation(TestRootDirectory.class);
+    if (annotation != null) {
+      return new File(annotation.value());
+    }
+    return new File("tests");
   }
 }
