@@ -27,6 +27,11 @@ public abstract class TypeConstraint implements Constraint {
   /** T, the type on the right hand side of the constraint; may contain inference variables. */
   protected AbstractType T;
 
+  /**
+   * Creates a type constraint
+   *
+   * @param T the type of the right hand side of the constraint
+   */
   protected TypeConstraint(AbstractType T) {
     assert T != null : "Can't create a constraint with a null type.";
     this.T = T;
@@ -80,9 +85,12 @@ public abstract class TypeConstraint implements Constraint {
    * Implementation of {@link #getInputVariables()} that is used both by expressions constraints and
    * checked exception constraints
    * https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.5.2-200
+   *
+   * @param tree an expression tree
+   * @param T the type of the right hand side of the constraint
+   * @return the input variables for this constraint
    */
   protected List<Variable> getInputVariablesForExpression(ExpressionTree tree, AbstractType T) {
-
     switch (tree.getKind()) {
       case LAMBDA_EXPRESSION:
         if (T.isUseOfVariable()) {

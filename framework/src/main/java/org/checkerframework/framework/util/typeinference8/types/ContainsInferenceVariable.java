@@ -49,6 +49,11 @@ public class ContainsInferenceVariable {
     /** A set of types that have been visited. Used to prevent infinite recursion. */
     private final Set<TypeMirror> visitedTypes = new HashSet<>();
 
+    /**
+     * Creates the visitor.
+     *
+     * @param variables a collection of type variables that should be treated as inference variables
+     */
     Visitor(Collection<? extends TypeVariable> variables) {
       typeVariables = variables;
     }

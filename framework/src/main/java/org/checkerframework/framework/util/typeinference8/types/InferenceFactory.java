@@ -79,6 +79,11 @@ public class InferenceFactory {
   /** Stores information about the current inference problem being solved. */
   private Java8InferenceContext context;
 
+  /**
+   * Creates an inference factory
+   *
+   * @param context the context
+   */
   public InferenceFactory(Java8InferenceContext context) {
     this.context = context;
     this.typeFactory = context.typeFactory;

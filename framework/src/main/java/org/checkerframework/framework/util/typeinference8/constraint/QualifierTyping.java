@@ -12,13 +12,16 @@ import org.checkerframework.javacutil.BugInCF;
  * <ul>
  *   <li>{@link Kind#QUALIFIER_SUBTYPE} {@code < Q <: R >}: A qualifier Q is a subtype of a
  *       qualifier R.
- *   <li>{@link Kind#QUALIFIER_EQUALITY} {@code < Q = R >}: A qualifier R is the same as a qualifier
+ *   <li>{@link Kind#QUALIFIER_EQUALITY} {@code < Q = R >}: A qualifier Q is the same as a qualifier
  *       R.
  * </ul>
  */
 public class QualifierTyping implements Constraint {
+
+  /** The qualifiers on the left hand side of the constraint. */
   private final Set<AnnotationMirror> Q;
 
+  /** The qualifiers on the right hand side of the constraint. */
   private final Set<AnnotationMirror> R;
 
   /**
@@ -26,6 +29,13 @@ public class QualifierTyping implements Constraint {
    */
   private final Kind kind;
 
+  /**
+   * Creates a qualifier typing constraint.
+   *
+   * @param Q the qualifiers on the left hand side of the constraint
+   * @param R the qualifiers on the right hand side of the constraint
+   * @param kind the kind of qualifier constraint
+   */
   public QualifierTyping(Set<AnnotationMirror> Q, Set<AnnotationMirror> R, Kind kind) {
     assert Q != null && R != null;
     switch (kind) {
@@ -57,6 +67,12 @@ public class QualifierTyping implements Constraint {
     }
   }
 
+  /**
+   * Reduce this constraint
+   *
+   * @param context the context
+   * @return the result of reducing this constraint
+   */
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
     if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(Q, R)
         && context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(R, Q)) {
@@ -65,6 +81,12 @@ public class QualifierTyping implements Constraint {
     return ConstraintSet.TRUE_ANNO_FAIL;
   }
 
+  /**
+   * Reduce this constraint
+   *
+   * @param context the context
+   * @return the result of reducing this constraint
+   */
   private ReductionResult reduceEquality(Java8InferenceContext context) {
     if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(Q, R)) {
       return ConstraintSet.TRUE;
