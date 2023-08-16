@@ -831,35 +831,38 @@ public final class TypesUtils {
   // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
   /**
-   * This method identifies wildcard types that are unbound.
+   * Returns true if {@code type} is an unbound wildcard
    *
-   * @param wildcard the type to check
-   * @return true if the given card is an unbounded wildcard
+   * @param type the type to check
+   * @return true if the given type is an unbound wildcard
    */
-  public static boolean hasNoExplicitBound(WildcardType wildcard) {
-    return ((Type.WildcardType) wildcard).kind == BoundKind.UNBOUND;
+  public static boolean hasNoExplicitBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && ((Type.WildcardType) type).kind == BoundKind.UNBOUND;
   }
 
   /**
-   * Returns true if wildcard type has an explicit super bound.
+   * Returns true if {@code type} is a wildcard with an explicit super bound.
    *
-   * @param wildcard the wildcard type to test
-   * @return true if wildcard type is explicitly super bounded
+   * @param type the {@code type} to test
+   * @return true if {@code type} is explicitly super bounded
    */
-  public static boolean hasExplicitSuperBound(WildcardType wildcard) {
-    return ((Type.WildcardType) wildcard).isSuperBound()
-        && ((Type.WildcardType) wildcard).kind != BoundKind.UNBOUND;
+  public static boolean hasExplicitSuperBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && !hasNoExplicitBound(type)
+        && ((Type.WildcardType) type).isSuperBound();
   }
 
   /**
-   * Returns true if wildcard type has an explicit extends bound.
+   * Returnsif {@code type} is a wildcard with an explicit extends bound.
    *
-   * @param wildcardType the wildcard type to test
-   * @return true if wildcard type is explicitly extends bounded
+   * @param type the type to test
+   * @return true if {@code type} is a wildcard with an explicit extends bound
    */
-  public static boolean hasExplicitExtendsBound(WildcardType wildcardType) {
-    return ((Type.WildcardType) wildcardType).isExtendsBound()
-        && ((Type.WildcardType) wildcardType).kind != BoundKind.UNBOUND;
+  public static boolean hasExplicitExtendsBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && !hasNoExplicitBound(type)
+        && ((Type.WildcardType) type).isExtendsBound();
   }
 
   /**
