@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -824,6 +825,61 @@ public final class TypesUtils {
       }
     }
     return effectiveUpper;
+  }
+
+  // For Wildcards, isSuperBound() and isExtendsBound() will return true if isUnbound() does.
+  // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
+
+  /**
+   * This method identifies wildcard types that are unbound.
+   *
+   * @param wildcard the type to check
+   * @return true if the given card is an unbounded wildcard
+   */
+  public static boolean hasNoExplicitBound(WildcardType wildcard) {
+    return ((Type.WildcardType) wildcard).kind == BoundKind.UNBOUND;
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit super bound.
+   *
+   * @param wildcard the wildcard type to test
+   * @return true if wildcard type is explicitly super bounded
+   */
+  public static boolean hasExplicitSuperBound(WildcardType wildcard) {
+    return ((Type.WildcardType) wildcard).isSuperBound()
+        && ((Type.WildcardType) wildcard).kind != BoundKind.UNBOUND;
+  }
+
+  /**
+   * Returns true if wildcard type has an explicit extends bound.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if wildcard type is explicitly extends bounded
+   */
+  public static boolean hasExplicitExtendsBound(WildcardType wildcardType) {
+    return ((Type.WildcardType) wildcardType).isExtendsBound()
+        && ((Type.WildcardType) wildcardType).kind != BoundKind.UNBOUND;
+  }
+
+  /**
+   * Returns true if this type is super bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is super bounded or unbounded
+   */
+  public static boolean isUnboundedOrSuperBounded(WildcardType wildcardType) {
+    return ((Type.WildcardType) wildcardType).isSuperBound();
+  }
+
+  /**
+   * Returns true if this type is extends bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is extends bounded or unbounded
+   */
+  public static boolean isUnboundedOrExtendsBounded(WildcardType wildcardType) {
+    return ((Type.WildcardType) wildcardType).isExtendsBound();
   }
 
   /**
