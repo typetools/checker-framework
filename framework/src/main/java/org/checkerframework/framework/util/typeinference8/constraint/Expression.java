@@ -36,6 +36,12 @@ public class Expression extends TypeConstraint {
   /** Expression that is compatible in a loose invocation context with {@link #T}. */
   private final ExpressionTree expression;
 
+  /**
+   * Creates an expression constraint.
+   *
+   * @param expressionTree the expression for the constraint
+   * @param t the type that the expression is compatible in a loose invocation context
+   */
   public Expression(ExpressionTree expressionTree, AbstractType t) {
     super(t);
     this.expression = expressionTree;
@@ -60,13 +66,9 @@ public class Expression extends TypeConstraint {
     return output;
   }
 
-  public ExpressionTree getExpression() {
-    return expression;
-  }
-
-  /** See JLS 18.2.1 */
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
+    // See JLS 18.2.1
     if (getT().isProper()) {
       return reduceProperType();
     } else if (TreeUtils.isStandaloneExpression(expression)) {
@@ -116,6 +118,8 @@ public class Expression extends TypeConstraint {
   /**
    * JSL 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
+   *
+   * @return the result of reducing a proper type
    */
   private ReductionResult reduceProperType() {
     // Assume the constraint reduces to TRUE, if it did not the code wouldn't compile with
@@ -136,6 +140,9 @@ public class Expression extends TypeConstraint {
    *
    * <p>This bound set may contain new inference variables, as well as dependencies between these
    * new variables and the inference variables in T.
+   *
+   * @param context the context
+   * @return the result of reducing this constraint
    */
   private BoundSet reduceMethodInvocation(Java8InferenceContext context) {
     ExpressionTree expressionTree = expression;
@@ -156,7 +163,13 @@ public class Expression extends TypeConstraint {
     return context.inference.createB3(b2, expressionTree, methodType, T, map);
   }
 
-  /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300 */
+  /**
+   * Reduce this constraint
+   *
+   * @param context the context
+   * @return the result of reducing this constraint
+   */
+  // https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-300
   private ReductionResult reduceMethodRef(Java8InferenceContext context) {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
@@ -239,7 +252,13 @@ public class Expression extends TypeConstraint {
         new BoundSet(context));
   }
 
-  /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-200 */
+  /**
+   * Reduce this constraint
+   *
+   * @param context the context
+   * @return the result of reducing this constraint
+   */
+  // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.2.1-200
   private ReductionResultPair reduceLambda(Java8InferenceContext context) {
     LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
     IPair<AbstractType, BoundSet> pair = getGroundTargetType(T, lambda, context);
@@ -285,6 +304,8 @@ public class Expression extends TypeConstraint {
    * Computes the ground target type of {@code t} as defined in JLS 18.5.3. Returned as the first in
    * the pair. This process might create additional bounds, if so the second in the returned pair
    * will be non-null.
+   *
+   * @return the ground target type
    */
   private IPair<AbstractType, BoundSet> getGroundTargetType(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
@@ -305,7 +326,13 @@ public class Expression extends TypeConstraint {
     }
   }
 
-  /** Returns the non-wilcard parameterization of {@code t} as defined in JLS 9.9. */
+  /**
+   * Returns the non-wildcard parameterization of {@code t} as defined in JLS 9.9.
+   *
+   * @param t a type
+   * @param context the context
+   * @return the non-wildcard parameterization of {@code t}
+   */
   private AbstractType nonWildcardParameterization(AbstractType t, Java8InferenceContext context) {
     List<AbstractType> As = t.getTypeArguments();
     Iterator<ProperType> Bs = t.getTypeParameterBounds().iterator();
@@ -329,7 +356,13 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Infers the type of {@code lambda}. See 18.5.3: Functional Interface Parameterization Inference
+   * Infers the type of {@code lambda} which may create a bounds set that needs to be resolved as
+   * part of a larger inference problem. See 18.5.3: Functional Interface Parameterization Inference
+   *
+   * @param t the target type of the lambda
+   * @param lambda a lambda expression
+   * @param context the context
+   * @return a pair of the type of the lambda and the bound set that needs to be resolved
    */
   private IPair<AbstractType, BoundSet> explicitlyTypedLambdaWithWildcard(
       AbstractType t, LambdaExpressionTree lambda, Java8InferenceContext context) {
