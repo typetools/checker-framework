@@ -32,17 +32,28 @@ public class BoundSet implements ReductionResult {
   /** All capture bounds. */
   private final LinkedHashSet<CaptureBound> captures;
 
+  /** The context. */
   private final Java8InferenceContext context;
+
+  /**
+   * If true, then type argument inference failed because an annotated type could not be inferred.
+   */
+  public boolean annoInferenceFailed = false;
+
+  /** The error message to report to users. */
   public String errorMsg = "";
 
-  /** Whether or not this bounds set contains the false bound. */
+  /** Whether this bounds set contains the false bound. */
   private boolean containsFalse;
 
-  /** Whether or not unchecked conversion was necessary to reduce and incorporate this bound set. */
+  /** Whether unchecked conversion was necessary to reduce and incorporate this bound set. */
   private boolean uncheckedConversion;
 
-  public boolean annoFail = false;
-
+  /**
+   * Creates a bound set.
+   *
+   * @param context the context
+   */
   public BoundSet(Java8InferenceContext context) {
     assert context != null;
     this.variables = new LinkedHashSet<>();
@@ -99,14 +110,14 @@ public class BoundSet implements ReductionResult {
    * Merges {@code newSet} into this bound set.
    *
    * @param newSet bound set to merge
-   * @return whether or not the merge changed this bound set
+   * @return whether the merge changed this bound set
    */
   public boolean merge(BoundSet newSet) {
     boolean changed = captures.addAll(newSet.captures);
     changed |= variables.addAll(newSet.variables);
     containsFalse |= newSet.containsFalse;
     uncheckedConversion |= newSet.uncheckedConversion;
-    annoFail |= newSet.annoFail;
+    annoInferenceFailed |= newSet.annoInferenceFailed;
     errorMsg += " " + newSet.errorMsg;
     return changed;
   }
@@ -117,34 +128,38 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Return wheter or not this bound set contains false.
+   * Return whether this bound set contains false.
    *
-   * @return whether or not this bound set contains false
+   * @return whether this bound set contains false
    */
   public boolean containsFalse() {
     return containsFalse;
   }
 
   /**
-   * Return whether or not unchecked conversion was necessary to reduce and incorporate this bound
-   * set
+   * Return whether unchecked conversion was necessary to reduce and incorporate this bound set
    *
-   * @return whether or not unchecked conversion was necessary to reduce and incorporate this bound
-   *     set
+   * @return whether unchecked conversion was necessary to reduce and incorporate this bound set
    */
   public boolean isUncheckedConversion() {
     return uncheckedConversion;
   }
 
   /**
-   * Sets Whether or not unchecked conversion was necessary to reduce and incorporate this bound
-   * set.
+   * Sets whether unchecked conversion was necessary to reduce and incorporate this bound set.
+   *
+   * @param uncheckedConversion whether unchecked conversion was necessary to reduce and incorporate
+   *     this bound set
    */
   public void setUncheckedConversion(boolean uncheckedConversion) {
     this.uncheckedConversion = uncheckedConversion;
   }
 
-  /** Adds {@code capture} to this bound set. */
+  /**
+   * Adds {@code capture} to this bound set.
+   *
+   * @param capture a capture bound
+   */
   public void addCapture(CaptureBound capture) {
     captures.add(capture);
     variables.addAll(capture.getAllVariablesOnLHS());
@@ -152,7 +167,11 @@ public class BoundSet implements ReductionResult {
 
   /**
    * Does the bound set contain a bound of the form {@code G<..., ai, ...> = capture(G<...>)} for
-   * any variable in as?
+   * any variable in {@code as}?
+   *
+   * @param as a collection of varialbes
+   * @return whether the bound set contain a bound of the form {@code G<..., ai, ...> =
+   *     capture(G<...>)} for any variable in {@code as}
    */
   public boolean containsCapture(Collection<Variable> as) {
     List<Variable> list = new ArrayList<>();
@@ -167,7 +186,12 @@ public class BoundSet implements ReductionResult {
     return false;
   }
 
-  /** Returns a list of variables in {@code alphas} that are instantiated. */
+  /**
+   * Returns a list of variables in {@code alphas} that are instantiated.
+   *
+   * @param alphas a list of variables
+   * @return a list of variables in {@code alphas} that are instantiated
+   */
   public List<Variable> getInstantiationsInAlphas(Collection<Variable> alphas) {
     List<Variable> list = new ArrayList<>();
     for (Variable var : alphas) {
@@ -178,7 +202,11 @@ public class BoundSet implements ReductionResult {
     return list;
   }
 
-  /** Returns a list of all variables in this bound set that are instantiated. */
+  /**
+   * Returns a list of all variables in this bound set that are instantiated.
+   *
+   * @return a list of all variables in this bound set that are instantiated
+   */
   public List<Variable> getInstantiatedVariables() {
     List<Variable> list = new ArrayList<>();
     for (Variable var : variables) {
@@ -189,13 +217,21 @@ public class BoundSet implements ReductionResult {
     return list;
   }
 
-  /** Resolve all inference variables mentioned in any bound. */
+  /**
+   * Resolve all inference variables mentioned in any bound.
+   *
+   * @return a list of resolved variables in this bounds set.
+   */
   public List<Variable> resolve() {
     BoundSet b = Resolution.resolve(new ArrayList<>(variables), this, context);
     return b.getInstantiationsInAlphas(variables);
   }
 
-  /** Returns the dependencies between variables. */
+  /**
+   * Returns the dependencies between variables.
+   *
+   * @return the dependencies between variables.
+   */
   public Dependencies getDependencies() {
     return getDependencies(new ArrayList<>());
   }
@@ -303,7 +339,11 @@ public class BoundSet implements ReductionResult {
     } while (!containsFalse && count < MAX_INCORPORATION_STEPS);
   }
 
-  /** Remove any capture bound that mentions any variable in {@code as}. */
+  /**
+   * Remove any capture bound that mentions any variable in {@code as}.
+   *
+   * @param as a set of variables
+   */
   public void removeCaptures(Set<Variable> as) {
     captures.removeIf((CaptureBound c) -> c.isCaptureMentionsAny(as));
   }

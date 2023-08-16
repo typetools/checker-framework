@@ -1804,7 +1804,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExpressionTree tree, AnnotatedExecutableType methodType) {
     InferenceResult args =
         atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, tree, methodType);
-    if (args != null && !args.isAnnoInferenceFailed()) {
+    if (args != null && !args.inferenceFailed()) {
       return false;
     }
     String error;

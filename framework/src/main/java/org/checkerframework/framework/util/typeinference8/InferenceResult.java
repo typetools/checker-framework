@@ -68,15 +68,32 @@ public class InferenceResult {
     this.errorMsg = errorMsg;
   }
 
+  /**
+   * A mapping from a tree that needs type argument inference to a map from type parameter to its
+   * inferred annotated type argument. If inference failed, this map will be empty.
+   *
+   * @return mapping from a tree that needs type argument inference to a map from type parameter to
+   *     its inferred annotated type argument
+   */
   public Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> getResults() {
     return results;
   }
 
+  /**
+   * Whether unchecked conversion was necessary to infer the type arguments.
+   *
+   * @return whether unchecked conversion was necessary to infer the type arguments
+   */
   public boolean isUncheckedConversion() {
     return uncheckedConversion;
   }
 
-  public boolean isAnnoInferenceFailed() {
+  /**
+   * Whether type argument inference failed because an annotated type could not be inferred.
+   *
+   * @return Whether type argument inference failed because an annotated type could not be inferred
+   */
+  public boolean inferenceFailed() {
     return annoInferenceFailed;
   }
 

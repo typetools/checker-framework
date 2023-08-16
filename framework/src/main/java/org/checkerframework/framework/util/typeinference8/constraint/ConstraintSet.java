@@ -285,7 +285,7 @@ public class ConstraintSet implements ReductionResult {
       throw new RuntimeException("Not found " + result);
     }
     if (this.annotationFailure) {
-      boundSet.annoFail = true;
+      boundSet.annoInferenceFailed = true;
       if (boundSet.errorMsg.equals("")) {
         boundSet.errorMsg = constraint.toString();
       }

@@ -50,12 +50,20 @@ public class CaptureBound {
    */
   private final List<CaptureVariable> captureVariables = new ArrayList<>();
 
-  public CaptureBound(
-      AbstractType capturedType, ExpressionTree tree, Java8InferenceContext context) {
+  /**
+   * Creates a captured bound.
+   *
+   * @param capturedType a capture type
+   * @param invocation invocation a method or constructor invocation; used to create fresh inference
+   *     variables
+   * @param context the context
+   */
+  private CaptureBound(
+      AbstractType capturedType, ExpressionTree invocation, Java8InferenceContext context) {
     this.capturedType = capturedType;
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
-    this.map = context.inferenceTypeFactory.createThetaForCapture(tree, capturedType);
+    this.map = context.inferenceTypeFactory.createThetaForCapture(invocation, capturedType);
 
     lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
 
@@ -74,12 +82,38 @@ public class CaptureBound {
   }
 
   /**
+   * Given {@code r}, a parameterized type, G<A1, ..., An>, and one of A1, ..., An is a wildcard,
+   * then, for fresh inference variables B1, ..., Bn, the constraint formula <G<B1, ..., Bn> -> T>
+   * is reduced and incorporated, along with the bound G<B1, ..., Bn> = capture(G<A1, ..., An>),
+   * with B2.
+   *
+   * @param r a parameterized type, G<A1, ..., An>, and one of A1, ..., An is a wildcard
+   * @param target target of the constraint
+   * @param invocation invocation a method or constructor invocation; used to create fresh inference
+   *     variables
+   * @param context the context
+   * @return the result of incorporating the created capture constraint
+   */
+  public static BoundSet createAndIncorporateCaptureConstraint(
+      AbstractType r,
+      AbstractType target,
+      ExpressionTree invocation,
+      Java8InferenceContext context) {
+    CaptureBound capture = new CaptureBound(r, invocation, context);
+    return capture.incorporate(target, context);
+  }
+
+  /**
    * Incorporate this capture bound. See JLS 18.3.1.
    *
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
+   *
+   * @param target the target type of
+   * @param context the context
+   * @return the result of incorporation
    */
-  public BoundSet incorporate(AbstractType target, Java8InferenceContext context) {
+  private BoundSet incorporate(AbstractType target, Java8InferenceContext context) {
     // First add the non-wildcard bounds.
     for (CaptureTuple t : tuples) {
       if (t.capturedTypeArg.getTypeKind() != TypeKind.WILDCARD) {
@@ -168,12 +202,26 @@ public class CaptureBound {
      */
     public final AbstractType bound;
 
+    /**
+     * Creates a tuple.
+     *
+     * @param alpha capture variable
+     * @param capturedTypeArg captured type argument
+     * @param bound the bound of the type parameter
+     */
     private CaptureTuple(CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
       this.alpha = alpha;
       this.capturedTypeArg = capturedTypeArg;
       this.bound = bound;
     }
 
+    /**
+     * Creates a tuple.
+     *
+     * @param alpha capture variable
+     * @param capturedTypeArg captured type argument
+     * @param bound the bound of the type parameter
+     */
     public static CaptureTuple of(
         CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
       return new CaptureTuple(alpha, capturedTypeArg, bound);

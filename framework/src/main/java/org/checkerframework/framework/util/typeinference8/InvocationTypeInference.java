@@ -167,7 +167,10 @@ public class InvocationTypeInference {
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
     return new InferenceResult(
-        b4.getInstantiatedVariables(), b4.isUncheckedConversion(), b4.annoFail, b4.errorMsg);
+        b4.getInstantiatedVariables(),
+        b4.isUncheckedConversion(),
+        b4.annoInferenceFailed,
+        b4.errorMsg);
   }
 
   /**
@@ -209,7 +212,8 @@ public class InvocationTypeInference {
 
     List<Variable> thetaPrime = b3.resolve();
 
-    return new InferenceResult(thetaPrime, b3.isUncheckedConversion(), b3.annoFail, b3.errorMsg);
+    return new InferenceResult(
+        thetaPrime, b3.isUncheckedConversion(), b3.annoInferenceFailed, b3.errorMsg);
   }
 
   /**
@@ -354,8 +358,8 @@ public class InvocationTypeInference {
       // An is a wildcard, then, for fresh inference variables B1, ..., Bn, the constraint
       // formula <G<B1, ..., Bn> -> T> is reduced and incorporated, along with the bound
       // G<B1, ..., Bn> = capture(G<A1, ..., An>), with B2.
-      CaptureBound capture = new CaptureBound(r, invocation, context);
-      BoundSet b = capture.incorporate(target, context);
+      BoundSet b =
+          CaptureBound.createAndIncorporateCaptureConstraint(r, target, invocation, context);
       b2.incorporateToFixedPoint(b);
       return b2;
     } else if (r.isUseOfVariable()) {
