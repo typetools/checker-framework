@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
-import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -277,7 +276,7 @@ public class ConstraintSet implements ReductionResult {
       if (boundSet.containsFalse()) {
         throw new FalseBoundException(constraint, result);
       }
-    } else if (result == null || result == ConstraintSet.FALSE || result instanceof FalseBound) {
+    } else if (result == null || result == ConstraintSet.FALSE) {
       throw new FalseBoundException(constraint, result);
     } else if (result == UNCHECKED_CONVERSION) {
       boundSet.setUncheckedConversion(true);

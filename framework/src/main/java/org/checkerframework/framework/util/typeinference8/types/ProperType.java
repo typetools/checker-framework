@@ -10,7 +10,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -109,7 +108,7 @@ public class ProperType extends AbstractType {
         return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound();
+      return ConstraintSet.FALSE;
     }
   }
 
@@ -133,7 +132,7 @@ public class ProperType extends AbstractType {
         return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound();
+      return ConstraintSet.FALSE;
     }
   }
 
@@ -157,7 +156,7 @@ public class ProperType extends AbstractType {
         return ConstraintSet.TRUE_ANNO_FAIL;
       }
     } else {
-      return new FalseBound();
+      return ConstraintSet.FALSE;
     }
   }
 

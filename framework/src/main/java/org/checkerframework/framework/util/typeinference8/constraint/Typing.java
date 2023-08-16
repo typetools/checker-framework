@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.util.typeinference8.bound.FalseBound;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -184,7 +183,7 @@ public class Typing extends TypeConstraint {
 
       AbstractType sAsSuper = S.asSuper(T.getJavaType());
       if (sAsSuper == null) {
-        return new FalseBound();
+        return ConstraintSet.FALSE;
       } else if (sAsSuper.isRaw() || T.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
