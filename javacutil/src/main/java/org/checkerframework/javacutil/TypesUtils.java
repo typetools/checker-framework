@@ -1,5 +1,6 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -826,8 +827,67 @@ public final class TypesUtils {
     return effectiveUpper;
   }
 
+  // For Wildcards, isSuperBound() and isExtendsBound() will return true if isUnbound() does.
+  // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
+
   /**
-   * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
+   * Returns true if {@code type} is an unbounded wildcard.
+   *
+   * @param type the type to check
+   * @return true if the given type is an unbounded wildcard
+   */
+  public static boolean hasNoExplicitBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && ((Type.WildcardType) type).kind == BoundKind.UNBOUND;
+  }
+
+  /**
+   * Returns true if {@code type} is a wildcard with an explicit super bound.
+   *
+   * @param type the {@code type} to test
+   * @return true if {@code type} is explicitly super bounded
+   */
+  public static boolean hasExplicitSuperBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && !hasNoExplicitBound(type)
+        && ((Type.WildcardType) type).isSuperBound();
+  }
+
+  /**
+   * Returns true if {@code type} is a wildcard with an explicit extends bound.
+   *
+   * @param type the type to test
+   * @return true if {@code type} is a wildcard with an explicit extends bound
+   */
+  public static boolean hasExplicitExtendsBound(TypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && !hasNoExplicitBound(type)
+        && ((Type.WildcardType) type).isExtendsBound();
+  }
+
+  /**
+   * Returns true if this type is super bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is super bounded or unbounded
+   */
+  public static boolean isUnboundedOrSuperBounded(WildcardType wildcardType) {
+    return ((Type.WildcardType) wildcardType).isSuperBound();
+  }
+
+  /**
+   * Returns true if this type is extends bounded or unbounded.
+   *
+   * @param wildcardType the wildcard type to test
+   * @return true if this type is extends bounded or unbounded
+   */
+  public static boolean isUnboundedOrExtendsBounded(WildcardType wildcardType) {
+    return ((Type.WildcardType) wildcardType).isExtendsBound();
+  }
+
+  /**
+   * Returns true if the erased type of {@code subtype} is a subtype of the erased type of {@code
+   * supertype}.
    *
    * @param subtype possible subtype
    * @param supertype possible supertype
