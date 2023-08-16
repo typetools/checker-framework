@@ -831,10 +831,10 @@ public final class TypesUtils {
   // But don't use isUnbound(), because as of Java 18, it returns true for "? extends Object".
 
   /**
-   * Returns true if {@code type} is an unbound wildcard
+   * Returns true if {@code type} is an unbounded wildcard.
    *
    * @param type the type to check
-   * @return true if the given type is an unbound wildcard
+   * @return true if the given type is an unbounded wildcard
    */
   public static boolean hasNoExplicitBound(TypeMirror type) {
     return type.getKind() == TypeKind.WILDCARD
@@ -854,7 +854,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Returnsif {@code type} is a wildcard with an explicit extends bound.
+   * Returns true if {@code type} is a wildcard with an explicit extends bound.
    *
    * @param type the type to test
    * @return true if {@code type} is a wildcard with an explicit extends bound
@@ -886,7 +886,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
+   * Returns true if the erased type of {@code subtype} is a subtype of the erased type of {@code
+   * supertype}.
    *
    * @param subtype possible subtype
    * @param supertype possible supertype
