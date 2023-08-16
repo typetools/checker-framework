@@ -1599,7 +1599,7 @@ public class AnnotatedTypes {
    * @param wildcard the type to check
    * @return true if the given card is an unbounded wildcard
    */
-  public static boolean hasNoExplicitBound(AnnotatedWildcardType wildcard) {
+  public static boolean hasNoExplicitBound(AnnotatedTypeMirror wildcard) {
     return TypesUtils.hasNoExplicitBound(wildcard.getUnderlyingType());
   }
 
@@ -1608,7 +1608,7 @@ public class AnnotatedTypes {
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
-   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedWildcardType)}
+   * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
    */
   @Deprecated
   public static boolean isExplicitlySuperBounded(AnnotatedWildcardType wildcardType) {
@@ -1621,7 +1621,7 @@ public class AnnotatedTypes {
    * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly super bounded
    */
-  public static boolean hasExplicitSuperBound(AnnotatedWildcardType wildcard) {
+  public static boolean hasExplicitSuperBound(AnnotatedTypeMirror wildcard) {
     return TypesUtils.hasExplicitSuperBound(wildcard.getUnderlyingType());
   }
 
@@ -1630,7 +1630,7 @@ public class AnnotatedTypes {
    *
    * @param wildcardType the wildcard type to test
    * @return true if wildcard type is explicitly extends bounded
-   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedWildcardType)}.
+   * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedTypeMirror)}.
    */
   @Deprecated
   public static boolean isExplicitlyExtendsBounded(AnnotatedWildcardType wildcardType) {
@@ -1643,7 +1643,7 @@ public class AnnotatedTypes {
    * @param wildcard the wildcard type to test
    * @return true if wildcard type is explicitly extends bounded
    */
-  public static boolean hasExplicitExtendsBound(AnnotatedWildcardType wildcard) {
+  public static boolean hasExplicitExtendsBound(AnnotatedTypeMirror wildcard) {
     return TypesUtils.hasExplicitExtendsBound(wildcard.getUnderlyingType());
   }
 
