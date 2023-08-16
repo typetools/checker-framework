@@ -534,7 +534,7 @@ public abstract class AbstractType {
    * @return true if the type is an unbound wildcard
    */
   public boolean isUnboundWildcard() {
-    return TypesUtils.isUnboundWildcard(getJavaType());
+    return TypesUtils.hasNoExplicitBound(getJavaType());
   }
 
   /**
@@ -543,16 +543,16 @@ public abstract class AbstractType {
    * @return true if the type is a wildcard with an upper bound
    */
   public boolean isUpperBoundedWildcard() {
-    return TypesUtils.isExtendsBoundWildcard(getJavaType());
+    return TypesUtils.hasExplicitExtendsBound(getJavaType());
   }
 
   /**
-   * Return true if the type is a wilcard with a lower bound.
+   * Return true if the type is a wildcard with a lower bound.
    *
    * @return true if the type is a wildcard with a lower bound
    */
   public boolean isLowerBoundedWildcard() {
-    return TypesUtils.isSuperBoundWildcard(getJavaType());
+    return TypesUtils.hasExplicitSuperBound(getJavaType());
   }
 
   /**
