@@ -19,7 +19,7 @@ abstract class CheckerFrameworkRootedTest {
     if (annotation != null) {
       return new File(annotation.value());
     }
-    return new File("test");
+    return new File("tests");
   }
 
   /**
