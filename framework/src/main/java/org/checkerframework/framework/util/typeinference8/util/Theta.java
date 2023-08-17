@@ -9,19 +9,27 @@ import org.checkerframework.javacutil.TypesUtils;
 public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   private static final long serialVersionUID = 42L;
 
-  private TypeVariable sames(TypeVariable other) {
+  /**
+   * Returns the type variable in the key set that is {@link TypesUtils#areSame(TypeVariable,
+   * TypeVariable)} as {@code typeVariable}.
+   *
+   * @param typeVariable a type variable
+   * @return the type variable in the key set that is {@link TypesUtils#areSame(TypeVariable,
+   *     TypeVariable)} as {@code typeVariable}
+   */
+  private TypeVariable getTypeVariable(TypeVariable typeVariable) {
     for (TypeVariable key : keySet()) {
-      if (TypesUtils.areSame(key, other)) {
+      if (TypesUtils.areSame(key, typeVariable)) {
         return key;
       }
     }
-    return other;
+    return typeVariable;
   }
 
   @Override
   public boolean containsKey(Object key) {
     if (key instanceof TypeVariable) {
-      return super.containsKey(sames((TypeVariable) key));
+      return super.containsKey(getTypeVariable((TypeVariable) key));
     }
     return false;
   }
@@ -29,7 +37,7 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   @Override
   public Variable get(Object key) {
     if (key instanceof TypeVariable) {
-      return super.get(sames((TypeVariable) key));
+      return super.get(getTypeVariable((TypeVariable) key));
     }
     return super.get(key);
   }

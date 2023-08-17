@@ -67,12 +67,22 @@ public class Java8InferenceContext {
   /** TypeMirror for java.lang.RuntimeException. */
   public final TypeMirror runtimeEx;
 
+  /** The inference factory. */
   public final InferenceFactory inferenceTypeFactory;
 
+  /** The annotated type factory. */
   public final AnnotatedTypeFactory typeFactory;
 
+  /** There's no way to tell if an element is a parameter of a lambda, so keep track of them. */
   public final Set<VariableElement> lambdaParms = new HashSet<>();
 
+  /**
+   * Creates a context
+   *
+   * @param factory type factory
+   * @param pathToExpression path to the expression whose type arguments are inferred
+   * @param inference inference object
+   */
   public Java8InferenceContext(
       AnnotatedTypeFactory factory, TreePath pathToExpression, InvocationTypeInference inference) {
     this.typeFactory = factory;
@@ -123,9 +133,9 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Return whether or not the {@code expression} is a lambda parameter.
+   * Return whether the {@code expression} is a lambda parameter.
    *
-   * @return whether or not the {@code expression} is a lambda parameter
+   * @return whether the {@code expression} is a lambda parameter
    */
   public boolean isLambdaParam(ExpressionTree expression) {
     Element element = TreeUtils.elementFromTree(expression);
