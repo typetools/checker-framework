@@ -20,6 +20,7 @@ import org.plumelib.util.IPair;
 /** Data structure to stores the bounds of a variable. */
 public class VariableBounds {
 
+  /** Kind of bound. */
   public enum BoundKind {
     /** {@code other type <: this } */
     LOWER,
@@ -32,6 +33,7 @@ public class VariableBounds {
   /** The variable whose bounds this class represents. */
   private final Variable variable;
 
+  /** The context. */
   private final Java8InferenceContext context;
 
   /** The type to which this variable is instantiated. */
@@ -63,6 +65,12 @@ public class VariableBounds {
   /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
   public EnumMap<BoundKind, LinkedHashSet<Set<AnnotationMirror>>> savedQualifierBounds = null;
 
+  /**
+   * Creates bounds for {@code variable}.
+   *
+   * @param variable a variable
+   * @param context the context
+   */
   public VariableBounds(Variable variable, Java8InferenceContext context) {
     this.variable = variable;
     this.context = context;
@@ -125,11 +133,22 @@ public class VariableBounds {
     return hasThrowsBound;
   }
 
+  /**
+   * Set has throws bound
+   *
+   * @param b has thrown bound
+   */
   public void setHasThrowsBound(boolean b) {
     hasThrowsBound = b;
   }
 
-  /** Adds {@code otherType} as bound against this variable. */
+  /**
+   * Adds {@code otherType} as bound against this variable.
+   *
+   * @param kind the kind of bound
+   * @param otherType the bound type
+   * @return if a new bound was added
+   */
   public boolean addBound(BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
@@ -146,14 +165,24 @@ public class VariableBounds {
     return false;
   }
 
-  /** Adds {@code qualifiers} as a qualifier bound against this variable. */
+  /**
+   * Adds {@code qualifiers} as a qualifier bound against this variable.
+   *
+   * @param kind the kind of bound
+   * @param qualifiers the qualifiers
+   */
   public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
     addConstraintsFromComplementaryBounds(kind, qualifiers);
     qualifierBounds.get(kind).add(qualifiers);
   }
 
-  /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
+  /**
+   * Add constraints created via incorporation of the bound. See JLS 18.3.1.
+   *
+   * @param kind the kind of bound
+   * @param s the qualifiers
+   */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryQualifierBounds(
       BoundKind kind, Set<AnnotationMirror> s) {
@@ -194,7 +223,12 @@ public class VariableBounds {
     }
   }
 
-  /** Add constraints created via incorporation of the bound. See JLS 18.3.1. */
+  /**
+   * Add constraints created via incorporation of the bound. See JLS 18.3.1.
+   *
+   * @param kind the kind of bound
+   * @param s the type of the bound
+   */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
     if (kind == BoundKind.EQUAL) {
@@ -249,6 +283,12 @@ public class VariableBounds {
     }
   }
 
+  /**
+   * Adds constraints from complementary bounds.
+   *
+   * @param kind kind of bound
+   * @param s qualifiers
+   */
   public void addConstraintsFromComplementaryBounds(BoundKind kind, Set<AnnotationMirror> s) {
     // Copy bound to equal variables
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
@@ -357,9 +397,13 @@ public class VariableBounds {
     return set;
   }
 
-  /** Apply instantiations to all bounds and constraints of this variable. */
+  /**
+   * Apply instantiations to all bounds and constraints of this variable.
+   *
+   * @return whether any of the bounds changed
+   */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public boolean applyInstantiationsToBounds(List<Variable> instantiations) {
+  public boolean applyInstantiationsToBounds() {
     boolean changed = false;
     for (Set<AbstractType> boundList : bounds.values()) {
       LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());

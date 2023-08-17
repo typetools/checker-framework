@@ -183,7 +183,7 @@ public class Resolution {
 
     BoundSet resolvedBounds;
     if (boundSet.containsCapture(as)) {
-      fixes(new ArrayList<>(as), boundSet);
+      fixes(new ArrayList<>(as));
       as.removeAll(boundSet.getInstantiatedVariables());
       // Then resolve the capture variables
       resolvedBounds = resolveWithCapture(as, boundSet, context);
@@ -208,13 +208,13 @@ public class Resolution {
   }
 
   // TODO: I'm not sure what's going on with this method, I need to investigate it.
-  private void fixes(List<Variable> variables, BoundSet boundSet) {
+  private void fixes(List<Variable> variables) {
     Variable smallV;
     do {
       smallV = null;
       int smallest = Integer.MAX_VALUE;
       for (Variable v : variables) {
-        v.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
+        v.getBounds().applyInstantiationsToBounds();
         if (v.getBounds().hasInstantiation()) {
           variables.remove(v);
           // loop again because a new instantiation has been found.
@@ -319,7 +319,7 @@ public class Resolution {
     List<AbstractType> typeArg = new ArrayList<>();
 
     for (Variable ai : as) {
-      ai.getBounds().applyInstantiationsToBounds(boundSet.getInstantiatedVariables());
+      ai.getBounds().applyInstantiationsToBounds();
       if (ai.getBounds().hasInstantiation()) {
         // If ai is equal to a variable that was resolved previously,
         // ai would now have an instantiation.
