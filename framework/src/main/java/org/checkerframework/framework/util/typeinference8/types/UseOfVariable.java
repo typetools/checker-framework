@@ -14,13 +14,34 @@ import org.checkerframework.framework.util.typeinference8.types.VariableBounds.B
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
+/**
+ * A use of an inference variable. This class keeps track of whether the use of this variable has a
+ * primary annotation.
+ */
 public class UseOfVariable extends AbstractType {
+
+  /** The variable that this is a use of. */
   private final Variable variable;
+
+  /** Whether this use has a primary annotation. */
   private final boolean hasPrimaryAnno;
+
+  /** The bottom annotations for each hierarchy that has a primary annotation on this use. */
   private final Set<AnnotationMirror> bots;
+
+  /** The top annotations for each hierarchy that has a primary annotation on this use. */
   private final Set<AnnotationMirror> tops;
+
+  /** The annotated type variable for this use. */
   private final AnnotatedTypeVariable type;
 
+  /**
+   * Creates a use of a variable.
+   *
+   * @param type annotated type variable for this use
+   * @param variable variable that this is a use of
+   * @param context the context
+   */
   public UseOfVariable(
       AnnotatedTypeVariable type, Variable variable, Java8InferenceContext context) {
     super(context);
@@ -92,24 +113,50 @@ public class UseOfVariable extends AbstractType {
     return this;
   }
 
+  /**
+   * Returns the variable that this is a use of.
+   *
+   * @return the variable that this is a use of
+   */
   public Variable getVariable() {
     return variable;
   }
 
+  /**
+   * Set whether this use has a throws bound.
+   *
+   * @param hasThrowsBound whether this use has a throws bound
+   */
   public void setHasThrowsBound(boolean hasThrowsBound) {
     variable.getBounds().setHasThrowsBound(hasThrowsBound);
   }
 
+  /**
+   * Adds a qualifier bound for this variable, is this use does not have a primary annotation.
+   *
+   * @param kind the kind of bound
+   * @param annotations the qualifiers to add
+   */
   public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> annotations) {
     if (!hasPrimaryAnno) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
   }
 
+  /**
+   * Adds a bound for this variable, is this use does not have a primary annotation.
+   *
+   * @param kind the kind of bound
+   * @param bound the type of the bound
+   */
   public void addBound(BoundKind kind, AbstractType bound) {
     if (!hasPrimaryAnno) {
       variable.getBounds().addBound(kind, bound);
     } else {
+      // If the use has a primary annotation, then add the bound but with that annotations set to
+      // bottom
+      // or top.  This makes it so that the java type is still a bound, but the qualifiers do not
+      // change the results of inference.
       if (kind == BoundKind.LOWER) {
         bound.getAnnotatedType().replaceAnnotations(bots);
         variable.getBounds().addBound(kind, bound);
