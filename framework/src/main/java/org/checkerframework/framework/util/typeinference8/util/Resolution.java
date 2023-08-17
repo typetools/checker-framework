@@ -105,11 +105,18 @@ public class Resolution {
     return boundSet;
   }
 
+  /** The context. */
   private final Java8InferenceContext context;
 
   /** The set of dependencies between the variables. */
   private final Dependencies dependencies;
 
+  /**
+   * Creates a resolution.
+   *
+   * @param context the context
+   * @param dependencies the dependencies
+   */
   private Resolution(Java8InferenceContext context, Dependencies dependencies) {
     this.context = context;
     this.dependencies = dependencies;

@@ -474,6 +474,14 @@ public class InferenceFactory {
     return (ExecutableType) TypesUtils.substitute(executableType, typeVariables, args, context.env);
   }
 
+  /**
+   * Returns the least upper bound of {@code tm1} and {@code tm2}.
+   *
+   * @param processingEnv the processing environment
+   * @param tm1 a type
+   * @param tm2 a type
+   * @return the least upper bound of {@code tm1} and {@code tm2}.
+   */
   public static TypeMirror lub(
       ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
     Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
@@ -484,6 +492,14 @@ public class InferenceFactory {
     return types.lub(t1, t2);
   }
 
+  /**
+   * Returns the greatest lower bound of {@code tm1} and {@code tm2}.
+   *
+   * @param processingEnv the processing environment
+   * @param tm1 a type
+   * @param tm2 a type
+   * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+   */
   public static TypeMirror glb(
       ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
     Type t1 = TypeAnnotationUtils.unannotatedType(tm1);
@@ -788,6 +804,15 @@ public class InferenceFactory {
         compileTimeType, compileTimeType.getUnderlyingType(), memRef, context);
   }
 
+  /**
+   * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
+   * as the least upper bound of {@code a} and {@code b}.
+   *
+   * @param a type
+   * @param b type
+   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and * {@code
+   *     b} as the least upper bound of {@code a} and {@code b}
+   */
   public IPair<AbstractType, AbstractType> getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
@@ -1066,12 +1091,20 @@ public class InferenceFactory {
     return upperBound.create(typeVariable, freshTypeVariable);
   }
 
+  /**
+   * Returns the result of substituting {@code typeArg} for {@code typeVar} in {@code types}.
+   *
+   * @param typeVar type variables
+   * @param typeArg type arguments
+   * @param types types
+   * @return the result of substituting {@code typeArg} for {@code typeVar} in {@code types}
+   */
   public List<AbstractType> getSubsTypeArgs(
-      List<TypeVariable> typeVar, List<AbstractType> typeArg, List<Variable> asList) {
+      List<TypeVariable> typeVar, List<AbstractType> typeArg, List<Variable> types) {
     List<TypeMirror> javaTypeArgs = new ArrayList<>();
     // Recursive types:
     for (int i = 0; i < typeArg.size(); i++) {
-      Variable ai = asList.get(i);
+      Variable ai = types.get(i);
       TypeMirror inst = typeArg.get(i).getJavaType();
       TypeVariable typeVariableI = ai.getJavaType();
       if (ContainsInferenceVariable.hasAnyTypeVariable(
@@ -1105,7 +1138,7 @@ public class InferenceFactory {
     List<AnnotatedTypeMirror> typeArgsATM = new ArrayList<>();
     // Recursive types:
     for (int i = 0; i < typeArg.size(); i++) {
-      Variable ai = asList.get(i);
+      Variable ai = types.get(i);
       AbstractType inst = typeArg.get(i);
       typeArgsATM.add(inst.getAnnotatedType());
       TypeVariable typeVariableI = ai.getJavaType();

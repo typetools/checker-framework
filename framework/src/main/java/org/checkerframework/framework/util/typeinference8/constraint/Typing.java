@@ -43,6 +43,13 @@ public class Typing extends TypeConstraint {
    */
   private final Kind kind;
 
+  /**
+   * Creates a typing constraint.
+   *
+   * @param S left hand side type
+   * @param t right hand side type
+   * @param kind the kind of constraint
+   */
   public Typing(AbstractType S, AbstractType t, Kind kind) {
     super(t);
     assert S != null;
@@ -117,6 +124,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint. See JLS
    * 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtyping() {
     if (S.isProper() && T.isProper()) {
@@ -172,6 +181,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
    * {@code T} is a class type. See JLS 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtypeClass() {
     if (T.isParameterizedType()) {
@@ -206,6 +217,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
    * {@code T} is an array type. See JLS 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtypeArray() {
     AbstractType msArrayType = S.getMostSpecificArrayType();
@@ -222,6 +235,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
    * {@code T} is a type variable. See JLS 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtypeTypeVariable() {
     if (S.getTypeKind() == TypeKind.INTERSECTION) {
@@ -238,6 +253,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
    * {@code T} is an intersection type. See JLS 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtypingIntersection() {
     ConstraintSet constraintSet = new ConstraintSet();
@@ -250,6 +267,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assuming it is a containment constraint. See
    * JLS 18.2.3.
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceContained() {
     if (T.getTypeKind() != TypeKind.WILDCARD) {
@@ -286,6 +305,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assume it is a type compatibility constraint.
    * See JLS 18.2.2
+   *
+   * @return the result of reducing the constraint
    */
   private ReductionResult reduceCompatible() {
     if (T.isProper() && S.isProper()) {
@@ -321,6 +342,8 @@ public class Typing extends TypeConstraint {
   /**
    * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
    * 18.2.4
+   *
+   * @return the result of reducing the constraint
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   private ReductionResult reduceEquality() {

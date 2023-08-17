@@ -169,8 +169,14 @@ public class CaptureBound {
     return new LinkedHashSet<>(capturedType.getInferenceVariables());
   }
 
-  public boolean isCaptureMentionsAny(Collection<Variable> as) {
-    for (Variable a : as) {
+  /**
+   * Returns whether this bound contains any {@code variables}.
+   *
+   * @param variables inference variables
+   * @return whether this bound contains any {@code variables}
+   */
+  public boolean isCaptureMentionsAny(Collection<Variable> variables) {
+    for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;
       }

@@ -31,9 +31,16 @@ public class InvocationType {
   /** A method or constructor invocation. */
   private final ExpressionTree invocation;
 
+  /** The annotated method type. */
   private final AnnotatedExecutableType annotatedExecutableType;
+
+  /** The Java method type */
   private final ExecutableType methodType;
+
+  /** The context. */
   private final Java8InferenceContext context;
+
+  /** The annotated type factory. */
   private final AnnotatedTypeFactory typeFactory;
 
   /**
