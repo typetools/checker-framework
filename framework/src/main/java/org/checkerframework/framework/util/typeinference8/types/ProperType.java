@@ -20,44 +20,65 @@ import org.checkerframework.javacutil.TypesUtils;
 /** A type that does not contain any inference variables. */
 public class ProperType extends AbstractType {
 
+  /** The annotated type mirror. */
   private final AnnotatedTypeMirror type;
+
+  /** The Java type. */
   private final TypeMirror properType;
 
+  /**
+   * Creates a proper type.
+   *
+   * @param type the annotated type
+   * @param properType the java type
+   * @param context the context
+   */
   public ProperType(
       AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
     super(context);
-    type = verifyTypeKinds(type, properType);
-
     this.properType = properType;
     this.type = type;
+    verifyTypeKinds(type, properType);
   }
 
+  /**
+   * Creates a proper type from the type of the expression.
+   *
+   * @param tree an expression tree
+   * @param context the context
+   */
   public ProperType(ExpressionTree tree, Java8InferenceContext context) {
     super(context);
-    AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(tree);
-    TypeMirror properType = type.getUnderlyingType();
-
-    this.type = verifyTypeKinds(type, properType);
-    this.properType = properType;
+    this.type = context.typeFactory.getAnnotatedType(tree);
+    this.properType = type.getUnderlyingType();
+    verifyTypeKinds(type, properType);
   }
 
+  /**
+   * Creates a proper type from the type of the variable.
+   *
+   * @param varTree a variable tree
+   * @param context the context
+   */
   public ProperType(VariableTree varTree, Java8InferenceContext context) {
     super(context);
-    AnnotatedTypeMirror type = context.typeFactory.getAnnotatedType(varTree);
-    TypeMirror properType = TreeUtils.typeOf(varTree);
-    this.type = verifyTypeKinds(type, properType);
-    this.properType = properType;
+    this.type = context.typeFactory.getAnnotatedType(varTree);
+    this.properType = TreeUtils.typeOf(varTree);
+    verifyTypeKinds(type, properType);
   }
 
-  /** Asserts that the underlying type of {@code atm} is the same kind as {@code typeMirror} */
-  private static AnnotatedTypeMirror verifyTypeKinds(
-      AnnotatedTypeMirror atm, TypeMirror typeMirror) {
+  /**
+   * Asserts that the underlying type of {@code atm} is the same kind as {@code typeMirror}.
+   *
+   * @param atm annotated type mirror
+   * @param typeMirror java type
+   */
+  private static void verifyTypeKinds(AnnotatedTypeMirror atm, TypeMirror typeMirror) {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
 
     if (typeMirror.getKind() != atm.getKind()) {
       throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());
     }
-    return atm;
   }
 
   @Override

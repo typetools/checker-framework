@@ -14,7 +14,10 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** An inference variable. */
+/**
+ * An inference variable. It corresponds to a type argument for a particular method invocation, new
+ * class tree or method reference that needs to be inferred.
+ */
 @Interned public class Variable {
 
   /** Bounds of this variable. */
@@ -35,10 +38,21 @@ import org.checkerframework.javacutil.TypesUtils;
   /** Type variable for which the instantiation of this variable is a type argument, */
   protected final AnnotatedTypeVariable typeVariable;
 
+  /** A mapping from type variable to inference variable. */
   protected final Theta map;
 
+  /** The context. */
   protected final Java8InferenceContext context;
 
+  /**
+   * Creates a variable.
+   *
+   * @param typeVariable an annotated type variable
+   * @param typeVariableJava a java type variable
+   * @param invocation the invocation for which this variable is a type argument for
+   * @param context the context
+   * @param map a mapping from type variable to inference variable
+   */
   Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,
@@ -48,8 +62,18 @@ import org.checkerframework.javacutil.TypesUtils;
     this(typeVariable, typeVariableJava, invocation, context, map, context.getNextVariableId());
   }
 
+  /**
+   * Creates a variable.
+   *
+   * @param typeVariable an annotated type variable
+   * @param typeVariableJava a java type variable
+   * @param invocation the invocation for which this variable is a type argument for
+   * @param context the context
+   * @param map a mapping from type variable to inference variable
+   * @param id a unique number for this variable
+   */
   @SuppressWarnings("interning:argument") // "this" is interned
-  Variable(
+  protected Variable(
       AnnotatedTypeVariable typeVariable,
       TypeVariable typeVariableJava,
       ExpressionTree invocation,
@@ -107,6 +131,11 @@ import org.checkerframework.javacutil.TypesUtils;
         BoundKind.LOWER, typeVariable.getLowerBound().getPrimaryAnnotations());
   }
 
+  /**
+   * Returns the invocation tree.
+   *
+   * @return the invocation tree
+   */
   public ExpressionTree getInvocation() {
     return invocation;
   }
@@ -142,6 +171,11 @@ import org.checkerframework.javacutil.TypesUtils;
     return "a" + id;
   }
 
+  /**
+   * Returns the instantiation for this variable.
+   *
+   * @return the instantiation for this variable
+   */
   public ProperType getInstantiation() {
     return variableBounds.getInstantiation();
   }
@@ -160,14 +194,19 @@ import org.checkerframework.javacutil.TypesUtils;
   }
 
   /**
-   * Returns whether or not this variable was created for a capture bound.
+   * Returns whether this variable was created for a capture bound.
    *
-   * @return whether or not this variable was created for a capture bound
+   * @return whether this variable was created for a capture bound
    */
   public boolean isCaptureVariable() {
     return false;
   }
 
+  /**
+   * The Java type variable.
+   *
+   * @return the Java type variable
+   */
   public TypeVariable getJavaType() {
     return typeVariableJava;
   }
