@@ -503,6 +503,10 @@ public class VariableBounds {
    * Does this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2 <: var},
    * where S1 and S2 have supertypes that are two different parameterizations of the same generic
    * class or interface?
+   *
+   * @return whether this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2
+   *     <: var}, where S1 and S2 have supertypes that are two different parameterizations of the
+   *     same generic class or interface
    */
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
@@ -559,7 +563,13 @@ public class VariableBounds {
     return false;
   }
 
-  /** These are constraints generated when incorporating a capture bound. See JLS 18.3.2. */
+  /**
+   * Returns the constraints generated when incorporating a capture bound. See JLS 18.3.2.
+   *
+   * @param Ai the captured type argument
+   * @param Bi the bound of the type variable
+   * @return constraints generated when incorporating a capture bound
+   */
   public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     ConstraintSet constraintSet = new ConstraintSet();
 

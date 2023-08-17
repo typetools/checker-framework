@@ -228,6 +228,7 @@ public class CaptureBound {
      * @param alpha capture variable
      * @param capturedTypeArg captured type argument
      * @param bound the bound of the type parameter
+     * @return a tuple
      */
     public static CaptureTuple of(
         CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {

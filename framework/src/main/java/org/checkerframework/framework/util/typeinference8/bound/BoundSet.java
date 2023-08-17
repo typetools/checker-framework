@@ -63,7 +63,11 @@ public class BoundSet implements ReductionResult {
     this.uncheckedConversion = false;
   }
 
-  /** Copy constructor. */
+  /**
+   * Copy constructor.
+   *
+   * @param toCopy bound set to copy
+   */
   public BoundSet(BoundSet toCopy) {
     this.context = toCopy.context;
     this.containsFalse = toCopy.containsFalse;

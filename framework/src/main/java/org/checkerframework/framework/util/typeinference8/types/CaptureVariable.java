@@ -38,7 +38,13 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
     return "b" + id;
   }
 
-  /** These are constraints generated when incorporating a capture bound. See JLS 18.3.2. */
+  /**
+   * Returns the constraints generated when incorporating a capture bound. See JLS 18.3.2.
+   *
+   * @param Ai the captured type argument
+   * @param Bi the bound of the type variable
+   * @return constraints generated when incorporating a capture bound
+   */
   public ConstraintSet getWildcardConstraints(AbstractType Ai, AbstractType Bi) {
     return variableBounds.getWildcardConstraints(Ai, Bi);
   }

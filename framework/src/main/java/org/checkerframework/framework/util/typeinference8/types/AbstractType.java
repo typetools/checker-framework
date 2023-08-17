@@ -305,11 +305,13 @@ public abstract class AbstractType {
   }
 
   /**
-   * <a href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS
-   * section 15.27.3</a>
+   * Make {@code type} ground, which is basically changing any wildcards to their bounds. <a
+   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS section
+   * 15.27.3</a>
    *
    * @param type a type to ground
    * @param typeFactory type factory
+   * @return the ground type
    */
   // TODO: This method is named make ground, but is actually implements non-wildcard
   // parameterization as defined in

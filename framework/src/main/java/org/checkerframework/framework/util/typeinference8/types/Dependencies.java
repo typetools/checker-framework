@@ -17,24 +17,26 @@ public class Dependencies {
   /** A map from a variable to the variables, including itself, on which it depends. */
   private final Map<Variable, LinkedHashSet<Variable>> map = new LinkedHashMap<>();
 
-  /** Add {@code value} as a dependency of {@code key}. */
-  public boolean putOrAdd(Variable key, Variable value) {
-    LinkedHashSet<Variable> set = map.get(key);
-    if (set == null) {
-      set = new LinkedHashSet<>();
-      map.put(key, set);
-    }
-    return set.add(value);
+  /**
+   * Add {@code value} as a dependency of {@code key}.
+   *
+   * @param key a key to add
+   * @param value a value to add
+   */
+  public void putOrAdd(Variable key, Variable value) {
+    LinkedHashSet<Variable> set = map.computeIfAbsent(key, k -> new LinkedHashSet<>());
+    set.add(value);
   }
 
-  /** Add {@code values} as dependencies of {@code key}. */
-  public boolean putOrAddAll(Variable key, Collection<? extends Variable> values) {
-    LinkedHashSet<Variable> set = map.get(key);
-    if (set == null) {
-      set = new LinkedHashSet<>();
-      map.put(key, set);
-    }
-    return set.addAll(values);
+  /**
+   * Add {@code values} as dependencies of {@code key}.
+   *
+   * @param key a key to add
+   * @param values values to add
+   */
+  public void putOrAddAll(Variable key, Collection<? extends Variable> values) {
+    LinkedHashSet<Variable> set = map.computeIfAbsent(key, k -> new LinkedHashSet<>());
+    set.addAll(values);
   }
 
   /**
@@ -63,12 +65,22 @@ public class Dependencies {
     }
   }
 
-  /** Returns the set of dependencies of {@code alpha}. */
+  /**
+   * Returns the set of dependencies of {@code alpha}.
+   *
+   * @param alpha a variable
+   * @return the set of dependencies of {@code alpha}
+   */
   public Set<Variable> get(Variable alpha) {
     return new LinkedHashSet<>(map.get(alpha));
   }
 
-  /** Returns the set of dependencies for all variables in {@code variables}. */
+  /**
+   * Returns the set of dependencies for all variables in {@code variables}.
+   *
+   * @param variables list of variables
+   * @return the set of dependencies for all variables in {@code variables}
+   */
   public Set<Variable> get(List<Variable> variables) {
     LinkedHashSet<Variable> set = new LinkedHashSet<>();
     for (Variable v : variables) {

@@ -5,6 +5,8 @@ import org.checkerframework.framework.util.typeinference8.constraint.ReductionRe
 
 /** Exception thrown when the Java types make it so that false is inferred. */
 public class FalseBoundException extends RuntimeException {
+
+  /** serialVersionUID */
   private static final long serialVersionUID = 1;
 
   /**

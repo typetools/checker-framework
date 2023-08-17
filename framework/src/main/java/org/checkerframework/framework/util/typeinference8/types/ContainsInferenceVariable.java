@@ -22,13 +22,25 @@ import org.checkerframework.javacutil.TypesUtils;
 /** Helper class for determining if a type contains an inference variable. */
 public class ContainsInferenceVariable {
 
-  /** Returns true if {@code type} contains any of the type variables in {@code typeVariables}. */
+  /**
+   * Returns true if {@code type} contains any of the type variables in {@code typeVariables}.
+   *
+   * @param typeVariables a collection of type variables
+   * @param type a type to check
+   * @return true if {@code type} contains any of the type variables in {@code typeVariables}
+   */
   public static boolean hasAnyTypeVariable(
       Collection<? extends TypeVariable> typeVariables, TypeMirror type) {
     return new Visitor(typeVariables).visit(type);
   }
 
-  /** Returns the type variables in {@code typeVariables} that appear in {@code type}. */
+  /**
+   * Returns the type variables in {@code typeVariables} that appear in {@code type}.
+   *
+   * @param typeVariables a collection of type variables
+   * @param type a type to check
+   * @return the type variables in {@code typeVariables} that appear in {@code type}
+   */
   public static Set<TypeVariable> getMentionedTypeVariables(
       Collection<? extends TypeVariable> typeVariables, TypeMirror type) {
     Visitor visitor = new Visitor(typeVariables);

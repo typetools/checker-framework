@@ -270,6 +270,9 @@ public class CheckedExceptionsUtil {
     /**
      * If any type in {@code thrownExceptionTypes} is assignable to {@code type}, then remove it
      * from the list.
+     *
+     * @param type an exception type
+     * @param thrownExceptionTypes a list of thrown exception types; side-effected by this method
      */
     private void removeAssignable(TypeMirror type, List<AnnotatedTypeMirror> thrownExceptionTypes) {
       if (thrownExceptionTypes.isEmpty()) {

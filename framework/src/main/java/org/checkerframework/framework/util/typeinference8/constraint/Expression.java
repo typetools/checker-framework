@@ -301,10 +301,15 @@ public class Expression extends TypeConstraint {
   }
 
   /**
-   * Computes the ground target type of {@code t} as defined in JLS 18.5.3. Returned as the first in
-   * the pair. This process might create additional bounds, if so the second in the returned pair
-   * will be non-null.
+   * This method sets up functional interface parameterization inference for {@code lambda} as
+   * defined in JLS 18.5.3.
    *
+   * <p>Computes the ground target type of {@code t}. Returned as the first in the pair. This
+   * process might create additional bounds, if so the second in the returned pair will be non-null.
+   *
+   * @param t the target type of {@code lambda}
+   * @param lambda a lambda to infer functional interface parameterization
+   * @param context the context
    * @return the ground target type
    */
   private IPair<AbstractType, BoundSet> getGroundTargetType(

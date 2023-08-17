@@ -135,6 +135,7 @@ public class Java8InferenceContext {
   /**
    * Return whether the {@code expression} is a lambda parameter.
    *
+   * @param expression an expression
    * @return whether the {@code expression} is a lambda parameter
    */
   public boolean isLambdaParam(ExpressionTree expression) {

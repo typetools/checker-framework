@@ -1127,7 +1127,12 @@ public final class TreeUtils {
     }
   }
 
-  /** Returns true if the tree represents a {@code String} concatenation operation. */
+  /**
+   * Returns true if the tree represents a {@code String} concatenation operation.
+   *
+   * @param tree a tree
+   * @return true if the tree represents a {@code String} concatenation operation
+   */
   public static boolean isStringConcatenation(Tree tree) {
     return (tree.getKind() == Tree.Kind.PLUS && TypesUtils.isString(TreeUtils.typeOf(tree)));
   }

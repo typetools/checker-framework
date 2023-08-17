@@ -1057,7 +1057,9 @@ public class InferenceFactory {
    * Creates a fresh type variable using the upper and lower bounds provided.
    *
    * @param lowerBound a proper type or null
+   * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null
    * @param upperBound an abstract type or null
+   * @param upperBoundAnnos annotations to use if {@code upperBound} is null
    * @return a fresh type variable with the provided upper and lower bounds
    */
   public AbstractType createFreshTypeVariable(
