@@ -82,12 +82,13 @@ public class CaptureBound {
   }
 
   /**
-   * Given {@code r}, a parameterized type, G<A1, ..., An>, and one of A1, ..., An is a wildcard,
-   * then, for fresh inference variables B1, ..., Bn, the constraint formula <G<B1, ..., Bn> -> T>
-   * is reduced and incorporated, along with the bound G<B1, ..., Bn> = capture(G<A1, ..., An>),
-   * with B2.
+   * Given {@code r}, a parameterized type, {@code G<A1, ..., An>}}, and one of {@code A1, ..., An}
+   * is a wildcard, then, for fresh inference variables {@code B1, ..., Bn}, the constraint formula
+   * {@code <G<B1, ..., Bn> -> T>} is reduced and incorporated, along with the bound {@code G<B1,
+   * ..., Bn> = capture(G<A1, ..., An>)}, with B2.
    *
-   * @param r a parameterized type, G<A1, ..., An>, and one of A1, ..., An is a wildcard
+   * @param r a parameterized type, {@code G<A1, ..., An>}, and one of {@code A1, ..., An} is a
+   *     wildcard
    * @param target target of the constraint
    * @param invocation invocation a method or constructor invocation; used to create fresh inference
    *     variables

@@ -4,7 +4,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 
 /**
  * A constraint. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se20/html/jls-18.html#jls-18.1.2>JLS </a>.
+ * href="https://docs.oracle.com/javase/specs/jls/se20/html/jls-18.html#jls-18.1.2">JLS</a>.
  */
 public interface Constraint extends ReductionResult {
 
