@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** Util for checked exception constraints. */
 public class CheckedExceptionsUtil {
 
   /**
@@ -36,8 +37,14 @@ public class CheckedExceptionsUtil {
    */
   private static class CheckedExceptionVisitor extends TreeScanner<List<TypeMirror>, Void> {
 
+    /** the context. */
     private final Java8InferenceContext context;
 
+    /**
+     * Creates the visitor.
+     *
+     * @param context the context
+     */
     private CheckedExceptionVisitor(Java8InferenceContext context) {
       this.context = context;
     }
@@ -118,6 +125,9 @@ public class CheckedExceptionsUtil {
     /**
      * If any type in {@code thrownExceptionTypes} is assignable to {@code type}, then remove it
      * from the list.
+     *
+     * @param type a type
+     * @param thrownExceptionTypes the type of the exceptions
      */
     private void removeAssignable(TypeMirror type, List<TypeMirror> thrownExceptionTypes) {
       if (thrownExceptionTypes.isEmpty()) {
@@ -137,7 +147,13 @@ public class CheckedExceptionsUtil {
     }
   }
 
-  /** Returns true iff {@code type} is a checked exception. */
+  /**
+   * Returns true iff {@code type} is a checked exception.
+   *
+   * @param type at ype to check
+   * @param context the context
+   * @return true iff {@code type} is a checked exception
+   */
   private static boolean isCheckedException(TypeMirror type, Java8InferenceContext context) {
     TypeMirror runtimeEx = context.runtimeEx;
     return context.env.getTypeUtils().isSubtype(type, runtimeEx);
@@ -162,8 +178,14 @@ public class CheckedExceptionsUtil {
   private static class CheckedExceptionATMVisitor
       extends TreeScanner<List<AnnotatedTypeMirror>, Void> {
 
+    /** The context. */
     private final Java8InferenceContext context;
 
+    /**
+     * Creates the visitor.
+     *
+     * @param context the context
+     */
     private CheckedExceptionATMVisitor(Java8InferenceContext context) {
       this.context = context;
     }
@@ -267,7 +289,13 @@ public class CheckedExceptionsUtil {
     }
   }
 
-  /** Returns true iff {@code type} is a checked exception. */
+  /**
+   * Returns true iff {@code type} is a checked exception.
+   *
+   * @param type a type to check
+   * @param context the context
+   * @return true iff {@code type} is a checked exception
+   */
   private static boolean isCheckedException(
       AnnotatedTypeMirror type, Java8InferenceContext context) {
     TypeMirror runtimeEx = context.runtimeEx;
