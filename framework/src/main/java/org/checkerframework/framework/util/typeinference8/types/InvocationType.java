@@ -25,14 +25,25 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 
+/** A method type for an invocation of a method or constructor. */
 public class InvocationType {
 
+  /** A method or constructor invocation. */
   private final ExpressionTree invocation;
+
   private final AnnotatedExecutableType annotatedExecutableType;
   private final ExecutableType methodType;
   private final Java8InferenceContext context;
   private final AnnotatedTypeFactory typeFactory;
 
+  /**
+   * Creates an invocation type.
+   *
+   * @param annotatedExecutableType annotated method type
+   * @param methodType java method type
+   * @param invocation a method or constructor invocation
+   * @param context the context
+   */
   public InvocationType(
       AnnotatedExecutableType annotatedExecutableType,
       ExecutableType methodType,
@@ -46,14 +57,30 @@ public class InvocationType {
     this.typeFactory = context.typeFactory;
   }
 
+  /**
+   * Returns the method or constructor invocation.
+   *
+   * @return the method or constructor invocation
+   */
   public ExpressionTree getInvocation() {
     return invocation;
   }
 
+  /**
+   * Returns the java method type.
+   *
+   * @return the java method type
+   */
   public ExecutableType getJavaType() {
     return annotatedExecutableType.getUnderlyingType();
   }
 
+  /**
+   * Returns the thrown types.
+   *
+   * @param map a mapping from type variable to inference variable
+   * @return the thrown types
+   */
   public List<? extends AbstractType> getThrownTypes(Theta map) {
     List<AbstractType> thrown = new ArrayList<>();
     Iterator<? extends TypeMirror> iter = methodType.getThrownTypes().iterator();
@@ -63,6 +90,12 @@ public class InvocationType {
     return thrown;
   }
 
+  /**
+   * Returns the return type.
+   *
+   * @param map a mapping from type variable to inference variable
+   * @return the return type
+   */
   public AbstractType getReturnType(Theta map) {
     TypeMirror returnTypeJava;
     AnnotatedTypeMirror returnType;
@@ -95,6 +128,11 @@ public class InvocationType {
   /**
    * Returns a list of the parameter types of {@code InvocationType} where the vararg parameter has
    * been modified to match the arguments in {@code expression}.
+   *
+   * @param map a mapping from type variable to inference variable
+   * @param size the number of parameters to return; used to expand the vararg
+   * @return a list of the parameter types of {@code InvocationType} where the vararg parameter has
+   *     been modified to match the arguments in {@code expression}
    */
   public List<AbstractType> getParameterTypes(Theta map, int size) {
     List<AnnotatedTypeMirror> params = new ArrayList<>(annotatedExecutableType.getParameterTypes());
@@ -123,26 +161,57 @@ public class InvocationType {
     return InferenceType.create(params, paramsJava, map, context);
   }
 
-  public boolean hasTypeVariables() {
-    return !annotatedExecutableType.getTypeVariables().isEmpty();
-  }
-
-  public List<? extends AnnotatedTypeVariable> getAnnotatedTypeVariables() {
-    return annotatedExecutableType.getTypeVariables();
-  }
-
-  public List<? extends TypeVariable> getTypeVariables() {
-    return methodType.getTypeVariables();
-  }
-
-  public boolean isVoid() {
-    return annotatedExecutableType.getReturnType().getKind() == TypeKind.VOID;
-  }
-
+  /**
+   * Returns the parameter types. (Varags are not expanded.)
+   *
+   * @param map a mapping from type variable to inference variable
+   * @return the parameter types
+   */
   public List<AbstractType> getParameterTypes(Theta map) {
     return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
   }
 
+  /**
+   * Whether this method has type variables.
+   *
+   * @return whether this method has type variables.
+   */
+  public boolean hasTypeVariables() {
+    return !annotatedExecutableType.getTypeVariables().isEmpty();
+  }
+
+  /**
+   * Returns the annotated type variables.
+   *
+   * @return the annotated type variables
+   */
+  public List<? extends AnnotatedTypeVariable> getAnnotatedTypeVariables() {
+    return annotatedExecutableType.getTypeVariables();
+  }
+
+  /**
+   * Returns the type variables.
+   *
+   * @return the type variables
+   */
+  public List<? extends TypeVariable> getTypeVariables() {
+    return methodType.getTypeVariables();
+  }
+
+  /**
+   * Whether this method is void.
+   *
+   * @return whether this method is void
+   */
+  public boolean isVoid() {
+    return annotatedExecutableType.getReturnType().getKind() == TypeKind.VOID;
+  }
+
+  /**
+   * Returns the annotated method type.
+   *
+   * @return the annotated method type
+   */
   public AnnotatedExecutableType getAnnotatedType() {
     return annotatedExecutableType;
   }

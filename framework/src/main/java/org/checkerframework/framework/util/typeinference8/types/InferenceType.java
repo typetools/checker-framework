@@ -42,6 +42,14 @@ public class InferenceType extends AbstractType {
   /** A mapping of type variables to inference variables. */
   private final Theta map;
 
+  /**
+   * Creates an inference type.
+   *
+   * @param type the annotated type mirror
+   * @param typeMirror the type mirror
+   * @param map a mapping from type variable to inference variablef
+   * @param context the context
+   */
   private InferenceType(
       AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
     super(context);
@@ -62,6 +70,12 @@ public class InferenceType extends AbstractType {
    * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference variable,
    * it will return that {@link Variable}. Or if {@code type} contains no type variables that are
    * mapped in an inference variable, a {@link ProperType} is returned.
+   *
+   * @param type the annotated type mirror
+   * @param typeMirror the java type
+   * @param map a mapping from type variable to inference variable
+   * @param context the context
+   * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static AbstractType create(
       AnnotatedTypeMirror type,
@@ -88,6 +102,12 @@ public class InferenceType extends AbstractType {
    * Or if the type is a type variable that is mapped to an inference variable, it will return that
    * {@link Variable}. Or if the type contains no type variables that are mapped in an inference
    * variable, a {@link ProperType} is returned.
+   *
+   * @param types the annotated type mirrors
+   * @param typeMirrors the java types
+   * @param map a mapping from type variable to inference variable
+   * @param context the context
+   * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
   public static List<AbstractType> create(
       List<AnnotatedTypeMirror> types,

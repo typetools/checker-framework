@@ -249,9 +249,18 @@ public class InferenceFactory {
     }
   }
 
+  /**
+   * Return the rhs of the assignment of an argument and its formal parameter.
+   *
+   * @param path path to the argument
+   * @param invocation a method or constructor invocation
+   * @param arguments the argument expression tress
+   * @param context the context
+   * @return the rhs of the assignment of an argument and its formal parameter
+   */
   private static TypeMirror assignedToExecutable(
       TreePath path,
-      ExpressionTree methodInvocation,
+      ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       Java8InferenceContext context) {
     int treeIndex = -1;
@@ -263,9 +272,9 @@ public class InferenceFactory {
       }
     }
 
-    ExecutableType methodType = getTypeOfMethodAdaptedToUse(methodInvocation, context);
+    ExecutableType methodType = getTypeOfMethodAdaptedToUse(invocation, context);
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(methodInvocation)) {
+        && TreeUtils.isVarArgMethodCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       TypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((ArrayType) typeMirror).getComponentType();
@@ -274,9 +283,18 @@ public class InferenceFactory {
     return methodType.getParameterTypes().get(treeIndex);
   }
 
+  /**
+   * Return the rhs of the assignment of an argument and its formal parameter.
+   *
+   * @param path path to the argument
+   * @param invocation a method or constructor invocation
+   * @param arguments the argument expression tress
+   * @param methodType the type of the method or constructor
+   * @return the rhs of the assignment of an argument and its formal parameter
+   */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
-      ExpressionTree methodInvocation,
+      ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
       AnnotatedExecutableType methodType) {
     int treeIndex = -1;
@@ -289,7 +307,7 @@ public class InferenceFactory {
     }
 
     if (treeIndex >= methodType.getParameterTypes().size() - 1
-        && TreeUtils.isVarArgMethodCall(methodInvocation)) {
+        && TreeUtils.isVarArgMethodCall(invocation)) {
       treeIndex = methodType.getParameterTypes().size() - 1;
       AnnotatedTypeMirror typeMirror = methodType.getParameterTypes().get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
@@ -327,7 +345,15 @@ public class InferenceFactory {
     return false;
   }
 
-  private static DeclaredType getReceiverType(ExpressionTree tree) {
+  /**
+   * Returns the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   * receiver.
+   *
+   * @param tree an expression tree
+   * @return the type of the receiver of {@code tree} or null if {@code tree} does not have a
+   *     receiver
+   */
+  private static @Nullable DeclaredType getReceiverType(ExpressionTree tree) {
     Tree receiverTree;
     if (tree.getKind() == Tree.Kind.NEW_CLASS) {
       receiverTree = ((NewClassTree) tree).getEnclosingExpression();
@@ -355,6 +381,8 @@ public class InferenceFactory {
   /**
    * Return ExecutableType of the method invocation or new class tree adapted to the call site.
    *
+   * @param expressionTree a method invocation or new class tree
+   * @param context the context
    * @return ExecutableType of the method invocation or new class tree adapted to the call site
    */
   public static ExecutableType getTypeOfMethodAdaptedToUse(
