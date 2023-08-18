@@ -851,7 +851,7 @@ subprojects {
                 "-dir:${projectDir}/jtreg",
                 "-workDir:${jtregOutput}/${name}/work",
                 "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail,nopass',
+                '-verbose:error,fail',
                 // Don't add debugging information
                 //  '-javacoptions:-g',
                 '-keywords:!ignore',
@@ -917,7 +917,6 @@ subprojects {
     // Configure JUnit tests
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
-      // jvmArgs += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
 
       maxParallelForks = Integer.MAX_VALUE
 

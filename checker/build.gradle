@@ -416,10 +416,6 @@ task ainferTestCheckerGenerateStubs(type: Test) {
     // is extended to support annotation definitions.
     delete('tests/ainfer-testchecker/annotated/all-systems/Issue4083.java')
 
-    delete('tests/ainfer-testchecker/annotated/all-systems/java8inference/Bug8.java')
-    delete('tests/ainfer-testchecker/annotated/all-systems/java8inference/Issue3036.java')
-    delete('tests/ainfer-testchecker/annotated/all-systems/java8inference/Bug7.java')
-
     copy {
       from file('tests/ainfer-testchecker/non-annotated/UsesAnonymous.java')
       into file('tests/ainfer-testchecker/annotated')
