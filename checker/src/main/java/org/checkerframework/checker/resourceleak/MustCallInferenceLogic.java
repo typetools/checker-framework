@@ -168,6 +168,9 @@ public class MustCallInferenceLogic {
 
       for (Node node : current.block.getNodes()) {
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
+          // This call will not induce any side effects in the result of RLC, as the inference takes
+          // place within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
+          // consistency analyzer is finished.
           mcca.updateObligationsWithInvocationResult(obligations, node);
           if (node instanceof MethodInvocationNode) {
             checkMethodInvocation(obligations, (MethodInvocationNode) node);
