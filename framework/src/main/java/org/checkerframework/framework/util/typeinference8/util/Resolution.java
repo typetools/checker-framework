@@ -25,7 +25,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
- * usings all the bounds on a variable. Because a bound on a variable by be another unresolved
+ * using all the bounds on a variable. Because a bound on a variable by be another unresolved
  * variable, the order in which the variables must be computed before resolution. If the set of
  * variables contains any captured variables, then a different resolution algorthim is used. If a
  * set of variables does not contain a captured variable, but the resolution fails, then the
@@ -188,34 +188,36 @@ public class Resolution {
   private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
     assert !boundSet.containsFalse();
 
-    BoundSet resolvedBounds;
     if (boundSet.containsCapture(as)) {
-      fixes(new ArrayList<>(as));
-      as.removeAll(boundSet.getInstantiatedVariables());
+      resolveNoCapturesFirst(new ArrayList<>(as));
+      boundSet.getInstantiatedVariables().forEach(as::remove);
       // Then resolve the capture variables
-      resolvedBounds = resolveWithCapture(as, boundSet, context);
+      return resolveWithCapture(as, boundSet, context);
     } else {
       BoundSet copy = new BoundSet(boundSet);
       // Save the current bounds in case the first attempt at resolution fails.
       copy.saveBounds();
       try {
-        resolvedBounds = resolveNoCapture(as, boundSet);
+        BoundSet resolvedBounds = resolveNoCapture(as, boundSet);
+        if (!resolvedBounds.containsFalse()) {
+          return resolvedBounds;
+        }
       } catch (FalseBoundException ex) {
-        resolvedBounds = null;
+        // Try with capture.
       }
-      if (resolvedBounds == null || resolvedBounds.containsFalse()) {
-        boundSet = copy;
-        // If resolveNoCapture fails, then undo an resolved variables from the failed
-        // attempt.
-        boundSet.restore();
-        resolvedBounds = resolveWithCapture(as, boundSet, context);
-      }
+      boundSet = copy;
+      // If resolveNoCapture fails, then undo all resolved variables from the failed attempt.
+      boundSet.restore();
+      return resolveWithCapture(as, boundSet, context);
     }
-    return resolvedBounds;
   }
 
-  // TODO: I'm not sure what's going on with this method, I need to investigate it.
-  private void fixes(List<Variable> variables) {
+  /**
+   * Resolves all the non-capture variables in {@code variables}.
+   *
+   * @param variables the variables
+   */
+  private void resolveNoCapturesFirst(List<Variable> variables) {
     Variable smallV;
     do {
       smallV = null;
@@ -243,7 +245,14 @@ public class Resolution {
     } while (smallV != null);
   }
 
-  /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
+  /**
+   * Resolves all variables in {@code as} by instantiating each to the greatest lower bound of its
+   * proper upper bounds. This may fail and resolveWithCapture will need to be used instead.
+   *
+   * @param as variables to resolve
+   * @param boundSet the bound set to use
+   * @return the resolved bound st
+   */
   private BoundSet resolveNoCapture(Set<Variable> as, BoundSet boundSet) {
     BoundSet resolvedBoundSet = new BoundSet(context);
     for (Variable ai : as) {
@@ -258,7 +267,11 @@ public class Resolution {
     return boundSet;
   }
 
-  /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-A */
+  /**
+   * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
+   *
+   * @param ai variable to resolve
+   */
   private void resolveNoCapture(Variable ai) {
     assert !ai.getBounds().hasInstantiation();
     Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
@@ -315,7 +328,15 @@ public class Resolution {
     }
   }
 
-  /** https://docs.oracle.com/javase/specs/jls/se8/html/jls-18.html#jls-18.4-320-B */
+  /**
+   * Instantiates the variables in {@code as} by creating fresh type variables using the bounds of
+   * the variables.
+   *
+   * @param as a set of variables to resolve
+   * @param boundSet the bounds set to use
+   * @param context the contest
+   * @return the resolved bound set
+   */
   private static BoundSet resolveWithCapture(
       Set<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
     assert !boundSet.containsFalse();
