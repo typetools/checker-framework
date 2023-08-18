@@ -538,13 +538,13 @@ public class VariableBounds {
   /**
    * Returns true if there exists an equal or lower bound against a type, S, such that S is not a
    * subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where {@code G}
-   * a generic class or interfacce for which the parameter of this method, {@code t}, is a
+   * a generic class or interface for which the parameter of this method, {@code t}, is a
    * parameterization.
    *
    * @param t a parameterization of a generic class or interface, {@code G}
    * @return true if there exists an equal or lower bound against a type, S, such that S is not a
    *     subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where
-   *     {@code G} a generic class or interfacce for which the parameter of this method, {@code t},
+   *     {@code G} a generic class or interface for which the parameter of this method, {@code t},
    *     is a parameterization.
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
