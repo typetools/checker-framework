@@ -417,48 +417,6 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Checks the arguments of a method invocation to see if any of them is passed as an owning
-   * parameter. If so, it adds owning to the corresponding parameters of the enclosing method.
-   *
-   * @param obligations Set of obligations associated with the current code block.
-   * @param mNode The method invocation node to check.
-   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
-   */
-  private void checkArgsOfMethodCall(
-      Set<Obligation> obligations,
-      MethodInvocationNode mNode,
-      List<? extends VariableTree> paramsOfEnclosingMethod) {
-    List<Node> arguments = mcca.getArgumentsOfInvocation(mNode);
-    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(mNode);
-    if (parameters.isEmpty()) {
-      return;
-    }
-
-    for (int i = 0; i < arguments.size(); i++) {
-      Node arg = NodeUtils.removeCasts(arguments.get(i));
-
-      if (!typeFactory.hasOwning(parameters.get(i))) {
-        continue;
-      }
-
-      Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
-      for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
-        for (ResourceAlias rl : argAliases) {
-          Element argAliasElt = rl.reference.getElement();
-          if (!argAliasElt.equals(paramElt)) {
-            continue;
-          }
-          if (typeFactory.hasOwning(parameters.get(i))) {
-            addOwningOnParams(j);
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * Checks if the receiver of a method call has an obligation that is satisfied by the method
    * invocation node. If the receiver is a field, check if it is an owning field, if the receiver is
    * resource alias with any parameter of the enclosing method, add owning to that parameter.
@@ -517,6 +475,44 @@ public class MustCallInferenceLogic {
   }
 
   /**
+   * Checks the arguments of a method invocation to see if any of them is passed as an owning
+   * parameter. If so, it adds owning to the corresponding parameters of the enclosing method.
+   *
+   * @param obligations Set of obligations associated with the current code block.
+   * @param mNode The method invocation node to check.
+   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
+   */
+  private void checkArgsOfMethodCall(
+      Set<Obligation> obligations,
+      MethodInvocationNode mNode,
+      List<? extends VariableTree> paramsOfEnclosingMethod) {
+    List<Node> arguments = mcca.getArgumentsOfInvocation(mNode);
+    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(mNode);
+    if (parameters.isEmpty() || paramsOfEnclosingMethod.isEmpty()) {
+      return;
+    }
+
+    for (int i = 0; i < arguments.size(); i++) {
+      Node arg = NodeUtils.removeCasts(arguments.get(i));
+
+      if (!typeFactory.hasOwning(parameters.get(i))) {
+        continue;
+      }
+
+      Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
+      for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
+        for (ResourceAlias rl : argAliases) {
+          Element argAliasElt = rl.reference.getElement();
+          if (argAliasElt.equals(paramElt)) {
+            addOwningOnParams(j);
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Checks for indirect calls within the method represented by the given MethodInvocationNode. It
    * checks the called-methods set of each argument after the call to infer owning annotation for
    * the field or parameter passed as an argument to this call.
@@ -531,33 +527,48 @@ public class MustCallInferenceLogic {
       List<? extends VariableTree> paramsOfEnclosingMethod) {
 
     List<Node> arguments = mcca.getArgumentsOfInvocation(mNode);
-    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(mNode);
-    if (parameters.isEmpty()) {
+    List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(mNode);
+
+    if (paramsOfInvocation.isEmpty()) {
       return;
     }
 
-    for (int i = 0; i < arguments.size(); i++) {
-      Node arg = NodeUtils.removeCasts(arguments.get(i));
-      Element argElt = TreeUtils.elementFromTree(arg.getTree());
-
-      if (arg instanceof ArrayCreationNode) {
-        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        checkCalledMethodsSetForVarArg(obligations, varArgsNode, mNode, paramsOfEnclosingMethod, i);
-      } else if (argElt != null && argElt.getKind().isField()) {
-        inferOwningField(arg, mNode);
-      }
+    for (Node argument : arguments) {
+      Node arg = NodeUtils.removeCasts(argument);
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
-      processArgAliases(mNode, paramsOfEnclosingMethod, i, argAliases);
+      // In the CFG, explicit passing of multiple arguments in the varargs position is represented
+      // via an ArrayCreationNode. In this case, it checks the called methods set of each argument
+      // passed in this position.
+      if (arg instanceof ArrayCreationNode) {
+        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
+        checkCalledMethodsSetForVarArgs(paramsOfEnclosingMethod, mNode, varArgsNode, argAliases);
+      } else {
+        Element varArgElt = TreeUtils.elementFromTree(arg.getTree());
+        if (varArgElt != null && varArgElt.getKind().isField()) {
+          inferOwningField(arg, mNode);
+          continue;
+        }
+        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, mNode, argAliases);
+      }
     }
   }
 
-  private void checkCalledMethodsSetForVarArg(
-      Set<Obligation> obligations,
-      ArrayCreationNode varArgsNode,
-      MethodInvocationNode mNode,
+  /**
+   * Checks each node passed in the var argument position. It checks the called-methods set of each
+   * argument after the call to infer owning annotation for the field or parameter passed as an
+   * argument to this call.
+   *
+   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method.
+   * @param mNode the method invocation node to check.
+   * @param varArgsNode the VarArg node of the given method invocation node.
+   * @param argAliases the set of resource aliases associated with the argument node.
+   */
+  private void checkCalledMethodsSetForVarArgs(
       List<? extends VariableTree> paramsOfEnclosingMethod,
-      int argIndex) {
+      MethodInvocationNode mNode,
+      ArrayCreationNode varArgsNode,
+      Set<ResourceAlias> argAliases) {
 
     for (Node argNode : varArgsNode.getInitializers()) {
       Element varArgElt = TreeUtils.elementFromTree(argNode.getTree());
@@ -569,35 +580,38 @@ public class MustCallInferenceLogic {
       if (varArgElt.getKind().isField()) {
         inferOwningField(argNode, mNode);
       } else {
-        Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, argNode);
-        processArgAliases(mNode, paramsOfEnclosingMethod, argIndex, argAliases);
+        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, mNode, argAliases);
       }
     }
   }
 
-  private void processArgAliases(
-      MethodInvocationNode mNode,
+  /**
+   * It checks if any of the parameters of the enclosing method are aliased with the argument passed
+   * to the method invocation. It so, it checks the set of called methods for the parameter after
+   * the call, in order to infer the owning annotation for that parameter.
+   *
+   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method.
+   * @param mNode the method invocation node to check.
+   * @param argAliases the set of resource aliases associated with the argument node.
+   */
+  private void checkCalledMethodsSetForArgAliases(
       List<? extends VariableTree> paramsOfEnclosingMethod,
-      int argIndex,
+      MethodInvocationNode mNode,
       Set<ResourceAlias> argAliases) {
 
-    for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
+    for (int i = 0; i < paramsOfEnclosingMethod.size(); i++) {
 
+      VariableTree encParamTree = paramsOfEnclosingMethod.get(i);
       for (ResourceAlias rl : argAliases) {
         Element argAliasElt = rl.reference.getElement();
-        if (!argAliasElt.equals(paramElt)) {
+        VariableElement encParamElt = TreeUtils.elementFromDeclaration(encParamTree);
+        if (!argAliasElt.equals(encParamElt)) {
           continue;
         }
 
-        JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(j));
-        if (mustCallObligationSatisfied(mNode, paramElt, target)) {
-          addOwningOnParams(j);
-          break;
-        }
-
-        if (typeFactory.hasOwning(parameters.get(argIndex))) {
-          addOwningOnParams(j);
+        JavaExpression target = JavaExpression.fromVariableTree(encParamTree);
+        if (mustCallObligationSatisfied(mNode, encParamElt, target)) {
+          addOwningOnParams(i);
           break;
         }
       }
@@ -634,7 +648,7 @@ public class MustCallInferenceLogic {
    * <ul>
    *   <li>It calls {@link #checkArgsOfMethodCall} to inspect the arguments of a method invocation
    *       and identify if any of them are passed as an owning parameter. If found, it adds the
-   *       "owning" annotation to the corresponding parameters of the enclosing method.
+   *       “owning” annotation to the corresponding parameters of the enclosing method.
    *   <li>It calls {@link #checkReceiverOfMethodCall} to verify if the receiver of the method
    *       represented by {@code mNode} qualifies as a candidate owning field, and if the method
    *       invocation satisfies the field's must-call obligation. If these conditions are met, the
