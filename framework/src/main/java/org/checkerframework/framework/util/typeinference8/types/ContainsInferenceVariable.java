@@ -70,7 +70,12 @@ public class ContainsInferenceVariable {
       typeVariables = variables;
     }
 
-    /** Returns true if {@code typeVar} is a type variable in {@code typeVariables} */
+    /**
+     * Returns true if {@code typeVar} is a type variable in {@code typeVariables}.
+     *
+     * @param typeVar a type variable
+     * @return true if {@code typeVar} is a type variable in {@code typeVariables}
+     */
     private boolean isTypeVariableOfInterest(TypeVariable typeVar) {
       for (TypeVariable tv : typeVariables) {
         if (TypesUtils.areSame(tv, typeVar)) {

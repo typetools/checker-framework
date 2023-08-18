@@ -536,16 +536,23 @@ public class VariableBounds {
   }
 
   /**
-   * Does this bound set contain a bound of one of the forms {@code var = S} or {@code S <: var},
-   * where there exists no type of the form {@code G<...>} that is a supertype of S, but the raw
-   * type {@code |G<...>|} is a supertype of S?
+   * Returns true if there exists an equal or lower bound against a type, S, such that S is not a
+   * subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where {@code G}
+   * a generic class or interfacce for which the parameter of this method, {@code t}, is a
+   * parameterization.
+   *
+   * @param t a parameterization of a generic class or interface, {@code G}
+   * @return true if there exists an equal or lower bound against a type, S, such that S is not a
+   *     subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where
+   *     {@code G} a generic class or interfacce for which the parameter of this method, {@code t},
+   *     is a parameterization.
    */
-  public boolean hasRawTypeLowerOrEqualBound(AbstractType g) {
+  public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
     for (AbstractType type : bounds.get(BoundKind.LOWER)) {
       if (type.isUseOfVariable()) {
         continue;
       }
-      AbstractType superTypeOfS = type.asSuper(g.getJavaType());
+      AbstractType superTypeOfS = type.asSuper(t.getJavaType());
       if (superTypeOfS != null && superTypeOfS.isRaw()) {
         return true;
       }
@@ -555,7 +562,7 @@ public class VariableBounds {
       if (type.isUseOfVariable()) {
         continue;
       }
-      AbstractType superTypeOfS = type.asSuper(g.getJavaType());
+      AbstractType superTypeOfS = type.asSuper(t.getJavaType());
       if (superTypeOfS != null && superTypeOfS.isRaw()) {
         return true;
       }
