@@ -70,6 +70,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * limitation should be taken into account while using the class. Must-call set with more than one
  * element may also be supported in the future.
  *
+ * <p>TODO: update this reference to point at user-facing documentation in the manual
+ *
  * @see <a href="https://arxiv.org/pdf/2306.11953.pdf">Automatic Inference of Resource Leak
  *     Specifications</a>
  */

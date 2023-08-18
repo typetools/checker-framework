@@ -778,7 +778,8 @@ class MustCallConsistencyAnalyzer {
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
    */
-  protected void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
+  /*package-private*/ void updateObligationsWithInvocationResult(
+      Set<Obligation> obligations, Node node) {
     Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
@@ -1034,7 +1035,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return the temporary for node, or node if no temporary exists
    */
-  protected Node getTempVarOrNode(Node node) {
+  /*package-private*/ Node getTempVarOrNode(Node node) {
     Node temp = typeFactory.getTempVarForNode(node);
     if (temp != null) {
       return temp;
@@ -1163,7 +1164,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the node
    * @return true if must-call type of node only contains close
    */
-  protected boolean isMustCallClose(Node node) {
+  /*package-private*/ boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
@@ -1178,7 +1179,7 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the set of Obligations
    * @param var a variable
    */
-  protected void removeObligationsContainingVar(
+  /*package-private*/ void removeObligationsContainingVar(
       Set<Obligation> obligations, LocalVariableNode var) {
     Obligation obligationForVar = getObligationForVar(obligations, var);
     while (obligationForVar != null) {
@@ -1224,7 +1225,7 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode})
    */
-  protected void updateObligationsForPseudoAssignment(
+  /*package-private*/ void updateObligationsForPseudoAssignment(
       Set<Obligation> obligations, Node node, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
@@ -1651,7 +1652,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a MethodInvocation or ObjectCreation node
    * @return the arguments, in order
    */
-  protected List<Node> getArgumentsOfInvocation(Node node) {
+  /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
       return invocationNode.getArguments();
@@ -1670,7 +1671,7 @@ class MustCallConsistencyAnalyzer {
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  protected List<? extends VariableElement> getParametersOfInvocation(Node node) {
+  /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -2055,7 +2056,7 @@ class MustCallConsistencyAnalyzer {
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation
    */
-  protected static @Nullable Obligation getObligationForVar(
+  /*package-private*/ static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
@@ -2216,7 +2217,7 @@ class MustCallConsistencyAnalyzer {
    * @return true iff cmAnno is a subtype of a called-methods annotation with the same values as
    *     mustCallValues
    */
-  protected boolean calledMethodsSatisfyMustCall(
+  /*package-private*/ boolean calledMethodsSatisfyMustCall(
       List<String> mustCallValues, AnnotationMirror cmAnno) {
     // Create this annotation and use a subtype test because there's no guarantee that
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
