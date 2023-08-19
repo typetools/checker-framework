@@ -256,8 +256,7 @@ public class MustCallInferenceLogic {
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
     }
-    if (!getEnclosedOwningFields().contains(nodeElt)
-        && typeFactory.isCandidateOwningField(nodeElt)) {
+    if (typeFactory.isCandidateOwningField(nodeElt)) {
       node = NodeUtils.removeCasts(node);
       JavaExpression target = JavaExpression.fromNode(node);
       if (mustCallObligationSatisfied(mNode, nodeElt, target)) {

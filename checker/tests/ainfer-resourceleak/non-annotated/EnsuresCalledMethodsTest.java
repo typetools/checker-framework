@@ -7,8 +7,10 @@ class EnsuresCalledMethodsTest {
     void a() {}
   }
 
-  private class ECM {
-    Foo foo;
+  @InheritableMustCall("close")
+  class ECM {
+    // :: warning: (required.method.not.called)
+    @Owning Foo foo;
 
     private void closePrivate() {
       if (foo != null) {
@@ -24,13 +26,4 @@ class EnsuresCalledMethodsTest {
       }
     }
   }
-
-  //  static void test() {
-  //    // :: error: required.method.not.called
-  //    Foo foo = new Foo();
-  //    ECM ecm = new ECM();
-  //    ecm.foo = foo;
-  //    ecm.close();
-  //  }
-
 }
