@@ -11,6 +11,9 @@ public class Theta extends LinkedHashMap<TypeVariable, Variable> {
   /** serialVersionUID */
   private static final long serialVersionUID = 42L;
 
+  /** Creates Theta. */
+  public Theta() {}
+
   /**
    * Returns the type variable in the key set that is {@link TypesUtils#areSame(TypeVariable,
    * TypeVariable)} as {@code typeVariable}.

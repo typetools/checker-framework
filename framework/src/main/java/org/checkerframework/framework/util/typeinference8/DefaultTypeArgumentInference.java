@@ -33,6 +33,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /** Stack of all inference problems currently being solved. */
   private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
 
+  /** Creates a DefaultTypeArgumentInference. */
+  public DefaultTypeArgumentInference() {}
+
   @SuppressWarnings("interning:not.interned")
   @Override
   public InferenceResult inferTypeArgs(

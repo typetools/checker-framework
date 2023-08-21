@@ -22,6 +22,9 @@ import org.checkerframework.javacutil.TypesUtils;
 /** Helper class for determining if a type contains an inference variable. */
 public class ContainsInferenceVariable {
 
+  /** Don't use. */
+  private ContainsInferenceVariable() {}
+
   /**
    * Returns true if {@code type} contains any of the type variables in {@code typeVariables}.
    *

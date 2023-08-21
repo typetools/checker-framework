@@ -19,6 +19,9 @@ import org.checkerframework.javacutil.TreeUtils;
 /** Util for checked exception constraints. */
 public class CheckedExceptionsUtil {
 
+  /** Don't use. */
+  private CheckedExceptionsUtil() {}
+
   /**
    * Returns a list of checked exception types that can be thrown by the lambda.
    *

@@ -14,6 +14,9 @@ import java.util.Set;
  */
 public class Dependencies {
 
+  /** Creates Dependencies. */
+  public Dependencies() {}
+
   /** A map from a variable to the variables, including itself, on which it depends. */
   private final Map<Variable, LinkedHashSet<Variable>> map = new LinkedHashMap<>();
 

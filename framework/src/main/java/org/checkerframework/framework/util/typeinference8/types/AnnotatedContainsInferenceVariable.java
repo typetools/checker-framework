@@ -20,6 +20,9 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 /** Helper class for determining if a type contains an inference variable. */
 public class AnnotatedContainsInferenceVariable {
 
+  /** Creates an AnnotatedContainsInferenceVariable. */
+  public AnnotatedContainsInferenceVariable() {}
+
   /**
    * Returns true if {@code type} contains any of the type variables in {@code typeVariables}.
    *

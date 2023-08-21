@@ -5187,6 +5187,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public static class CapturedTypeVarSubstitutor extends AnnotatedTypeCopier {
 
+    /** Creates a CapturedTypeVarSubstitutor. */
+    public CapturedTypeVarSubstitutor() {}
+
     /** A mapping from a captured type variable to its AnnotatedTypeVariable. */
     private Map<TypeVariable, AnnotatedTypeVariable> capturedTypeVarToAnnotatedTypeVar;
 
