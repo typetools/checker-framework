@@ -99,12 +99,6 @@ public class InferenceFactory {
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
     TreePath path = context.pathToExpression;
     Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext != null
-        && path.getLeaf().getKind() != Kind.MEMBER_REFERENCE
-        && assignmentContext.getKind() == Kind.TYPE_CAST) {
-      // TODO: Fix bug.
-      assignmentContext = null;
-    }
     if (assignmentContext == null) {
       AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
       if (dummy == null || dummy.containsCapturedTypes()) {
