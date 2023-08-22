@@ -6,10 +6,6 @@ import org.checkerframework.checker.fenum.qual.FenumTop;
  * It does not depend on the Fenum Checker, it breaks for any checker.
  */
 public class IdentityArrayListTest {
-  // The type of the third argument to Arrays.copyOf should be:
-  // Class<? extends T @FenumTop []>
-  // But the annotated JDK does not have annotations for the Fenum Checker.
-  @SuppressWarnings("argument")
   public <T> T[] toArray(T[] a) {
     // Warnings only with -Alint=cast:strict.
     // TODO:: warning: (cast.unsafe)

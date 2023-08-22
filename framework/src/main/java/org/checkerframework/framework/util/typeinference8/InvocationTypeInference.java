@@ -8,13 +8,11 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -344,16 +342,6 @@ public class InvocationTypeInference {
       AbstractType target,
       Theta map) {
     AbstractType r = methodType.getReturnType(map);
-    TypeMirror invocationType = TreeUtils.typeOf(invocation);
-    if (target.getJavaType().getKind() == TypeKind.DECLARED
-        && invocationType.getKind() == TypeKind.DECLARED
-        && !context.types.isAssignable((Type) invocationType, (Type) target.getJavaType())) {
-      if (context.pathToExpression.getParentPath().getLeaf().getKind() == Tree.Kind.TYPE_CAST) {
-
-        b2.setUncheckedConversion(true);
-      }
-    }
-
     if (b2.isUncheckedConversion()) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
