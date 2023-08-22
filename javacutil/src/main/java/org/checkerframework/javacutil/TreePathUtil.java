@@ -328,6 +328,25 @@ public final class TreePathUtil {
       case PARENTHESIZED:
         return getAssignmentContext(parentPath, isLambdaOrMethodRef);
       default:
+        if (TreeUtils.isYield(parent)) {
+          parentPath = parentPath.getParentPath();
+          // The first parent is a case statement.
+          parentPath = parentPath.getParentPath();
+          parent = parentPath.getLeaf();
+        }
+        if (TreeUtils.isSwitchExpression(parent)) {
+
+          @SuppressWarnings("interning:not.interned") // AST node comparison
+          boolean switchIsLeaf =
+              (TreeUtils.switchExpressionTreeGetExpression(parent) == treePath.getLeaf());
+          if (switchIsLeaf) {
+            // The assignment context for the switch(ex) is simply boolean.
+            // No point in going on.
+            return null;
+          }
+          // Otherwise use the context of the ConditionalExpressionTree.
+          return getAssignmentContext(parentPath, isLambdaOrMethodRef);
+        }
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {

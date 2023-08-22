@@ -171,7 +171,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         return tree;
       default:
-        if (TreeUtils.isSwitchExpression(tree)) {
+        if (TreeUtils.isYield(parentTree)) {
+          parentPath = parentPath.getParentPath();
+          // The first parent is a case statement.
+          parentPath = parentPath.getParentPath();
+          parentTree = parentPath.getLeaf();
+        }
+        if (TreeUtils.isSwitchExpression(parentTree)) {
           // case SWITCH_EXPRESSION:
           ExpressionTree outerTree =
               outerInference((ExpressionTree) parentTree, parentPath.getParentPath());

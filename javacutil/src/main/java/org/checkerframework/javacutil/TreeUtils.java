@@ -2597,6 +2597,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given tree is a yield expression.
+   *
+   * @param tree a tree to check
+   * @return true if the given tree is a yield expression
+   */
+  public static boolean isYield(Tree tree) {
+    return tree.getKind().name().equals("YIELD");
+  }
+
+  /**
    * Returns the value (expression) for {@code yieldTree}.
    *
    * @param yieldTree the yield tree
