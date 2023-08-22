@@ -1474,16 +1474,12 @@ class MustCallConsistencyAnalyzer {
     AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
-    if (cmValue != null) { // When store contains the lhs
-      Set<String> accumulatedValues = cmValue.getAccumulatedValues();
-      if (accumulatedValues != null) { // type variable or wildcard type
-        cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
-      } else {
-        for (AnnotationMirror anno : cmValue.getAnnotations()) {
-          if (AnnotationUtils.areSameByName(
-              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-            cmAnno = anno;
-          }
+    if (cmValue != null) {
+      for (AnnotationMirror anno : cmValue.getAnnotations()) {
+        if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+          cmAnno = anno;
+          break;
         }
       }
     }
