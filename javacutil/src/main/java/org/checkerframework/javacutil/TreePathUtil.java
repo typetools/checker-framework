@@ -6,6 +6,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
@@ -272,6 +273,21 @@ public final class TreePathUtil {
    * @return the assignment context as described, {@code null} otherwise
    */
   public static @Nullable Tree getAssignmentContext(TreePath treePath) {
+    boolean isLambdaOrMethodRef =
+        treePath.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION
+            || treePath.getLeaf().getKind() == Kind.MEMBER_REFERENCE;
+    return getAssignmentContext(treePath, isLambdaOrMethodRef);
+  }
+
+  /**
+   * Implementation of {@link #getAssignmentContext(TreePath)}.
+   *
+   * @param treePath a path
+   * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference.
+   * @return the assignment context as described, {@code null} otherwise
+   */
+  private static @Nullable Tree getAssignmentContext(
+      TreePath treePath, boolean isLambdaOrMethodRef) {
     TreePath parentPath = treePath.getParentPath();
 
     if (parentPath == null) {
@@ -287,6 +303,12 @@ public final class TreePathUtil {
       case NEW_CLASS:
       case RETURN:
         return parent;
+      case TYPE_CAST:
+        if (isLambdaOrMethodRef) {
+          return parent;
+        } else {
+          return null;
+        }
       case VARIABLE:
         if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parent)) {
           return null;
@@ -302,9 +324,9 @@ public final class TreePathUtil {
           return null;
         }
         // Otherwise use the context of the ConditionalExpressionTree.
-        return getAssignmentContext(parentPath);
+        return getAssignmentContext(parentPath, isLambdaOrMethodRef);
       case PARENTHESIZED:
-        return getAssignmentContext(parentPath);
+        return getAssignmentContext(parentPath, isLambdaOrMethodRef);
       default:
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
