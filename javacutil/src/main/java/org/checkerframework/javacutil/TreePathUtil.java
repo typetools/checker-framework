@@ -241,52 +241,33 @@ public final class TreePathUtil {
   }
 
   /**
-   * Returns the "assignment context" for the leaf of {@code treePath}, which is often the leaf of
-   * the parent of {@code treePath}. (Does not handle pseudo-assignment of an argument to a
-   * parameter or a receiver expression to a receiver.) This is not the same as {@code
-   * org.checkerframework.dataflow.cfg.node.AssignmentContext}, which represents the left-hand side
-   * rather than the assignment itself.
+   * Returns the tree representing the context for the poly expression which is the leaf of {@code
+   * treePath}. If the leaf of {@code treePath} is not a poly expression, the null is returned. The
+   * context then can be used to find the target type of the poly expression.
    *
-   * <p>The assignment context for {@code treePath} is the leaf of its parent, if that leaf is one
-   * of the following trees:
-   *
-   * <ul>
-   *   <li>AssignmentTree
-   *   <li>CompoundAssignmentTree
-   *   <li>MethodInvocationTree
-   *   <li>NewArrayTree
-   *   <li>NewClassTree
-   *   <li>ReturnTree
-   *   <li>VariableTree
-   * </ul>
-   *
-   * If the parent is a ConditionalExpressionTree we need to distinguish two cases: If the leaf is
-   * either the then or else branch of the ConditionalExpressionTree, then recurse on the parent. If
-   * the leaf is the condition of the ConditionalExpressionTree, then return null to not consider
-   * this assignment context.
-   *
-   * <p>If the leaf is a ParenthesizedTree, then recurse on the parent.
-   *
-   * <p>Otherwise, null is returned.
-   *
-   * @param treePath a path
-   * @return the assignment context as described, {@code null} otherwise
+   * @param treePath a path, if the leaf of the path is a poly expression, then the context is
+   *     returned
+   * @return the tree representing the context for the poly expression which is the leaf of {@code
+   *     treePath}; or null if the leaf is not a poly expression
    */
-  public static @Nullable Tree getAssignmentContext(TreePath treePath) {
+  public static @Nullable Tree getContextForPolyExpression(TreePath treePath) {
+    // If a lambda or a method reference is the expression in a type cast, then the type cast is
+    // the context.  If a method or constructor invocation is the expression in a type cast, then
+    // the invocation has no context.
     boolean isLambdaOrMethodRef =
         treePath.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION
             || treePath.getLeaf().getKind() == Kind.MEMBER_REFERENCE;
-    return getAssignmentContext(treePath, isLambdaOrMethodRef);
+    return getContextForPolyExpression(treePath, isLambdaOrMethodRef);
   }
 
   /**
-   * Implementation of {@link #getAssignmentContext(TreePath)}.
+   * Implementation of {@link #getContextForPolyExpression(TreePath)}.
    *
    * @param treePath a path
    * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference.
    * @return the assignment context as described, {@code null} otherwise
    */
-  private static @Nullable Tree getAssignmentContext(
+  private static @Nullable Tree getContextForPolyExpression(
       TreePath treePath, boolean isLambdaOrMethodRef) {
     TreePath parentPath = treePath.getParentPath();
 
@@ -324,9 +305,9 @@ public final class TreePathUtil {
           return null;
         }
         // Otherwise use the context of the ConditionalExpressionTree.
-        return getAssignmentContext(parentPath, isLambdaOrMethodRef);
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       case PARENTHESIZED:
-        return getAssignmentContext(parentPath, isLambdaOrMethodRef);
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
           parentPath = parentPath.getParentPath();
@@ -345,7 +326,7 @@ public final class TreePathUtil {
             return null;
           }
           // Otherwise use the context of the ConditionalExpressionTree.
-          return getAssignmentContext(parentPath, isLambdaOrMethodRef);
+          return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
         }
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.

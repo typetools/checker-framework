@@ -98,30 +98,30 @@ public class InferenceFactory {
     GenericAnnotatedTypeFactory<?, ?, ?, ?> factory =
         (GenericAnnotatedTypeFactory<?, ?, ?, ?>) context.typeFactory;
     TreePath path = context.pathToExpression;
-    Tree assignmentContext = TreePathUtil.getAssignmentContext(path);
-    if (assignmentContext == null) {
+    Tree context = TreePathUtil.getContextForPolyExpression(path);
+    if (context == null) {
       AnnotatedTypeMirror dummy = factory.getDummyAssignedTo((ExpressionTree) path.getLeaf());
       if (dummy == null || dummy.containsCapturedTypes()) {
         return null;
       }
-      return new ProperType(dummy, dummy.getUnderlyingType(), context);
+      return new ProperType(dummy, dummy.getUnderlyingType(), this.context);
     }
 
-    switch (assignmentContext.getKind()) {
+    switch (context.getKind()) {
       case ASSIGNMENT:
-        ExpressionTree variable = ((AssignmentTree) assignmentContext).getVariable();
+        ExpressionTree variable = ((AssignmentTree) context).getVariable();
         AnnotatedTypeMirror atm = factory.getAnnotatedTypeLhs(variable);
-        return new ProperType(atm, TreeUtils.typeOf(variable), context);
+        return new ProperType(atm, TreeUtils.typeOf(variable), this.context);
       case TYPE_CAST:
-        Tree cast = ((TypeCastTree) assignmentContext).getType();
+        Tree cast = ((TypeCastTree) context).getType();
         AnnotatedTypeMirror castType = factory.getAnnotatedTypeFromTypeTree(cast);
-        return new ProperType(castType, TreeUtils.typeOf(cast), context);
+        return new ProperType(castType, TreeUtils.typeOf(cast), this.context);
       case VARIABLE:
-        VariableTree variableTree = (VariableTree) assignmentContext;
-        AnnotatedTypeMirror variableAtm = assignedToVariable(factory, assignmentContext);
-        return new ProperType(variableAtm, TreeUtils.typeOf(variableTree.getType()), context);
+        VariableTree variableTree = (VariableTree) context;
+        AnnotatedTypeMirror variableAtm = assignedToVariable(factory, context);
+        return new ProperType(variableAtm, TreeUtils.typeOf(variableTree.getType()), this.context);
       case METHOD_INVOCATION:
-        MethodInvocationTree methodInvocation = (MethodInvocationTree) assignmentContext;
+        MethodInvocationTree methodInvocation = (MethodInvocationTree) context;
 
         AnnotatedExecutableType methodType =
             factory.methodFromUseWithoutTypeArgInference(methodInvocation).executableType;
@@ -131,33 +131,34 @@ public class InferenceFactory {
                 path, methodInvocation, methodInvocation.getArguments(), methodType);
         return new ProperType(
             paramType,
-            assignedToExecutable(path, methodInvocation, methodInvocation.getArguments(), context),
-            context);
+            assignedToExecutable(
+                path, methodInvocation, methodInvocation.getArguments(), this.context),
+            this.context);
       case NEW_CLASS:
-        NewClassTree newClassTree = (NewClassTree) assignmentContext;
+        NewClassTree newClassTree = (NewClassTree) context;
         AnnotatedExecutableType constructorType =
             factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType;
         AnnotatedTypeMirror constATM =
             assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
         return new ProperType(
             constATM,
-            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), context),
-            context);
+            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), this.context),
+            this.context);
       case NEW_ARRAY:
-        NewArrayTree newArrayTree = (NewArrayTree) assignmentContext;
+        NewArrayTree newArrayTree = (NewArrayTree) context;
         ArrayType arrayType = (ArrayType) TreeUtils.typeOf(newArrayTree);
-        AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) assignmentContext);
+        AnnotatedArrayType type = factory.getAnnotatedType((NewArrayTree) context);
         AnnotatedTypeMirror component = type.getComponentType();
-        return new ProperType(component, arrayType.getComponentType(), context);
+        return new ProperType(component, arrayType.getComponentType(), this.context);
       case LAMBDA_EXPRESSION:
         {
-          LambdaExpressionTree lambdaTree = (LambdaExpressionTree) assignmentContext;
+          LambdaExpressionTree lambdaTree = (LambdaExpressionTree) context;
           AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
           AnnotatedTypeMirror res = fninf.getReturnType();
           if (res.getKind() == TypeKind.VOID) {
             return null;
           }
-          return new ProperType(res, res.getUnderlyingType(), context);
+          return new ProperType(res, res.getUnderlyingType(), this.context);
         }
       case RETURN:
         HashSet<Kind> kinds =
@@ -166,24 +167,23 @@ public class InferenceFactory {
         if (enclosing.getKind() == Tree.Kind.METHOD) {
           MethodTree methodTree = (MethodTree) enclosing;
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
-          return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), context);
+          return new ProperType(res, TreeUtils.typeOf(methodTree.getReturnType()), this.context);
         } else {
           LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosing;
           AnnotatedExecutableType fninf = factory.getFunctionTypeFromTree(lambdaTree);
           AnnotatedTypeMirror res = fninf.getReturnType();
-          return new ProperType(res, res.getUnderlyingType(), context);
+          return new ProperType(res, res.getUnderlyingType(), this.context);
         }
       default:
-        if (assignmentContext.getKind().asInterface() == CompoundAssignmentTree.class) {
+        if (context.getKind().asInterface() == CompoundAssignmentTree.class) {
           // 11 Tree kinds are compound assignments, so don't use it in the switch
-          ExpressionTree var = ((CompoundAssignmentTree) assignmentContext).getVariable();
+          ExpressionTree var = ((CompoundAssignmentTree) context).getVariable();
           AnnotatedTypeMirror res = factory.getAnnotatedTypeLhs(var);
 
-          return new ProperType(res, TreeUtils.typeOf(var), context);
+          return new ProperType(res, TreeUtils.typeOf(var), this.context);
         } else {
           throw new BugInCF(
-              "Unexpected assignment context.\nKind: %s\nTree: %s",
-              assignmentContext.getKind(), assignmentContext);
+              "Unexpected assignment context.\nKind: %s\nTree: %s", context.getKind(), context);
         }
     }
   }
