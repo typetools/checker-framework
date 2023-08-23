@@ -193,7 +193,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   @Override
   protected boolean shouldPerformContractInference() {
-    return isWPIEnabledForRLC();
+    return atypeFactory.getWholeProgramInference() != null && isWPIEnabledForRLC();
   }
 
   // Overwritten to check that destructors (i.e. methods responsible for resolving
