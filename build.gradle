@@ -55,7 +55,7 @@ ext {
   localRepo = '.git'
 
   versions = [
-    autoValue       : '1.10.2',
+    autoValue       : '1.10.3',
     lombok          : '1.18.28',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
