@@ -1,15 +1,17 @@
-Version 3.37.1 (September 1, 2023)
------------------------------
+Version 3.38.0 (September 1, 2023)
+----------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
 
+Renamed `SourceChecker.processArg()' to `processErrorMessageArg()`.
+
 **Closed issues:**
 
 
 Version 3.37.0 (August 1, 2023)
------------------------------
+-------------------------------
 
 **User-visible changes:**
 
