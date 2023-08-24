@@ -142,10 +142,13 @@ public class TreeBuilder {
     for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
       if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("hasNext")) {
         hasNextMethod = (Symbol.MethodSymbol) method;
+        break;
       }
     }
 
-    assert hasNextMethod != null : "no hasNext method declared for expression type";
+    if (hasNextMethod == null) {
+      throw new BugInCF("no hasNext method declared for " + exprElement);
+    }
 
     JCTree.JCFieldAccess hasNextAccess = TreeUtils.Select(maker, iteratorExpr, hasNextMethod);
     hasNextAccess.setType(hasNextMethod.asType());
