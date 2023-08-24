@@ -11,10 +11,10 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 /** Annotated type factory for the Tainting Checker. */
 public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** {@link Untainted} annotation mirror. */
+  /** The {@code @}{@link Untainted} annotation mirror. */
   private final AnnotationMirror UNTAINTED;
 
-  /** A set of containing on the {@link Untainted} annotation mirror. */
+  /** A singleton set containing the {@code @}{@link Untainted} annotation mirror. */
   private final AnnotationMirrorSet setOfUntainted;
 
   /**

@@ -2781,7 +2781,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the annotations that should be applied to enum constructors. This implementation
-   * returns an empty set. Subclass can override to return a different set.
+   * returns an empty set. Subclasses can override to return a different set.
    *
    * @return the annotations that should be applied to enum constructors
    */
