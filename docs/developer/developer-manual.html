@@ -47,6 +47,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+      <li><a href="#Counting_annotations">Counting annotations</a></li>
       <li><a href="#Build_historical">Building a historical version of the Checker Framework</a></li>
     </ul>
 <!-- end toc -->
@@ -475,12 +476,26 @@ See a separate document about the Checker Framework release process:
 </p>
 
 
+<h2 id="Counting_annotations">Counting annotations</h2>
+
+<p>
+After you have annotated a project, you may wish to count the annotations that you have written.
+These programs will help you do that:
+</p>
+
+<ul>
+  <li><a href="https://checkerframework.org/api/org/checkerframework/common/util/count/AnnotationStatistics.html">AnnotationStatistics</a></li>
+  <li><a href="https://checkerframework.org/api/org/checkerframework/common/util/count/JavaCodeStatistics.html">JavaCodeStatistics</a></li>
+  <li><a href="https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/count-suppressions">count-suppression-reasons"></a></li>
+</ul>
+
+
 <h2 id="Build_historical">Building a historical version of the Checker Framework</h2>
 
 <p>
 The use of four different repositories, as explained in
 "<a href="#Related_repositories">Related repositories</a>" above, means that you
-cannot check out an old version of the Checker Framework and build it
+cannot just check out an old version of the Checker Framework and build it
 with <code>./gradlew assemble</code>.  By default, the Checker Framework build
 uses the latest version of the other three repositories, which are rarely
 compatible with an old version of the Checker Framework.  One symptom of the
