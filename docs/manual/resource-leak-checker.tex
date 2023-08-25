@@ -544,9 +544,9 @@ then verify the code using a method other than the Resource Leak Checker.
 
 \sectionAndLabel{Resource Leak Checker Annotation Inference Algorithm}{resource-leak-checker-inference-algo}
 
-There is a special inference mechanism to infer annotations for the Resource Leak Checker. By default, this mechanism operates when the -Ainfer flag is enabled. To utilize the whole-program inference mechanism outlined in section \ref{whole-program-inference}, you should provide the \<-AenableWPIForRLC> flag.
+We are developing a special inference mechanism to infer annotations for the Resource Leak Checker. By default, this mechanism operates when the -Ainfer flag is enabled. To utilize the whole-program inference mechanism outlined in section \ref{whole-program-inference}, you should provide the \<-AenableWPIForRLC> flag.
 
-For more detail, please read \href={https://arxiv.org/pdf/2306.11953.pdf}{Automatic Inference of Resource Leak Specifications}.
+The paper \href={https://arxiv.org/pdf/2306.11953.pdf}{Automatic Inference of Resource Leak Specifications}, published at OOPSLA 2023, gives more details on the inference algorithm. Currently, only the first phase of the algorithm described in the paper has been implemented.
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite

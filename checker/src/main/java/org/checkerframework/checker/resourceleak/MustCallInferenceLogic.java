@@ -100,7 +100,7 @@ public class MustCallInferenceLogic {
   /** The MethodTree of the cfg. */
   private final MethodTree enclosingMethodTree;
 
-  /** The element for the enMethodTree. */
+  /** The element for the enclosingMethodElt. */
   private final ExecutableElement enclosingMethodElt;
 
   /**
@@ -300,12 +300,10 @@ public class MustCallInferenceLogic {
         return;
       }
 
-      if (TreeUtils.isConstructor(enclosingMethodTree)) {
-        addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
-      } else {
+      if (!TreeUtils.isConstructor(enclosingMethodTree)) {
         owningFieldToECM.remove((VariableElement) lhsElement);
-        addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
       }
+      addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
 
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
@@ -345,7 +343,7 @@ public class MustCallInferenceLogic {
    * whose must-call obligation is satisfied within the enclosing method.
    */
   private void addEnsuresCalledMethods() {
-    Map<String, Set<String>> map = new LinkedHashMap<>();
+    Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement owningField : owningFieldToECM) {
       List<String> mustCallValues = typeFactory.getMustCallValue(owningField);
       assert !mustCallValues.isEmpty() : "Must-call obligation of an owning field is deleted.";
@@ -354,13 +352,13 @@ public class MustCallInferenceLogic {
       String key = mustCallValues.get(0);
       String value = "this." + owningField.getSimpleName().toString();
 
-      map.computeIfAbsent(key, k -> new HashSet<>()).add(value);
+      methodToFields.computeIfAbsent(key, k -> new HashSet<>()).add(value);
     }
 
-    for (String mustCallValue : map.keySet()) {
+    for (String mustCallValue : methodToFields.keySet()) {
       AnnotationBuilder builder =
           new AnnotationBuilder(typeFactory.getProcessingEnv(), EnsuresCalledMethods.class);
-      builder.setValue("value", map.get(mustCallValue).toArray());
+      builder.setValue("value", methodToFields.get(mustCallValue).toArray());
       builder.setValue("methods", new String[] {mustCallValue});
       AnnotationMirror am = builder.build();
       WholeProgramInference wpi = typeFactory.getWholeProgramInference();
