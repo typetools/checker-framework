@@ -842,7 +842,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines if the result of the given method or constructor invocation node should be tracked
+   * Returns true if the result of the given method or constructor invocation node should be tracked
    * in {@code obligations}. In some cases, there is no need to track the result because the
    * must-call obligations are already satisfied in some other way or there cannot possibly be
    * must-call obligations because of the structure of the code.

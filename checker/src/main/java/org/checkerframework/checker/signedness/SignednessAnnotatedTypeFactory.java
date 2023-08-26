@@ -588,7 +588,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Determines if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
+   * Returns true if a right shift operation, {@code >>} or {@code >>>}, is masked with a masking
    * operation of the form {@code shiftExpr & maskLit} or {@code shiftExpr | maskLit} such that the
    * mask renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by destroying the bits
    * duplicated into the shift result. For example, the following pairs of right shifts on {@code
@@ -639,10 +639,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Determines if a right shift operation, {@code >>} or {@code >>>}, is type casted such that the
-   * cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by discarding the bits
-   * duplicated into the shift result. For example, the following pair of right shifts on {@code
-   * short s} both produce the same results under any input, because of type casting:
+   * Returns true if a right shift operation, {@code >>} or {@code >>>}, is type casted such that
+   * the cast renders the shift signedness ({@code >>} vs {@code >>>}) irrelevant by discarding the
+   * bits duplicated into the shift result. For example, the following pair of right shifts on
+   * {@code short s} both produce the same results under any input, because of type casting:
    *
    * <p>{@code (byte)(s >> 8) == (byte)(b >>> 8);}
    *

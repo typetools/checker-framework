@@ -1191,7 +1191,7 @@ public class Range {
   }
 
   /**
-   * Determines if the range is wider than a given value, i.e., if the number of possible values
+   * Returns true if the range is wider than a given value, i.e., if the number of possible values
    * enclosed by this range is more than the given value.
    *
    * @param value the value to compare with
@@ -1212,13 +1212,13 @@ public class Range {
     }
   }
 
-  /** Determines if this range represents a constant value. */
+  /** Returns true if this range represents a constant value. */
   public boolean isConstant() {
     return from == to;
   }
 
   /**
-   * Determines if this range is completely contained in the range specified by the given lower
+   * Returns true if this range is completely contained in the range specified by the given lower
    * bound inclusive and upper bound inclusive.
    *
    * @param lb lower bound for the range that might contain this one
@@ -1231,7 +1231,7 @@ public class Range {
   }
 
   /**
-   * Determines if this range is contained inclusively between Long.MIN_VALUE/2 and
+   * Returns true if this range is contained inclusively between Long.MIN_VALUE/2 and
    * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
    */
   private boolean isWithinHalfLong() {
@@ -1239,7 +1239,7 @@ public class Range {
   }
 
   /**
-   * Determines if this range is completely contained in the scope of the Integer type.
+   * Returns true if this range is completely contained in the scope of the Integer type.
    *
    * @return true if the range is contained within the Integer range inclusive
    */
