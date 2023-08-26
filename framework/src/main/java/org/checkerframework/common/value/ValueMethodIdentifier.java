@@ -68,7 +68,13 @@ class ValueMethodIdentifier {
     return TreeUtils.isMethodInvocation(methodTree, mathMaxMethods, processingEnv);
   }
 
-  /** Returns true if a tree is an invocation of the {@code String.length()} method. */
+  /**
+   * Returns true if a tree is an invocation of the {@code String.length()} method.
+   *
+   * @param tree a tree
+   * @param processingEnv the processing environment
+   * @return true if a tree is an invocation of the {@code String.length()} method
+   */
   public boolean isStringLengthInvocation(Tree tree, ProcessingEnvironment processingEnv) {
     return TreeUtils.isMethodInvocation(tree, lengthMethod, processingEnv);
   }

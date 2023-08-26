@@ -1212,7 +1212,11 @@ public class Range {
     }
   }
 
-  /** Returns true if this range represents a constant value. */
+  /**
+   * Returns true if this range represents a constant value.
+   *
+   * @return true if this range represents a constant value
+   */
   public boolean isConstant() {
     return from == to;
   }

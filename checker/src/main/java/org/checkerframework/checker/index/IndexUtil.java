@@ -13,7 +13,12 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** A collection of utility functions used by several Index Checker subcheckers. */
 public class IndexUtil {
-  /** Returns true if the type is a sequence supported by this checker. */
+  /**
+   * Returns true if the type is a sequence supported by this checker.
+   *
+   * @param type a type
+   * @return true if the type is a sequence supported by this checker
+   */
   public static boolean isSequenceType(TypeMirror type) {
     return type.getKind() == TypeKind.ARRAY || TypesUtils.isString(type);
   }
