@@ -38,5 +38,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({Unsigned.class, Signed.class})
+// TODO: This should only be for negative literals, not positive ones!
 @QualifierForLiterals({LiteralKind.INT, LiteralKind.LONG, LiteralKind.CHAR})
 public @interface SignednessGlb {}

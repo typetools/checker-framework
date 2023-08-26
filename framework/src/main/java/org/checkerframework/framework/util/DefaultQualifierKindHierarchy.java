@@ -286,7 +286,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         DefaultQualifierKind superQualifier = nameToQualifierKind.get(superName);
         if (superQualifier == null) {
           throw new TypeSystemError(
-              "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
+              "In %s, @SubtypeOf(%s) argument isn't in the hierarchy."
+                  + " Have you mis-defined createSupportedTypeQualifiers()? Qualifiers: [%s]",
               qualifierKind, superName, StringsPlume.join(", ", qualifierKinds));
         }
         directSupers.add(superQualifier);
