@@ -13,6 +13,12 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** A collection of utility functions used by several Index Checker subcheckers. */
 public class IndexUtil {
+
+  /** Do not instantiate IndexUtil. */
+  private IndexUtil() {
+    throw new Error("Do not instantiate IndexUtil.");
+  }
+
   /**
    * Returns true if the type is a sequence supported by this checker.
    *
