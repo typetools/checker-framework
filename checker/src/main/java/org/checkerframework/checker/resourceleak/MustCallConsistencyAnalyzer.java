@@ -843,7 +843,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines if the result of the given method or constructor invocation node should be tracked
+   * Returns true if the result of the given method or constructor invocation node should be tracked
    * in {@code obligations}. In some cases, there is no need to track the result because the
    * must-call obligations are already satisfied in some other way or there cannot possibly be
    * must-call obligations because of the structure of the code.
@@ -1474,12 +1474,16 @@ class MustCallConsistencyAnalyzer {
     AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
-    if (cmValue != null) {
-      for (AnnotationMirror anno : cmValue.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          cmAnno = anno;
-          break;
+    if (cmValue != null) { // When store contains the lhs
+      Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+      if (accumulatedValues != null) { // type variable or wildcard type
+        cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+      } else {
+        for (AnnotationMirror anno : cmValue.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            cmAnno = anno;
+          }
         }
       }
     }

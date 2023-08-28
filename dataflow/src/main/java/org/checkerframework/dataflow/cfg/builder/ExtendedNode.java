@@ -18,9 +18,12 @@ import org.checkerframework.javacutil.BugInCF;
  *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
  *       targets for both the 'then' and 'else' branch.
  * </ul>
+ *
+ * Note that this class is deliberately public, to enable users of the dataflow library to customize
+ * CFG construction.
  */
 @SuppressWarnings("nullness") // TODO
-/*package-private*/ abstract class ExtendedNode {
+public abstract class ExtendedNode {
 
   /** The basic block this extended node belongs to (as determined in phase two). */
   protected BlockImpl block;

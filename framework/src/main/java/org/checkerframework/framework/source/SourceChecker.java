@@ -2090,8 +2090,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
-   * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
+   * Returns true if all the warnings pertaining to a given tree should be suppressed. Returns true
+   * if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
    * suppresses the checker's warning. Also, returns true if the {@code errKey} matches a string in
    * {@code -AsuppressWarnings}.
    *
@@ -2123,9 +2123,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether all the warnings pertaining to a given tree path should be suppressed.
-   * Returns true if the path is within the scope of a @SuppressWarnings annotation, one of whose
-   * values suppresses the checker's warning.
+   * Returns true if all the warnings pertaining to a given tree path should be suppressed. Returns
+   * true if the path is within the scope of a @SuppressWarnings annotation, one of whose values
+   * suppresses the checker's warning.
    *
    * @param path the TreePath that might be a source of, or related to, a warning
    * @param errKey the error key the checker is emitting
@@ -2219,7 +2219,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
   /**
-   * Determines whether all the warnings pertaining to a given element should be suppressed. Returns
+   * Returns true if all the warnings pertaining to a given element should be suppressed. Returns
    * true if the element is within the scope of a @SuppressWarnings annotation, one of whose values
    * suppresses all the checker's warnings.
    *
@@ -2256,8 +2256,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether an error (whose message key is {@code messageKey}) should be suppressed. It
-   * is suppressed if any of the given SuppressWarnings strings suppresses it.
+   * Returns true if an error (whose message key is {@code messageKey}) should be suppressed. It is
+   * suppressed if any of the given SuppressWarnings strings suppresses it.
    *
    * <p>A SuppressWarnings string may be of the following pattern:
    *

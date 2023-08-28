@@ -34,7 +34,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Unsigned} or {@link PolySigned}
@@ -44,7 +44,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Signed} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Signed} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Signed} or {@link PolySigned}
@@ -91,16 +91,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case RIGHT_SHIFT:
         if (hasUnsignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
+            && !SignednessShifts.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !SignednessShifts.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.signed", kind, leftOpType, rightOpType);
         }
         break;
 
       case UNSIGNED_RIGHT_SHIFT:
         if (hasSignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
+            && !SignednessShifts.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !SignednessShifts.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.unsigned", kind, leftOpType, rightOpType);
         }
         break;

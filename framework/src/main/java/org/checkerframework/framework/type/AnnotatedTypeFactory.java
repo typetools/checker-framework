@@ -2772,7 +2772,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Reset the enclosing type because it can be substituted incorrectly.
       ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
     }
+    if (ctor.getEnclosingElement().getKind() == ElementKind.ENUM) {
+      Set<AnnotationMirror> enumAnnos = getEnumConstructorQualifiers();
+      con.getReturnType().replaceAnnotations(enumAnnos);
+    }
     return new ParameterizedExecutableType(con, typeargs);
+  }
+
+  /**
+   * Returns the annotations that should be applied to enum constructors. This implementation
+   * returns an empty set. Subclasses can override to return a different set.
+   *
+   * @return the annotations that should be applied to enum constructors
+   */
+  protected Set<AnnotationMirror> getEnumConstructorQualifiers() {
+    return Collections.emptySet();
   }
 
   /**
@@ -3292,9 +3306,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // **********************************************************************
 
   /**
-   * Determines whether the given annotation is a part of the type system under which this type
-   * factory operates. Null is never a supported qualifier; the parameter is nullable to allow the
-   * result of canonicalAnnotation to be passed in directly.
+   * Returns true if the given annotation is a part of the type system under which this type factory
+   * operates. Null is never a supported qualifier; the parameter is nullable to allow the result of
+   * canonicalAnnotation to be passed in directly.
    *
    * @param a any annotation
    * @return true if that annotation is part of the type system under which this type factory
@@ -3309,7 +3323,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class is a part of the type system under which this type factory
+   * Returns true if the given class is a part of the type system under which this type factory
    * operates.
    *
    * @param clazz annotation class
@@ -3321,8 +3335,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class name is a part of the type system under which this type
-   * factory operates.
+   * Returns true if the given class name is a part of the type system under which this type factory
+   * operates.
    *
    * @param className fully-qualified annotation class name
    * @return true if that class name is a type qualifier in the type system under which this type
