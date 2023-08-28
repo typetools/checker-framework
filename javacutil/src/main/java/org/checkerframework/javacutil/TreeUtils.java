@@ -1805,8 +1805,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Determines whether or not the given {@link MethodTree} is an anonymous constructor (the
-   * constructor for an anonymous class).
+   * Returns true if the given {@link MethodTree} is an anonymous constructor (the constructor for
+   * an anonymous class).
    *
    * @param method a method tree that may be an anonymous constructor
    * @return true if the given path points to an anonymous constructor, false if it does not

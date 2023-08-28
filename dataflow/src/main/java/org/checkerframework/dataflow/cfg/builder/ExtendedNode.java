@@ -23,7 +23,7 @@ import org.checkerframework.javacutil.BugInCF;
  * CFG construction.
  */
 @SuppressWarnings("nullness") // TODO
-abstract class ExtendedNode {
+public abstract class ExtendedNode {
 
   /** The basic block this extended node belongs to (as determined in phase two). */
   protected BlockImpl block;

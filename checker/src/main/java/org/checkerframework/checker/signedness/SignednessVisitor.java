@@ -34,7 +34,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Unsigned} or {@link PolySigned}
@@ -44,7 +44,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Signed} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Signed} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Signed} or {@link PolySigned}

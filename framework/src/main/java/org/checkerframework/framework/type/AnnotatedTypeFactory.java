@@ -3306,9 +3306,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // **********************************************************************
 
   /**
-   * Determines whether the given annotation is a part of the type system under which this type
-   * factory operates. Null is never a supported qualifier; the parameter is nullable to allow the
-   * result of canonicalAnnotation to be passed in directly.
+   * Returns true if the given annotation is a part of the type system under which this type factory
+   * operates. Null is never a supported qualifier; the parameter is nullable to allow the result of
+   * canonicalAnnotation to be passed in directly.
    *
    * @param a any annotation
    * @return true if that annotation is part of the type system under which this type factory
@@ -3323,7 +3323,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class is a part of the type system under which this type factory
+   * Returns true if the given class is a part of the type system under which this type factory
    * operates.
    *
    * @param clazz annotation class
@@ -3335,8 +3335,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class name is a part of the type system under which this type
-   * factory operates.
+   * Returns true if the given class name is a part of the type system under which this type factory
+   * operates.
    *
    * @param className fully-qualified annotation class name
    * @return true if that class name is a type qualifier in the type system under which this type
