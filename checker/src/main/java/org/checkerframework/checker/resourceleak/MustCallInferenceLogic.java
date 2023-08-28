@@ -77,10 +77,10 @@ import org.checkerframework.javacutil.TypesUtils;
 public class MustCallInferenceLogic {
 
   /**
-   * The set of owning fields that have been inferred to be released within the CFG currently under
-   * analysis.
+   * The set of fields that have been inferred to be released within the CFG currently under
+   * analysis. All of these fields will be given on @Owning annotation.
    */
-  private final Set<VariableElement> owningFieldToECM = new HashSet<>();
+  private final Set<VariableElement> releasedFields = new HashSet<>();
 
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
@@ -143,7 +143,7 @@ public class MustCallInferenceLogic {
 
   /**
    * Runs the inference algorithm on the current method (the {@link #cfg} field). It updates the
-   * {@link #owningFieldToECM} set or adds @Owning to the formal parameter if it discovers their
+   * {@link #releasedFields} set or adds @Owning to the formal parameter if it discovers their
    * must-call obligations were satisfied along one of the checked paths.
    *
    * <p>Operationally, it checks method invocations for fields and parameters with
@@ -218,17 +218,14 @@ public class MustCallInferenceLogic {
    *
    * @return the owning fields
    */
-  private Set<VariableElement> getEnclosedOwningFields() {
+  private Set<VariableElement> getOwningFields() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enclosingMethodTree));
     TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-    Set<VariableElement> enOwningFields = new HashSet<>();
+    Set<VariableElement> enOwningFields = new HashSet<>(releasedFields);
     for (Element memberElt : classElt.getEnclosedElements()) {
       if (memberElt.getKind().isField() && typeFactory.hasOwning(memberElt)) {
         enOwningFields.add((VariableElement) memberElt);
       }
-    }
-    for (Element memberElt : owningFieldToECM) {
-      enOwningFields.add((VariableElement) memberElt);
     }
     return enOwningFields;
   }
@@ -244,13 +241,13 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Infers @Owning annotation for the given node if it is a field and its must-call obligation is
-   * fulfilled via the given method call. If so, it adds the node to the owningFieldToECM set.
+   * Adds the node to the releasedFields set if it is a field and its must-call obligation is
+   * fulfilled via the given method call. If so, it will be given an @Owning annotation later.
    *
-   * @param node the possible owning field
-   * @param mNode method invoked on the possible owning field
+   * @param node possibly an owning field
+   * @param invocation method invoked on the possible owning field
    */
-  private void inferOwningField(@Nullable Node node, MethodInvocationNode mNode) {
+  private void inferOwningField(@Nullable Node node, MethodInvocationNode invocation) {
     if (node == null) {
       return;
     }
@@ -260,22 +257,22 @@ public class MustCallInferenceLogic {
     }
     if (typeFactory.isCandidateOwningField(nodeElt)) {
       node = NodeUtils.removeCasts(node);
-      JavaExpression target = JavaExpression.fromNode(node);
-      if (mustCallObligationSatisfied(mNode, nodeElt, target)) {
+      JavaExpression nodeJe = JavaExpression.fromNode(node);
+      if (mustCallObligationSatisfied(invocation, nodeElt, nodeJe)) {
         // This assumes that any MustCall annotation has at most one element.
         // TODO: generalize this to MustCall annotations with more than one element.
-        owningFieldToECM.add((VariableElement) nodeElt);
+        releasedFields.add((VariableElement) nodeElt);
       }
     }
   }
 
   /**
-   * Updates a set of obligations based on an assignment statement node. If the left-hand side of
-   * the assignment is a field that is an "enclosed owning field", adds the owning field to the
-   * method's parameters if its alias is assigned to the field. If the left-hand side of the
-   * assignment is a resource variable and the right-hand side is a must-call-close method call,
-   * adds the owning resource to the method's parameters if its alias is assigned to the resource
-   * variable. Otherwise, updates the obligations based on the assignment.
+   * Updates a set of obligations based on an assignment statement. If the left-hand side of the
+   * assignment is a field that is an "enclosed owning field", adds the owning field to the method's
+   * parameters if its alias is assigned to the field. If the left-hand side of the assignment is a
+   * resource variable and the right-hand side is a must-call-close method call, adds the owning
+   * resource to the method's parameters if its alias is assigned to the resource variable.
+   * Otherwise, updates the obligations based on the assignment.
    *
    * @param obligations the set of obligations to update
    * @param assignmentNode the assignment statement node
@@ -298,12 +295,12 @@ public class MustCallInferenceLogic {
     }
 
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      if (!getEnclosedOwningFields().contains(lhsElement)) {
+      if (!getOwningFields().contains(lhsElement)) {
         return;
       }
 
       if (!TreeUtils.isConstructor(enclosingMethodTree)) {
-        owningFieldToECM.remove((VariableElement) lhsElement);
+        releasedFields.remove((VariableElement) lhsElement);
       }
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
 
@@ -346,7 +343,7 @@ public class MustCallInferenceLogic {
    */
   private void addEnsuresCalledMethods() {
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
-    for (VariableElement owningField : owningFieldToECM) {
+    for (VariableElement owningField : releasedFields) {
       List<String> mustCallValues = typeFactory.getMustCallValue(owningField);
       assert !mustCallValues.isEmpty() : "Must-call obligation of an owning field is deleted.";
       assert mustCallValues.size() == 1 : "The size of the must-call set is greater than one.";
@@ -408,8 +405,7 @@ public class MustCallInferenceLogic {
     // if the enclosing method is not private and satisfies the must-call obligation of all owning
     // fields, add an InheritableMustCall annotation with the name of this method
     if (!enclosingMethodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-      if (!owningFieldToECM.isEmpty()
-          && owningFieldToECM.size() == getEnclosedOwningFields().size()) {
+      if (!releasedFields.isEmpty() && releasedFields.size() == getOwningFields().size()) {
         AnnotationBuilder builder =
             new AnnotationBuilder(typeFactory.getProcessingEnv(), InheritableMustCall.class);
         String[] methodArray = new String[] {enclosingMethodTree.getName().toString()};
@@ -425,16 +421,16 @@ public class MustCallInferenceLogic {
    * invocation node. If the receiver is a field, check if it is an owning field, if the receiver is
    * resource alias with any parameter of the enclosing method, add owning to that parameter.
    *
-   * @param obligations Set of obligations associated with the current code block
-   * @param mNode Method invocation node to check.
-   * @param paramsOfEnclosingMethod List of parameters of the enclosing method
+   * @param obligations the obligations associated with the current code block
+   * @param invocation the method invocation node to check
+   * @param paramsOfEnclosingMethod the parameters of the enclosing method
    */
   private void checkReceiverOfMethodCall(
       Set<Obligation> obligations,
-      MethodInvocationNode mNode,
+      MethodInvocationNode invocation,
       List<? extends VariableTree> paramsOfEnclosingMethod) {
 
-    Node receiver = mNode.getTarget().getReceiver();
+    Node receiver = invocation.getTarget().getReceiver();
     if (receiver.getTree() == null) {
       return;
     }
@@ -442,7 +438,7 @@ public class MustCallInferenceLogic {
     Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
     if (receiverEl != null) {
       if (receiverEl.getKind().isField()) {
-        inferOwningField(receiver, mNode);
+        inferOwningField(receiver, invocation);
         return;
       }
     }
@@ -470,7 +466,7 @@ public class MustCallInferenceLogic {
         }
 
         JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(i));
-        if (mustCallObligationSatisfied(mNode, paramElt, target)) {
+        if (mustCallObligationSatisfied(invocation, paramElt, target)) {
           addOwningOnParams(i);
           break;
         }
@@ -483,15 +479,15 @@ public class MustCallInferenceLogic {
    * parameter. If so, it adds owning to the corresponding parameters of the enclosing method.
    *
    * @param obligations the obligations associated with the current code block
-   * @param mNode the method invocation node to check
+   * @param invocation the method invocation node to check
    * @param paramsOfEnclosingMethod the parameters of the enclosing method
    */
   private void checkArgsOfMethodCall(
       Set<Obligation> obligations,
-      MethodInvocationNode mNode,
+      MethodInvocationNode invocation,
       List<? extends VariableTree> paramsOfEnclosingMethod) {
-    List<Node> arguments = mcca.getArgumentsOfInvocation(mNode);
-    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(mNode);
+    List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
+    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(invocation);
     if (parameters.isEmpty() || paramsOfEnclosingMethod.isEmpty()) {
       return;
     }
@@ -522,16 +518,16 @@ public class MustCallInferenceLogic {
    * the field or parameter passed as an argument to this call.
    *
    * @param obligations Set of obligations associated with the current code block
-   * @param mNode Method invocation node to check.
+   * @param invocation Method invocation node to check.
    * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
    */
   private void checkIndirectCalls(
       Set<Obligation> obligations,
-      MethodInvocationNode mNode,
+      MethodInvocationNode invocation,
       List<? extends VariableTree> paramsOfEnclosingMethod) {
 
-    List<Node> arguments = mcca.getArgumentsOfInvocation(mNode);
-    List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(mNode);
+    List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
+    List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(invocation);
 
     if (paramsOfInvocation.isEmpty()) {
       return;
@@ -546,14 +542,15 @@ public class MustCallInferenceLogic {
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        checkCalledMethodsSetForVarArgs(paramsOfEnclosingMethod, mNode, varArgsNode, argAliases);
+        checkCalledMethodsSetForVarArgs(
+            paramsOfEnclosingMethod, invocation, varArgsNode, argAliases);
       } else {
         Element varArgElt = TreeUtils.elementFromTree(arg.getTree());
         if (varArgElt != null && varArgElt.getKind().isField()) {
-          inferOwningField(arg, mNode);
+          inferOwningField(arg, invocation);
           continue;
         }
-        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, mNode, argAliases);
+        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, invocation, argAliases);
       }
     }
   }
@@ -564,13 +561,13 @@ public class MustCallInferenceLogic {
    * argument to this call.
    *
    * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
-   * @param mNode the method invocation node to check.
+   * @param invocation the method invocation node to check.
    * @param varArgsNode the VarArg node of the given method invocation node
    * @param argAliases the set of resource aliases associated with the argument node.
    */
   private void checkCalledMethodsSetForVarArgs(
       List<? extends VariableTree> paramsOfEnclosingMethod,
-      MethodInvocationNode mNode,
+      MethodInvocationNode invocation,
       ArrayCreationNode varArgsNode,
       Set<ResourceAlias> argAliases) {
 
@@ -582,9 +579,9 @@ public class MustCallInferenceLogic {
       }
 
       if (varArgElt.getKind().isField()) {
-        inferOwningField(argNode, mNode);
+        inferOwningField(argNode, invocation);
       } else {
-        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, mNode, argAliases);
+        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, invocation, argAliases);
       }
     }
   }
@@ -595,12 +592,12 @@ public class MustCallInferenceLogic {
    * the call, in order to infer the owning annotation for that parameter.
    *
    * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
-   * @param mNode the method invocation node to check.
+   * @param invocation the method invocation node to check.
    * @param argAliases the set of resource aliases associated with the argument node
    */
   private void checkCalledMethodsSetForArgAliases(
       List<? extends VariableTree> paramsOfEnclosingMethod,
-      MethodInvocationNode mNode,
+      MethodInvocationNode invocation,
       Set<ResourceAlias> argAliases) {
 
     for (int i = 0; i < paramsOfEnclosingMethod.size(); i++) {
@@ -614,7 +611,7 @@ public class MustCallInferenceLogic {
         }
 
         JavaExpression target = JavaExpression.fromVariableTree(encParamTree);
-        if (mustCallObligationSatisfied(mNode, encParamElt, target)) {
+        if (mustCallObligationSatisfied(invocation, encParamElt, target)) {
           addOwningOnParams(i);
           break;
         }
@@ -654,9 +651,9 @@ public class MustCallInferenceLogic {
    *       and identify if any of them are passed as an owning parameter. If found, it adds the
    *       “owning” annotation to the corresponding parameters of the enclosing method.
    *   <li>It calls {@link #checkReceiverOfMethodCall} to verify if the receiver of the method
-   *       represented by {@code mNode} qualifies as a candidate owning field, and if the method
-   *       invocation satisfies the field's must-call obligation. If these conditions are met, the
-   *       field is added to the {@link #owningFieldToECM} set.
+   *       represented by {@code invocation} qualifies as a candidate owning field, and if the
+   *       method invocation satisfies the field's must-call obligation. If these conditions are
+   *       met, the field is added to the {@link #releasedFields} set.
    *   <li>It calls {@link #checkIndirectCalls} to inspect the method represented by the given
    *       MethodInvocationNode for any indirect calls within it. The method analyzes the
    *       called-methods set of each argument after the call and computes the @Owning annotation to
@@ -664,14 +661,14 @@ public class MustCallInferenceLogic {
    * </ul>
    *
    * @param obligations the set of obligations to search in
-   * @param mNode the MethodInvocationNode
+   * @param invocation the MethodInvocationNode
    */
-  private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode mNode) {
+  private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode invocation) {
     if (enclosingMethodElt != null) {
       List<? extends VariableTree> paramsOfEnclosingMethod = enclosingMethodTree.getParameters();
-      checkArgsOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
-      checkReceiverOfMethodCall(obligations, mNode, paramsOfEnclosingMethod);
-      checkIndirectCalls(obligations, mNode, paramsOfEnclosingMethod);
+      checkArgsOfMethodCall(obligations, invocation, paramsOfEnclosingMethod);
+      checkReceiverOfMethodCall(obligations, invocation, paramsOfEnclosingMethod);
+      checkIndirectCalls(obligations, invocation, paramsOfEnclosingMethod);
     }
   }
 
@@ -680,14 +677,14 @@ public class MustCallInferenceLogic {
    * MustCall obligation of an element is satisfied if the called-methods set contains the target of
    * its must-call obligation.
    *
-   * @param mNode the method invocation node being checked for satisfaction of the MustCall
+   * @param invocation the method invocation node being checked for satisfaction of the MustCall
    *     obligation
    * @param varElt the element representing the variable annotated with the MustCall annotation
    * @param target the target of the MustCall obligation, represented as a JavaExpression
    * @return {@code true} if the MustCall obligation is satisfied, {@code false} otherwise
    */
   private boolean mustCallObligationSatisfied(
-      MethodInvocationNode mNode, Element varElt, JavaExpression target) {
+      MethodInvocationNode invocation, Element varElt, JavaExpression target) {
 
     List<String> mustCallValues = typeFactory.getMustCallValue(varElt);
     if (mustCallValues.size() != 1) {
@@ -695,7 +692,7 @@ public class MustCallInferenceLogic {
       return false;
     }
 
-    AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(mNode);
+    AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(invocation);
     @Nullable AccumulationValue cmValue =
         cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
     AnnotationMirror cmAnno = null;
@@ -724,7 +721,7 @@ public class MustCallInferenceLogic {
   /**
    * Updates {@code worklist} with the next block along all paths to the regular exit point. If the
    * next block is a regular exit point, adds an {@literal @}Owning annotation for fields in {@link
-   * #owningFieldToECM}.
+   * #releasedFields}.
    *
    * @param obligations the set of obligations to update
    * @param curBlock the current block
@@ -746,10 +743,10 @@ public class MustCallInferenceLogic {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
 
         assert wpi != null : "MustCallInference is running without WPI.";
-        for (VariableElement fieldElt : getEnclosedOwningFields()) {
+        for (VariableElement fieldElt : getOwningFields()) {
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
         }
-        if (!owningFieldToECM.isEmpty()) {
+        if (!releasedFields.isEmpty()) {
           addEnsuresCalledMethods();
         }
 
