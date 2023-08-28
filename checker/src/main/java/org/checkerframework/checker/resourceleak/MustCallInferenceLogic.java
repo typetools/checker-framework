@@ -125,9 +125,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Creates a MustCallInferenceLogic instance, runs the inference algorithm. If the type factory
-   * has whole program inference enabled, its postAnalyze method should execute the inference
-   * algorithm using this method.
+   * Creates a MustCallInferenceLogic instance and runs the inference algorithm. A type factory's
+   * postAnalyze method calls this, if whole program inference is enabled.
    *
    * @param typeFactory the type factory
    * @param cfg the control flow graph of the method to check
@@ -143,13 +142,13 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Runs the inference algorithm on the contents of the {@link #cfg} field and parameters.
+   * Runs the inference algorithm on the current method (the {@link #cfg} field). It updates the
+   * {@link #owningFieldToECM} set or adds @Owning to the formal parameter if it discovers their
+   * must-call obligations were satisfied along one of the checked paths.
    *
    * <p>Operationally, it checks method invocations for fields and parameters with
    * non-empty @MustCall obligations along all paths to the regular exit point in the method body of
-   * the method represented by {@link #cfg}, and updates the {@link #owningFieldToECM} set or
-   * adds @Owning to the formal parameter if it discovers their must-call obligations were satisfied
-   * along one of the checked paths.
+   * the method represented by {@link #cfg}.
    */
   private void runInference() {
 
@@ -169,14 +168,15 @@ public class MustCallInferenceLogic {
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
-        if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          // This call will not induce any side effects in the result of RLC, as the inference takes
-          // place within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
-          // consistency analyzer is finished.
+        // Calling updateObligationsWithInvocationResult() will not induce any side effects in the
+        // result of RLC, as the inference takes
+        // place within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
+        // consistency analyzer is finished.
+        if (node instanceof MethodInvocationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
-          if (node instanceof MethodInvocationNode) {
-            checkMethodInvocation(obligations, (MethodInvocationNode) node);
-          }
+          checkMethodInvocation(obligations, (MethodInvocationNode) node);
+        } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
+          mcca.updateObligationsWithInvocationResult(obligations, node);
         } else if (node instanceof AssignmentNode) {
           updateObligationsForAssignment(obligations, (AssignmentNode) node);
         }
@@ -193,7 +193,7 @@ public class MustCallInferenceLogic {
    *
    * @param cfg the control flow graph of the method to check
    * @return a set of obligations representing the non-empty MustCall parameters of the method
-   *     corresponding to a CFG.
+   *     corresponding to a CFG
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
@@ -202,8 +202,8 @@ public class MustCallInferenceLogic {
     }
     Set<Obligation> result = new LinkedHashSet<>(1);
     for (VariableTree param : enclosingMethodTree.getParameters()) {
-      VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
       if (typeFactory.declaredTypeHasMustCall(param)) {
+        VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
         result.add(
             new Obligation(
                 ImmutableSet.of(new ResourceAlias(new LocalVariable(paramElement), param))));
@@ -213,10 +213,10 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * This function returns a set of all owning fields that have been inferred in the current or any
-   * previous iteration
+   * Returns all owning fields of the enclosing class that have been inferred in the current or any
+   * previous iteration.
    *
-   * @return set of owning fields
+   * @return the owning fields
    */
   private Set<VariableElement> getEnclosedOwningFields() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(enclosingMethodTree));
@@ -277,8 +277,8 @@ public class MustCallInferenceLogic {
    * adds the owning resource to the method's parameters if its alias is assigned to the resource
    * variable. Otherwise, updates the obligations based on the assignment.
    *
-   * @param obligations The set of obligations to update.
-   * @param assignmentNode The assignment statement node.
+   * @param obligations the set of obligations to update
+   * @param assignmentNode the assignment statement node
    */
   private void updateObligationsForAssignment(
       Set<Obligation> obligations, AssignmentNode assignmentNode) {
@@ -319,9 +319,9 @@ public class MustCallInferenceLogic {
    * Adds owning fields to the method's parameters, if the must-call obligation of its alias
    * referred to by the right-hand side of the assignment is fulfilled during the assignment.
    *
-   * @param obligations The set of obligations to update.
-   * @param rhsObligation The obligation associated with the right-hand side of the assignment.
-   * @param rhs The right-hand side of the assignment.
+   * @param obligations the set of obligations to update
+   * @param rhsObligation the obligation associated with the right-hand side of the assignment
+   * @param rhs the right-hand side of the assignment
    */
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
@@ -425,9 +425,9 @@ public class MustCallInferenceLogic {
    * invocation node. If the receiver is a field, check if it is an owning field, if the receiver is
    * resource alias with any parameter of the enclosing method, add owning to that parameter.
    *
-   * @param obligations Set of obligations associated with the current code block.
+   * @param obligations Set of obligations associated with the current code block
    * @param mNode Method invocation node to check.
-   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
+   * @param paramsOfEnclosingMethod List of parameters of the enclosing method
    */
   private void checkReceiverOfMethodCall(
       Set<Obligation> obligations,
@@ -482,9 +482,9 @@ public class MustCallInferenceLogic {
    * Checks the arguments of a method invocation to see if any of them is passed as an owning
    * parameter. If so, it adds owning to the corresponding parameters of the enclosing method.
    *
-   * @param obligations Set of obligations associated with the current code block.
-   * @param mNode The method invocation node to check.
-   * @param paramsOfEnclosingMethod List of parameters of the enclosing method.
+   * @param obligations the obligations associated with the current code block
+   * @param mNode the method invocation node to check
+   * @param paramsOfEnclosingMethod the parameters of the enclosing method
    */
   private void checkArgsOfMethodCall(
       Set<Obligation> obligations,
@@ -521,7 +521,7 @@ public class MustCallInferenceLogic {
    * checks the called-methods set of each argument after the call to infer owning annotation for
    * the field or parameter passed as an argument to this call.
    *
-   * @param obligations Set of obligations associated with the current code block.
+   * @param obligations Set of obligations associated with the current code block
    * @param mNode Method invocation node to check.
    * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
    */
@@ -563,9 +563,9 @@ public class MustCallInferenceLogic {
    * argument after the call to infer owning annotation for the field or parameter passed as an
    * argument to this call.
    *
-   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method.
+   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
    * @param mNode the method invocation node to check.
-   * @param varArgsNode the VarArg node of the given method invocation node.
+   * @param varArgsNode the VarArg node of the given method invocation node
    * @param argAliases the set of resource aliases associated with the argument node.
    */
   private void checkCalledMethodsSetForVarArgs(
@@ -594,9 +594,9 @@ public class MustCallInferenceLogic {
    * to the method invocation. It so, it checks the set of called methods for the parameter after
    * the call, in order to infer the owning annotation for that parameter.
    *
-   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method.
+   * @param paramsOfEnclosingMethod a list of the parameters of the enclosing method
    * @param mNode the method invocation node to check.
-   * @param argAliases the set of resource aliases associated with the argument node.
+   * @param argAliases the set of resource aliases associated with the argument node
    */
   private void checkCalledMethodsSetForArgAliases(
       List<? extends VariableTree> paramsOfEnclosingMethod,
@@ -680,11 +680,11 @@ public class MustCallInferenceLogic {
    * MustCall obligation of an element is satisfied if the called-methods set contains the target of
    * its must-call obligation.
    *
-   * @param mNode The method invocation node being checked for satisfaction of the MustCall
-   *     obligation.
-   * @param varElt The element representing the variable annotated with the MustCall annotation.
-   * @param target The target of the MustCall obligation, represented as a JavaExpression.
-   * @return {@code true} if the MustCall obligation is satisfied, {@code false} otherwise.
+   * @param mNode the method invocation node being checked for satisfaction of the MustCall
+   *     obligation
+   * @param varElt the element representing the variable annotated with the MustCall annotation
+   * @param target the target of the MustCall obligation, represented as a JavaExpression
+   * @return {@code true} if the MustCall obligation is satisfied, {@code false} otherwise
    */
   private boolean mustCallObligationSatisfied(
       MethodInvocationNode mNode, Element varElt, JavaExpression target) {
