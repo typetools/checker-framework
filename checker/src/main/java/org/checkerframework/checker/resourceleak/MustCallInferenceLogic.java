@@ -67,13 +67,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * annotation on the enclosing class.
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. This
- * limitation should be taken into account while using the class. Must-call set with more than one
- * element may also be supported in the future.
+ * limitation should be taken into account while using the class. Must-call sets with more than one
+ * element may be supported in the future.
  *
- * <p>TODO: update this reference to point at user-facing documentation in the manual
- *
- * @see <a href="https://arxiv.org/pdf/2306.11953.pdf">Automatic Inference of Resource Leak
- *     Specifications</a>
+ * @see <a
+ *     href="https://checkerframework.org/manual/#resource-leak-checker-inference-algo">Automatic
+ *     Inference of Resource Leak Specifications</a>
  */
 public class MustCallInferenceLogic {
 
@@ -91,16 +90,19 @@ public class MustCallInferenceLogic {
   /** The {@link Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
-  /** The control flow graph. */
+  /**
+   * The control flow graph of the current method. There is a separate MustCallInferenceLogic for
+   * each method.
+   */
   private final ControlFlowGraph cfg;
 
   /** The MustCallConsistencyAnalyzer. */
   private final MustCallConsistencyAnalyzer mcca;
 
-  /** The MethodTree of the cfg. */
+  /** The MethodTree of the current method. */
   private final MethodTree enclosingMethodTree;
 
-  /** The element for the enclosingMethodElt. */
+  /** The element for the current method. */
   private final ExecutableElement enclosingMethodElt;
 
   /**
