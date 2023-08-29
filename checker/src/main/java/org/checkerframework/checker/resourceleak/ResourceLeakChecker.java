@@ -39,7 +39,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    */
   public static final String COUNT_MUST_CALL = "countMustCall";
 
-  /** Command-line option for enabling wpi for the Resource Leak Checker. */
+  /** Command-line option for enabling WPI for the Resource Leak Checker. */
   public static final String ENABLE_WPI_FOR_RLC = "enableWPIForRLC";
 
   /**

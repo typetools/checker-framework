@@ -235,6 +235,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     // called separately.
     Element elt = TreeUtils.elementFromTree(tree);
     if (elt != null) {
+      if (AnnotationUtils.containsSameByClass(elt.getAnnotationMirrors(), MustCallAlias.class)) {
+        return true;
+      }
       // Need to check the type mirror for ajava-derived annotations and the element itself
       // for human-written annotations from the source code. Getting to the ajava file directly
       // at this point is impossible, so we approximate "the ajava file has an @MustCallAlias
@@ -246,8 +249,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           useType.hasPrimaryAnnotation(PolyMustCall.class)
               && !AnnotationUtils.containsSameByClass(
                   elt.getAnnotationMirrors(), PolyMustCall.class);
-      if (ajavaFileHasMustCallAlias
-          || AnnotationUtils.containsSameByClass(elt.getAnnotationMirrors(), MustCallAlias.class)) {
+      if (ajavaFileHasMustCallAlias) {
         return true;
       }
     }

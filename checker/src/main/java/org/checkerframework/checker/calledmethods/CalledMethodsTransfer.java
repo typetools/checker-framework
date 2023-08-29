@@ -69,9 +69,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
 
   /**
    * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When we
-   * enable -Ainfer for the Resource Leak Checker, whole-program inference (wpi) is performed for
+   * enable -Ainfer for the Resource Leak Checker, whole-program inference (WPI) is performed for
    * all the sub-checkers. However, our mechanism for inferring annotations for the resource leak
-   * checker is different. It relies on pattern matching instead. The wpi results for this inference
+   * checker is different. It relies on pattern matching instead. The WPI results for this inference
    * are not useful and only end up slowing down the convergence of the algorithm for Resource Leak
    * Inference.
    *
@@ -88,10 +88,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When
-   * -Ainfer flag is enabled for the Resource Leak Checker, whole-program inference (wpi) is
+   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When the
+   * -Ainfer flag is enabled for the Resource Leak Checker, whole-program inference (WPI) is
    * performed for all the sub-checkers. However, the mechanism for inferring annotations for the
-   * resource leak checker is different. It relies on pattern matching instead. The wpi results for
+   * resource leak checker is different. It relies on pattern matching instead. The WPI results for
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
    * Resource Leak Inference.
    *
@@ -275,9 +275,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * Checks if wpi is enabled for the Resource Leak Checker inference.
+   * Checks if WPI is enabled for the Resource Leak Checker inference.
    *
-   * @return returns true if wpi is enabled for the Resource Leak Checker
+   * @return returns true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWPIEnabledForRLC() {
     return enableWPIForRLC;

@@ -457,9 +457,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Checks if wpi is enabled for the Resource Leak Checker inference.
+   * Checks if WPI is enabled for the Resource Leak Checker inference.
    *
-   * @return returns true if wpi is enabled for the Resource Leak Checker
+   * @return returns true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWPIEnabledForRLC() {
     return enableWPIForRLC;
