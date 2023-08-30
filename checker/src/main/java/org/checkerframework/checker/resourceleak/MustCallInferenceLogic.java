@@ -425,12 +425,12 @@ public class MustCallInferenceLogic {
    *
    * @param obligations the obligations associated with the current code block
    * @param invocation the method invocation node to check
-   * @param paramsOfEnclosingMethod the parameters of the current method
+   * @param paramsOfCurrentMethod the parameters of the current method
    */
   private void addOwningReceiverFromMethodCall(
       Set<Obligation> obligations,
       MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfEnclosingMethod) {
+      List<? extends VariableTree> paramsOfCurrentMethod) {
 
     Node receiver = invocation.getTarget().getReceiver();
     if (receiver.getTree() == null) {
@@ -458,8 +458,8 @@ public class MustCallInferenceLogic {
     }
 
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    for (int i = 0; i < paramsOfEnclosingMethod.size(); i++) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(i));
+    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
 
       for (ResourceAlias resourceAlias : receiverAliases) {
         Element resourceElt = resourceAlias.reference.getElement();
@@ -467,7 +467,7 @@ public class MustCallInferenceLogic {
           continue;
         }
 
-        JavaExpression target = JavaExpression.fromVariableTree(paramsOfEnclosingMethod.get(i));
+        JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
         if (mustCallObligationSatisfied(invocation, paramElt, target)) {
           addOwningOnParams(i);
           break;
@@ -481,16 +481,16 @@ public class MustCallInferenceLogic {
    * parameter. If so, it adds owning to the corresponding parameters of the current method.
    *
    * @param obligations the obligations associated with the current code block
-   * @param invocation the method invocation node to check
-   * @param paramsOfEnclosingMethod the parameters of the current method
+   * @param invocation a method invocation node that appears in the current method
+   * @param paramsOfCurrentMethod the parameters of the current method
    */
   private void addOwningParamsFromMethodCall(
       Set<Obligation> obligations,
       MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfEnclosingMethod) {
+      List<? extends VariableTree> paramsOfCurrentMethod) {
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
     List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(invocation);
-    if (parameters.isEmpty() || paramsOfEnclosingMethod.isEmpty()) {
+    if (parameters.isEmpty() || paramsOfCurrentMethod.isEmpty()) {
       return;
     }
 
@@ -502,8 +502,8 @@ public class MustCallInferenceLogic {
       }
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
-      for (int j = 0; j < paramsOfEnclosingMethod.size(); j++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfEnclosingMethod.get(j));
+      for (int j = 0; j < paramsOfCurrentMethod.size(); j++) {
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(j));
         for (ResourceAlias rl : argAliases) {
           Element argAliasElt = rl.reference.getElement();
           if (argAliasElt.equals(paramElt)) {
@@ -520,13 +520,13 @@ public class MustCallInferenceLogic {
    * the field or parameter passed as an argument to this call.
    *
    * @param obligations Set of obligations associated with the current code block
-   * @param invocation Method invocation node to check.
-   * @param paramsOfEnclosingMethod a list of the parameters of the current method
+   * @param invocation a method invocation node to check
+   * @param paramsOfCurrentMethod a list of the parameters of the current method
    */
   private void checkIndirectCalls(
       Set<Obligation> obligations,
       MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfEnclosingMethod) {
+      List<? extends VariableTree> paramsOfCurrentMethod) {
 
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
     List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(invocation);
@@ -544,15 +544,14 @@ public class MustCallInferenceLogic {
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        checkCalledMethodsSetForVarArgs(
-            paramsOfEnclosingMethod, invocation, varArgsNode, argAliases);
+        checkCalledMethodsSetForVarArgs(paramsOfCurrentMethod, invocation, varArgsNode, argAliases);
       } else {
         Element varArgElt = TreeUtils.elementFromTree(arg.getTree());
         if (varArgElt != null && varArgElt.getKind().isField()) {
           inferOwningField(arg, invocation);
           continue;
         }
-        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, invocation, argAliases);
+        checkCalledMethodsSetForArgAliases(paramsOfCurrentMethod, invocation, argAliases);
       }
     }
   }
@@ -562,13 +561,13 @@ public class MustCallInferenceLogic {
    * argument after the call to infer owning annotation for the field or parameter passed as an
    * argument to this call.
    *
-   * @param paramsOfEnclosingMethod the parameters of the current method
+   * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param varArgsNode the VarArg node of the given method invocation node
    * @param argAliases the set of resource aliases associated with the argument node.
    */
   private void checkCalledMethodsSetForVarArgs(
-      List<? extends VariableTree> paramsOfEnclosingMethod,
+      List<? extends VariableTree> paramsOfCurrentMethod,
       MethodInvocationNode invocation,
       ArrayCreationNode varArgsNode,
       Set<ResourceAlias> argAliases) {
@@ -583,7 +582,7 @@ public class MustCallInferenceLogic {
       if (varArgElt.getKind().isField()) {
         inferOwningField(argNode, invocation);
       } else {
-        checkCalledMethodsSetForArgAliases(paramsOfEnclosingMethod, invocation, argAliases);
+        checkCalledMethodsSetForArgAliases(paramsOfCurrentMethod, invocation, argAliases);
       }
     }
   }
@@ -593,18 +592,18 @@ public class MustCallInferenceLogic {
    * to the method invocation. It so, it checks the set of called methods for the parameter after
    * the call, in order to infer the owning annotation for that parameter.
    *
-   * @param paramsOfEnclosingMethod a list of the parameters of the current method
+   * @param paramsOfCurrentMethod a list of the parameters of the current method
    * @param invocation the method invocation node to check.
    * @param argAliases the set of resource aliases associated with the argument node
    */
   private void checkCalledMethodsSetForArgAliases(
-      List<? extends VariableTree> paramsOfEnclosingMethod,
+      List<? extends VariableTree> paramsOfCurrentMethod,
       MethodInvocationNode invocation,
       Set<ResourceAlias> argAliases) {
 
-    for (int i = 0; i < paramsOfEnclosingMethod.size(); i++) {
+    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
 
-      VariableTree encParamTree = paramsOfEnclosingMethod.get(i);
+      VariableTree encParamTree = paramsOfCurrentMethod.get(i);
       for (ResourceAlias rl : argAliases) {
         Element argAliasElt = rl.reference.getElement();
         VariableElement encParamElt = TreeUtils.elementFromDeclaration(encParamTree);
@@ -666,10 +665,10 @@ public class MustCallInferenceLogic {
    */
   private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode invocation) {
     if (methodElt != null) {
-      List<? extends VariableTree> paramsOfEnclosingMethod = methodTree.getParameters();
-      addOwningParamsFromMethodCall(obligations, invocation, paramsOfEnclosingMethod);
-      addOwningReceiverFromMethodCall(obligations, invocation, paramsOfEnclosingMethod);
-      checkIndirectCalls(obligations, invocation, paramsOfEnclosingMethod);
+      List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
+      addOwningParamsFromMethodCall(obligations, invocation, paramsOfCurrentMethod);
+      addOwningReceiverFromMethodCall(obligations, invocation, paramsOfCurrentMethod);
+      checkIndirectCalls(obligations, invocation, paramsOfCurrentMethod);
     }
   }
 
