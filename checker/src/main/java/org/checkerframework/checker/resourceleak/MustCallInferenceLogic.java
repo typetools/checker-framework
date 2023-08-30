@@ -5,7 +5,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -701,7 +700,8 @@ public class MustCallInferenceLogic {
         cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
     AnnotationMirror cmAnno = null;
 
-    if (cmValue != null) { // When store contains the lhs
+    if (cmValue != null) {
+      // The store contains the lhs.
       Set<String> accumulatedValues = cmValue.getAccumulatedValues();
       if (accumulatedValues != null) { // type variable or wildcard type
         cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
@@ -723,12 +723,12 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Adds all non-exceptionsal successors to {@code worklist}. If a successor is a non-exceptional
+   * Adds all non-exceptional successors to {@code worklist}. If a successor is a non-exceptional
    * exit point, adds an {@literal @}Owning annotation for fields in {@link #releasedFields}.
    *
    * @param obligations the set of obligations to update
-   * @param curBlock the current block
-   * @param visited set of blocks already on the worklist
+   * @param curBlock the block whose successors to add to the worklist
+   * @param visited set of blocks that have already been added worklist
    * @param worklist current worklist
    */
   private void discoverNonExceptionalSuccessors(
@@ -737,14 +737,10 @@ public class MustCallInferenceLogic {
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
 
-    List<Block> successors = getNonExceptionalSuccessors(curBlock);
-
-    for (Block b : successors) {
-      // If b is a special block, it must be the regular exit, since it does not propagate to
-      // exceptional successors.
-      if (b.getType() == Block.BlockType.SPECIAL_BLOCK) {
+    for (Block successor : getNonExceptionalSuccessors(curBlock)) {
+      // If successor is a special block, it must be the regular exit.
+      if (successor.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-
         assert wpi != null : "MustCallInference is running without WPI.";
         for (VariableElement fieldElt : getOwningFields()) {
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
@@ -755,7 +751,7 @@ public class MustCallInferenceLogic {
 
         addOrUpdateMustCall();
       }
-      BlockWithObligations state = new BlockWithObligations(b, obligations);
+      BlockWithObligations state = new BlockWithObligations(successor, obligations);
       if (visited.add(state)) {
         worklist.add(state);
       }
@@ -763,32 +759,25 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Returns the non-exceptional successors of the current block.
+   * Returns the non-exceptional successors of a block.
    *
-   * @param cur the current block
+   * @param cur a block
    * @return the successors of this current block
    */
   private List<Block> getNonExceptionalSuccessors(Block cur) {
-    List<Block> successorBlock = new ArrayList<>();
-
     if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
-
       ConditionalBlock ccur = (ConditionalBlock) cur;
-
-      successorBlock.add(ccur.getThenSuccessor());
-      successorBlock.add(ccur.getElseSuccessor());
-
-    } else {
-      if (!(cur instanceof SingleSuccessorBlock)) {
-        throw new BugInCF("BlockImpl is neither a conditional block nor a SingleSuccessorBlock");
-      }
-
-      Block b = ((SingleSuccessorBlock) cur).getSuccessor();
-      if (b != null) {
-        successorBlock.add(b);
-      }
+      return List.of(ccur.getThenSuccessor(), ccur.getElseSuccessor());
     }
-    return successorBlock;
+    if (!(cur instanceof SingleSuccessorBlock)) {
+      throw new BugInCF("Not a conditional block nor a SingleSuccessorBlock: " + cur);
+    }
+
+    Block successor = ((SingleSuccessorBlock) cur).getSuccessor();
+    if (successor != null) {
+      return Collections.singletonList(successor);
+    }
+    return Collections.emptyList();
   }
 
   /**
