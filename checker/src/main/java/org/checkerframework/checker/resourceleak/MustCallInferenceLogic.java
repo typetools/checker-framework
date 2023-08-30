@@ -648,7 +648,7 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * This method performs three checks related to method invocation node and compute @Owning
+   * This method performs three checks related to method invocation node. It computes @Owning
    * annotations to the enclosing formal parameter or fields:
    *
    * <ul>
@@ -677,9 +677,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Checks if a MustCall obligation of the element is satisfied via the given method call. A
-   * MustCall obligation of an element is satisfied if the called-methods set contains the target of
-   * its must-call obligation.
+   * Checks if a MustCall obligation is satisfied via the given method call. A MustCall obligation
+   * of an element is satisfied if the called-methods set contains the target of its must-call
+   * obligation.
    *
    * @param invocation the method invocation node being checked for satisfaction of the MustCall
    *     obligation
