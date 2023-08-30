@@ -268,12 +268,16 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Updates a set of obligations based on an assignment statement. If the left-hand side of the
-   * assignment is a field that is an "enclosed owning field", adds the owning field to the method's
-   * parameters if its alias is assigned to the field. If the left-hand side of the assignment is a
-   * resource variable and the right-hand side is a must-call-close method call, adds the owning
-   * resource to the method's parameters if its alias is assigned to the resource variable.
-   * Otherwise, updates the obligations based on the assignment.
+   * Updates a set of obligations based on an assignment statement.
+   *
+   * <ul>
+   *   <li>If the left-hand side of the assignment is an owning field, and the rhs is an alias of a
+   *       formal parameter, adds the owning field.
+   *   <li>If the left-hand side of the assignment is a resource variable and the right-hand side is
+   *       a must-call-close method call, adds the owning resource to the method's parameters if its
+   *       alias is assigned to the resource variable.
+   *   <li>Otherwise, updates the obligations based on the assignment.
+   * </ul>
    *
    * @param obligations the set of obligations to update
    * @param assignmentNode the assignment statement node
@@ -371,11 +375,11 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Adds an InheritableMustCall annotation on the enclosing class. If the class already has a
-   * non-empty MustCall type (which is inherited from one of its superclasses), this method does
-   * nothing, in order to avoid infinite iteration. Otherwise, if the method being analyzed by
-   * {@code this} is not private and satisfies must-call obligation of all the enclosed owning
-   * fields, it adds an InheritableMustCall annotation to the enclosing class.
+   * Possibly adds an InheritableMustCall annotation on the enclosing class. If the class already
+   * has a non-empty MustCall type (which is inherited from one of its superclasses), this method
+   * does nothing, in order to avoid infinite iteration. Otherwise, if the current method is not
+   * private and satisfies the must-call obligations of all the owning fields, it adds an
+   * InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(methodTree));
@@ -415,9 +419,9 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Checks if the receiver of a method call has an obligation that is satisfied by the method
-   * invocation node. If the receiver is a field, check if it is an owning field, if the receiver is
-   * resource alias with any parameter of the current method, add owning to that parameter.
+   * Checks whether a method invocation node satisfies the receiver's obligation. If the receiver is
+   * a field, check if it is an owning field, if the receiver is resource alias with any parameter
+   * of the current method, add owning to that parameter.
    *
    * @param obligations the obligations associated with the current code block
    * @param invocation the method invocation node to check
