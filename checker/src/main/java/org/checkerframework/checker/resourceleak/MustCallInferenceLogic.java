@@ -683,9 +683,9 @@ public class MustCallInferenceLogic {
    *
    * @param invocation the method invocation node being checked for satisfaction of the MustCall
    *     obligation
-   * @param varElt the element representing the variable annotated with the MustCall annotation
-   * @param target the target of the MustCall obligation, represented as a JavaExpression
-   * @return {@code true} if the MustCall obligation is satisfied, {@code false} otherwise
+   * @param varElt the variable annotated with the MustCall annotation
+   * @param target the target of the MustCall obligation
+   * @return {@code true} if the MustCall obligation is satisfied
    */
   private boolean mustCallObligationSatisfied(
       MethodInvocationNode invocation, Element varElt, JavaExpression target) {
