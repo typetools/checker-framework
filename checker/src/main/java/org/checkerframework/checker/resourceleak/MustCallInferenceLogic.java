@@ -58,13 +58,16 @@ import org.checkerframework.javacutil.TypesUtils;
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
  * responsible for inferring annotations such as @Owning on owning fields and
  * parameters, @EnsuresCalledMethods on methods, and @InheritableMustCall on class declarations.
- * Each instance of this class corresponds to a single control flow graph (CFG), typically
- * representing a method. The algorithm determines if the @MustCall obligation of a field is
- * fulfilled along some path leading to the regular exit point of the method. If the obligation is
- * satisfied, it adds an @Owning annotation on the field and an @EnsuresCalledMethods annotation on
- * the method being analyzed by this instance. Additionally, if the method being analyzed fulfills
- * the must-call obligation of all the enclosed owning fields, it adds a @InheritableMustCall
- * annotation on the enclosing class.
+ *
+ * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
+ * representing a method.
+ *
+ * <p>The algorithm determines if the @MustCall obligation of a field is fulfilled along some path
+ * leading to the regular exit point of the method. If the obligation is satisfied, it adds
+ * an @Owning annotation on the field and an @EnsuresCalledMethods annotation on the method being
+ * analyzed by this instance. Additionally, if the method being analyzed fulfills the must-call
+ * obligation of all the enclosed owning fields, it adds a @InheritableMustCall annotation on the
+ * enclosing class.
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. This
  * limitation should be taken into account while using the class. Must-call sets with more than one
@@ -87,6 +90,9 @@ public class MustCallInferenceLogic {
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
 
+  /** The MustCallConsistencyAnalyzer. */
+  private final MustCallConsistencyAnalyzer mcca;
+
   /** The {@link Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
@@ -95,9 +101,6 @@ public class MustCallInferenceLogic {
    * each method.
    */
   private final ControlFlowGraph cfg;
-
-  /** The MustCallConsistencyAnalyzer. */
-  private final MustCallConsistencyAnalyzer mcca;
 
   /** The MethodTree of the current method. */
   private final MethodTree methodTree;
@@ -169,13 +172,12 @@ public class MustCallInferenceLogic {
 
       for (Node node : current.block.getNodes()) {
         // Calling updateObligationsWithInvocationResult() will not induce any side effects in the
-        // result of RLC, as the inference takes
-        // place within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
-        // consistency analyzer is finished.
+        // result of RLC, as the inference takes place within the postAnalyze method of the
+        // ResourceLeakAnnotatedTypeFactory, once the consistency analyzer is finished.
         if (node instanceof MethodInvocationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
           checkMethodInvocation(obligations, (MethodInvocationNode) node);
-        } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
+        } else if (node instanceof ObjectCreationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
         } else if (node instanceof AssignmentNode) {
           updateObligationsForAssignment(obligations, (AssignmentNode) node);
@@ -187,13 +189,12 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Returns a set of obligations representing the non-empty MustCall parameters of the method that
-   * corresponds to the given cfg, or an empty set if the given CFG doesn't correspond to a method
-   * body.
+   * Returns a set of obligations representing the non-empty MustCall parameters of the current
+   * method. Returns an empty set if the given CFG doesn't correspond to a method body.
    *
    * @param cfg the control flow graph of the method to check
    * @return a set of obligations representing the non-empty MustCall parameters of the method
-   *     corresponding to a CFG
+   *     corresponding to {@code cfg}
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
@@ -213,8 +214,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Returns all owning fields of the enclosing class that have been inferred in the current or any
-   * previous iteration.
+   * Returns all owning fields of the enclosing class that have been inferred to be owning, in the
+   * current or any previous iteration.
    *
    * @return the owning fields
    */
