@@ -80,8 +80,8 @@ import org.checkerframework.javacutil.TypesUtils;
 public class MustCallInferenceLogic {
 
   /**
-   * The set of fields that have been inferred to be released within the CFG currently under
-   * analysis. All of these fields will be given on @Owning annotation.
+   * The fields that have been inferred to be released within the CFG currently under analysis. All
+   * of these fields will be given on @Owning annotation.
    */
   private final Set<VariableElement> releasedFields = new HashSet<>();
 
@@ -488,18 +488,21 @@ public class MustCallInferenceLogic {
       Set<Obligation> obligations,
       MethodInvocationNode invocation,
       List<? extends VariableTree> paramsOfCurrentMethod) {
+    if (paramsOfCurrentMethod.isEmpty()) {
+      return;
+    }
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
-    List<? extends VariableElement> parameters = mcca.getParametersOfInvocation(invocation);
-    if (parameters.isEmpty() || paramsOfCurrentMethod.isEmpty()) {
+    List<? extends VariableElement> invocationParams = mcca.getParametersOfInvocation(invocation);
+    if (invocationParams.isEmpty()) {
       return;
     }
 
     for (int i = 0; i < arguments.size(); i++) {
-      Node arg = NodeUtils.removeCasts(arguments.get(i));
-
-      if (!typeFactory.hasOwning(parameters.get(i))) {
+      if (!typeFactory.hasOwning(invocationParams.get(i))) {
         continue;
       }
+
+      Node arg = NodeUtils.removeCasts(arguments.get(i));
 
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
       for (int j = 0; j < paramsOfCurrentMethod.size(); j++) {
@@ -521,7 +524,7 @@ public class MustCallInferenceLogic {
    *
    * @param obligations Set of obligations associated with the current code block
    * @param invocation a method invocation node to check
-   * @param paramsOfCurrentMethod a list of the parameters of the current method
+   * @param paramsOfCurrentMethod the parameters of the current method
    */
   private void checkIndirectCalls(
       Set<Obligation> obligations,
@@ -557,14 +560,14 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Checks each node passed in the var argument position. It checks the called-methods set of each
-   * argument after the call to infer owning annotation for the field or parameter passed as an
+   * Checks each node passed in the varargs argument position. It checks the called-methods set of
+   * each argument after the call to infer owning annotation for the field or parameter passed as an
    * argument to this call.
    *
    * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param varArgsNode the VarArg node of the given method invocation node
-   * @param argAliases the set of resource aliases associated with the argument node.
+   * @param argAliases the resource aliases associated with the argument node
    */
   private void checkCalledMethodsSetForVarArgs(
       List<? extends VariableTree> paramsOfCurrentMethod,
@@ -592,8 +595,8 @@ public class MustCallInferenceLogic {
    * to the method invocation. It so, it checks the set of called methods for the parameter after
    * the call, in order to infer the owning annotation for that parameter.
    *
-   * @param paramsOfCurrentMethod a list of the parameters of the current method
-   * @param invocation the method invocation node to check.
+   * @param paramsOfCurrentMethod the parameters of the current method
+   * @param invocation a method invocation within the current method
    * @param argAliases the set of resource aliases associated with the argument node
    */
   private void checkCalledMethodsSetForArgAliases(
@@ -603,16 +606,17 @@ public class MustCallInferenceLogic {
 
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
 
-      VariableTree encParamTree = paramsOfCurrentMethod.get(i);
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
       for (ResourceAlias rl : argAliases) {
         Element argAliasElt = rl.reference.getElement();
-        VariableElement encParamElt = TreeUtils.elementFromDeclaration(encParamTree);
-        if (!argAliasElt.equals(encParamElt)) {
+        VariableElement currentMethodParamElt =
+            TreeUtils.elementFromDeclaration(currentMethodParamTree);
+        if (!argAliasElt.equals(currentMethodParamElt)) {
           continue;
         }
 
-        JavaExpression target = JavaExpression.fromVariableTree(encParamTree);
-        if (mustCallObligationSatisfied(invocation, encParamElt, target)) {
+        JavaExpression target = JavaExpression.fromVariableTree(currentMethodParamTree);
+        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, target)) {
           addOwningOnParams(i);
           break;
         }
@@ -625,9 +629,9 @@ public class MustCallInferenceLogic {
    * corresponding obligation in the given set of obligations.
    *
    * @param obligations the set of obligations to search in
-   * @param arg the argument node whose corresponding resource aliases are to be returned
-   * @return the set of resource aliases associated with the given argument node, or an empty set if
-   *     the node has none
+   * @param arg the argument node whose resource aliases are to be returned
+   * @return the resource aliases associated with the given argument node, or an empty set if the
+   *     node has none
    */
   private Set<ResourceAlias> getResourceAliasOfArgument(Set<Obligation> obligations, Node arg) {
     Node tempVar = mcca.getTempVarOrNode(arg);
