@@ -8,6 +8,8 @@ advised against using.
 
 **Implementation details:**
 
+Renamed `SourceChecker.processArg()' to `processErrorMessageArg()`.
+
 **Closed issues:**
 
 
