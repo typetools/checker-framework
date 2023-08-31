@@ -3,13 +3,12 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -19,7 +18,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
-import org.checkerframework.checker.signedness.qual.SignedPositiveFromUnsigned;
 import org.checkerframework.checker.signedness.qual.SignednessBottom;
 import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.checker.signedness.qual.Unsigned;
@@ -65,9 +63,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final AnnotationMirror SIGNEDNESS_GLB =
       AnnotationBuilder.fromClass(elements, SignednessGlb.class);
 
-  /** The @SignedPositiveFromUnsigned annotation. */
-  protected final AnnotationMirror SIGNED_POSITIVE_FROM_UNSIGNED =
-      AnnotationBuilder.fromClass(elements, SignedPositiveFromUnsigned.class);
+  /** The @SignedPositive annotation. */
+  protected final AnnotationMirror SIGNED_POSITIVE =
+      AnnotationBuilder.fromClass(elements, SignedPositive.class);
 
   /** The @SignednessBottom annotation. */
   protected final AnnotationMirror SIGNEDNESS_BOTTOM =
@@ -111,24 +109,30 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
-    addAliasedTypeAnnotation(SignedPositive.class, SIGNEDNESS_GLB);
-
     addAliasedTypeAnnotation("jdk.jfr.Unsigned", UNSIGNED);
 
     postInit();
   }
 
   @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    Set<Class<? extends Annotation>> result = getBundledTypeQualifiers();
-    result.remove(SignedPositive.class); // this method should not return aliases
-    return result;
-  }
-
-  @Override
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-    if (!computingAnnotatedTypeMirrorOfLHS) {
-      addSignednessGlbAnnotation(tree, type);
+    Tree.Kind treeKind = tree.getKind();
+    if (treeKind == Tree.Kind.INT_LITERAL) {
+      int literalValue = (int) ((LiteralTree) tree).getValue();
+      if (literalValue >= 0) {
+        type.replaceAnnotation(SIGNED_POSITIVE);
+      } else {
+        type.replaceAnnotation(SIGNEDNESS_GLB);
+      }
+    } else if (treeKind == Tree.Kind.LONG_LITERAL) {
+      long literalValue = (long) ((LiteralTree) tree).getValue();
+      if (literalValue >= 0) {
+        type.replaceAnnotation(SIGNED_POSITIVE);
+      } else {
+        type.replaceAnnotation(SIGNEDNESS_GLB);
+      }
+    } else if (!computingAnnotatedTypeMirrorOfLHS) {
+      addSignedPositiveAnnotation(tree, type);
     }
 
     super.addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -153,13 +157,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Refines an integer expression to @SignednessGlb if its value is within the signed positive
+   * Refines an integer expression to @SignedPositive if its value is within the signed positive
    * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
    */
-  private void addSignednessGlbAnnotation(Tree tree, AnnotatedTypeMirror type) {
+  private void addSignedPositiveAnnotation(Tree tree, AnnotatedTypeMirror type) {
     if (tree.getKind() == Tree.Kind.TYPE_CAST) {
       return;
     }
@@ -182,7 +186,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
             || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
         && type.hasPrimaryAnnotation(SIGNED)) {
-      type.replaceAnnotation(SIGNEDNESS_GLB);
+      type.replaceAnnotation(SIGNED_POSITIVE);
     } else {
       Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
 
@@ -191,22 +195,22 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           case BYTE:
           case CHAR:
             if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
-              type.replaceAnnotation(SIGNEDNESS_GLB);
+              type.replaceAnnotation(SIGNED_POSITIVE);
             }
             break;
           case SHORT:
             if (treeRange.isWithin(0, Short.MAX_VALUE)) {
-              type.replaceAnnotation(SIGNEDNESS_GLB);
+              type.replaceAnnotation(SIGNED_POSITIVE);
             }
             break;
           case INT:
             if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
-              type.replaceAnnotation(SIGNEDNESS_GLB);
+              type.replaceAnnotation(SIGNED_POSITIVE);
             }
             break;
           case LONG:
             if (treeRange.isWithin(0, Long.MAX_VALUE)) {
-              type.replaceAnnotation(SIGNEDNESS_GLB);
+              type.replaceAnnotation(SIGNED_POSITIVE);
             }
             break;
           default:
@@ -232,7 +236,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     if ((widenedTypeKind == TypeKind.INT || widenedTypeKind == TypeKind.LONG)
         && typeKind == TypeKind.CHAR) {
-      result.add(SIGNED_POSITIVE_FROM_UNSIGNED);
+      result.add(SIGNED_POSITIVE);
       return result;
     }
     return annos;
@@ -294,7 +298,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           if (path != null
               && (SignednessShifts.isMaskedShiftEitherSignedness(tree, path)
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
-            type.replaceAnnotation(SIGNEDNESS_GLB);
+            type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
