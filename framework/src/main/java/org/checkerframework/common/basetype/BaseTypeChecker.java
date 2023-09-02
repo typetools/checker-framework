@@ -880,16 +880,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
   }
 
   @Override
-  protected Object processArg(Object arg) {
+  protected Object processErrorMessageArg(Object arg) {
     if (arg instanceof Collection) {
       Collection<?> carg = (Collection<?>) arg;
-      return CollectionsPlume.mapList(this::processArg, carg);
+      return CollectionsPlume.mapList(this::processErrorMessageArg, carg);
     } else if (arg instanceof AnnotationMirror && getTypeFactory() != null) {
       return getTypeFactory()
           .getAnnotationFormatter()
           .formatAnnotationMirror((AnnotationMirror) arg);
     } else {
-      return super.processArg(arg);
+      return super.processErrorMessageArg(arg);
     }
   }
 

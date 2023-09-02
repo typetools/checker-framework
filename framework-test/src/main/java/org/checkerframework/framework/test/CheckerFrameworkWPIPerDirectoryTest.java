@@ -1,7 +1,10 @@
 package org.checkerframework.framework.test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import javax.annotation.processing.AbstractProcessor;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.junit.Assert;
@@ -33,6 +36,26 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
       String testDir,
       String... checkerOptions) {
     super(testFiles, checker, testDir, checkerOptions);
+
+    String skipComment;
+    if (this.checkerOptions.contains("-Ainfer=ajava")) {
+      skipComment = "@infer-ajava-skip-test";
+    } else if (this.checkerOptions.contains("-Ainfer=jaifs")) {
+      skipComment = "@infer-jaifs-skip-test";
+    } else if (this.checkerOptions.contains("-Ainfer=stubs")) {
+      skipComment = "@infer-stubs-skip-test";
+    } else {
+      skipComment = null;
+    }
+    if (skipComment != null) {
+      List<File> removeFiles = new ArrayList<>();
+      for (File testFile : testFiles) {
+        if (hasSkipComment(testFile, skipComment)) {
+          removeFiles.add(testFile);
+        }
+      }
+      this.testFiles.removeAll(removeFiles);
+    }
   }
 
   /**
@@ -70,5 +93,26 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
     if (removeIndex != -1) {
       testFiles.remove(removeIndex);
     }
+  }
+
+  /**
+   * Whether {@code file} contains {@code skipComment}.
+   *
+   * @param file a java test file
+   * @param skipComment a comment that indicates that a test should be skipped
+   * @return whether {@code file} contains {@code skipComment}
+   */
+  public static boolean hasSkipComment(File file, String skipComment) {
+    try (Scanner in = new Scanner(file)) {
+      while (in.hasNext()) {
+        String nextLine = in.nextLine();
+        if (nextLine.contains(skipComment)) {
+          return true;
+        }
+      }
+    } catch (FileNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    return false;
   }
 }

@@ -66,6 +66,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
  */
+// Error Prone is warning on calls to ClassSymbol#getEnclosedElements() because the JDK 11 return
+// type is java.util.List, but the JDK 17 returns com.sun.tools.javac.util.List.
+// All the calls in this class are to Symbol#getEnclosedElements(), so just suppress the warning.
+@SuppressWarnings("ASTHelpersSuggestions")
 public class DefaultReflectionResolver implements ReflectionResolver {
 
   /** Message prefix added to verbose reflection messages. */
@@ -390,7 +394,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
           debugReflection("Resolved non-public method: " + symbol.owner + "." + symbol);
         }
 
-        JCExpression method = make.Select(receiver, symbol);
+        JCExpression method = TreeUtils.Select(make, receiver, symbol);
         args = getCorrectedArgs(symbol, args);
         // Build method invocation tree depending on the number of
         // parameters
@@ -517,7 +521,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     List<Symbol> result = new ArrayList<>();
     ClassSymbol classSym = (ClassSymbol) sym;
     while (classSym != null) {
-      for (Symbol s : classSym.getEnclosedElements()) {
+      // Upcast to Symbol to avoid bytecode incompatibility; see comment on the
+      // @SuppressWarnings("ASTHelpersSuggestions") on the class.
+      for (Symbol s : ((Symbol) classSym).getEnclosedElements()) {
         // check all member methods
         if (s.getKind() == ElementKind.METHOD) {
           // Check for method name and number of arguments
