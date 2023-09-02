@@ -55,7 +55,8 @@ public class GlbUtil {
         AnnotationMirror typeAnno = type.getEffectiveAnnotationInHierarchy(top);
         AnnotationMirror currentAnno = glbPrimaries.get(top);
         if (typeAnno != null && currentAnno != null) {
-          glbPrimaries.put(top, qualHierarchy.greatestLowerBound(currentAnno, typeAnno));
+          glbPrimaries.put(
+              top, qualHierarchy.greatestLowerBoundQualifiersOnly(currentAnno, typeAnno));
         } else if (typeAnno != null) {
           glbPrimaries.put(top, typeAnno);
         }
@@ -68,7 +69,7 @@ public class GlbUtil {
     AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
     for (AnnotatedTypeMirror atm : typeMirrors.keySet()) {
       if (atm.getKind() != TypeKind.TYPEVAR
-          || !qualHierarchy.isSubtype(atm.getEffectiveAnnotations(), values)) {
+          || !typeFactory.getTypeHierarchy().isSubtypeShallowEffective(atm, values)) {
         AnnotatedTypeMirror copy = atm.deepCopy();
         copy.replaceAnnotations(values);
         glbTypes.add(copy);
@@ -188,7 +189,10 @@ public class GlbUtil {
       AnnotationMirrorSet annos2 = type2.getPrimaryAnnotations();
       if (AnnotationUtils.areSame(annos1, annos2)) {
         return 0;
-      } else if (qualHierarchy.isSubtype(annos1, annos2)) {
+      }
+      TypeMirror tm1 = type1.getUnderlyingType();
+      TypeMirror tm2 = type2.getUnderlyingType();
+      if (qualHierarchy.isSubtypeShallow(annos1, tm1, annos2, tm2)) {
         return 1;
       } else {
         return -1;

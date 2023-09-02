@@ -114,7 +114,8 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.36.1-SNAPSHOT'
+  // To make a snapshot release: ./gradlew publish
+  version '3.37.0-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -732,12 +733,10 @@ subprojects {
 
   shadowJar {
     // If you add an external dependency, then do the following:
-    // 1. Before adding the dependency, run ./gradlew assembleForJavac.
-    // 2. Copy checker/dist/checker.jar elsewhere.
-    // 3. Add the dependency, then run ./gradlew clean assembleForJavac.
-    // 4. Unzip both jars and compare the contents.
-    // 5. Add relocate lines below for the packages.
-    // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+    //  * On the master branch and on the modified branch, run:
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //  * Compare the files, and add relocate lines below.
+    //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
     relocate 'org.apache', 'org.checkerframework.org.apache'
@@ -750,6 +749,45 @@ subprojects {
     // relocate 'sun', 'org.checkerframework.sun'
     relocate 'com.google', 'org.checkerframework.com.google'
     relocate 'plume', 'org.checkerframework.plume'
+    // The JSR 305 jar file, which is used by Guava, illegally uses javax.annotation.
+    // We want to relocate only it -- nothing official that uses javax.annotation.
+    relocate('javax.annotation', 'org.checkerframework.javax.annotation') {
+      include 'javax.annotation.CheckForNull'
+      include 'javax.annotation.CheckForSigned'
+      include 'javax.annotation.CheckReturnValue'
+      include 'javax.annotation.concurrent.GuardedBy'
+      include 'javax.annotation.concurrent.Immutable'
+      include 'javax.annotation.concurrent.NotThreadSafe'
+      include 'javax.annotation.concurrent.ThreadSafe'
+      include 'javax.annotation.Detainted'
+      include 'javax.annotation.MatchesPattern$Checker'
+      include 'javax.annotation.MatchesPattern'
+      include 'javax.annotation.meta.Exclusive'
+      include 'javax.annotation.meta.Exhaustive'
+      include 'javax.annotation.meta.TypeQualifier'
+      include 'javax.annotation.meta.TypeQualifierDefault'
+      include 'javax.annotation.meta.TypeQualifierNickname'
+      include 'javax.annotation.meta.TypeQualifierValidator'
+      include 'javax.annotation.meta.When'
+      include 'javax.annotation.Nonnegative$Checker'
+      include 'javax.annotation.Nonnegative'
+      include 'javax.annotation.Nonnull$Checker'
+      include 'javax.annotation.Nonnull'
+      include 'javax.annotation.Nullable'
+      include 'javax.annotation.OverridingMethodsMustInvokeSuper'
+      include 'javax.annotation.ParametersAreNonnullByDefault'
+      include 'javax.annotation.ParametersAreNullableByDefault'
+      include 'javax.annotation.PropertyKey'
+      include 'javax.annotation.RegEx$Checker'
+      include 'javax.annotation.RegEx'
+      include 'javax.annotation.Signed'
+      include 'javax.annotation.Syntax'
+      include 'javax.annotation.Tainted'
+      include 'javax.annotation.Untainted'
+      include 'javax.annotation.WillClose'
+      include 'javax.annotation.WillCloseWhenClosed'
+      include 'javax.annotation.WillNotClose'
+    }
 
     exclude '**/module-info.class'
 

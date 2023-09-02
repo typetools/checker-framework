@@ -107,7 +107,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public FenumQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, FenumAnnotatedTypeFactory.this);
       this.FENUM_KIND =
           this.qualifierKindHierarchy.getQualifierKind(Fenum.class.getCanonicalName());
     }

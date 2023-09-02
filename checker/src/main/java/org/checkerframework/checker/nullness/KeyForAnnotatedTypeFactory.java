@@ -181,7 +181,8 @@ public class KeyForAnnotatedTypeFactory
 
   @Override
   protected QualifierHierarchy createQualifierHierarchy() {
-    return new SubtypeIsSupersetQualifierHierarchy(getSupportedTypeQualifiers(), processingEnv);
+    return new SubtypeIsSupersetQualifierHierarchy(
+        getSupportedTypeQualifiers(), processingEnv, KeyForAnnotatedTypeFactory.this);
   }
 
   /** Returns true if the node is an invocation of Map.containsKey. */

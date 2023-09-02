@@ -24,17 +24,14 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
     if (!TreeUtils.isStringConcatenation(tree)) {
-      // TODO: ignore string concatenations
-
       // The Fenum Checker is only concerned with primitive types, so just check that
       // the primary annotations are equivalent.
-      AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(tree.getLeftOperand());
-      AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(tree.getRightOperand());
+      AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(tree.getRightOperand());
 
-      AnnotationMirrorSet lhs = lhsAtm.getEffectiveAnnotations();
-      AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
-      if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-        checker.reportError(tree, "binary", lhsAtm, rhsAtm);
+      if (!(typeHierarchy.isSubtypeShallowEffective(lhs, rhs)
+          || typeHierarchy.isSubtypeShallowEffective(rhs, lhs))) {
+        checker.reportError(tree, "binary", lhs, rhs);
       }
     }
     return super.visitBinary(tree, p);

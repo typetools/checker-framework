@@ -1645,8 +1645,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * this default is too conservative. So this method is used instead of {@link
    * GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
    *
-   * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains why a
-   * different type is used.
+   * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, VariableTree)} explains
+   * why a different type is used.
    *
    * @param lhsTree left-hand side of an assignment
    * @return AnnotatedTypeMirror of {@code lhsTree}
@@ -2511,6 +2511,11 @@ public abstract class GenericAnnotatedTypeFactory<
               return true;
           }
         }
+        return false;
+
+      case EXECUTABLE:
+      case MODULE:
+      case PACKAGE:
         return false;
 
       default:

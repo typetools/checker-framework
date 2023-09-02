@@ -191,8 +191,12 @@ public class AnnotationFileElementTypes {
     parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.BUILTIN_STUB);
 
     // 5. Stub files provided via -Astubs command-line option
-    List<String> stubsOption = checker.getStringsOption("stubs", File.pathSeparator);
-    parseAnnotationFiles(stubsOption, AnnotationFileType.COMMAND_LINE_STUB);
+    String stubsOption = checker.getOption("stubs");
+    if (stubsOption != null) {
+      parseAnnotationFiles(
+          SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
+          AnnotationFileType.COMMAND_LINE_STUB);
+    }
 
     parsing = false;
   }
@@ -236,7 +240,9 @@ public class AnnotationFileElementTypes {
     parsing = true;
     try {
       // TODO: Error if this is called more than once?
-      List<String> ajavaFiles = factory.getChecker().getStringsOption("ajava", File.pathSeparator);
+      SourceChecker checker = factory.getChecker();
+      List<String> ajavaFiles = checker.getStringsOption("ajava", File.pathSeparator);
+      System.out.printf("ajavaFiles = %s%n", ajavaFiles);
       parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     } finally {
       parsing = false;

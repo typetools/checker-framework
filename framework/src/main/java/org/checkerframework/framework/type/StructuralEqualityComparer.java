@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -14,7 +15,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsPlume;
@@ -106,12 +106,22 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return areEqual;
   }
 
-  /** Return true if type1 and type2 have the same set of annotations. */
+  /**
+   * Return true if type1 and type2 have the same set of annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if type1 and type2 have the same set of annotations
+   */
   protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (currentTop != null) {
-      return AnnotationUtils.areSame(
-          type1.getPrimaryAnnotationInHierarchy(currentTop),
-          type2.getPrimaryAnnotationInHierarchy(currentTop));
+      AnnotationMirror anno1 = type1.getPrimaryAnnotationInHierarchy(currentTop);
+      AnnotationMirror anno2 = type2.getPrimaryAnnotationInHierarchy(currentTop);
+      TypeMirror typeMirror1 = type1.underlyingType;
+      TypeMirror typeMirror2 = type2.underlyingType;
+      QualifierHierarchy qh = type1.atypeFactory.getQualifierHierarchy();
+      return qh.isSubtypeShallow(anno1, typeMirror1, anno2, typeMirror2)
+          && qh.isSubtypeShallow(anno2, typeMirror2, anno1, typeMirror1);
     } else {
       throw new BugInCF("currentTop null");
     }
