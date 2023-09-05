@@ -300,6 +300,11 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      //  https://docs.gradle.org/6.7-rc-1/userguide/toolchains.html
+      javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(17)
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
@@ -769,6 +774,12 @@ subprojects {
   }
 
   java {
+    toolchain {
+      // TODO: Remove this
+      //  Run everything, except compilation, with JDK 21 just to see what happens.
+      // Build with Java 21
+      languageVersion = JavaLanguageVersion.of(21)
+    }
     withJavadocJar()
     withSourcesJar()
   }
