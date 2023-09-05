@@ -367,12 +367,7 @@ final class SupertypeFinder {
       for (AnnotatedTypeMirror t : adt.getTypeArguments()) {
         // If the type argument of super is the same as the input type
         if (atypeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
-          AnnotationMirrorSet bounds =
-              ((AnnotatedDeclaredType) atypeFactory.getAnnotatedType(dt.asElement()))
-                  .typeArgs
-                  .get(0)
-                  .getEffectiveAnnotations();
-          t.addAnnotations(bounds);
+          t.addAnnotations(type.primaryAnnotations);
         }
       }
       adt.addAnnotations(type.getPrimaryAnnotations());

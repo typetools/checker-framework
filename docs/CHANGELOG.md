@@ -1,5 +1,5 @@
-Version 3.37.1 (September 1, 2023)
------------------------------
+Version 3.38.1 (October 1, 2023)
+----------------------------------
 
 **User-visible changes:**
 
@@ -8,8 +8,25 @@ Version 3.37.1 (September 1, 2023)
 **Closed issues:**
 
 
+Version 3.38.0 (September 1, 2023)
+----------------------------------
+
+**User-visible changes:**
+
+Eliminated the `@SignedPositiveFromUnsigned` annotation, which users were
+advised against using.
+
+**Implementation details:**
+
+Renamed `SourceChecker.processArg()' to `processErrorMessageArg()`.
+
+**Closed issues:**
+
+#2156, #5672, #6110, #6111, #6116, #6125, #6129, #6136.
+
+
 Version 3.37.0 (August 1, 2023)
------------------------------
+-------------------------------
 
 **User-visible changes:**
 

@@ -8,7 +8,7 @@ package org.checkerframework.dataflow.cfg.builder;
  * <p>Note that this class is deliberately public, to enable users of the dataflow library to
  * customize CFG construction.
  */
-class Label {
+public class Label {
 
   /** Unique id counter that incremented in {@code #uniqueName}. */
   private static int uid = 0;
