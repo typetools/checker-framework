@@ -3,6 +3,9 @@ buildscript {
     throw new Error("The Checker Framework can't be built with Java 8.")
   }
 }
+plugins {
+  id 'org.gradle.toolchains.foojay-resolver-convention' version '0.4.0'
+}
 
 rootProject.name = 'checker-framework'
 include 'checker'
