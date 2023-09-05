@@ -1577,6 +1577,8 @@ public class AnnotationFileParser {
             atypeFactory.replaceAnnotations(typePar.getLowerBound(), typeVarUse.getLowerBound());
           }
         }
+        // Add back the primary annotations.
+        annotate(atype, primaryAnnotations, astNode);
         break;
       default:
         // No additional annotations to add.
