@@ -179,7 +179,7 @@ public class MustCallInferenceLogic {
         } else if (node instanceof ObjectCreationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
         } else if (node instanceof AssignmentNode) {
-          updateObligationsForAssignment(obligations, (AssignmentNode) node);
+          checkAssignment(obligations, (AssignmentNode) node);
         }
       }
 
@@ -233,9 +233,9 @@ public class MustCallInferenceLogic {
   /**
    * Given an index, adds an owning annotation to the parameter at the specified index.
    *
-   * @param index index of the current method's parameter
+   * @param index index of the current method's parameter (0-indexed)
    */
-  private void addOwningOnParams(int index) {
+  private void addOwningToParam(int index) {
     WholeProgramInference wpi = typeFactory.getWholeProgramInference();
     wpi.addDeclarationAnnotationToFormalParameter(methodElt, index, OWNING);
   }
@@ -267,22 +267,22 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Updates a set of obligations based on an assignment statement.
+   * Analyzes an assignment statement node and performs three computations:
    *
    * <ul>
    *   <li>If the left-hand side of the assignment is an owning field, and the rhs is an alias of a
-   *       formal parameter, adds the owning field.
-   *   <li>If the left-hand side of the assignment is a resource variable and the right-hand side is
-   *       a must-call-close method call, adds the owning resource to the method's parameters if its
-   *       alias is assigned to the resource variable.
-   *   <li>Otherwise, updates the obligations based on the assignment.
+   *       formal parameter, it adds the {@code @Owning} annotation to the formal parameter.
+   *   <li>If the left-hand side of the assignment is a resource variable, and the right-hand side
+   *       is a must-call-close method call, and an alias of a formal parameter, it adds the
+   *       {@code @Owning} annotation to the formal parameter.
+   *   <li>Otherwise, updates the set of tracked obligations to account for the (pseudo-)assignment
+   *       to some variable, as in a gen-kill dataflow analysis problem.
    * </ul>
    *
    * @param obligations the set of obligations to update
    * @param assignmentNode the assignment statement node
    */
-  private void updateObligationsForAssignment(
-      Set<Obligation> obligations, AssignmentNode assignmentNode) {
+  private void checkAssignment(Set<Obligation> obligations, AssignmentNode assignmentNode) {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
@@ -327,13 +327,13 @@ public class MustCallInferenceLogic {
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
-    for (ResourceAlias rl : rhsAliases) {
-      Element rhsElt = rl.reference.getElement();
+    for (ResourceAlias rhsAlias : rhsAliases) {
+      Element rhsElt = rhsAlias.reference.getElement();
       List<? extends VariableTree> params = methodTree.getParameters();
       for (int i = 0; i < params.size(); i++) {
         VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i));
         if (paramElt.equals(rhsElt)) {
-          addOwningOnParams(i);
+          addOwningToParam(i);
           mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
           break;
         }
@@ -346,6 +346,9 @@ public class MustCallInferenceLogic {
    * whose must-call obligation is satisfied within the current method.
    */
   private void addEnsuresCalledMethods() {
+    // This map is used to create @EnsuresCalledMethods annotation for fields with the same
+    // must-call obligation on the method boundary. The keys are the must-call method names, and
+    // the values are the set fields on which those methods are called
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement owningField : releasedFields) {
       List<String> mustCallValues = typeFactory.getMustCallValue(owningField);
@@ -357,6 +360,7 @@ public class MustCallInferenceLogic {
               + ") of "
               + owningField
               + "should be a singleton";
+      // The assumption is that the must-call set has only one element
       String key = mustCallValues.get(0);
       String value = "this." + owningField.getSimpleName().toString();
 
@@ -468,7 +472,7 @@ public class MustCallInferenceLogic {
 
         JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
         if (mustCallObligationSatisfied(invocation, paramElt, target)) {
-          addOwningOnParams(i);
+          addOwningToParam(i);
           break;
         }
       }
@@ -509,7 +513,7 @@ public class MustCallInferenceLogic {
         for (ResourceAlias rl : argAliases) {
           Element argAliasElt = rl.reference.getElement();
           if (argAliasElt.equals(paramElt)) {
-            addOwningOnParams(j);
+            addOwningToParam(j);
           }
         }
       }
@@ -616,7 +620,7 @@ public class MustCallInferenceLogic {
 
         JavaExpression target = JavaExpression.fromVariableTree(currentMethodParamTree);
         if (mustCallObligationSatisfied(invocation, currentMethodParamElt, target)) {
-          addOwningOnParams(i);
+          addOwningToParam(i);
           break;
         }
       }
