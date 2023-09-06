@@ -44,6 +44,7 @@ public class Typing extends TypeConstraint {
    */
   private final Kind kind;
 
+  /** Whether this constraint is for a covariant type argument. */
   private boolean isCovarTypeArg;
 
   /**
@@ -141,6 +142,7 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint. See JLS
    * 18.2.3.
    *
+   * @param context the context
    * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
@@ -198,6 +200,7 @@ public class Typing extends TypeConstraint {
    * Returns the result of reducing this constraint, assuming it is a subtyping constraint where
    * {@code T} is a class type. See JLS 18.2.3.
    *
+   * @param context the context
    * @return the result of reducing the constraint
    */
   private ReductionResult reduceSubtypeClass(Java8InferenceContext context) {
