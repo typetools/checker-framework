@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
@@ -566,14 +567,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       return true;
     }
 
-    TypeElement supertypeElem = (TypeElement) supertype.getUnderlyingType().asElement();
-    AnnotationMirror covariantAnno = typeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
-
-    List<Integer> covariantArgIndexes =
-        (covariantAnno == null)
-            ? null
-            : AnnotationUtils.getElementValueArray(
-                covariantAnno, covariantValueElement, Integer.class);
+    List<Integer> covariantArgIndexes = getCovariantArgIndexes(supertype);
 
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
     // 4th paragraph, bullet 2
@@ -599,6 +593,19 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
         capturedSubtypeAsSuper.getTypeArguments(), supertypeTypeArgs, covariantArgIndexes);
   }
 
+  @Override
+  public List<Integer> getCovariantArgIndexes(AnnotatedDeclaredType type) {
+    TypeElement supertypeElem = (TypeElement) type.getUnderlyingType().asElement();
+    AnnotationMirror covariantAnno =
+        type.atypeFactory.getDeclAnnotation(supertypeElem, Covariant.class);
+    if (covariantAnno == null) {
+      return Collections.emptyList();
+    }
+
+    return AnnotationUtils.getElementValueArray(
+        covariantAnno, covariantValueElement, Integer.class);
+  }
+
   /**
    * Calls {@link #isContainedBy(AnnotatedTypeMirror, AnnotatedTypeMirror, boolean)} on the two
    * lists of type arguments. Returns true if every type argument in {@code supertypeTypeArgs}
@@ -617,7 +624,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     for (int i = 0; i < supertypeTypeArgs.size(); i++) {
       AnnotatedTypeMirror superTypeArg = supertypeTypeArgs.get(i);
       AnnotatedTypeMirror subTypeArg = subtypeTypeArgs.get(i);
-      boolean covariant = covariantArgIndexes != null && covariantArgIndexes.contains(i);
+      boolean covariant = covariantArgIndexes.contains(i);
       if (!isContainedBy(subTypeArg, superTypeArg, covariant)) {
         return false;
       }

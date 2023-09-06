@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.InferenceType;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
@@ -43,6 +44,8 @@ public class Typing extends TypeConstraint {
    */
   private final Kind kind;
 
+  private boolean isCovarTypeArg;
+
   /**
    * Creates a typing constraint.
    *
@@ -51,6 +54,18 @@ public class Typing extends TypeConstraint {
    * @param kind the kind of constraint
    */
   public Typing(AbstractType S, AbstractType t, Kind kind) {
+    this(S, t, kind, false);
+  }
+
+  /**
+   * Creates a typing constraint.
+   *
+   * @param S left hand side type
+   * @param t right hand side type
+   * @param kind the kind of constraint
+   * @param covarTypeArg whether the constraint is for a covariant type argument
+   */
+  public Typing(AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
     super(t);
     assert S != null;
     switch (kind) {
@@ -64,6 +79,7 @@ public class Typing extends TypeConstraint {
     }
     this.S = S;
     this.kind = kind;
+    this.isCovarTypeArg = covarTypeArg;
   }
 
   /**
@@ -111,7 +127,7 @@ public class Typing extends TypeConstraint {
       case TYPE_COMPATIBILITY:
         return reduceCompatible();
       case SUBTYPE:
-        return reduceSubtyping();
+        return reduceSubtyping(context);
       case CONTAINED:
         return reduceContained();
       case TYPE_EQUALITY:
@@ -127,7 +143,7 @@ public class Typing extends TypeConstraint {
    *
    * @return the result of reducing the constraint
    */
-  private ReductionResult reduceSubtyping() {
+  private ReductionResult reduceSubtyping(Java8InferenceContext context) {
     if (S.isProper() && T.isProper()) {
       ReductionResult isSubtype = ((ProperType) S).isSubType((ProperType) T);
       if (isSubtype == ConstraintSet.TRUE) {
@@ -165,7 +181,7 @@ public class Typing extends TypeConstraint {
 
     switch (T.getTypeKind()) {
       case DECLARED:
-        return reduceSubtypeClass();
+        return reduceSubtypeClass(context);
       case ARRAY:
         return reduceSubtypeArray();
       case WILDCARD:
@@ -184,7 +200,7 @@ public class Typing extends TypeConstraint {
    *
    * @return the result of reducing the constraint
    */
-  private ReductionResult reduceSubtypeClass() {
+  private ReductionResult reduceSubtypeClass(Java8InferenceContext context) {
     if (T.isParameterizedType()) {
       // let A1, ..., An be the type arguments of T. Among the supertypes of S, a
       // corresponding class or interface type is identified, with type arguments B1, ...,
@@ -201,10 +217,18 @@ public class Typing extends TypeConstraint {
 
       List<AbstractType> Bs = sAsSuper.getTypeArguments();
       Iterator<AbstractType> As = T.getTypeArguments().iterator();
+      List<Integer> covariantArgIndexes =
+          context
+              .typeFactory
+              .getTypeHierarchy()
+              .getCovariantArgIndexes((AnnotatedDeclaredType) T.getAnnotatedType());
       ConstraintSet set = new ConstraintSet();
+      int index = 0;
       for (AbstractType b : Bs) {
         AbstractType a = As.next();
-        set.add(new Typing(b, a, Kind.CONTAINED));
+        boolean convarArg = covariantArgIndexes.contains(index);
+        set.add(new Typing(b, a, Kind.CONTAINED, convarArg));
+        index++;
       }
 
       return set;
@@ -273,6 +297,9 @@ public class Typing extends TypeConstraint {
   private ReductionResult reduceContained() {
     if (T.getTypeKind() != TypeKind.WILDCARD) {
       if (S.getTypeKind() != TypeKind.WILDCARD) {
+        if (isCovarTypeArg) {
+          return new Typing(S, T, Kind.SUBTYPE);
+        }
         return new Typing(S, T, Kind.TYPE_EQUALITY);
       } else {
         return ConstraintSet.FALSE;
