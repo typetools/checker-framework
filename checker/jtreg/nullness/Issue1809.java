@@ -32,6 +32,7 @@ abstract class Issue1809 {
 
   interface S {}
 
+  @SuppressWarnings("nullness")
   private Stream<A> xrefsFor(B b) {
     return concat(b.g().stream().flatMap(a -> a.h().stream().map(c -> f())))
         .filter(Optional::isPresent)
