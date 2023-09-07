@@ -432,6 +432,14 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
     return super.isSubtypeShallow(subQualifier, subType, superQualifier, superType);
   }
 
+  @Override
+  public @Nullable AnnotationMirror leastUpperBoundShallow(
+      AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+    qualifier1 = atypeFactory.convertSpecialIntRangeToStandardIntRange(qualifier1, tm1);
+    qualifier2 = atypeFactory.convertSpecialIntRangeToStandardIntRange(qualifier2, tm2);
+    return super.leastUpperBoundShallow(qualifier1, tm1, qualifier2, tm2);
+  }
+
   /**
    * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
    * annotations are Value. In this case, subAnno is a subtype of superAnno iff superAnno contains
