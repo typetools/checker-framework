@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.value.util.Range;
@@ -417,6 +418,18 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
     // In all other cases, the LUB is UnknownVal.
     return atypeFactory.UNKNOWNVAL;
+  }
+
+  @Override
+  public boolean isSubtypeShallow(
+      AnnotationMirror subQualifier,
+      TypeMirror subType,
+      AnnotationMirror superQualifier,
+      TypeMirror superType) {
+    subQualifier = atypeFactory.convertSpecialIntRangeToStandardIntRange(subQualifier, subType);
+    superQualifier =
+        atypeFactory.convertSpecialIntRangeToStandardIntRange(superQualifier, superType);
+    return super.isSubtypeShallow(subQualifier, subType, superQualifier, superType);
   }
 
   /**
