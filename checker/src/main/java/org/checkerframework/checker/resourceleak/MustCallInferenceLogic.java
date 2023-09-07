@@ -213,8 +213,8 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Returns all owning fields of the enclosing class that have been inferred to be owning, in the
-   * current or any previous iteration.
+   * Returns all fields within the enclosing class that have been either inferred as owning or
+   * annotated with the {@code @Owning} annotation.
    *
    * @return the owning fields
    */
@@ -350,21 +350,21 @@ public class MustCallInferenceLogic {
     // must-call obligation on the method boundary. The keys are the must-call method names, and
     // the values are the set fields on which those methods are called
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
-    for (VariableElement owningField : releasedFields) {
-      List<String> mustCallValues = typeFactory.getMustCallValue(owningField);
+    for (VariableElement releasedField : releasedFields) {
+      List<String> mustCallValues = typeFactory.getMustCallValue(releasedField);
       assert !mustCallValues.isEmpty()
-          : "Must-call obligation of owning field " + owningField + " is deleted.";
+          : "Must-call obligation of owning field " + releasedField + " is deleted.";
       assert mustCallValues.size() == 1
           : "The must-call set ("
               + mustCallValues
               + ") of "
-              + owningField
+              + releasedField
               + "should be a singleton";
       // The assumption is that the must-call set has only one element
-      String key = mustCallValues.get(0);
-      String value = "this." + owningField.getSimpleName().toString();
+      String mustCallValue = mustCallValues.get(0);
+      String fieldName = "this." + releasedField.getSimpleName().toString();
 
-      methodToFields.computeIfAbsent(key, k -> new HashSet<>()).add(value);
+      methodToFields.computeIfAbsent(mustCallValue, k -> new HashSet<>()).add(fieldName);
     }
 
     for (String mustCallValue : methodToFields.keySet()) {
@@ -404,7 +404,8 @@ public class MustCallInferenceLogic {
         }
       }
       // Add the current @MustCall annotation to guarantee the termination property. This is
-      // necessary when there are multiple candidates for the must-call obligation.
+      // necessary to avoid overwriting @MustCall annotations on the class declaration when there
+      // are multiple methods that could fulfill the must-call obligation.
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
       wpi.addClassDeclarationAnnotation(typeElement, am);
       return;
@@ -413,6 +414,8 @@ public class MustCallInferenceLogic {
     // If the current method is not private and satisfies the must-call obligation of all owning
     // fields, add an InheritableMustCall annotation with the name of this method.
     if (!methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
+      // Since the result of getOwningFields() is a superset of releasedFields, it is sufficient to
+      // check the equality of their sizes to determine if both sets are equal.
       if (!releasedFields.isEmpty() && releasedFields.size() == getOwningFields().size()) {
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
@@ -428,12 +431,10 @@ public class MustCallInferenceLogic {
    *
    * @param obligations the obligations associated with the current code block
    * @param invocation the method invocation node to check
-   * @param paramsOfCurrentMethod the parameters of the current method
    */
   private void addOwningReceiverFromMethodCall(
-      Set<Obligation> obligations,
-      MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfCurrentMethod) {
+      Set<Obligation> obligations, MethodInvocationNode invocation) {
+    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
 
     Node receiver = invocation.getTarget().getReceiver();
     if (receiver.getTree() == null) {
@@ -485,12 +486,10 @@ public class MustCallInferenceLogic {
    *
    * @param obligations the obligations associated with the current code block
    * @param invocation a method invocation node that appears in the current method
-   * @param paramsOfCurrentMethod the parameters of the current method
    */
   private void addOwningParamsFromMethodCall(
-      Set<Obligation> obligations,
-      MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfCurrentMethod) {
+      Set<Obligation> obligations, MethodInvocationNode invocation) {
+    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
     if (paramsOfCurrentMethod.isEmpty()) {
       return;
     }
@@ -527,12 +526,9 @@ public class MustCallInferenceLogic {
    *
    * @param obligations Set of obligations associated with the current code block
    * @param invocation a method invocation node to check
-   * @param paramsOfCurrentMethod the parameters of the current method
    */
-  private void checkIndirectCalls(
-      Set<Obligation> obligations,
-      MethodInvocationNode invocation,
-      List<? extends VariableTree> paramsOfCurrentMethod) {
+  private void checkIndirectCalls(Set<Obligation> obligations, MethodInvocationNode invocation) {
+    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
 
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
     List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(invocation);
@@ -578,15 +574,15 @@ public class MustCallInferenceLogic {
       ArrayCreationNode varArgsNode,
       Set<ResourceAlias> argAliases) {
 
-    for (Node argNode : varArgsNode.getInitializers()) {
-      Element varArgElt = TreeUtils.elementFromTree(argNode.getTree());
+    for (Node varArgNode : varArgsNode.getInitializers()) {
+      Element varArgElt = TreeUtils.elementFromTree(varArgNode.getTree());
 
       if (varArgElt == null) {
         continue;
       }
 
       if (varArgElt.getKind().isField()) {
-        inferOwningField(argNode, invocation);
+        inferOwningField(varArgNode, invocation);
       } else {
         checkCalledMethodsSetForArgAliases(paramsOfCurrentMethod, invocation, argAliases);
       }
@@ -672,10 +668,9 @@ public class MustCallInferenceLogic {
    */
   private void checkMethodInvocation(Set<Obligation> obligations, MethodInvocationNode invocation) {
     if (methodElt != null) {
-      List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
-      addOwningParamsFromMethodCall(obligations, invocation, paramsOfCurrentMethod);
-      addOwningReceiverFromMethodCall(obligations, invocation, paramsOfCurrentMethod);
-      checkIndirectCalls(obligations, invocation, paramsOfCurrentMethod);
+      addOwningParamsFromMethodCall(obligations, invocation);
+      addOwningReceiverFromMethodCall(obligations, invocation);
+      checkIndirectCalls(obligations, invocation);
     }
   }
 
