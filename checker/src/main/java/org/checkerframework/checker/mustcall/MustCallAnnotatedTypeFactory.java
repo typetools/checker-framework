@@ -453,6 +453,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return type.getKind().isPrimitive() || TypesUtils.isClass(type) || TypesUtils.isString(type);
   }
 
+  /** Qualifier hierarchy for the Must Call Checker. */
   class MustCallQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
 
     /**
