@@ -180,6 +180,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param smaller the first value to compare
    * @param bigger the second value to compare
+   * @param path used to parse expressions strings
    * @return {@code smaller < bigger}, using information from the Value Checker
    */
   public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
