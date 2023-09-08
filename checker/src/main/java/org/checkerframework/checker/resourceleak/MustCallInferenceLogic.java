@@ -463,7 +463,8 @@ public class MustCallInferenceLogic {
 
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
+      VariableTree paramVarTree = paramsOfCurrentMethod.get(i);
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramVarTree);
 
       for (ResourceAlias resourceAlias : receiverAliases) {
         Element resourceElt = resourceAlias.reference.getElement();
@@ -471,8 +472,8 @@ public class MustCallInferenceLogic {
           continue;
         }
 
-        JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
-        if (mustCallObligationSatisfied(invocation, paramElt, target)) {
+        JavaExpression paramJe = JavaExpression.fromVariableTree(paramVarTree);
+        if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
           addOwningToParam(i);
           break;
         }
@@ -509,10 +510,11 @@ public class MustCallInferenceLogic {
       Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, arg);
       for (int j = 0; j < paramsOfCurrentMethod.size(); j++) {
         VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(j));
-        for (ResourceAlias rl : argAliases) {
-          Element argAliasElt = rl.reference.getElement();
+        for (ResourceAlias argAlias : argAliases) {
+          Element argAliasElt = argAlias.reference.getElement();
           if (argAliasElt.equals(paramElt)) {
             addOwningToParam(j);
+            break;
           }
         }
       }
@@ -566,7 +568,8 @@ public class MustCallInferenceLogic {
    * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param varArgsNode the VarArg node of the given method invocation node
-   * @param argAliases the resource aliases associated with the argument node
+   * @param argAliases the resource aliases associated with the argument passed in the given {@code
+   *     invocation}
    */
   private void checkCalledMethodsSetForVarArgs(
       List<? extends VariableTree> paramsOfCurrentMethod,
@@ -596,7 +599,8 @@ public class MustCallInferenceLogic {
    *
    * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation a method invocation within the current method
-   * @param argAliases the set of resource aliases associated with the argument node
+   * @param argAliases the set of resource aliases associated with the argument passed in the given
+   *     {@code invocation}
    */
   private void checkCalledMethodsSetForArgAliases(
       List<? extends VariableTree> paramsOfCurrentMethod,
@@ -606,16 +610,16 @@ public class MustCallInferenceLogic {
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
 
       VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
-      for (ResourceAlias rl : argAliases) {
-        Element argAliasElt = rl.reference.getElement();
+      for (ResourceAlias argAlias : argAliases) {
+        Element argAliasElt = argAlias.reference.getElement();
         VariableElement currentMethodParamElt =
             TreeUtils.elementFromDeclaration(currentMethodParamTree);
         if (!argAliasElt.equals(currentMethodParamElt)) {
           continue;
         }
 
-        JavaExpression target = JavaExpression.fromVariableTree(currentMethodParamTree);
-        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, target)) {
+        JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
+        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
           addOwningToParam(i);
           break;
         }
@@ -681,12 +685,12 @@ public class MustCallInferenceLogic {
    *
    * @param invocation the method invocation node being checked for satisfaction of the MustCall
    *     obligation
-   * @param varElt the variable annotated with the MustCall annotation
-   * @param target the target of the MustCall obligation
+   * @param varElt a variable whose must-call obligation is being evaluated
+   * @param varExpr a Java expression whose its must-call obligation is being evaluated
    * @return {@code true} if the MustCall obligation is satisfied
    */
   private boolean mustCallObligationSatisfied(
-      MethodInvocationNode invocation, Element varElt, JavaExpression target) {
+      MethodInvocationNode invocation, Element varElt, JavaExpression varExpr) {
 
     List<String> mustCallValues = typeFactory.getMustCallValue(varElt);
     if (mustCallValues.size() != 1) {
@@ -696,19 +700,21 @@ public class MustCallInferenceLogic {
 
     AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(invocation);
     @Nullable AccumulationValue cmValue =
-        cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
+        cmStoreAfter == null ? null : cmStoreAfter.getValue(varExpr);
     AnnotationMirror cmAnno = null;
 
     if (cmValue != null) {
       // The store contains the lhs.
       Set<String> accumulatedValues = cmValue.getAccumulatedValues();
-      if (accumulatedValues != null) { // type variable or wildcard type
+      if (accumulatedValues != null) {
+        // accumulatedValues is not null if the underlying type is a type variable or a wildcard
         cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
       } else {
         for (AnnotationMirror anno : cmValue.getAnnotations()) {
           if (AnnotationUtils.areSameByName(
               anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
             cmAnno = anno;
+            break;
           }
         }
       }
