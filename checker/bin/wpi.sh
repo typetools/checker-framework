@@ -307,6 +307,11 @@ stdout is in      $dljc_stdout"
 
 #### Check and setup dependencies
 
+# Proposed changes
+# - If the DLJC environment variable is not set:
+#   - Check if the script is being executed from the binary distribution
+#   - If so, means there isn't going to be gradle or the getPlumeScripts deps.
+
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
