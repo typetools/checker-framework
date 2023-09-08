@@ -4,7 +4,7 @@ plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
   id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.4.0'
+  id 'de.undercouch.download' version '5.5.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
@@ -42,7 +42,7 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.3"
+  stubparserVersion = "3.25.5"
   stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -115,7 +115,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.37.1-SNAPSHOT'
+  version '3.38.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
