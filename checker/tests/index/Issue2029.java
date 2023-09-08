@@ -20,6 +20,7 @@ public class Issue2029 {
       @NonNegative @LessThan("#3 + 1") int index) {
     @NonNegative int m = n - k;
     int[] arr = new int[size];
+    // :: error: (unary.increment)
     for (; index < arr.length - 1; index++) {
       arr[index] = 10;
     }
