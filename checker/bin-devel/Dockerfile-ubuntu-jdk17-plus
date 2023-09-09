@@ -5,8 +5,6 @@
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
-## Keep this file in sync with ../../docs/manual/troubleshooting.tex
-
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
 #  * Put "apt-get update" and "apt-get install" and "apt cleanup" in the same RUN command.

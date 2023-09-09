@@ -1,13 +1,15 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
-# including building the manual and Javadoc, using JDK 20.
+# including building the manual and Javadoc, using JDK 21.
 # (This is OpenJDK, not Oracle JDK.  There are different instructions for
 # installing a LTS release of Java.)
 # To convert this file to use a newer JDK, search (from the top level of the
-# Checker Framework and Annotation Tools repositories) for: (java|jdk).?20
+# Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 FROM ubuntu:rolling
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
+
+## Keep this file in sync with ../../docs/manual/troubleshooting.tex
 
 # According to
 # https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/:
@@ -20,14 +22,10 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && aptitude -y install \
   apt-utils
 
-# ca-certificates-java is a dependency of openjdk-20-jdk, but the installation
-# process seems to fail sometimes when only openjdk-20-jdk is specified.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
-  ca-certificates-java \
-&& aptitude -y install \
-  openjdk-20-jdk
+  openjdk-21-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
