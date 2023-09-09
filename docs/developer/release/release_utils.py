@@ -277,8 +277,8 @@ def commit_tag_and_push(version, path, tag_prefix):
 
 
 def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, bareflag):
-    """If the clone_from_scratch flag is True, clone the given git or
-    Mercurial repo from scratch into the filesystem path specified by dst_repo,
+    """If the clone_from_scratch flag is True, clone the given git
+    repo from scratch into the filesystem path specified by dst_repo,
     deleting it first if the repo is present on the filesystem.
     Otherwise, if a repo exists at the filesystem path given by dst_repo, pull
     the latest changes to it and update it. If the repo does not exist, clone it
@@ -294,7 +294,7 @@ def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, barefla
 
 
 def delete_and_clone(src_repo, dst_repo, bareflag):
-    """Clone the given git or Mercurial repo from scratch into the filesystem
+    """Clone the given git repo from scratch into the filesystem
     path specified by dst_repo. If a repo exists at the filesystem path given
     by dst_repo, delete it first. The bareflag parameter indicates whether
     the cloned repo must be a bare git repo."""
@@ -303,7 +303,7 @@ def delete_and_clone(src_repo, dst_repo, bareflag):
 
 
 def clone(src_repo, dst_repo, bareflag):
-    """Clone the given git or Mercurial repo from scratch into the filesystem
+    """Clone the given git repo from scratch into the filesystem
     path specified by dst_repo. The bareflag parameter indicates whether the
     cloned repo must be a bare git repo."""
     flags = ""
