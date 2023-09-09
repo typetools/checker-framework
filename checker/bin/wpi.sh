@@ -310,11 +310,6 @@ stdout is in      $dljc_stdout"
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && ./gradlew --stacktrace getDoLikeJavac)
-  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-      echo "Failed to clone do-like-javac"
-      exit 1
-  fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
   # The user did set the DLJC environment variable.
