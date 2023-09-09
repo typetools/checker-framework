@@ -307,19 +307,20 @@ stdout is in      $dljc_stdout"
 
 #### Check and setup dependencies
 
-# Proposed changes
-# - If the DLJC environment variable is not set:
-#   - Check if the script is being executed from the binary distribution
-#   - If so, means there isn't going to be gradle or the getPlumeScripts deps.
-
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
-  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-      echo "Failed to clone do-like-javac"
-      exit 1
+  if [ ! -f "${CHECKERFRAMEWORK}/gradlew" ]; then
+      # The user is likely executing wpi.sh from a binary distribution of the
+      # Checker Framework. 
+      echo "Fix me: clone do-like-javac"
+  else
+      (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
+      "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
+      if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+          echo "Failed to clone do-like-javac"
+          exit 1
+      fi
   fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
