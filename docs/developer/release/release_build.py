@@ -287,6 +287,8 @@ def build_checker_framework_release(
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
     gradle_cmd = "./gradlew assembleForJavac"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
+    gradle_cmd = "./gradlew getDoLikeJavac"
+    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
@@ -309,7 +311,10 @@ def build_checker_framework_release(
         cfZipName,
         version,
     )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+
+    # IMPORTANT: The release.xml in the directory where the Checker Framework
+    # is being built is used. Not the release.xml in the directory you ran
+    # release_build.py from.
     ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
