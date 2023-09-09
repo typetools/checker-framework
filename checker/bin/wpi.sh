@@ -324,10 +324,10 @@ if [ "${DLJC}" = "" ]; then
       # version of the Checker Framework.
       (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
       "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-      if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-          echo "Failed to clone do-like-javac"
-          exit 1
-      fi
+  fi
+  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+      echo "Failed to clone do-like-javac"
+      exit 1
   fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
