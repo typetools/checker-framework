@@ -312,9 +312,14 @@ if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
   if [ ! -f "${CHECKERFRAMEWORK}/gradlew" ]; then
       # The user is likely executing wpi.sh from a binary distribution of the
-      # Checker Framework. 
-      echo "Fix me: clone do-like-javac"
+      # Checker Framework.
+      if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
+        (cd "${SCRIPTDIR}" && (git clone -b master -q --single-branch --depth 1 "https://github.com/plume-lib/plume-scripts.git"))
+        "${SCRIPTDIR}"/plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
+      fi
   else
+      # Otherwise, assume the user is executing wpi.sh from a locally-built
+      # version of the Checker Framework.
       (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
       "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
       if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
