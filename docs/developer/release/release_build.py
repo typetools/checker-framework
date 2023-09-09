@@ -311,7 +311,6 @@ def build_checker_framework_release(
         cfZipName,
         version,
     )
-
     # IMPORTANT: The release.xml in the directory where the Checker Framework
     # is being built is used. Not the release.xml in the directory you ran
     # release_build.py from.
