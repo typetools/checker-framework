@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.afu.scenelib.util.JVMNames;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
@@ -57,6 +58,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -309,7 +311,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     }
 
     int numArguments = arguments.size();
-    for (int i = 1; i <= numArguments; i++) {
+    for (int i = 0; i < numArguments; i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
@@ -379,7 +381,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       // If storage.getParameterAnnotations receives an index that's larger than the size
       // of the parameter list, scenes-backed inference can create duplicate entries
       // for the varargs parameter (it indexes inferred annotations by the parameter number).
-      int paramIndex = varargsParam ? methodElt.getParameters().size() : i;
+      int paramIndex = varargsParam ? methodElt.getParameters().size() : i + 1;
       T paramAnnotations =
           storage.getParameterAnnotations(methodElt, paramIndex, paramATM, ve, atypeFactory);
       if (this.atypeFactory instanceof GenericAnnotatedTypeFactory) {
@@ -553,13 +555,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     String file = storage.getFileForElement(methodElt);
 
     int numParams = overriddenMethod.getParameterTypes().size();
-    for (int i = 1; i <= numParams; i++) {
-      VariableElement ve = methodElt.getParameters().get(i);
+    for (int index = 0; index < numParams; index++) {
+      VariableElement ve = methodElt.getParameters().get(index);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(index);
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
-          storage.getParameterAnnotations(methodElt, i, paramATM, ve, atypeFactory);
+          storage.getParameterAnnotations(methodElt, index, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
@@ -599,8 +601,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     ExecutableElement methodElt = (ExecutableElement) paramElt.getEnclosingElement();
 
-    int i = methodElt.getParameters().indexOf(paramElt) + 1;
-    if (i == 0) {
+    int index = methodElt.getParameters().indexOf(paramElt) + 1;
+    if (index == 0) {
       // When paramElt is the parameter of a lambda contained in another
       // method body, the enclosing element is the outer method body
       // rather than the lambda itself (which has no element). WPI
@@ -620,7 +622,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
     atypeFactory.wpiAdjustForUpdateNonField(argATM);
     T paramAnnotations =
-        storage.getParameterAnnotations(methodElt, i, paramATM, paramElt, atypeFactory);
+        storage.getParameterAnnotations(methodElt, index, paramATM, paramElt, atypeFactory);
     String file = storage.getFileForElement(methodElt);
     updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
   }
@@ -907,14 +909,18 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
   @Override
   public void addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+      ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno) {
+    if (index_1based == 0) {
+      throw new TypeSystemError(
+          "0 is illegal as index argument to addDeclarationAnnotationToFormalParameter");
+    }
     if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return;
     }
 
     String file = storage.getFileForElement(methodElt);
     boolean isNewAnnotation =
-        storage.addDeclarationAnnotationToFormalParameter(methodElt, index, anno);
+        storage.addDeclarationAnnotationToFormalParameter(methodElt, index_1based, anno);
     if (isNewAnnotation) {
       storage.setFileModified(file);
     }

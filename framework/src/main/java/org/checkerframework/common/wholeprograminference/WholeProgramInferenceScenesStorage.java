@@ -50,6 +50,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
@@ -232,14 +233,17 @@ public class WholeProgramInferenceScenesStorage
   @Override
   public ATypeElement getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      int index_1based,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
+    if (index_1based == 0) {
+      throw new TypeSystemError("0 is illegal as index argument to getParameterAnnotations");
+    }
     AMethod methodAnnos = getMethodAnnos(methodElt);
     AField param =
         methodAnnos.vivifyAndAddTypeMirrorToParameter(
-            i, paramATM.getUnderlyingType(), ve.getSimpleName());
+            index_1based, paramATM.getUnderlyingType(), ve.getSimpleName());
     return param.type;
   }
 
@@ -416,15 +420,19 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public boolean addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index, AnnotationMirror anno) {
+      ExecutableElement methodElt, int index_1based, AnnotationMirror anno) {
+    if (index_1based == 0) {
+      throw new TypeSystemError(
+          "0 is illegal as index argument to addDeclarationAnnotationToFormalParameter");
+    }
     if (!ElementUtils.isElementFromSourceCode(methodElt)) {
       return false;
     }
 
-    VariableElement paramElt = methodElt.getParameters().get(index);
+    VariableElement paramElt = methodElt.getParameters().get(index_1based - 1);
     AnnotatedTypeMirror paramAType = atypeFactory.getAnnotatedType(paramElt);
     ATypeElement paramAnnos =
-        getParameterAnnotations(methodElt, index, paramAType, paramElt, atypeFactory);
+        getParameterAnnotations(methodElt, index_1based, paramAType, paramElt, atypeFactory);
     Annotation sceneAnno = AnnotationConverter.annotationMirrorToAnnotation(anno);
 
     boolean isNewAnnotation = paramAnnos.tlAnnotationsHere.add(sceneAnno);

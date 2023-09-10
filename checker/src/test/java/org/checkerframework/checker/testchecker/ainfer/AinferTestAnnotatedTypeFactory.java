@@ -160,10 +160,10 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (wpi != null) {
         ExecutableElement execElt = TreeUtils.elementFromDeclaration(methodTree);
         int numParams = execElt.getParameters().size();
-        for (int i = 1; i <= numParams; ++i) {
+        for (int i = 0; i < numParams; ++i) {
           VariableElement param = execElt.getParameters().get(i);
           if (param.getSimpleName().contentEquals("iShouldBeTreatedAsSibling1")) {
-            wpi.addDeclarationAnnotationToFormalParameter(execElt, i, TREAT_AS_SIBLING1);
+            wpi.addDeclarationAnnotationToFormalParameter(execElt, i + 1, TREAT_AS_SIBLING1);
           }
         }
       }

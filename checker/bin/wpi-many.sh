@@ -266,7 +266,12 @@ do
       echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
       wpi_status=$?
-      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} in $(pwd) at $(date)"
+      if [[ $wpi_status -eq 0 ]]; then
+        wpi_status_string="success"
+      else
+        wpi_status_string="faulure"
+      fi
+      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} (${wpi_status_string}) in $(pwd) at $(date)"
       # The test of $wpi_status below may halt wpi-many.sh.
       if [ "$DEBUG" -eq "1" ]; then
           echo "Listing of $(pwd):"

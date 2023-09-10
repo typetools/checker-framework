@@ -10,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -225,11 +226,11 @@ public interface WholeProgramInference {
    * Adds a declaration annotation to a formal parameter.
    *
    * @param methodElt the method whose formal parameter will be annotated
-   * @param index the index of the parameter (1-indexed)
+   * @param index_1based the index of the parameter (1-indexed)
    * @param anno the annotation to add
    */
   void addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index, AnnotationMirror anno);
+      ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno);
 
   /**
    * Adds an annotation to a class declaration.
