@@ -555,13 +555,13 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     String file = storage.getFileForElement(methodElt);
 
     int numParams = overriddenMethod.getParameterTypes().size();
-    for (int index = 0; index < numParams; index++) {
-      VariableElement ve = methodElt.getParameters().get(index);
+    for (int i = 0; i < numParams; i++) {
+      VariableElement ve = methodElt.getParameters().get(i);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
-      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(index);
+      AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
       atypeFactory.wpiAdjustForUpdateNonField(argATM);
       T paramAnnotations =
-          storage.getParameterAnnotations(methodElt, index, paramATM, ve, atypeFactory);
+          storage.getParameterAnnotations(methodElt, i + 1, paramATM, ve, atypeFactory);
       updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
     }
 
@@ -601,8 +601,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     ExecutableElement methodElt = (ExecutableElement) paramElt.getEnclosingElement();
 
-    int index = methodElt.getParameters().indexOf(paramElt) + 1;
-    if (index == 0) {
+    int index_1based = methodElt.getParameters().indexOf(paramElt) + 1;
+    if (index_1based == 0) {
       // When paramElt is the parameter of a lambda contained in another
       // method body, the enclosing element is the outer method body
       // rather than the lambda itself (which has no element). WPI
@@ -622,7 +622,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
     AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(rhsTree);
     atypeFactory.wpiAdjustForUpdateNonField(argATM);
     T paramAnnotations =
-        storage.getParameterAnnotations(methodElt, index, paramATM, paramElt, atypeFactory);
+        storage.getParameterAnnotations(methodElt, index_1based, paramATM, paramElt, atypeFactory);
     String file = storage.getFileForElement(methodElt);
     updateAnnotationSet(paramAnnotations, TypeUseLocation.PARAMETER, argATM, paramATM, file);
   }
