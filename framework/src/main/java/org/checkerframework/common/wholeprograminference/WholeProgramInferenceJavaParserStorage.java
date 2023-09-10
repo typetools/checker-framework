@@ -1499,7 +1499,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Adds a declaration annotation to this parameter and returns whether it was a new annotation.
      *
      * @param annotation the declaration annotation to add
-     * @param index index of the parameter (0-indexed)
+     * @param index index of the parameter (1-indexed)
      * @return true if {@code annotation} wasn't previously stored for this parameter
      */
     public boolean addDeclarationAnnotationToFormalParameter(

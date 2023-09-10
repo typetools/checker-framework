@@ -225,7 +225,7 @@ public interface WholeProgramInference {
    * Adds a declaration annotation to a formal parameter.
    *
    * @param methodElt the method whose formal parameter will be annotated
-   * @param index the index of the parameter (0-indexed)
+   * @param index the index of the parameter (1-indexed)
    * @param anno the annotation to add
    */
   void addDeclarationAnnotationToFormalParameter(
