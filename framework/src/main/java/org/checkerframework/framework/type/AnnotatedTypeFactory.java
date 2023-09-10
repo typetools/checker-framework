@@ -320,14 +320,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Caches the supported type qualifier classes. Call {@link #getSupportedTypeQualifiers()} instead
    * of using this field directly, as it may not have been initialized.
    */
-  private final Set<Class<? extends Annotation>> supportedQuals;
+  private @MonotonicNonNull Set<Class<? extends Annotation>> supportedQuals = null;
 
   /**
    * Caches the fully-qualified names of the classes in {@link #supportedQuals}. Call {@link
    * #getSupportedTypeQualifierNames()} instead of using this field directly, as it may not have
    * been initialized.
    */
-  private final Set<@CanonicalName String> supportedQualNames;
+  private @MonotonicNonNull Set<@CanonicalName String> supportedQualNames = null;
 
   /** Parses stub files and stores annotations on public elements from stub files. */
   public final AnnotationFileElementTypes stubTypes;
@@ -567,8 +567,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.elements = processingEnv.getElementUtils();
     this.types = processingEnv.getTypeUtils();
 
-    this.supportedQuals = new HashSet<>();
-    this.supportedQualNames = new HashSet<>();
     this.stubTypes = new AnnotationFileElementTypes(this);
     this.ajavaTypes = new AnnotationFileElementTypes(this);
     this.currentFileAjavaTypes = null;
@@ -709,14 +707,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Requires that supportedQuals is non-empty and each element is a type qualifier. That is, no
-   * element has a {@code @Target} meta-annotation that contains something besides TYPE_USE or
-   * TYPE_PARAMETER. (@Target({}) is allowed.) @
+   * Requires that supportedQuals is non-null and non-empty and each element is a type qualifier.
+   * That is, no element has a {@code @Target} meta-annotation that contains something besides
+   * TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed.) @
    *
    * @throws BugInCF If supportedQuals is empty or contaions a non-type qualifier
    */
   private void checkSupportedQualsAreTypeQuals() {
-    if (supportedQuals.isEmpty()) {
+    if (supportedQuals == null || supportedQuals.isEmpty()) {
       throw new TypeSystemError("Found no supported qualifiers.");
     }
     for (Class<? extends Annotation> annotationClass : supportedQuals) {
@@ -1242,11 +1240,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     supported
    */
   public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-    if (this.supportedQuals.isEmpty()) {
-      supportedQuals.addAll(createSupportedTypeQualifiers());
+    if (this.supportedQuals == null) {
+      supportedQuals = createSupportedTypeQualifiers();
       checkSupportedQualsAreTypeQuals();
     }
-    return Collections.unmodifiableSet(supportedQuals);
+    return supportedQuals;
   }
 
   /**
@@ -1261,12 +1259,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *     supported
    */
   public final Set<@CanonicalName String> getSupportedTypeQualifierNames() {
-    if (this.supportedQualNames.isEmpty()) {
+    if (this.supportedQualNames == null) {
+      supportedQualNames = new HashSet<>();
       for (Class<?> clazz : getSupportedTypeQualifiers()) {
         supportedQualNames.add(clazz.getCanonicalName());
       }
+      supportedQualNames = Collections.unmodifiableSet(supportedQualNames);
     }
-    return Collections.unmodifiableSet(supportedQualNames);
+    return supportedQualNames;
   }
 
   // **********************************************************************
@@ -2772,7 +2772,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Reset the enclosing type because it can be substituted incorrectly.
       ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
     }
+    if (ctor.getEnclosingElement().getKind() == ElementKind.ENUM) {
+      Set<AnnotationMirror> enumAnnos = getEnumConstructorQualifiers();
+      con.getReturnType().replaceAnnotations(enumAnnos);
+    }
     return new ParameterizedExecutableType(con, typeargs);
+  }
+
+  /**
+   * Returns the annotations that should be applied to enum constructors. This implementation
+   * returns an empty set. Subclasses can override to return a different set.
+   *
+   * @return the annotations that should be applied to enum constructors
+   */
+  protected Set<AnnotationMirror> getEnumConstructorQualifiers() {
+    return Collections.emptySet();
   }
 
   /**
@@ -3292,9 +3306,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   // **********************************************************************
 
   /**
-   * Determines whether the given annotation is a part of the type system under which this type
-   * factory operates. Null is never a supported qualifier; the parameter is nullable to allow the
-   * result of canonicalAnnotation to be passed in directly.
+   * Returns true if the given annotation is a part of the type system under which this type factory
+   * operates. Null is never a supported qualifier; the parameter is nullable to allow the result of
+   * canonicalAnnotation to be passed in directly.
    *
    * @param a any annotation
    * @return true if that annotation is part of the type system under which this type factory
@@ -3309,7 +3323,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class is a part of the type system under which this type factory
+   * Returns true if the given class is a part of the type system under which this type factory
    * operates.
    *
    * @param clazz annotation class
@@ -3321,8 +3335,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Determines whether the given class name is a part of the type system under which this type
-   * factory operates.
+   * Returns true if the given class name is a part of the type system under which this type factory
+   * operates.
    *
    * @param className fully-qualified annotation class name
    * @return true if that class name is a type qualifier in the type system under which this type

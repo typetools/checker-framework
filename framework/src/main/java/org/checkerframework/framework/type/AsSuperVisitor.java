@@ -6,6 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -629,7 +630,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitTypevar_Wildcard(
       AnnotatedTypeVariable type, AnnotatedWildcardType superType, Void p) {
-    AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getExtendsBound(), p);
+    AnnotatedTypeMirror upperBound;
+    if (superType.getExtendsBound().getUnderlyingType().getKind() == TypeKind.TYPEVAR
+        && TypesUtils.areSame(
+            type.getUnderlyingType(),
+            (TypeVariable) superType.getExtendsBound().getUnderlyingType())) {
+      upperBound = visit(type, superType.getExtendsBound(), p);
+    } else {
+      upperBound = visit(type.getUpperBound(), superType.getExtendsBound(), p);
+    }
     superType.setExtendsBound(upperBound);
 
     AnnotatedTypeMirror lowerBound;

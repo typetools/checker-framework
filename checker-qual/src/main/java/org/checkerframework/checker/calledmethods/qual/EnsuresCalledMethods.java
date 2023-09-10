@@ -12,7 +12,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
 
 /**
  * Indicates that the method, if it terminates successfully, always invokes the given methods on the
- * given expressions. This annotation is repeatable.
+ * given expressions. This annotation is repeatable, which means that users can write more than one
+ * instance of it on the same method (users should NOT manually write an
+ * {@code @EnsuresCalledMethods.List} annotation, which the checker will create from multiple copies
+ * of this annotation automatically).
  *
  * <p>Consider the following method:
  *
@@ -60,10 +63,10 @@ public @interface EnsuresCalledMethods {
   String[] methods();
 
   /**
-   * A wrapper annotation that makes the {@link EnsuresCalledMethods} annotation repeatable.
-   *
-   * <p>Programmers generally do not need to write this. It is created by Java when a programmer
-   * writes more than one {@link EnsuresCalledMethods} annotation at the same location.
+   * A wrapper annotation that makes the {@link EnsuresCalledMethods} annotation repeatable. This
+   * annotation is an implementation detail: programmers generally do not need to write this. It is
+   * created automatically by Java when a programmer writes more than one {@link
+   * EnsuresCalledMethods} annotation at the same location.
    */
   @Documented
   @Retention(RetentionPolicy.RUNTIME)

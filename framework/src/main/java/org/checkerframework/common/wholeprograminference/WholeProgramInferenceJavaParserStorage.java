@@ -750,13 +750,13 @@ public class WholeProgramInferenceJavaParserStorage
               className = ElementUtils.getBinaryName(classElt);
               for (TypeElement supertypeElement : ElementUtils.getSuperTypes(classElt, elements)) {
                 String supertypeName = ElementUtils.getBinaryName(supertypeElement);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> supertypeSet =
-                    supertypesMap.computeIfAbsent(className, k -> new TreeSet<>());
+                Set<@BinaryName String> supertypeSet =
+                    supertypesMap.computeIfAbsent(
+                        className, k -> new TreeSet<@BinaryName String>());
                 supertypeSet.add(supertypeName);
-                @SuppressWarnings({"signature:assignment", "signature:return"}) // #979?
-                Set<String> subtypeSet =
-                    subtypesMap.computeIfAbsent(supertypeName, k -> new TreeSet<>());
+                Set<@BinaryName String> subtypeSet =
+                    subtypesMap.computeIfAbsent(
+                        supertypeName, k -> new TreeSet<@BinaryName String>());
                 subtypeSet.add(className);
               }
             }
@@ -1499,7 +1499,7 @@ public class WholeProgramInferenceJavaParserStorage
      * Adds a declaration annotation to this parameter and returns whether it was a new annotation.
      *
      * @param annotation the declaration annotation to add
-     * @param index index of the parameter
+     * @param index index of the parameter (0-indexed)
      * @return true if {@code annotation} wasn't previously stored for this parameter
      */
     public boolean addDeclarationAnnotationToFormalParameter(

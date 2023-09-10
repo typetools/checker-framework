@@ -189,12 +189,18 @@ Disabling a test case
 
 Write @skip-test anywhere in a test file to disable that test.
 
-Write @below-java9-jdk-skip-test anywhere in a test file to disable that
-test if the executing JDK version is lower than 9.
-This is useful when the test depends on Java 9 language features that
-need runtime support or depends on Java 9 APIs.
-Tests that only exercise the static type annotation API do not need
-this marker.
+Write @below-java17-jdk-skip-test anywhere in a test file to disable that
+test if the executing JDK version is lower than 17.
+This is useful when the test depends on Java 17 language features that
+need runtime support or depends on Java 17 APIs. If the test contains a record,
+then it must also be in a directory named java17 so that it is only formatting
+when using JDK 17.
+
+Write @infer-ajava-skip-test, @infer-jaifs-skip-test, or @infer-stubs-skip-test
+to skip running inference using a particular output format on a test. If you
+want to run inference on the test case but not validate the results of
+inference, then delete the test file in the inference Gradle task that tests
+it.
 
 To disable all tests for a given type system, annotate the JUnit test class
 with @Ignore.

@@ -4,7 +4,7 @@ plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
   id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.4.0'
+  id 'de.undercouch.download' version '5.5.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.19.0'
+  id 'com.diffplug.spotless' version '6.21.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -42,7 +42,7 @@ ext {
   afu = "${annotationTools}/annotation-file-utilities"
 
   stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.3"
+  stubparserVersion = "3.25.5"
   stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
@@ -55,12 +55,12 @@ ext {
   localRepo = '.git'
 
   versions = [
-    autoValue       : '1.10.2',
+    autoValue       : '1.10.3',
     lombok          : '1.18.28',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
-    errorprone : '2.20.0',
+    errorprone : '2.21.1',
   ]
 }
 
@@ -115,7 +115,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.37.0-SNAPSHOT'
+  version '3.38.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -188,6 +188,7 @@ allprojects {
     // add them to the spotlessPredeclare block.
 
     def doNotFormat = [
+      'checker/bin-devel/.plume-scripts/**',
       'checker/tests/ainfer-*/annotated/*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
