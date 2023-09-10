@@ -1,4 +1,3 @@
-warning: [options] system modules path not set in conjunction with -source 11
 BcelUtil.java:766: error: [argument] incompatible argument for parameter typename of ClassnameAndDimensions.parseFqBinaryName.
         Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
                                                             ^
