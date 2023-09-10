@@ -1735,7 +1735,7 @@ public class WholeProgramInferenceJavaParserStorage
 
       if (paramsDeclAnnos != null) {
         for (IPair<Integer, AnnotationMirror> pair : paramsDeclAnnos) {
-          Parameter param = declaration.getParameter(pair.first);
+          Parameter param = declaration.getParameter(pair.first - 1);
           param.addAnnotation(
               AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(
                   pair.second));

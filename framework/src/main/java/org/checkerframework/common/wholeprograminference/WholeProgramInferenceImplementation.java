@@ -333,10 +333,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
         return;
       }
+      List<? extends VariableElement> params = methodElt.getParameters();
       if (varargsParam) {
-        ve = methodElt.getParameters().get(methodElt.getParameters().size());
+        ve = params.get(params.size() - 1);
       } else {
-        ve = methodElt.getParameters().get(i);
+        ve = params.get(i);
       }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
