@@ -40,8 +40,6 @@ else
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
        (sleep 1m && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)))
 fi
-## TODO: reinstate "-q" command-line argument
-(cd "$CHECKERFRAMEWORK" && ./gradlew getDoLikeJavac)
 
 # Clone the annotated JDK into ../jdk .
 "$PLUME_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
@@ -97,5 +95,7 @@ echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
 
 echo "running \"./gradlew assemble\" for checker-framework"
 ./gradlew assemble --console=plain --warning-mode=all -s -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+
+(cd "$CHECKERFRAMEWORK" && ./gradlew getDoLikeJavac -q)
 
 echo Exiting checker/bin-devel/build.sh in "$(pwd)"
