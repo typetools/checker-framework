@@ -58,7 +58,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 70
   steps:
   - checkout: self
@@ -91,7 +91,7 @@ jobs:
    - canary_jobs
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -143,7 +143,7 @@ jobs:
    - inference_part2_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 90
   steps:
   - checkout: self
@@ -178,7 +178,7 @@ jobs:
    - misc_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-plus-testing:latest
+  container: mdernst/cf-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -223,7 +223,7 @@ jobs:
    - typecheck_part2_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-plus-testing:latest
+  container: mdernst/cf-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
     fetchDepth: 1000
@@ -274,7 +274,7 @@ jobs:
    - daikon_part2_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 80
   steps:
   - checkout: self
@@ -317,7 +317,7 @@ jobs:
    - guava_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   timeoutInMinutes: 60
   steps:
   - checkout: self
@@ -353,7 +353,7 @@ jobs:
    - plume_lib_jdk17
   pool:
     vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk20-testing:latest
+  container: mdernst/cf-ubuntu-jdk20:latest
   steps:
   - checkout: self
     fetchDepth: 25
@@ -389,7 +389,7 @@ jobs:
 #    - downstream_jdk17
 #   pool:
 #     vmImage: 'ubuntu-latest'
-#   container: mdernst/cf-ubuntu-jdk20-testing:latest
+#   container: mdernst/cf-ubuntu-jdk20:latest
 #   steps:
 #   - checkout: self
 #     fetchDepth: 25
