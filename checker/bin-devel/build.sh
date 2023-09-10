@@ -40,6 +40,7 @@ else
       (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
        (sleep 1m && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)))
 fi
+(cd "$CHECKERFRAMEWORK" && ./gradlew getDoLikeJavac -q)
 
 # Clone the annotated JDK into ../jdk .
 "$PLUME_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
