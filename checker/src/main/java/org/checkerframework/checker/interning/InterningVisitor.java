@@ -913,7 +913,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Determines whether or not the given element overrides the named method in the named class.
+   * Returns true if the given element overrides the named method in the named class.
    *
    * @param e an element for a method
    * @param clazz the class

@@ -1,5 +1,32 @@
-Version 3.37.0 (July ?, 2023)
------------------------------
+Version 3.38.1 (October 1, 2023)
+----------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.38.0 (September 1, 2023)
+----------------------------------
+
+**User-visible changes:**
+
+Eliminated the `@SignedPositiveFromUnsigned` annotation, which users were
+advised against using.
+
+**Implementation details:**
+
+Renamed `SourceChecker.processArg()' to `processErrorMessageArg()`.
+
+**Closed issues:**
+
+#2156, #5672, #6110, #6111, #6116, #6125, #6129, #6136.
+
+
+Version 3.37.0 (August 1, 2023)
+-------------------------------
 
 **User-visible changes:**
 
@@ -21,6 +48,8 @@ to be written on a non-integral type.
  * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 **Closed issues:**
+
+#6076, #6077, #6078, #6098, #6100, #6104, #6113.
 
 
 Version 3.36.0 (July 3, 2023)

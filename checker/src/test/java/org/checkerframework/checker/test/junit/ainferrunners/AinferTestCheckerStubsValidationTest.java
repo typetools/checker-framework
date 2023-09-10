@@ -28,7 +28,7 @@ public class AinferTestCheckerStubsValidationTest extends AinferValidatePerDirec
         // "-AstubDebug",
         "-AmergeStubsWithSource",
         "-Awarns",
-        "-AskipDefs=TestPure|MyRecord");
+        "-AskipDefs=TestPure");
   }
 
   @Parameters

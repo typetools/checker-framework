@@ -160,6 +160,7 @@ jobs:
   container: mdernst/cf-ubuntu-jdk11-plus:latest
   steps:
   - checkout: self
+    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk17
@@ -168,6 +169,7 @@ jobs:
   container: mdernst/cf-ubuntu-jdk17-plus:latest
   steps:
   - checkout: self
+    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: misc_jdk20
@@ -179,6 +181,7 @@ jobs:
   container: mdernst/cf-ubuntu-jdk20-plus:latest
   steps:
   - checkout: self
+    fetchDepth: 25
   - bash: ./checker/bin-devel/test-misc.sh
     displayName: test-misc.sh
 - job: typecheck_jdk11

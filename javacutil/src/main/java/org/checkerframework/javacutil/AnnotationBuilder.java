@@ -185,6 +185,7 @@ public class AnnotationBuilder {
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
                   + ReflectionPlume.classpathToString();
+      new Error("Backtrace:").printStackTrace();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
