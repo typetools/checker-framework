@@ -247,7 +247,6 @@ public class AnnotationFileElementTypes {
       if (ajavaOption != null) {
         Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
       }
-      System.out.printf("ajavaFiles = %s%n", ajavaFiles);
       parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     } finally {
       parsing = false;
