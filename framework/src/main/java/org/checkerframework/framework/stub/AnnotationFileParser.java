@@ -733,9 +733,8 @@ public class AnnotationFileParser {
    */
   private void parseStubUnit(InputStream inputStream) {
     stubDebug(
-        String.format(
-            "started parsing annotation file %s for %s",
-            filename, atypeFactory.getClass().getSimpleName()));
+        "started parsing annotation file %s for %s",
+        filename, atypeFactory.getClass().getSimpleName());
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
@@ -756,9 +755,8 @@ public class AnnotationFileParser {
 
     if (debugAnnotationFileParser) {
       stubDebug(
-          String.format(
-              "finished parsing annotation file %s for %s",
-              filename, atypeFactory.getClass().getSimpleName()));
+          "finished parsing annotation file %s for %s",
+          filename, atypeFactory.getClass().getSimpleName());
     }
   }
 
