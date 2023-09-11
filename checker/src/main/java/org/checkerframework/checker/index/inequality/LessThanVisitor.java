@@ -80,7 +80,7 @@ public class LessThanVisitor extends BaseTypeVisitor<LessThanAnnotatedTypeFactor
         getTypeFactory()
             .getLessThanExpressions(
                 varType.getEffectiveAnnotationInHierarchy(atypeFactory.LESS_THAN_UNKNOWN));
-    if (expressions != null && !expressions.isEmpty()) {
+    if (expressions != null) {
       boolean isLessThan = true;
       for (String expression : expressions) {
         if (!atypeFactory.isLessThanByValue(valueTree, expression, getCurrentPath())) {
