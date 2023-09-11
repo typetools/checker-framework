@@ -2571,7 +2571,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
-    logBug(ce, "The Checker Framework crashed.  Please report the crash.");
+    logBug(
+        ce,
+        "The Checker Framework crashed.  Please report the crash.  Version: Checker Framework "
+            + getCheckerVersion()
+            + ".");
   }
 
   /**
