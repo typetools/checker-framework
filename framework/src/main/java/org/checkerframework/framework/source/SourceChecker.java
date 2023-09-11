@@ -2620,23 +2620,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             msg.add(line);
           }
         }
-      }
-    }
 
-    if (ce.getCause() != null) {
-      msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-      boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-      Throwable cause = ce.getCause().getCause();
-      while (cause != null) {
-        msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-        printClasspath |= cause instanceof NoClassDefFoundError;
-        cause = cause.getCause();
-      }
+        Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;
+        if (forStackTrace != null) {
+          msg.add(
+              "Exception: " + forStackTrace + "; " + UtilPlume.stackTraceToString(forStackTrace));
+          boolean printClasspath = forStackTrace instanceof NoClassDefFoundError;
+          Throwable cause = forStackTrace.getCause();
+          while (cause != null) {
+            msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+            printClasspath |= cause instanceof NoClassDefFoundError;
+            cause = cause.getCause();
+          }
 
-      if (printClasspath) {
-        msg.add("Classpath:");
-        for (URI uri : new ClassGraph().getClasspathURIs()) {
-          msg.add(uri.toString());
+          if (printClasspath) {
+            msg.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              msg.add(uri.toString());
+            }
+          }
         }
       }
     }
