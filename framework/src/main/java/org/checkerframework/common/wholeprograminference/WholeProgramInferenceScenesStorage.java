@@ -243,7 +243,7 @@ public class WholeProgramInferenceScenesStorage
     AMethod methodAnnos = getMethodAnnos(methodElt);
     AField param =
         methodAnnos.vivifyAndAddTypeMirrorToParameter(
-            index_1based, paramATM.getUnderlyingType(), ve.getSimpleName());
+            index_1based - 1, paramATM.getUnderlyingType(), ve.getSimpleName());
     return param.type;
   }
 
