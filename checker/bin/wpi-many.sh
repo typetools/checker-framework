@@ -287,14 +287,18 @@ do
         ls -al "$(pwd)"
         echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
-        echo "Listing of ${REPO_FULLPATH}/dljc-out:"
-        ls -al "${REPO_FULLPATH}"/dljc-out
-        for f in "${REPO_FULLPATH}"/dljc-out/* ; do
-            echo "==== start of tail of ${f} ===="
-            tail -n 2000 "${f}"
-            sleep 1
-            echo "==== end of tail of ${f} ===="
-        done
+        if [ -d "${REPO_FULLPATH}/dljc-out" ] ; then
+            echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+            ls -al "${REPO_FULLPATH}"/dljc-out
+            for f in "${REPO_FULLPATH}"/dljc-out/* ; do
+                echo "==== start of tail of ${f} ===="
+                tail -n 2000 "${f}"
+                sleep 1
+                echo "==== end of tail of ${f} ===="
+            done
+        else
+            echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
+        fi
 
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can

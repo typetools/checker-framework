@@ -239,6 +239,7 @@ function configure_and_exec_dljc {
 
   # Remove old DLJC output.
   rm -rf dljc-out
+  mkdir -p "${DIR}/dljc-out/"
 
   # Ensure the project is clean before invoking DLJC.
   DLJC_CLEAN_STATUS=0
@@ -248,7 +249,8 @@ function configure_and_exec_dljc {
     echo "${WPI_RESULTS_AVAILABLE}"
     echo "Re-running clean command."
     # Cleaning failed.  Re-run without piping output to /dev/null.
-    eval "${CLEAN_CMD}" < /dev/null || true
+    (eval "${CLEAN_CMD}" < /dev/null | tee -a "${DIR}/dljc-out/clean-output") || true
+    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}\n$(cat "${DIR}/dljc-out/clean-output")"
     return
   fi
 
