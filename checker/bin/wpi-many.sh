@@ -269,7 +269,7 @@ do
       if [[ $wpi_status -eq 0 ]]; then
         wpi_status_string="success"
       else
-        wpi_status_string="faulure"
+        wpi_status_string="failure"
       fi
       echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} (${wpi_status_string}) in $(pwd) at $(date)"
       # The test of $wpi_status below may halt wpi-many.sh.
