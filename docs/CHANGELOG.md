@@ -1,9 +1,11 @@
-Version 3.38.1 (October 1, 2023)
+Version 3.39.0 (October 1, 2023)
 ----------------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+WPI uses 1-based indexing for formal parameters and arguments.
 
 **Closed issues:**
 
