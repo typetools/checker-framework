@@ -449,6 +449,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return superPair;
   }
 
+  @Override
+  public AnnotationMirrorSet getWidenedAnnotations(
+      AnnotationMirrorSet annos, TypeKind typeKind, TypeKind widenedTypeKind) {
+    return AnnotationMirrorSet.singleton(
+        convertSpecialIntRangeToStandardIntRange(annos.first(), typeKind));
+  }
+
   /**
    * Finds the appropriate value for the {@code from} value of an annotated type mirror containing
    * an {@code IntRange} annotation.
@@ -626,6 +633,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
    *
    * @param anm any annotation mirror
+   * @param primitiveKind a primitive TypeKind
+   * @return the int range annotation is that equivalent to {@code anm}, or {@code anm} if one
+   *     doesn't exist
+   */
+  /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
+      AnnotationMirror anm, TypeKind primitiveKind) {
+    long max = Long.MAX_VALUE;
+    if (TypesUtils.isIntegralPrimitive(primitiveKind)) {
+      Range maxRange = Range.create(primitiveKind);
+      max = maxRange.to;
+    }
+    return convertSpecialIntRangeToStandardIntRange(anm, max);
+  }
+
+  /**
+   * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
+   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+   *
+   * @param anm any annotation mirror
    * @param typeMirror the Java type on which {@code anm} is written
    * @return the int range annotation is that equivalent to {@code anm}, or {@code anm} if one
    *     doesn't exist
@@ -640,13 +666,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     } else {
       primitiveKind = TypeKind.LONG;
     }
-    Range maxRange;
+
     if (TypesUtils.isIntegralPrimitiveOrBoxed(typeMirror)) {
-      maxRange = Range.create(primitiveKind);
+      Range maxRange = Range.create(primitiveKind);
+      return convertSpecialIntRangeToStandardIntRange(anm, maxRange.to);
+
     } else {
-      maxRange = Range.LONG_EVERYTHING;
+      return convertSpecialIntRangeToStandardIntRange(anm, Long.MAX_VALUE);
     }
-    return convertSpecialIntRangeToStandardIntRange(anm, maxRange.to);
   }
 
   /**

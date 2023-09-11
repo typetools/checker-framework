@@ -444,7 +444,7 @@ public abstract class QualifierHierarchy {
    * @param tm2 the type on which qualifiers2 appear
    * @return the least upper bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> leastUpperBoundsShallow(
+  public final Set<? extends AnnotationMirror> leastUpperBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
       TypeMirror tm1,
       Collection<? extends AnnotationMirror> qualifiers2,
@@ -608,7 +608,7 @@ public abstract class QualifierHierarchy {
    * @param tm2 the type that is annotated by qualifier2
    * @return the greatest lower bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
+  public final Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
       TypeMirror tm1,
       Collection<? extends AnnotationMirror> qualifiers2,
