@@ -249,8 +249,10 @@ function configure_and_exec_dljc {
     echo "${WPI_RESULTS_AVAILABLE}"
     echo "Re-running clean command."
     # Cleaning failed.  Re-run without piping output to /dev/null.
+    echo "${CLEAN_CMD}" > "${DIR}/dljc-out/clean-output"
     (eval "${CLEAN_CMD}" < /dev/null | tee -a "${DIR}/dljc-out/clean-output") || true
-    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}\n$(cat "${DIR}/dljc-out/clean-output")"
+    ls -al "${DIR}/dljc-out"
+    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"$(cat "${DIR}/dljc-out/clean-output")"
     return
   fi
 
