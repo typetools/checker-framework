@@ -232,14 +232,14 @@ public class WholeProgramInferenceScenesStorage
   @Override
   public ATypeElement getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      int index,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
     AField param =
         methodAnnos.vivifyAndAddTypeMirrorToParameter(
-            i, paramATM.getUnderlyingType(), ve.getSimpleName());
+            index, paramATM.getUnderlyingType(), ve.getSimpleName());
     return param.type;
   }
 

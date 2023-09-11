@@ -308,7 +308,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
       }
     }
 
-    for (int i = 0; i < arguments.size(); i++) {
+    int numArguments = arguments.size();
+    for (int i = 0; i < numArguments; i++) {
       Node arg = arguments.get(i);
       Tree argTree = arg.getTree();
 
@@ -330,10 +331,11 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         }
         return;
       }
+      List<? extends VariableElement> params = methodElt.getParameters();
       if (varargsParam) {
-        ve = methodElt.getParameters().get(methodElt.getParameters().size() - 1);
+        ve = params.get(params.size() - 1);
       } else {
-        ve = methodElt.getParameters().get(i);
+        ve = params.get(i);
       }
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = atypeFactory.getAnnotatedType(argTree);
@@ -551,7 +553,8 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     String file = storage.getFileForElement(methodElt);
 
-    for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
+    int numParams = overriddenMethod.getParameterTypes().size();
+    for (int i = 0; i < numParams; i++) {
       VariableElement ve = methodElt.getParameters().get(i);
       AnnotatedTypeMirror paramATM = atypeFactory.getAnnotatedType(ve);
       AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
