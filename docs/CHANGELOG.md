@@ -1,4 +1,4 @@
-Version 3.38.1 (October 1, 2023)
+Version 3.39.0 (October 1, 2023)
 --------------------------------
 
 **User-visible changes:**
@@ -6,6 +6,8 @@ Version 3.38.1 (October 1, 2023)
 The Checker Framework runs under JDK 21 -- that is, it runs on a version 21 JVM.
 
 **Implementation details:**
+
+WPI uses 1-based indexing for formal parameters and arguments.
 
 **Closed issues:**
 
