@@ -233,7 +233,7 @@ public class WholeProgramInferenceScenesStorage
   @Override
   public ATypeElement getParameterAnnotations(
       ExecutableElement methodElt,
-      int index_1based,
+      @Positive int index_1based,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
@@ -420,7 +420,7 @@ public class WholeProgramInferenceScenesStorage
 
   @Override
   public boolean addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index_1based, AnnotationMirror anno) {
+      ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno) {
     if (index_1based == 0) {
       throw new TypeSystemError(
           "0 is illegal as index argument to addDeclarationAnnotationToFormalParameter");
