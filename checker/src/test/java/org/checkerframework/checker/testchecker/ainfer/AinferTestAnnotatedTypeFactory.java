@@ -163,7 +163,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (int i = 0; i < numParams; ++i) {
           VariableElement param = execElt.getParameters().get(i);
           if (param.getSimpleName().contentEquals("iShouldBeTreatedAsSibling1")) {
-            wpi.addDeclarationAnnotationToFormalParameter(execElt, i, TREAT_AS_SIBLING1);
+            wpi.addDeclarationAnnotationToFormalParameter(execElt, i + 1, TREAT_AS_SIBLING1);
           }
         }
       }
