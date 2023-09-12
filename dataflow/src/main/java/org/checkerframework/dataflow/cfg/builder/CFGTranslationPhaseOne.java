@@ -2560,20 +2560,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             // It's an enumerated type.
             List<VariableElement> enumConstants =
                 ElementUtils.getEnumConstants(declaredTypeElement);
-            List<@Nullable Name> caseLabels = new ArrayList<>(enumConstants.size());
+            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
             for (CaseTree caseTree : caseTrees) {
               for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
-                if (caseEnumConstant.getKind() == Kind.NULL_LITERAL) {
-                  caseLabels.add(null);
-                } else {
+                if (caseEnumConstant.getKind() != Kind.NULL_LITERAL) {
                   caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
                 }
               }
             }
             // Could also check that the values match.
-            boolean result =
-                (enumConstants.size() == caseLabels.size()
-                    || enumConstants.size() == caseLabels.size() - 1);
+            boolean result = enumConstants.size() == caseLabels.size();
             return result;
           }
           break;
