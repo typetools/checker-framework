@@ -613,7 +613,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
-   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just returned.
    *
    * @param anm any annotation mirror
    * @return the int range annotation is that equivalent to {@code anm}, or {@code anm} if one
@@ -626,7 +626,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
-   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just returned.
    *
    * @param anm any annotation mirror
    * @param primitiveKind a primitive TypeKind
@@ -645,7 +645,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
-   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just returned.
    *
    * @param anm any annotation mirror
    * @param typeMirror the Java type on which {@code anm} is written
@@ -674,7 +674,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Converts {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, or {@link
-   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just return.
+   * IntRangeFromGTENegativeOne} to {@link IntRange}. Any other annotation is just returned.
    *
    * @param anm any annotation mirror
    * @param max the max value to use
