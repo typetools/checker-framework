@@ -114,6 +114,7 @@ import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.SystemPlume;
 
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
@@ -3042,9 +3043,13 @@ public class AnnotationFileParser {
     if (debugAnnotationFileParser) {
       String warning = String.format(fmt, args);
       if (warnings.add(warning)) {
+        System.out.flush();
+        SystemPlume.sleep(1);
         processingEnv
             .getMessager()
             .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+        System.out.flush();
+        SystemPlume.sleep(1);
       }
     }
   }
@@ -3062,9 +3067,13 @@ public class AnnotationFileParser {
       ProcessingEnvironment processingEnv, String fmt, Object... args) {
     String warning = String.format(fmt, args);
     if (warnings.add(warning)) {
+      System.out.flush();
+      SystemPlume.sleep(1);
       processingEnv
           .getMessager()
           .printMessage(javax.tools.Diagnostic.Kind.NOTE, "AnnotationFileParser: " + warning);
+      System.out.flush();
+      SystemPlume.sleep(1);
     }
   }
 

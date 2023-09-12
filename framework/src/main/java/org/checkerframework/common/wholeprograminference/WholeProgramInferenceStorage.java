@@ -53,7 +53,7 @@ public interface WholeProgramInferenceStorage<T> {
    * Get the annotations for a formal parameter type.
    *
    * @param methodElt the method or constructor Element
-   * @param i the parameter index (0-based)
+   * @param index the parameter index (0-based)
    * @param paramATM the parameter type
    * @param ve the parameter variable
    * @param atypeFactory the type factory
@@ -61,7 +61,7 @@ public interface WholeProgramInferenceStorage<T> {
    */
   public T getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      int index,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory);

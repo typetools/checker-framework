@@ -305,7 +305,7 @@ public class WholeProgramInferenceJavaParserStorage
   @Override
   public AnnotatedTypeMirror getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      int index,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory) {
@@ -318,7 +318,7 @@ public class WholeProgramInferenceJavaParserStorage
       // because even if WPI inferred something, it couldn't be printed.
       return paramATM;
     }
-    return methodAnnos.getParameterTypeInitialized(paramATM, i, atypeFactory);
+    return methodAnnos.getParameterTypeInitialized(paramATM, index, atypeFactory);
   }
 
   @Override
@@ -1459,7 +1459,7 @@ public class WholeProgramInferenceJavaParserStorage
      *     {@code AnnotatedTypeMirror} the first time it's accessed
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
-     * @param index index of the parameter to return the inferred annotations of
+     * @param index index of the parameter to return the inferred annotations of (0-based)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
      *     at the given index
      */
