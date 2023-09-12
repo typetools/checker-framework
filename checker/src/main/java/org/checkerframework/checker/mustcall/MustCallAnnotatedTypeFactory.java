@@ -449,7 +449,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param type the type to check
    * @return true if the given type should never have a must-call obligation
    */
-  public boolean noMustCallObligation(TypeMirror type) {
+  public boolean shouldHaveNoMustCallObligation(TypeMirror type) {
     return type.getKind().isPrimitive() || TypesUtils.isClass(type) || TypesUtils.isString(type);
   }
 
@@ -476,7 +476,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         TypeMirror subType,
         AnnotationMirror superQualifier,
         TypeMirror superType) {
-      if (noMustCallObligation(subType) || noMustCallObligation(superType)) {
+      if (shouldHaveNoMustCallObligation(subType) || shouldHaveNoMustCallObligation(superType)) {
         return true;
       }
       return super.isSubtypeShallow(subQualifier, subType, superQualifier, superType);
@@ -485,8 +485,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public @Nullable AnnotationMirror leastUpperBoundShallow(
         AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
-      boolean tm1NoMustCall = noMustCallObligation(tm1);
-      boolean tm2NoMustCall = noMustCallObligation(tm2);
+      boolean tm1NoMustCall = shouldHaveNoMustCallObligation(tm1);
+      boolean tm2NoMustCall = shouldHaveNoMustCallObligation(tm2);
       if (tm1NoMustCall == tm2NoMustCall) {
         return super.leastUpperBoundShallow(qualifier1, tm1, qualifier2, tm2);
       } else if (tm1NoMustCall) {
