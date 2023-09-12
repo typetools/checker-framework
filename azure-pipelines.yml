@@ -14,6 +14,7 @@ jobs:
 #  * Everything depends on the canary jobs (the main jdk21 jobs), except those jobs themselves.
 #  * Anything *_jdk11 or *_jdk17 or *_jdk20 depends on *_jdk21.
 ## TODO: The jdk20 jobs are a bit gratuitous.  They are placeholders for jdk22 when it is released.
+## Leaving those placeholders will ease the jdk22 edits to this file.
 
 # misc_jdk20 because JDK 20 adds more strict checking (e.g., Javadoc)
 - job: canary_jobs
