@@ -29,6 +29,7 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.JVMNames;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
