@@ -131,8 +131,8 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
-    echo "JAVA21_HOME is set to a non-existent directory ${JAVA21_HOME}"
+if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA20_HOME}" ]; then
+    echo "JAVA20_HOME is set to a non-existent directory ${JAVA20_HOME}"
     exit 1
 fi
 
