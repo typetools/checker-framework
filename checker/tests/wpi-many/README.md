@@ -6,7 +6,11 @@ The projects listed in `testin.txt` are derived from plume-lib projects; each is
 These forks have had their (inferrable) annotations removed, and their typical checker
 build infrastructure disabled. The `./gradlew wpiManyTest` task defined in `checker/build.gradle`
 runs the `wpi-many.sh` script on these projects, and then checks that they typecheck afterwards.
+
 The use of a hard fork means these tests may fail to compile under newer versions of the JDK.
+When a new Java version is released, the projects may need to be updated and a new SHA commit
+put in the `testin.txt` file.
+TODO: List the required steps, such as using a newer version of Gradle.
 
 To add a new project (named `$PROJECT` below) to `testin.txt`, follow these steps:
 1. Create a new GitHub repository under your own user name with the name "wpi-many-tests-$PROJECT".
