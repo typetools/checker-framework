@@ -713,11 +713,13 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
-    stubDebugStatic(
-        processingEnv,
-        "parseJdkFileAsStub(%s, _, %s, _, _)%n",
-        filename,
-        atypeFactory.getClass().getSimpleName());
+    if (debugAnnotationFileParser) {
+      stubDebugStatic(
+          processingEnv,
+          "parseJdkFileAsStub(%s, _, %s, _, _)%n",
+          filename,
+          atypeFactory.getClass().getSimpleName());
+    }
     parseStubFile(
         filename, inputStream, atypeFactory, processingEnv, stubAnnos, AnnotationFileType.JDK_STUB);
   }
