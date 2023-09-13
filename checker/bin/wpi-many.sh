@@ -73,11 +73,11 @@ else
   has_java17="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA20_HOME, not a typo of JAVA_HOME
-if [ "${JAVA20_HOME}" = "" ]; then
-  has_java20="no"
+# shellcheck disable=SC2153 # testing for JAVA21_HOME, not a typo of JAVA_HOME
+if [ "${JAVA21_HOME}" = "" ]; then
+  has_java21="no"
 else
-  has_java20="yes"
+  has_java21="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -99,9 +99,9 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
     fi
-    if [ "${has_java20}" = "no" ] && [ "${java_version}" = 20 ]; then
-      export JAVA20_HOME="${JAVA_HOME}"
-      has_java20="yes"
+    if [ "${has_java21}" = "no" ] && [ "${java_version}" = 21 ]; then
+      export JAVA21_HOME="${JAVA_HOME}"
+      has_java21="yes"
     fi
 fi
 
@@ -120,22 +120,22 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA20_HOME}" ]; then
-    echo "JAVA20_HOME is set to a non-existent directory ${JAVA20_HOME}"
+if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
+    echo "JAVA21_HOME is set to a non-existent directory ${JAVA21_HOME}"
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java20}" = "no" ]; then
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java21}" = "no" ]; then
     if [ "${has_java_home}" = "yes" ]; then
       echo "Cannot determine Java version from JAVA_HOME"
     else
-      echo "No Java 8, 11, 17, or 20 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA20_HOME must be set."
+      echo "No Java 8, 11, 17, or 21 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA21_HOME must be set."
     fi
     echo "JAVA_HOME = ${JAVA_HOME}"
     echo "JAVA8_HOME = ${JAVA8_HOME}"
     echo "JAVA11_HOME = ${JAVA11_HOME}"
     echo "JAVA17_HOME = ${JAVA17_HOME}"
-    echo "JAVA20_HOME = ${JAVA20_HOME}"
+    echo "JAVA21_HOME = ${JAVA21_HOME}"
     command -v java
     java -version
     exit 1
@@ -292,14 +292,18 @@ do
         ls -al "$(pwd)"
         echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
-        echo "Listing of ${REPO_FULLPATH}/dljc-out:"
-        ls -al "${REPO_FULLPATH}"/dljc-out
-        for f in "${REPO_FULLPATH}"/dljc-out/* ; do
-            echo "==== start of tail of ${f} ===="
-            tail -n 2000 "${f}"
-            sleep 1
-            echo "==== end of tail of ${f} ===="
-        done
+        if [ -d "${REPO_FULLPATH}/dljc-out" ] ; then
+            echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+            ls -al "${REPO_FULLPATH}"/dljc-out
+            for f in "${REPO_FULLPATH}"/dljc-out/* ; do
+                echo "==== start of tail of ${f} ===="
+                tail -n 2000 "${f}"
+                sleep 1
+                echo "==== end of tail of ${f} ===="
+            done
+        else
+            echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
+        fi
 
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can

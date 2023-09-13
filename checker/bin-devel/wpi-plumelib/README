@@ -11,13 +11,13 @@ running wpi.sh, with two permitted additions:
 
 The script `test-wpi-plumelib.sh` complements the Gradle `wpiManyTest`
 task.  Here are differences:
- * different projects use a different list of type-checkers.
-   (wpi-many.sh uses a fixed set of type-checkers for all projects)
- * this uses the HEAD commit
-   (wpi-many.sh uses a fixed commit)
- * this checks for expected type-checking errors
-   (the Gradle wpiManyTest target requires that there are no errors, so it
-   skips type systems for which inference does not currently work)
+ * Different projects use a different list of type-checkers.
+   (wpi-many.sh uses a fixed set of type-checkers for all projects.)
+ * This uses the HEAD commit.
+   (wpi-many.sh uses a fixed commit.)
+ * This checks for expected type-checking errors.
+   (The Gradle wpiManyTest target requires that there are no errors, so it
+   skips type systems for which inference does not currently work.)
 
 The use of the HEAD commit makes these tests brittle.  They might fail if:
  * The Checker Framework is changed in a way that makes whole-program
