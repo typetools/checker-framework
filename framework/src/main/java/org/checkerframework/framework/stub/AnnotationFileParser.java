@@ -713,13 +713,11 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
-    if (processingEnv.getOptions().containsKey("stubDebug")) {
-      // This uses `System.out.printf()` instead of `stubDebug()` because this method is static, but
-      // `stubDebug()` is an instance method.
-      System.out.printf(
-          "parseJdkFileAsStub(%s, _, %s, _, _)%n",
-          filename, atypeFactory.getClass().getSimpleName());
-    }
+    stubDebugStatic(
+        processingEnv,
+        "parseJdkFileAsStub(%s, _, %s, _, _)%n",
+        filename,
+        atypeFactory.getClass().getSimpleName());
     parseStubFile(
         filename, inputStream, atypeFactory, processingEnv, stubAnnos, AnnotationFileType.JDK_STUB);
   }
