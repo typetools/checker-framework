@@ -46,6 +46,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -2341,7 +2342,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // This can be extended to handle case statements as well as case rules.
           boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
+              isLastExceptDefault && allCasesAreEnumerated() && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
@@ -2545,7 +2546,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @return true if the cases are exhaustive
      */
-    private boolean casesAreExhaustive() {
+    private boolean allCasesAreEnumerated() {
       TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
 
       switch (selectorTypeMirror.getKind()) {
@@ -2562,6 +2563,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             List<Name> caseLabels = new ArrayList<>(enumConstants.size());
             for (CaseTree caseTree : caseTrees) {
               for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
+                if (caseEnumConstant.getKind() != Kind.IDENTIFIER) {
+                  // This is not a simple switch on an enum, so all cases can't be enumerated.
+                  return false;
+                }
                 caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
               }
             }
