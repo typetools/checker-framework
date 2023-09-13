@@ -522,7 +522,17 @@ public final class TypesUtils {
    * @return whether the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    switch (type.getKind()) {
+    return isIntegralPrimitive(type.getKind());
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param typeKind a type kind
+   * @return whether the argument is an integral primitive type
+   */
+  public static boolean isIntegralPrimitive(TypeKind typeKind) {
+    switch (typeKind) {
       case BYTE:
       case CHAR:
       case INT:
