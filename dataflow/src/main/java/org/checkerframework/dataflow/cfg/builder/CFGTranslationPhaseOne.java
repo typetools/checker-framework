@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -2563,9 +2562,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             List<Name> caseLabels = new ArrayList<>(enumConstants.size());
             for (CaseTree caseTree : caseTrees) {
               for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
-                if (caseEnumConstant.getKind() != Kind.NULL_LITERAL) {
-                  caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
-                }
+                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
               }
             }
             // Could also check that the values match.
