@@ -125,6 +125,9 @@ public final class TreeUtils {
   /** The CaseTree.getExpressions method for Java 12 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETEXPRESSIONS;
 
+  /** The CaseTree.getLabels method for Java 21 and higher; null otherwise. */
+  private static final @Nullable Method CASETREE_GETLABELS;
+
   /** The CaseTree.getBody method for Java 12 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETBODY;
 
@@ -260,8 +263,10 @@ public final class TreeUtils {
       }
       if (atLeastJava21) {
         TREEMAKER_SELECT = TreeMaker.class.getMethod("Select", JCExpression.class, Symbol.class);
+        CASETREE_GETLABELS = CaseTree.class.getDeclaredMethod("getLabels");
       } else {
         TREEMAKER_SELECT = null;
+        CASETREE_GETLABELS = null;
       }
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       Error err = new AssertionError("Unexpected error in TreeUtils static initializer");
@@ -2382,6 +2387,47 @@ public final class TreeUtils {
   public static List<? extends ExpressionTree> caseTreeGetExpressions(CaseTree caseTree) {
     try {
       if (atLeastJava12) {
+        @SuppressWarnings({"unchecked", "nullness"})
+        @NonNull List<? extends ExpressionTree> result =
+            (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
+        return result;
+      } else {
+        @SuppressWarnings("nullness")
+        ExpressionTree expression = (ExpressionTree) CASETREE_GETEXPRESSION.invoke(caseTree);
+        if (expression == null) {
+          return Collections.emptyList();
+        } else {
+          return Collections.singletonList(expression);
+        }
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF(
+          "TreeUtils.caseTreeGetExpressions: reflection failed for tree: %s", caseTree, e);
+    }
+  }
+
+  /**
+   * Get the list of expressions from a case expression. For the default case, this is empty.
+   * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
+   * multiple expressions per case.
+   *
+   * @param caseTree the case expression to get the expressions from
+   * @return the list of {@code CaseLabelTree}s in the case
+   */
+  public static List<? extends Tree> caseTreeGetLabels(CaseTree caseTree) {
+    try {
+      if (atLeastJava21) {
+        @SuppressWarnings({"unchecked", "nullness"})
+        // These are caseLabelTrees.
+        @NonNull List<? extends Tree> caseLabelTrees =
+            (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
+        List<Tree> unwrappedLabel = new ArrayList<>();
+        for (Tree caseLabelTree : caseLabelTrees) {
+          //          if(caseLabelTrees)
+
+        }
+        return unwrappedLabel;
+      } else if (atLeastJava12) {
         @SuppressWarnings({"unchecked", "nullness"})
         @NonNull List<? extends ExpressionTree> result =
             (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
