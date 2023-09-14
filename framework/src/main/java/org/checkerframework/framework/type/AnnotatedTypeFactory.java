@@ -2103,6 +2103,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of {@code this} at the location of {@code tree}
    */
   public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
+    logGat("getSelfType(%s) of kind %s%n", tree, tree.getKind());
     if (TreeUtils.isClassTree(tree)) {
       return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
     }
@@ -3894,7 +3895,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   @Override
   public final AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
-    return getDeclAnnotation(elt, anno, true);
+    logGat("entering getDeclAnnotation(%s [%s], %s)%n", elt, elt.getKind(), anno);
+    if (debugGat) {
+      if (elt.toString().equals("java.lang.CharSequence")) {
+        new Error("stack trace").printStackTrace();
+      }
+    }
+    AnnotationMirror result = getDeclAnnotation(elt, anno, true);
+    logGat("  exiting getDeclAnnotation(%s [%s], %s) => %s%n", elt, elt.getKind(), anno, result);
+    return result;
   }
 
   /**

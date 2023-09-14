@@ -3,8 +3,5 @@ build/**
 dist/bin/**
 .git/**
 .gitignore
-.hg/**
-.hgignore
-.hgtags
 .jcheck
 **/*.orig
