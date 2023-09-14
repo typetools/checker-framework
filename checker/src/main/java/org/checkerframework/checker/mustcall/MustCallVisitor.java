@@ -34,7 +34,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The visitor for the Must Call Checker. This visitor is similar to BaseTypeVisitor, but overrides
@@ -317,10 +316,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
-    if (noMustCallObligation(varType) || noMustCallObligation(valueType)) {
-      return true;
-    }
-
     if (commonAssignmentCheckOnResourceVariable) {
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
@@ -398,31 +393,5 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     return null;
-  }
-
-  /**
-   * Returns true if the given type should never have a must-call obligation.
-   *
-   * @param atm the type to check
-   * @return true if the given type should never have a must-call obligation
-   */
-  private boolean noMustCallObligation(AnnotatedTypeMirror atm) {
-    if (atm.getKind().isPrimitive()) {
-      return true;
-    }
-    TypeMirror tm = atm.getUnderlyingType();
-    if (TypesUtils.isClass(tm) || TypesUtils.isString(tm)) {
-      return true;
-    }
-    return false;
-  }
-
-  @Override
-  protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
-    if (noMustCallObligation(castType) || noMustCallObligation(exprType)) {
-      return true;
-    }
-
-    return super.isTypeCastSafe(castType, exprType);
   }
 }
