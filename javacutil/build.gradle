@@ -20,6 +20,9 @@ dependencies {
   // Update relocations in these locations:
   //   * in ../build.gradle in the shadowJar block.
   //   * in ../dataflow/build.gradle in the createDataflowShaded task.
+
+  // https://mvnrepository.com/artifact/com.google.guava/guava
+  implementation "com.google.guava:guava:32.0.1-jre"
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
