@@ -125,9 +125,6 @@ public final class TreeUtils {
   /** The CaseTree.getExpressions method for Java 12 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETEXPRESSIONS;
 
-  /** The CaseTree.getLabels method for Java 21 and higher; null otherwise. */
-  private static final @Nullable Method CASETREE_GETLABELS;
-
   /** The CaseTree.getBody method for Java 12 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETBODY;
 
@@ -151,6 +148,17 @@ public final class TreeUtils {
 
   /** The BindingPatternTree.getVariable method for Java 16 and higher; null otherwise. */
   private static final @Nullable Method BINDINGPATTERNTREE_GETVARIABLE;
+
+  /** The CaseTree.getLabels method for Java 21 and higher; null otherwise. */
+  private static final @Nullable Method CASETREE_GETLABELS;
+
+  /**
+   * The ConstantCaseLabelTree.getConstantExpression method for Java 21 and higher; null otherwise.
+   */
+  private static final @Nullable Method CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION;
+
+  /** The PatternCaseLabelTree.getPattern method for Java 21 and higher; null otherwise. */
+  private static final @Nullable Method PATTERNCASELABELTREE_GETPATTERN;
 
   /**
    * The {@code TreeMaker.Select(JCExpression, Symbol)} method. Return type changes for JDK21+. Only
@@ -261,12 +269,23 @@ public final class TreeUtils {
         INSTANCEOFTREE_GETPATTERN = null;
         BINDINGPATTERNTREE_GETVARIABLE = null;
       }
+
       if (atLeastJava21) {
+        Class<?> constantCaseLabelTreeClass =
+            Class.forName("com.sun.source.tree.ConstantCaseLabelTree");
+        CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION =
+            constantCaseLabelTreeClass.getMethod("getConstantExpression");
+        Class<?> patternCaseLabelTreeClass =
+            Class.forName("com.sun.source.tree.PatternCaseLabelTree");
+        PATTERNCASELABELTREE_GETPATTERN = patternCaseLabelTreeClass.getMethod("getPattern");
+
         TREEMAKER_SELECT = TreeMaker.class.getMethod("Select", JCExpression.class, Symbol.class);
         CASETREE_GETLABELS = CaseTree.class.getDeclaredMethod("getLabels");
       } else {
         TREEMAKER_SELECT = null;
         CASETREE_GETLABELS = null;
+        CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION = null;
+        PATTERNCASELABELTREE_GETPATTERN = null;
       }
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       Error err = new AssertionError("Unexpected error in TreeUtils static initializer");
@@ -2350,7 +2369,7 @@ public final class TreeUtils {
    * @return true if {@code caseTree} is the default case for a switch statement or expression
    */
   public static boolean isDefaultCaseTree(CaseTree caseTree) {
-    return caseTreeGetExpressions(caseTree).isEmpty();
+    return caseTreeGetLabels(caseTree).isEmpty();
   }
 
   /**
@@ -2421,12 +2440,17 @@ public final class TreeUtils {
         // These are caseLabelTrees.
         @NonNull List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
-        List<Tree> unwrappedLabel = new ArrayList<>();
-        for (Tree caseLabelTree : caseLabelTrees) {
-          //          if(caseLabelTrees)
-
+        List<Tree> unWrappedLabels = new ArrayList<>();
+        for (Tree caseLabel : caseLabelTrees) {
+          if (isDefaultCaseLabelTree(caseLabel)) {
+            return Collections.emptyList();
+          } else if (isConstantCaseLabelTree(caseLabel)) {
+            unWrappedLabels.add(constantCaseLabelTreeGetConstantExpression(caseLabel));
+          } else if (isPatternCaseLabelTree(caseLabel)) {
+            unWrappedLabels.add(patternCaseLabelTreeGetPattern(caseLabel));
+          }
         }
-        return unwrappedLabel;
+        return unWrappedLabels;
       } else if (atLeastJava12) {
         @SuppressWarnings({"unchecked", "nullness"})
         @NonNull List<? extends ExpressionTree> result =
@@ -2444,6 +2468,84 @@ public final class TreeUtils {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new BugInCF(
           "TreeUtils.caseTreeGetExpressions: reflection failed for tree: %s", caseTree, e);
+    }
+  }
+
+  /**
+   * Returns whether {@code tree} is a {@code DefaultCaseLabelTree}.
+   *
+   * @param tree a tree to check
+   * @return whether {@code tree} is a {@code DefaultCaseLabelTree}
+   */
+  public static boolean isDefaultCaseLabelTree(Tree tree) {
+    return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
+  }
+
+  /**
+   * Returns whether {@code tree} is a {@code ConstantCaseLabelTree}.
+   *
+   * @param tree a tree to check
+   * @return whether {@code tree} is a {@code ConstantCaseLabelTree}
+   */
+  public static boolean isConstantCaseLabelTree(Tree tree) {
+    return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
+  }
+
+  /**
+   * Wrapper around {@code ConstantCaseLabelTree#getConstantExpression}.
+   *
+   * @param constantCaseLabelTree a ConstantCaseLabelTree tree
+   * @return the expression in the {@code constantCaseLabelTree}
+   */
+  public static ExpressionTree constantCaseLabelTreeGetConstantExpression(
+      Tree constantCaseLabelTree) {
+    if (atLeastJava21) {
+      try {
+        @SuppressWarnings("nullness")
+        ExpressionTree ret =
+            (ExpressionTree)
+                CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION.invoke(constantCaseLabelTree);
+        return ret;
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new BugInCF(
+            "TreeUtils.constantCaseLabelTreeGetConstantExpression: reflection failed for tree: %s",
+            constantCaseLabelTree, e);
+      }
+    } else {
+      throw new BugInCF(
+          "TreeUtils.constantCaseLabelTreeGetConstantExpression: requires at least Java 21");
+    }
+  }
+
+  /**
+   * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+   *
+   * @param tree a tree to check
+   * @return whether {@code tree} is a {@code PatternCaseLabelTree}
+   */
+  public static boolean isPatternCaseLabelTree(Tree tree) {
+    return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
+  }
+
+  /**
+   * Wrapper around {@code PatternCaseLabelTree#getPattern}.
+   *
+   * @param patternCaseLabelTree a PatternCaseLabelTree tree
+   * @return the {@code PatternTree} in the {@code patternCaseLabelTree}
+   */
+  public static Tree patternCaseLabelTreeGetPattern(Tree patternCaseLabelTree) {
+    if (atLeastJava21) {
+      try {
+        @SuppressWarnings("nullness")
+        Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
+        return ret;
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new BugInCF(
+            "TreeUtils.patternCaseLabelTreeGetPattern: reflection failed for tree: %s",
+            patternCaseLabelTree, e);
+      }
+    } else {
+      throw new BugInCF("TreeUtils.patternCaseLabelTreeGetPattern: requires at least Java 21");
     }
   }
 

@@ -138,7 +138,8 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.testDir = testDir;
     this.classpathExtra = classpathExtra;
     this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
-    this.checkerOptions.add("-AajavaChecks");
+    // TODO: Reinstate, javaparser crashes on new Java 21 language features.
+    //    this.checkerOptions.add("-AajavaChecks");
   }
 
   @Test
