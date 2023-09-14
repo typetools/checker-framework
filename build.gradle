@@ -752,8 +752,8 @@ subprojects {
     // relocate 'sun', 'org.checkerframework.sun'
     relocate 'com.google', 'org.checkerframework.com.google'
     relocate 'plume', 'org.checkerframework.plume'
-    // The JSR 305 jar file, which is used by Guava, illegally uses javax.annotation.
-    // We want to relocate only it -- nothing official that uses javax.annotation.
+    // The JSR 305 jar file, which is used by Guava, uses javax.annotation in violation of the Java license.
+    // We want to relocate only it -- nothing official that properly uses javax.annotation.
     relocate('javax.annotation', 'org.checkerframework.javax.annotation') {
       include 'javax.annotation.CheckForNull'
       include 'javax.annotation.CheckForSigned'
