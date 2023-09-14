@@ -108,9 +108,9 @@ public class SystemUtil {
    * The only valid values are 1, 2 3 or 4. If the byte has an invalid bit pattern an
    * IllegalArgumentException is thrown.
    *
-   * @param b The first byte of a UTF-8 character.
-   * @return The number of bytes for this UTF-* character.
-   * @throws IllegalArgumentException if the bit pattern is invalid.
+   * @param b the first byte of a UTF-8 character
+   * @return the number of bytes for this UTF-* character
+   * @throws IllegalArgumentException if the bit pattern is invalid
    */
   private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) throws IllegalArgumentException {
     if ((b >= 0)) return 1; // Pattern is 0xxxxxxx.
