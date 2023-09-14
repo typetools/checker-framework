@@ -292,7 +292,7 @@ function configure_and_exec_dljc {
   cat "${dljc_stdout}"
   echo "=== End of DLJC standard out/err.  ==="
 
-  # the wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
+  # The wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
@@ -330,12 +330,6 @@ stdout is in      $dljc_stdout"
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
-  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-      echo "Failed to clone do-like-javac"
-      exit 1
-  fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
   # The user did set the DLJC environment variable.
