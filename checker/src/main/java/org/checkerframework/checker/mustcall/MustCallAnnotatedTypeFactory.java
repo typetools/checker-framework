@@ -232,7 +232,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     // as their @MustCall obligation is set to Top in this method. However, this computation is not
     // desirable for RLC inference in unannotated programs, where the goal is to infer and add
     // @Owning annotations to owning parameters.
-    if (getWholeProgramInference() != null && !isWPIEnabledForRLC()) {
+    if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
       return;
     }
     List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
@@ -466,7 +466,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    *
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */
-  protected boolean isWPIEnabledForRLC() {
+  protected boolean isWpiEnabledForRLC() {
     return enableWPIForRLC;
   }
 
