@@ -713,6 +713,8 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
+    Map<String, String> options = processingEnv.getOptions();
+    boolean debugAnnotationFileParser = options.containsKey("stubDebug");
     if (debugAnnotationFileParser) {
       stubDebugStatic(
           processingEnv,
