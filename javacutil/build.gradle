@@ -22,7 +22,11 @@ dependencies {
   //   * in ../dataflow/build.gradle in the createDataflowShaded task.
 
   // https://mvnrepository.com/artifact/com.google.guava/guava
-  implementation "com.google.guava:guava:32.0.1-jre"
+  implementation ("com.google.guava:guava:32.0.1-jre") {
+    // The JSR 305 jar file uses javax.annotation in violation of the Java license. Exclude it here
+    // so that it does not end up in any fat jars.
+    exclude group: 'com.google.code.findbugs', module: 'jsr305'
+  }
 }
 
 apply from: rootProject.file('gradle-mvn-push.gradle')
