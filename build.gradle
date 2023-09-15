@@ -774,12 +774,6 @@ subprojects {
   }
 
   java {
-    toolchain {
-      // TODO: Remove this
-      //  Run everything, except compilation, with JDK 21 just to see what happens.
-      // Build with Java 21
-      languageVersion = JavaLanguageVersion.of(21)
-    }
     withJavadocJar()
     withSourcesJar()
   }
