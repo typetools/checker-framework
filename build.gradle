@@ -301,10 +301,12 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-      // This uses the Java 17 compiler to compile all code.
-      //  https://docs.gradle.org/current/userguide/toolchains.html
-      javaCompiler = javaToolchains.compilerFor {
-        languageVersion = JavaLanguageVersion.of(17)
+      if (project.hasProperty('org.checkerframework.useJdk17Compiler')) {
+        // This uses the Java 17 compiler to compile all code.
+        //  https://docs.gradle.org/current/userguide/toolchains.html
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(17)
+        }
       }
 
       // Sorting is commented out because it disables incremental compilation.
