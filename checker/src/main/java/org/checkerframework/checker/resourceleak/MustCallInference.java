@@ -212,27 +212,27 @@ public class MustCallInference {
   }
 
   /**
-   * Returns all fields within the enclosing class that have been either inferred as owning or
-   * annotated with the {@code @Owning} annotation.
+   * Returns all owning fields within the enclosing class. These are the fields that have been
+   * annotated with the {@code @Owning} annotation or inferred as owning.
    *
    * @return the owning fields
    */
   private Set<VariableElement> getOwningFields() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(methodTree));
     TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-    Set<VariableElement> enOwningFields = new HashSet<>(releasedFields);
+    Set<VariableElement> owningFields = new HashSet<>(releasedFields);
     for (Element memberElt : classElt.getEnclosedElements()) {
       if (memberElt.getKind().isField() && typeFactory.hasOwning(memberElt)) {
-        enOwningFields.add((VariableElement) memberElt);
+        owningFields.add((VariableElement) memberElt);
       }
     }
-    return enOwningFields;
+    return owningFields;
   }
 
   /**
-   * Given an index, adds an owning annotation to the parameter at the specified index.
+   * Adds an owning annotation to the parameter at the given index.
    *
-   * @param index index of the current method's parameter (1-indexed)
+   * @param index the index a formal parameter of the current method (1-based)
    */
   private void addOwningToParam(int index) {
     WholeProgramInference wpi = typeFactory.getWholeProgramInference();
@@ -301,12 +301,10 @@ public class MustCallInference {
       if (!getOwningFields().contains(lhsElement)) {
         return;
       }
-
       if (!TreeUtils.isConstructor(methodTree)) {
         releasedFields.remove((VariableElement) lhsElement);
       }
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
-
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
     } else if (lhs instanceof LocalVariableNode) {
@@ -326,16 +324,17 @@ public class MustCallInference {
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
+    if (rhsAliases.isEmpty()) {
+      return;
+    }
+    List<VariableElement> paramElts =
+        mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias rhsAlias : rhsAliases) {
       Element rhsElt = rhsAlias.reference.getElement();
-      List<? extends VariableTree> params = methodTree.getParameters();
-      for (int i = 1; i < params.size() + 1; i++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i - 1));
-        if (paramElt.equals(rhsElt)) {
-          addOwningToParam(i);
-          mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
-          break;
-        }
+      int i = paramElts.indexOf(rhsElt);
+      if (i != -1) {
+        addOwningToParam(i + 1);
+        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
     }
   }
@@ -353,13 +352,13 @@ public class MustCallInference {
       List<String> mustCallValues = typeFactory.getMustCallValue(releasedField);
       assert !mustCallValues.isEmpty()
           : "Must-call obligation of owning field " + releasedField + " is deleted.";
+      // Currently, this code assumes that the must-call set has only one element.
       assert mustCallValues.size() == 1
           : "The must-call set ("
               + mustCallValues
               + ") of "
               + releasedField
               + "should be a singleton";
-      // The assumption is that the must-call set has only one element
       String mustCallValue = mustCallValues.get(0);
       String fieldName = "this." + releasedField.getSimpleName().toString();
 
@@ -367,10 +366,10 @@ public class MustCallInference {
     }
 
     for (String mustCallValue : methodToFields.keySet()) {
+      Set<String> fields = methodToFields.get(mustCallValue);
       AnnotationMirror am =
           createEnsuresCalledMethods(
-              methodToFields.get(mustCallValue).toArray(new String[0]),
-              new String[] {mustCallValue});
+              fields.toArray(new String[fields.size()]), new String[] {mustCallValue});
       WholeProgramInference wpi = typeFactory.getWholeProgramInference();
       wpi.addMethodDeclarationAnnotation(methodElt, am);
     }
@@ -378,10 +377,10 @@ public class MustCallInference {
 
   /**
    * Possibly adds an InheritableMustCall annotation on the enclosing class. If the class already
-   * has a non-empty MustCall type (which is inherited from one of its superclasses), this method
+   * has a non-empty MustCall type (that is inherited from one of its superclasses), this method
    * does nothing, in order to avoid infinite iteration. Otherwise, if the current method is not
-   * private and satisfies the must-call obligations of all the owning fields, it adds an
-   * InheritableMustCall annotation to the enclosing class.
+   * private and satisfies the must-call obligations of all the owning fields, it adds (or updates)
+   * an InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
     ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(methodTree));
@@ -393,8 +392,9 @@ public class MustCallInference {
     WholeProgramInference wpi = typeFactory.getWholeProgramInference();
     List<String> currentMustCallValues = typeFactory.getMustCallValue(typeElement);
     if (!currentMustCallValues.isEmpty()) {
-      // If the class already has a MustCall annotation which is inherited from a superclass,
-      // do nothing.
+      // The class already has a MustCall annotation.
+
+      // If it is inherited from a superclass, do nothing.
       if (typeElement.getSuperclass() != null) {
         TypeMirror superType = typeElement.getSuperclass();
         TypeElement superTypeElement = TypesUtils.getTypeElement(superType);
@@ -402,7 +402,7 @@ public class MustCallInference {
           return;
         }
       }
-      // Add the current @MustCall annotation to guarantee the termination property. This is
+      // Add the current @MustCall annotation to guarantee that inference terminates. This is
       // necessary to avoid overwriting @MustCall annotations on the class declaration when there
       // are multiple methods that could fulfill the must-call obligation.
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
@@ -438,50 +438,53 @@ public class MustCallInference {
 
     Node receiver = invocation.getTarget().getReceiver();
     if (receiver.getTree() == null) {
+      // It's a static method.
       return;
     }
 
-    Element receiverEl = TreeUtils.elementFromTree(receiver.getTree());
-    if (receiverEl != null) {
-      if (receiverEl.getKind().isField()) {
+    Element receiverElt = TreeUtils.elementFromTree(receiver.getTree());
+    if (receiverElt != null) {
+      if (receiverElt.getKind().isField()) {
         inferOwningField(receiver, invocation);
         return;
       }
     }
 
-    Node receiverTmpVar = mcca.getTempVarOrNode(receiver);
-    if (!(receiverTmpVar instanceof LocalVariableNode)) {
+    Node receiverTempVar = mcca.getTempVarOrNode(receiver);
+    if (!(receiverTempVar instanceof LocalVariableNode)) {
       return;
     }
 
     Obligation receiverObligation =
         MustCallConsistencyAnalyzer.getObligationForVar(
-            obligations, (LocalVariableNode) receiverTmpVar);
+            obligations, (LocalVariableNode) receiverTempVar);
     if (receiverObligation == null) {
       return;
     }
 
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i - 1));
+    if (!receiverAliases.isEmpty()) {
+      for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
 
-      for (ResourceAlias resourceAlias : receiverAliases) {
-        Element resourceElt = resourceAlias.reference.getElement();
-        if (!resourceElt.equals(paramElt)) {
-          continue;
-        }
+        for (ResourceAlias resourceAlias : receiverAliases) {
+          Element resourceElt = resourceAlias.reference.getElement();
+          if (!resourceElt.equals(paramElt)) {
+            continue;
+          }
 
-        JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i - 1));
-        if (mustCallObligationSatisfied(invocation, paramElt, target)) {
-          addOwningToParam(i);
-          break;
+          JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
+          if (mustCallObligationSatisfied(invocation, paramElt, target)) {
+            addOwningToParam(i + 1);
+            break;
+          }
         }
       }
     }
   }
 
   /**
-   * Checks the arguments of the method invocation node, if any of them is passed as an owning
+   * Checks the arguments of the method invocation node. If any of them is passed as an owning
    * parameter to the callee, and is an alias with any parameter of the current method, this method
    * adds the {@code @Owning} annotation to the corresponding parameter of the current method.
    *
