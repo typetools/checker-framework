@@ -53,7 +53,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private final ExecutableElement calledMethodsValueElement;
 
   /** True if -AenableWPIForRLC was passed on the command line. */
-  private final boolean enableWPIForRLC;
+  private final boolean enableWpiForRlc;
 
   /**
    * Create a new CalledMethodsTransfer.
@@ -64,7 +64,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
-    enableWPIForRLC = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
   }
 
   /**
@@ -81,7 +81,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    if (!isWPIEnabledForRLC()) {
+    if (!isWpiEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(tree);
@@ -102,7 +102,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    if (!isWPIEnabledForRLC()) {
+    if (!isWpiEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
@@ -279,7 +279,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */
-  protected boolean isWPIEnabledForRLC() {
-    return enableWPIForRLC;
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 }

@@ -183,7 +183,7 @@ public class MustCallTransfer extends CFTransfer {
 
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    if (!isWPIEnabledForRLC()) {
+    if (!isWpiEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(tree);
@@ -191,7 +191,7 @@ public class MustCallTransfer extends CFTransfer {
 
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    if (!isWPIEnabledForRLC()) {
+    if (!isWpiEnabledForRLC()) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
@@ -321,7 +321,7 @@ public class MustCallTransfer extends CFTransfer {
    *
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */
-  protected boolean isWPIEnabledForRLC() {
+  protected boolean isWpiEnabledForRLC() {
     return enableWPIForRLC;
   }
 }

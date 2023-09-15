@@ -36,7 +36,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libcurl3-gnutls \
   make \
   maven \
-  mercurial \
   python3-distutils \
   python3-requests \
   unzip \
