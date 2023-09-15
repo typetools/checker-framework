@@ -186,8 +186,9 @@ public class MustCallInference {
   }
 
   /**
-   * Returns a set of obligations representing the non-empty MustCall parameters of the current
-   * method. Returns an empty set if the given CFG doesn't correspond to a method body.
+   * Returns a set of obligations representing the formal parameters of the current method that have
+   * non-empty MustCall annotations. Returns an empty set if the given CFG doesn't correspond to a
+   * method body.
    *
    * @param cfg the control flow graph of the method to check
    * @return a set of obligations representing the non-empty MustCall parameters of the method
@@ -198,7 +199,7 @@ public class MustCallInference {
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
       return Collections.emptySet();
     }
-    Set<Obligation> result = new LinkedHashSet<>(1);
+    Set<Obligation> result = new LinkedHashSet<>(2);
     for (VariableTree param : methodTree.getParameters()) {
       if (typeFactory.declaredTypeHasMustCall(param)) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
