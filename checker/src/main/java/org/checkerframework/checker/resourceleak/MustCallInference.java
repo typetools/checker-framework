@@ -1,5 +1,7 @@
 package org.checkerframework.checker.resourceleak;
 
+import static org.plumelib.util.CollectionsPlume.mapList;
+
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
