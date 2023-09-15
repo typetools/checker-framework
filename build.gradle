@@ -301,7 +301,7 @@ allprojects {
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
       // This uses the Java 17 compiler to compile all code.
-      //  https://docs.gradle.org/6.7-rc-1/userguide/toolchains.html
+      //  https://docs.gradle.org/current/userguide/toolchains.html
       javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(17)
       }
