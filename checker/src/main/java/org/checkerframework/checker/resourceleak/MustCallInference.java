@@ -55,7 +55,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
- * responsible for inferring annotations such as @Owning on owning fields and
+ * responsible for inferring annotations such as {@code @}{@link Owning} on owning fields and
  * parameters, @EnsuresCalledMethods on methods, and @InheritableMustCall on class declarations.
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
@@ -68,19 +68,18 @@ import org.checkerframework.javacutil.TypesUtils;
  * obligation of all the enclosed owning fields, it adds a @InheritableMustCall annotation on the
  * enclosing class.
  *
- * <p>Note: This class makes the assumption that the must-call set has only one element. This
- * limitation should be taken into account while using the class. Must-call sets with more than one
- * element may be supported in the future.
+ * <p>Note: This class makes the assumption that the must-call set has only one element. Must-call
+ * sets with more than one element may be supported in the future.
  *
  * @see <a
  *     href="https://checkerframework.org/manual/#resource-leak-checker-inference-algo">Automatic
  *     Inference of Resource Leak Specifications</a>
  */
-public class MustCallInferenceLogic {
+public class MustCallInference {
 
   /**
    * The fields that have been inferred to be released within the CFG currently under analysis. All
-   * of these fields will be given on @Owning annotation.
+   * of these fields will be given an @Owning annotation.
    */
   private final Set<VariableElement> releasedFields = new HashSet<>();
 
@@ -96,8 +95,8 @@ public class MustCallInferenceLogic {
   protected final AnnotationMirror OWNING;
 
   /**
-   * The control flow graph of the current method. There is a separate MustCallInferenceLogic for
-   * each method.
+   * The control flow graph of the current method. There is a separate MustCallInference for each
+   * method.
    */
   private final ControlFlowGraph cfg;
 
@@ -108,13 +107,13 @@ public class MustCallInferenceLogic {
   private final ExecutableElement methodElt;
 
   /**
-   * Creates a MustCallInferenceLogic instance.
+   * Creates a MustCallInference instance.
    *
    * @param typeFactory the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
-  /*package-private*/ MustCallInferenceLogic(
+  /*package-private*/ MustCallInference(
       ResourceLeakAnnotatedTypeFactory typeFactory,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
@@ -127,19 +126,18 @@ public class MustCallInferenceLogic {
   }
 
   /**
-   * Creates a MustCallInferenceLogic instance and runs the inference algorithm. A type factory's
-   * postAnalyze method calls this, if whole program inference is enabled.
+   * Creates a MustCallInference instance and runs the inference algorithm. A type factory's
+   * postAnalyze method calls this, if Whole Program Inference is enabled.
    *
    * @param typeFactory the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
-  protected static void runMustCallInferenceLogic(
+  protected static void runMustCallInference(
       ResourceLeakAnnotatedTypeFactory typeFactory,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
-    MustCallInferenceLogic mustCallInferenceLogic =
-        new MustCallInferenceLogic(typeFactory, cfg, mcca);
+    MustCallInference mustCallInferenceLogic = new MustCallInference(typeFactory, cfg, mcca);
     mustCallInferenceLogic.runInference();
   }
 
@@ -155,14 +153,14 @@ public class MustCallInferenceLogic {
   private void runInference() {
 
     Set<BlockWithObligations> visited = new HashSet<>();
-
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
-    BlockWithObligations entry =
-        new BlockWithObligations(cfg.getEntryBlock(), getNonEmptyMCParams(cfg));
-
-    worklist.add(entry);
-    visited.add(entry);
+    {
+      BlockWithObligations entry =
+          new BlockWithObligations(cfg.getEntryBlock(), getNonEmptyMCParams(cfg));
+      worklist.add(entry);
+      visited.add(entry);
+    }
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
