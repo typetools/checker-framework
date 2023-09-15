@@ -312,6 +312,27 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     return result;
   }
 
+  private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
+      ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
+    AnnotationMirror createsMustCallForList =
+        atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.List.class);
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    if (createsMustCallForList != null) {
+      List<AnnotationMirror> createsMustCallFors =
+          AnnotationUtils.getElementValueArray(
+              createsMustCallForList,
+              atypeFactory.getEnsuresCalledMethodsListValueElement(),
+              AnnotationMirror.class);
+      result.addAll(createsMustCallFors);
+    }
+    AnnotationMirror createsMustCallFor =
+        atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.class);
+    if (createsMustCallFor != null) {
+      result.add(createsMustCallFor);
+    }
+    return result;
+  }
+
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
     Element varElement = TreeUtils.elementFromDeclaration(tree);
@@ -378,10 +399,10 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       for (Element siblingElement : siblingsOfOwningField) {
         if (siblingElement.getKind() == ElementKind.METHOD
             && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
-          AnnotationMirror ensuresCalledMethodsAnno =
-              rlTypeFactory.getDeclAnnotation(siblingElement, EnsuresCalledMethods.class);
 
-          if (ensuresCalledMethodsAnno != null) {
+          AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
+              getEnsuresCalledMethodsAnnotations((ExecutableElement) siblingElement, rlTypeFactory);
+          for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
             List<String> values =
                 AnnotationUtils.getElementValueArray(
                     ensuresCalledMethodsAnno,
