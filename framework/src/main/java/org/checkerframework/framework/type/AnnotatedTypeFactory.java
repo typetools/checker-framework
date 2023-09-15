@@ -131,6 +131,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -828,7 +829,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ((JavacProcessingEnvironment) processingEnv).getContext();
     String processorArg = Options.instance(context).get("-processor");
     if (processorArg != null) {
-      return Arrays.asList(processorArg.split(","));
+      return SystemUtil.commaSplitter.splitToList(processorArg);
     }
     try {
       String filename = "META-INF/services/javax.annotation.processing.Processor";
@@ -2102,6 +2103,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of {@code this} at the location of {@code tree}
    */
   public @Nullable AnnotatedDeclaredType getSelfType(Tree tree) {
+    logGat("getSelfType(%s) of kind %s%n", tree, tree.getKind());
     if (TreeUtils.isClassTree(tree)) {
       return getAnnotatedType(TreeUtils.elementFromDeclaration((ClassTree) tree));
     }
@@ -3893,7 +3895,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   @Override
   public final AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno) {
-    return getDeclAnnotation(elt, anno, true);
+    logGat("entering getDeclAnnotation(%s [%s], %s)%n", elt, elt.getKind(), anno);
+    if (debugGat) {
+      if (elt.toString().equals("java.lang.CharSequence")) {
+        new Error("stack trace").printStackTrace();
+      }
+    }
+    AnnotationMirror result = getDeclAnnotation(elt, anno, true);
+    logGat("  exiting getDeclAnnotation(%s [%s], %s) => %s%n", elt, elt.getKind(), anno, result);
+    return result;
   }
 
   /**

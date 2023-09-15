@@ -132,7 +132,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
 
   /**
    * Generates the correct argument to the {@code -Aajava} or {@code -Astubs} CF option
-   * corresponding to the source file {@code sourceFile} and the wpi output type.
+   * corresponding to the source file {@code sourceFile} and the WPI output type.
    *
    * @param sourceFile a java source file
    * @param inferenceBaseDir the base directory in which inference output is placed

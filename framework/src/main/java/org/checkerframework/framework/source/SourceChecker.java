@@ -1,5 +1,6 @@
 package org.checkerframework.framework.source;
 
+import com.google.common.base.Splitter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -75,6 +76,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -1472,7 +1474,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    List<String> lintStrings = Arrays.asList(lintString.split(","));
+    List<String> lintStrings = SystemUtil.commaSplitter.splitToList(lintString);
     Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.size());
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
@@ -1843,7 +1845,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (value == null) {
       return defaultValue;
     }
-    return Arrays.asList(value.split(Pattern.quote(Character.toString(separator))));
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
   /**
@@ -1858,7 +1860,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (value == null) {
       return defaultValue;
     }
-    return Arrays.asList(value.split(separator));
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
   @Override
@@ -2571,7 +2573,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
-    logBug(ce, "The Checker Framework crashed.  Please report the crash.");
+    logBug(
+        ce,
+        "The Checker Framework crashed.  Please report the crash.  Version: Checker Framework "
+            + getCheckerVersion()
+            + ".");
   }
 
   /**
@@ -2616,23 +2622,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             msg.add(line);
           }
         }
-      }
-    }
 
-    if (ce.getCause() != null) {
-      msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-      boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-      Throwable cause = ce.getCause().getCause();
-      while (cause != null) {
-        msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-        printClasspath |= cause instanceof NoClassDefFoundError;
-        cause = cause.getCause();
-      }
+        Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;
+        if (forStackTrace != null) {
+          msg.add(
+              "Exception: " + forStackTrace + "; " + UtilPlume.stackTraceToString(forStackTrace));
+          boolean printClasspath = forStackTrace instanceof NoClassDefFoundError;
+          Throwable cause = forStackTrace.getCause();
+          while (cause != null) {
+            msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+            printClasspath |= cause instanceof NoClassDefFoundError;
+            cause = cause.getCause();
+          }
 
-      if (printClasspath) {
-        msg.add("Classpath:");
-        for (URI uri : new ClassGraph().getClasspathURIs()) {
-          msg.add(uri.toString());
+          if (printClasspath) {
+            msg.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              msg.add(uri.toString());
+            }
+          }
         }
       }
     }

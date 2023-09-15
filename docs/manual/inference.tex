@@ -145,7 +145,7 @@ results (i.e., those obtained using the most precise, consistent set of annotati
 will appear at the end of this file.
 The inferred annotations appear in \<.ajava> files in a
 temporary directory whose name appears in the \<dlcj-out/wpi-stdout.log> file;
-you can find their location by examining the \<-Ajava> argument
+you can find their location by examining the \<-Aajava> argument
 to the last \<javac> command that was run. The annotation files generated in
 each round of inference appear in directories labeled \<iteration0>, \<iteration1>, etc.
 
@@ -280,9 +280,10 @@ created by running \<query-github.sh securerandom.query 100>. If you do
 not want to use GitHub, construct a file yourself that matches the format of
 the file \<securerandom.list>.
 
-\item Use \<wpi-many.sh> to run whole-program inference on every
-Ant, Gradle, or Maven project in a list of (GitHub repository URL, git hash)
-pairs.
+\item Use \<wpi-many.sh> to run whole-program inference on multiple
+Ant, Gradle, or Maven projects.  You provide it a file in which each line
+is ``GitHub repository URL'' ``git hash'' (with no quotes, and with
+whitespace between them).
 \begin{itemize}
 \item If you are using a checker that is distributed with the Checker
 Framework, use \<wpi-many.sh> directly.

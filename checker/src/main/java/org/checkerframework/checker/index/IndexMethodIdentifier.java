@@ -85,7 +85,7 @@ public class IndexMethodIdentifier {
    *
    * @param methodTree the method invocation tree to be tested
    * @return true iff the argument is an invocation of one of String's indexOf or lastIndexOf
-   *     methods that takes another string as a parameter.
+   *     methods that takes another string as a parameter
    */
   public boolean isIndexOfString(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();

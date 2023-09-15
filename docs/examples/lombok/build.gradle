@@ -6,7 +6,7 @@ plugins {
   id 'java'
   id 'io.freefair.lombok' version '6.6.3'
   // Checker Framework pluggable type-checking
-  id 'org.checkerframework' version '0.6.27'
+  id 'org.checkerframework' version '0.6.33'
 }
 
 apply plugin: 'org.checkerframework'
