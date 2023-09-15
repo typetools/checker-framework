@@ -181,7 +181,7 @@ public class MustCallInference {
         }
       }
 
-      discoverNonExceptionalSuccessors(obligations, current.block, visited, worklist);
+      addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
     }
   }
 
@@ -497,11 +497,11 @@ public class MustCallInference {
     if (paramsOfCurrentMethod.isEmpty()) {
       return;
     }
-    List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
     List<? extends VariableElement> invocationParams = mcca.getParametersOfInvocation(invocation);
     if (invocationParams.isEmpty()) {
       return;
     }
+    List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
 
     for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
 
@@ -534,8 +534,8 @@ public class MustCallInference {
   private boolean isParamAndArgAliased(
       Set<Obligation> obligations, Node argument, VariableElement paramElt) {
     Set<ResourceAlias> argAliases = getResourceAliasOfArgument(obligations, argument);
-    for (ResourceAlias rl : argAliases) {
-      Element argAliasElt = rl.reference.getElement();
+    for (ResourceAlias argAlias : argAliases) {
+      Element argAliasElt = argAlias.reference.getElement();
       if (argAliasElt.equals(paramElt)) {
         return true;
       }
@@ -555,14 +555,12 @@ public class MustCallInference {
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
 
-    List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
     List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(invocation);
-
     if (paramsOfInvocation.isEmpty()) {
       return;
     }
 
-    for (Node argument : arguments) {
+    for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
       Node arg = NodeUtils.removeCasts(argument);
 
       // In the CFG, explicit passing of multiple arguments in the varargs position is represented
@@ -585,9 +583,9 @@ public class MustCallInference {
   }
 
   /**
-   * Analyze each node passed in the varargs argument position. It checks the called-methods set of
-   * each argument after the call to compute owning annotation for the field or parameter passed as
-   * an argument to a method invocation.
+   * Analyze each node passed in the varargs argument position. This method checks the
+   * called-methods set of each argument after the call to compute an {@code @Owning} annotation for
+   * the field or parameter passed as an argument to a method invocation.
    *
    * @param obligations set of obligations associated with the current code block
    * @param paramsOfCurrentMethod the parameters of the current method
@@ -618,9 +616,9 @@ public class MustCallInference {
   }
 
   /**
-   * For any parameters of the current method that is alias with the argument passed to the method
-   * invocation, it checks the set of called methods for the parameter after the call, in order to
-   * infer the owning annotation for that parameter.
+   * For any parameter of the current method that is aliased with an argument passed to the method
+   * invocation, check the set of called methods for the parameter after the call, in order to infer
+   * the owning annotation for that parameter.
    *
    * @param obligations set of obligations associated with the current code block
    * @param paramsOfCurrentMethod the parameters of the current method
@@ -633,16 +631,14 @@ public class MustCallInference {
       MethodInvocationNode invocation,
       Node arg) {
 
-    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-
-      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i - 1);
+    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(1);
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
       if (isParamAndArgAliased(obligations, arg, currentMethodParamElt)) {
-
         JavaExpression target = JavaExpression.fromVariableTree(currentMethodParamTree);
         if (mustCallObligationSatisfied(invocation, currentMethodParamElt, target)) {
-          addOwningToParam(i);
+          addOwningToParam(i + 1);
           break;
         }
       }
@@ -673,8 +669,8 @@ public class MustCallInference {
   }
 
   /**
-   * This method performs three checks related to method invocation node. It computes @Owning
-   * annotations to the enclosing formal parameter or fields:
+   * This method performs three checks related to method invocation nodes. It computes @Owning
+   * annotations for the enclosing formal parameter or fields:
    *
    * <ul>
    *   <li>If a formal method is passed as an owning parameter, it adds the @Owning annotation to
@@ -751,12 +747,12 @@ public class MustCallInference {
    * Adds all non-exceptional successors to {@code worklist}. If a successor is a non-exceptional
    * exit point, adds an {@literal @Owning} annotation for fields in {@link #releasedFields}.
    *
-   * @param obligations the Obligations for the current block
+   * @param obligations the obligationsx for the current block
    * @param curBlock the block whose successors to add to the worklist
    * @param visited block-Obligations pairs already analyzed or already on the worklist
-   * @param worklist current worklist
+   * @param worklist the worklist, which is side-effected by this method
    */
-  private void discoverNonExceptionalSuccessors(
+  private void addNonExceptionalSuccessorsToWorklist(
       Set<Obligation> obligations,
       Block curBlock,
       Set<BlockWithObligations> visited,
@@ -787,7 +783,7 @@ public class MustCallInference {
    * Returns the non-exceptional successors of a block.
    *
    * @param cur a block
-   * @return the successors of this current block
+   * @return the successors of the given block
    */
   private List<Block> getNonExceptionalSuccessors(Block cur) {
     if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {

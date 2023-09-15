@@ -228,10 +228,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
-    // Formal parameters without a declared owning annotation are disregarded by the RLC analysis,
+    // Formal parameters without a declared owning annotation are disregarded by the RLC _analysis_,
     // as their @MustCall obligation is set to Top in this method. However, this computation is not
-    // desirable for RLC inference in unannotated programs, where the goal is to infer and add
-    // @Owning annotations to owning parameters.
+    // desirable for RLC _inference_ in unannotated programs, where a goal is to infer and add
+    // @Owning annotations to formal parameters.
     if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
       return;
     }
