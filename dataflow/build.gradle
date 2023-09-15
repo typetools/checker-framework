@@ -45,6 +45,7 @@ def createDataflowShaded(shadedPkgName) {
 
     // Relocate external dependencies
     relocate 'org.plume', "org.checkerframework.${shadedPkgName}.org.plume"
+    relocate 'com.google', 'org.checkerframework.com.google'
   }
 }
 
