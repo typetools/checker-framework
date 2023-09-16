@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -203,7 +202,7 @@ public class AnnotationFileElementTypes {
     String stubsOption = checker.getOption("stubs");
     if (stubsOption != null) {
       parseAnnotationFiles(
-          Arrays.asList(stubsOption.split(File.pathSeparator)),
+          SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
           AnnotationFileType.COMMAND_LINE_STUB);
     }
 
@@ -254,12 +253,7 @@ public class AnnotationFileElementTypes {
     try {
       // TODO: Error if this is called more than once?
       SourceChecker checker = factory.getChecker();
-      List<String> ajavaFiles = new ArrayList<>();
-      String ajavaOption = checker.getOption("ajava");
-      if (ajavaOption != null) {
-        Collections.addAll(ajavaFiles, ajavaOption.split(File.pathSeparator));
-      }
-
+      List<String> ajavaFiles = checker.getStringsOption("ajava", File.pathSeparator);
       parseAnnotationFiles(ajavaFiles, AnnotationFileType.AJAVA);
     } finally {
       parsing = false;
@@ -314,6 +308,10 @@ public class AnnotationFileElementTypes {
   // leak resources.
   )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
+    if (annotationFiles.isEmpty()) {
+      return;
+    }
+
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
     if (stubDebug) {

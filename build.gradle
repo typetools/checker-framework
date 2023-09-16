@@ -853,7 +853,7 @@ subprojects {
                 "-dir:${projectDir}/jtreg",
                 "-workDir:${jtregOutput}/${name}/work",
                 "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail',
+                '-verbose:error,fail,nopass',
                 // Don't add debugging information
                 //  '-javacoptions:-g',
                 '-keywords:!ignore',
