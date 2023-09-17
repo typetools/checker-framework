@@ -385,6 +385,11 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     return super.getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
   }
 
+  /**
+   * Returns the {@link EnsuresCalledMethods.List#value} element.
+   *
+   * @return the {@link EnsuresCalledMethods.List#value} element
+   */
   public ExecutableElement getEnsuresCalledMethodsListValueElement() {
     return ensuresCalledMethodsListValueElement;
   }
