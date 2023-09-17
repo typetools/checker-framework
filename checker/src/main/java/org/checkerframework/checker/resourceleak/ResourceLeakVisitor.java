@@ -21,6 +21,7 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -312,6 +313,14 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     return result;
   }
 
+  /**
+   * Get all {@link EnsuresCalledMethods} annotations on an element.
+   *
+   * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
+   * @param atypeFactory a <code>ResourceLeakAnnotatedTypeFactory</code>
+   * @return a set of {@link EnsuresCalledMethods} annotations
+   */
+  @Pure
   private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
       ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror createsMustCallForList =
