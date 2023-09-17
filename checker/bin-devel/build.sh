@@ -59,13 +59,6 @@ echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
 echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 
 
-## Build stubparser
-"$PLUME_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools stubparser
-echo "Running:  (cd ../stubparser/ && ./.build-without-test.sh)"
-(cd ../stubparser/ && ./.build-without-test.sh)
-echo "... done: (cd ../stubparser/ && ./.build-without-test.sh)"
-
-
 ### Commented temporarily because JSpecify build is failing under JDK 17.
 ### (I guess they don't use continuous integration.)
 # ## Build JSpecify, only for the purpose of using its tests.
