@@ -296,7 +296,6 @@ function configure_and_exec_dljc {
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
-  echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
     wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
     echo "=== ${wpi_no_output_message}: start of ${wpi_log_path} ==="

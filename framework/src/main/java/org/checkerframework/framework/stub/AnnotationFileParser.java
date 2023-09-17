@@ -713,6 +713,15 @@ public class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations stubAnnos) {
+    Map<String, String> options = processingEnv.getOptions();
+    boolean debugAnnotationFileParser = options.containsKey("stubDebug");
+    if (debugAnnotationFileParser) {
+      stubDebugStatic(
+          processingEnv,
+          "parseJdkFileAsStub(%s, _, %s, _, _)%n",
+          filename,
+          atypeFactory.getClass().getSimpleName());
+    }
     parseStubFile(
         filename, inputStream, atypeFactory, processingEnv, stubAnnos, AnnotationFileType.JDK_STUB);
   }
@@ -728,8 +737,8 @@ public class AnnotationFileParser {
    */
   private void parseStubUnit(InputStream inputStream) {
     stubDebug(
-        "AFP.parseStubUnit(%s) annotation file %s for %s",
-        inputStream, filename, atypeFactory.getClass().getSimpleName());
+        "started parsing annotation file %s for %s",
+        filename, atypeFactory.getClass().getSimpleName());
     stubUnit = JavaParserUtil.parseStubUnit(inputStream);
 
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
@@ -747,6 +756,12 @@ public class AnnotationFileParser {
     }
     // Annotations in java.lang might be used without an import statement, so add them in case.
     allAnnotations.putAll(annosInPackage(findPackage("java.lang", null)));
+
+    if (debugAnnotationFileParser) {
+      stubDebug(
+          "finished parsing annotation file %s for %s",
+          filename, atypeFactory.getClass().getSimpleName());
+    }
   }
 
   /**
