@@ -23,6 +23,7 @@ public abstract class AinferGeneratePerDirectoryTest extends CheckerFrameworkWPI
    * @param testDir the path to the directory of test inputs
    * @param checkerOptions options to pass to the compiler when running tests
    */
+  @SuppressWarnings("this-escape")
   protected AinferGeneratePerDirectoryTest(
       List<File> testFiles,
       Class<? extends AbstractProcessor> checker,
