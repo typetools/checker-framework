@@ -31,7 +31,7 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api files("${stubparserJar}")
+  api 'org.checkerframework:stubparser:3.25.5-SNAPSHOT'
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
   // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
   api('org.checkerframework:annotation-file-utilities:*') {
@@ -132,16 +132,6 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
-
-task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      throw new GradleException("${stubparserJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
-    }
-  }
-}
-
-compileJava.dependsOn(checkDependencies)
 
 task allSourcesJar(type: Jar, group: 'Build') {
   description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'
