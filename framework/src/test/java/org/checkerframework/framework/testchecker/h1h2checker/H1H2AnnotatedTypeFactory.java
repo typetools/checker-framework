@@ -25,6 +25,12 @@ public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   AnnotationMirror H1S2;
 
+  /**
+   * Creates a new H1H2AnnotatedTypeFactory.
+   *
+   * @param checker the checker
+   */
+  @SuppressWarnings("this-escape")
   public H1H2AnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();
