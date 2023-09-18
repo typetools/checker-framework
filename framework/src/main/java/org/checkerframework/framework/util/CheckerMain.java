@@ -462,9 +462,7 @@ public class CheckerMain {
               "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
               "--add-exports",
               "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-              // Required because the Checker Framework reflectively accesses private
-              // members in jdk.internal.opt.
-              "--add-opens",
+              "--add-exports",
               "jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED",
               // Required because the Checker Framework reflectively accesses private
               // members in com.sun.tools.javac.comp.
