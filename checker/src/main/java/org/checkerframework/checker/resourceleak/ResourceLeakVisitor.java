@@ -323,21 +323,20 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   @Pure
   private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
       ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
-    AnnotationMirror createsMustCallForList =
+    AnnotationMirror ensuresCalledMethodsAnnos =
         atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.List.class);
     AnnotationMirrorSet result = new AnnotationMirrorSet();
-    if (createsMustCallForList != null) {
-      List<AnnotationMirror> createsMustCallFors =
+    if (ensuresCalledMethodsAnnos != null) {
+      result.addAll(
           AnnotationUtils.getElementValueArray(
-              createsMustCallForList,
+              ensuresCalledMethodsAnnos,
               atypeFactory.getEnsuresCalledMethodsListValueElement(),
-              AnnotationMirror.class);
-      result.addAll(createsMustCallFors);
+              AnnotationMirror.class));
     }
-    AnnotationMirror createsMustCallFor =
+    AnnotationMirror ensuresCalledMethod =
         atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.class);
-    if (createsMustCallFor != null) {
-      result.add(createsMustCallFor);
+    if (ensuresCalledMethod != null) {
+      result.add(ensuresCalledMethod);
     }
     return result;
   }
