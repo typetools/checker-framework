@@ -971,6 +971,16 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
+    if (node.getBindingVariable() != null) {
+      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
+      AnnotatedTypeMirror expType =
+          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+        in.getRegularStore().insertOrRefine(expr, anno);
+      }
+      return result;
+    }
+
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = node.getTree().getType();
     if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
@@ -985,15 +995,6 @@ public abstract class CFAbstractTransfer<
           in.getRegularStore().insertOrRefine(expr, anno);
         }
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
-      }
-    }
-    // TODO: Should this be an else if?
-    if (node.getBindingVariable() != null) {
-      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
     return result;

@@ -3802,10 +3802,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
     Node operand = scan(tree.getExpression(), p);
-    TypeMirror refType = TreeUtils.typeOf(tree.getType());
     Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
-    LocalVariableNode bindingNode =
-        (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
+    TypeMirror refType;
+    LocalVariableNode bindingNode;
+    if (binding != null) {
+      bindingNode = (LocalVariableNode) scan(binding, p);
+      // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node instead.
+      refType = bindingNode.getType();
+    } else {
+      refType = TreeUtils.typeOf(tree.getType());
+      bindingNode = null;
+    }
 
     InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
     extendWithNode(node);
