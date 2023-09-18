@@ -176,7 +176,9 @@ allprojects {
       'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
       '--add-exports',
       'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      '--add-exports',
+      // Required because the Checker Framework reflectively accesses private members.
+      // See org.checkerframework.afu.scenelib.util.CommandLineUtils.parseCommandLine.
+      '--add-opens',
       'jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED',
       // Required because the Checker Framework reflectively accesses private members in com.sun.tools.javac.comp.
       '--add-opens',
@@ -840,7 +842,6 @@ subprojects {
                 // uses the jdk.jdeps module.
                 '-javacoptions:--add-modules jdk.jdeps',
                 '-javacoptions:--add-exports=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
-                '-javacoptions:--add-exports=jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED',
                 '-vmoptions:--add-opens=jdk.jdeps/com.sun.tools.classfile=ALL-UNNAMED',
                 '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
                 '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
@@ -851,6 +852,7 @@ subprojects {
                 '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
                 '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
                 '-vmoptions:--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+                '-vmoptions:--add-opens=jdk.internal.opt/jdk.internal.opt=ALL-UNNAMED',
               ]
               if (project.name.is('framework')) {
                 // Do not check for the annotated JDK
