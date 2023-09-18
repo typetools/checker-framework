@@ -394,7 +394,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
           debugReflection("Resolved non-public method: " + symbol.owner + "." + symbol);
         }
 
-        JCExpression method = TreeUtils.Select(make, receiver, symbol);
+        JCExpression method = make.Select(receiver, symbol);
         args = getCorrectedArgs(symbol, args);
         // Build method invocation tree depending on the number of
         // parameters
