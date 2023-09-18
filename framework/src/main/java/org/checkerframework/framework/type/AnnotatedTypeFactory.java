@@ -129,6 +129,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -824,7 +825,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         ((JavacProcessingEnvironment) processingEnv).getContext();
     String processorArg = Options.instance(context).get("-processor");
     if (processorArg != null) {
-      return Arrays.asList(processorArg.split(","));
+      return SystemUtil.commaSplitter.splitToList(processorArg);
     }
     try {
       String filename = "META-INF/services/javax.annotation.processing.Processor";

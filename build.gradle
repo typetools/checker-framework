@@ -23,6 +23,7 @@ import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
   mavenCentral()
 }
 
@@ -41,12 +42,9 @@ ext {
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
-  stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.5"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
-
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
+  doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -55,7 +53,7 @@ ext {
   localRepo = '.git'
 
   versions = [
-    autoValue       : '1.10.3',
+    autoValue       : '1.10.4',
     lombok          : '1.18.28',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
@@ -130,6 +128,7 @@ allprojects {
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
     mavenCentral()
   }
 
@@ -416,46 +415,6 @@ task cloneAndBuildDependencies(type: Exec, group: 'Build') {
   executable 'checker/bin-devel/build.sh'
 }
 
-task maybeCloneAndBuildDependencies() {
-  // No group so it does not show up in the output of `gradlew tasks`
-  description 'Clones (or updates) and builds all dependencies if they are not present.'
-  onlyIf {
-    !file(stubparserJar).exists()
-    // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
-    // the repository does not exist when building checker.jar.
-  }
-
-  doFirst {
-    if (file(stubparser).exists()) {
-      exec {
-        workingDir stubparser
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true  // because of the doLast block below
-      }
-      exec {
-        workingDir stubparser
-        executable "${stubparser}/.build-without-test.sh"
-      }
-    } else {
-      exec {
-        executable 'checker/bin-devel/build.sh'
-      }
-    }
-  }
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser-${stubparserVersion}.jar!) are:"
-      exec {
-        workingDir "${stubparser}/javaparser-core/target"
-        executable 'ls'
-        ignoreExitValue = true
-      }
-      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar + '; are you using an out-of-date Checker Framework or Stubparser?')
-    }
-  }
-}
-
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
   doLast {
@@ -689,6 +648,7 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
 
 createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
 createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
+createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
@@ -851,7 +811,7 @@ subprojects {
                 "-dir:${projectDir}/jtreg",
                 "-workDir:${jtregOutput}/${name}/work",
                 "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail',
+                '-verbose:error,fail,nopass',
                 // Don't add debugging information
                 //  '-javacoptions:-g',
                 '-keywords:!ignore',
