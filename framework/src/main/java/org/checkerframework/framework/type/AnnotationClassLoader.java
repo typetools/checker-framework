@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -42,6 +41,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
@@ -123,10 +123,6 @@ public class AnnotationClassLoader implements Closeable {
    */
   private final Set<Class<? extends Annotation>> supportedBundledAnnotationClasses;
 
-  /** The package separator: ".". */
-  private static final Pattern DOT_LITERAL_PATTERN =
-      Pattern.compile(Character.toString(DOT), Pattern.LITERAL);
-
   /**
    * Constructor for loading annotations defined for a checker.
    *
@@ -154,7 +150,7 @@ public class AnnotationClassLoader implements Closeable {
     fullyQualifiedPackageNameSegments = new ArrayList<>();
 
     // from the fully qualified package name, split it at every dot then add to the list
-    fullyQualifiedPackageNameSegments.addAll(Arrays.asList(DOT_LITERAL_PATTERN.split(packageName)));
+    fullyQualifiedPackageNameSegments.addAll(SystemUtil.dotSplitter.splitToList(packageName));
 
     classLoader = getClassLoader();
 
@@ -435,13 +431,10 @@ public class AnnotationClassLoader implements Closeable {
     Set<String> paths = new LinkedHashSet<>();
 
     // add all extension paths
-    String extdirs = System.getProperty("java.ext.dirs");
-    if (extdirs != null && !extdirs.isEmpty()) {
-      paths.addAll(Arrays.asList(extdirs.split(File.pathSeparator)));
-    }
+    paths.addAll(SystemUtil.getPathsProperty("java.ext.dirs"));
 
     // add all paths in CLASSPATH, -cp, and -classpath
-    paths.addAll(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
+    paths.addAll(SystemUtil.getPathsProperty("java.class.path"));
 
     // add all paths that are examined by the classloader
     if (classLoader != null) {
@@ -475,22 +468,20 @@ public class AnnotationClassLoader implements Closeable {
   @SuppressWarnings("unused") // for debugging
   protected final void printPaths() {
     // all paths in Xbootclasspath
-    String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(File.pathSeparator);
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "bootclass path:");
-    for (String path : bootclassPaths) {
+    for (String path : SystemUtil.getPathsProperty("sun.boot.class.path")) {
       processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 
     // all extension paths
-    String[] extensionDirs = System.getProperty("java.ext.dirs").split(File.pathSeparator);
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "extension dirs:");
-    for (String path : extensionDirs) {
+    for (String path : SystemUtil.getPathsProperty("java.ext.dirs")) {
       processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 
     // all paths in CLASSPATH, -cp, and -classpath
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "java.class.path property:");
-    for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {
+    for (String path : SystemUtil.getPathsProperty("java.class.path")) {
       processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "\t" + path);
     }
 

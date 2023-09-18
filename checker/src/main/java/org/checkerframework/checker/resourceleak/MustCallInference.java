@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * field if it finds a method that satisfies the @MustCall obligation of the field along some path
  * to the regular exit point.
  */
-public class MustCallInferenceLogic {
+public class MustCallInference {
 
   /** The set of owning fields. */
   private final Set<VariableElement> owningFields = new HashSet<>();
@@ -44,14 +44,14 @@ public class MustCallInferenceLogic {
   private final ControlFlowGraph cfg;
 
   /**
-   * Creates a MustCallInferenceLogic. If the type factory has whole program inference enabled, its
-   * postAnalyze method should instantiate a new MustCallInferenceLogic using this constructor and
-   * then call {@link #runInference()}.
+   * Creates a MustCallInference. If the type factory has whole program inference enabled, its
+   * postAnalyze method should instantiate a new MustCallInference using this constructor and then
+   * call {@link #runInference()}.
    *
    * @param typeFactory the type factory
    * @param cfg the ControlFlowGraph
    */
-  /*package-private*/ MustCallInferenceLogic(
+  /*package-private*/ MustCallInference(
       ResourceLeakAnnotatedTypeFactory typeFactory, ControlFlowGraph cfg) {
     this.typeFactory = typeFactory;
     this.cfg = cfg;
