@@ -295,7 +295,7 @@ allprojects {
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED', true)
         options.addBooleanOption('-add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED', true)
-        options.addBooleanOption('-add-exports=jdk.internal.opt/jdk.intenal.opt=ALL-UNNAMED', true)
+        options.addBooleanOption('--add-exports=jdk.internal.opt/jdk.intenal.opt=ALL-UNNAMED', true)
 
         // "-Xwerror" requires Javadoc everywhere.  Currently, CI jobs require Javadoc only
         // on changed lines.  Enable -Xwerror in the future when all Javadoc exists.
