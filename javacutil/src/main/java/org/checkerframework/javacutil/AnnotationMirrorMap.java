@@ -38,10 +38,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
    *
    * @param copy a map whose contents should be copied to the newly created map
    */
-  @SuppressWarnings({
-    "nullness:method.invocation", // initialization in constructor
-    "this-escape"
-  })
+  @SuppressWarnings("nullness:method.invocation") // initialization in constructor
   public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> copy) {
     this();
     this.putAll(copy);

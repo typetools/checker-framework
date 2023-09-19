@@ -18,7 +18,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 public class CompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  @SuppressWarnings("this-escape")
   public CompoundCheckerAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

@@ -24,7 +24,6 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
    *
    * @param checker the checker
    */
-  @SuppressWarnings("this-escape")
   public TestAccumulationAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(
         checker,

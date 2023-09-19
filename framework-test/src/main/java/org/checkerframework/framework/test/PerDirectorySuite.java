@@ -51,12 +51,8 @@ public class PerDirectorySuite extends RootedSuite {
    * Only called reflectively. Do not use programmatically.
    *
    * @param klass the class whose tests to run
-   * @throws Throwable if there is trouble
    */
-  @SuppressWarnings({
-    "nullness", // JUnit needs to be annotated
-    "this-escape"
-  })
+  @SuppressWarnings("nullness") // JUnit needs to be annotated
   public PerDirectorySuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
     TestClass testClass = getTestClass();

@@ -52,7 +52,6 @@ public class AnnotationMirrorSet
    *
    * @param value the AnnotationMirror to put in the set
    */
-  @SuppressWarnings("this-escape")
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
@@ -62,7 +61,6 @@ public class AnnotationMirrorSet
    *
    * @param annos the AnnotationMirrors to put in the set
    */
-  @SuppressWarnings("this-escape")
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
   }
