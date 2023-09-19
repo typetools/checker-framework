@@ -35,7 +35,7 @@ ext {
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2023-09-08, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
+  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
   skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
@@ -364,7 +364,7 @@ allprojects {
       //   warnings are suppressible with a "// fall through" comment.
       String lint =     '-Xlint:-options,-fallthrough'
       if(isJava21orHigher) {
-        // TODO: Ignore these for now, we may want to review and suppress each one later.
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
         lint +=',-this-escape'
       }
       options.compilerArgs += [
