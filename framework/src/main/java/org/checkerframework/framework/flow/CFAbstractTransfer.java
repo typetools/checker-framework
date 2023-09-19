@@ -983,7 +983,7 @@ public abstract class CFAbstractTransfer<
 
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = node.getTree().getType();
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+    if (refTypeTree != null && refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());

@@ -2577,14 +2577,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // The "reference type" is the type after "instanceof".
     Tree patternTree = TreeUtils.instanceOfTreeGetPattern(tree);
     if (patternTree != null) {
-      VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
-      validateTypeOf(variableTree);
-      if (variableTree.getModifiers() != null) {
-        AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-        if (!isTypeCastSafe(variableType, expType)) {
-          checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+      if (patternTree.getKind().name().equals("BINDING_PATTERN")) {
+        VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
+        validateTypeOf(variableTree);
+        if (variableTree.getModifiers() != null) {
+          AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+          AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+          if (!isTypeCastSafe(variableType, expType)) {
+            checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+          }
         }
+      } else {
+        // TODO:
       }
     } else {
       Tree refTypeTree = tree.getType();

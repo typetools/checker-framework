@@ -549,6 +549,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return visitSwitchExpression17(tree, p);
           case "YIELD":
             return visitYield17(tree, p);
+          case "DECONSTRUCTION_PATTERN":
+            return visitDeconstructionPattern21(tree, p);
           default:
             // fall through to generic behavior
         }
@@ -605,6 +607,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
     extendWithNode(varNode);
     return varNode;
+  }
+
+  /**
+   * Visit a DeconstructionPatternTree
+   *
+   * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree to be
+   *     backward-compatible
+   * @param p parameter
+   * @return the result of visiting the tree
+   */
+  public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
+    throw new RuntimeException("Not implemented");
   }
 
   /* --------------------------------------------------------- */
@@ -3805,10 +3819,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
     TypeMirror refType;
     LocalVariableNode bindingNode;
+
     if (binding != null) {
-      bindingNode = (LocalVariableNode) scan(binding, p);
-      // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node instead.
-      refType = bindingNode.getType();
+      if (!binding.getKind().name().contentEquals("DECONSTRUCTION_PATTERN")) {
+        bindingNode = (LocalVariableNode) scan(binding, p);
+        // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node
+        // instead.
+        refType = bindingNode.getType();
+      } else {
+        bindingNode = null;
+        refType = TreeUtils.typeOf(binding);
+      }
     } else {
       refType = TreeUtils.typeOf(tree.getType());
       bindingNode = null;
