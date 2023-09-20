@@ -309,7 +309,9 @@ do
         ls -al "$(pwd)"
         echo "Listing of ${REPO_FULLPATH}:"
         ls -al "${REPO_FULLPATH}"
-        if [ -d "${REPO_FULLPATH}/dljc-out" ] ; then
+        if [ ! -d "${REPO_FULLPATH}/dljc-out" ] ; then
+            echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
+        else
             echo "Listing of ${REPO_FULLPATH}/dljc-out:"
             ls -al "${REPO_FULLPATH}"/dljc-out
             for f in "${REPO_FULLPATH}"/dljc-out/* ; do
@@ -318,8 +320,6 @@ do
                 sleep 1
                 echo "==== end of tail of ${f} ===="
             done
-        else
-            echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
         fi
 
         # If the result is unusable (i.e. wpi cannot run),
