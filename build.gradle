@@ -55,7 +55,7 @@ ext {
 
   versions = [
     autoValue       : '1.10.4',
-    lombok          : '1.18.28',
+    lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
