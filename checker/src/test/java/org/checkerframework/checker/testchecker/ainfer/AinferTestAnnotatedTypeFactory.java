@@ -89,6 +89,11 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final ExecutableElement siblingWithFieldsValue2Element =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value2", 0, processingEnv);
 
+  /**
+   * Creates an AinferTestAnnotatedTypeFactory.
+   *
+   * @param checker the checker
+   */
   public AinferTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Support a declaration annotation that has the same meaning as @Sibling1, to test that the

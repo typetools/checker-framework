@@ -33,9 +33,10 @@ ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
+  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
@@ -200,6 +201,10 @@ allprojects {
       doNotFormat += ['**/java17/', '**/*record*/']
     }
 
+    if (!isJava21orHigher) {
+      doNotFormat += ['**/java21/']
+    }
+
     format 'misc', {
       // define the files to apply `misc` to
       target '*.md', '*.tex', '.gitignore', 'Makefile'
@@ -354,13 +359,18 @@ allprojects {
 
       options.failOnError = true
       options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      String lint =     '-Xlint:-options,-fallthrough'
+      if(isJava21orHigher) {
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+        lint +=',-this-escape'
+      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-options,-fallthrough',
+        lint,
         '-Xlint',
       ]
 
