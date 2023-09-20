@@ -35,8 +35,8 @@ ext {
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
+  // As of 2023-09-21, delombok doesn't yet support JDK 22; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() >= JavaVersion.VERSION_22
 
   parentDir = file("${rootDir}/../").absolutePath
 
