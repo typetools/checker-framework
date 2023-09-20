@@ -68,20 +68,24 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When we
-   * enable -Ainfer for the Resource Leak Checker, whole-program inference (WPI) is performed for
-   * all the sub-checkers. However, our mechanism for inferring annotations for the resource leak
-   * checker is different. It relies on pattern matching instead. The WPI results for this inference
-   * are not useful and only end up slowing down the convergence of the algorithm for Resource Leak
-   * Inference.
+   * The Called Methods Checker is one of the sub-checkers of the Resource Leak Checker. When the
+   * -Ainfer flag is enabled for the Resource Leak Checker, whole-program inference (WPI) is
+   * performed for all the sub-checkers. However, the mechanism for inferring annotations for the
+   * resource leak checker is different. It relies on pattern matching instead. The WPI results for
+   * this inference are not useful and only end up slowing down the convergence of the algorithm for
+   * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
+   * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
+   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * command line arguments.
    *
    * @param tree a tree
-   * @return false if Resource Leak Checker is running as one of the upstream checkers, otherwise
-   *     returns the result of the super call
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    if (!isWpiEnabledForRLC()) {
+    if (!isWpiEnabledForRLC() && atypeFactory.getCheckerNames().contains("resourceleak")) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(tree);
@@ -93,16 +97,20 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * performed for all the sub-checkers. However, the mechanism for inferring annotations for the
    * resource leak checker is different. It relies on pattern matching instead. The WPI results for
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
-   * Resource Leak Inference.
+   * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
+   * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
+   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * command line arguments.
    *
    * @param expressionTree a tree
    * @param lhsTree its element
-   * @return false if Resource Leak Checker is running as one of the upstream checkers, otherwise
-   *     returns the result of the super call
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    if (!isWpiEnabledForRLC()) {
+    if (!isWpiEnabledForRLC() && atypeFactory.getCheckerNames().contains("resourceleak")) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);

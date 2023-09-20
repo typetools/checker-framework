@@ -1,4 +1,4 @@
-// @skip-test if -AenableWPIForRLC flag is not passed
+// @skip-test the test contains no resource types to infer
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 
 public class ECMInference {

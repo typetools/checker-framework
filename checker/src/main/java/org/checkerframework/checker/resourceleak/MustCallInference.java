@@ -411,8 +411,10 @@ public class MustCallInference {
       // Add the existing @MustCall annotation to guarantee the termination of inference. This is
       // necessary to prevent the re-computation of @MustCall annotations on the class declaration.
       // It simply adds the existing `@MustCall` annotation from the class declaration, helping to
-      // maintain consistency and termination when there are multiple methods that could satisfy the
-      // must-call obligation.
+      // maintain consistency and termination of the fixed-point algorithm. It becomes particularly
+      // important when multiple methods could satisfy the must-call obligation, potentially
+      // resulting in different @MustCall annotations between different iterations of the
+      // fixed-point algorithm.
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
       wpi.addClassDeclarationAnnotation(typeElement, am);
       return;
@@ -481,8 +483,8 @@ public class MustCallInference {
             continue;
           }
 
-          JavaExpression target = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
-          if (mustCallObligationSatisfied(invocation, paramElt, target)) {
+          JavaExpression paramJe = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
+          if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
             addOwningToParam(i + 1);
             break;
           }
@@ -492,7 +494,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks the arguments of the method invocation node. If any of them is passed as an owning
+   * Analyze the arguments of the method invocation node. If any of them is passed as an owning
    * parameter to the callee, and is an alias with any parameter of the current method, this method
    * adds the {@code @Owning} annotation to the corresponding parameter of the current method.
    *
@@ -531,8 +533,8 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the argument passed in the invocation node and the parameter of the current
-   * method are resource aliases.
+   * Checks whether the given argument which is passed in the invocation node and the given
+   * parameter of the current method are resource aliases.
    *
    * @param obligations the obligations associated with the current block
    * @param argument the argument
@@ -552,9 +554,8 @@ public class MustCallInference {
   }
 
   /**
-   * Analyzes indirect calls within the method represented by the given MethodInvocationNode. It
-   * checks the called-methods set of each argument passed into the method call to infer the
-   * presence of an owning annotation for the field or parameter used as an argument in the call.
+   * Analyzes the called-methods set of each argument passed into the method call to compute
+   * the @Owning annotation for the field or parameter used as an argument in the call.
    *
    * @param obligations set of obligations associated with the current block
    * @param invocation a method invocation node to check
@@ -644,8 +645,8 @@ public class MustCallInference {
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
       if (isParamAndArgAliased(obligations, arg, currentMethodParamElt)) {
-        JavaExpression target = JavaExpression.fromVariableTree(currentMethodParamTree);
-        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, target)) {
+        JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
+        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
           addOwningToParam(i + 1);
           break;
         }
@@ -677,7 +678,7 @@ public class MustCallInference {
   }
 
   /**
-   * This method performs three checks related to method invocation nodes. It computes @Owning
+   * This method performs three computations related to method invocation nodes. It computes @Owning
    * annotations for the enclosing formal parameter or fields:
    *
    * <ul>
@@ -713,11 +714,11 @@ public class MustCallInference {
    * @param invocation the method invocation node being checked for satisfaction of the MustCall
    *     obligation
    * @param varElt the variable annotated with the MustCall annotation
-   * @param target the target of the MustCall obligation
+   * @param varJe the java expression corresponding to the {@code varElt}
    * @return {@code true} if the MustCall obligation is satisfied
    */
   private boolean mustCallObligationSatisfied(
-      MethodInvocationNode invocation, Element varElt, JavaExpression target) {
+      MethodInvocationNode invocation, Element varElt, JavaExpression varJe) {
 
     List<String> mustCallValues = typeFactory.getMustCallValue(varElt);
     if (mustCallValues.size() != 1) {
@@ -727,7 +728,7 @@ public class MustCallInference {
 
     AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(invocation);
     @Nullable AccumulationValue cmValue =
-        cmStoreAfter == null ? null : cmStoreAfter.getValue(target);
+        cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
     AnnotationMirror cmAnno = null;
 
     if (cmValue != null) {
@@ -780,10 +781,11 @@ public class MustCallInference {
         }
 
         addOrUpdateMustCall();
-      }
-      BlockWithObligations state = new BlockWithObligations(successor, obligations);
-      if (visited.add(state)) {
-        worklist.add(state);
+      } else {
+        BlockWithObligations state = new BlockWithObligations(successor, obligations);
+        if (visited.add(state)) {
+          worklist.add(state);
+        }
       }
     }
   }
