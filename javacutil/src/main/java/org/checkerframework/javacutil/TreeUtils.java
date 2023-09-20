@@ -2502,7 +2502,7 @@ public final class TreeUtils {
     if (atLeastJava21) {
       try {
         @SuppressWarnings("nullness")
-        ExpressionTree ret =
+        @NonNull ExpressionTree ret =
             (ExpressionTree)
                 CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION.invoke(constantCaseLabelTree);
         return ret;
@@ -2537,7 +2537,7 @@ public final class TreeUtils {
     if (atLeastJava21) {
       try {
         @SuppressWarnings("nullness")
-        Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
+        @NonNull Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
         return ret;
       } catch (IllegalAccessException | InvocationTargetException e) {
         throw new BugInCF(
