@@ -304,7 +304,8 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
-      if (project.getProperties().getOrDefault('useJdk17Compiler', false)) {
+      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
+      if (jdk17Compiler) {
         // This uses the Java 17 compiler to compile all code.
         //  https://docs.gradle.org/current/userguide/toolchains.html
         javaCompiler = javaToolchains.compilerFor {
@@ -371,7 +372,7 @@ allprojects {
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint =     '-Xlint:-options,-fallthrough'
-      if(isJava21orHigher) {
+      if(isJava21orHigher && !jdk17Compiler) {
         // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
         lint +=',-this-escape'
       }
