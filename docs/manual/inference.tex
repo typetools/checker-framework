@@ -241,10 +241,11 @@ The requirements to run \<wpi.sh> and \<wpi-many.sh> are the same:
   \verb|JAVA8_HOME|, \verb|JAVA11_HOME|, \verb|JAVA17_HOME|, or \verb|JAVA21_HOME|
   environment variables must be set.
 \item If set, the \verb|JAVA_HOME| environment variable must point to a
-  Java 8, 11, 17, or 21 JDK.
+  Java 8, 11, 17, 20, or 21 JDK.
 \item If set, the \verb|JAVA8_HOME| environment variable must point to a Java 8 JDK.
 \item If set, the \verb|JAVA11_HOME| environment variable must point to a Java 11 JDK.
 \item If set, the \verb|JAVA17_HOME| environment variable must point to a Java 17 JDK.
+\item If set, the \verb|JAVA20_HOME| environment variable must point to a Java 20 JDK.
 \item If set, the \verb|JAVA21_HOME| environment variable must point to a Java 21 JDK.
 \item \<CHECKERFRAMEWORK> environment variable must point to a built copy of the Checker Framework.
 \item If set, the \verb|DLJC| environment variable must point to a copy of the \<dljc> script
@@ -280,9 +281,10 @@ created by running \<query-github.sh securerandom.query 100>. If you do
 not want to use GitHub, construct a file yourself that matches the format of
 the file \<securerandom.list>.
 
-\item Use \<wpi-many.sh> to run whole-program inference on every
-Ant, Gradle, or Maven project in a list of (GitHub repository URL, git hash)
-pairs.
+\item Use \<wpi-many.sh> to run whole-program inference on multiple
+Ant, Gradle, or Maven projects.  You provide it a file in which each line
+is ``GitHub repository URL'' ``git hash'' (with no quotes, and with
+whitespace between them).
 \begin{itemize}
 \item If you are using a checker that is distributed with the Checker
 Framework, use \<wpi-many.sh> directly.

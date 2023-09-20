@@ -1,6 +1,10 @@
 // @below-java21-jdk-skip-test
+// @infer-jaifs-skip-test
+// @infer-ajava-skip-test
 // These are examples copied from:
 // https://openjdk.org/jeps/441
+
+@SuppressWarnings("i18n") // true postives.
 public class JEP441 {
 
   // We enhance switch statements and expressions in four ways:

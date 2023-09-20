@@ -2342,6 +2342,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       // Build CFG for the cases.
       int defaultIndex = -1;
+      boolean exhaustiveAndNoDefault = exhaustiveAndNoDefault();
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
@@ -2356,7 +2357,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // This can be extended to handle case statements as well as case rules.
           boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastOfExhaustive =
-              isLastExceptDefault && allCasesAreEnumerated() && noFallthroughToHere;
+              isLastExceptDefault && exhaustiveAndNoDefault && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
@@ -2554,43 +2555,37 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
     }
 
-    /**
-     * Returns true if the cases are exhaustive -- exactly one is executed. There might or might not
-     * be a `default` case label; if there is, it is never used.
-     *
-     * @return true if the cases are exhaustive
-     */
-    private boolean allCasesAreEnumerated() {
-      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
-
-      switch (selectorTypeMirror.getKind()) {
-        case BOOLEAN:
-          // TODO
-          break;
-        case DECLARED:
-          DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
-          TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
-          if (declaredTypeElement.getKind() == ElementKind.ENUM) {
-            // It's an enumerated type.
-            List<VariableElement> enumConstants =
-                ElementUtils.getEnumConstants(declaredTypeElement);
-            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
-            for (CaseTree caseTree : caseTrees) {
-              for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
-                if (caseEnumConstant.getKind() != Kind.IDENTIFIER) {
-                  // This is not a simple switch on an enum, so all cases can't be enumerated.
-                  return false;
-                }
-                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
-              }
-            }
-            // Could also check that the values match.
-            boolean result = enumConstants.size() == caseLabels.size();
-            return result;
+    private boolean exhaustiveAndNoDefault() {
+      for (CaseTree caseTree : caseTrees) {
+        if (TreeUtils.isDefaultCaseTree(caseTree)) {
+          return false;
+        }
+      }
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        return true;
+      }
+      int enumCaseLabels = 0;
+      for (CaseTree caseTree : caseTrees) {
+        for (Tree caseLabel : TreeUtils.caseTreeGetLabels(caseTree)) {
+          if (caseLabel.getKind() == Kind.NULL_LITERAL
+              || caseLabel.getKind().name().contentEquals("BINDING_PATTERN")) {
+            return true;
           }
-          break;
-        default:
-          break;
+          if (caseLabel.getKind() == Kind.IDENTIFIER) {
+            enumCaseLabels++;
+          }
+        }
+      }
+
+      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
+      if (selectorTypeMirror.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
+        TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
+        if (declaredTypeElement.getKind() == ElementKind.ENUM) {
+          // It's an enumerated type.
+          List<VariableElement> enumConstants = ElementUtils.getEnumConstants(declaredTypeElement);
+          return enumConstants.size() == enumCaseLabels;
+        }
       }
       return false;
     }
