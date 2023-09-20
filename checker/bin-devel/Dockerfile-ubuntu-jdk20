@@ -1,8 +1,12 @@
 # Create a Docker image that is ready to run the main Checker Framework tests,
-# using JDK 11.
+# using JDK 20.
+# (This is OpenJDK, not Oracle JDK.  There are different instructions for
+# installing a LTS release of Java.)
+# To convert this file to use a newer JDK, search (from the top level of the
+# Checker Framework and Annotation Tools repositories) for: (java|jdk).?20\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-FROM ubuntu
+FROM ubuntu:rolling
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
@@ -16,12 +20,15 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && aptitude -y install \
   apt-utils
 
+# ca-certificates-java is a dependency of openjdk-20-jdk, but the installation
+# process seems to fail sometimes when only openjdk-20-jdk is specified.
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
-  openjdk-11-jdk \
+  ca-certificates-java \
+&& aptitude -y install \
   openjdk-17-jdk \
-&& update-java-alternatives -s java-1.11.0-openjdk-amd64
+  openjdk-20-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
 
@@ -32,14 +39,28 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   cpp \
   git \
   jq \
-  jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
   python3-distutils \
   python3-requests \
   unzip \
-  wget
+  wget \
+&& aptitude -y install \
+  jtreg6
+
+# Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
+# (Don't try to use a variable here for the Maven version.)
+# RUN export DEBIAN_FRONTEND=noninteractive \
+# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz \
+# && tar xzvf apache-maven-3.9.2-bin.tar.gz
+# ENV PATH="/apache-maven-3.9.2/bin:$PATH"
+
+# Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& aptitude -y install \
+  default-jre-headless
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get autoremove \

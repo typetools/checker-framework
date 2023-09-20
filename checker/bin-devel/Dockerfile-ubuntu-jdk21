@@ -6,7 +6,7 @@
 # Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-FROM ubuntu:rolling
+FROM ubuntu:23.10
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
@@ -23,6 +23,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
+  openjdk-17-jdk \
   openjdk-21-jdk
 
 # Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .

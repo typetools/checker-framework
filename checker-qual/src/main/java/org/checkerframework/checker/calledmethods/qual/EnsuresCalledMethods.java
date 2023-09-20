@@ -46,9 +46,9 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Repeatable(EnsuresCalledMethods.List.class)
 public @interface EnsuresCalledMethods {
   /**
-   * The Java expressions to which the qualifier applies.
+   * The Java expressions that will have methods called on them.
    *
-   * @return the Java expressions to which the qualifier applies
+   * @return the Java expressions that will have methods called on them
    * @see org.checkerframework.framework.qual.EnsuresQualifier
    */
   // Postconditions must use "value" as the name (conditional postconditions use "expression").
