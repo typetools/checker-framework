@@ -201,7 +201,10 @@ allprojects {
       doNotFormat += ['**/java17/', '**/*record*/']
     }
 
-    if (!isJava21orHigher) {
+    // TODO: reinstate. googlejavaformat can't parse new language features.
+    // (As of version 1.17.0.)
+    // if (!isJava21orHigher) {
+    if (true) {
       doNotFormat += ['**/java21/']
     }
 
