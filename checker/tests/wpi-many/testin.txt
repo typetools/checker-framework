@@ -1,7 +1,7 @@
-https://github.com/kelloggm/wpi-many-tests-bcel-util 9735be546d4286c033c45fa30186576f309723ab
-https://github.com/kelloggm/wpi-many-tests-bibtex-clean 08919453b8868c1c50dde6cc9c82e82a6d1eba1b
-https://github.com/kelloggm/wpi-many-tests-ensures-called-methods b5729881d621c12b9df6cbba818d8ad097ec32fb
-https://github.com/kelloggm/wpi-many-tests-html-pretty-print 8ffe6fa5870f2f160bb713be28f823bd1c90fbda
-https://github.com/kelloggm/-wpi-many-tests-bibtex-clean a9f2564f32bb874492aa1f9b0c5225f845a0e640
+https://github.com/kelloggm/wpi-many-tests-bcel-util bed1372c5c6de5c90f3a17d5ce228b882faa0da2
+https://github.com/kelloggm/wpi-many-tests-bibtex-clean 14770af9a6c973fd8a7920e22e40a501ba6fd2dc
+https://github.com/kelloggm/wpi-many-tests-ensures-called-methods 20361e992d8c24aa48de62f1130f977d6b3c0ef1
+https://github.com/kelloggm/wpi-many-tests-html-pretty-print 96eb875ca7c9a67d6e3d61d634011c7354064dab
+https://github.com/kelloggm/-wpi-many-tests-bibtex-clean c7715b8a60dd296926cc64d0bba9761caca88ab0
 # This comment line tests that the commenting feature works (if it doesn't, then this line will be read and fail, as it's not a URL).
-https://github.com/Nargeshdb/wpi-many-tests-owning-field 5f8fad65154dc14b3261b4c237ece70e265b3801
+https://github.com/Nargeshdb/wpi-many-tests-owning-field 1b73c81021f598717226243f99417c0cad54be82

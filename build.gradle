@@ -23,6 +23,7 @@ import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
   mavenCentral()
 }
 
@@ -32,18 +33,15 @@ ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
+  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
-
-  stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.5"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
 
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
@@ -131,6 +129,7 @@ allprojects {
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
     mavenCentral()
   }
 
@@ -200,6 +199,10 @@ allprojects {
     ]
     if (!isJava17orHigher) {
       doNotFormat += ['**/java17/', '**/*record*/']
+    }
+
+    if (!isJava21orHigher) {
+      doNotFormat += ['**/java21/']
     }
 
     format 'misc', {
@@ -356,13 +359,18 @@ allprojects {
 
       options.failOnError = true
       options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      String lint =     '-Xlint:-options,-fallthrough'
+      if(isJava21orHigher) {
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+        lint +=',-this-escape'
+      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-options,-fallthrough',
+        lint,
         '-Xlint',
       ]
 
@@ -415,46 +423,6 @@ allprojects {
 task cloneAndBuildDependencies(type: Exec, group: 'Build') {
   description 'Clones (or updates) and builds all dependencies'
   executable 'checker/bin-devel/build.sh'
-}
-
-task maybeCloneAndBuildDependencies() {
-  // No group so it does not show up in the output of `gradlew tasks`
-  description 'Clones (or updates) and builds all dependencies if they are not present.'
-  onlyIf {
-    !file(stubparserJar).exists()
-    // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
-    // the repository does not exist when building checker.jar.
-  }
-
-  doFirst {
-    if (file(stubparser).exists()) {
-      exec {
-        workingDir stubparser
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true  // because of the doLast block below
-      }
-      exec {
-        workingDir stubparser
-        executable "${stubparser}/.build-without-test.sh"
-      }
-    } else {
-      exec {
-        executable 'checker/bin-devel/build.sh'
-      }
-    }
-  }
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser-${stubparserVersion}.jar!) are:"
-      exec {
-        workingDir "${stubparser}/javaparser-core/target"
-        executable 'ls'
-        ignoreExitValue = true
-      }
-      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar + '; are you using an out-of-date Checker Framework or Stubparser?')
-    }
-  }
 }
 
 task version(group: 'Documentation') {
