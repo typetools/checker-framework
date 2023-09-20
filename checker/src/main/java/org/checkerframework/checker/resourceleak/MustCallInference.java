@@ -72,6 +72,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>Note: This class makes the assumption that the must-call set has only one element. Must-call
  * sets with more than one element may be supported in the future.
  *
+ * <p>Note: When the -Ainfer flag is used by default, whole-program inference is disabled for the
+ * Resource Leak Checker, and instead, this special mechanism as the best inference mechanism for
+ * the Resource Leak Checker inference is executed. However, for testing and future experimental
+ * purposes, we defined the -AenableWPIForRLC flag to enable whole-program inference (WPI) when
+ * running the Resource Leak Checker inference.
+ *
  * @see <a
  *     href="https://checkerframework.org/manual/#resource-leak-checker-inference-algo">Automatic
  *     Inference of Resource Leak Specifications</a>
