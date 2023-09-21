@@ -971,8 +971,8 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
-    if (node.getBindingVariable() != null) {
-      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
+    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+      JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {

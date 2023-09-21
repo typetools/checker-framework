@@ -149,6 +149,16 @@ public final class TreeUtils {
   /** The BindingPatternTree.getVariable method for Java 16 and higher; null otherwise. */
   private static final @Nullable Method BINDINGPATTERNTREE_GETVARIABLE;
 
+  /**
+   * The DeconstructionPatternTree.getDeconstructor method for Java 21 and higher; null otherwise.
+   */
+  private static final @Nullable Method DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR;
+
+  /**
+   * The DeconstructionPatternTree.getNestedPatterns method for Java 21 and higher; null otherwise.
+   */
+  private static final @Nullable Method DECONSTRUCTIONPATTERNTREE_GETNESTEDPATTERNS;
+
   /** The CaseTree.getLabels method for Java 21 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETLABELS;
 
@@ -281,11 +291,20 @@ public final class TreeUtils {
 
         TREEMAKER_SELECT = TreeMaker.class.getMethod("Select", JCExpression.class, Symbol.class);
         CASETREE_GETLABELS = CaseTree.class.getDeclaredMethod("getLabels");
+
+        Class<?> deconstructionPatternClass =
+            Class.forName("com.sun.source.tree.DeconstructionPatternTree");
+        DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR =
+            deconstructionPatternClass.getMethod("getDeconstructor");
+        DECONSTRUCTIONPATTERNTREE_GETNESTEDPATTERNS =
+            deconstructionPatternClass.getMethod("getNestedPatterns");
       } else {
         TREEMAKER_SELECT = null;
         CASETREE_GETLABELS = null;
         CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION = null;
         PATTERNCASELABELTREE_GETPATTERN = null;
+        DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR = null;
+        DECONSTRUCTIONPATTERNTREE_GETNESTEDPATTERNS = null;
       }
     } catch (ClassNotFoundException | NoSuchMethodException e) {
       Error err = new AssertionError("Unexpected error in TreeUtils static initializer");
@@ -2572,6 +2591,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns whether {@code tree} is a {@code BindingPatternTree}.
+   *
+   * @param tree a tree to check
+   * @return whether {@code tree} is a {@code BindingPatternTree}
+   */
+  public static boolean isBindingPatternTree(Tree tree) {
+    return tree.getKind().name().contentEquals("BINDING_PATTERN");
+  }
+
+  /**
    * Returns the binding variable of {@code bindingPatternTree}.
    *
    * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
@@ -2598,6 +2627,74 @@ public final class TreeUtils {
           bindingPatternTree);
     } else {
       throw new BugInCF("TreeUtils.bindingPatternTreeGetVariable: requires at least Java 16");
+    }
+  }
+
+  /**
+   * Returns whether {@code tree} is a {@code DeconstructionPatternTree}.
+   *
+   * @param tree a tree to check
+   * @return whether {@code tree} is a {@code DeconstructionPatternTree}
+   */
+  public static boolean isDeconstructionPatternTree(Tree tree) {
+    return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
+  }
+
+  /**
+   * Wrapper around {@code DeconstructionPatternTree#getDeconstructor}.
+   *
+   * @param tree the DeconstructionPatternTree
+   * @return the deconstructor of {@code DeconstructionPatternTree}
+   */
+  public static ExpressionTree deconstructionPatternTreeGetDeconstructor(Tree tree) {
+    if (atLeastJava21) {
+      ExpressionTree exprTree;
+      try {
+        exprTree = (ExpressionTree) DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR.invoke(tree);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new BugInCF(
+            "TreeUtils.deconstructionPatternTreeGetDeconstructor: reflection failed for tree: %s",
+            tree, e);
+      }
+      if (exprTree != null) {
+        return exprTree;
+      }
+      throw new BugInCF(
+          "TreeUtils.deconstructionPatternTreeGetDeconstructor: deconstructor is null for tree: %s",
+          tree);
+    } else {
+      throw new BugInCF(
+          "TreeUtils.deconstructionPatternTreeGetDeconstructor: requires at least Java 21");
+    }
+  }
+
+  /**
+   * Wrapper around {@code DeconstructionPatternTree#getNestedPatterns}.
+   *
+   * @param tree the DeconstructionPatternTree
+   * @return the nested patterns of {@code DeconstructionPatternTree}
+   */
+  @SuppressWarnings("unchecked")
+  public static List<? extends Tree> deconstructionPatternTreeGetNestedPatterns(Tree tree) {
+    if (atLeastJava21) {
+      List<? extends Tree> nestedPatterns;
+      try {
+        nestedPatterns =
+            (List<? extends Tree>) DECONSTRUCTIONPATTERNTREE_GETNESTEDPATTERNS.invoke(tree);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new BugInCF(
+            "TreeUtils.deconstructionPatternTreeGetNestedPatterns: reflection failed for tree: %s",
+            tree, e);
+      }
+      if (nestedPatterns != null) {
+        return nestedPatterns;
+      }
+      throw new BugInCF(
+          "TreeUtils.deconstructionPatternTreeGetNestedPatterns: nested patterns are null for tree: %s",
+          tree);
+    } else {
+      throw new BugInCF(
+          "TreeUtils.deconstructionPatternTreeGetNestedPatterns: requires at least Java 21");
     }
   }
 

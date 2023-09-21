@@ -105,6 +105,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
@@ -618,8 +619,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the tree
    */
   public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
-    // TODO: implement deconstruction pattern.
-    throw new BugInCF("Deconstruction patterns are not yet implemented.");
+    List<? extends Tree> nestedPatternTrees =
+        TreeUtils.deconstructionPatternTreeGetNestedPatterns(deconstructionPatternTree);
+    List<Node> nestedPatterns = new ArrayList<>(nestedPatternTrees.size());
+    for (Tree pattern : nestedPatternTrees) {
+      nestedPatterns.add(scan(pattern, p));
+    }
+
+    return new DeconstructorPatternNode(
+        TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
   }
 
   /* --------------------------------------------------------- */
@@ -2569,7 +2577,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (CaseTree caseTree : caseTrees) {
         for (Tree caseLabel : TreeUtils.caseTreeGetLabels(caseTree)) {
           if (caseLabel.getKind() == Kind.NULL_LITERAL
-              || caseLabel.getKind().name().contentEquals("BINDING_PATTERN")) {
+              || TreeUtils.isBindingPatternTree(caseLabel)) {
             return true;
           }
           if (caseLabel.getKind() == Kind.IDENTIFIER) {
@@ -3811,24 +3819,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
+    InstanceOfNode instanceOfNode;
     Node operand = scan(tree.getExpression(), p);
-    Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
-    TypeMirror refType;
-    LocalVariableNode bindingNode;
-
-    if (binding != null) {
-      bindingNode = (LocalVariableNode) scan(binding, p);
-      // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node
-      // instead.
-      refType = bindingNode.getType();
+    Tree patternTree = TreeUtils.instanceOfTreeGetPattern(tree);
+    if (patternTree != null) {
+      Node pattern = scan(patternTree, p);
+      instanceOfNode = new InstanceOfNode(tree, operand, pattern, pattern.getType(), types);
     } else {
-      refType = TreeUtils.typeOf(tree.getType());
-      bindingNode = null;
+      TypeMirror refType = TreeUtils.typeOf(tree.getType());
+      instanceOfNode = new InstanceOfNode(tree, operand, refType, types);
     }
-
-    InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
-    extendWithNode(node);
-    return node;
+    extendWithNode(instanceOfNode);
+    return instanceOfNode;
   }
 
   @Override

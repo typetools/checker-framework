@@ -2577,7 +2577,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // The "reference type" is the type after "instanceof".
     Tree patternTree = TreeUtils.instanceOfTreeGetPattern(tree);
     if (patternTree != null) {
-      if (patternTree.getKind().name().equals("BINDING_PATTERN")) {
+      if (TreeUtils.isBindingPatternTree(patternTree)) {
         VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
@@ -2588,7 +2588,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           }
         }
       } else {
-        // TODO:
+        // TODO: implement deconstructed patterns.
       }
     } else {
       Tree refTypeTree = tree.getType();
