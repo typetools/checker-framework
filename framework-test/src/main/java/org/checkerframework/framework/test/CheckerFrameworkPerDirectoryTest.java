@@ -144,6 +144,9 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
 
   @Test
   public void run() {
+    if (testFiles.isEmpty()) {
+      return;
+    }
     boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
     List<String> customizedOptions = customizeOptions(Collections.unmodifiableList(checkerOptions));
     TestConfiguration config =
