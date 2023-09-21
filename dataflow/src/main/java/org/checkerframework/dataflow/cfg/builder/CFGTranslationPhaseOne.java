@@ -618,7 +618,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the tree
    */
   public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
-    throw new RuntimeException("Not implemented");
+    // TODO: implement deconstruction pattern.
+    throw new BugInCF("Deconstruction patterns are not yet implemented.");
   }
 
   /* --------------------------------------------------------- */
@@ -3816,15 +3817,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     LocalVariableNode bindingNode;
 
     if (binding != null) {
-      if (!binding.getKind().name().contentEquals("DECONSTRUCTION_PATTERN")) {
-        bindingNode = (LocalVariableNode) scan(binding, p);
-        // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node
-        // instead.
-        refType = bindingNode.getType();
-      } else {
-        bindingNode = null;
-        refType = TreeUtils.typeOf(binding);
-      }
+      bindingNode = (LocalVariableNode) scan(binding, p);
+      // Calling InstanceOfTree#getType() returns null if a pattern exists, so use the node
+      // instead.
+      refType = bindingNode.getType();
     } else {
       refType = TreeUtils.typeOf(tree.getType());
       bindingNode = null;
