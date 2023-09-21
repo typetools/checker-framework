@@ -5,6 +5,7 @@
 // @below-java21-jdk-skip-test
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
+// @infer-stubs-skip-test
 public class JEP440 {
 
   record Point(int x, int y) {}

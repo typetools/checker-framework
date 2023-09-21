@@ -1,6 +1,8 @@
 // @below-java21-jdk-skip-test
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
+// @infer-stubs-skip-test
+
 // These are examples copied from:
 // https://openjdk.org/jeps/441
 

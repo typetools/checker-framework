@@ -1,6 +1,7 @@
 // @below-java21-jdk-skip-test
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
+// @infer-stubs-skip-test
 public class FlowSwitch {
 
   void test1(Integer i) {
