@@ -1,7 +1,5 @@
 package org.checkerframework.checker.resourceleak;
 
-import static org.plumelib.util.CollectionsPlume.mapList;
-
 import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -53,6 +51,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
@@ -336,7 +335,7 @@ public class MustCallInference {
       return;
     }
     List<VariableElement> paramElts =
-        mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias rhsAlias : rhsAliases) {
       Element rhsElt = rhsAlias.reference.getElement();
       int i = paramElts.indexOf(rhsElt);
