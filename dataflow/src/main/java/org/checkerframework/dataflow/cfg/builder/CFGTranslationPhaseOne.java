@@ -2364,9 +2364,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
           // This can be extended to handle case statements as well as case rules.
-          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
+          //          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastOfExhaustive =
-              isLastExceptDefault && exhaustiveAndNoDefault && noFallthroughToHere;
+              isLastExceptDefault && exhaustiveAndNoDefault; // && noFallthroughToHere;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
@@ -2577,7 +2577,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (CaseTree caseTree : caseTrees) {
         for (Tree caseLabel : TreeUtils.caseTreeGetLabels(caseTree)) {
           if (caseLabel.getKind() == Kind.NULL_LITERAL
-              || TreeUtils.isBindingPatternTree(caseLabel)) {
+              || TreeUtils.isBindingPatternTree(caseLabel)
+              || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
             return true;
           }
           if (caseLabel.getKind() == Kind.IDENTIFIER) {
