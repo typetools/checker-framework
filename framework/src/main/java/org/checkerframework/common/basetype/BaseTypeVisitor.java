@@ -1519,7 +1519,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public Void visitVariable(VariableTree tree, Void p) {
     warnAboutTypeAnnotationsTooEarly(tree, tree.getModifiers());
 
-    visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getType());
+    if (tree.getType() != null) {
+      visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getType());
+    }
 
     AnnotatedTypeMirror variableType;
     if (getCurrentPath().getParentPath() != null
