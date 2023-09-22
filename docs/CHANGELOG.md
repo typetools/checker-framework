@@ -4,10 +4,15 @@ Version 3.39.0 (October 1, 2023)
 **User-visible changes:**
 
 The Checker Framework runs under JDK 21 -- that is, it runs on a version 21 JVM.
-It does not yet support all new Java 21 language features -- it may crash when
-run on a program with new Java 21 language features.
+It does not yet soundly check all new Java 21 language features, but it should not crash
+on them.
 
 **Implementation details:**
+
+Dataflow supports all the new Java 21 langauge features. A new node,
+`DeconstructorPatternNode`, was added, so any implementation of `NodeVisitor` will
+need to be updated.
+
 
 WPI uses 1-based indexing for formal parameters and arguments.
 
