@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TypesUtils;
@@ -87,7 +88,11 @@ public class InstanceOfNode extends Node {
     return null;
   }
 
-  List<LocalVariableNode> bindingVariables = null;
+  /**
+   * A list of all binding variables in this instance of. This is lazy initialized, use {@link
+   * #getBindingVariables()}.
+   */
+  @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
    * Return a list of all the binding variables in this instance of.

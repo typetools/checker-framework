@@ -45,6 +45,7 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
+   * @param guard the guard expression or null
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(

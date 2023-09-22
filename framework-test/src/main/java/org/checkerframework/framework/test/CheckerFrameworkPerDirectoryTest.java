@@ -142,6 +142,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     //    this.checkerOptions.add("-AajavaChecks");
   }
 
+  /** Run the tests. */
   @Test
   public void run() {
     if (testFiles.isEmpty()) {

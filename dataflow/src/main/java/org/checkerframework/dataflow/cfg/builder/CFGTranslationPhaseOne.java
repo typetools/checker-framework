@@ -2363,10 +2363,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           boolean isLastExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          // This can be extended to handle case statements as well as case rules.
-          //          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
-          boolean isLastOfExhaustive =
-              isLastExceptDefault && exhaustiveAndNoDefault; // && noFallthroughToHere;
+          boolean isLastOfExhaustive = isLastExceptDefault && exhaustiveAndNoDefault;
           buildCase(caseTree, i, isLastOfExhaustive);
         }
       }
@@ -2572,6 +2569,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
     }
 
+    /**
+     * Returns true if the switch is exhaustive and does not contain a default case.
+     *
+     * @return true if the switch is exhaustive and does not contain a default case
+     */
     private boolean exhaustiveAndNoDefault() {
       for (CaseTree caseTree : caseTrees) {
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
