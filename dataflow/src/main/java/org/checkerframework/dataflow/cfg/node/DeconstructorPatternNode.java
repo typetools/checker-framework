@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A node for a deconstrutor pattern. */
@@ -58,7 +59,7 @@ public class DeconstructorPatternNode extends Node {
    * A list of nested binding variables. This is lazily initialized and should only be accessed by
    * {@link #getBindingVariables()}.
    */
-  private List<LocalVariableNode> bindingVariables = null;
+  private @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
    * Return a list of all the binding variables in this pattern.

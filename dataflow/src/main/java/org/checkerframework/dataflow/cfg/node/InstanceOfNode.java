@@ -100,15 +100,13 @@ public class InstanceOfNode extends Node {
    * @return a list of all the binding variables
    */
   public List<LocalVariableNode> getBindingVariables() {
-    if (bindingVariables == null && patternNode == null) {
-      bindingVariables = Collections.emptyList();
-      return bindingVariables;
-    }
     if (bindingVariables == null) {
-      if (patternNode instanceof LocalVariableNode) {
+      if (patternNode instanceof DeconstructorPatternNode) {
+        bindingVariables = ((DeconstructorPatternNode) patternNode).getBindingVariables();
+      } else if (patternNode instanceof LocalVariableNode) {
         bindingVariables = Collections.singletonList((LocalVariableNode) patternNode);
       } else {
-        bindingVariables = ((DeconstructorPatternNode) patternNode).getBindingVariables();
+        bindingVariables = Collections.emptyList();
       }
     }
     return bindingVariables;
