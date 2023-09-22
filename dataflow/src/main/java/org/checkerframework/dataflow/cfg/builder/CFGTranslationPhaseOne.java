@@ -2489,7 +2489,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (Tree exprTree : TreeUtils.caseTreeGetLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils());
+
+        ExpressionTree guardTree = TreeUtils.caseTreeGetGuard(caseTree);
+        Node guard = null;
+        if (guardTree != null) {
+          guard = scan(guardTree, null);
+        }
+
+        CaseNode test =
+            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }

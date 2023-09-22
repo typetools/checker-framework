@@ -162,6 +162,9 @@ public final class TreeUtils {
   /** The CaseTree.getLabels method for Java 21 and higher; null otherwise. */
   private static final @Nullable Method CASETREE_GETLABELS;
 
+  /** The CaseTree.getGuard method for Java 21 and higher; null otherwise. */
+  private static final @Nullable Method CASETREE_GETGUARD;
+
   /**
    * The ConstantCaseLabelTree.getConstantExpression method for Java 21 and higher; null otherwise.
    */
@@ -291,6 +294,7 @@ public final class TreeUtils {
 
         TREEMAKER_SELECT = TreeMaker.class.getMethod("Select", JCExpression.class, Symbol.class);
         CASETREE_GETLABELS = CaseTree.class.getDeclaredMethod("getLabels");
+        CASETREE_GETGUARD = CaseTree.class.getDeclaredMethod("getGuard");
 
         Class<?> deconstructionPatternClass =
             Class.forName("com.sun.source.tree.DeconstructionPatternTree");
@@ -301,6 +305,7 @@ public final class TreeUtils {
       } else {
         TREEMAKER_SELECT = null;
         CASETREE_GETLABELS = null;
+        CASETREE_GETGUARD = null;
         CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION = null;
         PATTERNCASELABELTREE_GETPATTERN = null;
         DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR = null;
@@ -2488,6 +2493,24 @@ public final class TreeUtils {
       throw new BugInCF(
           "TreeUtils.caseTreeGetExpressions: reflection failed for tree: %s", caseTree, e);
     }
+  }
+
+  /**
+   * Wrapper around {@code CaseTree#getGuard}.
+   *
+   * @param caseTree the case tree
+   * @return the guard on the case tree or null if one does not exist
+   */
+  public static @Nullable ExpressionTree caseTreeGetGuard(CaseTree caseTree) {
+    if (atLeastJava21) {
+      try {
+        return (ExpressionTree) CASETREE_GETGUARD.invoke(caseTree);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new BugInCF(
+            "TreeUtils.caseTreeGetGuard: reflection failed for tree: %s", caseTree, e);
+      }
+    }
+    return null;
   }
 
   /**

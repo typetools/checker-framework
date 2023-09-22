@@ -1195,6 +1195,12 @@ public abstract class CFAbstractTransfer<
                 null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
+    //    if(n.getGuard() != null) {
+    //      Node guard = n.getGuard();
+    //      TransferResult<V, S> result = guard.accept(this, in);
+    //
+    //
+    //    }
     return lubResult;
   }
 
