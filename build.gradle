@@ -55,7 +55,7 @@ ext {
 
   versions = [
     autoValue       : '1.10.4',
-    lombok          : '1.18.28',
+    lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
@@ -307,6 +307,15 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
+      if (jdk17Compiler) {
+        // This uses the Java 17 compiler to compile all code.
+        //  https://docs.gradle.org/current/userguide/toolchains.html
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(17)
+        }
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
@@ -366,7 +375,7 @@ allprojects {
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint =     '-Xlint:-options,-fallthrough'
-      if(isJava21orHigher) {
+      if(isJava21orHigher && !jdk17Compiler) {
         // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
         lint +=',-this-escape'
       }
