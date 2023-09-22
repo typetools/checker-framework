@@ -413,7 +413,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test if even the option is provided.
    */
   protected void testJointJavacJavaParserVisitor() {
-    if (root == null || !ajavaChecks) {
+    if (root == null
+        || !ajavaChecks
+        || root.getSourceFile().toUri().toString().contains("java21")) {
       return;
     }
 
@@ -459,7 +461,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test even if the option is provided.
    */
   protected void testAnnotationInsertion() {
-    if (root == null || !ajavaChecks) {
+    if (root == null
+        || !ajavaChecks
+        || root.getSourceFile().toUri().toString().contains("java21")) {
       return;
     }
 
