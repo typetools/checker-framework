@@ -6,6 +6,7 @@
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
+@SuppressWarnings("i18n") // true postives.
 public class JEP440 {
 
   record Point(int x, int y) {}
