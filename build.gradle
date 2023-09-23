@@ -33,9 +33,10 @@ ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
+  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
@@ -54,7 +55,7 @@ ext {
 
   versions = [
     autoValue       : '1.10.4',
-    lombok          : '1.18.28',
+    lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
@@ -200,6 +201,10 @@ allprojects {
       doNotFormat += ['**/java17/', '**/*record*/']
     }
 
+    if (!isJava21orHigher) {
+      doNotFormat += ['**/java21/']
+    }
+
     format 'misc', {
       // define the files to apply `misc` to
       target '*.md', '*.tex', '.gitignore', 'Makefile'
@@ -299,6 +304,15 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
+      if (jdk17Compiler) {
+        // This uses the Java 17 compiler to compile all code.
+        //  https://docs.gradle.org/current/userguide/toolchains.html
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(17)
+        }
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
@@ -354,13 +368,18 @@ allprojects {
 
       options.failOnError = true
       options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      String lint =     '-Xlint:-options,-fallthrough'
+      if(isJava21orHigher && !jdk17Compiler) {
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+        lint +=',-this-escape'
+      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-options,-fallthrough',
+        lint,
         '-Xlint',
       ]
 

@@ -1,4 +1,4 @@
-BcelUtil.java:766: error: [argument] incompatible argument for parameter typename of ClassnameAndDimensions.parseFqBinaryName.
+BcelUtil.java:764: error: [argument] incompatible argument for parameter typename of ClassnameAndDimensions.parseFqBinaryName.
         Signatures.ClassnameAndDimensions.parseFqBinaryName(classname);
                                                             ^
   found   : @SignatureUnknown String
