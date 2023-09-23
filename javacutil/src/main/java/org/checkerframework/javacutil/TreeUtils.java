@@ -2460,7 +2460,8 @@ public final class TreeUtils {
   public static List<? extends Tree> caseTreeGetLabels(CaseTree caseTree) {
     try {
       if (atLeastJava21) {
-        @SuppressWarnings({"unchecked", "nullness"})
+        assert CASETREE_GETLABELS != null : "@AssumeAssertion(nullness): tested atLeastJava21";
+        @SuppressWarnings("unchecked")
         // These are caseLabelTrees.
         @NonNull List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
@@ -2476,7 +2477,8 @@ public final class TreeUtils {
         }
         return unWrappedLabels;
       } else if (atLeastJava12) {
-        @SuppressWarnings({"unchecked", "nullness"})
+        assert CASETREE_GETEXPRESSION != null : "@AssumeAssertion(nullness): tested atLeastJava12";
+        @SuppressWarnings("unchecked")
         @NonNull List<? extends ExpressionTree> result =
             (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
         return result;
@@ -2502,15 +2504,15 @@ public final class TreeUtils {
    * @return the guard on the case tree or null if one does not exist
    */
   public static @Nullable ExpressionTree caseTreeGetGuard(CaseTree caseTree) {
-    if (atLeastJava21) {
-      try {
-        return (ExpressionTree) CASETREE_GETGUARD.invoke(caseTree);
-      } catch (IllegalAccessException | InvocationTargetException e) {
-        throw new BugInCF(
-            "TreeUtils.caseTreeGetGuard: reflection failed for tree: %s", caseTree, e);
-      }
+    if (!atLeastJava21) {
+      return null;
     }
-    return null;
+    assert CASETREE_GETGUARD != null : "@AssumeAssertion(nullness): tested atLeastJava21";
+    try {
+      return (ExpressionTree) CASETREE_GETGUARD.invoke(caseTree);
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF("TreeUtils.caseTreeGetGuard: reflection failed for tree: %s", caseTree, e);
+    }
   }
 
   /**
@@ -2541,21 +2543,21 @@ public final class TreeUtils {
    */
   public static ExpressionTree constantCaseLabelTreeGetConstantExpression(
       Tree constantCaseLabelTree) {
-    if (atLeastJava21) {
-      try {
-        @SuppressWarnings("nullness")
-        @NonNull ExpressionTree ret =
-            (ExpressionTree)
-                CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION.invoke(constantCaseLabelTree);
-        return ret;
-      } catch (IllegalAccessException | InvocationTargetException e) {
-        throw new BugInCF(
-            "TreeUtils.constantCaseLabelTreeGetConstantExpression: reflection failed for tree: %s",
-            constantCaseLabelTree, e);
-      }
-    } else {
+    if (!atLeastJava21) {
       throw new BugInCF(
           "TreeUtils.constantCaseLabelTreeGetConstantExpression: requires at least Java 21");
+    }
+    assert CONSTANTCASELABELTREEGETCONSTANTEXPRESSION != null
+        : "@AssumeAssertion(nullness): tested atLeastJava21";
+    try {
+      @NonNull ExpressionTree ret =
+          (ExpressionTree)
+              CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION.invoke(constantCaseLabelTree);
+      return ret;
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF(
+          "TreeUtils.constantCaseLabelTreeGetConstantExpression: reflection failed for tree: %s",
+          constantCaseLabelTree, e);
     }
   }
 
@@ -2576,18 +2578,18 @@ public final class TreeUtils {
    * @return the {@code PatternTree} in the {@code patternCaseLabelTree}
    */
   public static Tree patternCaseLabelTreeGetPattern(Tree patternCaseLabelTree) {
-    if (atLeastJava21) {
-      try {
-        @SuppressWarnings("nullness")
-        @NonNull Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
-        return ret;
-      } catch (IllegalAccessException | InvocationTargetException e) {
-        throw new BugInCF(
-            "TreeUtils.patternCaseLabelTreeGetPattern: reflection failed for tree: %s",
-            patternCaseLabelTree, e);
-      }
-    } else {
+    if (!atLeastJava21) {
       throw new BugInCF("TreeUtils.patternCaseLabelTreeGetPattern: requires at least Java 21");
+    }
+    assert PATTERNCASELABELTREE_GETPATTERN != null
+        : "@AssumeAssertion(nullness): tested atLeastJava21";
+    try {
+      @NonNull Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
+      return ret;
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF(
+          "TreeUtils.patternCaseLabelTreeGetPattern: reflection failed for tree: %s",
+          patternCaseLabelTree, e);
     }
   }
 
@@ -2713,7 +2715,8 @@ public final class TreeUtils {
         return nestedPatterns;
       }
       throw new BugInCF(
-          "TreeUtils.deconstructionPatternTreeGetNestedPatterns: nested patterns are null for tree: %s",
+          "TreeUtils.deconstructionPatternTreeGetNestedPatterns: nested patterns are null for tree:"
+              + " %s",
           tree);
     } else {
       throw new BugInCF(
