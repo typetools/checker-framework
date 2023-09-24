@@ -204,6 +204,9 @@ do
     # Skip lines that start with "#".
     [[ $line = \#* ]] && continue
 
+    # Remove trailing return character if reading from a DOS file.
+    line="$(echo "$line" | tr -d '\r')"
+
     REPOHASH=${line}
 
     REPO=$(echo "${REPOHASH}" | awk '{print $1}')

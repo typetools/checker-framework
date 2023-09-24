@@ -2577,6 +2577,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     try {
       checkerVersion = getCheckerVersion();
     } catch (Exception ex) {
+      // getCheckerVersion() throws an exception when invoked during Junit tests.
       checkerVersion = null;
     }
     String msg = "The Checker Framework crashed.  Please report the crash.  ";
