@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
-    errorprone : '2.21.1',
+    errorprone : '2.22.0',
   ]
 }
 
