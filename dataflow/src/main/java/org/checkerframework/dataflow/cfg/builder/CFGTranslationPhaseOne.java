@@ -611,11 +611,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a DeconstructionPatternTree
+   * Visit a DeconstructionPatternTree.
    *
    * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree to be
    *     backward-compatible
-   * @param p parameter
+   * @param p an unused parameter
    * @return the result of visiting the tree
    */
   public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
@@ -2360,11 +2360,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else {
-          boolean isLastExceptDefault =
+          boolean isLastCaseExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          boolean isLastOfExhaustive = isLastExceptDefault && exhaustiveAndNoDefault;
-          buildCase(caseTree, i, isLastOfExhaustive);
+          boolean isLastCaseOfExhaustive = isLastCaseExceptDefault && exhaustiveAndNoDefault;
+          buildCase(caseTree, i, isLastCaseOfExhaustive);
         }
       }
 
@@ -2461,8 +2461,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /**
      * Build the CFG for the given case tree.
      *
-     * @param caseTree a case caseTree whose CFG to build
-     * @param index the index of the case caseTree in {@link #caseBodyLabels}
+     * @param caseTree a case tree whose CFG to build
+     * @param index the index of the case tree in {@link #caseBodyLabels}
      * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
      *     with no fallthrough to it. In other words, no test of the labels is necessary.
      */

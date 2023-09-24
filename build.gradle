@@ -201,10 +201,13 @@ allprojects {
       doNotFormat += ['**/java17/', '**/*record*/']
     }
 
-    // TODO: reinstate. googlejavaformat can't parse new language features.
-    // (As of version 1.17.0.)
-    // if (!isJava21orHigher) {
+    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+    // See https://github.com/google/google-java-format/releases.
     if (true) {
+      doNotFormat += ['**/java21/']
+    }
+
+    if (!isJava21orHigher) {
       doNotFormat += ['**/java21/']
     }
 
