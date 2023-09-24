@@ -9,6 +9,10 @@ plugins {
   id 'org.checkerframework' version '0.6.33'
 }
 
+lombok {
+  version = "1.18.30"
+}
+
 apply plugin: 'org.checkerframework'
 
 def cfHome = "${projectDir}/../../.."
