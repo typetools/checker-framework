@@ -2547,7 +2547,7 @@ public final class TreeUtils {
       throw new BugInCF(
           "TreeUtils.constantCaseLabelTreeGetConstantExpression: requires at least Java 21");
     }
-    assert CONSTANTCASELABELTREEGETCONSTANTEXPRESSION != null
+    assert CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION != null
         : "@AssumeAssertion(nullness): tested atLeastJava21";
     try {
       @NonNull ExpressionTree ret =
