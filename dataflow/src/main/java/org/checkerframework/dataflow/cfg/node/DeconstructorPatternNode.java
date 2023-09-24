@@ -11,17 +11,20 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A node for a deconstrutor pattern. */
 public class DeconstructorPatternNode extends Node {
-  /** The {@code DeconstructorPatternTree}. */
+  /**
+   * The {@code DeconstructorPatternTree}, declared as {@link Tree} to permit this file to compile
+   * under JDK &lt; 21.
+   */
   private Tree deconstructorPattern;
 
   /** A list of nested pattern nodes. */
   private List<Node> nestedPatterns;
 
   /**
-   * Creates a {@code DeconstructorPatternNode}
+   * Creates a {@code DeconstructorPatternNode}.
    *
    * @param type the type of the node
-   * @param deconstructorPattern {@code DeconstructorPatternTree}
+   * @param deconstructorPattern the {@code DeconstructorPatternTree}
    * @param nestedPatterns a list of nested pattern nodes
    */
   public DeconstructorPatternNode(
@@ -37,9 +40,9 @@ public class DeconstructorPatternNode extends Node {
   }
 
   /**
-   * Returns the list of nested patterns.
+   * Returns the nested patterns.
    *
-   * @return the list of nested patterns
+   * @return the nested patterns
    */
   public List<Node> getNestedPatterns() {
     return nestedPatterns;
@@ -62,25 +65,24 @@ public class DeconstructorPatternNode extends Node {
   private @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
-   * Return a list of all the binding variables in this pattern.
+   * Return all the binding variables in this pattern.
    *
-   * @return a list of all the binding variables
+   * @return all the binding variables in this pattern
    */
   public List<LocalVariableNode> getBindingVariables() {
-    if (bindingVariables == null && nestedPatterns.isEmpty()) {
-      bindingVariables = Collections.emptyList();
-      return bindingVariables;
-    }
     if (bindingVariables == null) {
-      List<LocalVariableNode> bindingVars = new ArrayList<>(nestedPatterns.size());
-      for (Node patternNode : nestedPatterns) {
-        if (patternNode instanceof LocalVariableNode) {
-          bindingVars.add((LocalVariableNode) patternNode);
-        } else {
-          bindingVars.addAll(((DeconstructorPatternNode) patternNode).getBindingVariables());
+      if (nestedPatterns.isEmpty()) {
+        bindingVariables = Collections.emptyList();
+      } else {
+        bindingVariables = new ArrayList<>(nestedPatterns.size());
+        for (Node patternNode : nestedPatterns) {
+          if (patternNode instanceof LocalVariableNode) {
+            bindingVariables.add((LocalVariableNode) patternNode);
+          } else {
+            bindingVariables.addAll(((DeconstructorPatternNode) patternNode).getBindingVariables());
+          }
         }
       }
-      this.bindingVariables = bindingVars;
     }
     return bindingVariables;
   }
