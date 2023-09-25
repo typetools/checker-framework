@@ -52,7 +52,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private final ExecutableElement calledMethodsValueElement;
 
-  /** True if -AenableWPIForRLC was passed on the command line. */
+  /** True if -AenableWpiForRlc was passed on the command line. */
   private final boolean enableWpiForRlc;
 
   /**
@@ -75,12 +75,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
    * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
    * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
-   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * Leak Checker inference is executed. To enable it, you must include -AenableWpiForRlc in the
    * command line arguments.
    *
    * @param tree a tree
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
    *     result of the super call
    */
   @Override
@@ -99,13 +99,13 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
    * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
    * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
-   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * Leak Checker inference is executed. To enable it, you must include -AenableWpiForRlc in the
    * command line arguments.
    *
    * @param expressionTree a tree
    * @param lhsTree its element
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
    *     result of the super call
    */
   @Override

@@ -47,7 +47,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * purposes, we defined this flag to enable whole-program inference (WPI) when running the
    * Resource Leak Checker inference.
    */
-  public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRLC";
+  public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the

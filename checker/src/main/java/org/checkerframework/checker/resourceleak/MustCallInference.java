@@ -74,7 +74,7 @@ import org.plumelib.util.CollectionsPlume;
  * <p>Note: When the -Ainfer flag is used by default, whole-program inference is disabled for the
  * Resource Leak Checker, and instead, this special mechanism as the best inference mechanism for
  * the Resource Leak Checker inference is executed. However, for testing and future experimental
- * purposes, we defined the -AenableWPIForRLC flag to enable whole-program inference (WPI) when
+ * purposes, we defined the -AenableWpiForRlc flag to enable whole-program inference (WPI) when
  * running the Resource Leak Checker inference.
  *
  * @see <a
