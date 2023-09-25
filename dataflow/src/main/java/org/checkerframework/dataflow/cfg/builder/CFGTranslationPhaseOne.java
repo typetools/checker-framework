@@ -2577,12 +2577,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           return false;
         }
       }
+
+      // There is no default case.  Check whether the switch is exhaustive.
+
+      // Switch expressions are always exhaustive, but they might have a default case, which is why
+      // the above loop is not fused with the below loop.
       if (!TreeUtils.isSwitchStatement(switchTree)) {
         return true;
       }
+
       int enumCaseLabels = 0;
       for (CaseTree caseTree : caseTrees) {
         for (Tree caseLabel : TreeUtils.caseTreeGetLabels(caseTree)) {
+          // Java guarantees that if one of the cases is the null literal, the switch is exhaustive.
+          // Also if certain other constructs exist.
           if (caseLabel.getKind() == Kind.NULL_LITERAL
               || TreeUtils.isBindingPatternTree(caseLabel)
               || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
@@ -2599,11 +2607,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
         TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
         if (declaredTypeElement.getKind() == ElementKind.ENUM) {
-          // It's an enumerated type.
+          // The switch expression's type is an enumerated type.
           List<VariableElement> enumConstants = ElementUtils.getEnumConstants(declaredTypeElement);
           return enumConstants.size() == enumCaseLabels;
         }
       }
+
       return false;
     }
   }

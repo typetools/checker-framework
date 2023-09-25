@@ -15,10 +15,10 @@ public class DeconstructorPatternNode extends Node {
    * The {@code DeconstructorPatternTree}, declared as {@link Tree} to permit this file to compile
    * under JDK &lt; 21.
    */
-  private Tree deconstructorPattern;
+  private final Tree deconstructorPattern;
 
   /** A list of nested pattern nodes. */
-  private List<Node> nestedPatterns;
+  private final List<Node> nestedPatterns;
 
   /**
    * Creates a {@code DeconstructorPatternNode}.
@@ -35,6 +35,7 @@ public class DeconstructorPatternNode extends Node {
   }
 
   @Override
+  @Pure
   public @Nullable Tree getTree() {
     return deconstructorPattern;
   }
@@ -44,6 +45,7 @@ public class DeconstructorPatternNode extends Node {
    *
    * @return the nested patterns
    */
+  @Pure
   public List<Node> getNestedPatterns() {
     return nestedPatterns;
   }
@@ -54,6 +56,7 @@ public class DeconstructorPatternNode extends Node {
   }
 
   @Override
+  @Pure
   public Collection<Node> getOperands() {
     return nestedPatterns;
   }
@@ -82,6 +85,7 @@ public class DeconstructorPatternNode extends Node {
             bindingVariables.addAll(((DeconstructorPatternNode) patternNode).getBindingVariables());
           }
         }
+        bindingVariables = Collections.unmodifiableList(bindingVariables);
       }
     }
     return bindingVariables;

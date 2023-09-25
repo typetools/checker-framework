@@ -82,7 +82,7 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Gets the node for the guard.
+   * Gets the node for the guard (the expression in the {@code when} clause).
    *
    * @return the node for the guard
    */
