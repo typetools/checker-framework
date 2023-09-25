@@ -9,7 +9,7 @@
 @SuppressWarnings("i18n") // true postives.
 public class JEP441 {
 
-  // We enhance switch statements and expressions in four ways:
+  // JEP 441 enhances switch statements and expressions in four ways:
   //  * Improve enum constant case labels
   //  * Extend case labels to include patterns and null in addition to constants
   //  * Broaden the range of types permitted for the selector expressions of both switch statements
@@ -34,10 +34,10 @@ public class JEP441 {
   static void formatterPatternSwitchStatement(Object obj) {
      switch (obj) {
       case Integer i: String.format("int %d", i); break;
-      case Long l   :String.format("long %d", l);break;
-      case Double d  :String.format("double %f", d);break;
-      case String s  :String.format("String %s", s);break;
-      default        : obj.toString();
+      case Long l   : String.format("long %d", l); break;
+      case Double d : String.format("double %f", d); break;
+      case String s : String.format("String %s", s); break;
+      default       :  obj.toString();
     };
   }
 

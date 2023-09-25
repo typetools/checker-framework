@@ -1,11 +1,12 @@
-// JEP 440: Record Patterns
-// These are examples copied from:
-// https://openjdk.org/jeps/440
-
 // @below-java21-jdk-skip-test
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
+
+// JEP 440: Record Patterns
+// These are examples copied from:
+// https://openjdk.org/jeps/440
+
 @SuppressWarnings("i18n") // true postives.
 public class JEP440 {
 

@@ -2,6 +2,7 @@
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
+
 public class Issue6173 {
 
   static Object toGroupByQueryWithExtractor2(GroupBy groupBy) {
