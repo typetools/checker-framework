@@ -8,6 +8,7 @@ import java.util.List;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /** A node for a deconstrutor pattern. */
 public class DeconstructorPatternNode extends Node {
