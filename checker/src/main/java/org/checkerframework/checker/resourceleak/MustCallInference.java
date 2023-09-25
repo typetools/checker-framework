@@ -83,6 +83,9 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class MustCallInference {
 
+  /** If true, produce debugging diagnostic output. */
+  private static final boolean debug = true;
+
   /**
    * The fields that have been inferred to be disposed within the CFG currently under analysis. All
    * of these fields will be given an @Owning annotation.
@@ -158,6 +161,21 @@ public class MustCallInference {
    */
   private void runInference() {
 
+    if (debug) {
+      UnderlyingAST uAST = cfg.getUnderlyingAST();
+      if (uAST.getKind() == UnderlyingAST.Kind.METHOD) {
+        UnderlyingAST.CFGMethod uMethod = ((UnderlyingAST.CFGMethod) uAST);
+        System.out.printf(
+            "entering runInference() for CFG %d of method %s.%s%n",
+            uAST.getUid(), uMethod.getSimpleClassName(), uMethod.getMethodName());
+      } else {
+        System.out.printf(
+            "entering runInference() for CFG %d of kind %s%n", uAST.getUid(), uAST.getKind());
+      }
+      System.out.flush();
+    }
+    long startMillis = System.currentTimeMillis();
+
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
@@ -188,6 +206,21 @@ public class MustCallInference {
       }
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
+    }
+
+    if (debug) {
+      long elapsedMillis = System.currentTimeMillis() - startMillis;
+      if (uAST.getKind() == UnderlyingAST.Kind.METHOD) {
+        UnderlyingAST.CFGMethod uMethod = ((UnderlyingAST.CFGMethod) uAST);
+        System.out.printf(
+            "exiting (%d msec) runInference() for CFG %d of method %s.%s%n",
+            elapsedMillis, uAST.getUid(), uMethod.getSimpleClassName(), uMethod.getMethodName());
+      } else {
+        System.out.printf(
+            "exiting (%d msec) runInference() for CFG %d of kind %s%n",
+            elapsedMillis, uAST.getUid(), uAST.getKind());
+      }
+      System.out.flush();
     }
   }
 
