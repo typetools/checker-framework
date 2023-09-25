@@ -2460,8 +2460,10 @@ public final class TreeUtils {
   public static List<? extends Tree> caseTreeGetLabels(CaseTree caseTree) {
     try {
       if (atLeastJava21) {
-        assert CASETREE_GETLABELS != null : "@AssumeAssertion(nullness): tested atLeastJava21";
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({
+          "unchecked",
+          "nullness" // tested atLeastJava21, and method returns non-null
+        })
         // These are caseLabelTrees.
         @NonNull List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
@@ -2477,8 +2479,10 @@ public final class TreeUtils {
         }
         return unWrappedLabels;
       } else if (atLeastJava12) {
-        assert CASETREE_GETEXPRESSION != null : "@AssumeAssertion(nullness): tested atLeastJava12";
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({
+          "unchecked",
+          "nullness" // tested atLeastJava21, and method returns non-null
+        })
         @NonNull List<? extends ExpressionTree> result =
             (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
         return result;
@@ -2547,9 +2551,8 @@ public final class TreeUtils {
       throw new BugInCF(
           "TreeUtils.constantCaseLabelTreeGetConstantExpression: requires at least Java 21");
     }
-    assert CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION != null
-        : "@AssumeAssertion(nullness): tested atLeastJava21";
     try {
+      @SuppressWarnings("nullness") // tested atLeastJava21, and method returns non-null
       @NonNull ExpressionTree ret =
           (ExpressionTree)
               CONSTANTCASELABELTREE_GETCONSTANTEXPRESSION.invoke(constantCaseLabelTree);
@@ -2581,9 +2584,8 @@ public final class TreeUtils {
     if (!atLeastJava21) {
       throw new BugInCF("TreeUtils.patternCaseLabelTreeGetPattern: requires at least Java 21");
     }
-    assert PATTERNCASELABELTREE_GETPATTERN != null
-        : "@AssumeAssertion(nullness): tested atLeastJava21";
     try {
+      @SuppressWarnings("nullness") // tested atLeastJava21, and method returns non-null
       @NonNull Tree ret = (Tree) PATTERNCASELABELTREE_GETPATTERN.invoke(patternCaseLabelTree);
       return ret;
     } catch (IllegalAccessException | InvocationTargetException e) {
@@ -2673,6 +2675,8 @@ public final class TreeUtils {
    */
   public static ExpressionTree deconstructionPatternTreeGetDeconstructor(Tree tree) {
     if (atLeastJava21) {
+      assert DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR != null
+          : "@AssumeAssertion(nullness): tested atLeastJava21";
       ExpressionTree exprTree;
       try {
         exprTree = (ExpressionTree) DECONSTRUCTIONPATTERNTREE_GETDECONSTRUCTOR.invoke(tree);
@@ -2702,6 +2706,8 @@ public final class TreeUtils {
   @SuppressWarnings("unchecked")
   public static List<? extends Tree> deconstructionPatternTreeGetNestedPatterns(Tree tree) {
     if (atLeastJava21) {
+      assert DECONSTRUCTIONPATTERNTREE_GETNESTEDPATTERNS != null
+          : "@AssumeAssertion(nullness): tested atLeastJava21";
       List<? extends Tree> nestedPatterns;
       try {
         nestedPatterns =
