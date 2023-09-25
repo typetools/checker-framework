@@ -978,7 +978,6 @@ public abstract class CFAbstractTransfer<
       for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
-      return result;
     }
 
     // The "reference type" is the type after "instanceof".
