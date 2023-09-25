@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -171,7 +172,7 @@ public class MustCallInference {
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
 
-      Set<Obligation> obligations = new HashSet<>(current.obligations);
+      Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
         // Calling updateObligationsWithInvocationResult() will not induce any side effects in the
@@ -480,6 +481,9 @@ public class MustCallInference {
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
     if (!receiverAliases.isEmpty()) {
       for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
+        if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i))) {
+          continue;
+        }
         VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
 
         for (ResourceAlias resourceAlias : receiverAliases) {
@@ -518,15 +522,16 @@ public class MustCallInference {
     }
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
 
-    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-
-      for (int j = 0; j < arguments.size(); j++) {
-        if (!typeFactory.hasOwning(invocationParams.get(j))) {
+    for (int j = 0; j < arguments.size(); j++) {
+      if (!typeFactory.hasOwning(invocationParams.get(j))) {
+        continue;
+      }
+      for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
+        if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
           continue;
         }
 
         Node arg = NodeUtils.removeCasts(arguments.get(j));
-
         VariableElement paramElt =
             TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i - 1));
         if (isParamAndArgAliased(obligations, arg, paramElt)) {
@@ -646,7 +651,10 @@ public class MustCallInference {
       Node arg) {
 
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(0);
+      if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i))) {
+        continue;
+      }
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
       if (isParamAndArgAliased(obligations, arg, currentMethodParamElt)) {
