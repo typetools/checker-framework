@@ -804,7 +804,7 @@ public class MustCallInference {
   private List<Block> getNonExceptionalSuccessors(Block cur) {
     if (cur.getType() == Block.BlockType.CONDITIONAL_BLOCK) {
       ConditionalBlock ccur = (ConditionalBlock) cur;
-      return List.of(ccur.getThenSuccessor(), ccur.getElseSuccessor());
+      return Arrays.asList(ccur.getThenSuccessor(), ccur.getElseSuccessor());
     }
     if (!(cur instanceof SingleSuccessorBlock)) {
       throw new BugInCF("Not a conditional block nor a SingleSuccessorBlock: " + cur);

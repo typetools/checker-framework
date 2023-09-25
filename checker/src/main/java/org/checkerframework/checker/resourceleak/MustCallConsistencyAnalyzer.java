@@ -14,6 +14,7 @@ import com.sun.tools.javac.code.Type;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -2357,5 +2359,56 @@ class MustCallConsistencyAnalyzer {
     public int hashCode() {
       return Objects.hash(block, obligations);
     }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "BWO{%s %d, %d obligations %d}",
+          block.getType(), block.getUid(), obligations.size(), obligations.hashCode());
+    }
+
+    /**
+     * Returns a printed representation of a collection of BlockWithObligations.
+     *
+     * @param bwos a collection of BlockWithObligations, to format
+     * @return a printed representation of a collection of BlockWithObligations
+     */
+    public String collectionToString(Collection<BlockWithObligations> bwos) {
+      List<Block> blocksWithDuplicates = new ArrayList<>();
+      for (BlockWithObligations bwo : bwos) {
+        blocksWithDuplicates.add(bwo.block);
+      }
+      List<Block> duplicateBlocks = duplicates(blocksWithDuplicates);
+      StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
+      for (BlockWithObligations bwo : bwos) {
+        ImmutableSet<Obligation> obligations = bwo.obligations;
+        if (duplicateBlocks.contains(bwo.block)) {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations %s}",
+                  block.getType(), block.getUid(), obligations.size(), obligations));
+        } else {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations}",
+                  block.getType(), block.getUid(), obligations.size()));
+        }
+      }
+      return result.toString();
+    }
+  }
+
+  // TODO: Use from plume-lib's CollectionsPlume.
+  /**
+   * Returns the elements (once each) that appear more than once in the given collection.
+   *
+   * @param <T> the type of elements
+   * @param c a collection
+   * @return the elements (once each) that appear more than once in the given collection
+   */
+  public static <T> List<T> duplicates(Collection<T> c) {
+    // Inefficient (because of streams) but simple implementation.
+    Set<T> withoutDuplicates = new HashSet<>();
+    return c.stream().filter(n -> !withoutDuplicates.add(n)).collect(Collectors.toList());
   }
 }
