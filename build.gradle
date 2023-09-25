@@ -791,24 +791,26 @@ subprojects {
         [
           '-Astubs=javax-lang-model-element-name.astub'
         ])
-    createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        [
-          '-AskipUses=com\\.sun\\.*',
-          // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
-          '-AuseConservativeDefaultsForUncheckedCode=source'
-        ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
     createCheckTypeTask(project.name, 'ResourceLeak',
         'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
-    // These pass on some subprojects, which the `typecheck` task runs.
-    // TODO: Incrementally add @AnnotatedFor on more classes.
-    createCheckTypeTask(project.name, 'Nullness',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        ['-AskipUses=com.sun.*'])
+
+    if (project.name.is('framework') || project.name.is('checker')) {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          [
+            '-AskipUses=com\\.sun\\.*',
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            '-AuseConservativeDefaultsForUncheckedCode=source'
+          ])
+    } else {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          ['-AskipUses=com.sun.*'])
+    }
 
 
     // Add jtregTests to framework and checker modules
@@ -975,7 +977,7 @@ subprojects {
       description 'Run the Checker Framework on itself (part 2)'
       dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
+        dependsOn('checkCompilerMessages')
       } else {
         dependsOn('checkNullness')
       }
