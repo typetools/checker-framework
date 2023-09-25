@@ -2335,13 +2335,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else {
-          boolean isLastExceptDefault =
+          boolean isLastCaseExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
           // This can be extended to handle case statements as well as case rules.
           boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastCaseOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
+              isLastCaseExceptDefault && casesAreExhaustive() && noFallthroughToHere;
           buildCase(caseTree, i, isLastCaseOfExhaustive);
         }
       }
