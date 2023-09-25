@@ -51,7 +51,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+
+// import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
@@ -74,7 +75,7 @@ import org.plumelib.util.CollectionsPlume;
  * <p>Note: When the -Ainfer flag is used by default, whole-program inference is disabled for the
  * Resource Leak Checker, and instead, this special mechanism as the best inference mechanism for
  * the Resource Leak Checker inference is executed. However, for testing and future experimental
- * purposes, we defined the -AenableWPIForRLC flag to enable whole-program inference (WPI) when
+ * purposes, we defined the -AenableWpiForRlc flag to enable whole-program inference (WPI) when
  * running the Resource Leak Checker inference.
  *
  * @see <a
@@ -364,17 +365,28 @@ public class MustCallInference {
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
-    if (rhsAliases.isEmpty()) {
-      return;
-    }
-    List<VariableElement> paramElts =
-        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias rhsAlias : rhsAliases) {
       Element rhsElt = rhsAlias.reference.getElement();
-      int i = paramElts.indexOf(rhsElt);
-      if (i != -1) {
-        addOwningToParam(i + 1);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+      List<? extends VariableTree> params = methodTree.getParameters();
+      for (int i = 1; i < params.size() + 1; i++) {
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i - 1));
+        if (paramElt.equals(rhsElt)) {
+          addOwningToParam(i);
+          mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+          break;
+        }
+        //    if (rhsAliases.isEmpty()) {
+        //      return;
+        //    }
+        //    List<VariableElement> paramElts =
+        //        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration,
+        // methodTree.getParameters());
+        //    for (ResourceAlias rhsAlias : rhsAliases) {
+        //      Element rhsElt = rhsAlias.reference.getElement();
+        //      int i = paramElts.indexOf(rhsElt);
+        //      if (i != -1) {
+        //        addOwningToParam(i + 1);
+        //        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
     }
   }

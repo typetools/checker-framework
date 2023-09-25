@@ -117,8 +117,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
-  /** True if -AenableWPIForRLC was passed on the command line. */
-  private final boolean enableWPIForRLC;
+  /** True if -AenableWpiForRlc was passed on the command line. */
+  private final boolean enableWpiForRlc;
 
   /**
    * Creates a MustCallAnnotatedTypeFactory.
@@ -136,7 +136,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
-    enableWPIForRLC = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
   }
 
@@ -467,7 +467,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
-    return enableWPIForRLC;
+    return enableWpiForRlc;
   }
 
   /**

@@ -60,8 +60,8 @@ public class MustCallTransfer extends CFTransfer {
   /** True if -AnoCreatesMustCallFor was passed on the command line. */
   private final boolean noCreatesMustCallFor;
 
-  /** True if -AenableWPIForRLC was passed on the command line. */
-  private final boolean enableWPIForRLC;
+  /** True if -AenableWpiForRlc was passed on the command line. */
+  private final boolean enableWpiForRlc;
 
   /**
    * Create a MustCallTransfer.
@@ -73,7 +73,7 @@ public class MustCallTransfer extends CFTransfer {
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
     noCreatesMustCallFor =
         atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
-    enableWPIForRLC = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     ProcessingEnvironment env = atypeFactory.getChecker().getProcessingEnvironment();
     treeBuilder = new TreeBuilder(env);
   }
@@ -189,12 +189,12 @@ public class MustCallTransfer extends CFTransfer {
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
    * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
    * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
-   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * Leak Checker inference is executed. To enable it, you must include -AenableWpiForRlc in the
    * command line arguments.
    *
    * @param tree a tree
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
    *     result of the super call
    */
   @Override
@@ -213,13 +213,13 @@ public class MustCallTransfer extends CFTransfer {
    * this inference are not useful and only end up slowing down the convergence of the algorithm for
    * Resource Leak Inference. When the -Ainfer flag is used by default, whole-program inference is
    * disabled for the Resource Leak Checker, and instead, the special mechanism for the Resource
-   * Leak Checker inference is executed. To enable it, you must include -AenableWPIForRLC in the
+   * Leak Checker inference is executed. To enable it, you must include -AenableWpiForRlc in the
    * command line arguments.
    *
    * @param expressionTree a tree
    * @param lhsTree its element
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWPIForRLC flag is not passed as a command line argument, otherwise returns the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
    *     result of the super call
    */
   @Override
@@ -355,6 +355,6 @@ public class MustCallTransfer extends CFTransfer {
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
-    return enableWPIForRLC;
+    return enableWpiForRlc;
   }
 }
