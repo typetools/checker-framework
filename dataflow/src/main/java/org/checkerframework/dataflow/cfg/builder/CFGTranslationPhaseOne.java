@@ -3796,16 +3796,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
-    InstanceOfNode node;
+    InstanceOfNode instanceOfNode;
     Node operand = scan(tree.getExpression(), p);
     TypeMirror refType = TreeUtils.typeOf(tree.getType());
     Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
     LocalVariableNode bindingNode =
         (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
 
-    node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
-    extendWithNode(node);
-    return node;
+    instanceOfNode = new InstanceOfNode(tree, operand, bindingNode, refType, types);
+    extendWithNode(instanceOfNode);
+    return instanceOfNode;
   }
 
   @Override
