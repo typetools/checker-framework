@@ -146,6 +146,7 @@ public class TreeUtilsAfterJava11 {
         }
         return (List<? extends ExpressionTree>) invokeNonNullResult(GETEXPRESSIONS, caseTree);
       }
+      @SuppressWarnings("deprecation") // getExpression is deprecated in Java 21
       ExpressionTree expression = caseTree.getExpression();
       if (expression == null) {
         return Collections.emptyList();
