@@ -809,7 +809,7 @@ subprojects {
     } else {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
-          ['-AskipUses=com.sun.*'])
+          ['-AskipUses=com\\.sun\\.*'])
     }
 
 
