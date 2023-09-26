@@ -29,7 +29,7 @@ public class InstanceOfNode extends Node {
   /** The tree associated with this node. */
   protected final InstanceOfTree tree;
 
-  /** The node of the pattern variable if one exists. */
+  /** The node of the pattern if one exists. */
   protected final @Nullable Node patternNode;
 
   /** For Types.isSameType. */

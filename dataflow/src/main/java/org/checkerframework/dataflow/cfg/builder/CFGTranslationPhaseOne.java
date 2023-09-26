@@ -2360,10 +2360,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else {
-          boolean isLastCaseExceptDefault =
-              i == numCases - 1
-                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          boolean isLastCaseOfExhaustive = isLastCaseExceptDefault && exhaustiveAndNoDefault;
+          boolean isLastCaseOfExhaustive = (i == numCases - 1) && exhaustiveAndNoDefault;
           buildCase(caseTree, i, isLastCaseOfExhaustive);
         }
       }

@@ -2450,12 +2450,12 @@ public final class TreeUtils {
   }
 
   /**
-   * Get the list of expressions from a case expression. For the default case, this is empty.
-   * Otherwise, in JDK 11 and earlier, this is a singleton list. In JDK 12 onwards, there can be
-   * multiple expressions per case.
+   * Get the list of labels from a case expression. For {@code default}, this is empty. Otherwise,
+   * in JDK 11 and earlier, this is a singleton list of expression trees. In JDK 12, this is a list
+   * of expression trees. In JDK 21+, this is a list of expression and pattern trees.
    *
-   * @param caseTree the case expression to get the expressions from
-   * @return the list of {@code CaseLabelTree}s in the case
+   * @param caseTree the case expression to get the labels from
+   * @return the list of case labels in the case
    */
   public static List<? extends Tree> caseTreeGetLabels(CaseTree caseTree) {
     try {
@@ -2464,7 +2464,7 @@ public final class TreeUtils {
           "unchecked",
           "nullness" // tested atLeastJava21, and method returns non-null
         })
-        // These are caseLabelTrees.
+        // These are CaseLabelTrees.
         @NonNull List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
         List<Tree> unWrappedLabels = new ArrayList<>();
