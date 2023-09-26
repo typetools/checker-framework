@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.trees.NewTreeUtils.CaseUtils;
+import org.checkerframework.javacutil.trees.NewTreeUtils.SwitchExpressionUtils;
+import org.checkerframework.javacutil.trees.NewTreeUtils.YieldUtils;
 
 /**
  * A class that visits each result expression of a switch expression and calls {@link
@@ -65,7 +68,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
     // TODO: use JCP to add version-specific behavior
     assert SystemUtil.jreVersion >= 14
         && switchExpression.getKind().name().equals("SWITCH_EXPRESSION");
-    List<? extends CaseTree> caseTrees = TreeUtils.switchExpressionTreeGetCases(switchExpression);
+    List<? extends CaseTree> caseTrees = SwitchExpressionUtils.getCases(switchExpression);
     R result = null;
     for (CaseTree caseTree : caseTrees) {
       if (caseTree.getStatements() != null) {
@@ -76,7 +79,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         @SuppressWarnings(
             "nullness:assignment") // caseTree.getStatements() == null, so the case has
         // a body.
-        @NonNull Tree body = TreeUtils.caseTreeGetBody(caseTree);
+        @NonNull Tree body = CaseUtils.getBody(caseTree);
         // This case is a switch rule, so its body is either an expression, block, or throw.
         // See https://docs.oracle.com/javase/specs/jls/se17/html/jls-15.html#jls-15.28.2.
         if (body.getKind() == Tree.Kind.BLOCK) {
@@ -120,7 +123,7 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
         // Don't scan nested switch expressions.
         return null;
       } else if (tree.getKind().name().equals("YIELD")) {
-        ExpressionTree value = TreeUtils.yieldTreeGetValue(tree);
+        ExpressionTree value = YieldUtils.getValue(tree);
         return visitSwitchResultExpression(value, p);
       }
       return super.scan(tree, p);

@@ -26,6 +26,8 @@ import com.sun.source.tree.WhileLoopTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.trees.NewTreeUtils.BindingPatternUtils;
+import org.checkerframework.javacutil.trees.NewTreeUtils.SwitchExpressionUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with
@@ -70,7 +72,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   public Void visitBindingPattern17(Tree tree, Void p) {
     super.visitBindingPattern17(tree, p);
     // JavaPaser doesn't have a node for the VariableTree.
-    trees.remove(TreeUtils.bindingPatternTreeGetVariable(tree));
+    trees.remove(BindingPatternUtils.getVariable(tree));
     return null;
   }
 
@@ -213,7 +215,7 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
   public Void visitSwitchExpression17(Tree tree, Void p) {
     super.visitSwitchExpression17(tree, p);
     // javac surrounds switch expression in a ParenthesizedTree but JavaParser does not.
-    trees.remove(TreeUtils.switchExpressionTreeGetExpression(tree));
+    trees.remove(SwitchExpressionUtils.getExpression(tree));
     return null;
   }
 
