@@ -498,7 +498,7 @@ public class MustCallInference {
 
         JavaExpression paramJe = JavaExpression.fromVariableTree(paramOfCurrMethod);
         if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
-          addOwningToParam(i + 1);
+          addOwningToParam(i);
           break;
         }
       }
