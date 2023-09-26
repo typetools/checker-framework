@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -439,7 +440,7 @@ public class TreeUtilsAfterJava11 {
    * @param name a class name
    * @return the class named {@code name}
    */
-  private static Class<?> classForName(String name) {
+  private static Class<?> classForName(@ClassGetName String name) {
     try {
       return Class.forName(name);
     } catch (ClassNotFoundException e) {
