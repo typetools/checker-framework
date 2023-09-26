@@ -479,24 +479,27 @@ public class MustCallInference {
     }
 
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    if (!receiverAliases.isEmpty()) {
-      for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-        if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i))) {
+    if (receiverAliases.isEmpty()) {
+      return;
+    }
+
+    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
+      VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(i - 1);
+      if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
+        continue;
+      }
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
+
+      for (ResourceAlias resourceAlias : receiverAliases) {
+        Element resourceElt = resourceAlias.reference.getElement();
+        if (!resourceElt.equals(paramElt)) {
           continue;
         }
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
 
-        for (ResourceAlias resourceAlias : receiverAliases) {
-          Element resourceElt = resourceAlias.reference.getElement();
-          if (!resourceElt.equals(paramElt)) {
-            continue;
-          }
-
-          JavaExpression paramJe = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
-          if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
-            addOwningToParam(i + 1);
-            break;
-          }
+        JavaExpression paramJe = JavaExpression.fromVariableTree(paramOfCurrMethod);
+        if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
+          addOwningToParam(i + 1);
+          break;
         }
       }
     }
@@ -522,20 +525,20 @@ public class MustCallInference {
     }
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
 
-    for (int j = 0; j < arguments.size(); j++) {
-      if (!typeFactory.hasOwning(invocationParams.get(j))) {
+    for (int i = 1; i < arguments.size() + 1; i++) {
+      if (!typeFactory.hasOwning(invocationParams.get(i - 1))) {
         continue;
       }
-      for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-        if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
+      for (int j = 1; j < paramsOfCurrentMethod.size() + 1; j++) {
+        VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(j - 1);
+        if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
           continue;
         }
 
-        Node arg = NodeUtils.removeCasts(arguments.get(j));
-        VariableElement paramElt =
-            TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i - 1));
+        Node arg = NodeUtils.removeCasts(arguments.get(i - 1));
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
         if (isParamAndArgAliased(obligations, arg, paramElt)) {
-          addOwningToParam(i);
+          addOwningToParam(j);
           break;
         }
       }
@@ -650,17 +653,17 @@ public class MustCallInference {
       MethodInvocationNode invocation,
       Node arg) {
 
-    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i))) {
+    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
+      if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
         continue;
       }
-      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i - 1);
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
       if (isParamAndArgAliased(obligations, arg, currentMethodParamElt)) {
         JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
         if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
-          addOwningToParam(i + 1);
+          addOwningToParam(i);
           break;
         }
       }
