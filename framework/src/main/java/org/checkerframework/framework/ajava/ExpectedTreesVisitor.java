@@ -26,8 +26,8 @@ import com.sun.source.tree.WhileLoopTree;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.BindingPatternUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.SwitchExpressionUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
 
 /**
  * After this visitor visits a tree, {@link #getTrees} returns all the trees that should match with

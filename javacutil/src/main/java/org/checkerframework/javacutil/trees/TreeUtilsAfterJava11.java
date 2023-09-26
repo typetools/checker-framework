@@ -17,9 +17,9 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * This class contains util methods for reflective accessing Tree classes and methods that were
- * added after Java 8.
+ * added after Java 11.
  */
-public class NewTreeUtils {
+public class TreeUtilsAfterJava11 {
 
   /** The latest source version supported by this compiler. */
   private static final int sourceVersionNumber =

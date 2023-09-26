@@ -88,11 +88,11 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.trees.NewTreeUtils.BindingPatternUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.CaseUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.InstanceOfUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.SwitchExpressionUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.YieldUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.YieldUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 

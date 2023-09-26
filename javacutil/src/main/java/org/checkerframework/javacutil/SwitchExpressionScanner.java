@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.trees.NewTreeUtils.CaseUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.SwitchExpressionUtils;
-import org.checkerframework.javacutil.trees.NewTreeUtils.YieldUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.YieldUtils;
 
 /**
  * A class that visits each result expression of a switch expression and calls {@link
