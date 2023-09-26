@@ -29,8 +29,13 @@ public class TreeUtilsAfterJava11 {
   /** Utility methods for accessing {@code BindingPatternTree} methods. */
   public static class BindingPatternUtils {
 
+    /** Don't use. */
+    private BindingPatternUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /** The {@code BindingPatternTree.getVariable} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GETVARIABLE = null;
+    private static @Nullable Method GET_VARIABLE = null;
 
     /**
      * Returns the binding variable of {@code bindingPatternTree}.
@@ -40,31 +45,36 @@ public class TreeUtilsAfterJava11 {
      */
     public static VariableTree getVariable(Tree bindingPatternTree) {
       assertVersionAtLeast(16);
-      if (GETVARIABLE == null) {
+      if (GET_VARIABLE == null) {
         Class<?> bindingPatternClass = classForName("com.sun.source.tree.BindingPatternTree");
-        GETVARIABLE = getMethod(bindingPatternClass, "getVariable");
+        GET_VARIABLE = getMethod(bindingPatternClass, "getVariable");
       }
-      return (VariableTree) invokeNonNullResult(GETVARIABLE, bindingPatternTree);
+      return (VariableTree) invokeNonNullResult(GET_VARIABLE, bindingPatternTree);
     }
   }
 
   /** Utility methods for accessing {@code CaseTree} methods. */
   public static class CaseUtils {
 
+    /** Don't use. */
+    private CaseUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /** The {@code CaseTree.getExpressions} method for Java 12 and higher; null otherwise. */
-    private static @Nullable Method GETEXPRESSIONS;
+    private static @Nullable Method GET_EXPRESSIONS = null;
 
     /** The {@code CaseTree.getBody} method for Java 12 and higher; null otherwise. */
-    private static @Nullable Method GETBODY;
+    private static @Nullable Method GET_BODY = null;
 
     /** The {@code CaseTree.getKind()} method for Java 12 and higher; null otherwise. */
-    private static @Nullable Method GETKIND;
+    private static @Nullable Method GET_KIND = null;
 
     /** The {@code CaseTree.getLabels} method for Java 21 and higher; null otherwise. */
-    private static @Nullable Method GETLABELS;
+    private static @Nullable Method GET_LABELS = null;
 
     /** The {@code CaseTree.getGuard} method for Java 21 and higher; null otherwise. */
-    private static @Nullable Method GETGUARD;
+    private static @Nullable Method GET_GUARD = null;
 
     /**
      * Returns true if this is a case rule (as opposed to a case statement).
@@ -77,10 +87,10 @@ public class TreeUtilsAfterJava11 {
         return false;
       }
 
-      if (GETKIND == null) {
-        GETKIND = getMethod(CaseTree.class, "getCaseKind");
+      if (GET_KIND == null) {
+        GET_KIND = getMethod(CaseTree.class, "getCaseKind");
       }
-      Enum<?> kind = (Enum<?>) invokeNonNullResult(GETKIND, caseTree);
+      Enum<?> kind = (Enum<?>) invokeNonNullResult(GET_KIND, caseTree);
       return kind.name().contentEquals("RULE");
     }
 
@@ -94,10 +104,10 @@ public class TreeUtilsAfterJava11 {
      */
     public static @Nullable Tree getBody(CaseTree caseTree) {
       assertVersionAtLeast(12);
-      if (GETBODY == null) {
-        GETBODY = getMethod(CaseTree.class, "getBody");
+      if (GET_BODY == null) {
+        GET_BODY = getMethod(CaseTree.class, "getBody");
       }
-      return (Tree) invoke(GETBODY, caseTree);
+      return (Tree) invoke(GET_BODY, caseTree);
     }
 
     /**
@@ -110,12 +120,12 @@ public class TreeUtilsAfterJava11 {
      */
     public static List<? extends Tree> getLabels(CaseTree caseTree) {
       if (sourceVersionNumber >= 21) {
-        if (GETLABELS == null) {
-          GETLABELS = getMethod(CaseTree.class, "getLabels");
+        if (GET_LABELS == null) {
+          GET_LABELS = getMethod(CaseTree.class, "getLabels");
         }
         @SuppressWarnings("unchecked")
         List<? extends Tree> caseLabelTrees =
-            (List<? extends Tree>) invokeNonNullResult(GETLABELS, caseTree);
+            (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
         List<Tree> unWrappedLabels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
           if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
@@ -142,10 +152,10 @@ public class TreeUtilsAfterJava11 {
     @SuppressWarnings("unchecked")
     public static List<? extends ExpressionTree> getExpressions(CaseTree caseTree) {
       if (sourceVersionNumber >= 12) {
-        if (GETEXPRESSIONS == null) {
-          GETEXPRESSIONS = getMethod(CaseTree.class, "getExpressions");
+        if (GET_EXPRESSIONS == null) {
+          GET_EXPRESSIONS = getMethod(CaseTree.class, "getExpressions");
         }
-        return (List<? extends ExpressionTree>) invokeNonNullResult(GETEXPRESSIONS, caseTree);
+        return (List<? extends ExpressionTree>) invokeNonNullResult(GET_EXPRESSIONS, caseTree);
       }
       @SuppressWarnings("deprecation") // getExpression is deprecated in Java 21
       ExpressionTree expression = caseTree.getExpression();
@@ -166,21 +176,26 @@ public class TreeUtilsAfterJava11 {
       if (sourceVersionNumber < 21) {
         return null;
       }
-      if (GETGUARD == null) {
-        GETGUARD = getMethod(CaseTree.class, "getGuard");
+      if (GET_GUARD == null) {
+        GET_GUARD = getMethod(CaseTree.class, "getGuard");
       }
-      return (ExpressionTree) invokeNonNullResult(GETGUARD, caseTree);
+      return (ExpressionTree) invokeNonNullResult(GET_GUARD, caseTree);
     }
   }
 
   /** Utility methods for accessing {@code ConstantCaseLabelTree} methods. */
   public static class ConstantCaseLabelUtils {
 
+    /** Don't use. */
+    private ConstantCaseLabelUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /**
      * The {@code ConstantCaseLabelTree.getConstantExpression} method for Java 21 and higher; null
      * otherwise.
      */
-    private static @Nullable Method GETCONSTANTEXPRESSION;
+    private static @Nullable Method GET_CONSTANT_EXPRESSION = null;
 
     /**
      * Wrapper around {@code ConstantCaseLabelTree#getConstantExpression}.
@@ -190,28 +205,34 @@ public class TreeUtilsAfterJava11 {
      */
     public static ExpressionTree getConstantExpression(Tree constantCaseLabelTree) {
       assertVersionAtLeast(21);
-      if (GETCONSTANTEXPRESSION == null) {
+      if (GET_CONSTANT_EXPRESSION == null) {
         Class<?> constantCaseLabelTreeClass =
             classForName("com.sun.source.tree.ConstantCaseLabelTree");
-        GETCONSTANTEXPRESSION = getMethod(constantCaseLabelTreeClass, "getConstantExpression");
+        GET_CONSTANT_EXPRESSION = getMethod(constantCaseLabelTreeClass, "getConstantExpression");
       }
-      return (ExpressionTree) invokeNonNullResult(GETCONSTANTEXPRESSION, constantCaseLabelTree);
+      return (ExpressionTree) invokeNonNullResult(GET_CONSTANT_EXPRESSION, constantCaseLabelTree);
     }
   }
 
   /** Utility methods for accessing {@code DeconstructionPatternTree} methods. */
   public static class DeconstructionPatternUtils {
+
+    /** Don't use. */
+    private DeconstructionPatternUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /**
      * The {@code DeconstructionPatternTree.getDeconstructor} method for Java 21 and higher; null
      * otherwise.
      */
-    private static @Nullable Method GETDECONSTRUCTOR;
+    private static @Nullable Method GET_DECONSTRUCTOR = null;
 
     /**
      * The {@code DeconstructionPatternTree.getNestedPatterns} method for Java 21 and higher; null
      * otherwise.
      */
-    private static @Nullable Method GETNESTEDPATTERNS;
+    private static @Nullable Method GET_NESTED_PATTERNS = null;
 
     /**
      * Returns the deconstruction type of {@code tree}. Wrapper around {@code
@@ -222,12 +243,12 @@ public class TreeUtilsAfterJava11 {
      */
     public static ExpressionTree getDeconstructor(Tree tree) {
       assertVersionAtLeast(21);
-      if (GETDECONSTRUCTOR == null) {
+      if (GET_DECONSTRUCTOR == null) {
         Class<?> deconstructionPatternClass =
             classForName("com.sun.source.tree.DeconstructionPatternTree");
-        GETDECONSTRUCTOR = getMethod(deconstructionPatternClass, "getDeconstructor");
+        GET_DECONSTRUCTOR = getMethod(deconstructionPatternClass, "getDeconstructor");
       }
-      return (ExpressionTree) invokeNonNullResult(GETDECONSTRUCTOR, tree);
+      return (ExpressionTree) invokeNonNullResult(GET_DECONSTRUCTOR, tree);
     }
 
     /**
@@ -239,20 +260,25 @@ public class TreeUtilsAfterJava11 {
     @SuppressWarnings("unchecked")
     public static List<? extends Tree> getNestedPatterns(Tree tree) {
       assertVersionAtLeast(21);
-      if (GETNESTEDPATTERNS == null) {
+      if (GET_NESTED_PATTERNS == null) {
         Class<?> deconstructionPatternClass =
             classForName("com.sun.source.tree.DeconstructionPatternTree");
-        GETNESTEDPATTERNS = getMethod(deconstructionPatternClass, "getNestedPatterns");
+        GET_NESTED_PATTERNS = getMethod(deconstructionPatternClass, "getNestedPatterns");
       }
-      return (List<? extends Tree>) invokeNonNullResult(GETNESTEDPATTERNS, tree);
+      return (List<? extends Tree>) invokeNonNullResult(GET_NESTED_PATTERNS, tree);
     }
   }
 
   /** Utility methods for accessing {@code PatternCaseLabelTree} methods. */
   public static class PatternCaseLabelUtils {
 
+    /** Don't use. */
+    private PatternCaseLabelUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /** The PatternCaseLabelTree.getPattern method for Java 21 and higher; null otherwise. */
-    private static @Nullable Method GETPATTERN;
+    private static @Nullable Method GET_PATTERN = null;
 
     /**
      * Wrapper around {@code PatternCaseLabelTree#getPattern}.
@@ -262,24 +288,29 @@ public class TreeUtilsAfterJava11 {
      */
     public static Tree getPattern(Tree patternCaseLabelTree) {
       assertVersionAtLeast(21);
-      if (GETPATTERN == null) {
+      if (GET_PATTERN == null) {
         Class<?> patternCaseLabelClass = classForName("com.sun.source.tree.PatternCaseLabelTree");
-        GETPATTERN = getMethod(patternCaseLabelClass, "getPattern");
+        GET_PATTERN = getMethod(patternCaseLabelClass, "getPattern");
       }
-      return (Tree) invokeNonNullResult(GETPATTERN, patternCaseLabelTree);
+      return (Tree) invokeNonNullResult(GET_PATTERN, patternCaseLabelTree);
     }
   }
 
   /** Utility methods for accessing {@code SwitchExpressionTree} methods. */
   public static class SwitchExpressionUtils {
 
+    /** Don't use. */
+    private SwitchExpressionUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /**
      * The {@code SwitchExpressionTree.getExpression} method for Java 12 and higher; null otherwise.
      */
-    private static @Nullable Method GETEXPRESSION;
+    private static @Nullable Method GET_EXPRESSION = null;
 
     /** The {@code SwitchExpressionTree.getCases} method for Java 12 and higher; null otherwise. */
-    private static @Nullable Method GETCASES;
+    private static @Nullable Method GET_CASES = null;
 
     /**
      * Returns the cases of {@code switchExpressionTree}. For example
@@ -296,11 +327,11 @@ public class TreeUtilsAfterJava11 {
     @SuppressWarnings("unchecked")
     public static List<? extends CaseTree> getCases(Tree switchExpressionTree) {
       assertVersionAtLeast(12);
-      if (GETCASES == null) {
+      if (GET_CASES == null) {
         Class<?> switchExpressionClass = classForName("com.sun.source.tree.SwitchExpressionTree");
-        GETCASES = getMethod(switchExpressionClass, "getCases");
+        GET_CASES = getMethod(switchExpressionClass, "getCases");
       }
-      return (List<? extends CaseTree>) invokeNonNullResult(GETCASES, switchExpressionTree);
+      return (List<? extends CaseTree>) invokeNonNullResult(GET_CASES, switchExpressionTree);
     }
 
     /**
@@ -315,19 +346,24 @@ public class TreeUtilsAfterJava11 {
      */
     public static ExpressionTree getExpression(Tree switchExpressionTree) {
       assertVersionAtLeast(12);
-      if (GETEXPRESSION == null) {
+      if (GET_EXPRESSION == null) {
         Class<?> switchExpressionClass = classForName("com.sun.source.tree.SwitchExpressionTree");
-        GETEXPRESSION = getMethod(switchExpressionClass, "getExpression");
+        GET_EXPRESSION = getMethod(switchExpressionClass, "getExpression");
       }
-      return (ExpressionTree) invokeNonNullResult(GETEXPRESSION, switchExpressionTree);
+      return (ExpressionTree) invokeNonNullResult(GET_EXPRESSION, switchExpressionTree);
     }
   }
 
   /** Utility methods for accessing {@code YieldTree} methods. */
   public static class YieldUtils {
 
+    /** Don't use. */
+    private YieldUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /** The {@code YieldTree.getValue} method for Java 13 and higher; null otherwise. */
-    private static @Nullable Method GETVALUE;
+    private static @Nullable Method GET_VALUE = null;
 
     /**
      * Returns the value (expression) for {@code yieldTree}.
@@ -337,19 +373,24 @@ public class TreeUtilsAfterJava11 {
      */
     public static ExpressionTree getValue(Tree yieldTree) {
       assertVersionAtLeast(13);
-      if (GETVALUE == null) {
+      if (GET_VALUE == null) {
         Class<?> yieldTreeClass = classForName("com.sun.source.tree.YieldTree");
-        GETVALUE = getMethod(yieldTreeClass, "getValue");
+        GET_VALUE = getMethod(yieldTreeClass, "getValue");
       }
-      return (ExpressionTree) invokeNonNullResult(GETVALUE, yieldTree);
+      return (ExpressionTree) invokeNonNullResult(GET_VALUE, yieldTree);
     }
   }
 
   /** Utility methods for accessing {@code InstanceOfTree} methods. */
   public static class InstanceOfUtils {
 
+    /** Don't use. */
+    private InstanceOfUtils() {
+      throw new AssertionError("Cannot be instantiated.");
+    }
+
     /** The {@code InstanceOfTree.getPattern} method for Java 16 and higher; null otherwise. */
-    private static @Nullable Method GETPATTERN;
+    private static @Nullable Method GET_PATTERN = null;
 
     /**
      * Returns the pattern of {@code instanceOfTree} tree. Returns null if the instanceof does not
@@ -362,10 +403,10 @@ public class TreeUtilsAfterJava11 {
       if (sourceVersionNumber < 16) {
         return null;
       }
-      if (GETPATTERN == null) {
-        GETPATTERN = getMethod(InstanceOfTree.class, "getPattern");
+      if (GET_PATTERN == null) {
+        GET_PATTERN = getMethod(InstanceOfTree.class, "getPattern");
       }
-      return (Tree) invoke(GETPATTERN, instanceOfTree);
+      return (Tree) invoke(GET_PATTERN, instanceOfTree);
     }
   }
 
