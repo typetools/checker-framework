@@ -44,7 +44,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       // Let normal defaulting happen for the primary annotation.
       result.clearPrimaryAnnotations();
     } else if (variableTree.getType() == null) {
-      // Happens with binding variables from DeconstructionPatternTree.
+      // VariableTree#getType return null for binding variables from a DeconstructionPatternTree.
       result = f.type(variableTree);
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those

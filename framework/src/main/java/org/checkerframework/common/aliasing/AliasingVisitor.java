@@ -225,6 +225,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
       checker.reportError(tree, "unique.location.forbidden");
     } else if (tree.getType() != null) {
+      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
       if (tree.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
         if (arrayType.getComponentType().hasPrimaryAnnotation(Unique.class)) {
