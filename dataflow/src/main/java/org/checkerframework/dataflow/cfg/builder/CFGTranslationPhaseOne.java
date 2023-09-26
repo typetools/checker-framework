@@ -2335,13 +2335,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else {
-          boolean isLastExceptDefault =
+          boolean isLastCaseExceptDefault =
               i == numCases - 1
                   || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
           // This can be extended to handle case statements as well as case rules.
           boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
           boolean isLastCaseOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
+              isLastCaseExceptDefault && casesAreExhaustive() && noFallthroughToHere;
           buildCase(caseTree, i, isLastCaseOfExhaustive);
         }
       }
@@ -3796,16 +3796,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
-    InstanceOfNode node;
+    InstanceOfNode instanceOfNode;
     Node operand = scan(tree.getExpression(), p);
     TypeMirror refType = TreeUtils.typeOf(tree.getType());
     Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
     LocalVariableNode bindingNode =
         (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
 
-    node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
-    extendWithNode(node);
-    return node;
+    instanceOfNode = new InstanceOfNode(tree, operand, bindingNode, refType, types);
+    extendWithNode(instanceOfNode);
+    return instanceOfNode;
   }
 
   @Override

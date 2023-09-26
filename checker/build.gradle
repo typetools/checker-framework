@@ -886,6 +886,7 @@ task ainferTest(group: 'Verification') {
 task wpiManyTest(group: 'Verification') {
   description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
+  dependsOn(':getDoLikeJavac')
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
