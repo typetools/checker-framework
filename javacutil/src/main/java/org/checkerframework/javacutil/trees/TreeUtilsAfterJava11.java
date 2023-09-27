@@ -131,17 +131,17 @@ public class TreeUtilsAfterJava11 {
         @SuppressWarnings("unchecked")
         List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
-        List<Tree> unWrappedLabels = new ArrayList<>();
+        List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
           if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
             return Collections.emptyList();
           } else if (TreeUtils.isConstantCaseLabelTree(caseLabel)) {
-            unWrappedLabels.add(ConstantCaseLabelUtils.getConstantExpression(caseLabel));
+            labels.add(ConstantCaseLabelUtils.getConstantExpression(caseLabel));
           } else if (TreeUtils.isPatternCaseLabelTree(caseLabel)) {
-            unWrappedLabels.add(PatternCaseLabelUtils.getPattern(caseLabel));
+            labels.add(PatternCaseLabelUtils.getPattern(caseLabel));
           }
         }
-        return unWrappedLabels;
+        return labels;
       }
       return getExpressions(caseTree);
     }
