@@ -142,6 +142,8 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.InstanceOfUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.ArraysPlume;
@@ -2575,9 +2577,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
-    Tree patternTree = TreeUtils.instanceOfTreeGetPattern(tree);
+    Tree patternTree = InstanceOfUtils.getPattern(tree);
     if (patternTree != null) {
-      VariableTree variableTree = TreeUtils.bindingPatternTreeGetVariable(patternTree);
+      VariableTree variableTree = BindingPatternUtils.getVariable(patternTree);
       validateTypeOf(variableTree);
       if (variableTree.getModifiers() != null) {
         AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
