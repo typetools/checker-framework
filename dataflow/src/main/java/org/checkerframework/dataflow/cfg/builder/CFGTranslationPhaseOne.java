@@ -620,7 +620,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Visit a DeconstructionPatternTree.
    *
    * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
-   *     Framework compiles under JDK &lt; 21
+   *     Framework compiles under JDK 20 and earlier
    * @param p an unused parameter
    * @return the result of visiting the tree
    */
