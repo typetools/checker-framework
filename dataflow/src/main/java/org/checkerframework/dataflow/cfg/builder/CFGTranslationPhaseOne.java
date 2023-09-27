@@ -620,7 +620,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Visit a DeconstructionPatternTree.
    *
    * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
-   *     Framework compiles under JDK 20 and earlier
+   *     Framework compiles under JDK &lt; 21
    * @param p an unused parameter
    * @return the result of visiting the tree
    */
@@ -2357,6 +2357,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       // Build CFG for the cases.
       int defaultIndex = -1;
+      boolean exhaustiveAndNoDefault = exhaustiveAndNoDefault();
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
@@ -2365,9 +2366,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else {
-          boolean isLastCase = (i == numCases - 1);
-          boolean isLastCaseAndNoDefault = isLastCase && defaultIndex == -1;
-          boolean isLastCaseOfExhaustive = isLastCaseAndNoDefault && exhaustiveAndNoDefault();
+          boolean isLastCaseOfExhaustive = (i == numCases - 1) && exhaustiveAndNoDefault;
           buildCase(caseTree, i, isLastCaseOfExhaustive);
         }
       }
