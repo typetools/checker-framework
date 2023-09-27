@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.qual.Pure;
 public class DeconstructorPatternNode extends Node {
   /**
    * The {@code DeconstructorPatternTree}, declared as {@link Tree} to permit this file to compile
-   * under JDK &lt; 21.
+   * under JDK 20 and earlier.
    */
   private final Tree deconstructorPattern;
 

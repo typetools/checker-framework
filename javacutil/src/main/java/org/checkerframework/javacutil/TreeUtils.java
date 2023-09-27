@@ -1835,7 +1835,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether or not tree is an access of array length.
+   * Returns true if tree is an access of array length.
    *
    * @param tree tree to check
    * @return true if tree is an access of array length
@@ -2435,7 +2435,7 @@ public final class TreeUtils {
             (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
         return result;
       } else {
-        @SuppressWarnings("nullness")
+        @SuppressWarnings("nullness") // tested atLeastJava12, and method returns null
         ExpressionTree expression = (ExpressionTree) CASETREE_GETEXPRESSION.invoke(caseTree);
         if (expression == null) {
           return Collections.emptyList();
@@ -2467,27 +2467,27 @@ public final class TreeUtils {
         // These are CaseLabelTrees.
         @NonNull List<? extends Tree> caseLabelTrees =
             (List<? extends Tree>) CASETREE_GETLABELS.invoke(caseTree);
-        List<Tree> unWrappedLabels = new ArrayList<>();
+        List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
           if (isDefaultCaseLabelTree(caseLabel)) {
             return Collections.emptyList();
           } else if (isConstantCaseLabelTree(caseLabel)) {
-            unWrappedLabels.add(constantCaseLabelTreeGetConstantExpression(caseLabel));
+            labels.add(constantCaseLabelTreeGetConstantExpression(caseLabel));
           } else if (isPatternCaseLabelTree(caseLabel)) {
-            unWrappedLabels.add(patternCaseLabelTreeGetPattern(caseLabel));
+            labels.add(patternCaseLabelTreeGetPattern(caseLabel));
           }
         }
-        return unWrappedLabels;
+        return labels;
       } else if (atLeastJava12) {
         @SuppressWarnings({
           "unchecked",
-          "nullness" // tested atLeastJava21, and method returns non-null
+          "nullness" // tested atLeastJava12, and method returns non-null
         })
         @NonNull List<? extends ExpressionTree> result =
             (List<? extends ExpressionTree>) CASETREE_GETEXPRESSIONS.invoke(caseTree);
         return result;
       } else {
-        @SuppressWarnings("nullness")
+        @SuppressWarnings("nullness") // tested atLeastJava12, and method returns null
         ExpressionTree expression = (ExpressionTree) CASETREE_GETEXPRESSION.invoke(caseTree);
         if (expression == null) {
           return Collections.emptyList();
@@ -2520,20 +2520,20 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code DefaultCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code DefaultCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code DefaultCaseLabelTree}
+   * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
    */
   public static boolean isDefaultCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
   }
 
   /**
-   * Returns whether {@code tree} is a {@code ConstantCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code ConstantCaseLabelTree}
+   * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
    */
   public static boolean isConstantCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
@@ -2565,10 +2565,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code PatternCaseLabelTree}
+   * @return true if {@code tree} is a {@code PatternCaseLabelTree}
    */
   public static boolean isPatternCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
@@ -2618,10 +2618,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code BindingPatternTree}.
+   * Returns true if {@code tree} is a {@code BindingPatternTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code BindingPatternTree}
+   * @return true if {@code tree} is a {@code BindingPatternTree}
    */
   public static boolean isBindingPatternTree(Tree tree) {
     return tree.getKind().name().contentEquals("BINDING_PATTERN");
@@ -2658,10 +2658,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code DeconstructionPatternTree}.
+   * Returns true if {@code tree} is a {@code DeconstructionPatternTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code DeconstructionPatternTree}
+   * @return true if {@code tree} is a {@code DeconstructionPatternTree}
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
     return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
