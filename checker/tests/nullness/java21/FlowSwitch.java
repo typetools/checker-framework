@@ -7,6 +7,18 @@
 
 public class FlowSwitch {
 
+  void test0(Number n) {
+    String s = null;
+    switch (n) {
+      case null, default: {
+        // TODO: this should issue a dereference of nullable error.
+        n.toString();
+        s = "";
+      }
+    }
+    s.toString();
+  }
+
   void test1(Integer i) {
     String msg = null;
     switch (i) {
@@ -36,6 +48,7 @@ public class FlowSwitch {
         msg = "pos";
         break;
     }
+    msg.toString();
   }
 
   class A {}

@@ -88,11 +88,11 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.YieldUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
@@ -2220,13 +2220,14 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if this is the default case for a switch statement or expression.
+   * Returns true if this is the default case for a switch statement or expression. (Also, returns
+   * true if {@code caseTree} is {@code case null, default:}.)
    *
    * @param caseTree a case tree
    * @return true if {@code caseTree} is the default case for a switch statement or expression
    */
   public static boolean isDefaultCaseTree(CaseTree caseTree) {
-    return CaseUtils.getLabels(caseTree).isEmpty();
+    return CaseUtils.isDefaultCaseTree(caseTree);
   }
 
   /**

@@ -1,4 +1,4 @@
-package org.checkerframework.javacutil.trees;
+package org.checkerframework.javacutil;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
@@ -13,8 +13,6 @@ import java.util.List;
 import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * This class contains util methods for reflective accessing Tree classes and methods that were
@@ -116,14 +114,39 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression. For {@code default}, this is empty. Otherwise,
-     * in JDK 11 and earlier, this is a singleton list of expression trees. In JDK 12, this is a
-     * list of expression trees. In JDK 21+, this is a list of expression and pattern trees.
+     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
+     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
+     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
      * @return the list of case labels in the case
      */
     public static List<? extends Tree> getLabels(CaseTree caseTree) {
+      return getLabels(caseTree, false);
+    }
+
+    /**
+     * Returns true if this is the default case for a switch statement or expression. (Also, returns
+     * true if {@code caseTree} is {@code case null, default:}.)
+     *
+     * @param caseTree a case tree
+     * @return true if {@code caseTree} is the default case for a switch statement or expression
+     */
+    public static boolean isDefaultCaseTree(CaseTree caseTree) {
+      if (sourceVersionNumber >= 21) {
+        for (Tree label : getLabels(caseTree, true)) {
+          if (TreeUtils.isDefaultCaseLabelTree(label)) {
+            return true;
+          }
+        }
+        return false;
+      } else {
+        return getExpressions(caseTree).isEmpty();
+      }
+    }
+
+    private static List<? extends Tree> getLabels(CaseTree caseTree, boolean useDefault) {
       if (sourceVersionNumber >= 21) {
         if (GET_LABELS == null) {
           GET_LABELS = getMethod(CaseTree.class, "getLabels");
@@ -134,7 +157,9 @@ public class TreeUtilsAfterJava11 {
         List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
           if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
-            return Collections.emptyList();
+            if (useDefault) {
+              labels.add(caseLabel);
+            }
           } else if (TreeUtils.isConstantCaseLabelTree(caseLabel)) {
             labels.add(ConstantCaseLabelUtils.getConstantExpression(caseLabel));
           } else if (TreeUtils.isPatternCaseLabelTree(caseLabel)) {
@@ -184,7 +209,7 @@ public class TreeUtilsAfterJava11 {
       if (GET_GUARD == null) {
         GET_GUARD = getMethod(CaseTree.class, "getGuard");
       }
-      return (ExpressionTree) invokeNonNullResult(GET_GUARD, caseTree);
+      return (ExpressionTree) invoke(GET_GUARD, caseTree);
     }
   }
 
