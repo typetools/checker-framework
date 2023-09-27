@@ -1527,8 +1527,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public Void visitVariable(VariableTree tree, Void p) {
     warnAboutTypeAnnotationsTooEarly(tree, tree.getModifiers());
 
+    // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
     if (tree.getType() != null) {
-      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
       visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getType());
     }
 

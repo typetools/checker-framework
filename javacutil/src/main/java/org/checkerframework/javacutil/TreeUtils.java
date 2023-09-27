@@ -1668,7 +1668,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether or not tree is an access of array length.
+   * Returns true if tree is an access of array length.
    *
    * @param tree tree to check
    * @return true if tree is an access of array length
@@ -2230,20 +2230,20 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code DefaultCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code DefaultCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code DefaultCaseLabelTree}
+   * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
    */
   public static boolean isDefaultCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
   }
 
   /**
-   * Returns whether {@code tree} is a {@code ConstantCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code ConstantCaseLabelTree}
+   * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
    */
   public static boolean isConstantCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
@@ -2253,7 +2253,7 @@ public final class TreeUtils {
    * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code PatternCaseLabelTree}
+   * @return true if {@code tree} is a {@code PatternCaseLabelTree}
    */
   public static boolean isPatternCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
@@ -2300,10 +2300,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code BindingPatternTree}.
+   * Returns true if {@code tree} is a {@code BindingPatternTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code BindingPatternTree}
+   * @return true if {@code tree} is a {@code BindingPatternTree}
    */
   public static boolean isBindingPatternTree(Tree tree) {
     return tree.getKind().name().contentEquals("BINDING_PATTERN");
@@ -2322,10 +2322,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether {@code tree} is a {@code DeconstructionPatternTree}.
+   * Returns true if {@code tree} is a {@code DeconstructionPatternTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code DeconstructionPatternTree}
+   * @return true if {@code tree} is a {@code DeconstructionPatternTree}
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
     return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
