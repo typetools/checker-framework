@@ -2357,7 +2357,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       // Build CFG for the cases.
       int defaultIndex = -1;
-      boolean exhaustiveAndNoDefault = exhaustiveAndNoDefault();
       for (int i = 0; i < numCases; ++i) {
         CaseTree caseTree = caseTrees.get(i);
         if (TreeUtils.isDefaultCaseTree(caseTree)) {
@@ -2365,9 +2364,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // before the default case, no matter where `default:` is written.  Therefore,
           // build the default case last.
           defaultIndex = i;
+        } else if (i == numCases - 1 && defaultIndex == -1) {
+          // This is the last case, and it's not a default case.
+          buildCase(caseTree, i, exhaustiveIgnoreDefault());
         } else {
-          boolean isLastCaseOfExhaustive = (i == numCases - 1) && exhaustiveAndNoDefault;
-          buildCase(caseTree, i, isLastCaseOfExhaustive);
+          buildCase(caseTree, i, false);
         }
       }
 
@@ -2570,19 +2571,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Returns true if the switch is exhaustive and does not contain a default case.
+     * Returns true if the switch is exhaustive; ignoring any default case
      *
-     * @return true if the switch is exhaustive and does not contain a default case
+     * @return true if the switch is exhaustive; ignoring any default case
      */
-    private boolean exhaustiveAndNoDefault() {
-      for (CaseTree caseTree : caseTrees) {
-        if (TreeUtils.isDefaultCaseTree(caseTree)) {
-          return false;
-        }
-      }
-
-      // There is no default case.  Check whether the switch is exhaustive.
-
+    private boolean exhaustiveIgnoreDefault() {
       // Switch expressions are always exhaustive, but they might have a default case, which is why
       // the above loop is not fused with the below loop.
       if (!TreeUtils.isSwitchStatement(switchTree)) {
