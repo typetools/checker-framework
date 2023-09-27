@@ -114,19 +114,6 @@ public class TreeUtilsAfterJava11 {
     }
 
     /**
-     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
-     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
-     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
-     * trees. In JDK 21+, the list might contain a single pattern tree.
-     *
-     * @param caseTree the case expression to get the labels from
-     * @return the list of case labels in the case
-     */
-    public static List<? extends Tree> getLabels(CaseTree caseTree) {
-      return getLabels(caseTree, false);
-    }
-
-    /**
      * Returns true if this is the default case for a switch statement or expression. (Also, returns
      * true if {@code caseTree} is {@code case null, default:}.)
      *
@@ -146,7 +133,43 @@ public class TreeUtilsAfterJava11 {
       }
     }
 
-    private static List<? extends Tree> getLabels(CaseTree caseTree, boolean useDefault) {
+    /**
+     * Get the list of labels from a case expression. For {@code default}, this is empty. For {@code
+     * case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier, this
+     * is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * trees. In JDK 21+, the list might contain a single pattern tree.
+     *
+     * @param caseTree the case expression to get the labels from
+     * @return the list of case labels in the case
+     */
+    public static List<? extends Tree> getLabels(CaseTree caseTree) {
+      return getLabels(caseTree, false);
+    }
+
+    /**
+     * Get the list of labels from a case expression.
+     *
+     * <p>For JDKs before 21, if {@code caseTree} is the default case, then the returned list is
+     * empty.
+     *
+     * <p>For 21+ JDK, if {@code useDefaultCaseLabelTree} is false, then if {@code caseTree} is the
+     * default case or {@code case null, default}, then the returned list is empty. If {@code
+     * useDefaultCaseLabelTree} is true, then if {@code caseTree} is the default case the returned
+     * contains just a {@code DefaultCaseLabelTree}. If {@code useDefaultCaseLabelTree} is false,
+     * then if {@code caseTree} is {@code case null, default} the returned list is a {@code
+     * DefaultCaseLabelTree} and the expression tree for {@code null}.
+     *
+     * <p>Otherwise, in JDK 11 and earlier, this is a list of a single expression tree. In JDK 12+,
+     * the list may have multiple expression trees. In JDK 21+, the list might contain a single
+     * pattern tree.
+     *
+     * @param caseTree the case expression to get the labels from
+     * @param useDefaultCaseLabelTree weather the result should contain a {@code
+     *     DefaultCaseLabelTree}.
+     * @return the list of case labels in the case
+     */
+    private static List<? extends Tree> getLabels(
+        CaseTree caseTree, boolean useDefaultCaseLabelTree) {
       if (sourceVersionNumber >= 21) {
         if (GET_LABELS == null) {
           GET_LABELS = getMethod(CaseTree.class, "getLabels");
@@ -157,7 +180,7 @@ public class TreeUtilsAfterJava11 {
         List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
           if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
-            if (useDefault) {
+            if (useDefaultCaseLabelTree) {
               labels.add(caseLabel);
             }
           } else if (TreeUtils.isConstantCaseLabelTree(caseLabel)) {
