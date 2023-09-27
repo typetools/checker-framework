@@ -19,6 +19,12 @@ import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
 
 /** The visitor for Fenum Checker. */
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
+
+  /**
+   * Creates a Fenum Visitor
+   *
+   * @param checker the checker
+   */
   public FenumVisitor(BaseTypeChecker checker) {
     super(checker);
   }

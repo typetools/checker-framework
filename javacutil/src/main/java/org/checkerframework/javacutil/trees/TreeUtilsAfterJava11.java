@@ -22,6 +22,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class TreeUtilsAfterJava11 {
 
+  /** Don't use. */
+  private TreeUtilsAfterJava11() {
+    throw new AssertionError("Cannot be instantiated.");
+  }
+
   /** The latest source version supported by this compiler. */
   private static final int sourceVersionNumber =
       Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
