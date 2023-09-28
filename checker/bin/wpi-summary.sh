@@ -15,7 +15,7 @@ targetdir=$1
 
 number_of_projects=$(find "${targetdir}" -name "*.log" | wc -l)
 
-no_build_file=$(grep -cl "no build file found for" "${targetdir}/"*.log)
+no_build_file=$(grep -o "no build file found for" "${targetdir}/"*.log | wc -l)
 no_build_file_percent=$(((no_build_file*100)/number_of_projects))
 
 # "old" and "new" in the below refer to the two different messages that
@@ -23,12 +23,12 @@ no_build_file_percent=$(((no_build_file*100)/number_of_projects))
 # running an early set of these experiments, I realized that the original
 # message wasn't correct, and fixed it. But, for backwards compatibility,
 # this script looks for both messages and combines the counts.
-build_failed_old=$(grep -cl "dljc could not run the Checker Framework" "${targetdir}/"*.log)
-build_failed_new=$(grep -cl "dljc could not run the build successfully" "${targetdir}/"*.log)
+build_failed_old=$(grep -o "dljc could not run the Checker Framework" "${targetdir}/"*.log | wc -l)
+build_failed_new=$(grep -o "dljc could not run the build successfully" "${targetdir}/"*.log | wc -l)
 build_failed=$((build_failed_old+build_failed_new))
 build_failed_percent=$(((build_failed*100)/number_of_projects))
 
-timed_out=$(grep -cl "dljc timed out for" "${targetdir}/"*.log)
+timed_out=$(grep -o "dljc timed out for" "${targetdir}/"*.log | wc -l)
 timed_out_percent=$(((timed_out*100)/number_of_projects))
 
 echo "number of projects: ${number_of_projects} (100%)"

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +52,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-
-// import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
@@ -190,7 +190,7 @@ public class MustCallInference {
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
 
-      Set<Obligation> obligations = new HashSet<>(current.obligations);
+      Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
         // Calling updateObligationsWithInvocationResult() will not induce any side effects in the
@@ -365,28 +365,17 @@ public class MustCallInference {
   private void addOwningToParamsIfDisposedAtAssignment(
       Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
     Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
+    if (rhsAliases.isEmpty()) {
+      return;
+    }
+    List<VariableElement> paramElts =
+        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias rhsAlias : rhsAliases) {
       Element rhsElt = rhsAlias.reference.getElement();
-      List<? extends VariableTree> params = methodTree.getParameters();
-      for (int i = 1; i < params.size() + 1; i++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(params.get(i - 1));
-        if (paramElt.equals(rhsElt)) {
-          addOwningToParam(i);
-          mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
-          break;
-        }
-        //    if (rhsAliases.isEmpty()) {
-        //      return;
-        //    }
-        //    List<VariableElement> paramElts =
-        //        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration,
-        // methodTree.getParameters());
-        //    for (ResourceAlias rhsAlias : rhsAliases) {
-        //      Element rhsElt = rhsAlias.reference.getElement();
-        //      int i = paramElts.indexOf(rhsElt);
-        //      if (i != -1) {
-        //        addOwningToParam(i + 1);
-        //        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+      int i = paramElts.indexOf(rhsElt);
+      if (i != -1) {
+        addOwningToParam(i + 1);
+        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
     }
   }
@@ -523,21 +512,27 @@ public class MustCallInference {
     }
 
     Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    if (!receiverAliases.isEmpty()) {
-      for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i));
+    if (receiverAliases.isEmpty()) {
+      return;
+    }
 
-        for (ResourceAlias resourceAlias : receiverAliases) {
-          Element resourceElt = resourceAlias.reference.getElement();
-          if (!resourceElt.equals(paramElt)) {
-            continue;
-          }
+    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
+      VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(i - 1);
+      if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
+        continue;
+      }
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
 
-          JavaExpression paramJe = JavaExpression.fromVariableTree(paramsOfCurrentMethod.get(i));
-          if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
-            addOwningToParam(i + 1);
-            break;
-          }
+      for (ResourceAlias resourceAlias : receiverAliases) {
+        Element resourceElt = resourceAlias.reference.getElement();
+        if (!resourceElt.equals(paramElt)) {
+          continue;
+        }
+
+        JavaExpression paramJe = JavaExpression.fromVariableTree(paramOfCurrMethod);
+        if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
+          addOwningToParam(i);
+          break;
         }
       }
     }
@@ -563,19 +558,20 @@ public class MustCallInference {
     }
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
 
-    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-
-      for (int j = 0; j < arguments.size(); j++) {
-        if (!typeFactory.hasOwning(invocationParams.get(j))) {
+    for (int i = 1; i < arguments.size() + 1; i++) {
+      if (!typeFactory.hasOwning(invocationParams.get(i - 1))) {
+        continue;
+      }
+      for (int j = 1; j < paramsOfCurrentMethod.size() + 1; j++) {
+        VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(j - 1);
+        if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
           continue;
         }
 
-        Node arg = NodeUtils.removeCasts(arguments.get(j));
-
-        VariableElement paramElt =
-            TreeUtils.elementFromDeclaration(paramsOfCurrentMethod.get(i - 1));
+        Node arg = NodeUtils.removeCasts(arguments.get(i - 1));
+        VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
         if (isParamAndArgAliased(obligations, arg, paramElt)) {
-          addOwningToParam(i);
+          addOwningToParam(j);
           break;
         }
       }
@@ -690,14 +686,17 @@ public class MustCallInference {
       MethodInvocationNode invocation,
       Node arg) {
 
-    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(0);
+    for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
+      if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
+        continue;
+      }
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i - 1);
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
       if (isParamAndArgAliased(obligations, arg, currentMethodParamElt)) {
         JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
         if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
-          addOwningToParam(i + 1);
+          addOwningToParam(i);
           break;
         }
       }
