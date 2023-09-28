@@ -209,6 +209,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     if (isInvocationOfEquals(tree)) {
       AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
+      assert receiverType != null : "@AssumeAssertion(nullness)";
       AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
 
       if (this.checker.getLintOption("dotequals", true)
