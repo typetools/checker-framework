@@ -209,6 +209,16 @@ public class JEP441 {
     }
   }
 
+  record MyPair<S,T>(S fst, T snd){};
+
+  static void recordInference(MyPair<String, Integer> pair) {
+    switch (pair) {
+      case MyPair(var f, var s) -> {
+        String ff = f;
+        Integer ss = s;
+      }
+    }
+  }
   void fragment( Integer i ){
     // TODO: This would be a good test case for the Value Checker.
 //    switch (i) {
