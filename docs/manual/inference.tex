@@ -243,7 +243,13 @@ The \<dljc-out/> folder contains:
   project, including build time, the number of built \<.jar> files, the number of
   executable \<.jar> files, the number of \<javac> invocations, and the number of
   source files.
-\item \<wpi-stdout.log>: TODO
+\item \<typecheck.out>: The final results of type-checking obtained with the
+  latest iteration of WPI (i.e., the most precise, consistent set of
+  annotations).
+\item \<wpi-stdout>: The results of type-checking with each candidate set of
+  annotations.
+  The final results (i.e., those obtained using the most precise, consistent
+  set of annotations) will appear at the end of this file.
 \end{itemize}
 
 \subsectionAndLabel{Requirements for whole-program inference scripts}{wpi-shared-requirements}
