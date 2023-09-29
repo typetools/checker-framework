@@ -235,23 +235,28 @@ of the target project.
 The \<dljc-out/> folder contains:
 
 \begin{itemize}
+\item \<typecheck.out>: The final error messages produced by \<javac>,
+  comprising the results of type-checking obtained with the
+  latest iteration of WPI (i.e., using the most precise, consistent set of
+  annotations).
 \item \<build\_output.txt>: Logs collected from compiling the target project
-  using the build file found at the top-level directory.
-\item \<javac.json>: The list of all `.java` files for which inference was
+  without the Checker Framework, using the build file found at the
+  top-level directory.
+\item \<wpi-stdout.log>: The results of type-checking with each candidate set of
+  annotations, concatenated together in the order in which the annotations
+  were inferred.
+  The final results (i.e., those obtained using the most precise, consistent
+  set of annotations) will appear at the end of this file.
+\item \<wpi-stdout-*>: These files are separate from the logs in \<wpi-stdout.log>.
+  They may be useful in the case where \<dljc> is not working as expected.
+\item \<toplevel.log>: The log of the command executed at the top-level of the
+  target directory to invoke whole-program inference.
+\item \<javac.json>: The list of all \<.java> files for which inference was
   attempted by \<wpi.sh>, and the options passed to \<javac>.
 \item \<stats.json>: Statistics from the invocation of \<wpi.sh> on the target
   project, including build time, the number of built \<.jar> files, the number of
   executable \<.jar> files, the number of \<javac> invocations, and the number of
   source files.
-\item \<typecheck.out>: The final results of type-checking obtained with the
-  latest iteration of WPI (i.e., the most precise, consistent set of
-  annotations).
-\item \<wpi-stdout.log>: The results of type-checking with each candidate set of
-  annotations.
-  The final results (i.e., those obtained using the most precise, consistent
-  set of annotations) will appear at the end of this file.
-\item \<toplevel.log>: The log of the command executed at the top-level of the
-  target directory to invoke whole-program inference.
 \end{itemize}
 
 \subsectionAndLabel{Requirements for whole-program inference scripts}{wpi-shared-requirements}
