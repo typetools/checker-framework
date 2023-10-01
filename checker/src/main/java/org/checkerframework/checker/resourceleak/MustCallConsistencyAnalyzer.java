@@ -473,6 +473,16 @@ class MustCallConsistencyAnalyzer {
     public int hashCode() {
       return Objects.hash(reference, tree);
     }
+
+    /**
+     * Returns some stuff
+     *
+     * @return appropriate String for representing this in an error message; in particular, we avoid
+     *     temporary variable names
+     */
+    public String stringForErrorMessage() {
+      return reference.toString().contains("temp-var") ? tree.toString() : reference.toString();
+    }
   }
 
   /**
@@ -2091,7 +2101,7 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.known",
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
@@ -2148,7 +2158,7 @@ class MustCallConsistencyAnalyzer {
               firstAlias.tree,
               "required.method.not.called",
               formatMissingMustCallMethods(mustCallValue),
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
@@ -2201,7 +2211,8 @@ class MustCallConsistencyAnalyzer {
    * @return true iff the type's fully-qualified name starts with "java", indicating that it is from
    *     a java.* or javax.* package (probably)
    */
-  /*package-private*/ static boolean isJdkClass(String qualifiedName) {
+  /*package-private*/
+  static boolean isJdkClass(String qualifiedName) {
     return qualifiedName.startsWith("java");
   }
 
@@ -2301,7 +2312,8 @@ class MustCallConsistencyAnalyzer {
    * @param mustCallVal the list of must-call strings
    * @return a formatted string
    */
-  /*package-private*/ static String formatMissingMustCallMethods(List<String> mustCallVal) {
+  /*package-private*/
+  static String formatMissingMustCallMethods(List<String> mustCallVal) {
     int size = mustCallVal.size();
     if (size == 0) {
       throw new TypeSystemError("empty mustCallVal " + mustCallVal);
