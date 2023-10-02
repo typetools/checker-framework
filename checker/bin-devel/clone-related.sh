@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering checker/bin-devel/build.sh in "$(pwd)"
+echo Entering checker/bin-devel/clone-related.sh in "$(pwd)"
 
 # Fail the whole script if any command fails
 set -e
