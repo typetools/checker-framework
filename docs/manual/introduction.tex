@@ -1306,7 +1306,7 @@ crash due to use of a non-present Optional value.  Therefore, the receiver
 of
 \<orElseThrow> is annotated as
 \refqualclass{checker/optional/qual}{Present},
-and the Optional Checker issues a warning if the client calls
+and the Optional Checker issues an error if the client calls
 \<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
 
 
