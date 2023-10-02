@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -966,6 +967,14 @@ public abstract class CFAbstractTransfer<
 
     return new ConditionalTransferResult<>(
         finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+  }
+
+  @Override
+  public TransferResult<V, S> visitDeconstructorPattern(
+      DeconstructorPatternNode n, TransferInput<V, S> in) {
+    // TODO: Implement getting the type of a DeconstructorPatternTree.
+    V value = null;
+    return createTransferResult(value, in);
   }
 
   @Override
