@@ -11,9 +11,9 @@ import java.util.Set;
 public class Marks7 {
 
   void illegalInstantiations() {
-    // :: error: (optional.collection)
+    // :: warning: (optional.collection)
     Optional<List<String>> ols = Optional.of(new ArrayList<String>());
-    // :: error: (optional.collection)
+    // :: warning: (optional.collection)
     Optional<Set<String>> oss = Optional.of(new HashSet<String>());
   }
 }
