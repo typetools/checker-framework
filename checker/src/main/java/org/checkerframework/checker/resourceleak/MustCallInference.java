@@ -203,16 +203,19 @@ public class MustCallInference {
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
       return Collections.emptySet();
     }
-    Set<Obligation> result = new HashSet<>(2);
+    Set<Obligation> result = null;
     for (VariableTree param : methodTree.getParameters()) {
       if (resourceLeakAtf.declaredTypeHasMustCall(param)) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
+        if (result == null) {
+          result = new HashSet<>(2);
+        }
         result.add(
             new Obligation(
                 ImmutableSet.of(new ResourceAlias(new LocalVariable(paramElement), param))));
       }
     }
-    return result;
+    return result != null ? result : Collections.emptySet();
   }
 
   /**
