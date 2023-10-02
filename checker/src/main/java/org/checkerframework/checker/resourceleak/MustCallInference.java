@@ -349,9 +349,9 @@ public class MustCallInference {
    * whose must-call obligation is satisfied within the current method.
    */
   private void addEnsuresCalledMethods() {
-    // This map is used to create @EnsuresCalledMethods annotation for fields that share the same
-    // must-call obligation on the method boundary. The keys are the must-call method names, and
-    // the values are the set fields on which those methods are called
+    // The keys are the must-call method names, and the values are the set of fields on which those
+    // methods are called.  This map is used to create @EnsuresCalledMethods annotation for fields
+    // that share the same must-call obligation on the method boundary.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
       List<String> mustCallValues = resourceLeakAtf.getMustCallValue(disposedField);
@@ -359,11 +359,7 @@ public class MustCallInference {
           : "Must-call obligation of owning field " + disposedField + " is empty.";
       // Currently, this code assumes that the must-call set has only one element.
       assert mustCallValues.size() == 1
-          : "The must-call set ("
-              + mustCallValues
-              + ") of "
-              + disposedField
-              + "should be a singleton";
+          : "The must-call set of " + disposedField + "should be a singleton: " + mustCallValues;
       String mustCallValue = mustCallValues.get(0);
       String fieldName = "this." + disposedField.getSimpleName().toString();
 
