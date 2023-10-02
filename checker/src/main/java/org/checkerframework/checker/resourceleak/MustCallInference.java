@@ -346,7 +346,8 @@ public class MustCallInference {
 
   /**
    * Adds an {@link EnsuresCalledMethods} annotation to the current method for any owning field
-   * whose must-call obligation is satisfied within the current method.
+   * whose must-call obligation is satisfied within the current method. Those fields are the ones in
+   * variable {@link #disposedFields}.
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
@@ -767,7 +768,7 @@ public class MustCallInference {
    * Adds all non-exceptional successors to {@code worklist}. If a successor is a non-exceptional
    * exit point, adds an {@literal @Owning} annotation for fields in {@link #disposedFields}.
    *
-   * @param obligations the obligationsx for the current block
+   * @param obligations the obligations for the current block
    * @param curBlock the block whose successors to add to the worklist
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist the worklist, which is side-effected by this method
