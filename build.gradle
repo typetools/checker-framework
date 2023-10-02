@@ -437,7 +437,7 @@ allprojects {
 
 task cloneAndBuildDependencies(type: Exec, group: 'Build') {
   description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/build.sh'
+  executable 'checker/bin-devel/clone-related.sh'
 }
 
 task version(group: 'Documentation') {
