@@ -153,8 +153,7 @@ public class MustCallInference {
    * must-call obligations were satisfied along one of the checked paths.
    *
    * <p>Operationally, it checks method invocations for fields and parameters with
-   * non-empty @MustCall obligations along all paths to the regular exit point in the method body of
-   * the method represented by {@link #cfg}.
+   * non-empty @MustCall obligations along all paths to the regular exit point.
    */
   private void runInference() {
 
@@ -197,8 +196,7 @@ public class MustCallInference {
    * method body.
    *
    * @param cfg the control flow graph of the method to check
-   * @return a set of obligations representing the non-empty MustCall parameters of the method
-   *     corresponding to {@code cfg}
+   * @return a set of obligations representing the parameters with non-empty MustCall
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
