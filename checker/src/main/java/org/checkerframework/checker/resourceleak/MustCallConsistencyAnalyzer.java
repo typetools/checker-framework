@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -472,6 +473,21 @@ class MustCallConsistencyAnalyzer {
     @Override
     public int hashCode() {
       return Objects.hash(reference, tree);
+    }
+
+    /**
+     * Returns an appropriate String for representing this in an error message. In particular, if
+     * {@link #reference} is a temporary variable, we return the String representation of {@link
+     * #tree}, to avoid exposing the temporary name (which has no meaning for the user) in the error
+     * message
+     *
+     * @return an appropriate String for representing this in an error message
+     */
+    public String stringForErrorMessage() {
+      String referenceStr = reference.toString();
+      // we assume that any temporary variable name will not be a syntactically-valid identifier
+      // or keyword
+      return !SourceVersion.isIdentifier(referenceStr) ? tree.toString() : referenceStr;
     }
   }
 
@@ -2091,7 +2107,7 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.known",
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
@@ -2148,7 +2164,7 @@ class MustCallConsistencyAnalyzer {
               firstAlias.tree,
               "required.method.not.called",
               formatMissingMustCallMethods(mustCallValue),
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
