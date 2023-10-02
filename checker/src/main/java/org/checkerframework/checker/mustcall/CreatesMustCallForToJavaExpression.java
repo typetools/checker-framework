@@ -112,7 +112,7 @@ public class CreatesMustCallForToJavaExpression {
    * @param supplier supplier to use to get elements
    * @return the {@code CreatesMustCallFor} annotations
    */
-  private static List<AnnotationMirror> getCreatesMustCallForAnnos(
+  public static List<AnnotationMirror> getCreatesMustCallForAnnos(
       ExecutableElement method,
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       CreatesMustCallForElementSupplier supplier) {

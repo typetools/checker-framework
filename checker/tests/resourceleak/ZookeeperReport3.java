@@ -14,6 +14,7 @@ class ZookeeperReport3 {
       InetSocketAddress address, boolean portUnification, boolean sslQuorum) {
     ServerSocket serverSocket;
     try {
+      // :: error: required.method.not.called
       serverSocket = new ServerSocket();
       serverSocket.setReuseAddress(true);
       serverSocket.bind(address);
@@ -29,8 +30,10 @@ class ZookeeperReport3 {
     ServerSocket serverSocket;
     try {
       if (portUnification || sslQuorum) {
+        // :: error: required.method.not.called
         serverSocket = new UnifiedServerSocket(portUnification);
       } else {
+        // :: error: required.method.not.called
         serverSocket = new ServerSocket();
       }
       serverSocket.setReuseAddress(true);
@@ -48,11 +51,14 @@ class ZookeeperReport3 {
 
     if (portUnification) {
       System.out.println("Creating TLS-enabled quorum server socket");
+      // :: error: required.method.not.called
       socket = new UnifiedServerSocket(true);
     } else if (sslQuorum) {
       System.out.println("Creating TLS-only quorum server socket");
+      // :: error: required.method.not.called
       socket = new UnifiedServerSocket(false);
     } else {
+      // :: error: required.method.not.called
       socket = new ServerSocket();
     }
 

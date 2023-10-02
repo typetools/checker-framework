@@ -5,7 +5,10 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -14,8 +17,10 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -57,6 +62,8 @@ public class MustCallTransfer extends CFTransfer {
 
   /** True if -AnoCreatesMustCallFor was passed on the command line. */
   private final boolean noCreatesMustCallFor;
+
+  private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
 
   /**
    * Create a MustCallTransfer.
@@ -149,12 +156,40 @@ public class MustCallTransfer extends CFTransfer {
 
           CFStore elseStore = result.getElseStore();
           lubWithStoreValue(elseStore, targetExpr, defaultType);
+
+          exceptionalStores = makeExceptionalStores(n, result);
+
+          TransferResult<CFValue, CFStore> finalResult =
+              new ConditionalTransferResult<>(
+                  result.getResultValue(),
+                  result.getThenStore(),
+                  result.getElseStore(),
+                  exceptionalStores);
+          exceptionalStores = null;
+          return finalResult;
         } else {
           CFStore store = result.getRegularStore();
           lubWithStoreValue(store, targetExpr, defaultType);
         }
       }
     }
+
+    return result;
+  }
+
+  private Map<TypeMirror, CFStore> makeExceptionalStores(
+      MethodInvocationNode node, TransferResult<CFValue, CFStore> input) {
+    if (!(node.getBlock() instanceof ExceptionBlock)) {
+      // This can happen in some weird (buggy?) cases:
+      // see https://github.com/typetools/checker-framework/issues/3585
+      return Collections.emptyMap();
+    }
+
+    ExceptionBlock block = (ExceptionBlock) node.getBlock();
+    Map<TypeMirror, CFStore> result = new LinkedHashMap<>();
+    block
+        .getExceptionalSuccessors()
+        .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
     return result;
   }
 
