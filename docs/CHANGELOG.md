@@ -1,4 +1,4 @@
-Version 3.39.0 (October 1, 2023)
+Version 3.39.0 (October 2, 2023)
 --------------------------------
 
 **User-visible changes:**
@@ -18,6 +18,8 @@ Dataflow supports all the new Java 21 langauge features.
 WPI uses 1-based indexing for formal parameters and arguments.
 
 **Closed issues:**
+
+#5911, #5967, #6155, #6173, #6201.
 
 
 Version 3.38.0 (September 1, 2023)
