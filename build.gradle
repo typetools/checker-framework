@@ -114,7 +114,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.38.1-SNAPSHOT'
+  version '3.39.0'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -199,6 +199,12 @@ allprojects {
     ]
     if (!isJava17orHigher) {
       doNotFormat += ['**/java17/', '**/*record*/']
+    }
+
+    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+    // See https://github.com/google/google-java-format/releases.
+    if (true) {
+      doNotFormat += ['**/java21/']
     }
 
     if (!isJava21orHigher) {

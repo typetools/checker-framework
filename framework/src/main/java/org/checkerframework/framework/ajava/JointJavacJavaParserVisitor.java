@@ -161,11 +161,11 @@ import java.util.Optional;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.YieldUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 
 /**
  * A visitor that processes javac trees and JavaParser nodes simultaneously, matching corresponding

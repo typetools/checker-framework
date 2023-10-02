@@ -419,14 +419,16 @@ public class NullnessVisitor
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-      List<? extends AnnotationMirror> annotations =
-          TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
-      if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
-        checker.reportError(tree, "instanceof.nullable");
-      }
-      if (AnnotationUtils.containsSame(annotations, NONNULL)) {
-        checker.reportWarning(tree, "instanceof.nonnull.redundant");
+    if (refTypeTree != null) {
+      if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+        List<? extends AnnotationMirror> annotations =
+            TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
+        if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
+          checker.reportError(tree, "instanceof.nullable");
+        }
+        if (AnnotationUtils.containsSame(annotations, NONNULL)) {
+          checker.reportWarning(tree, "instanceof.nonnull.redundant");
+        }
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.

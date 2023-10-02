@@ -176,4 +176,13 @@ public interface NodeVisitor<R, P> {
    * @return the return value of the operation implemented by this visitor
    */
   R visitExpressionStatement(ExpressionStatementNode n, P p);
+
+  /**
+   * Visits a deconstructor pattern node.
+   *
+   * @param n the {@link DeconstructorPatternNode} to be visited
+   * @param p the argument for the operation implemented by this visitor
+   * @return the return value of the operation implemented by this visitor
+   */
+  R visitDeconstructorPattern(DeconstructorPatternNode n, P p);
 }

@@ -88,11 +88,11 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.BindingPatternUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.CaseUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.InstanceOfUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.SwitchExpressionUtils;
-import org.checkerframework.javacutil.trees.TreeUtilsAfterJava11.YieldUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.UniqueIdMap;
 
@@ -1668,7 +1668,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns whether or not tree is an access of array length.
+   * Returns true if tree is an access of array length.
    *
    * @param tree tree to check
    * @return true if tree is an access of array length
@@ -2220,30 +2220,31 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if this is the default case for a switch statement or expression.
+   * Returns true if this is the default case for a switch statement or expression. (Also, returns
+   * true if {@code caseTree} is {@code case null, default:}.)
    *
    * @param caseTree a case tree
    * @return true if {@code caseTree} is the default case for a switch statement or expression
    */
   public static boolean isDefaultCaseTree(CaseTree caseTree) {
-    return CaseUtils.getLabels(caseTree).isEmpty();
+    return CaseUtils.isDefaultCaseTree(caseTree);
   }
 
   /**
-   * Returns whether {@code tree} is a {@code DefaultCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code DefaultCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code DefaultCaseLabelTree}
+   * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
    */
   public static boolean isDefaultCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
   }
 
   /**
-   * Returns whether {@code tree} is a {@code ConstantCaseLabelTree}.
+   * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code ConstantCaseLabelTree}
+   * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
    */
   public static boolean isConstantCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
@@ -2253,7 +2254,7 @@ public final class TreeUtils {
    * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
    *
    * @param tree a tree to check
-   * @return whether {@code tree} is a {@code PatternCaseLabelTree}
+   * @return true if {@code tree} is a {@code PatternCaseLabelTree}
    */
   public static boolean isPatternCaseLabelTree(Tree tree) {
     return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
@@ -2300,6 +2301,16 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if {@code tree} is a {@code BindingPatternTree}.
+   *
+   * @param tree a tree to check
+   * @return true if {@code tree} is a {@code BindingPatternTree}
+   */
+  public static boolean isBindingPatternTree(Tree tree) {
+    return tree.getKind().name().contentEquals("BINDING_PATTERN");
+  }
+
+  /**
    * Returns the binding variable of {@code bindingPatternTree}.
    *
    * @param bindingPatternTree the BindingPatternTree whose binding variable is returned
@@ -2309,6 +2320,16 @@ public final class TreeUtils {
   @Deprecated // 2023-26-09
   public static VariableTree bindingPatternTreeGetVariable(Tree bindingPatternTree) {
     return BindingPatternUtils.getVariable(bindingPatternTree);
+  }
+
+  /**
+   * Returns true if {@code tree} is a {@code DeconstructionPatternTree}.
+   *
+   * @param tree a tree to check
+   * @return true if {@code tree} is a {@code DeconstructionPatternTree}
+   */
+  public static boolean isDeconstructionPatternTree(Tree tree) {
+    return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
   }
 
   /**
