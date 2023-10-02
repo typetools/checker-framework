@@ -55,19 +55,18 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /**
- * This class implements the annotation inference algorithm for the Resource Leak Checker. It is
- * responsible for inferring annotations such as {@code @}{@link Owning} on owning fields and
+ * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
+ * annotations such as {@code @}{@link Owning} on owning fields and
  * parameters, @EnsuresCalledMethods on methods, and @InheritableMustCall on class declarations.
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
  * representing a method.
  *
- * <p>The algorithm determines if the @MustCall obligation of a field is disposed along some path
+ * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
  * leading to the regular exit point of the method. If the obligation is satisfied, it adds
  * an @Owning annotation on the field and an @EnsuresCalledMethods annotation on the method being
- * analyzed by this instance. Additionally, if the method being analyzed satisfies the must-call
- * obligation of all the enclosed owning fields, it adds a @InheritableMustCall annotation on the
- * enclosing class.
+ * analyzed. Additionally, if the method being analyzed satisfies the must-call obligation of all
+ * the enclosed owning fields, it adds a @InheritableMustCall annotation on the enclosing class.
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. Must-call
  * sets with more than one element may be supported in the future.
@@ -84,9 +83,6 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class MustCallInference {
 
-  /** If true, produce debugging diagnostic output. */
-  private static final boolean debug = true;
-
   /**
    * The fields that have been inferred to be disposed within the CFG currently under analysis. All
    * of these fields will be given an @Owning annotation.
@@ -96,7 +92,7 @@ public class MustCallInference {
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
-  private final ResourceLeakAnnotatedTypeFactory typeFactory;
+  private final ResourceLeakAnnotatedTypeFactory resourceLeakAtf;
 
   /** The MustCallConsistencyAnalyzer. */
   private final MustCallConsistencyAnalyzer mcca;
@@ -119,18 +115,18 @@ public class MustCallInference {
   /**
    * Creates a MustCallInference instance.
    *
-   * @param typeFactory the type factory
+   * @param resourceLeakAtf the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
   /*package-private*/ MustCallInference(
-      ResourceLeakAnnotatedTypeFactory typeFactory,
+      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
-    this.typeFactory = typeFactory;
+    this.resourceLeakAtf = resourceLeakAtf;
     this.mcca = mcca;
     this.cfg = cfg;
-    OWNING = AnnotationBuilder.fromClass(this.typeFactory.getElementUtils(), Owning.class);
+    OWNING = AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), Owning.class);
     methodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
     methodElt = TreeUtils.elementFromDeclaration(methodTree);
   }
@@ -139,15 +135,15 @@ public class MustCallInference {
    * Creates a MustCallInference instance and runs the inference algorithm. A type factory's
    * postAnalyze method calls this, if Whole Program Inference is enabled.
    *
-   * @param typeFactory the type factory
+   * @param resourceLeakAtf the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
   protected static void runMustCallInference(
-      ResourceLeakAnnotatedTypeFactory typeFactory,
+      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
-    MustCallInference mustCallInferenceLogic = new MustCallInference(typeFactory, cfg, mcca);
+    MustCallInference mustCallInferenceLogic = new MustCallInference(resourceLeakAtf, cfg, mcca);
     mustCallInferenceLogic.runInference();
   }
 
@@ -161,21 +157,6 @@ public class MustCallInference {
    * the method represented by {@link #cfg}.
    */
   private void runInference() {
-
-    if (debug) {
-      UnderlyingAST uAST = cfg.getUnderlyingAST();
-      if (uAST.getKind() == UnderlyingAST.Kind.METHOD) {
-        UnderlyingAST.CFGMethod uMethod = ((UnderlyingAST.CFGMethod) uAST);
-        System.out.printf(
-            "entering runInference() for CFG %d of method %s.%s%n",
-            uAST.getUid(), uMethod.getSimpleClassName(), uMethod.getMethodName());
-      } else {
-        System.out.printf(
-            "entering runInference() for CFG %d of kind %s%n", uAST.getUid(), uAST.getKind());
-      }
-      System.out.flush();
-    }
-    long startMillis = System.currentTimeMillis();
 
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
@@ -208,21 +189,6 @@ public class MustCallInference {
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
     }
-
-    if (debug) {
-      long elapsedMillis = System.currentTimeMillis() - startMillis;
-      if (uAST.getKind() == UnderlyingAST.Kind.METHOD) {
-        UnderlyingAST.CFGMethod uMethod = ((UnderlyingAST.CFGMethod) uAST);
-        System.out.printf(
-            "exiting (%d msec) runInference() for CFG %d of method %s.%s%n",
-            elapsedMillis, uAST.getUid(), uMethod.getSimpleClassName(), uMethod.getMethodName());
-      } else {
-        System.out.printf(
-            "exiting (%d msec) runInference() for CFG %d of kind %s%n",
-            elapsedMillis, uAST.getUid(), uAST.getKind());
-      }
-      System.out.flush();
-    }
   }
 
   /**
@@ -241,7 +207,7 @@ public class MustCallInference {
     }
     Set<Obligation> result = new HashSet<>(2);
     for (VariableTree param : methodTree.getParameters()) {
-      if (typeFactory.declaredTypeHasMustCall(param)) {
+      if (resourceLeakAtf.declaredTypeHasMustCall(param)) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
         result.add(
             new Obligation(
@@ -258,11 +224,11 @@ public class MustCallInference {
    * @return the owning fields
    */
   private Set<VariableElement> getOwningFields() {
-    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(methodTree));
+    ClassTree classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
     TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
     Set<VariableElement> owningFields = new HashSet<>(disposedFields);
     for (Element memberElt : classElt.getEnclosedElements()) {
-      if (memberElt.getKind().isField() && typeFactory.hasOwning(memberElt)) {
+      if (memberElt.getKind().isField() && resourceLeakAtf.hasOwning(memberElt)) {
         owningFields.add((VariableElement) memberElt);
       }
     }
@@ -275,7 +241,7 @@ public class MustCallInference {
    * @param index the index a formal parameter of the current method (1-based)
    */
   private void addOwningToParam(int index) {
-    WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
     wpi.addDeclarationAnnotationToFormalParameter(methodElt, index, OWNING);
   }
 
@@ -294,7 +260,7 @@ public class MustCallInference {
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
     }
-    if (typeFactory.isCandidateOwningField(nodeElt)) {
+    if (resourceLeakAtf.isCandidateOwningField(nodeElt)) {
       node = NodeUtils.removeCasts(node);
       JavaExpression nodeJe = JavaExpression.fromNode(node);
       if (mustCallObligationSatisfied(invocation, nodeElt, nodeJe)) {
@@ -390,7 +356,7 @@ public class MustCallInference {
     // the values are the set fields on which those methods are called
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
-      List<String> mustCallValues = typeFactory.getMustCallValue(disposedField);
+      List<String> mustCallValues = resourceLeakAtf.getMustCallValue(disposedField);
       assert !mustCallValues.isEmpty()
           : "Must-call obligation of owning field " + disposedField + " is empty.";
       // Currently, this code assumes that the must-call set has only one element.
@@ -411,7 +377,7 @@ public class MustCallInference {
       AnnotationMirror am =
           createEnsuresCalledMethods(
               fields.toArray(new String[fields.size()]), new String[] {mustCallValue});
-      WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+      WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
       wpi.addMethodDeclarationAnnotation(methodElt, am);
     }
   }
@@ -424,7 +390,7 @@ public class MustCallInference {
    * an InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
-    ClassTree classTree = TreePathUtil.enclosingClass(typeFactory.getPath(methodTree));
+    ClassTree classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
 
     // elementFromDeclaration returns null instead of crashing when no element exists for
     // the class tree, which can happen for certain kinds of anonymous classes, such as
@@ -434,8 +400,8 @@ public class MustCallInference {
       return;
     }
 
-    WholeProgramInference wpi = typeFactory.getWholeProgramInference();
-    List<String> currentMustCallValues = typeFactory.getMustCallValue(typeElement);
+    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+    List<String> currentMustCallValues = resourceLeakAtf.getMustCallValue(typeElement);
     if (!currentMustCallValues.isEmpty()) {
       // The class already has a MustCall annotation.
 
@@ -443,7 +409,8 @@ public class MustCallInference {
       if (typeElement.getSuperclass() != null) {
         TypeMirror superType = typeElement.getSuperclass();
         TypeElement superTypeElement = TypesUtils.getTypeElement(superType);
-        if (superTypeElement != null && !typeFactory.getMustCallValue(superTypeElement).isEmpty()) {
+        if (superTypeElement != null
+            && !resourceLeakAtf.getMustCallValue(superTypeElement).isEmpty()) {
           return;
         }
       }
@@ -518,7 +485,7 @@ public class MustCallInference {
 
     for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
       VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(i - 1);
-      if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
+      if (resourceLeakAtf.hasEmptyMustCallValue(paramOfCurrMethod)) {
         continue;
       }
       VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
@@ -559,12 +526,12 @@ public class MustCallInference {
     List<Node> arguments = mcca.getArgumentsOfInvocation(invocation);
 
     for (int i = 1; i < arguments.size() + 1; i++) {
-      if (!typeFactory.hasOwning(invocationParams.get(i - 1))) {
+      if (!resourceLeakAtf.hasOwning(invocationParams.get(i - 1))) {
         continue;
       }
       for (int j = 1; j < paramsOfCurrentMethod.size() + 1; j++) {
         VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(j - 1);
-        if (typeFactory.hasEmptyMustCallValue(paramOfCurrMethod)) {
+        if (resourceLeakAtf.hasEmptyMustCallValue(paramOfCurrMethod)) {
           continue;
         }
 
@@ -687,7 +654,7 @@ public class MustCallInference {
       Node arg) {
 
     for (int i = 1; i < paramsOfCurrentMethod.size() + 1; i++) {
-      if (typeFactory.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
+      if (resourceLeakAtf.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i - 1))) {
         continue;
       }
       VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i - 1);
@@ -769,13 +736,13 @@ public class MustCallInference {
   private boolean mustCallObligationSatisfied(
       MethodInvocationNode invocation, Element varElt, JavaExpression varJe) {
 
-    List<String> mustCallValues = typeFactory.getMustCallValue(varElt);
+    List<String> mustCallValues = resourceLeakAtf.getMustCallValue(varElt);
     if (mustCallValues.size() != 1) {
       // TODO: generalize this to MustCall annotations with more than one element.
       return false;
     }
 
-    AccumulationStore cmStoreAfter = typeFactory.getStoreAfter(invocation);
+    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
     @Nullable AccumulationValue cmValue =
         cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
     AnnotationMirror cmAnno = null;
@@ -784,7 +751,7 @@ public class MustCallInference {
       // The store contains the lhs.
       Set<String> accumulatedValues = cmValue.getAccumulatedValues();
       if (accumulatedValues != null) { // type variable or wildcard type
-        cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+        cmAnno = resourceLeakAtf.createCalledMethods(accumulatedValues.toArray(new String[0]));
       } else {
         for (AnnotationMirror anno : cmValue.getAnnotations()) {
           if (AnnotationUtils.areSameByName(
@@ -796,7 +763,7 @@ public class MustCallInference {
     }
 
     if (cmAnno == null) {
-      cmAnno = typeFactory.top;
+      cmAnno = resourceLeakAtf.top;
     }
 
     return mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno);
@@ -820,7 +787,7 @@ public class MustCallInference {
     for (Block successor : getNonExceptionalSuccessors(curBlock)) {
       // If successor is a special block, it must be the regular exit.
       if (successor.getType() == Block.BlockType.SPECIAL_BLOCK) {
-        WholeProgramInference wpi = typeFactory.getWholeProgramInference();
+        WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
         assert wpi != null : "MustCallInference is running without WPI.";
         for (VariableElement fieldElt : getOwningFields()) {
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
@@ -870,7 +837,7 @@ public class MustCallInference {
    */
   private AnnotationMirror createEnsuresCalledMethods(String[] value, String[] methods) {
     AnnotationBuilder builder =
-        new AnnotationBuilder(typeFactory.getProcessingEnv(), EnsuresCalledMethods.class);
+        new AnnotationBuilder(resourceLeakAtf.getProcessingEnv(), EnsuresCalledMethods.class);
     builder.setValue("value", value);
     builder.setValue("methods", methods);
     AnnotationMirror am = builder.build();
@@ -885,7 +852,7 @@ public class MustCallInference {
    */
   private AnnotationMirror createInheritableMustCall(String[] methods) {
     AnnotationBuilder builder =
-        new AnnotationBuilder(typeFactory.getProcessingEnv(), InheritableMustCall.class);
+        new AnnotationBuilder(resourceLeakAtf.getProcessingEnv(), InheritableMustCall.class);
     Arrays.sort(methods);
     builder.setValue("value", methods);
     return builder.build();
