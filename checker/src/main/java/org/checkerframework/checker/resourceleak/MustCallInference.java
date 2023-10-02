@@ -237,9 +237,9 @@ public class MustCallInference {
   }
 
   /**
-   * Adds an owning annotation to the parameter at the given index.
+   * Adds an owning annotation to the formal parameter at the given index.
    *
-   * @param index the index a formal parameter of the current method (1-based)
+   * @param index the index of a formal parameter of the current method (1-based)
    */
   private void addOwningToParam(int index) {
     WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
@@ -248,7 +248,7 @@ public class MustCallInference {
 
   /**
    * Adds the node to the disposedFields set if it is a field and its must-call obligation is
-   * satisfied via the given method call. If so, it will be given an @Owning annotation later.
+   * satisfied by the given method call. If so, it will be given an @Owning annotation later.
    *
    * @param node possibly an owning field
    * @param invocation method invoked on the possible owning field
@@ -261,7 +261,7 @@ public class MustCallInference {
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
     }
-    if (resourceLeakAtf.isCandidateOwningField(nodeElt)) {
+    if (resourceLeakAtf.isFieldWithNonemptyMustCallValue(nodeElt)) {
       node = NodeUtils.removeCasts(node);
       JavaExpression nodeJe = JavaExpression.fromNode(node);
       if (mustCallObligationSatisfied(invocation, nodeElt, nodeJe)) {
@@ -273,7 +273,7 @@ public class MustCallInference {
   }
 
   /**
-   * Analyzes an assignment statement node and performs three computations:
+   * Analyzes an assignment statement and performs three computations:
    *
    * <ul>
    *   <li>If the left-hand side of the assignment is an owning field, and the rhs is an alias of a
@@ -286,7 +286,7 @@ public class MustCallInference {
    * </ul>
    *
    * @param obligations the set of obligations to update
-   * @param assignmentNode the assignment statement node
+   * @param assignmentNode the assignment statement
    */
   private void analyzeOwnershipTransferAtAssignment(
       Set<Obligation> obligations, AssignmentNode assignmentNode) {
