@@ -117,7 +117,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
-  /** True if -AenableWpiForRlc was passed on the command line. */
+  /**
+   * True if -AenableWpiForRlc (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) was passed on
+   * the command line.
+   */
   private final boolean enableWpiForRlc;
 
   /**
@@ -462,7 +465,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Checks if WPI is enabled for the Resource Leak Checker inference.
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */

@@ -50,7 +50,10 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   /** True if -AnoLightweightOwnership was supplied on the command line. */
   private final boolean noLightweightOwnership;
 
-  /** True if -AenableWpiForRlc was passed on the command line. */
+  /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
   private final boolean enableWpiForRlc;
 
   /**
@@ -465,7 +468,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
-   * Checks if WPI is enabled for the Resource Leak Checker inference.
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @return returns true if WPI is enabled for the Resource Leak Checker
    */

@@ -40,12 +40,11 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   public static final String COUNT_MUST_CALL = "countMustCall";
 
   /**
-   * Command-line option for enabling WPI for the Resource Leak Checker. By default, whole-program
-   * inference is disabled when -Ainfer flag is used. Instead, the special mechanism as implemented
-   * in {@link org.checkerframework.checker.resourceleak.MustCallInference} is executed as the best
-   * inference mechanism for the Resource Leak Checker. However, for testing and future experimental
-   * purposes, we defined this flag to enable whole-program inference (WPI) when running the
-   * Resource Leak Checker inference.
+   * Ordinarily, when the -Ainfer flag is used, whole-program inference is run for every checker and
+   * sub-checker. However, the Resource Leak Checker is different. The -Ainfer flag enables the
+   * RLC's own (non-WPI) inference mechanism. To use WPI [[TODO: Is this *instead* or *in
+   * addition*?]], use the -AenableWpiForRlc flag, which is intended only for testing and
+   * experiments.
    */
   public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
