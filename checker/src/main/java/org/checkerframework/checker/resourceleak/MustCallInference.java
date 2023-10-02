@@ -211,6 +211,7 @@ public class MustCallInference {
 
     if (debug) {
       long elapsedMillis = System.currentTimeMillis() - startMillis;
+      UnderlyingAST uAST = cfg.getUnderlyingAST();
       if (uAST.getKind() == UnderlyingAST.Kind.METHOD) {
         UnderlyingAST.CFGMethod uMethod = ((UnderlyingAST.CFGMethod) uAST);
         System.out.printf(
