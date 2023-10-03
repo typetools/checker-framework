@@ -748,7 +748,7 @@ pipx ensurepath
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh#L19
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
@@ -945,14 +945,14 @@ Building the Checker Framework depends on other repositories, such as
 You need to have compatible versions of each.
 
 After you \<git pull> in one of the repositories, you should do so in the
-others as well.  The script \<checker/bin-devel/build.sh> pulls all the
+others as well.  The script \<checker/bin-devel/clone-related.sh> pulls all the
 related repositories, so to build the latest development version of the
 Checker Framework you can do
 
 \begin{Verbatim}
 cd $CHECKERFRAMEWORK
 git pull
-checker/bin-devel/build.sh
+checker/bin-devel/clone-related.sh
 \end{Verbatim}
 
 
