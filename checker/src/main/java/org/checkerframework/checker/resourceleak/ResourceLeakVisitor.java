@@ -393,7 +393,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     // This value is side-effected.
     List<String> unsatisfiedMustCallObligationsOfOwningField =
-        rlTypeFactory.getMustCallValue(field);
+        rlTypeFactory.getMustCallValues(field);
 
     if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
       return;
@@ -401,7 +401,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
-    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValue(enclosingElement);
+    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValues(enclosingElement);
 
     if (enclosingMustCallValues == null) {
       error =

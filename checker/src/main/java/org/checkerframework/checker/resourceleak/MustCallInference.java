@@ -86,6 +86,9 @@ public class MustCallInference {
    */
   private final Set<VariableElement> disposedFields = new HashSet<>();
 
+  /** The fields that have been annotated with the {@code @Owning} annotation */
+  private final Set<VariableElement> owningFields = new HashSet<>();
+
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
@@ -109,6 +112,12 @@ public class MustCallInference {
   /** The element for the current method. */
   private final ExecutableElement methodElt;
 
+  /** The ClassTree referring to the enclosing class of the current method. */
+  private final ClassTree classTree;
+
+  /** The element referring to the enclosing class of the current method. */
+  private final @Nullable TypeElement classElt;
+
   /**
    * Creates a MustCallInference instance.
    *
@@ -126,6 +135,19 @@ public class MustCallInference {
     OWNING = AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), Owning.class);
     methodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
     methodElt = TreeUtils.elementFromDeclaration(methodTree);
+    classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
+    // elementFromDeclaration returns null instead of crashing when no element exists for
+    // the class tree, which can happen for certain kinds of anonymous classes, such as
+    // PolyCollectorTypeVar.java in the all-systems test suite.
+    classElt = TreeUtils.elementFromDeclaration(classTree);
+
+    if (classElt != null) {
+      for (Element memberElt : classElt.getEnclosedElements()) {
+        if (memberElt.getKind().isField() && resourceLeakAtf.hasOwning(memberElt)) {
+          owningFields.add((VariableElement) memberElt);
+        }
+      }
+    }
   }
 
   /**
@@ -170,9 +192,15 @@ public class MustCallInference {
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
-        // Calling updateObligationsWithInvocationResult() will not induce any side effects in the
-        // result of RLC, as the inference takes place within the postAnalyze method of the
-        // ResourceLeakAnnotatedTypeFactory, once the consistency analyzer is finished.
+        // The obligation set calculated for RLC differs from the Inference process. In the
+        // Inference process, it exclusively tracks parameters with non-empty must-call types,
+        // whether they have the @Owning annotation or not. However, there are some shared
+        // computations, such as 'updateObligationsWithInvocationResult,' which is used during
+        // inference and could potentially affect the RLC result if it were called before the
+        // checking phase. However, calling 'updateObligationsWithInvocationResult()' will not have
+        // any side effects on the outcome of the Resource Leak Checker. This is because the
+        // inference occurs within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory,
+        // once the consistency analyzer has completed its process
         if (node instanceof MethodInvocationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
           computeOwningFromInvocation(obligations, (MethodInvocationNode) node);
@@ -185,6 +213,8 @@ public class MustCallInference {
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
     }
+
+    disposedFields.clear();
   }
 
   /**
@@ -222,14 +252,7 @@ public class MustCallInference {
    * @return the owning fields
    */
   private Set<VariableElement> getOwningFields() {
-    ClassTree classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
-    TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-    Set<VariableElement> owningFields = new HashSet<>(disposedFields);
-    for (Element memberElt : classElt.getEnclosedElements()) {
-      if (memberElt.getKind().isField() && resourceLeakAtf.hasOwning(memberElt)) {
-        owningFields.add((VariableElement) memberElt);
-      }
-    }
+    owningFields.addAll(disposedFields);
     return owningFields;
   }
 
@@ -250,10 +273,7 @@ public class MustCallInference {
    * @param node possibly an owning field
    * @param invocation method invoked on the possible owning field
    */
-  private void inferOwningField(@Nullable Node node, MethodInvocationNode invocation) {
-    if (node == null) {
-      return;
-    }
+  private void inferOwningField(Node node, MethodInvocationNode invocation) {
     Element nodeElt = TreeUtils.elementFromTree(node.getTree());
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
@@ -306,6 +326,10 @@ public class MustCallInference {
       if (!getOwningFields().contains(lhsElement)) {
         return;
       }
+
+      // If the owning field is present in the disposedFields set and there is an assignment to the
+      // field, it must be removed from the set. This is essential since the disposedFields set is
+      // used for adding @EnsuresCalledMethods annotations to the current method later.
       if (!TreeUtils.isConstructor(methodTree)) {
         disposedFields.remove((VariableElement) lhsElement);
       }
@@ -319,8 +343,9 @@ public class MustCallInference {
   }
 
   /**
-   * Adds @Owning to method parameter p, if the must-call obligation of some alias of p is satisfied
-   * during the assignment.
+   * If must-call obligation of some alias of p is satisfied during the assignment, it adds @Owning
+   * to method parameter p, and removes the rhs node from the obligations set since it's no longer
+   * needed to be tracked.
    *
    * @param obligations the set of obligations to update
    * @param rhsObligation the obligation associated with the right-hand side of the assignment
@@ -351,11 +376,11 @@ public class MustCallInference {
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
-    // methods are called.  This map is used to create @EnsuresCalledMethods annotation for fields
-    // that share the same must-call obligation on the method boundary.
+    // methods should be called. This map is used to create @EnsuresCalledMethods annotation for
+    // fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
-      List<String> mustCallValues = resourceLeakAtf.getMustCallValue(disposedField);
+      List<String> mustCallValues = resourceLeakAtf.getMustCallValues(disposedField);
       assert !mustCallValues.isEmpty()
           : "Must-call obligation of owning field " + disposedField + " is empty.";
       // Currently, this code assumes that the must-call set has only one element.
@@ -385,27 +410,20 @@ public class MustCallInference {
    * an InheritableMustCall annotation to the enclosing class.
    */
   private void addOrUpdateMustCall() {
-    ClassTree classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
-
-    // elementFromDeclaration returns null instead of crashing when no element exists for
-    // the class tree, which can happen for certain kinds of anonymous classes, such as
-    // PolyCollectorTypeVar.java in the all-systems test suite.
-    TypeElement typeElement = TreeUtils.elementFromDeclaration(classTree);
-    if (typeElement == null) {
+    if (classElt == null) {
       return;
     }
 
     WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
-    List<String> currentMustCallValues = resourceLeakAtf.getMustCallValue(typeElement);
+    List<String> currentMustCallValues = resourceLeakAtf.getMustCallValues(classElt);
     if (!currentMustCallValues.isEmpty()) {
       // The class already has a MustCall annotation.
 
       // If it is inherited from a superclass, do nothing.
-      if (typeElement.getSuperclass() != null) {
-        TypeMirror superType = typeElement.getSuperclass();
-        TypeElement superTypeElement = TypesUtils.getTypeElement(superType);
-        if (superTypeElement != null
-            && !resourceLeakAtf.getMustCallValue(superTypeElement).isEmpty()) {
+      if (classElt.getSuperclass() != null) {
+        TypeMirror superType = classElt.getSuperclass();
+        TypeElement superClassElt = TypesUtils.getTypeElement(superType);
+        if (superClassElt != null && !resourceLeakAtf.getMustCallValues(superClassElt).isEmpty()) {
           return;
         }
       }
@@ -417,7 +435,7 @@ public class MustCallInference {
       // resulting in different @MustCall annotations between different iterations of the
       // fixed-point algorithm.
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
-      wpi.addClassDeclarationAnnotation(typeElement, am);
+      wpi.addClassDeclarationAnnotation(classElt, am);
       return;
     }
 
@@ -429,7 +447,7 @@ public class MustCallInference {
       if (!disposedFields.isEmpty() && disposedFields.size() == getOwningFields().size()) {
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
-        wpi.addClassDeclarationAnnotation(typeElement, am);
+        wpi.addClassDeclarationAnnotation(classElt, am);
       }
     }
   }
@@ -731,7 +749,7 @@ public class MustCallInference {
   private boolean mustCallObligationSatisfied(
       MethodInvocationNode invocation, Element varElt, JavaExpression varJe) {
 
-    List<String> mustCallValues = resourceLeakAtf.getMustCallValue(varElt);
+    List<String> mustCallValues = resourceLeakAtf.getMustCallValues(varElt);
     if (mustCallValues.size() != 1) {
       // TODO: generalize this to MustCall annotations with more than one element.
       return false;

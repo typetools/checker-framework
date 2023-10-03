@@ -96,7 +96,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     for (int i = 0; i < methodElt.getParameters().size(); i++) {
       VariableElement param = methodElt.getParameters().get(i);
       if (rlTypeFactory.hasOwning(param) && !rlTypeFactory.noLightweightOwnership) {
-        List<String> mcMethods = rlTypeFactory.getMustCallValue(param);
+        List<String> mcMethods = rlTypeFactory.getMustCallValues(param);
         Node correspondingArgument = node.getArgument(i);
         accumulate(correspondingArgument, result, mcMethods.toArray(new String[0]));
       }
