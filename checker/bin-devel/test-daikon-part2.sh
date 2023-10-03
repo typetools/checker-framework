@@ -11,8 +11,9 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
-echo "running \"./gradlew assemble\" for checker-framework"
-./gradlew assemble --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
+# Run assembleForJavac because it does not build the javadoc, so it is faster than assemble.
+echo "running \"./gradlew assembleForJavac\" for checker-framework"
+./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 # daikon-typecheck: 15 minutes
 "$SCRIPTDIR/.plume-scripts/git-clone-related" codespecs daikon
