@@ -398,7 +398,7 @@ public class OptionalVisitor
         if (typeArgs.size() == 1) {
           TypeMirror typeArg = typeArgs.get(0);
           if (isCollectionType(typeArg)) {
-            checker.reportError(tree, "optional.collection");
+            checker.reportWarning(tree, "optional.collection");
           }
         }
       }
