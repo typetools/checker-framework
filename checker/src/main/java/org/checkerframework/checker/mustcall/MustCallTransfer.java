@@ -18,6 +18,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
@@ -30,7 +31,6 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -70,7 +70,7 @@ public class MustCallTransfer extends CFTransfer {
    *
    * @param analysis the analysis
    */
-  public MustCallTransfer(CFAnalysis analysis) {
+  public MustCallTransfer(MustCallAnalysis analysis) {
     super(analysis);
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
     noCreatesMustCallFor =
@@ -156,27 +156,46 @@ public class MustCallTransfer extends CFTransfer {
 
           CFStore elseStore = result.getElseStore();
           lubWithStoreValue(elseStore, targetExpr, defaultType);
+        } else {
+          CFStore store = result.getRegularStore();
+          lubWithStoreValue(store, targetExpr, defaultType);
+        }
+      }
 
-          exceptionalStores = makeExceptionalStores(n, result);
-
-          TransferResult<CFValue, CFStore> finalResult =
+      if (n.getBlock() instanceof ExceptionBlock) {
+        exceptionalStores = makeExceptionalStores(n, result);
+        // Update stores for the exceptional paths to handle cases like:
+        // https://github.com/typetools/checker-framework/issues/6050
+        if (result.containsTwoStores()) {
+          result =
               new ConditionalTransferResult<>(
                   result.getResultValue(),
                   result.getThenStore(),
                   result.getElseStore(),
                   exceptionalStores);
-          exceptionalStores = null;
-          return finalResult;
         } else {
-          CFStore store = result.getRegularStore();
-          lubWithStoreValue(store, targetExpr, defaultType);
+          result =
+              new RegularTransferResult<>(
+                  result.getResultValue(), result.getRegularStore(), exceptionalStores);
         }
+        exceptionalStores = null;
       }
     }
 
     return result;
   }
 
+  /**
+   * Create a set of stores for the exceptional paths out of the block containing {@code node}. This
+   * allows propagation, along those paths, of the fact that the method being invoked in {@code
+   * node} was definitely called.
+   *
+   * @param node a method invocation
+   * @param input the transfer input associated with the method invocation
+   * @return a map from types to stores. The keys are the same keys used by {@link
+   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
+   *     {@code input}.
+   */
   private Map<TypeMirror, CFStore> makeExceptionalStores(
       MethodInvocationNode node, TransferResult<CFValue, CFStore> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {

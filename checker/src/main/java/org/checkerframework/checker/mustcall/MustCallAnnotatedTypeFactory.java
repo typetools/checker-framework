@@ -147,6 +147,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   @Override
+  protected MustCallAnalysis createFlowAnalysis() {
+    return new MustCallAnalysis(checker, this);
+  }
+
+  @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(super.createTreeAnnotator(), new MustCallTreeAnnotator(this));
   }

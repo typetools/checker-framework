@@ -13,7 +13,6 @@ public class BindFail {
   class Bar {
     @Owning Foo f;
 
-    // TODO: I think this will warn (in a stub file for Sockets)
     // :: error: inconsistent.constructor.type
     public @MustCall({}) Bar() {
       // nothing to do
@@ -38,7 +37,20 @@ public class BindFail {
     }
   }
 
-  public void test2222() throws Exception {
+  public void test() throws Exception {
+    // :: error: required.method.not.called
+    Socket s = new Socket();
+    SocketAddress addr = new InetSocketAddress("127.0.0.1", 6010);
+    try {
+      s.bind(addr);
+    } catch (Exception e) {
+      // socket might still be open on this path
+      return;
+    }
+    s.close();
+  }
+
+  public void test2() throws Exception {
     // :: error: required.method.not.called
     Bar b = new Bar();
     try {
@@ -49,23 +61,23 @@ public class BindFail {
     b.a();
   }
 
-  public Bar test3333() throws Exception {
+  public Bar test3() throws Exception {
     // :: error: required.method.not.called
-    Bar bbbbbbb = new Bar();
+    Bar b = new Bar();
     try {
-      bbbbbbb.overwrite();
-      return bbbbbbb;
+      b.overwrite();
+      return b;
     } catch (Exception e) {
     }
     return null;
   }
 
-  public Bar test4444() throws Exception {
+  public Bar test4() throws Exception {
     try {
       // :: error: required.method.not.called
-      Bar ccccc = new Bar();
-      ccccc.overwrite();
-      return ccccc;
+      Bar c = new Bar();
+      c.overwrite();
+      return c;
     } catch (Exception e) {
 
     }
