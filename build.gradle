@@ -435,11 +435,6 @@ allprojects {
   } // end afterEvaluate
 } // end allProjects
 
-task cloneAndBuildDependencies(type: Exec, group: 'Build') {
-  description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/clone-related.sh'
-}
-
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
   doLast {
