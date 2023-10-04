@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.flow.*;
+import org.checkerframework.framework.flow.CFAnalysis;
 
 /**
  * The analysis for the Must Call Checker. The analysis is specialized to ignore certain exception
