@@ -194,7 +194,8 @@ public class MustCallTransfer extends CFTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-    if (!isWpiEnabledForRLC() && atypeFactory.getCheckerNames().contains("resourceleak")) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(tree);
@@ -211,7 +212,8 @@ public class MustCallTransfer extends CFTransfer {
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-    if (!isWpiEnabledForRLC() && atypeFactory.getCheckerNames().contains("resourceleak")) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
       return false;
     }
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
