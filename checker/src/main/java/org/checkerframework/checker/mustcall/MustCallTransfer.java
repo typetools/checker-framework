@@ -63,6 +63,7 @@ public class MustCallTransfer extends CFTransfer {
   /** True if -AnoCreatesMustCallFor was passed on the command line. */
   private final boolean noCreatesMustCallFor;
 
+  /** A set of stores for the exceptional paths */
   private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
 
   /**
