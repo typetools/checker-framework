@@ -378,18 +378,19 @@ public class MustCallInference {
   }
 
   /**
-   * Possibly adds an InheritableMustCall annotation on the enclosing class. If the class already
-   * has a non-empty MustCall type (that is inherited from one of its superclasses), this method
-   * does nothing, in order to avoid infinite iteration. Otherwise, if the current method is not
-   * private and satisfies the must-call obligations of all the owning fields, it adds (or updates)
-   * an InheritableMustCall annotation to the enclosing class.
+   * Possibly adds an InheritableMustCall annotation on the enclosing class.
+   *
+   * <p>If the class already has a non-empty MustCall type (that is inherited from one of its
+   * superclasses), this method does nothing, in order to avoid infinite iteration. Otherwise, if
+   * the current method is not private and satisfies the must-call obligations of all the owning
+   * fields, it adds (or updates) an InheritableMustCall annotation to the enclosing class.
    */
-  private void addOrUpdateMustCall() {
+  private void addOrUpdateClassMustCall() {
     ClassTree classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
 
-    // elementFromDeclaration returns null instead of crashing when no element exists for
-    // the class tree, which can happen for certain kinds of anonymous classes, such as
-    // PolyCollectorTypeVar.java in the all-systems test suite.
+    // elementFromDeclaration() returns null when no element exists for the class tree, which can
+    // happen for certain kinds of anonymous classes, such as PolyCollectorTypeVar.java in the
+    // all-systems test suite.
     TypeElement typeElement = TreeUtils.elementFromDeclaration(classTree);
     if (typeElement == null) {
       return;
@@ -791,7 +792,7 @@ public class MustCallInference {
           addEnsuresCalledMethods();
         }
 
-        addOrUpdateMustCall();
+        addOrUpdateClassMustCall();
       } else {
         BlockWithObligations state = new BlockWithObligations(successor, obligations);
         if (visited.add(state)) {

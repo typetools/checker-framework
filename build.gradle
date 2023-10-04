@@ -114,7 +114,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.39.0'
+  version '3.39.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -434,11 +434,6 @@ allprojects {
     }
   } // end afterEvaluate
 } // end allProjects
-
-task cloneAndBuildDependencies(type: Exec, group: 'Build') {
-  description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/build.sh'
-}
 
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
