@@ -16,6 +16,7 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.plumelib.util.IPair;
 
 /**
@@ -318,8 +319,7 @@ public final class TreePathUtil {
         if (TreeUtils.isSwitchExpression(parent)) {
 
           @SuppressWarnings("interning:not.interned") // AST node comparison
-          boolean switchIsLeaf =
-              (TreeUtils.switchExpressionTreeGetExpression(parent) == treePath.getLeaf());
+          boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
           if (switchIsLeaf) {
             // The assignment context for the switch(ex) is simply boolean.
             // No point in going on.
