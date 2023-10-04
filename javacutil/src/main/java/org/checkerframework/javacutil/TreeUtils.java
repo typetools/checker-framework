@@ -2382,10 +2382,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Whether {@code switchTree} has a null case label.
+   * Returns true if {@code switchTree} has a null case label.
    *
    * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
-   * @return whether {@code switchTree} has a null case label
+   * @return true if {@code switchTree} has a null case label
    */
   public static boolean hasNullCaseLabel(Tree switchTree) {
     if (!atLeastJava21) {
