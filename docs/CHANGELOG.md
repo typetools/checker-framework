@@ -1,17 +1,25 @@
-Version 3.39.0 (October 1, 2023)
+Version 3.39.0 (October 2, 2023)
 --------------------------------
 
 **User-visible changes:**
 
-The Checker Framework runs under JDK 21 -- that is, it runs on a version 21 JVM.
-It does not yet support all new Java 21 language features -- it may crash when
-run on a program with new Java 21 language features.
+The Checker Framework runs on a version 21 JVM.
+It does not yet soundly check all new Java 21 language features, but it does not
+crash when compiling them.
 
 **Implementation details:**
+
+Dataflow supports all the new Java 21 language features.
+ * A new node,`DeconstructorPatternNode`, was added, so any implementation of
+   `NodeVisitor` must be updated.
+ * Method `InstanceOfNode.getBindingVariable()` is deprecated; use
+   `getPatternNode()` or `getBindingVariables()` instead.
 
 WPI uses 1-based indexing for formal parameters and arguments.
 
 **Closed issues:**
+
+#5911, #5967, #6155, #6173, #6201.
 
 
 Version 3.38.0 (September 1, 2023)

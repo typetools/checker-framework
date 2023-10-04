@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.21.0'
+  id 'com.diffplug.spotless' version '6.22.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -35,8 +35,8 @@ ext {
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
   isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2023-09-19, delombok doesn't yet support JDK 21; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_21
+  // As of 2023-09-23, delombok doesn't yet support JDK 22; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
@@ -114,7 +114,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.38.1-SNAPSHOT'
+  version '3.39.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -199,6 +199,12 @@ allprojects {
     ]
     if (!isJava17orHigher) {
       doNotFormat += ['**/java17/', '**/*record*/']
+    }
+
+    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+    // See https://github.com/google/google-java-format/releases.
+    if (true) {
+      doNotFormat += ['**/java21/']
     }
 
     if (!isJava21orHigher) {
@@ -428,11 +434,6 @@ allprojects {
     }
   } // end afterEvaluate
 } // end allProjects
-
-task cloneAndBuildDependencies(type: Exec, group: 'Build') {
-  description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/build.sh'
-}
 
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
@@ -791,24 +792,26 @@ subprojects {
         [
           '-Astubs=javax-lang-model-element-name.astub'
         ])
-    createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        [
-          '-AskipUses=com\\.sun\\.*',
-          // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
-          '-AuseConservativeDefaultsForUncheckedCode=source'
-        ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
     createCheckTypeTask(project.name, 'ResourceLeak',
         'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
-    // These pass on some subprojects, which the `typecheck` task runs.
-    // TODO: Incrementally add @AnnotatedFor on more classes.
-    createCheckTypeTask(project.name, 'Nullness',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        ['-AskipUses=com.sun.*'])
+
+    if (project.name.is('framework') || project.name.is('checker')) {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          [
+            '-AskipUses=com\\.sun\\.*',
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            '-AuseConservativeDefaultsForUncheckedCode=source'
+          ])
+    } else {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          ['-AskipUses=com\\.sun\\.*'])
+    }
 
 
     // Add jtregTests to framework and checker modules
@@ -975,7 +978,7 @@ subprojects {
       description 'Run the Checker Framework on itself (part 2)'
       dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
+        dependsOn('checkCompilerMessages')
       } else {
         dependsOn('checkNullness')
       }

@@ -141,8 +141,12 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.checkerOptions.add("-AajavaChecks");
   }
 
+  /** Run the tests. */
   @Test
   public void run() {
+    if (testFiles.isEmpty()) {
+      return;
+    }
     boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
     List<String> customizedOptions = customizeOptions(Collections.unmodifiableList(checkerOptions));
     TestConfiguration config =
