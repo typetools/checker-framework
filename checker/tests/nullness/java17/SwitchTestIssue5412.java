@@ -30,9 +30,9 @@ class SwitchTestExhaustive {
             // The default case is dead code, so it would be possible for type-checking
             // to skip it and not issue this warning.  But giving the warning is also
             // good.
-            // :: error: (switch.expression)
           default -> null;
         };
+    // :: error: (return)
     return s;
   }
 

@@ -75,7 +75,11 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (!Signatures.isBinaryName(qualName)) {
         throw new UserError("Malformed qualifier \"%s\" in -Aquals", qualName);
       }
-      qualSet.add(loader.loadExternalAnnotationClass(qualName));
+      Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(qualName);
+      if (annoClass == null) {
+        throw new UserError("Cannot load qualifier \"%s\" in -Aquals", qualName);
+      }
+      qualSet.add(annoClass);
     }
 
     // load directories of qualifiers

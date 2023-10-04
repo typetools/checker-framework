@@ -730,7 +730,7 @@ sudo apt-get -qqy update
 sudo apt-get -qqy install \
  openjdk-17-jdk \
  ant cpp git gradle jq jtreg6 libcurl3-gnutls \
- make maven mercurial pipx python3-requests unzip wget \
+ make maven pipx python3-requests unzip wget \
  autoconf devscripts dia hevea imagemagick junit jtreg6 latexmk \
  librsvg2-bin libasound2-dev libcups2-dev libfontconfig1-dev \
  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
@@ -748,7 +748,7 @@ pipx ensurepath
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh#L19
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
@@ -765,7 +765,7 @@ In a startup file, write:
 
 \begin{Verbatim}
 brew update
-brew install git ant hevea maven mercurial librsvg unzip make
+brew install git ant hevea maven librsvg unzip make
 brew tap homebrew/cask-versions
 brew install --cask temurin17
 brew install --cask mactex
@@ -945,14 +945,14 @@ Building the Checker Framework depends on other repositories, such as
 You need to have compatible versions of each.
 
 After you \<git pull> in one of the repositories, you should do so in the
-others as well.  The script \<checker/bin-devel/build.sh> pulls all the
+others as well.  The script \<checker/bin-devel/clone-related.sh> pulls all the
 related repositories, so to build the latest development version of the
 Checker Framework you can do
 
 \begin{Verbatim}
 cd $CHECKERFRAMEWORK
 git pull
-checker/bin-devel/build.sh
+checker/bin-devel/clone-related.sh
 \end{Verbatim}
 
 

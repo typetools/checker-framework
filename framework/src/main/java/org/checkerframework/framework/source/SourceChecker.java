@@ -1,5 +1,6 @@
 package org.checkerframework.framework.source;
 
+import com.google.common.base.Splitter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -75,6 +76,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -438,7 +440,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Maps error keys to localized/custom error messages. Do not use directly; call {@link
-   * #fullMessageOf} or {@link #processArg}. Is set in {@link #initChecker}.
+   * #fullMessageOf} or {@link #processErrorMessageArg}. Is set in {@link #initChecker}.
    */
   protected Properties messagesProperties;
 
@@ -1126,7 +1128,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
     if (args != null) {
       for (int i = 0; i < args.length; ++i) {
-        args[i] = processArg(args[i]);
+        args[i] = processErrorMessageArg(args[i]);
       }
     }
 
@@ -1319,7 +1321,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param arg the argument
    * @return the result after processing
    */
-  protected Object processArg(Object arg) {
+  protected Object processErrorMessageArg(Object arg) {
     // Check to see if the argument itself is a property to be expanded
     if (arg instanceof String) {
       return messagesProperties.getProperty((String) arg, (String) arg);
@@ -1472,7 +1474,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return Collections.singleton("all");
     }
 
-    List<String> lintStrings = Arrays.asList(lintString.split(","));
+    List<String> lintStrings = SystemUtil.commaSplitter.splitToList(lintString);
     Set<String> activeLint = ArraySet.newArraySetOrHashSet(lintStrings.size());
     for (String s : lintStrings) {
       if (!this.getSupportedLintOptions().contains(s)
@@ -1843,7 +1845,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (value == null) {
       return defaultValue;
     }
-    return Arrays.asList(value.split(Pattern.quote(Character.toString(separator))));
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
   /**
@@ -1858,7 +1860,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (value == null) {
       return defaultValue;
     }
-    return Arrays.asList(value.split(separator));
+    return Splitter.on(separator).omitEmptyStrings().splitToList(value);
   }
 
   @Override
@@ -2090,8 +2092,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
-   * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
+   * Returns true if all the warnings pertaining to a given tree should be suppressed. Returns true
+   * if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
    * suppresses the checker's warning. Also, returns true if the {@code errKey} matches a string in
    * {@code -AsuppressWarnings}.
    *
@@ -2123,9 +2125,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether all the warnings pertaining to a given tree path should be suppressed.
-   * Returns true if the path is within the scope of a @SuppressWarnings annotation, one of whose
-   * values suppresses the checker's warning.
+   * Returns true if all the warnings pertaining to a given tree path should be suppressed. Returns
+   * true if the path is within the scope of a @SuppressWarnings annotation, one of whose values
+   * suppresses the checker's warning.
    *
    * @param path the TreePath that might be a source of, or related to, a warning
    * @param errKey the error key the checker is emitting
@@ -2219,7 +2221,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   protected final Set<Element> elementsWithSuppressedWarnings = new HashSet<>();
 
   /**
-   * Determines whether all the warnings pertaining to a given element should be suppressed. Returns
+   * Returns true if all the warnings pertaining to a given element should be suppressed. Returns
    * true if the element is within the scope of a @SuppressWarnings annotation, one of whose values
    * suppresses all the checker's warnings.
    *
@@ -2256,8 +2258,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Determines whether an error (whose message key is {@code messageKey}) should be suppressed. It
-   * is suppressed if any of the given SuppressWarnings strings suppresses it.
+   * Returns true if an error (whose message key is {@code messageKey}) should be suppressed. It is
+   * suppressed if any of the given SuppressWarnings strings suppresses it.
    *
    * <p>A SuppressWarnings string may be of the following pattern:
    *
@@ -2571,7 +2573,18 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param ce the internal error to output
    */
   private void logBugInCF(BugInCF ce) {
-    logBug(ce, "The Checker Framework crashed.  Please report the crash.");
+    String checkerVersion;
+    try {
+      checkerVersion = getCheckerVersion();
+    } catch (Exception ex) {
+      // getCheckerVersion() throws an exception when invoked during Junit tests.
+      checkerVersion = null;
+    }
+    String msg = "The Checker Framework crashed.  Please report the crash.  ";
+    if (checkerVersion != null) {
+      msg += String.format("Version: Checker Framework %s. ", checkerVersion);
+    }
+    logBug(ce, msg);
   }
 
   /**
@@ -2616,23 +2629,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             msg.add(line);
           }
         }
-      }
-    }
 
-    if (ce.getCause() != null) {
-      msg.add("Exception: " + ce.getCause() + "; " + UtilPlume.stackTraceToString(ce.getCause()));
-      boolean printClasspath = ce.getCause() instanceof NoClassDefFoundError;
-      Throwable cause = ce.getCause().getCause();
-      while (cause != null) {
-        msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
-        printClasspath |= cause instanceof NoClassDefFoundError;
-        cause = cause.getCause();
-      }
+        Throwable forStackTrace = ce.getCause() != null ? ce.getCause() : ce;
+        if (forStackTrace != null) {
+          msg.add(
+              "Exception: " + forStackTrace + "; " + UtilPlume.stackTraceToString(forStackTrace));
+          boolean printClasspath = forStackTrace instanceof NoClassDefFoundError;
+          Throwable cause = forStackTrace.getCause();
+          while (cause != null) {
+            msg.add("Underlying Exception: " + cause + "; " + UtilPlume.stackTraceToString(cause));
+            printClasspath |= cause instanceof NoClassDefFoundError;
+            cause = cause.getCause();
+          }
 
-      if (printClasspath) {
-        msg.add("Classpath:");
-        for (URI uri : new ClassGraph().getClasspathURIs()) {
-          msg.add(uri.toString());
+          if (printClasspath) {
+            msg.add("Classpath:");
+            for (URI uri : new ClassGraph().getClasspathURIs()) {
+              msg.add(uri.toString());
+            }
+          }
         }
       }
     }

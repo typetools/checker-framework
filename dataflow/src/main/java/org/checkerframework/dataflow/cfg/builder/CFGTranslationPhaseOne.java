@@ -46,6 +46,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -104,6 +105,7 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
@@ -166,6 +168,12 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.DeconstructionPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -548,6 +556,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             return visitSwitchExpression17(tree, p);
           case "YIELD":
             return visitYield17(tree, p);
+          case "DECONSTRUCTION_PATTERN":
+            return visitDeconstructionPattern21(tree, p);
           default:
             // fall through to generic behavior
         }
@@ -567,7 +577,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the switch expression tree
    */
   public Node visitYield17(Tree yieldTree, Void p) {
-    ExpressionTree resultExpression = TreeUtils.yieldTreeGetValue(yieldTree);
+    ExpressionTree resultExpression = YieldUtils.getValue(yieldTree);
     switchBuilder.buildSwitchExpressionResult(resultExpression);
     return null;
   }
@@ -598,12 +608,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
     TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
     Node receiver = new ImplicitThisNode(classElem.asType());
-    VariableTree varTree = TreeUtils.bindingPatternTreeGetVariable(bindingPatternTree);
+    VariableTree varTree = BindingPatternUtils.getVariable(bindingPatternTree);
     VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
     extendWithNode(variableDeclarationNode);
     LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
     extendWithNode(varNode);
     return varNode;
+  }
+
+  /**
+   * Visit a DeconstructionPatternTree.
+   *
+   * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
+   *     Framework compiles under JDK 20 and earlier
+   * @param p an unused parameter
+   * @return the result of visiting the tree
+   */
+  public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
+    List<? extends Tree> nestedPatternTrees =
+        DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree);
+    List<Node> nestedPatterns = new ArrayList<>(nestedPatternTrees.size());
+    for (Tree pattern : nestedPatternTrees) {
+      nestedPatterns.add(scan(pattern, p));
+    }
+    DeconstructorPatternNode dcpN =
+        new DeconstructorPatternNode(
+            TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
+    extendWithNode(dcpN);
+    return dcpN;
   }
 
   /* --------------------------------------------------------- */
@@ -2288,8 +2320,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = switchStatementTree.getCases();
         this.selectorExprTree = switchStatementTree.getExpression();
       } else {
-        this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
-        this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
+        this.caseTrees = SwitchExpressionUtils.getCases(switchTree);
+        this.selectorExprTree = SwitchExpressionUtils.getExpression(switchTree);
       }
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
@@ -2334,15 +2366,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // before the default case, no matter where `default:` is written.  Therefore,
           // build the default case last.
           defaultIndex = i;
+        } else if (i == numCases - 1 && defaultIndex == -1) {
+          // This is the last case, and it's not a default case.
+          buildCase(caseTree, i, exhaustiveIgnoreDefault());
         } else {
-          boolean isLastExceptDefault =
-              i == numCases - 1
-                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          // This can be extended to handle case statements as well as case rules.
-          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
-          boolean isLastOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
-          buildCase(caseTree, i, isLastOfExhaustive);
+          buildCase(caseTree, i, false);
         }
       }
 
@@ -2439,18 +2467,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /**
      * Build the CFG for the given case tree.
      *
-     * @param tree a case tree whose CFG to build
+     * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
-     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
-     *     with no fallthrough to it. In other words, no test of the labels is necessary.
+     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch
+     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary.
      */
-    private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
-      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+    private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
+      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
       // within the body of the CaseNode.  In the future, that can be performed, but it
       // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
-      boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
+      boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
@@ -2461,21 +2489,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (!isTerminalCase) {
         // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
-        for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
+
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+
+        CaseNode test =
+            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
       // Handle the case body
       addLabelForNextNode(thisBodyLabel);
-      if (tree.getStatements() != null) {
+      if (caseTree.getStatements() != null) {
         // This is a switch labeled statement group.
         // A "switch labeled statement group" is a "case L:" label along with its code.
         // The code either ends with a "yield" statement, or it falls through.
-        for (StatementTree stmt : tree.getStatements()) {
+        for (StatementTree stmt : caseTree.getStatements()) {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
@@ -2486,7 +2519,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // This is either the default case or a switch labeled rule (which appears in a
         // switch expression).
         // A "switch labeled rule" is a "case L ->" label along with its code.
-        Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
+        Tree bodyTree = CaseUtils.getBody(caseTree);
         if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
@@ -2540,39 +2573,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Returns true if the cases are exhaustive -- exactly one is executed. There might or might not
-     * be a `default` case label; if there is, it is never used.
+     * Returns true if the switch is exhaustive; ignoring any default case
      *
-     * @return true if the cases are exhaustive
+     * @return true if the switch is exhaustive; ignoring any default case
      */
-    private boolean casesAreExhaustive() {
-      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
-
-      switch (selectorTypeMirror.getKind()) {
-        case BOOLEAN:
-          // TODO
-          break;
-        case DECLARED:
-          DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
-          TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
-          if (declaredTypeElement.getKind() == ElementKind.ENUM) {
-            // It's an enumerated type.
-            List<VariableElement> enumConstants =
-                ElementUtils.getEnumConstants(declaredTypeElement);
-            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
-            for (CaseTree caseTree : caseTrees) {
-              for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
-                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
-              }
-            }
-            // Could also check that the values match.
-            boolean result = enumConstants.size() == caseLabels.size();
-            return result;
-          }
-          break;
-        default:
-          break;
+    private boolean exhaustiveIgnoreDefault() {
+      // Switch expressions are always exhaustive, but they might have a default case, which is why
+      // the above loop is not fused with the below loop.
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        return true;
       }
+
+      int enumCaseLabels = 0;
+      for (CaseTree caseTree : caseTrees) {
+        for (Tree caseLabel : CaseUtils.getLabels(caseTree)) {
+          // Java guarantees that if one of the cases is the null literal, the switch is exhaustive.
+          // Also if certain other constructs exist.
+          if (caseLabel.getKind() == Kind.NULL_LITERAL
+              || TreeUtils.isBindingPatternTree(caseLabel)
+              || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
+            return true;
+          }
+          if (caseLabel.getKind() == Kind.IDENTIFIER) {
+            enumCaseLabels++;
+          }
+        }
+      }
+
+      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
+      if (selectorTypeMirror.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
+        TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
+        if (declaredTypeElement.getKind() == ElementKind.ENUM) {
+          // The switch expression's type is an enumerated type.
+          List<VariableElement> enumConstants = ElementUtils.getEnumConstants(declaredTypeElement);
+          return enumConstants.size() == enumCaseLabels;
+        }
+      }
+
       return false;
     }
   }
@@ -3796,15 +3834,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
+    InstanceOfNode instanceOfNode;
     Node operand = scan(tree.getExpression(), p);
-    TypeMirror refType = TreeUtils.typeOf(tree.getType());
-    Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
-    LocalVariableNode bindingNode =
-        (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
-
-    InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
-    extendWithNode(node);
-    return node;
+    Tree patternTree = InstanceOfUtils.getPattern(tree);
+    if (patternTree != null) {
+      Node pattern = scan(patternTree, p);
+      instanceOfNode = new InstanceOfNode(tree, operand, pattern, pattern.getType(), types);
+    } else {
+      TypeMirror refType = TreeUtils.typeOf(tree.getType());
+      instanceOfNode = new InstanceOfNode(tree, operand, refType, types);
+    }
+    extendWithNode(instanceOfNode);
+    return instanceOfNode;
   }
 
   @Override

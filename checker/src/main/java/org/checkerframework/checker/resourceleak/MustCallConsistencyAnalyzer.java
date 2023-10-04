@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -138,7 +139,7 @@ import org.plumelib.util.IPair;
  * variables, the checker wouldn't be able to verify code such as {@code new Socket(host,
  * port).close()}, which would cause false positives. Temporaries are created for {@code new}
  * expressions, method calls (for the return value), and ternary expressions. Other types of
- * expressions may also be supported in the future.
+ * expressions may be supported in the future.
  */
 /*package-private*/
 class MustCallConsistencyAnalyzer {
@@ -472,6 +473,21 @@ class MustCallConsistencyAnalyzer {
     @Override
     public int hashCode() {
       return Objects.hash(reference, tree);
+    }
+
+    /**
+     * Returns an appropriate String for representing this in an error message. In particular, if
+     * {@link #reference} is a temporary variable, we return the String representation of {@link
+     * #tree}, to avoid exposing the temporary name (which has no meaning for the user) in the error
+     * message
+     *
+     * @return an appropriate String for representing this in an error message
+     */
+    public String stringForErrorMessage() {
+      String referenceStr = reference.toString();
+      // we assume that any temporary variable name will not be a syntactically-valid identifier
+      // or keyword
+      return !SourceVersion.isIdentifier(referenceStr) ? tree.toString() : referenceStr;
     }
   }
 
@@ -842,7 +858,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines if the result of the given method or constructor invocation node should be tracked
+   * Returns true if the result of the given method or constructor invocation node should be tracked
    * in {@code obligations}. In some cases, there is no need to track the result because the
    * must-call obligations are already satisfied in some other way or there cannot possibly be
    * must-call obligations because of the structure of the code.
@@ -1472,12 +1488,16 @@ class MustCallConsistencyAnalyzer {
     AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
-    if (cmValue != null) {
-      for (AnnotationMirror anno : cmValue.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          cmAnno = anno;
-          break;
+    if (cmValue != null) { // When store contains the lhs
+      Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+      if (accumulatedValues != null) { // type variable or wildcard type
+        cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+      } else {
+        for (AnnotationMirror anno : cmValue.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            cmAnno = anno;
+          }
         }
       }
     }
@@ -2056,7 +2076,7 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.known",
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
@@ -2113,7 +2133,7 @@ class MustCallConsistencyAnalyzer {
               firstAlias.tree,
               "required.method.not.called",
               formatMissingMustCallMethods(mustCallValue),
-              firstAlias.reference.toString(),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }

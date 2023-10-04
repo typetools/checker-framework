@@ -307,6 +307,12 @@ public class MustCallTransfer extends CFTransfer {
   /**
    * Creates a variable declaration for the given expression node, if possible.
    *
+   * <p>Note that error reporting code assumes that the names of temporary variables are not legal
+   * Java identifiers (see <a
+   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
+   * temporary variable names generated here include an {@code '-'} character to make the names
+   * invalid.
+   *
    * @param node an expression node
    * @return a variable tree for the node, or null if an appropriate containing element cannot be
    *     located

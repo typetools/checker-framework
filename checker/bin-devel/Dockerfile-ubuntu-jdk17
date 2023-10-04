@@ -21,6 +21,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && aptitude -y install \
   openjdk-17-jdk
 
+# Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
+
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
 && aptitude -y install \
@@ -32,7 +34,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libcurl3-gnutls \
   make \
   maven \
-  mercurial \
   python3-distutils \
   python3-requests \
   unzip \

@@ -209,6 +209,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     if (isInvocationOfEquals(tree)) {
       AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType(tree);
+      assert receiverType != null : "@AssumeAssertion(nullness)";
       AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(tree.getArguments().get(0));
 
       if (this.checker.getLintOption("dotequals", true)
@@ -913,7 +914,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Determines whether or not the given element overrides the named method in the named class.
+   * Returns true if the given element overrides the named method in the named class.
    *
    * @param e an element for a method
    * @param clazz the class

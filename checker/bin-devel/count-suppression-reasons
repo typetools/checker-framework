@@ -3,7 +3,7 @@
 # This command counts the approximate frequency of each distinct reason for
 # warning suppressions, in all files under the current directory.
 # To invoke it, pass a type system name; for example:
-#   count-suppressions nullness
+#   count-suppression-reasons nullness
 # The argument to this script is actually a regular expression.
 
 # The "reason" for a warning suppression is the Java line comment after it:
@@ -62,8 +62,8 @@ fi
 # Diagnostics
 # echo "regex=${regex}"
 
-greplines=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
-countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
+greplines=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
+countedreasons=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
 
 # These are the two types of matching lines:
 #  * "checkername" or "chekername:..."
@@ -71,10 +71,10 @@ countedreasons=$(mktemp /tmp/count-suppressions."$(date +%Y%m%d-%H%M%S)"-XXX)
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppressions-ignore".
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppression-reasons-ignore".
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
     | grep -v "@AnnotatedFor" | grep -v "/tests/" \
-    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppressions-ignore" > "${greplines}"
+    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppression-reasons-ignore" > "${greplines}"
 
 total=$(wc -l < "${greplines}")
 ## Don't output a total, to avoid people using this approximate count.
@@ -87,7 +87,7 @@ cat "${greplines}" \
     | ${SED} 's/ \+$//' \
     | sort | uniq -c | sort -rg > "${countedreasons}"
 
-# Add leading percentages to `uniq -c` output.  Note that it rounds down to the nearest integer.
+# Add leading percentages to `uniq -c` output.  Note that it rounds *down* to the nearest integer.
 # (Digits afert the decimal don't make a practical difference.)
 while read -r line; do
     count=$(echo "$line" | cut -f1 -d " ");

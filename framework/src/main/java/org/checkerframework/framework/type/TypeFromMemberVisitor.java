@@ -43,6 +43,10 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       result = f.getAnnotatedType(variableTree.getInitializer());
       // Let normal defaulting happen for the primary annotation.
       result.clearPrimaryAnnotations();
+    } else if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+        || variableTree.getType() == null) {
+      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      result = f.type(variableTree);
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those
       // are added to the type below).
@@ -74,8 +78,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
       // The underlying type of result does not have all annotations, but the TypeMirror of
       // variableTree.getType() does.
-      DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
-      AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
+      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      if (variableTree.getType() != null
+          && !TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+        DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
+        AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
+      }
 
       // Handle declaration annotations
       for (AnnotationMirror anno : modifierAnnos) {
