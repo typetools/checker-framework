@@ -171,13 +171,13 @@ public class MustCallTransfer extends CFTransfer {
           result =
               new ConditionalTransferResult<>(
                   result.getResultValue(),
-                  result.getThenStore(),
-                  result.getElseStore(),
+                  result.getThenStore().copy(),
+                  result.getElseStore().copy(),
                   exceptionalStores);
         } else {
           result =
               new RegularTransferResult<>(
-                  result.getResultValue(), result.getRegularStore(), exceptionalStores);
+                  result.getResultValue(), result.getRegularStore().copy(), exceptionalStores);
         }
         exceptionalStores = null;
       }
