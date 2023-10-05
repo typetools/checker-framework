@@ -19,6 +19,10 @@ public class OwningOverride {
     // no resource leak reported for x
     InputStream x = new FileInputStream("foo.txt");
     A a = new B();
-    a.closeStream(x);
+    try {
+      a.closeStream(x);
+    } catch (Exception e) {
+      x.close();
+    }
   }
 }
