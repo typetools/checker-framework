@@ -105,7 +105,7 @@ public class TreeBuilder {
         elementType = ((Type.CapturedType) elementType).wildcard;
         TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
         assert iteratorElt != null
-            : "@AssumeAssertion(nullness): element not found for " + iteratorType;
+            : "@AssumeAssertion(nullness): the iterator type always has an element";
 
         iteratorType = modelTypes.getDeclaredType(iteratorElt, elementType);
       }
