@@ -438,6 +438,7 @@ public class MustCallInference {
       // inference algorithm. It becomes particularly important when multiple methods could satisfy
       // the must-call obligation of the enclosing class. Therefore, to include the existing
       // @MustCall annotation in the inference result for this iteration, we re-add it.
+      assert currentMustCallValues.size() == 1 : "TODO: Handle multiple must-call values";
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
       wpi.addClassDeclarationAnnotation(classElt, am);
       return;
@@ -450,7 +451,6 @@ public class MustCallInference {
       // Since the result of getOwningFields() is a superset of disposedFields, it is sufficient to
       // check the equality of their sizes to determine if both sets are equal.
       if (!disposedFields.isEmpty() && disposedFields.size() == getOwningFields().size()) {
-        assert currentMustCallValues.size() == 1 : "TODO: Handle multiple must-call values";
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
         wpi.addClassDeclarationAnnotation(classElt, am);
