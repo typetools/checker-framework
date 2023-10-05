@@ -103,10 +103,11 @@ public class TreeBuilder {
       // Remove captured type variable from a wildcard.
       if (elementType instanceof Type.CapturedType) {
         elementType = ((Type.CapturedType) elementType).wildcard;
+        TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
+        assert iteratorElt != null
+            : "@AssumeAssertion(nullness): the iterator type always has an element";
 
-        iteratorType =
-            modelTypes.getDeclaredType(
-                (TypeElement) modelTypes.asElement(iteratorType), elementType);
+        iteratorType = modelTypes.getDeclaredType(iteratorElt, elementType);
       }
     }
 
