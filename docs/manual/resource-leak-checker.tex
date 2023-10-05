@@ -189,12 +189,16 @@ refer to the same underlying resource.)
 For example, consider the following code that safely closes a \<Socket>:
 
 \begin{verbatim}
-  void example(String myHost, int myPort) {
+  void example(String myHost, int myPort) throws IOException {
     Socket s = new Socket(myHost, myPort);
     closeSocket(s);
   }
   void closeSocket(@Owning @MustCall("close") Socket t) {
-    t.close();
+    try {
+      t.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 \end{verbatim}
 

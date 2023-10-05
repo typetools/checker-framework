@@ -3,27 +3,58 @@
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.Socket;
 import org.checkerframework.checker.calledmethods.qual.*;
-import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
-import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 abstract class OwnershipWithExceptions {
 
+  static class ManualExample1 {
+    void example(String myHost, int myPort) throws IOException {
+      Socket s = new Socket(myHost, myPort);
+      closeSocket(s);
+    }
+
+    void closeSocket(@Owning @MustCall("close") Socket t) {
+      try {
+        t.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  static class ManualExample2 {
+    void example(String myHost, int myPort) throws Exception {
+      // Error: `s` is not closed on all paths
+      // ::error: (required.method.not.called)
+      Socket s = new Socket(myHost, myPort);
+
+      // `closeSocket` does not have to close `s` when it throws IOException.
+      // Instead, this method has to catch the exception and close `s`.
+      closeSocket(s);
+    }
+
+    void closeSocket(@Owning Socket t) throws IOException {
+      throw new IOException();
+    }
+  }
+
   abstract @Owning Closeable alloc();
 
-  @Pure
+  @SideEffectFree
   abstract boolean arbitraryChoice();
 
   abstract void transfer(@Owning Closeable resource) throws IOException;
 
-  //  void transferAndPropagateException(@Owning Closeable resource) throws IOException {
-  //    transfer(resource);
-  //  }
+  void transferAndPropagateException(@Owning Closeable resource) throws IOException {
+    transfer(resource);
+  }
 
-  //  void transferHasNoObligationsOnException(@Owning Closeable resource) throws IOException {
-  //    throw new IOException();
-  //  }
+  void transferHasNoObligationsOnException(@Owning Closeable resource) throws IOException {
+    throw new IOException();
+  }
 
   // :: error: (required.method.not.called)
   void transferAndIgnoreExceptionWithoutClosing(@Owning Closeable zzz) {
@@ -67,27 +98,27 @@ abstract class OwnershipWithExceptions {
       resource = alloc();
     }
 
-    //    FinalOwnedField(int ignored) throws IOException {
-    //      // Same as the 0-argument constructor, but handled correctly.
-    //      resource = alloc();
-    //      try {
-    //        if (arbitraryChoice()) {
-    //          throw new IOException();
-    //        }
-    //      } catch (Exception e) {
-    //        resource.close();
-    //        throw e;
-    //      }
-    //    }
+    FinalOwnedField(int ignored) throws IOException {
+      // Same as the 0-argument constructor, but handled correctly.
+      resource = alloc();
+      try {
+        if (arbitraryChoice()) {
+          throw new IOException();
+        }
+      } catch (Exception e) {
+        resource.close();
+        throw e;
+      }
+    }
 
-    //    FinalOwnedField(@Owning Closeable resource) throws IOException {
-    //      // Although, when the resource was passed by a caller, then we can be
-    //      // more relaxed.  On exception, ownership remains with the caller.
-    //      this.resource = resource;
-    //      if (arbitraryChoice()) {
-    //        throw new IOException();
-    //      }
-    //    }
+    FinalOwnedField(@Owning Closeable resource) throws IOException {
+      // Although, when the resource was passed by a caller, then we can be
+      // more relaxed.  On exception, ownership remains with the caller.
+      this.resource = resource;
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+    }
 
     // Not allowed: destructors have to close @Owning fields even on exception.
     @Override

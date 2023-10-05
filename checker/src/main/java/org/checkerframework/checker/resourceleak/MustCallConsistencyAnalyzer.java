@@ -186,6 +186,11 @@ class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
+  /*package-private*/ enum ObligationStrength {
+    NORMAL_RETURNS_ONLY,
+    ALL_PATHS,
+  }
+
   /**
    * An Obligation is a dataflow fact: a set of resource aliases. Abstractly, each Obligation
    * represents a resource for which the analyzed program might have a must-call obligation. Each
@@ -213,13 +218,16 @@ class MustCallConsistencyAnalyzer {
      */
     public final ImmutableSet<ResourceAlias> resourceAliases;
 
+    public final ObligationStrength strength;
+
     /**
      * Create an Obligation from a set of resource aliases.
      *
      * @param resourceAliases a set of resource aliases
      */
-    public Obligation(Set<ResourceAlias> resourceAliases) {
+    public Obligation(Set<ResourceAlias> resourceAliases, ObligationStrength strength) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
+      this.strength = strength;
     }
 
     /**
@@ -368,7 +376,10 @@ class MustCallConsistencyAnalyzer {
 
     @Override
     public String toString() {
-      return "Obligation: resourceAliases=" + Iterables.toString(resourceAliases);
+      return "Obligation: resourceAliases="
+          + Iterables.toString(resourceAliases)
+          + ", strength="
+          + strength;
     }
 
     @Override
@@ -380,12 +391,13 @@ class MustCallConsistencyAnalyzer {
         return false;
       }
       Obligation that = (Obligation) obj;
-      return this.resourceAliases.equals(that.resourceAliases);
+      return this.resourceAliases.equals(that.resourceAliases)
+          && this.strength.equals(that.strength);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(resourceAliases);
+      return Objects.hash(resourceAliases, strength);
     }
   }
 
@@ -701,7 +713,7 @@ class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            toAdd = new Obligation(ImmutableSet.of(alias));
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.strength);
           }
         }
 
@@ -805,7 +817,8 @@ class MustCallConsistencyAnalyzer {
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-      obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
+      obligations.add(
+          new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), ObligationStrength.ALL_PATHS));
     } else {
       for (Node mustCallAlias : mustCallAliases) {
         if (mustCallAlias instanceof FieldAccessNode) {
@@ -829,7 +842,8 @@ class MustCallConsistencyAnalyzer {
                     .append(tmpVarAsResourceAlias)
                     .toSet();
             obligations.remove(obligationContainingMustCallAlias);
-            obligations.add(new Obligation(newResourceAliasSet));
+            obligations.add(
+                new Obligation(newResourceAliasSet, obligationContainingMustCallAlias.strength));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -1301,7 +1315,9 @@ class MustCallConsistencyAnalyzer {
             "variable overwritten by assignment " + node.getTree());
         replacements.put(obligation, null);
       } else {
-        replacements.put(obligation, new Obligation(newResourceAliasesForObligation));
+        replacements.put(
+            obligation,
+            new Obligation(newResourceAliasesForObligation, ObligationStrength.ALL_PATHS));
       }
     }
 
@@ -2004,7 +2020,20 @@ class MustCallConsistencyAnalyzer {
           }
         }
 
-        checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+        boolean mustCheckObligationOnThisPath;
+        switch (obligation.strength) {
+          case NORMAL_RETURNS_ONLY:
+            mustCheckObligationOnThisPath = exceptionType == null;
+            break;
+          case ALL_PATHS:
+          default:
+            mustCheckObligationOnThisPath = true;
+            break;
+        }
+
+        if (mustCheckObligationOnThisPath) {
+          checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+        }
       } else {
         // In this case, there is info in the successor store about some alias in the
         // Obligation.
@@ -2013,7 +2042,7 @@ class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
             alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-        successorObligations.add(new Obligation(copyOfResourceAliases));
+        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.strength));
       }
     }
 
@@ -2070,8 +2099,8 @@ class MustCallConsistencyAnalyzer {
           result.add(
               new Obligation(
                   ImmutableSet.of(
-                      new ResourceAlias(
-                          new LocalVariable(paramElement), param, hasMustCallAlias))));
+                      new ResourceAlias(new LocalVariable(paramElement), param, hasMustCallAlias)),
+                  ObligationStrength.NORMAL_RETURNS_ONLY));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing
           // method.
           incrementNumMustCall(paramElement);
