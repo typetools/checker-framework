@@ -95,19 +95,13 @@ abstract class OwnershipWithExceptions {
     final @Owning Closeable resource;
 
     FinalOwnedField() throws IOException {
+      // Field assignments in constructors are special.  When the constructor
+      // exits by exception, the field becomes permanently inaccessible, and
+      // therefore the allocated resource is leaked.
+      // :: error: (required.method.not.called)
       resource = alloc();
-    }
-
-    FinalOwnedField(int ignored) throws IOException {
-      // Same as the 0-argument constructor, but handled correctly.
-      resource = alloc();
-      try {
-        if (arbitraryChoice()) {
-          throw new IOException();
-        }
-      } catch (Exception e) {
-        resource.close();
-        throw e;
+      if (arbitraryChoice()) {
+        throw new IOException();
       }
     }
 
@@ -120,6 +114,50 @@ abstract class OwnershipWithExceptions {
       }
     }
 
+    FinalOwnedField(@Owning Closeable resource, boolean arg) throws IOException {
+      // Same as the previous constructor, but in the other order.
+      this.resource = resource;
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+    }
+
+    FinalOwnedField(int ignored) throws IOException {
+      // Same as the 0-argument constructor, but handled correctly (algorithm 1).
+      resource = alloc();
+      try {
+        if (arbitraryChoice()) {
+          throw new IOException();
+        }
+      } catch (Exception e) {
+        resource.close();
+        throw e;
+      }
+    }
+
+    FinalOwnedField(float ignored) throws IOException {
+      // Same as the 0-argument constructor, but handled correctly (algorithm 2).
+      Closeable r = alloc();
+      resource = r;
+      try {
+        if (arbitraryChoice()) {
+          throw new IOException();
+        }
+      } catch (Exception e) {
+        r.close();
+        throw e;
+      }
+    }
+
+    FinalOwnedField(@Owning Closeable resource, int arg) throws IOException {
+      // On exception, ownership of the @Owning argument remains with the caller.
+      // So, this constructor is OK.
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+      this.resource = resource;
+    }
+
     // Not allowed: destructors have to close @Owning fields even on exception.
     @Override
     @EnsuresCalledMethods(
@@ -128,6 +166,91 @@ abstract class OwnershipWithExceptions {
     // ::error: (destructor.exceptional.postcondition)
     public void close() throws IOException {
       throw new IOException();
+    }
+  }
+
+  // Classes with >1 owned field are treated slightly differently
+  // (see ./TwoOwningMCATest.java)
+  class TwoOwnedFields implements Closeable {
+
+    final @Owning Closeable unused = null;
+
+    final @Owning Closeable resource;
+
+    TwoOwnedFields() throws IOException {
+      // Field assignments in constructors are special.  When the constructor
+      // exits by exception, the field becomes permanently inaccessible, and
+      // therefore the allocated resource is leaked.
+      // :: error: (required.method.not.called)
+      resource = alloc();
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+    }
+
+    TwoOwnedFields(@Owning Closeable resource) throws IOException {
+      // Although, when the resource was passed by a caller, then we can be
+      // more relaxed.  On exception, ownership remains with the caller.
+      this.resource = resource;
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+    }
+
+    TwoOwnedFields(@Owning Closeable resource, boolean arg) throws IOException {
+      // Same as the previous constructor, but in the other order.
+      this.resource = resource;
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+    }
+
+    TwoOwnedFields(int ignored) throws IOException {
+      // Same as the 0-argument constructor, but handled correctly (algorithm 1).
+      resource = alloc();
+      try {
+        if (arbitraryChoice()) {
+          throw new IOException();
+        }
+      } catch (Exception e) {
+        resource.close();
+        throw e;
+      }
+    }
+
+    TwoOwnedFields(float ignored) throws IOException {
+      // Same as the 0-argument constructor, but handled correctly (algorithm 2).
+      Closeable r = alloc();
+      resource = r;
+      try {
+        if (arbitraryChoice()) {
+          throw new IOException();
+        }
+      } catch (Exception e) {
+        r.close();
+        throw e;
+      }
+    }
+
+    TwoOwnedFields(@Owning Closeable resource, int arg) throws IOException {
+      // On exception, ownership of the @Owning argument remains with the caller.
+      // So, this constructor is OK.
+      if (arbitraryChoice()) {
+        throw new IOException();
+      }
+      this.resource = resource;
+    }
+
+    // Not allowed: destructors have to close @Owning fields even on exception.
+    // In this case, the exception from `unused.close()` can prematurely stop the method.
+    @Override
+    @EnsuresCalledMethods(
+        value = {"this.resource", "this.unused"},
+        methods = {"close"})
+    // ::error: (destructor.exceptional.postcondition)
+    public void close() throws IOException {
+      if (unused != null) unused.close();
+      if (resource != null) resource.close();
     }
   }
 

@@ -16,8 +16,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,6 +32,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -186,9 +189,12 @@ class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
-  /*package-private*/ enum ObligationStrength {
-    NORMAL_RETURNS_ONLY,
-    ALL_PATHS,
+  /*package-private*/ enum MethodExitKind {
+    NORMAL_RETURN,
+    EXCEPTIONAL_EXIT;
+
+    public static final Set<MethodExitKind> ALL =
+        ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
   }
 
   /**
@@ -218,16 +224,16 @@ class MustCallConsistencyAnalyzer {
      */
     public final ImmutableSet<ResourceAlias> resourceAliases;
 
-    public final ObligationStrength strength;
+    public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
      * Create an Obligation from a set of resource aliases.
      *
      * @param resourceAliases a set of resource aliases
      */
-    public Obligation(Set<ResourceAlias> resourceAliases, ObligationStrength strength) {
+    public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
-      this.strength = strength;
+      this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
     }
 
     /**
@@ -241,7 +247,7 @@ class MustCallConsistencyAnalyzer {
     private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
       Element element = localVariableNode.getElement();
       for (ResourceAlias alias : resourceAliases) {
-        if (alias.reference.getElement().equals(element)) {
+        if (alias.reference instanceof LocalVariable && alias.element.equals(element)) {
           return alias;
         }
       }
@@ -337,7 +343,7 @@ class MustCallConsistencyAnalyzer {
      */
     private static AnnotationMirror getMustCallValue(
         ResourceAlias alias, @Nullable CFStore mcStore, MustCallAnnotatedTypeFactory mcAtf) {
-      LocalVariable reference = alias.reference;
+      JavaExpression reference = alias.reference;
       CFValue value = mcStore == null ? null : mcStore.getValue(reference);
       if (value != null) {
         AnnotationMirror result =
@@ -346,10 +352,9 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
+
       AnnotationMirror result =
-          mcAtf
-              .getAnnotatedType(reference.getElement())
-              .getEffectiveAnnotationInHierarchy(mcAtf.TOP);
+          mcAtf.getAnnotatedType(alias.element).getEffectiveAnnotationInHierarchy(mcAtf.TOP);
       if (result != null && !AnnotationUtils.areSame(result, mcAtf.TOP)) {
         return result;
       }
@@ -378,8 +383,8 @@ class MustCallConsistencyAnalyzer {
     public String toString() {
       return "Obligation: resourceAliases="
           + Iterables.toString(resourceAliases)
-          + ", strength="
-          + strength;
+          + ", whenToEnforce="
+          + whenToEnforce;
     }
 
     @Override
@@ -392,12 +397,12 @@ class MustCallConsistencyAnalyzer {
       }
       Obligation that = (Obligation) obj;
       return this.resourceAliases.equals(that.resourceAliases)
-          && this.strength.equals(that.strength);
+          && this.whenToEnforce.equals(that.whenToEnforce);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(resourceAliases, strength);
+      return Objects.hash(resourceAliases, whenToEnforce);
     }
   }
 
@@ -420,7 +425,10 @@ class MustCallConsistencyAnalyzer {
   /*package-private*/ static class ResourceAlias {
 
     /** A local variable defined in the source code or a temporary variable for an expression. */
-    public final LocalVariable reference;
+    public final JavaExpression reference;
+
+    /** The element for {@link #reference}. */
+    public final Element element;
 
     /** The tree at which {@code reference} was assigned, for the purpose of error reporting. */
     public final Tree tree;
@@ -447,7 +455,30 @@ class MustCallConsistencyAnalyzer {
      * @param tree the tree
      */
     public ResourceAlias(LocalVariable reference, Tree tree) {
-      this(reference, tree, false);
+      this(reference, reference.getElement(), tree);
+    }
+
+    /**
+     * Create a new resource alias. This constructor should only be used if the resource alias was
+     * not derived from a method parameter annotated as {@link MustCallAlias}.
+     *
+     * @param reference the reference
+     * @param tree the tree
+     */
+    public ResourceAlias(FieldAccess reference, Tree tree) {
+      this(reference, reference.getField(), tree);
+    }
+
+    /**
+     * Create a new resource alias. This constructor should only be used if the resource alias was
+     * not derived from a method parameter annotated as {@link MustCallAlias}.
+     *
+     * @param reference the reference
+     * @param element the element for the given reference
+     * @param tree the tree
+     */
+    public ResourceAlias(JavaExpression reference, Element element, Tree tree) {
+      this(reference, element, tree, false);
     }
 
     /**
@@ -459,8 +490,12 @@ class MustCallConsistencyAnalyzer {
      *     {@link MustCallAlias} parameter
      */
     public ResourceAlias(
-        LocalVariable reference, Tree tree, boolean derivedFromMustCallAliasParam) {
+        JavaExpression reference,
+        Element element,
+        Tree tree,
+        boolean derivedFromMustCallAliasParam) {
       this.reference = reference;
+      this.element = element;
       this.tree = tree;
       this.derivedFromMustCallAliasParam = derivedFromMustCallAliasParam;
     }
@@ -713,7 +748,7 @@ class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            toAdd = new Obligation(ImmutableSet.of(alias), obligation.strength);
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce);
           }
         }
 
@@ -817,8 +852,7 @@ class MustCallConsistencyAnalyzer {
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-      obligations.add(
-          new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), ObligationStrength.ALL_PATHS));
+      obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
     } else {
       for (Node mustCallAlias : mustCallAliases) {
         if (mustCallAlias instanceof FieldAccessNode) {
@@ -835,6 +869,7 @@ class MustCallConsistencyAnalyzer {
             ResourceAlias tmpVarAsResourceAlias =
                 new ResourceAlias(
                     new LocalVariable(tmpVar),
+                    tmpVar.getElement(),
                     tree,
                     obligationContainingMustCallAlias.derivedFromMustCallAlias());
             Set<ResourceAlias> newResourceAliasSet =
@@ -843,7 +878,8 @@ class MustCallConsistencyAnalyzer {
                     .toSet();
             obligations.remove(obligationContainingMustCallAlias);
             obligations.add(
-                new Obligation(newResourceAliasSet, obligationContainingMustCallAlias.strength));
+                new Obligation(
+                    newResourceAliasSet, obligationContainingMustCallAlias.whenToEnforce));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -1122,11 +1158,13 @@ class MustCallConsistencyAnalyzer {
           && !ElementUtils.isFinal(lhsElement)) {
         checkReassignmentToField(obligations, assignmentNode);
       }
+
       // Remove Obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
+
         // Assigning to an owning field is sufficient to clear a must-call alias obligation
         // in a constructor, if the enclosing class has at most one @Owning field. If the
         // class had multiple owning fields, then a soundness bug would occur: the must call
@@ -1136,9 +1174,17 @@ class MustCallConsistencyAnalyzer {
         // case checker/tests/resourceleak/TwoOwningMCATest.java for an example.
         Element enclosingCtr = lhsElement.getEnclosingElement();
         if (enclosingCtr != null
-            && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR
             && hasAtMostOneOwningField(ElementUtils.enclosingTypeElement(enclosingCtr))) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+          boolean inConstructor =
+              TreePathUtil.inConstructor(typeFactory.getPath(assignmentNode.getTree()));
+          if (inConstructor
+              && lhs instanceof FieldAccessNode
+              && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
+            updateObligationsForFieldAssignmentInConstructor(
+                obligations, (LocalVariableNode) rhs, lhs, lhsElement);
+          } else {
+            removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+          }
         } else {
           removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
               obligations, (LocalVariableNode) rhs);
@@ -1209,6 +1255,52 @@ class MustCallConsistencyAnalyzer {
       obligations.remove(obligationForVar);
       obligationForVar = getObligationForVar(obligations, var);
     }
+  }
+
+  /**
+   * Perform the (somewhat complex) set of obligation updates that happen when {@code this.field =
+   * var} appears in a constructor. Precisely:
+   *
+   * <ul>
+   *   <li>Remove the Obligations that contain {@code var} in their resource-alias set, but only for
+   *       normal returns.
+   *   <li>If the field is a final field, also add {@code lhs}/{@code lhsElement} to the
+   *       resource-alias set of any remaining obligations for {@code var}, since closing the field
+   *       suffices to fulfill the obligation.
+   * </ul>
+   *
+   * @param obligations the set of Obligations
+   * @param var a variable
+   * @param lhs the {@code Node} for the left-hand side of the assignment ({@code this.field})
+   * @param lhsElement the {@code Element} for the field
+   */
+  private void updateObligationsForFieldAssignmentInConstructor(
+      Set<Obligation> obligations, LocalVariableNode var, Node lhs, Element lhsElement) {
+    List<Obligation> newObligations = new ArrayList<>();
+
+    Iterator<Obligation> it = obligations.iterator();
+    while (it.hasNext()) {
+      Obligation obligation = it.next();
+
+      if (obligation.canBeSatisfiedThrough(var)) {
+        it.remove();
+
+        Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
+        whenToEnforce.remove(MethodExitKind.NORMAL_RETURN);
+
+        if (!whenToEnforce.isEmpty()) {
+          Set<ResourceAlias> newAliases = obligation.resourceAliases;
+          if (lhsElement.getModifiers().contains(Modifier.FINAL)) {
+            newAliases = new LinkedHashSet<>(obligation.resourceAliases);
+            newAliases.add(
+                new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
+          }
+          newObligations.add(new Obligation(newAliases, whenToEnforce));
+        }
+      }
+    }
+
+    obligations.addAll(newObligations);
   }
 
   /**
@@ -1316,8 +1408,7 @@ class MustCallConsistencyAnalyzer {
         replacements.put(obligation, null);
       } else {
         replacements.put(
-            obligation,
-            new Obligation(newResourceAliasesForObligation, ObligationStrength.ALL_PATHS));
+            obligation, new Obligation(newResourceAliasesForObligation, MethodExitKind.ALL));
       }
     }
 
@@ -1946,7 +2037,8 @@ class MustCallConsistencyAnalyzer {
           // MustCallAlias annotations only have meaning if the method returns
           // normally, so issue an error if and only if this exit is happening on a
           // normal exit path.
-          if (exceptionType == null) {
+          if (exceptionType == null
+              && obligation.whenToEnforce.contains(MethodExitKind.NORMAL_RETURN)) {
             checker.reportError(
                 obligation.resourceAliases.asList().get(0).tree,
                 "mustcallalias.out.of.scope",
@@ -2020,18 +2112,9 @@ class MustCallConsistencyAnalyzer {
           }
         }
 
-        boolean mustCheckObligationOnThisPath;
-        switch (obligation.strength) {
-          case NORMAL_RETURNS_ONLY:
-            mustCheckObligationOnThisPath = exceptionType == null;
-            break;
-          case ALL_PATHS:
-          default:
-            mustCheckObligationOnThisPath = true;
-            break;
-        }
-
-        if (mustCheckObligationOnThisPath) {
+        MethodExitKind exitKind =
+            exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
+        if (obligation.whenToEnforce.contains(exitKind)) {
           checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
         }
       } else {
@@ -2042,7 +2125,7 @@ class MustCallConsistencyAnalyzer {
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
             alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.strength));
+        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.whenToEnforce));
       }
     }
 
@@ -2099,8 +2182,9 @@ class MustCallConsistencyAnalyzer {
           result.add(
               new Obligation(
                   ImmutableSet.of(
-                      new ResourceAlias(new LocalVariable(paramElement), param, hasMustCallAlias)),
-                  ObligationStrength.NORMAL_RETURNS_ONLY));
+                      new ResourceAlias(
+                          new LocalVariable(paramElement), paramElement, param, hasMustCallAlias)),
+                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing
           // method.
           incrementNumMustCall(paramElement);
@@ -2212,7 +2296,7 @@ class MustCallConsistencyAnalyzer {
       if (cmAnno == null) {
         cmAnno =
             typeFactory
-                .getAnnotatedType(alias.reference.getElement())
+                .getAnnotatedType(TreeUtils.elementFromTree(alias.tree))
                 .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
