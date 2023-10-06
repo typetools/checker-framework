@@ -36,7 +36,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -104,10 +103,11 @@ public class TreeBuilder {
       // Remove captured type variable from a wildcard.
       if (elementType instanceof Type.CapturedType) {
         elementType = ((Type.CapturedType) elementType).wildcard;
-        @SuppressWarnings("nullness:assignment") // iteratorType has element.
-        @NonNull TypeElement iteratorTypeElement = (TypeElement) modelTypes.asElement(iteratorType);
+        TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
+        assert iteratorElt != null
+            : "@AssumeAssertion(nullness): the iterator type always has an element";
 
-        iteratorType = modelTypes.getDeclaredType(iteratorTypeElement, elementType);
+        iteratorType = modelTypes.getDeclaredType(iteratorElt, elementType);
       }
     }
 
