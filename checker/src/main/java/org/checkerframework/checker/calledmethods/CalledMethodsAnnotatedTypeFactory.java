@@ -400,6 +400,17 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     return builderFrameworkSupports;
   }
 
+  /**
+   * Get the called methods specified by the given {@link CalledMethods} annotation.
+   *
+   * @param calledMethodsAnnotation the annotation
+   * @return the called methods
+   */
+  protected List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
+    return AnnotationUtils.getElementValueArray(
+        calledMethodsAnnotation, calledMethodsValueElement, String.class);
+  }
+
   @Override
   protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
       String expression,
@@ -408,8 +419,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
       Analysis.BeforeOrAfter preOrPost,
       @Nullable List<AnnotationMirror> preconds) {
     if (preOrPost == BeforeOrAfter.AFTER && isAccumulatorAnnotation(qualifier)) {
-      List<String> calledMethods =
-          AnnotationUtils.getElementValueArray(qualifier, calledMethodsValueElement, String.class);
+      List<String> calledMethods = getCalledMethods(qualifier);
       if (!calledMethods.isEmpty()) {
         return ensuresCMAnno(expression, calledMethods);
       }
@@ -468,7 +478,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * EnsuresCalledMethodsOnException} annotations on it.
    *
    * @param methodOrConstructor the method to examine
-   * @return the exceptional postconditions on the given method
+   * @return the exceptional postconditions on the given method; the return value is newly-allocated
+   *     and can be freely modified by callers
    */
   public Set<EnsuredCalledMethodOnException> getExceptionalPostconditions(
       ExecutableElement methodOrConstructor) {

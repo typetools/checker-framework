@@ -3,15 +3,19 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
+import org.checkerframework.checker.calledmethods.EnsuredCalledMethodOnException;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -22,12 +26,11 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -200,75 +203,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     return atypeFactory.getWholeProgramInference() != null && isWpiEnabledForRLC();
   }
 
-  // Overwritten to check that destructors (i.e. methods responsible for resolving
-  // the must-call obligations of owning fields) enforce a stronger version of
-  // @EnsuresCalledMethods: that the claimed @CalledMethods annotation is true on
-  // both exceptional and regular exits, not just on regular exits.
-  @Override
-  protected void checkPostcondition(
-      MethodTree methodTree, AnnotationMirror annotation, JavaExpression expression) {
-    super.checkPostcondition(methodTree, annotation, expression);
-    // Only check if the required annotation is a CalledMethods annotation (implying
-    // the method was annotated with @EnsuresCalledMethods).
-    if (!AnnotationUtils.areSameByName(
-        annotation, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-      return;
-    }
-    if (!isMustCallMethod(methodTree)) {
-      // In this case, the method has an EnsuresCalledMethods annotation but is not a
-      // destructor, so no further checking is required.
-      return;
-    }
-    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(methodTree);
-    if (exitStore == null) {
-      // If there is no exceptional exitStore, then the method cannot throw an exception and
-      // there is no need to check anything else.
-    } else {
-      CFAbstractValue<?> value = exitStore.getValue(expression);
-      AnnotationMirror inferredAnno = null;
-      if (value != null) {
-        AnnotationMirrorSet annos = value.getAnnotations();
-        inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, annotation);
-      }
-      if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
-        String inferredAnnoStr =
-            inferredAnno == null
-                ? "no information about " + expression.toString()
-                : inferredAnno.toString();
-        checker.reportError(
-            methodTree,
-            "destructor.exceptional.postcondition",
-            methodTree.getName(),
-            expression.toString(),
-            inferredAnnoStr,
-            annotation);
-      }
-    }
-  }
-
-  /**
-   * Returns true iff the {@code MustCall} annotation of the class that encloses the methodTree
-   * names this method.
-   *
-   * @param methodTree the declaration of a method
-   * @return whether that method is one of the must-call methods for its enclosing class
-   */
-  private boolean isMustCallMethod(MethodTree methodTree) {
-    ExecutableElement elt = TreeUtils.elementFromDeclaration(methodTree);
-    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
-    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotationMirror mcAnno =
-        mustCallAnnotatedTypeFactory
-            .getAnnotatedType(containingClass)
-            .getPrimaryAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
-    List<String> mcValues =
-        AnnotationUtils.getElementValueArray(
-            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
-    String methodName = elt.getSimpleName().toString();
-    return mcValues.contains(methodName);
-  }
-
   /**
    * Returns the {@link CreatesMustCallFor#value} element/argument of the given @CreatesMustCallFor
    * annotation, or "this" if there is none.
@@ -367,6 +301,43 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
+   * An obligation that must be satisfied by a destructor. Helper type for {@link
+   * #checkOwningField(Element)}.
+   */
+  private static final class DestructorObligation {
+    /** The method that must be called on the field. */
+    final String mustCallMethod;
+
+    /** When the method must be called. */
+    final MustCallConsistencyAnalyzer.MethodExitKind exitKind;
+
+    /**
+     * Create a new obligation.
+     *
+     * @param mustCallMethod the method that must be called
+     * @param exitKind when the method must be called
+     */
+    public DestructorObligation(
+        String mustCallMethod, MustCallConsistencyAnalyzer.MethodExitKind exitKind) {
+      this.mustCallMethod = mustCallMethod;
+      this.exitKind = exitKind;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      DestructorObligation that = (DestructorObligation) o;
+      return mustCallMethod.equals(that.mustCallMethod) && exitKind == that.exitKind;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(mustCallMethod, exitKind);
+    }
+  }
+
+  /**
    * Checks validity of a field {@code field} with an {@code @}{@link Owning} annotation. Say the
    * type of {@code field} is {@code @MustCall("m"}}. This method checks that the enclosing class of
    * {@code field} has a type {@code @MustCall("m2")} for some method {@code m2}, and that {@code
@@ -392,12 +363,19 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
 
     // This value is side-effected.
-    List<String> unsatisfiedMustCallObligationsOfOwningField =
-        rlTypeFactory.getMustCallValues(field);
+    List<String> mustCallObligationsOfOwningField = rlTypeFactory.getMustCallValues(field);
 
-    if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+    if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
     }
+
+    Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField =
+        mustCallObligationsOfOwningField.stream()
+            .flatMap(
+                method ->
+                    Arrays.stream(MustCallConsistencyAnalyzer.MethodExitKind.values())
+                        .map(exitKind -> new DestructorObligation(method, exitKind)))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
@@ -420,8 +398,10 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
         if (siblingElement.getKind() == ElementKind.METHOD
             && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
 
+          ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
+
           AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
-              getEnsuresCalledMethodsAnnotations((ExecutableElement) siblingElement, rlTypeFactory);
+              getEnsuresCalledMethodsAnnotations(siblingMethod, rlTypeFactory);
           for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
             List<String> values =
                 AnnotationUtils.getElementValueArray(
@@ -429,15 +409,32 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                     rlTypeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
-              if (value.contains(field.getSimpleName().toString())) {
+              if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
                         rlTypeFactory.ensuresCalledMethodsMethodsElement,
                         String.class);
-                unsatisfiedMustCallObligationsOfOwningField.removeAll(methods);
+                for (String method : methods) {
+                  unsatisfiedMustCallObligationsOfOwningField.remove(
+                      new DestructorObligation(
+                          method, MustCallConsistencyAnalyzer.MethodExitKind.NORMAL_RETURN));
+                }
               }
             }
+
+            Set<EnsuredCalledMethodOnException> exceptionalPostconds =
+                rlTypeFactory.getExceptionalPostconditions(siblingMethod);
+            for (EnsuredCalledMethodOnException postcond : exceptionalPostconds) {
+              if (expressionEqualsField(postcond.getExpression(), field)) {
+                unsatisfiedMustCallObligationsOfOwningField.remove(
+                    new DestructorObligation(
+                        postcond.getMethod(),
+                        MustCallConsistencyAnalyzer.MethodExitKind.EXCEPTIONAL_EXIT));
+              }
+            }
+
+            // Optimization: stop early as soon as we've exhausted the list of obligations
             if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
               return;
             }
@@ -447,20 +444,24 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             // This variable could be set immediately before reporting the error, but
             // IMO it is more clear to set it here.
             error =
-                " @EnsuresCalledMethods written on MustCall methods doesn't contain "
-                    + MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
-                        unsatisfiedMustCallObligationsOfOwningField);
+                "Postconditions written on MustCall methods are missing: "
+                    + formatMissingMustCallMethodPostconditions(
+                        field, unsatisfiedMustCallObligationsOfOwningField);
           }
         }
       }
     }
 
     if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+      Set<String> missingMethods = new LinkedHashSet<>();
+      for (DestructorObligation obligation : unsatisfiedMustCallObligationsOfOwningField) {
+        missingMethods.add(obligation.mustCallMethod);
+      }
+
       checker.reportError(
           field,
           "required.method.not.called",
-          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(
-              unsatisfiedMustCallObligationsOfOwningField),
+          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(new ArrayList<>(missingMethods)),
           "field " + field.getSimpleName().toString(),
           field.asType().toString(),
           error);
@@ -475,5 +476,60 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;
+  }
+
+  /**
+   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   *
+   * @param e the expression
+   * @param field the field
+   * @return true if <code>e</code> refers to <code>this.field</code>
+   */
+  private boolean expressionEqualsField(String e, Element field) {
+    // TODO: this is very wrong
+    return e.contains(field.getSimpleName().toString());
+  }
+
+  /**
+   * Formats a list of must-call method post-conditions to be printed in an error message.
+   *
+   * @param mustCallVal the list of must-call strings
+   * @return a formatted string
+   */
+  /*package-private*/ static String formatMissingMustCallMethodPostconditions(
+      Element field, Set<DestructorObligation> mustCallVal) {
+    int size = mustCallVal.size();
+    if (size == 0) {
+      throw new TypeSystemError("empty mustCallVal " + mustCallVal);
+    }
+    String fieldName = field.getSimpleName().toString();
+    return mustCallVal.stream()
+        .map(
+            o ->
+                postconditionAnnotationFor(o.exitKind)
+                    + "(value = \""
+                    + fieldName
+                    + "\", methods = \""
+                    + o.mustCallMethod
+                    + "\")")
+        .collect(Collectors.joining(", "));
+  }
+
+  /**
+   * Format a must-call post-condition to be printed in an error message.
+   *
+   * @param exitKind the kind of method exit
+   * @return the name of the annotation
+   */
+  private static String postconditionAnnotationFor(
+      MustCallConsistencyAnalyzer.MethodExitKind exitKind) {
+    switch (exitKind) {
+      case NORMAL_RETURN:
+        return "@EnsuresCalledMethods";
+      case EXCEPTIONAL_EXIT:
+        return "@EnsuresCalledMethodsOnException";
+      default:
+        throw new UnsupportedOperationException(exitKind.toString());
+    }
   }
 }

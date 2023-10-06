@@ -20,7 +20,7 @@ class TwoResourcesECM {
   @EnsuresCalledMethods(
       value = {"this.s1", "this.s2"},
       methods = {"close"})
-  // :: error: (contracts.postcondition) :: error: (destructor.exceptional.postcondition)
+  // :: error: (contracts.postcondition)
   public void dispose() throws IOException {
     s1.close();
     s2.close();

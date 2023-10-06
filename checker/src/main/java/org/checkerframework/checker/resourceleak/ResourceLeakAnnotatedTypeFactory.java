@@ -11,7 +11,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethods.EnsuredCalledMethodOnException;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
@@ -35,7 +37,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.Contract;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
@@ -437,5 +441,65 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   public boolean hasOwning(Element elt) {
     MustCallAnnotatedTypeFactory mcatf = getTypeFactoryOfSubchecker(MustCallChecker.class);
     return mcatf.getDeclAnnotation(elt, Owning.class) != null;
+  }
+
+  @Override
+  public Set<EnsuredCalledMethodOnException> getExceptionalPostconditions(
+      ExecutableElement methodOrConstructor) {
+    Set<EnsuredCalledMethodOnException> result =
+        super.getExceptionalPostconditions(methodOrConstructor);
+
+    // This override is a sneaky way to satisfy a few subtle design constraints:
+    //   1. The RLC requires destructors to close the class's @Owning fields even on exception
+    //      (see ResourceLeakVisitor.checkOwningField).
+    //   2. In versions 3.39.0 and earlier, the RLC did not have the annotation
+    //      @EnsuresCalledMethodsOnException, meaning that for destructors it had to treat
+    //      a simple @EnsuresCalledMethods annotation as serving both purposes.
+    //
+    // As a result, there is a lot of code that is missing the "correct"
+    // @EnsuresCalledMethodsOnException annotations on its destructors.
+    //
+    // This override treats the @EnsuresCalledMethods annotations on destructors as if they
+    // were also @EnsuresCalledMethodsOnException for backwards compatibility.  By overriding
+    // this method we get both directions of checking: destructor implementations have to
+    // satisfy these implicit contracts, and destructor callers get to benefit from them.
+    //
+    // It should be possible to remove this override entirely without sacrificing any soundness.
+    // However, that is undesirable at this point because it would be a breaking change.
+
+    if (isMustCallMethod(methodOrConstructor)) {
+      Set<Contract.Postcondition> normalPostconditions =
+          getContractsFromMethod().getPostconditions(methodOrConstructor);
+      for (Contract.Postcondition normalPostcondition : normalPostconditions) {
+        for (String method : getCalledMethods(normalPostcondition.annotation)) {
+          result.add(
+              new EnsuredCalledMethodOnException(normalPostcondition.expressionString, method));
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Returns true iff the {@code MustCall} annotation of the class that encloses the methodTree
+   * names this method.
+   *
+   * @param elt a method
+   * @return whether that method is one of the must-call methods for its enclosing class
+   */
+  private boolean isMustCallMethod(ExecutableElement elt) {
+    TypeElement containingClass = ElementUtils.enclosingTypeElement(elt);
+    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+        getTypeFactoryOfSubchecker(MustCallChecker.class);
+    AnnotationMirror mcAnno =
+        mustCallAnnotatedTypeFactory
+            .getAnnotatedType(containingClass)
+            .getPrimaryAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
+    List<String> mcValues =
+        AnnotationUtils.getElementValueArray(
+            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+    String methodName = elt.getSimpleName().toString();
+    return mcValues.contains(methodName);
   }
 }
