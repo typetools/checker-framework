@@ -16,8 +16,14 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -59,12 +65,57 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
       }
     }
+    for (EnsuredCalledMethodOnException postcond :
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
+      checkExceptionalPostcondition(postcond, tree);
+    }
     return super.visitMethod(tree, p);
+  }
+
+  /**
+   * Check if the given postcondition is really ensured by the body of the given method.
+   *
+   * @param postcond the postcondition to check
+   * @param tree the method
+   */
+  protected void checkExceptionalPostcondition(
+      EnsuredCalledMethodOnException postcond, MethodTree tree) {
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(tree);
+    if (exitStore == null) {
+      // If there is no regular exitStore, then the method cannot throw exceptions and
+      // there is no need to check anything.
+      return;
+    }
+
+    JavaExpression e;
+    try {
+      e = StringToJavaExpression.atMethodBody(postcond.getExpression(), tree, checker);
+    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      checker.report(tree, ex.getDiagMessage());
+      return;
+    }
+
+    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+
+    CFAbstractValue<?> value = exitStore.getValue(e);
+    AnnotationMirror inferredAnno = null;
+    if (value != null) {
+      AnnotationMirrorSet annos = value.getAnnotations();
+      inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, requiredAnno);
+    }
+
+    if (!checkContract(e, requiredAnno, inferredAnno, exitStore)) {
+      checker.reportError(
+          tree,
+          "contracts.postcondition",
+          tree.getName(),
+          contractExpressionAndType(postcond.getExpression(), inferredAnno),
+          contractExpressionAndType(postcond.getExpression(), requiredAnno));
+    }
   }
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-
     if (checker.getBooleanOption(CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS)) {
       ExecutableElement element = TreeUtils.elementFromUse(tree);
       for (BuilderFrameworkSupport builderFrameworkSupport :
