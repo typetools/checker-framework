@@ -122,7 +122,11 @@ public class BoundSet implements ReductionResult {
     containsFalse |= newSet.containsFalse;
     uncheckedConversion |= newSet.uncheckedConversion;
     annoInferenceFailed |= newSet.annoInferenceFailed;
-    errorMsg += " " + newSet.errorMsg;
+    if (this.errorMsg.isEmpty()) {
+      this.errorMsg = newSet.errorMsg;
+    } else if (!newSet.errorMsg.isEmpty()) {
+      this.errorMsg += " " + newSet.errorMsg;
+    }
     return changed;
   }
 

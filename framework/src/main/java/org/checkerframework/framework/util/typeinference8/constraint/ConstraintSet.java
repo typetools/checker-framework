@@ -299,6 +299,7 @@ public class ConstraintSet implements ReductionResult {
    * @return the result of reducing one constraint in this set.
    */
   public BoundSet reduceOneStep(Java8InferenceContext context) {
+    boolean alreadyFailed = this.annotationFailure;
     BoundSet boundSet = new BoundSet(context);
 
     Constraint constraint = this.pop();
@@ -327,7 +328,7 @@ public class ConstraintSet implements ReductionResult {
     }
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;
-      if (boundSet.errorMsg.equals("")) {
+      if (!alreadyFailed && boundSet.errorMsg.isEmpty()) {
         boundSet.errorMsg = constraint.toString();
       }
     }
