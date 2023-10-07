@@ -147,6 +147,7 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
 }
 
 // When adding a new test case, don't forget to add the temporary files to `../.gitignore`.
+testDataflowAnalysis("cfgConstructionTest", "cfgconstruction", "cfgconstruction.CFGConstruction", false)
 testDataflowAnalysis("busyExpressionTest", "busyexpr", "busyexpr.BusyExpression", true)
 testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constantpropagation.ConstantPropagation", true)
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
