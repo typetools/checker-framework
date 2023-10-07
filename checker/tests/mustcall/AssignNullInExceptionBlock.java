@@ -15,15 +15,15 @@ class AssignNullInExceptionBlock {
     throw new UnsupportedOperationException();
   }
 
-  Foo fooField;
+  Foo fooField11;
 
   AssignNullInExceptionBlock() {
     try {
-      fooField = makeFoo();
+      fooField11 = makeFoo();
     } catch (Exception e) {
       @SuppressWarnings("nullness")
-      @NonNull Foo f = null;
-      fooField = f;
+      @NonNull Foo f11 = null;
+      fooField11 = f11;
     }
   }
 }
