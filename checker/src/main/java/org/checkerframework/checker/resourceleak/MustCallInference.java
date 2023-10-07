@@ -374,8 +374,7 @@ public class MustCallInference {
 
   /**
    * Adds an {@link EnsuresCalledMethods} annotation to the current method for any owning field
-   * whose must-call obligation is satisfied within the current method. Those fields are the ones in
-   * variable {@link #disposedFields}.
+   * whose must-call obligation is satisfied within the current method, i.e., the fields in {@link #disposedFields}.
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
