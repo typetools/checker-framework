@@ -1505,7 +1505,6 @@ class MustCallConsistencyAnalyzer {
         }
       }
     }
-
     if (cmAnno == null) {
       cmAnno = typeFactory.top;
     }
@@ -2339,7 +2338,7 @@ class MustCallConsistencyAnalyzer {
    * consists of BlockWithObligations objects, each representing the need to handle the set of
    * dataflow facts reaching the block during analysis.
    */
-  static class BlockWithObligations {
+  /*package-private*/ static class BlockWithObligations {
 
     /** The block. */
     public final Block block;

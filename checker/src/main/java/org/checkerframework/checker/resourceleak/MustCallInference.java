@@ -161,7 +161,7 @@ public class MustCallInference {
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
-  protected static void runMustCallInference(
+  /*package-private*/ static void runMustCallInference(
       ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
@@ -346,9 +346,9 @@ public class MustCallInference {
   }
 
   /**
-   * If a must-call obligation of some alias of method parameter p is satisfied during the assignment, add an @Owning annotation
-   * to p, and remove the rhs node from the obligations set, since it no longer
-   * needs to be tracked.
+   * If a must-call obligation of some alias of method parameter p is satisfied during the
+   * assignment, add an @Owning annotation to p, and remove the rhs node from the obligations set,
+   * since it no longer needs to be tracked.
    *
    * @param obligations the set of obligations to update
    * @param rhsObligation the obligation associated with the right-hand side of the assignment
@@ -374,7 +374,8 @@ public class MustCallInference {
 
   /**
    * Adds an {@link EnsuresCalledMethods} annotation to the current method for any owning field
-   * whose must-call obligation is satisfied within the current method, i.e., the fields in {@link #disposedFields}.
+   * whose must-call obligation is satisfied within the current method, i.e., the fields in {@link
+   * #disposedFields}.
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
@@ -434,7 +435,8 @@ public class MustCallInference {
       // If the enclosing class already has a non-empty @MustCall type, either added by programmers
       // or inferred in previous iterations (not-inherited), we do not change it in the current
       // analysis round to prevent potential inconsistencies and guarantee the termination of the
-      // inference algorithm. This becomes particularly important when multiple methods could satisfy
+      // inference algorithm. This becomes particularly important when multiple methods could
+      // satisfy
       // the must-call obligation of the enclosing class. To ensure the existing
       // @MustCall annotation is included in the inference result for this iteration, we re-add it.
       assert currentMustCallValues.size() == 1 : "TODO: Handle multiple must-call values";
@@ -551,7 +553,7 @@ public class MustCallInference {
 
         Node arg = NodeUtils.removeCasts(arguments.get(i));
         VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
-        if (isNodeAndElementAliased(obligations, arg, paramElt)) {
+        if (nodeAndElementResourceAliased(obligations, arg, paramElt)) {
           addOwningToParam(j + 1);
           break;
         }
@@ -669,7 +671,7 @@ public class MustCallInference {
       VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
       VariableElement currentMethodParamElt =
           TreeUtils.elementFromDeclaration(currentMethodParamTree);
-      if (isNodeAndElementAliased(obligations, arg, currentMethodParamElt)) {
+      if (nodeAndElementResourceAliased(obligations, arg, currentMethodParamElt)) {
         JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
         if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
           addOwningToParam(i + 1);
@@ -707,7 +709,7 @@ public class MustCallInference {
    *
    * <ul>
    *   <li>If a formal parameter is passed as an owning parameter, it adds the @Owning annotation to
-   *       that formal parameter (see {@link #computeOwnershipTransfer}).
+   *       that formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
    *   <li>It calls {@link #computeOwningForReceiver} to verify if the receiver of the method
    *       represented by {@code invocation} qualifies as a candidate owning field, and if the
    *       method invocation satisfies the field's must-call obligation. If these conditions are
@@ -724,7 +726,7 @@ public class MustCallInference {
   private void computeOwningFromInvocation(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     if (methodElt != null) {
-      computeOwnershipTransfer(obligations, invocation);
+      inferOwningParamsViaOwnershipTransfer(obligations, invocation);
       computeOwningForReceiver(obligations, invocation);
       computeOwningForArgsOfCall(obligations, invocation);
     }
@@ -752,8 +754,7 @@ public class MustCallInference {
     }
 
     AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
-    @Nullable AccumulationValue cmValue =
-        cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
+    AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
     AnnotationMirror cmAnno = null;
 
     if (cmValue != null) {
