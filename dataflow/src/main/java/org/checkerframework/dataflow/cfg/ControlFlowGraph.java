@@ -15,6 +15,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -147,7 +148,7 @@ public class ControlFlowGraph implements UniqueId {
 
       // Each node in the block should have this block as its parent.
       for (Node n : b.getNodes()) {
-        if (n.getBlock() != b) {
+        if (!Objects.equals(n.getBlock(), b)) {
           throw new IllegalStateException(
               "Node "
                   + n

@@ -132,6 +132,7 @@ public class CFGTranslationPhaseThree {
    *
    * @param cfg the control flow graph
    */
+  @SuppressWarnings("nullness") // TODO: successors
   protected static void mergeConsecutiveBlocks(ControlFlowGraph cfg) {
     Set<Block> worklist = cfg.getAllBlocks();
 
