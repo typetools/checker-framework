@@ -527,7 +527,7 @@ public class MustCallInference {
    * @param obligations the obligations associated with the current block
    * @param invocation the method invocation node to check
    */
-  private void computeOwnershipTransfer(
+  private void inferOwningParamsViaOwnershipTransfer(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
     if (paramsOfCurrentMethod.isEmpty()) {
