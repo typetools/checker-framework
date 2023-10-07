@@ -346,9 +346,9 @@ public class MustCallInference {
   }
 
   /**
-   * If must-call obligation of some alias of p is satisfied during the assignment, it adds @Owning
-   * to method parameter p, and removes the rhs node from the obligations set since it's no longer
-   * needed to be tracked.
+   * If a must-call obligation of some alias of method parameter p is satisfied during the assignment, add an @Owning annotation
+   * to p, and remove the rhs node from the obligations set, since it no longer
+   * needs to be tracked.
    *
    * @param obligations the set of obligations to update
    * @param rhsObligation the obligation associated with the right-hand side of the assignment
