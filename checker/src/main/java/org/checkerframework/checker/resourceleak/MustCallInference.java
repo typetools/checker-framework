@@ -568,7 +568,7 @@ public class MustCallInference {
    * @param element the element
    * @return true if {@code element} is a resource alias of {@code node}
    */
-  private boolean isNodeAndElementAliased(
+  private boolean nodeAndElementResourceAliased(
       Set<Obligation> obligations, Node node, VariableElement element) {
     Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, node);
     for (ResourceAlias nodeAlias : nodeAliases) {
