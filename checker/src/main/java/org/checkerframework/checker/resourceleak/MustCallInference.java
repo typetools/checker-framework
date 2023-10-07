@@ -432,11 +432,11 @@ public class MustCallInference {
       }
 
       // If the enclosing class already has a non-empty @MustCall type, either added by programmers
-      // or inferred in previous iterations (not-inherited), we avoid recomputing it in the current
+      // or inferred in previous iterations (not-inherited), we do not change it in the current
       // analysis round to prevent potential inconsistencies and guarantee the termination of the
-      // inference algorithm. It becomes particularly important when multiple methods could satisfy
-      // the must-call obligation of the enclosing class. Therefore, to include the existing
-      // @MustCall annotation in the inference result for this iteration, we re-add it.
+      // inference algorithm. This becomes particularly important when multiple methods could satisfy
+      // the must-call obligation of the enclosing class. To ensure the existing
+      // @MustCall annotation is included in the inference result for this iteration, we re-add it.
       assert currentMustCallValues.size() == 1 : "TODO: Handle multiple must-call values";
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
       wpi.addClassDeclarationAnnotation(classElt, am);
