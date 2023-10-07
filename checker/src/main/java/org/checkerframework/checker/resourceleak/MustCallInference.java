@@ -297,7 +297,7 @@ public class MustCallInference {
    *
    * <ul>
    *   <li>If the left-hand side of the assignment is an owning field, and the rhs is an alias of a
-   *       formal parameter, it adds the {@code @Owning} annotation to the formal parameter.
+   *       formal parameter, it adds an {@code @Owning} annotation to the formal parameter.
    *   <li>If the left-hand side of the assignment is a resource variable, and the right-hand side
    *       is an alias of a formal parameter that has a must-call-close type, it adds the
    *       {@code @Owning} annotation to the formal parameter.
