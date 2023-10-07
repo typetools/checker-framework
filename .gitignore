@@ -149,6 +149,7 @@ dataflow/tests/busy-expression/Out.txt
 dataflow/tests/busy-expression/*.class
 dataflow/tests/busyexpr/Out.txt
 dataflow/tests/busyexpr/*.class
+dataflow/tests/cfgconstruction/*.class
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
 dataflow/tests/issue3447/Out.txt
