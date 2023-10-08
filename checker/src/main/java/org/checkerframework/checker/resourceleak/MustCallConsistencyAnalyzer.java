@@ -46,6 +46,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -2481,34 +2482,33 @@ class MustCallConsistencyAnalyzer {
    *
    * <p>Package-private to permit access from {@link ResourceLeakAnalysis}.
    */
-  /*package-private*/ static final Set<String> ignoredExceptionTypes =
-      new HashSet<>(
-          ImmutableSet.of(
-              // Any method call has a CFG edge for Throwable/RuntimeException/Error
-              // to represent run-time misbehavior. Ignore it.
-              Throwable.class.getCanonicalName(),
-              Error.class.getCanonicalName(),
-              RuntimeException.class.getCanonicalName(),
-              // Use the Nullness Checker to prove this won't happen.
-              NullPointerException.class.getCanonicalName(),
-              // These errors can't be predicted statically, so ignore them and assume
-              // they won't happen.
-              ClassCircularityError.class.getCanonicalName(),
-              ClassFormatError.class.getCanonicalName(),
-              NoClassDefFoundError.class.getCanonicalName(),
-              OutOfMemoryError.class.getCanonicalName(),
-              // It's not our problem if the Java type system is wrong.
-              ClassCastException.class.getCanonicalName(),
-              // It's not our problem if the code is going to divide by zero.
-              ArithmeticException.class.getCanonicalName(),
-              // Use the Index Checker to prevent these errors.
-              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
-              NegativeArraySizeException.class.getCanonicalName(),
-              // Most of the time, this exception is infeasible, as the charset used
-              // is guaranteed to be present by the Java spec (e.g., "UTF-8").
-              // Eventually, this exclusion could be refined by looking at the charset
-              // being requested.
-              UnsupportedEncodingException.class.getCanonicalName()));
+  /*package-private*/ static final Set<@CanonicalName String> ignoredExceptionTypes =
+      ImmutableSet.of(
+          // Any method call has a CFG edge for Throwable/RuntimeException/Error
+          // to represent run-time misbehavior. Ignore it.
+          Throwable.class.getCanonicalName(),
+          Error.class.getCanonicalName(),
+          RuntimeException.class.getCanonicalName(),
+          // Use the Nullness Checker to prove this won't happen.
+          NullPointerException.class.getCanonicalName(),
+          // These errors can't be predicted statically, so ignore them and assume
+          // they won't happen.
+          ClassCircularityError.class.getCanonicalName(),
+          ClassFormatError.class.getCanonicalName(),
+          NoClassDefFoundError.class.getCanonicalName(),
+          OutOfMemoryError.class.getCanonicalName(),
+          // It's not our problem if the Java type system is wrong.
+          ClassCastException.class.getCanonicalName(),
+          // It's not our problem if the code is going to divide by zero.
+          ArithmeticException.class.getCanonicalName(),
+          // Use the Index Checker to prevent these errors.
+          ArrayIndexOutOfBoundsException.class.getCanonicalName(),
+          NegativeArraySizeException.class.getCanonicalName(),
+          // Most of the time, this exception is infeasible, as the charset used
+          // is guaranteed to be present by the Java spec (e.g., "UTF-8").
+          // Eventually, this exclusion could be refined by looking at the charset
+          // being requested.
+          UnsupportedEncodingException.class.getCanonicalName());
 
   /**
    * Is {@code exceptionClassName} an exception type the checker ignores, to avoid excessive false
