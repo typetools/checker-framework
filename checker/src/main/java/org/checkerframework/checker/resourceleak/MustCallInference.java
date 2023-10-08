@@ -605,8 +605,7 @@ public class MustCallInference {
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        computeOwningParamsForVarArgs(
-            obligations, paramsOfCurrentMethod, invocation, varArgsNode, arg);
+        computeOwningParamsForVarArgs(obligations, paramsOfCurrentMethod, invocation, varArgsNode);
       } else {
         Element varArgElt = TreeUtils.elementFromTree(arg.getTree());
         if (varArgElt != null && varArgElt.getKind().isField()) {
@@ -626,14 +625,12 @@ public class MustCallInference {
    * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param varArgsNode the VarArg node of the given method invocation node
-   * @param arg the argument of a method invocation node
    */
   private void computeOwningParamsForVarArgs(
       Set<Obligation> obligations,
       List<? extends VariableTree> paramsOfCurrentMethod,
       MethodInvocationNode invocation,
-      ArrayCreationNode varArgsNode,
-      Node arg) {
+      ArrayCreationNode varArgsNode) {
     for (Node varArgNode : varArgsNode.getInitializers()) {
       Element varArgElt = TreeUtils.elementFromTree(varArgNode.getTree());
 
@@ -644,7 +641,8 @@ public class MustCallInference {
       if (varArgElt.getKind().isField()) {
         inferOwningField(varArgNode, invocation);
       } else {
-        computeOwningForParamOfCurrentMethod(obligations, paramsOfCurrentMethod, invocation, arg);
+        computeOwningForParamOfCurrentMethod(
+            obligations, paramsOfCurrentMethod, invocation, varArgNode);
       }
     }
   }
