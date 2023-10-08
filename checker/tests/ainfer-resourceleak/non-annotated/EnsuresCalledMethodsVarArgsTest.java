@@ -44,6 +44,12 @@ class EnsuresCalledMethodsVarArgsTest {
     void owningParam(Foo f) {
       Utils.close(f);
     }
+
+    void testOwningParamOnOwningParam() {
+      // :: warning: (required.method.not.called)
+      Foo f = new Foo();
+      owningParam(f);
+    }
   }
 
   void testCorrect() {
