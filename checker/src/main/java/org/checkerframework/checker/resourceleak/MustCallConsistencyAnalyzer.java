@@ -2383,7 +2383,9 @@ class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Returns a printed representation of a collection of BlockWithObligations.
+     * Returns a printed representation of a collection of BlockWithObligations. If a
+     * BlockWithObligations appears multiple times in the collection, it is printed more succinctly
+     * after the first time.
      *
      * @param bwos a collection of BlockWithObligations, to format
      * @return a printed representation of a collection of BlockWithObligations
@@ -2413,7 +2415,7 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
-  // TODO: Use from plume-lib's CollectionsPlume.
+  // TODO: Use from plume-lib's CollectionsPlume once version 1.9.0 is released.
   /**
    * Returns the elements (once each) that appear more than once in the given collection.
    *
