@@ -151,7 +151,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   protected ResourceLeakAnalysis createFlowAnalysis() {
-    return new ResourceLeakAnalysis(checker, this);
+    return new ResourceLeakAnalysis((ResourceLeakChecker) checker, this);
   }
 
   /**

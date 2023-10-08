@@ -1,12 +1,18 @@
 package org.checkerframework.checker.resourceleak;
 
+import com.google.common.collect.ImmutableSet;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
@@ -21,6 +27,7 @@ import org.checkerframework.framework.source.SupportedOptions;
   "permitStaticOwning",
   "permitInitializationLeak",
   ResourceLeakChecker.COUNT_MUST_CALL,
+  ResourceLeakChecker.IGNORED_EXCEPTIONS,
   MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
   MustCallChecker.NO_RESOURCE_ALIASES
@@ -37,6 +44,48 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * for a research paper. Not of interest to most users.
    */
   public static final String COUNT_MUST_CALL = "countMustCall";
+
+  /**
+   * The exception types in this set are ignored in the CFG when determining if a resource leaks
+   * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
+   * errors that the JVM can issue on any statement, and errors that can be prevented by running
+   * some other CF checker.
+   */
+  private static final Set<@CanonicalName String> DEFAULT_IGNORED_EXCEPTIONS =
+      ImmutableSet.of(
+          // Any method call has a CFG edge for Throwable/RuntimeException/Error
+          // to represent run-time misbehavior. Ignore it.
+          Throwable.class.getCanonicalName(),
+          Error.class.getCanonicalName(),
+          RuntimeException.class.getCanonicalName(),
+          // Use the Nullness Checker to prove this won't happen.
+          NullPointerException.class.getCanonicalName(),
+          // These errors can't be predicted statically, so ignore them and assume
+          // they won't happen.
+          ClassCircularityError.class.getCanonicalName(),
+          ClassFormatError.class.getCanonicalName(),
+          NoClassDefFoundError.class.getCanonicalName(),
+          OutOfMemoryError.class.getCanonicalName(),
+          // It's not our problem if the Java type system is wrong.
+          ClassCastException.class.getCanonicalName(),
+          // It's not our problem if the code is going to divide by zero.
+          ArithmeticException.class.getCanonicalName(),
+          // Use the Index Checker to prevent these errors.
+          ArrayIndexOutOfBoundsException.class.getCanonicalName(),
+          NegativeArraySizeException.class.getCanonicalName(),
+          // Most of the time, this exception is infeasible, as the charset used
+          // is guaranteed to be present by the Java spec (e.g., "UTF-8").
+          // Eventually, this exclusion could be refined by looking at the charset
+          // being requested.
+          UnsupportedEncodingException.class.getCanonicalName());
+
+  /**
+   * Command-line option for controlling which exceptions are ignored.
+   *
+   * @see #DEFAULT_IGNORED_EXCEPTIONS
+   * @see #getIgnoredExceptions()
+   */
+  public static final String IGNORED_EXCEPTIONS = "resourceLeakIgnoredExceptions";
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the
@@ -92,5 +141,20 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
           numMustCall - numMustCallFailed);
     }
     super.typeProcessingOver();
+  }
+
+  public Set<@CanonicalName String> getIgnoredExceptions() {
+    String ignoredExceptionsOption = getOption(IGNORED_EXCEPTIONS);
+    if (ignoredExceptionsOption == null) {
+      return DEFAULT_IGNORED_EXCEPTIONS;
+    } else {
+      String[] exceptions = ignoredExceptionsOption.split(Pattern.quote(","));
+      return Arrays.stream(exceptions).map(this::checkCanonicalName).collect(Collectors.toSet());
+    }
+  }
+
+  private @CanonicalName String checkCanonicalName(String s) {
+    // TODO
+    return s;
   }
 }
