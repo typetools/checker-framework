@@ -3,26 +3,79 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class AssignNullInExceptionBlock {
 
-  static class Foo implements Comparable<Foo> {
-
-    @Override
-    public int compareTo(Foo other) {
-      return 0;
-    }
-  }
+  static class Foo {}
 
   static Foo makeFoo() {
+    return new Foo();
+  }
+
+  static Foo makeFoo1() {
+    throw new UnsupportedOperationException();
+  }
+
+  static Foo makeFoo2() throws UnsupportedOperationException {
+    return new Foo();
+  }
+
+  static Foo makeFoo3() throws UnsupportedOperationException {
     throw new UnsupportedOperationException();
   }
 
   Foo fooField;
 
-  AssignNullInExceptionBlock() {
+  void test1() {
     try {
       fooField = makeFoo();
     } catch (Exception e) {
-      @SuppressWarnings("nullness")
-      @NonNull Foo f = null;
+      Foo f = null;
+      // :: error: (assignment)
+      fooField = f;
+    }
+  }
+
+  void test2() {
+    try {
+      fooField = makeFoo1();
+    } catch (Exception e) {
+      Foo f = null;
+      // :: error: (assignment)
+      fooField = f;
+    }
+  }
+
+  void test3() {
+    Foo f = null;
+    try {
+      fooField = makeFoo1();
+    } catch (Exception e) {
+      // :: error: (assignment)
+      fooField = f;
+    }
+  }
+
+  void test4() {
+    try {
+      fooField = makeFoo2();
+    } catch (Exception e) {
+      Foo f = null;
+      fooField = f;
+    }
+  }
+
+  void test5() {
+    try {
+      fooField = makeFoo3();
+    } catch (Exception e) {
+      Foo f = null;
+      fooField = f;
+    }
+  }
+
+  void test6() {
+    Foo f = null;
+    try {
+      fooField = makeFoo3();
+    } catch (Exception e) {
       fooField = f;
     }
   }
