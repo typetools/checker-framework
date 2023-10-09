@@ -46,6 +46,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -284,7 +285,8 @@ public class MustCallInference {
     if (resourceLeakAtf.isFieldWithNonemptyMustCallValue(nodeElt)) {
       node = NodeUtils.removeCasts(node);
       JavaExpression nodeJe = JavaExpression.fromNode(node);
-      if (mustCallObligationSatisfied(invocation, nodeElt, nodeJe)) {
+      AccumulationValue accumulationValue = getAccumulationValue(invocation, nodeJe);
+      if (mustCallObligationSatisfied(nodeElt, accumulationValue)) {
         // This assumes that any MustCall annotation has at most one element.
         // TODO: generalize this to MustCall annotations with more than one element.
         disposedFields.add((VariableElement) nodeElt);
@@ -500,26 +502,28 @@ public class MustCallInference {
     }
 
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
-    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(i);
-      if (resourceLeakAtf.hasEmptyMustCallValue(paramOfCurrMethod)) {
-        continue;
-      }
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
 
-      for (ResourceAlias resourceAlias : receiverAliases) {
-        Element resourceElt = resourceAlias.reference.getElement();
-        if (!resourceElt.equals(paramElt)) {
-          continue;
-        }
-
-        JavaExpression paramJe = JavaExpression.fromVariableTree(paramOfCurrMethod);
-        if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
-          addOwningToParam(i + 1);
-          break;
-        }
-      }
-    }
+    computeOwningForParamOfCurrentMethod(obligations, paramsOfCurrentMethod, invocation, receiver);
+    //    for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
+    //      VariableTree paramOfCurrMethod = paramsOfCurrentMethod.get(i);
+    //      if (resourceLeakAtf.hasEmptyMustCallValue(paramOfCurrMethod)) {
+    //        continue;
+    //      }
+    //      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
+    //
+    //      for (ResourceAlias resourceAlias : receiverAliases) {
+    //        Element resourceElt = resourceAlias.reference.getElement();
+    //        if (!resourceElt.equals(paramElt)) {
+    //          continue;
+    //        }
+    //
+    //        JavaExpression paramJe = JavaExpression.fromVariableTree(paramOfCurrMethod);
+    //        if (mustCallObligationSatisfied(invocation, paramElt, paramJe)) {
+    //          addOwningToParam(i + 1);
+    //          break;
+    //        }
+    //      }
+    //    }
   }
 
   /**
@@ -663,17 +667,25 @@ public class MustCallInference {
       Node arg) {
 
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
-      if (resourceLeakAtf.hasEmptyMustCallValue(paramsOfCurrentMethod.get(i))) {
+      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
+      if (resourceLeakAtf.hasEmptyMustCallValue(currentMethodParamTree)) {
         continue;
       }
-      VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
-      VariableElement currentMethodParamElt =
-          TreeUtils.elementFromDeclaration(currentMethodParamTree);
-      if (nodeAndElementResourceAliased(obligations, arg, currentMethodParamElt)) {
-        JavaExpression paramJe = JavaExpression.fromVariableTree(currentMethodParamTree);
-        if (mustCallObligationSatisfied(invocation, currentMethodParamElt, paramJe)) {
-          addOwningToParam(i + 1);
-          break;
+
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(currentMethodParamTree);
+
+      if (nodeAndElementResourceAliased(obligations, arg, paramElt)) {
+        Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, arg);
+        for (ResourceAlias resourceAlias : nodeAliases) {
+          Element resourceElt = resourceAlias.reference.getElement();
+
+          //          JavaExpression paramJe =
+          // JavaExpression.fromVariableTree(currentMethodParamTree);
+          if (mustCallObligationSatisfied(
+              resourceElt, getAccumulationValue(invocation, resourceAlias.reference))) {
+            addOwningToParam(i + 1);
+            break;
+          }
         }
       }
     }
@@ -735,24 +747,21 @@ public class MustCallInference {
    * of an element is satisfied if the called-methods set contains the target of its must-call
    * obligation.
    *
-   * @param invocation the method invocation node being checked for satisfaction of the MustCall
-   *     obligation
    * @param varElt the variable annotated with the MustCall annotation
-   * @param varJe the Java expression corresponding to the {@code varElt}
    * @return {@code true} if the MustCall obligation is satisfied
    */
   private boolean mustCallObligationSatisfied(
-      MethodInvocationNode invocation, Element varElt, JavaExpression varJe) {
+      Obligation obligation, CFStore mcStore, Element varElt, AccumulationValue cmValue) {
 
-    List<String> mustCallValues = resourceLeakAtf.getMustCallValues(varElt);
+    List<String> mustCallValues = obligation.getMustCallMethods(resourceLeakAtf, mcStore);
     // TODO: generalize this method to MustCall annotations with more than one element.
     assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
-    if (mustCallValues.isEmpty()) {
+    if (resourceLeakAtf.hasEmptyMustCallValue(varElt)) {
       return false;
     }
 
-    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
-    AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
+    //    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
+    //    AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
     AnnotationMirror cmAnno = null;
 
     if (cmValue != null) {
@@ -775,6 +784,20 @@ public class MustCallInference {
     }
 
     return mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno);
+  }
+
+  private AccumulationValue getAccumulationValue(
+      MethodInvocationNode invocation, JavaExpression varJe) {
+    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
+    AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
+    return cmValue;
+  }
+
+  private AccumulationValue getAccumulationValue(
+      MethodInvocationNode invocation, LocalVariable var) {
+    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
+    AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(var);
+    return cmValue;
   }
 
   /**

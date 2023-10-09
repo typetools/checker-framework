@@ -36,6 +36,17 @@ class OwningParams {
       owningFoo(f2);
     }
 
+    void checkAlias(Foo f1) {
+      Foo f2 = f1;
+      f2.a();
+    }
+
+    void checkAliasTest() {
+      // :: warning: (required.method.not.called)
+      Foo f = new Foo();
+      checkAlias(f);
+    }
+
     void passOwnershipTest() {
       // :: warning: (required.method.not.called)
       Foo f1 = new Foo();
