@@ -755,14 +755,6 @@ task ainferResourceLeakGenerateAjava(type: Test) {
     events 'passed', 'skipped', 'failed'
   }
 
-  //    debugOptions {
-  //        enabled = true
-  //        host = 'localhost'
-  //        port = 5005
-  //        server = true
-  //        suspend = true
-  //    }
-
   doLast {
     copyNonannotatedToAnnotatedDirectory('ainfer-resourceleak')
   }

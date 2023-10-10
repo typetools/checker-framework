@@ -32,8 +32,10 @@ class OwningParams {
     }
 
     void passOwnership(Foo f1, Foo f2) {
-      hasECM(f1);
-      owningFoo(f2);
+      Foo f11 = f1;
+      hasECM(f11);
+      Foo f22 = f2;
+      owningFoo(f22);
     }
 
     void checkAlias(Foo f1) {
