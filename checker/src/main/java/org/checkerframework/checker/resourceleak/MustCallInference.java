@@ -383,7 +383,8 @@ public class MustCallInference {
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
-    // methods should be called. This map is used to create a single @EnsuresCalledMethods annotation for
+    // methods should be called. This map is used to create a single @EnsuresCalledMethods
+    // annotation for
     // fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
@@ -548,7 +549,8 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given element is a resource alias of the given node in the provided set of obligations.
+   * Checks whether the given element is a resource alias of the given node in the provided set of
+   * obligations.
    *
    * @param obligations the obligations associated with the current block
    * @param node the node
