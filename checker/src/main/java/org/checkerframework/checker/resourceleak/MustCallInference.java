@@ -548,8 +548,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given argument which is passed in the invocation node and the given
-   * parameter of the current method are resource aliases.
+   * Checks whether the given element is a resource alias of the given node in the provided set of obligations.
    *
    * @param obligations the obligations associated with the current block
    * @param node the node
