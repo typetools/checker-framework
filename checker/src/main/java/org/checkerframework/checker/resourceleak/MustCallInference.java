@@ -216,8 +216,6 @@ public class MustCallInference {
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
     }
-
-    disposedFields.clear();
   }
 
   /**
