@@ -14,7 +14,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # First, count the number of WPI log files in the given directory.
-WPI_LOG_FILE_COUNT=`ls ${TARGETDIR}/*-wpi-stdout.log 2> /dev/null | wc -l`
+WPI_LOG_FILE_COUNT=$(find "${TARGETDIR}"/*-wpi-stdout.log 2> /dev/null | wc -l)
 
 if [ "$WPI_LOG_FILE_COUNT" -ne 0 ]; then
   # WPI log files exist, find the latest annotation files corresponding to
