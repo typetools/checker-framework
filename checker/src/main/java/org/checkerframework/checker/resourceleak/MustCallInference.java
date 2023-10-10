@@ -383,7 +383,7 @@ public class MustCallInference {
    */
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
-    // methods should be called. This map is used to create @EnsuresCalledMethods annotation for
+    // methods should be called. This map is used to create a single @EnsuresCalledMethods annotation for
     // fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
