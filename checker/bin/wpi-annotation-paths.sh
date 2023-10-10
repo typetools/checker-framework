@@ -13,7 +13,12 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
-if compgen -G "${TARGETDIR}/*-wpi-stdout.log" > /dev/null; then
+# First, count the number of WPI log files in the given directory.
+WPI_LOG_FILE_COUNT=`ls ${TARGETDIR}/*-wpi-stdout.log 2> /dev/null | wc -l`
+
+if [ "$WPI_LOG_FILE_COUNT" -ne 0 ]; then
+  # WPI log files exist, find the latest annotation files corresponding to
+  # each of them.
   for wpi_log_file in "$TARGETDIR"/*-wpi-stdout.log;
   do
     echo "Log file: $wpi_log_file"
