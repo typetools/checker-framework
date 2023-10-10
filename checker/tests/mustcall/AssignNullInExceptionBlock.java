@@ -1,6 +1,3 @@
-import org.checkerframework.checker.mustcall.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
-
 class AssignNullInExceptionBlock {
 
   static class Foo implements Comparable<Foo> {
@@ -21,8 +18,7 @@ class AssignNullInExceptionBlock {
     try {
       fooField11 = makeFoo();
     } catch (Exception e) {
-      @SuppressWarnings("nullness")
-      @NonNull Foo f11 = null;
+      Foo f11 = new Foo();
       fooField11 = f11;
     }
   }

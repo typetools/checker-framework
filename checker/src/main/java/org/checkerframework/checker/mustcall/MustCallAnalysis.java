@@ -1,12 +1,14 @@
 package org.checkerframework.checker.mustcall;
 
 import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.code.Type;
 import java.util.HashSet;
 import java.util.Set;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The analysis for the Must Call Checker. The analysis is specialized to ignore certain exception
@@ -49,7 +51,10 @@ public class MustCallAnalysis extends CFAnalysis {
    */
   @Override
   protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptionTypes.contains(
-        ((Type) exceptionType).tsym.getQualifiedName().toString());
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ignoredExceptionTypes.contains(
+          TypesUtils.getQualifiedName((DeclaredType) exceptionType));
+    }
+    return false;
   }
 }
