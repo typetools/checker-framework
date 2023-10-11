@@ -325,7 +325,7 @@ public class MustCallInference {
     }
 
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      if (!getOwningFields().contains(lhsElement)) {
+      if (!updateOwningFields().contains(lhsElement)) {
         return;
       }
 
@@ -448,9 +448,10 @@ public class MustCallInference {
     // fields, then add (to the class) an InheritableMustCall annotation with the name of this
     // method.
     if (!methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-      // Since the result of getOwningFields() is a superset of disposedFields, it is sufficient to
+      // Since the result of updateOwningFields() is a superset of disposedFields, it is sufficient
+      // to
       // check the equality of their sizes to determine if both sets are equal.
-      if (!disposedFields.isEmpty() && disposedFields.size() == getOwningFields().size()) {
+      if (!disposedFields.isEmpty() && disposedFields.size() == updateOwningFields().size()) {
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
         wpi.addClassDeclarationAnnotation(classElt, am);
@@ -773,7 +774,7 @@ public class MustCallInference {
       if (successor.getType() == Block.BlockType.SPECIAL_BLOCK) {
         WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
         assert wpi != null : "MustCallInference is running without WPI.";
-        for (VariableElement fieldElt : getOwningFields()) {
+        for (VariableElement fieldElt : updateOwningFields()) {
           wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
         }
         if (!disposedFields.isEmpty()) {
