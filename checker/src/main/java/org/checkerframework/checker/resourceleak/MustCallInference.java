@@ -182,12 +182,10 @@ public class MustCallInference {
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
-    {
-      BlockWithObligations entry =
-          new BlockWithObligations(cfg.getEntryBlock(), getNonEmptyMCParams(cfg));
-      worklist.add(entry);
-      visited.add(entry);
-    }
+    BlockWithObligations entry =
+        new BlockWithObligations(cfg.getEntryBlock(), getNonEmptyMCParams(cfg));
+    worklist.add(entry);
+    visited.add(entry);
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
@@ -247,7 +245,8 @@ public class MustCallInference {
   }
 
   /**
-   * Updates the owning fields set for this class to include all fields inferred as owning in this iteration.
+   * Updates the owning fields set for this class to include all fields inferred as owning in this
+   * iteration.
    *
    * @return the owning fields, including fields inferred as owning from the current iteration
    */
@@ -381,8 +380,7 @@ public class MustCallInference {
   private void addEnsuresCalledMethods() {
     // The keys are the must-call method names, and the values are the set of fields on which those
     // methods should be called. This map is used to create a single @EnsuresCalledMethods
-    // annotation for
-    // fields that share the same must-call obligation.
+    // annotation for fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
     for (VariableElement disposedField : disposedFields) {
       List<String> mustCallValues = resourceLeakAtf.getMustCallValues(disposedField);
@@ -438,9 +436,8 @@ public class MustCallInference {
       // or inferred in previous iterations (not-inherited), we do not change it in the current
       // analysis round to prevent potential inconsistencies and guarantee the termination of the
       // inference algorithm. This becomes particularly important when multiple methods could
-      // satisfy
-      // the must-call obligation of the enclosing class. To ensure the existing
-      // @MustCall annotation is included in the inference result for this iteration, we re-add it.
+      // satisfy the must-call obligation of the enclosing class. To ensure the existing @MustCall
+      // annotation is included in the inference result for this iteration, we re-add it.
       assert currentMustCallValues.size() == 1 : "TODO: Handle multiple must-call values";
       AnnotationMirror am = createInheritableMustCall(new String[] {currentMustCallValues.get(0)});
       wpi.addClassDeclarationAnnotation(classElt, am);
@@ -592,7 +589,7 @@ public class MustCallInference {
         computeOwningParamsForVarArgs(obligations, paramsOfCurrentMethod, invocation, varArgsNode);
       } else {
         Element argElt = TreeUtils.elementFromTree(arg.getTree());
-        if (varArgElt != null && varArgElt.getKind().isField()) {
+        if (argElt != null && argElt.getKind().isField()) {
           inferOwningField(arg, invocation);
           continue;
         }
@@ -695,19 +692,17 @@ public class MustCallInference {
   }
 
   /**
-   * Infers @Owning annotations for formal parameters of the enclosing method or fields of the enclosing class, as follows:
+   * Infers @Owning annotations for formal parameters of the enclosing method or fields of the
+   * enclosing class, as follows:
    *
    * <ul>
-   *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to
-   *       that formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>Use {@link #computeOwningForReceiver} to check if the receiver of the call
-   *       represented by {@code invocation} qualifies as a candidate owning field, and if the
-   *       method invocation satisfies the field's must-call obligation. If these conditions are
-   *       met, the field is added to the {@link #disposedFields} set.
-   *   <li>It calls {@link #computeOwningForArgsOfCall} to inspect the method represented by the
-   *       given MethodInvocationNode for any indirect calls within it. The method analyzes the
-   *       called-methods set of each argument after the call and computes the @Owning annotation to
-   *       the field or parameter passed as an argument to this call.
+   *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to that
+   *       formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
+   *   <li>Use {@link #computeOwningForReceiver} to check if the must-call obligation of the call's
+   *       receiver is satisfied via the call. The receiver can be a field or a formal parameter of
+   *       the current method.
+   *   <li>It calls {@link #computeOwningForArgsOfCall} to compute @Owning annotations for arguments
+   *       of a call by analyzing the called-methods set of each argument after the call.
    * </ul>
    *
    * @param obligations the set of obligations to search in
