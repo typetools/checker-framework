@@ -639,7 +639,7 @@ public class MustCallInference {
    * @param obligations set of obligations associated with the current block
    * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
-   * @param arg the argument of a method invocation node
+   * @param arg an argument passed at the method invocation
    */
   private void computeOwningForParamOfCurrentMethod(
       Set<Obligation> obligations,
