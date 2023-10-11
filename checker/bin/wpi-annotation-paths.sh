@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Given the name of a directory containing the results produced by an
-# invocation of wpi-many.sh, output the paths to the .ajava files to stdout.
+# invocation of wpi-many.sh, output the human-readable paths to the .ajava
+# files to stdout.
 
 # Usage:
 #   wpi-annotation-paths TARGETDIR
