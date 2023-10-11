@@ -247,12 +247,11 @@ public class MustCallInference {
   }
 
   /**
-   * Returns all owning fields within the enclosing class. These are the fields that have been
-   * annotated with the {@code @Owning} annotation or inferred as owning.
+   * Updates the owning fields set for this class to include all fields inferred as owning in this iteration.
    *
-   * @return the owning fields
+   * @return the owning fields, including fields inferred as owning from the current iteration
    */
-  private Set<VariableElement> getOwningFields() {
+  private Set<VariableElement> updateOwningFields() {
     owningFields.addAll(disposedFields);
     return owningFields;
   }
