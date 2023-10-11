@@ -696,12 +696,12 @@ public class MustCallInference {
   }
 
   /**
-   * Computes @Owning annotations for the enclosing formal parameter or fields:
+   * Infers @Owning annotations for formal parameters of the enclosing method or fields of the enclosing class, as follows:
    *
    * <ul>
-   *   <li>If a formal parameter is passed as an owning parameter, it adds the @Owning annotation to
+   *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to
    *       that formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>It calls {@link #computeOwningForReceiver} to verify if the receiver of the method
+   *   <li>Use {@link #computeOwningForReceiver} to check if the receiver of the call
    *       represented by {@code invocation} qualifies as a candidate owning field, and if the
    *       method invocation satisfies the field's must-call obligation. If these conditions are
    *       met, the field is added to the {@link #disposedFields} set.
