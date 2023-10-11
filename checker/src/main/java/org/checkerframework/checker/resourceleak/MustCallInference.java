@@ -592,7 +592,7 @@ public class MustCallInference {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
         computeOwningParamsForVarArgs(obligations, paramsOfCurrentMethod, invocation, varArgsNode);
       } else {
-        Element varArgElt = TreeUtils.elementFromTree(arg.getTree());
+        Element argElt = TreeUtils.elementFromTree(arg.getTree());
         if (varArgElt != null && varArgElt.getKind().isField()) {
           inferOwningField(arg, invocation);
           continue;
