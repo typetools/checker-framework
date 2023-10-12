@@ -467,35 +467,36 @@ public class MustCallInference {
   private void computeOwningForReceiver(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     Node receiver = invocation.getTarget().getReceiver();
+    receiver = NodeUtils.removeCasts(receiver);
     if (receiver.getTree() == null) {
       // There is no receiver e.g. in static methods or when the receiver is implicit "this".
       return;
     }
-
-    Element receiverElt = TreeUtils.elementFromTree(receiver.getTree());
-    if (receiverElt != null) {
-      if (receiverElt.getKind().isField()) {
-        inferOwningField(receiver, invocation);
-        return;
-      }
-    }
-
-    Node receiverTempVar = mcca.getTempVarOrNode(receiver);
-    if (!(receiverTempVar instanceof LocalVariableNode)) {
-      return;
-    }
-
-    Obligation receiverObligation =
-        MustCallConsistencyAnalyzer.getObligationForVar(
-            obligations, (LocalVariableNode) receiverTempVar);
-    if (receiverObligation == null) {
-      return;
-    }
-
-    Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    if (receiverAliases.isEmpty()) {
-      return;
-    }
+    //
+    //    Element receiverElt = TreeUtils.elementFromTree(receiver.getTree());
+    //    if (receiverElt != null) {
+    //      if (receiverElt.getKind().isField()) {
+    //        inferOwningField(receiver, invocation);
+    //        return;
+    //      }
+    //    }
+    //
+    //    Node receiverTempVar = mcca.getTempVarOrNode(receiver);
+    //    if (!(receiverTempVar instanceof LocalVariableNode)) {
+    //      return;
+    //    }
+    //
+    //    Obligation receiverObligation =
+    //        MustCallConsistencyAnalyzer.getObligationForVar(
+    //            obligations, (LocalVariableNode) receiverTempVar);
+    //    if (receiverObligation == null) {
+    //      return;
+    //    }
+    //
+    //    Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
+    //    if (receiverAliases.isEmpty()) {
+    //      return;
+    //    }
 
     computeOwningForParamOfCurrentMethod(obligations, invocation, receiver);
   }
@@ -567,48 +568,18 @@ public class MustCallInference {
    */
   private void computeOwningForArgsOfCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
-
     for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
       Node arg = NodeUtils.removeCasts(argument);
-
       // In the CFG, explicit passing of multiple arguments in the varargs position is represented
       // via an ArrayCreationNode. In this case, it checks the called methods set of each argument
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        computeOwningParamsForVarArgs(obligations, invocation, varArgsNode);
-      } else {
-        Element argElt = TreeUtils.elementFromTree(arg.getTree());
-        if (argElt != null && argElt.getKind().isField()) {
-          inferOwningField(arg, invocation);
-          continue;
+        for (Node varArgNode : varArgsNode.getInitializers()) {
+          computeOwningForParamOfCurrentMethod(obligations, invocation, varArgNode);
         }
-        computeOwningForParamOfCurrentMethod(obligations, invocation, arg);
-      }
-    }
-  }
-
-  /**
-   * Computes an @Owning annotation for a field or parameter passed in the varargs argument
-   * position.
-   *
-   * @param obligations set of obligations associated with the current block
-   * @param invocation the method invocation node to check
-   * @param varArgsNode the VarArg node of the given method invocation node
-   */
-  private void computeOwningParamsForVarArgs(
-      Set<Obligation> obligations, MethodInvocationNode invocation, ArrayCreationNode varArgsNode) {
-    for (Node varArgNode : varArgsNode.getInitializers()) {
-      Element varArgElt = TreeUtils.elementFromTree(varArgNode.getTree());
-
-      if (varArgElt == null) {
-        continue;
-      }
-
-      if (varArgElt.getKind().isField()) {
-        inferOwningField(varArgNode, invocation);
       } else {
-        computeOwningForParamOfCurrentMethod(obligations, invocation, varArgNode);
+        computeOwningForParamOfCurrentMethod(obligations, invocation, arg);
       }
     }
   }
@@ -623,6 +594,18 @@ public class MustCallInference {
    */
   private void computeOwningForParamOfCurrentMethod(
       Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
+
+    arg = NodeUtils.removeCasts(arg);
+    if (arg.getTree() == null) {
+      return;
+    }
+
+    Element argElt = TreeUtils.elementFromTree(arg.getTree());
+
+    if (argElt != null && argElt.getKind().isField()) {
+      inferOwningField(arg, invocation);
+      return;
+    }
 
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
 
