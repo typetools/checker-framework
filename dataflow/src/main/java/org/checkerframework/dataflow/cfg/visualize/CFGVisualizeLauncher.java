@@ -214,7 +214,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @return control flow graph of the specified method
    */
-  private static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
+  public static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
 
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
