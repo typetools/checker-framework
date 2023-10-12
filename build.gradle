@@ -799,6 +799,9 @@ subprojects {
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
 
+    // The checkNullness task runs on:
+    //  * All files outside the 'framework' and 'checker' modules.
+    //  * In the 'framework' and 'checker' modules, files with `@AnnotatedFor("nullness")`.
     if (project.name.is('framework') || project.name.is('checker')) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
