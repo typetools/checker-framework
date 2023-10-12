@@ -196,9 +196,9 @@ public class MustCallInference {
         // The obligation set calculated for RLC differs from the Inference process. In the
         // Inference process, it exclusively tracks parameters with non-empty must-call types,
         // whether they have the @Owning annotation or not. However, there are some shared
-        // computations, such as 'updateObligationsWithInvocationResult,' which is used during
+        // computations, such as updateObligationsWithInvocationResult, which is used during
         // inference and could potentially affect the RLC result if it were called before the
-        // checking phase. However, calling 'updateObligationsWithInvocationResult()' will not have
+        // checking phase. However, calling updateObligationsWithInvocationResult() will not have
         // any side effects on the outcome of the Resource Leak Checker. This is because the
         // inference occurs within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory,
         // once the consistency analyzer has completed its process
@@ -497,9 +497,7 @@ public class MustCallInference {
       return;
     }
 
-    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
-
-    computeOwningForParamOfCurrentMethod(obligations, paramsOfCurrentMethod, invocation, receiver);
+    computeOwningForParamOfCurrentMethod(obligations, invocation, receiver);
   }
 
   /**
@@ -569,12 +567,6 @@ public class MustCallInference {
    */
   private void computeOwningForArgsOfCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
-    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
-
-    List<? extends VariableElement> paramsOfInvocation = mcca.getParametersOfInvocation(invocation);
-    if (paramsOfInvocation.isEmpty()) {
-      return;
-    }
 
     for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
       Node arg = NodeUtils.removeCasts(argument);
@@ -584,14 +576,14 @@ public class MustCallInference {
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
-        computeOwningParamsForVarArgs(obligations, paramsOfCurrentMethod, invocation, varArgsNode);
+        computeOwningParamsForVarArgs(obligations, invocation, varArgsNode);
       } else {
         Element argElt = TreeUtils.elementFromTree(arg.getTree());
         if (argElt != null && argElt.getKind().isField()) {
           inferOwningField(arg, invocation);
           continue;
         }
-        computeOwningForParamOfCurrentMethod(obligations, paramsOfCurrentMethod, invocation, arg);
+        computeOwningForParamOfCurrentMethod(obligations, invocation, arg);
       }
     }
   }
@@ -601,15 +593,11 @@ public class MustCallInference {
    * position.
    *
    * @param obligations set of obligations associated with the current block
-   * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param varArgsNode the VarArg node of the given method invocation node
    */
   private void computeOwningParamsForVarArgs(
-      Set<Obligation> obligations,
-      List<? extends VariableTree> paramsOfCurrentMethod,
-      MethodInvocationNode invocation,
-      ArrayCreationNode varArgsNode) {
+      Set<Obligation> obligations, MethodInvocationNode invocation, ArrayCreationNode varArgsNode) {
     for (Node varArgNode : varArgsNode.getInitializers()) {
       Element varArgElt = TreeUtils.elementFromTree(varArgNode.getTree());
 
@@ -620,8 +608,7 @@ public class MustCallInference {
       if (varArgElt.getKind().isField()) {
         inferOwningField(varArgNode, invocation);
       } else {
-        computeOwningForParamOfCurrentMethod(
-            obligations, paramsOfCurrentMethod, invocation, varArgNode);
+        computeOwningForParamOfCurrentMethod(obligations, invocation, varArgNode);
       }
     }
   }
@@ -631,15 +618,13 @@ public class MustCallInference {
    * argument passed to the method call.
    *
    * @param obligations set of obligations associated with the current block
-   * @param paramsOfCurrentMethod the parameters of the current method
    * @param invocation the method invocation node to check
    * @param arg an argument passed at the method invocation
    */
   private void computeOwningForParamOfCurrentMethod(
-      Set<Obligation> obligations,
-      List<? extends VariableTree> paramsOfCurrentMethod,
-      MethodInvocationNode invocation,
-      Node arg) {
+      Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
+
+    List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
 
     outerLoop:
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
