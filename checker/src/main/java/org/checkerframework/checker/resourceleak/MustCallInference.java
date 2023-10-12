@@ -202,11 +202,9 @@ public class MustCallInference {
         // any side effects on the outcome of the Resource Leak Checker. This is because the
         // inference occurs within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory,
         // once the consistency analyzer has completed its process
-        if (node instanceof MethodInvocationNode) {
+        if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
-          computeOwningFromInvocation(obligations, (MethodInvocationNode) node);
-        } else if (node instanceof ObjectCreationNode) {
-          mcca.updateObligationsWithInvocationResult(obligations, node);
+          computeOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
           analyzeOwnershipTransferAtAssignment(obligations, (AssignmentNode) node);
         }
@@ -509,10 +507,9 @@ public class MustCallInference {
    * passed into the call.
    *
    * @param obligations the obligations associated with the current block
-   * @param invocation the method invocation node to check
+   * @param invocation the method or constructor invocation
    */
-  private void inferOwningParamsViaOwnershipTransfer(
-      Set<Obligation> obligations, MethodInvocationNode invocation) {
+  private void inferOwningParamsViaOwnershipTransfer(Set<Obligation> obligations, Node invocation) {
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
     if (paramsOfCurrentMethod.isEmpty()) {
       return;
@@ -707,14 +704,23 @@ public class MustCallInference {
    * </ul>
    *
    * @param obligations the set of obligations to search in
-   * @param invocation the MethodInvocationNode
+   * @param invocation the method or constructor invocation
    */
-  private void computeOwningFromInvocation(
-      Set<Obligation> obligations, MethodInvocationNode invocation) {
-    if (methodElt != null) {
+  private void computeOwningFromInvocation(Set<Obligation> obligations, Node invocation) {
+    if (methodElt == null) {
+      return;
+    }
+
+    if (invocation instanceof ObjectCreationNode) {
+      // If the invocation corresponds to an object creation node, only ownership transfer checking
+      // is required, as constructor parameters can include the @Owning annotation. Other
+      // computations, such as computeOwningForReceiver and computeOwningForArgsOfCall, are
+      // generally not applicable and rarely needed.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      computeOwningForReceiver(obligations, invocation);
-      computeOwningForArgsOfCall(obligations, invocation);
+    } else if (invocation instanceof MethodInvocationNode) {
+      inferOwningParamsViaOwnershipTransfer(obligations, invocation);
+      computeOwningForReceiver(obligations, (MethodInvocationNode) invocation);
+      computeOwningForArgsOfCall(obligations, (MethodInvocationNode) invocation);
     }
   }
 

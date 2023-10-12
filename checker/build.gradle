@@ -910,8 +910,7 @@ task wpiManyTest(group: 'Verification') {
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
             '-o', "${project.projectDir}/build/wpi-many-tests",
             '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
-            '--extraJavacArgs=-AenableWpiForRlc'
+            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak'
       }
     } catch (Exception e) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
@@ -1006,7 +1005,7 @@ task wpiManyTest(group: 'Verification') {
           details.getFile().eachLine { l -> println(l) }
           println("======== end of contents of ${filename} ========")
           throw new GradleException('Failure: WPI scripts produced an unexpected output in ' + filename + '. ' +
-          'wpiManyTest always expects compilation success. Failing line is the following: ' + line)
+          'Failing line is the following: ' + line)
         }
       }
     }
