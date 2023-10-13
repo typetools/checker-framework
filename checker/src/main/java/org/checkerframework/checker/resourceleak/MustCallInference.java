@@ -527,7 +527,7 @@ public class MustCallInference {
     Node receiver = invocation.getTarget().getReceiver();
     receiver = NodeUtils.removeCasts(receiver);
     if (receiver.getTree() != null) {
-      computeOwningForNode(obligations, invocation, receiver);
+      computeOwningForArgument(obligations, invocation, receiver);
     }
 
     for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
@@ -538,10 +538,10 @@ public class MustCallInference {
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
         for (Node varArgNode : varArgsNode.getInitializers()) {
-          computeOwningForNode(obligations, invocation, varArgNode);
+          computeOwningForArgument(obligations, invocation, varArgNode);
         }
       } else {
-        computeOwningForNode(obligations, invocation, arg);
+        computeOwningForArgument(obligations, invocation, arg);
       }
     }
   }
@@ -554,7 +554,7 @@ public class MustCallInference {
    * @param invocation the method invocation node to check
    * @param arg a receiver or an argument passed to the method call
    */
-  private void computeOwningForNode(
+  private void computeOwningForArgument(
       Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
     Element argElt = TreeUtils.elementFromTree(arg.getTree());
     if (argElt != null && argElt.getKind().isField()) {
@@ -633,7 +633,8 @@ public class MustCallInference {
 
     if (invocation instanceof ObjectCreationNode) {
       // If the invocation corresponds to an object creation node, only ownership transfer checking
-      // is required, as constructor parameters can have the @Owning annotation.
+      // is required, as constructor parameters may have an @Owning annotation.  We do not handle
+      // @EnsuresCalledMethods annotations on constructors as we have not observed them in practice.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
     } else if (invocation instanceof MethodInvocationNode) {
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
