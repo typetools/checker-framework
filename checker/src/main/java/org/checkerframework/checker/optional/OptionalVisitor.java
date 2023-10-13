@@ -143,7 +143,7 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true iff the method being callid is Optional creation: of, ofNullable.
+   * Returns true iff the method being called is Optional creation: of, ofNullable.
    *
    * @param methInvok a method invocation
    * @return true iff the method being called is Optional creation: of, ofNullable
@@ -162,7 +162,7 @@ public class OptionalVisitor
    * @return true iff the method being called is Optional elimination: get, orElse, orElseGet,
    *     orElseThrow
    */
-  private boolean isOptionalElimation(MethodInvocationTree methInvok) {
+  private boolean isOptionalElimination(MethodInvocationTree methInvok) {
     ProcessingEnvironment env = checker.getProcessingEnvironment();
     return TreeUtils.isMethodInvocation(methInvok, optionalGet, env)
         || TreeUtils.isMethodInvocation(methInvok, optionalOrElse, env)
@@ -333,7 +333,7 @@ public class OptionalVisitor
    * @param tree a method invocation that can perhaps be simplified
    */
   public void handleCreationElimination(MethodInvocationTree tree) {
-    if (!isOptionalElimation(tree)) {
+    if (!isOptionalElimination(tree)) {
       return;
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
