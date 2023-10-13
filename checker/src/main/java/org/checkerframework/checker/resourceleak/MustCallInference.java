@@ -458,50 +458,6 @@ public class MustCallInference {
   }
 
   /**
-   * Computes an {@code @Owning} annotation for the receiver of the method call, which can be either
-   * a field or a formal parameter of the current method.
-   *
-   * @param obligations the obligations associated with the current block
-   * @param invocation the method invocation node to check
-   */
-  private void computeOwningForReceiver(
-      Set<Obligation> obligations, MethodInvocationNode invocation) {
-    Node receiver = invocation.getTarget().getReceiver();
-    receiver = NodeUtils.removeCasts(receiver);
-    if (receiver.getTree() == null) {
-      // There is no receiver e.g. in static methods or when the receiver is implicit "this".
-      return;
-    }
-    //
-    //    Element receiverElt = TreeUtils.elementFromTree(receiver.getTree());
-    //    if (receiverElt != null) {
-    //      if (receiverElt.getKind().isField()) {
-    //        inferOwningField(receiver, invocation);
-    //        return;
-    //      }
-    //    }
-    //
-    //    Node receiverTempVar = mcca.getTempVarOrNode(receiver);
-    //    if (!(receiverTempVar instanceof LocalVariableNode)) {
-    //      return;
-    //    }
-    //
-    //    Obligation receiverObligation =
-    //        MustCallConsistencyAnalyzer.getObligationForVar(
-    //            obligations, (LocalVariableNode) receiverTempVar);
-    //    if (receiverObligation == null) {
-    //      return;
-    //    }
-    //
-    //    Set<ResourceAlias> receiverAliases = receiverObligation.resourceAliases;
-    //    if (receiverAliases.isEmpty()) {
-    //      return;
-    //    }
-
-    computeOwningForParamOfCurrentMethod(obligations, invocation, receiver);
-  }
-
-  /**
    * Computes ownership transfer at the method call to infer @Owning annotation for the arguments
    * passed into the call.
    *
@@ -561,13 +517,19 @@ public class MustCallInference {
   }
 
   /**
-   * Computes @Owning annotations for arguments of a call.
+   * Computes @Owning annotations for the arguments or receiver of a call.
    *
    * @param obligations set of obligations associated with the current block
    * @param invocation a method invocation node to check
    */
-  private void computeOwningForArgsOfCall(
+  private void computeOwningForArgsOrReceiverOfCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
+    Node receiver = invocation.getTarget().getReceiver();
+    receiver = NodeUtils.removeCasts(receiver);
+    if (receiver.getTree() != null) {
+      computeOwningForNode(obligations, invocation, receiver);
+    }
+
     for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
       Node arg = NodeUtils.removeCasts(argument);
       // In the CFG, explicit passing of multiple arguments in the varargs position is represented
@@ -576,39 +538,31 @@ public class MustCallInference {
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
         for (Node varArgNode : varArgsNode.getInitializers()) {
-          computeOwningForParamOfCurrentMethod(obligations, invocation, varArgNode);
+          computeOwningForNode(obligations, invocation, varArgNode);
         }
       } else {
-        computeOwningForParamOfCurrentMethod(obligations, invocation, arg);
+        computeOwningForNode(obligations, invocation, arg);
       }
     }
   }
 
   /**
-   * Computes an @Owning annotation for any parameter of the current method that is aliased with the
-   * argument passed to the method call.
+   * Computes an @Owning annotation for the {@code arg} that can be a receiver or an argument passed
+   * into a method call.
    *
    * @param obligations set of obligations associated with the current block
    * @param invocation the method invocation node to check
-   * @param arg an argument passed at the method invocation
+   * @param arg a receiver or an argument passed to the method call
    */
-  private void computeOwningForParamOfCurrentMethod(
+  private void computeOwningForNode(
       Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
-
-    arg = NodeUtils.removeCasts(arg);
-    if (arg.getTree() == null) {
-      return;
-    }
-
     Element argElt = TreeUtils.elementFromTree(arg.getTree());
-
     if (argElt != null && argElt.getKind().isField()) {
       inferOwningField(arg, invocation);
       return;
     }
 
     List<? extends VariableTree> paramsOfCurrentMethod = methodTree.getParameters();
-
     outerLoop:
     for (int i = 0; i < paramsOfCurrentMethod.size(); i++) {
       VariableTree currentMethodParamTree = paramsOfCurrentMethod.get(i);
@@ -617,18 +571,19 @@ public class MustCallInference {
       }
 
       VariableElement paramElt = TreeUtils.elementFromDeclaration(currentMethodParamTree);
+      if (!nodeAndElementResourceAliased(obligations, arg, paramElt)) {
+        continue;
+      }
 
-      if (nodeAndElementResourceAliased(obligations, arg, paramElt)) {
-        List<String> mustCallValues = resourceLeakAtf.getMustCallValues(paramElt);
-        // TODO: generalize this method to MustCall annotations with more than one element.
-        assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
-        Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, arg);
-        for (ResourceAlias resourceAlias : nodeAliases) {
-          AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, resourceAlias.reference);
-          if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
-            addOwningToParam(i + 1);
-            break outerLoop;
-          }
+      List<String> mustCallValues = resourceLeakAtf.getMustCallValues(paramElt);
+      // TODO: generalize this method to MustCall annotations with more than one element.
+      assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
+      Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, arg);
+      for (ResourceAlias resourceAlias : nodeAliases) {
+        AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, resourceAlias.reference);
+        if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
+          addOwningToParam(i + 1);
+          break outerLoop;
         }
       }
     }
@@ -664,11 +619,8 @@ public class MustCallInference {
    * <ul>
    *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to that
    *       formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>Use {@link #computeOwningForReceiver} to check if the must-call obligation of the call's
-   *       receiver is satisfied via the call. The receiver can be a field or a formal parameter of
-   *       the current method.
-   *   <li>It calls {@link #computeOwningForArgsOfCall} to compute @Owning annotations for arguments
-   *       of a call by analyzing the called-methods set of each argument after the call.
+   *   <li>It calls {@link #computeOwningForArgsOrReceiverOfCall} to compute @Owning annotations for
+   *       the receiver or arguments of a call by analyzing the called-methods set after the call.
    * </ul>
    *
    * @param obligations the set of obligations to search in
@@ -681,14 +633,11 @@ public class MustCallInference {
 
     if (invocation instanceof ObjectCreationNode) {
       // If the invocation corresponds to an object creation node, only ownership transfer checking
-      // is required, as constructor parameters can include the @Owning annotation. Other
-      // computations, such as computeOwningForReceiver and computeOwningForArgsOfCall, are
-      // generally not applicable and rarely needed.
+      // is required, as constructor parameters can have the @Owning annotation.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
     } else if (invocation instanceof MethodInvocationNode) {
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      computeOwningForReceiver(obligations, (MethodInvocationNode) invocation);
-      computeOwningForArgsOfCall(obligations, (MethodInvocationNode) invocation);
+      computeOwningForArgsOrReceiverOfCall(obligations, (MethodInvocationNode) invocation);
     }
   }
 
