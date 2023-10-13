@@ -212,6 +212,26 @@ public class MustCallInference {
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
     }
+
+    addMemberAndClassAnnotations();
+  }
+
+  /**
+   * Adds inferred {@literal @Owning} annotations to fields, {@literal @EnsuresCalledMethods}
+   * annotations to the current method, and {@literal @InheritableMustCall} annotation to the
+   * enclosing class.
+   */
+  private void addMemberAndClassAnnotations() {
+    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+    assert wpi != null : "MustCallInference is running without WPI.";
+    for (VariableElement fieldElt : updateOwningFields()) {
+      wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
+    }
+    if (!disposedFields.isEmpty()) {
+      addEnsuresCalledMethods();
+    }
+
+    addOrUpdateClassMustCall();
   }
 
   /**
@@ -679,8 +699,7 @@ public class MustCallInference {
   }
 
   /**
-   * Adds all non-exceptional successors to {@code worklist}. If a successor is a non-exceptional
-   * exit point, adds an {@literal @Owning} annotation for fields in {@link #disposedFields}.
+   * Adds all non-exceptional successors to {@code worklist}.
    *
    * @param obligations the obligations for the current block
    * @param curBlock the block whose successors to add to the worklist
@@ -695,18 +714,7 @@ public class MustCallInference {
 
     for (Block successor : getNonExceptionalSuccessors(curBlock)) {
       // If successor is a special block, it must be the regular exit.
-      if (successor.getType() == Block.BlockType.SPECIAL_BLOCK) {
-        WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
-        assert wpi != null : "MustCallInference is running without WPI.";
-        for (VariableElement fieldElt : updateOwningFields()) {
-          wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
-        }
-        if (!disposedFields.isEmpty()) {
-          addEnsuresCalledMethods();
-        }
-
-        addOrUpdateClassMustCall();
-      } else {
+      if (successor.getType() != Block.BlockType.SPECIAL_BLOCK) {
         BlockWithObligations state = new BlockWithObligations(successor, obligations);
         if (visited.add(state)) {
           worklist.add(state);
