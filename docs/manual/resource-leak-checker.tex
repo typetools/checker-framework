@@ -221,6 +221,25 @@ Writing \<@Owning> or \<@NotOwning> can never make the checker
 unsound:  a real warning can never be hidden by them.
 As with any annotation, incorrect or missing annotations can lead to false positive warnings.
 
+When \<@Owning> is written on a method parameter, the method only takes ownership of the
+parameter when it returns normally.  In this example, the Resource Leak Checker will report
+an error in the \<example> method and allow the definition of \<closeSocket>:
+
+\begin{verbatim}
+  void example(String myHost, int myPort) throws Exception {
+    // Error: `s` is not closed on all paths
+    Socket s = new Socket(myHost, myPort);
+
+    // `closeSocket` does not have to close `s` when it throws IOException.
+    // Instead, this method has to catch the exception and close `s`.
+    closeSocket(s);
+  }
+
+  void closeSocket(@Owning Socket t) throws IOException {
+    throw new IOException();
+  }
+\end{verbatim}
+
 
 \subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
 
