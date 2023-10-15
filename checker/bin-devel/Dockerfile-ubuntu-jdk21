@@ -6,7 +6,7 @@
 # Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-FROM ubuntu:23.10
+FROM ubuntu:mantic-20231011
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 # According to
