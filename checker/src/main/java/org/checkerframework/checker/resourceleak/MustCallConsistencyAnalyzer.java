@@ -188,10 +188,16 @@ class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
+  /** A description for how a method might exit. */
   /*package-private*/ enum MethodExitKind {
+
+    /** The method exits normally by returning. */
     NORMAL_RETURN,
+
+    /** The method exits by throwing an exception. */
     EXCEPTIONAL_EXIT;
 
+    /** An immutable set containing all possible ways for a method to exit. */
     public static final Set<MethodExitKind> ALL =
         ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
   }
@@ -223,12 +229,21 @@ class MustCallConsistencyAnalyzer {
      */
     public final ImmutableSet<ResourceAlias> resourceAliases;
 
+    /**
+     * The ways a method can exit along which this Obligation has to be enforced. For example, this
+     * will usually be {@link MethodExitKind#ALL}, indicating that this Obligation has to be
+     * enforced no matter how the method exits. It may also be a smaller set indicating that the
+     * Obligation only has to be enforced on certain exit conditions.
+     *
+     * <p>If this set is empty then the Obligation can be dropped as it never needs to be enforced.
+     */
     public final ImmutableSet<MethodExitKind> whenToEnforce;
 
     /**
      * Create an Obligation from a set of resource aliases.
      *
      * @param resourceAliases a set of resource aliases
+     * @param whenToEnforce when this Obligation should be enforced
      */
     public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
@@ -484,6 +499,7 @@ class MustCallConsistencyAnalyzer {
      * Create a new resource alias.
      *
      * @param reference the local variable
+     * @param element the element for the reference
      * @param tree the tree
      * @param derivedFromMustCallAliasParam true iff this resource alias was created because of an
      *     {@link MustCallAlias} parameter
