@@ -32,7 +32,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -1165,6 +1164,27 @@ class MustCallConsistencyAnalyzer {
           && rhs instanceof LocalVariableNode
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
 
+        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+
+        boolean inConstructor =
+            TreePathUtil.inConstructor(typeFactory.getPath(assignmentNode.getTree()));
+
+        // Determine which obligations this field assignment can clear.  In a constructor,
+        // assignments to `this.field` only clears obligations on normal return, since
+        // on exception `this` becomes inaccessible.
+        Set<MethodExitKind> toClear;
+        if (inConstructor
+            && lhs instanceof FieldAccessNode
+            && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
+          toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
+        } else {
+          toClear = MethodExitKind.ALL;
+        }
+
+        @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+        @Nullable TypeElement enclosingType =
+            enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+
         // Assigning to an owning field is sufficient to clear a must-call alias obligation
         // in a constructor, if the enclosing class has at most one @Owning field. If the
         // class had multiple owning fields, then a soundness bug would occur: the must call
@@ -1172,30 +1192,36 @@ class MustCallConsistencyAnalyzer {
         // closing only one of the parameters passed to the constructor (but the other
         // owning fields might not actually have had their obligations fulfilled). See test
         // case checker/tests/resourceleak/TwoOwningMCATest.java for an example.
-        Element enclosingCtr = lhsElement.getEnclosingElement();
-        if (enclosingCtr != null
-            && hasAtMostOneOwningField(ElementUtils.enclosingTypeElement(enclosingCtr))) {
-          boolean inConstructor =
-              TreePathUtil.inConstructor(typeFactory.getPath(assignmentNode.getTree()));
-          if (inConstructor
-              && lhs instanceof FieldAccessNode
-              && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
-            updateObligationsForFieldAssignmentInConstructor(
-                obligations, (LocalVariableNode) rhs, lhs, lhsElement);
-          } else {
-            removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
-          }
+        if (hasAtMostOneOwningField(enclosingType)) {
+          removeObligationsContainingVar(
+              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
         } else {
-          removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-              obligations, (LocalVariableNode) rhs);
+          removeObligationsContainingVar(
+              obligations,
+              rhsVar,
+              MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+              toClear);
+        }
+
+        // Finally, if any obligations containing this var remain, then closing the field will
+        // satisfy them.  Here we are overly cautious and only track final fields.  In the
+        // future we could perhaps relax this guard with careful handling for field reassignments.
+        if (ElementUtils.isFinal(lhsElement)) {
+          addAliasToObligationsContainingVar(
+              obligations,
+              rhsVar,
+              new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
       if (rhs instanceof FieldAccessNode) {
         // Handling of @Owning fields is a completely separate check.
       } else if (rhs instanceof LocalVariableNode) {
-        removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-            obligations, (LocalVariableNode) rhs);
+        removeObligationsContainingVar(
+            obligations,
+            (LocalVariableNode) rhs,
+            MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+            MethodExitKind.ALL);
       }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
@@ -1244,59 +1270,28 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any Obligations that contain {@code var} in their resource-alias set.
+   * Add a new alias to all Obligations that have {@code var} in their resource-alias set. This
+   * method should be used when {@code var} and {@code newAlias} definitively point to the same
+   * object in memory.
    *
-   * @param obligations the set of Obligations
+   * @param obligations the set of Obligations to modify
    * @param var a variable
+   * @param newAlias a new {@link ResourceAlias} to add
    */
-  private void removeObligationsContainingVar(Set<Obligation> obligations, LocalVariableNode var) {
-    Obligation obligationForVar = getObligationForVar(obligations, var);
-    while (obligationForVar != null) {
-      obligations.remove(obligationForVar);
-      obligationForVar = getObligationForVar(obligations, var);
-    }
-  }
-
-  /**
-   * Perform the (somewhat complex) set of obligation updates that happen when {@code this.field =
-   * var} appears in a constructor. Precisely:
-   *
-   * <ul>
-   *   <li>Remove the Obligations that contain {@code var} in their resource-alias set, but only for
-   *       normal returns.
-   *   <li>If the field is a final field, also add {@code lhs}/{@code lhsElement} to the
-   *       resource-alias set of any remaining obligations for {@code var}, since closing the field
-   *       suffices to fulfill the obligation.
-   * </ul>
-   *
-   * @param obligations the set of Obligations
-   * @param var a variable
-   * @param lhs the {@code Node} for the left-hand side of the assignment ({@code this.field})
-   * @param lhsElement the {@code Element} for the field
-   */
-  private void updateObligationsForFieldAssignmentInConstructor(
-      Set<Obligation> obligations, LocalVariableNode var, Node lhs, Element lhsElement) {
+  private void addAliasToObligationsContainingVar(
+      Set<Obligation> obligations, LocalVariableNode var, ResourceAlias newAlias) {
+    Iterator<Obligation> it = obligations.iterator();
     List<Obligation> newObligations = new ArrayList<>();
 
-    Iterator<Obligation> it = obligations.iterator();
     while (it.hasNext()) {
       Obligation obligation = it.next();
-
       if (obligation.canBeSatisfiedThrough(var)) {
         it.remove();
 
-        Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
-        whenToEnforce.remove(MethodExitKind.NORMAL_RETURN);
+        Set<ResourceAlias> newAliases = new LinkedHashSet<>(obligation.resourceAliases);
+        newAliases.add(newAlias);
 
-        if (!whenToEnforce.isEmpty()) {
-          Set<ResourceAlias> newAliases = obligation.resourceAliases;
-          if (lhsElement.getModifiers().contains(Modifier.FINAL)) {
-            newAliases = new LinkedHashSet<>(obligation.resourceAliases);
-            newAliases.add(
-                new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
-          }
-          newObligations.add(new Obligation(newAliases, whenToEnforce));
-        }
+        newObligations.add(new Obligation(newAliases, obligation.whenToEnforce));
       }
     }
 
@@ -1304,19 +1299,74 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Remove any Obligations that contain {@code var} in their resource-alias set, if those resources
-   * were not derived from an {@link MustCallAlias} parameter.
+   * Remove any Obligations that contain {@code var} in their resource-alias set.
    *
-   * @param obligations the set of Obligations
+   * @param obligations the set of Obligations to modify
    * @param var a variable
    */
-  private void removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-      Set<Obligation> obligations, LocalVariableNode var) {
-    Obligation obligationForVar = getObligationForVar(obligations, var);
-    while (obligationForVar != null && !obligationForVar.derivedFromMustCallAlias()) {
-      obligations.remove(obligationForVar);
-      obligationForVar = getObligationForVar(obligations, var);
+  private void removeObligationsContainingVar(Set<Obligation> obligations, LocalVariableNode var) {
+    removeObligationsContainingVar(
+        obligations, var, MustCallAliasHandling.NO_SPECIAL_HANDLING, MethodExitKind.ALL);
+  }
+
+  /**
+   * Helper type for {@link #removeObligationsContainingVar(Set, LocalVariableNode,
+   * MustCallAliasHandling, Set)}
+   */
+  private enum MustCallAliasHandling {
+    /**
+     * Obligations derived from {@link MustCallAlias} parameters do not require special handling,
+     * and they should be removed like any other obligation.
+     */
+    NO_SPECIAL_HANDLING,
+
+    /**
+     * Obligations derived from {@link MustCallAlias} parameters are not satisfied and should be
+     * retained.
+     */
+    RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+  }
+
+  /**
+   * Remove Obligations that contain {@code var} in their resource-alias set.
+   *
+   * <p>Some operations do not satisfy all Obligations. For instance, assigning to a field in a
+   * constructor only satisfies Obligations when the constructor exits normally (i.e. without
+   * throwing an exception). The last two arguments to this method can be used to retain some
+   * Obligations in special circumstances.
+   *
+   * @param obligations the set of Obligations to modify
+   * @param var a variable
+   * @param mustCallAliasHandling how to treat Obligations derived from {@link MustCallAlias}
+   *     parameters
+   * @param whatToClear the kind of Obligations to remove
+   */
+  private void removeObligationsContainingVar(
+      Set<Obligation> obligations,
+      LocalVariableNode var,
+      MustCallAliasHandling mustCallAliasHandling,
+      Set<MethodExitKind> whatToClear) {
+    List<Obligation> newObligations = new ArrayList<>();
+
+    Iterator<Obligation> it = obligations.iterator();
+    while (it.hasNext()) {
+      Obligation obligation = it.next();
+
+      if (obligation.canBeSatisfiedThrough(var)
+          && (mustCallAliasHandling == MustCallAliasHandling.NO_SPECIAL_HANDLING
+              || !obligation.derivedFromMustCallAlias())) {
+        it.remove();
+
+        Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
+        whenToEnforce.removeAll(whatToClear);
+
+        if (!whenToEnforce.isEmpty()) {
+          newObligations.add(new Obligation(obligation.resourceAliases, whenToEnforce));
+        }
+      }
     }
+
+    obligations.addAll(newObligations);
   }
 
   /**
