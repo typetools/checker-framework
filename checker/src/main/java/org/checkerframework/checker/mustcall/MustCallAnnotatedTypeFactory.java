@@ -431,7 +431,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromUse(tree);
-      if (elt.getKind() == ElementKind.PARAMETER
+      // The following changes are not desired for RLC _inference_ in unannotated programs, where a
+      // goal is to infer and add @Owning annotations to formal parameters. Therefore, if WPI is
+      // enabled, they should not be executed.
+      if (getWholeProgramInference() == null
+          && elt.getKind() == ElementKind.PARAMETER
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         if (!type.hasPrimaryAnnotation(POLY)) {
           // Parameters that are not annotated with @Owning should be treated as bottom
