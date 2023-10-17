@@ -1139,10 +1139,11 @@ class MustCallConsistencyAnalyzer {
    * set), etc.
    *
    * @param obligations the set of Obligations to update
+   * @param cfg the control flow graph that contains {@code assignmentNode}
    * @param assignmentNode the assignment
    */
   private void updateObligationsForAssignment(
-      Set<Obligation> obligations, AssignmentNode assignmentNode) {
+      Set<Obligation> obligations, ControlFlowGraph cfg, AssignmentNode assignmentNode) {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     if (lhsElement == null) {
@@ -1171,8 +1172,9 @@ class MustCallConsistencyAnalyzer {
 
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
 
+        MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
         boolean inConstructor =
-            TreePathUtil.inConstructor(typeFactory.getPath(assignmentNode.getTree()));
+            containingMethod != null && TreeUtils.isConstructor(containingMethod);
 
         // Determine which obligations this field assignment can clear.  In a constructor,
         // assignments to `this.field` only clears obligations on normal return, since
@@ -1942,7 +1944,7 @@ class MustCallConsistencyAnalyzer {
    * successor. The edge can either be normal control flow or an exception. See
    *
    * <ul>
-   *   <li>{@link #updateObligationsForAssignment(Set, AssignmentNode)}
+   *   <li>{@link #updateObligationsForAssignment(Set, ControlFlowGraph, AssignmentNode)}
    *   <li>{@link #updateObligationsForOwningReturn(Set, ControlFlowGraph, ReturnNode)}
    *   <li>{@link #updateObligationsForInvocation(Set, Node, TypeMirror)}
    * </ul>
@@ -1982,7 +1984,7 @@ class MustCallConsistencyAnalyzer {
 
       for (Node node : currentBlock.getNodes()) {
         if (node instanceof AssignmentNode) {
-          updateObligationsForAssignment(obligations, (AssignmentNode) node);
+          updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
         } else if (node instanceof ReturnNode) {
           updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
