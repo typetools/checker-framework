@@ -56,8 +56,8 @@ import org.plumelib.util.CollectionsPlume;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
- * annotations such as {@code @}{@link Owning} on owning fields and
- * parameters, @EnsuresCalledMethods on methods, and @InheritableMustCall on class declarations.
+ * annotations such as {@code @}{@link Owning} on owning fields and parameters, {@code @}{@link
+ * EnsuresCalledMethods} on methods, and {@code @}{@link InheritableMustCall} on class declarations.
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
  * representing a method.
@@ -81,14 +81,19 @@ import org.plumelib.util.CollectionsPlume;
 public class MustCallInference {
 
   /**
-   * The fields that have been inferred to be disposed within the CFG currently under analysis. All
-   * of these fields will be given an @Owning annotation.
+   * The fields that have been inferred to be disposed within the CFG (i.e., method) currently under
+   * analysis. All of the fields in this set when inference finishes will be given an @Owning
+   * annotation. Note that this set is not monotonically-increasing: fields may be added to this set
+   * and then removed during inference. For example, if a field's must-call method is called, it is
+   * added to this set. If, in a later statement in the same method, the same field is re-assigned,
+   * it will be removed from this set (since the previously-inferred closing of the obligation is
+   * invalid).
    */
   private final Set<VariableElement> disposedFields = new HashSet<>();
 
   /**
-   * The fields with written or inferred {@code @Owning} annotations at the entry point of the CFG
-   * currently under analysis.
+   * The fields with written {@code @Owning} annotations at the entry point of the CFG currently
+   * under analysis in addition to the inferred fields in this analysis.
    */
   private final Set<VariableElement> owningFields = new HashSet<>();
 
@@ -154,8 +159,9 @@ public class MustCallInference {
   }
 
   /**
-   * Creates a MustCallInference instance and runs the inference algorithm. A type factory's
-   * postAnalyze method calls this, if Whole Program Inference is enabled.
+   * Creates a MustCallInference instance and runs the inference algorithm. This method is called by
+   * the {@link ResourceLeakAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference is
+   * enabled.
    *
    * @param resourceLeakAtf the type factory
    * @param cfg the control flow graph of the method to check
@@ -190,6 +196,8 @@ public class MustCallInference {
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
 
+      // It uses a LinkedHashSet to maintain a deterministic order and prevent any inconsistencies
+      // between the results of inference in different iterations.
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
@@ -284,8 +292,9 @@ public class MustCallInference {
   }
 
   /**
-   * Adds the node to the disposedFields set if it is a field and its must-call obligation is
-   * satisfied by the given method call. If so, it will be given an @Owning annotation later.
+   * Adds the node to the disposedFields and owningFields sets if it is a field and its must-call
+   * obligation is satisfied by the given method call. If so, it will be given an @Owning annotation
+   * later.
    *
    * @param node possibly an owning field
    * @param invocation method invoked on the possible owning field
@@ -305,6 +314,7 @@ public class MustCallInference {
         // TODO: generalize this to MustCall annotations with more than one element.
         assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
         disposedFields.add((VariableElement) nodeElt);
+        owningFields.add((VariableElement) nodeElt);
       }
     }
   }
@@ -577,6 +587,8 @@ public class MustCallInference {
   private void computeOwningForArgument(
       Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
     Element argElt = TreeUtils.elementFromTree(arg.getTree());
+    // The must-call obligation of a field can be satisfied either through a call where it serves as
+    // a receiver or within the callee method when it is passed as an argument.
     if (argElt != null && argElt.getKind().isField()) {
       inferOwningField(arg, invocation);
       return;
@@ -647,10 +659,6 @@ public class MustCallInference {
    * @param invocation the method or constructor invocation
    */
   private void computeOwningFromInvocation(Set<Obligation> obligations, Node invocation) {
-    if (methodElt == null) {
-      return;
-    }
-
     if (invocation instanceof ObjectCreationNode) {
       // If the invocation corresponds to an object creation node, only ownership transfer checking
       // is required, as constructor parameters may have an @Owning annotation.  We do not handle

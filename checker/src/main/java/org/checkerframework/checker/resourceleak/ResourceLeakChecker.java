@@ -42,9 +42,9 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   /**
    * Ordinarily, when the -Ainfer flag is used, whole-program inference is run for every checker and
    * sub-checker. However, the Resource Leak Checker is different. The -Ainfer flag enables the
-   * RLC's own (non-WPI) inference mechanism. To use WPI in addition to this mechanism for its
-   * sub-checkers, use the -AenableWpiForRlc flag, which is intended only for testing and
-   * experiments.
+   * RLC's own (non-WPI) inference mechanism ({@link MustCallInference}). To use WPI in addition to
+   * this mechanism for its sub-checkers, use the -AenableWpiForRlc flag, which is intended only for
+   * testing and experiments.
    */
   public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
