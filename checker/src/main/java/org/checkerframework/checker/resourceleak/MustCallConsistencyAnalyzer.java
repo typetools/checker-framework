@@ -1946,7 +1946,19 @@ class MustCallConsistencyAnalyzer {
    * are going out of scope.
    *
    * <p>The basic algorithm loops over the successor blocks of the current block. For each
-   * successor, it checks every Obligation in obligations. If the successor is an exit block or all
+   * successor, two things happen:
+   *
+   * <p>First, it constructs an updated set of Obligations using {@code incomingObligations}, the
+   * nodes in {@code currentBlock}, and the nature of the edge from {@code currentBlock} to the
+   * successor. The edge can either be normal control flow or an exception. See
+   *
+   * <ul>
+   *   <li>{@link #updateObligationsForAssignment(Set, AssignmentNode)}
+   *   <li>{@link #updateObligationsForOwningReturn(Set, ControlFlowGraph, ReturnNode)}
+   *   <li>{@link #updateObligationsForInvocation(Set, Node, TypeMirror)}
+   * </ul>
+   *
+   * <p>Second, it checks every Obligation in obligations. If the successor is an exit block or all
    * of an Obligation's resource aliases might be going out of scope, then a consistency check
    * occurs (with two exceptions, both related to temporary variables that don't actually get
    * assigned; see code comments for details) and an error is issued if it fails. If the successor
