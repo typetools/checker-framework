@@ -432,13 +432,13 @@ class MustCallConsistencyAnalyzer {
    *
    * <p>A resource alias is always owning; non-owning aliases are, by definition, not tracked.
    *
-   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
+   * <p>Internally, a resource alias is represented by a pair of a {@link JavaExpression} (the
    * "reference" through which the must-call obligations for the alias set to which it belongs can
    * be satisfied) and a tree that "assigns" the reference.
    */
   /*package-private*/ static class ResourceAlias {
 
-    /** A local variable defined in the source code or a temporary variable for an expression. */
+    /** An expression from the source code or a temporary variable for an expression. */
     public final JavaExpression reference;
 
     /** The element for {@link #reference}. */
@@ -470,17 +470,6 @@ class MustCallConsistencyAnalyzer {
      */
     public ResourceAlias(LocalVariable reference, Tree tree) {
       this(reference, reference.getElement(), tree);
-    }
-
-    /**
-     * Create a new resource alias. This constructor should only be used if the resource alias was
-     * not derived from a method parameter annotated as {@link MustCallAlias}.
-     *
-     * @param reference the reference
-     * @param tree the tree
-     */
-    public ResourceAlias(FieldAccess reference, Tree tree) {
-      this(reference, reference.getField(), tree);
     }
 
     /**
