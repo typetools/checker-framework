@@ -93,7 +93,8 @@ public class MustCallInference {
 
   /**
    * The fields with written {@code @Owning} annotations at the entry point of the CFG currently
-   * under analysis in addition to the inferred fields in this analysis.
+   * under analysis in addition to the inferred owning fields in this analysis. This set is a
+   * superset of the {@code disposedFields} set.
    */
   private final Set<VariableElement> owningFields = new HashSet<>();
 
@@ -547,7 +548,8 @@ public class MustCallInference {
   }
 
   /**
-   * Computes @Owning annotations for the arguments or receiver of a call.
+   * Computes @Owning annotations for the parameters passed in the receiver or arguments position of
+   * a call.
    *
    * @param obligations set of obligations associated with the current block
    * @param invocation a method invocation node to check
