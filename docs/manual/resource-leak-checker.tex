@@ -266,6 +266,29 @@ on all exceptional paths.
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
 more details on how to annotate a non-final, non-static owning field.
 
+Owning fields are treated slightly differently in constructors versus normal methods.
+In normal methods, assigning a value to an owning field always satisfies the object's
+must-call obligations.  However, within a constructor, those obligations are only
+satisfied if the constructor returns normally.  If the constructor throws an exception,
+the constructed object will not be accessible afterward, and therefore its fields need
+to be closed before it exits.
+
+This constructor safely closes the object it allocates before throwing an exception:
+\begin{verbatim}
+  private final @Owning Socket socket;
+
+  public ConstructorThatCanThrow() throws IOException {
+    Socket s = new Socket(myHost, myPort);
+    try {
+      initialize(s); // may throw IOException
+    } catch (Exception e) {
+      s.close();
+      throw e;
+    }
+    this.socket = s;
+  }
+\end{verbatim}
+
 An assignment to a \textbf{static owning field} does not satisfy a
 must-call obligation; for example,
 
