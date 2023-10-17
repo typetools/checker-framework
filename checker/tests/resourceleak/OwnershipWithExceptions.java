@@ -116,10 +116,10 @@ abstract class OwnershipWithExceptions {
 
     FinalOwnedField(@Owning Closeable resource, boolean arg) throws IOException {
       // Same as the previous constructor, but in the other order.
-      this.resource = resource;
       if (arbitraryChoice()) {
         throw new IOException();
       }
+      this.resource = resource;
     }
 
     FinalOwnedField(int ignored) throws IOException {
@@ -147,15 +147,6 @@ abstract class OwnershipWithExceptions {
         r.close();
         throw e;
       }
-    }
-
-    FinalOwnedField(@Owning Closeable resource, int arg) throws IOException {
-      // On exception, ownership of the @Owning argument remains with the caller.
-      // So, this constructor is OK.
-      if (arbitraryChoice()) {
-        throw new IOException();
-      }
-      this.resource = resource;
     }
 
     // Not allowed: destructors have to close @Owning fields even on exception.
@@ -199,10 +190,10 @@ abstract class OwnershipWithExceptions {
 
     TwoOwnedFields(@Owning Closeable resource, boolean arg) throws IOException {
       // Same as the previous constructor, but in the other order.
-      this.resource = resource;
       if (arbitraryChoice()) {
         throw new IOException();
       }
+      this.resource = resource;
     }
 
     TwoOwnedFields(int ignored) throws IOException {
@@ -230,15 +221,6 @@ abstract class OwnershipWithExceptions {
         r.close();
         throw e;
       }
-    }
-
-    TwoOwnedFields(@Owning Closeable resource, int arg) throws IOException {
-      // On exception, ownership of the @Owning argument remains with the caller.
-      // So, this constructor is OK.
-      if (arbitraryChoice()) {
-        throw new IOException();
-      }
-      this.resource = resource;
     }
 
     // Not allowed: destructors have to close @Owning fields even on exception.
