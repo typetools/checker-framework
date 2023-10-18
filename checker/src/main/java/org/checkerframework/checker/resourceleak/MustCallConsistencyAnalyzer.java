@@ -203,12 +203,19 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * An Obligation is a dataflow fact: a set of resource aliases. Abstractly, each Obligation
-   * represents a resource for which the analyzed program might have a must-call obligation. Each
-   * Obligation is a pair of a set of resource aliases and their must-call obligation. Must-call
-   * obligations are tracked by the {@link MustCallChecker} and are accessed by looking up the
-   * type(s) in its type system of the resource aliases contained in each {@code Obligation} using
-   * {@link #getMustCallMethods(ResourceLeakAnnotatedTypeFactory, CFStore)}.
+   * An Obligation is a dataflow fact: a set of resource aliases and when those resources need to be
+   * cleaned up. Abstractly, each Obligation represents a resource for which the analyzed program
+   * might have a must-call obligation. Each Obligation is a pair of a set of resource aliases and
+   * their must-call obligation. Must-call obligations are tracked by the {@link MustCallChecker}
+   * and are accessed by looking up the type(s) in its type system of the resource aliases contained
+   * in each {@code Obligation} using {@link #getMustCallMethods(ResourceLeakAnnotatedTypeFactory,
+   * CFStore)}.
+   *
+   * <p>An Obligation might not matter on all paths out of a method. For instance, after a
+   * constructor assigns a resource to an {@link Owning} field, the resource only needs to be closed
+   * if the constructor throws an exception. If the constructor exits normally then the obligation
+   * is satisfied because the field is now responsible for its must-call obligations. See {@link
+   * #whenToEnforce}, which defines when the Obligation needs to be enforced.
    *
    * <p>There is no guarantee that a given Obligation represents a resource with a real must-call
    * obligation. When the analysis can conclude that a given Obligation certainly does not represent
@@ -1982,6 +1989,9 @@ class MustCallConsistencyAnalyzer {
       // the methods invoked in the for loop below.
       Set<Obligation> obligations = new LinkedHashSet<>(incomingObligations);
 
+      // PERFORMANCE NOTE: The computed changes to `obligations` are mostly the same for each
+      // successor block, but can vary slightly depending on the exception type.  There might
+      // be some opportunities for optimization in this mostly-redundant work.
       for (Node node : currentBlock.getNodes()) {
         if (node instanceof AssignmentNode) {
           updateObligationsForAssignment(obligations, cfg, (AssignmentNode) node);
