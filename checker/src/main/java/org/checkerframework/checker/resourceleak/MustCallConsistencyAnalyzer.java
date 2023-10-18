@@ -2365,7 +2365,7 @@ class MustCallConsistencyAnalyzer {
       if (cmAnno == null) {
         cmAnno =
             typeFactory
-                .getAnnotatedType(TreeUtils.elementFromTree(alias.tree))
+                .getAnnotatedType(alias.element)
                 .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
