@@ -248,7 +248,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           useType.hasPrimaryAnnotation(PolyMustCall.class)
               && !AnnotationUtils.containsSameByClass(
                   elt.getAnnotationMirrors(), PolyMustCall.class);
-      if (ajavaFileHasMustCallAlias) {
+      if (ajavaFileHasMustCallAlias
+          || AnnotationUtils.containsSameByClass(elt.getAnnotationMirrors(), MustCallAlias.class)) {
         return true;
       }
     }
