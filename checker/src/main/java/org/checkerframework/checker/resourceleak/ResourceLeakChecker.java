@@ -11,6 +11,7 @@ import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
@@ -106,6 +107,14 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    */
   private int numMustCallFailed = 0;
 
+  /**
+   * The cached set of ignored exceptions parsed from {@link #IGNORED_EXCEPTIONS}. Caching this
+   * field prevents the checker from issuing duplicate warnings about missing exception types.
+   *
+   * @see #getIgnoredExceptions()
+   */
+  private @MonotonicNonNull Set<@CanonicalName String> ignoredExceptions = null;
+
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
     Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
@@ -150,11 +159,23 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     super.typeProcessingOver();
   }
 
+  /**
+   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * #IGNORED_EXCEPTIONS} option if it was provided, or {@link #DEFAULT_IGNORED_EXCEPTIONS} if not.
+   *
+   * @return the set of exceptions to ignore
+   */
   public Set<@CanonicalName String> getIgnoredExceptions() {
-    String ignoredExceptionsOptionValue = getOption(IGNORED_EXCEPTIONS);
-    return ignoredExceptionsOptionValue == null
-        ? DEFAULT_IGNORED_EXCEPTIONS
-        : parseIgnoredExceptions(ignoredExceptionsOptionValue);
+    Set<@CanonicalName String> result = ignoredExceptions;
+    if (result == null) {
+      String ignoredExceptionsOptionValue = getOption(IGNORED_EXCEPTIONS);
+      result =
+          ignoredExceptionsOptionValue == null
+              ? DEFAULT_IGNORED_EXCEPTIONS
+              : parseIgnoredExceptions(ignoredExceptionsOptionValue);
+      ignoredExceptions = result;
+    }
+    return result;
   }
 
   /**
