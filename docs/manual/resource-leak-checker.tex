@@ -51,11 +51,13 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker, plus two others:
+the Called Methods Checker, plus three others:
 
 \begin{description}
 \item[\<-ApermitStaticOwning>]
   See Section~\ref{resource-leak-owning-fields}.
+\item[\<-AresourceLeakIgnoredExceptions=...>]
+  See Section~\ref{resource-leak-ignored-exceptions}.
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
 \end{description}
@@ -510,6 +512,14 @@ be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
 
+The set of ignored exception types can be controlled with the option
+\<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
+fully-qualified exception types.  For example, a very pedantic set of ignored
+exceptions might be
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions=java.lang.Error,java.lang.NullPointerException
+\end{verbatim}
 
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
 
