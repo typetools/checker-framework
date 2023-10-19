@@ -442,6 +442,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     super.setRoot(root);
     this.scannedClasses.clear();
+    this.reachableNodes.clear();
     this.flowResult = null;
     this.regularExitStores.clear();
     this.exceptionalExitStores.clear();
@@ -1054,6 +1055,29 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and may
+   * return {@code false} when the {@code exprTree} is unreachable.
+   *
+   * @param exprTree an expression tree
+   * @return true if the {@code exprTree} is unreachable
+   */
+  public boolean isUnreachable(ExpressionTree exprTree) {
+    Set<Node> nodes = getNodesForTree(exprTree);
+    if (nodes != null) {
+      for (Node node : nodes) {
+        if (reachableNodes.contains(node)) {
+          return false;
+        }
+      }
+      // None of the corresponding nodes are reachable, so this tree is dead.
+      return true;
+    }
+    // Dataflow doesn't have any information about the tree, so conservatively consider the tree
+    // reachable.
+    return false;
+  }
+
+  /**
    * Track the state of org.checkerframework.dataflow analysis scanning for each class tree in the
    * compilation unit.
    */
@@ -1066,6 +1090,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /** Map from ClassTree to their dataflow analysis state. */
   protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
+
+  /** A set of nodes that are reachable. */
+  public Set<Node> reachableNodes = new HashSet<>();
 
   /**
    * The result of the flow analysis. Invariant:
@@ -1264,7 +1291,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the {@link Node}s for a given {@link Tree}
    * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
    */
-  public Set<Node> getNodesForTree(Tree tree) {
+  public @Nullable Set<Node> getNodesForTree(Tree tree) {
     return flowResult.getNodesForTree(tree);
   }
 
@@ -1528,7 +1555,7 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isStatic,
       @Nullable Store capturedStore) {
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
-
+    reachableNodes.addAll(cfg.getAllNodes());
     if (isInitializationCode) {
       Store initStore = !isStatic ? initializationStore : initializationStaticStore;
       if (initStore != null) {
