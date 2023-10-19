@@ -284,7 +284,7 @@ public class ControlFlowGraph implements UniqueId {
       Function<TypeMirror, Boolean> f) {
     List<Node> result = new ArrayList<>();
     for (Block b : getAllBlocks()) {
-      boolean notDead = false;
+      boolean notDead = !b.getPredecessors().isEmpty();
       for (Block q : b.getPredecessors()) {
         if (q.getType() != BlockType.EXCEPTION_BLOCK) {
           notDead = true;
