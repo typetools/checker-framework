@@ -12,8 +12,10 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -136,6 +138,54 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
+   * Verify that this is a complete and well-formed CFG, i.e. that all internal invariants hold.
+   *
+   * @throws IllegalStateException if some internal invariant is violated
+   */
+  public void checkInvariants() {
+    // TODO: this is a big data structure with many more invariants...
+    for (Block b : getAllBlocks()) {
+
+      // Each node in the block should have this block as its parent.
+      for (Node n : b.getNodes()) {
+        if (!Objects.equals(n.getBlock(), b)) {
+          throw new IllegalStateException(
+              "Node "
+                  + n
+                  + " in block "
+                  + b
+                  + " incorrectly believes it belongs to "
+                  + n.getBlock());
+        }
+      }
+
+      // Each successor should have this block in its predecessors.
+      for (Block succ : b.getSuccessors()) {
+        if (!succ.getPredecessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has successor "
+                  + succ
+                  + " but does not appear in that successor's predecessors");
+        }
+      }
+
+      // Each predecessor should have this block in its successors.
+      for (Block pred : b.getPredecessors()) {
+        if (!pred.getSuccessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has predecessor "
+                  + pred
+                  + " but does not appear in that predecessor's successors");
+        }
+      }
+    }
+  }
+
+  /**
    * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
    * trees that don't produce a value.
    *
@@ -188,7 +238,7 @@ public class ControlFlowGraph implements UniqueId {
    */
   public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
-    Set<Block> visited = new HashSet<>();
+    Set<Block> visited = new LinkedHashSet<>();
     // worklist is always a subset of visited; any block in worklist is also in visited.
     Queue<Block> worklist = new ArrayDeque<>();
     Block cur = entryBlock;
