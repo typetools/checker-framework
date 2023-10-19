@@ -2,10 +2,9 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -88,6 +87,12 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   public static final String IGNORED_EXCEPTIONS = "resourceLeakIgnoredExceptions";
 
   /**
+   * A pattern that matches one or more consecutive commas, optionally preceded and followed by
+   * whitespace.
+   */
+  private static final Pattern COMMAS = Pattern.compile("\\s*(:?" + Pattern.quote(",") + "\\s*)+");
+
+  /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the
    * {@link #COUNT_MUST_CALL} command-line option was supplied.
    */
@@ -148,8 +153,19 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     if (ignoredExceptionsOption == null) {
       return DEFAULT_IGNORED_EXCEPTIONS;
     } else {
-      String[] exceptions = ignoredExceptionsOption.split(Pattern.quote(","));
-      return Arrays.stream(exceptions).map(this::checkCanonicalName).collect(Collectors.toSet());
+      String[] exceptions = COMMAS.split(ignoredExceptionsOption);
+      Set<@CanonicalName String> result = new LinkedHashSet<>();
+      for (String e : exceptions) {
+        e = e.trim();
+        if (!e.isEmpty()) {
+          if (e.equalsIgnoreCase("default")) {
+            result.addAll(DEFAULT_IGNORED_EXCEPTIONS);
+          } else {
+            result.add(checkCanonicalName(e));
+          }
+        }
+      }
+      return result;
     }
   }
 

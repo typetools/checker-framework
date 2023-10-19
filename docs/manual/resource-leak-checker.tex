@@ -521,6 +521,13 @@ exceptions might be
   -AresourceLeakIgnoredExceptions=java.lang.Error,java.lang.NullPointerException
 \end{verbatim}
 
+The keyword \<default> will expand to the default set of ignored exceptions.  So,
+to add an exception to the set of ignored exceptions, use e.g.
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions=default,package.MyCustomException
+\end{verbatim}
+
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
 
 % Arguably, this is working around a bug in the
