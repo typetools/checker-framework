@@ -491,6 +491,8 @@ an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
 may occur at any reference to a class.  Such exceptions usually terminate
 the program, and in that case unclosed resources do not matter.
+Furthermore, any method can throw \<RuntimeException>, and by default the
+Checker Framework pessimistically assumes one can be thrown by every call.
 Accounting for such exceptions would lead to vast numbers of
 false positive warnings, so the Resource Leak Checker assumes they are
 never thrown.  Strictly speaking, this is an unsoundness:  it can lead to
