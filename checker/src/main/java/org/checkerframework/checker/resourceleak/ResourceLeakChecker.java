@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -12,6 +13,7 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
@@ -149,28 +151,64 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   }
 
   public Set<@CanonicalName String> getIgnoredExceptions() {
-    String ignoredExceptionsOption = getOption(IGNORED_EXCEPTIONS);
-    if (ignoredExceptionsOption == null) {
-      return DEFAULT_IGNORED_EXCEPTIONS;
-    } else {
-      String[] exceptions = COMMAS.split(ignoredExceptionsOption);
-      Set<@CanonicalName String> result = new LinkedHashSet<>();
-      for (String e : exceptions) {
-        e = e.trim();
-        if (!e.isEmpty()) {
-          if (e.equalsIgnoreCase("default")) {
-            result.addAll(DEFAULT_IGNORED_EXCEPTIONS);
+    String ignoredExceptionsOptionValue = getOption(IGNORED_EXCEPTIONS);
+    return ignoredExceptionsOptionValue == null
+        ? DEFAULT_IGNORED_EXCEPTIONS
+        : parseIgnoredExceptions(ignoredExceptionsOptionValue);
+  }
+
+  /**
+   * Parse the argument given for the {@link #IGNORED_EXCEPTIONS} option. A warning will be issued
+   * if any of the named exceptions cannot be found.
+   *
+   * @param ignoredExceptionsOptionValue the value given for {@link #IGNORED_EXCEPTIONS}
+   * @return the set of ignored exceptions
+   */
+  protected Set<@CanonicalName String> parseIgnoredExceptions(String ignoredExceptionsOptionValue) {
+    String[] exceptions = COMMAS.split(ignoredExceptionsOptionValue);
+    Set<@CanonicalName String> result = new LinkedHashSet<>();
+    for (String e : exceptions) {
+      e = e.trim();
+      if (!e.isEmpty()) {
+        if (e.equalsIgnoreCase("default")) {
+          result.addAll(DEFAULT_IGNORED_EXCEPTIONS);
+        } else {
+          String exceptionName = checkCanonicalName(e);
+          if (exceptionName == null) {
+            message(
+                Diagnostic.Kind.WARNING,
+                "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
+                e,
+                IGNORED_EXCEPTIONS,
+                ignoredExceptionsOptionValue);
           } else {
-            result.add(checkCanonicalName(e));
+            result.add(exceptionName);
           }
         }
       }
-      return result;
     }
+    return result;
   }
 
-  private @CanonicalName String checkCanonicalName(String s) {
-    // TODO
-    return s;
+  /**
+   * Check if the given String refers to an actual type.
+   *
+   * @param s any string
+   * @return the canonical name of the referenced type, or null if it does not exist
+   */
+  @SuppressWarnings({
+    "signature:argument", // `s` is not a qualified name, but we pass it to getTypeElement anyway
+    "signature:assignment", // Name.toString() is not properly annotated
+  })
+  protected @Nullable @CanonicalName String checkCanonicalName(String s) {
+    TypeElement elem = getProcessingEnvironment().getElementUtils().getTypeElement(s);
+    if (elem == null) {
+      return null;
+    }
+    @CanonicalNameOrEmpty String result = elem.getQualifiedName().toString();
+    if (result.isEmpty()) {
+      return null;
+    }
+    return result;
   }
 }
