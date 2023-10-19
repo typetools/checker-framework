@@ -13,7 +13,8 @@ class MustCallAliasParams {
 
     final @Owning Foo f; // expect owning annotation for this field
 
-    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a false positive.
+    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a
+    // false positive.
     @SuppressWarnings("assignment")
     MCAConstructor(Foo foo) {
       f = foo;
@@ -39,7 +40,8 @@ class MustCallAliasParams {
     int i;
     final @Owning Foo f;
 
-    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a false positive.
+    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a
+    // false positive.
     @SuppressWarnings("assignment")
     @MustCallAlias MCASuperClass(@MustCallAlias Foo foo, int i) {
       f = foo;

@@ -18,7 +18,8 @@ class MustCallAliasOnRegularExits {
     protected final @Owning Foo f; // expect owning annotation for this field
     protected long s = 0L;
 
-    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a false positive.
+    // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a
+    // false positive.
     @SuppressWarnings("assignment")
     protected MCAConstructor(Foo foo) throws IOException {
       if (foo == null) {
@@ -45,5 +46,4 @@ class MustCallAliasOnRegularExits {
       f.a();
     }
   }
-
 }

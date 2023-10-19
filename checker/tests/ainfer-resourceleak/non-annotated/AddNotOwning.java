@@ -20,7 +20,7 @@ class AddNotOwning {
       return f;
     }
 
-    void testNotOwningOnFinal () {
+    void testNotOwningOnFinal() {
       // :: warning: (required.method.not.called)
       Foo f = getField();
     }
@@ -48,7 +48,7 @@ class AddNotOwning {
       return f;
     }
 
-    void testNotOwningOnNonFinal () {
+    void testNotOwningOnNonFinal() {
       // :: warning: (required.method.not.called)
       Foo f = getField();
     }
