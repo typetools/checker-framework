@@ -1560,7 +1560,7 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isStatic,
       @Nullable Store capturedStore) {
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
-    cfg.getAllNodes()
+    cfg.getAllNodes(this::isIgnoredExceptionType)
         .forEach(
             node -> {
               if (node.getTree() != null) {
@@ -1646,6 +1646,10 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     postAnalyze(cfg);
+  }
+
+  public boolean isIgnoredExceptionType(TypeMirror typeMirror) {
+    return false;
   }
 
   /**

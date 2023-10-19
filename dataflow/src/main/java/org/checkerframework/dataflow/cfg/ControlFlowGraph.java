@@ -20,10 +20,13 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -272,6 +275,34 @@ public class ControlFlowGraph implements UniqueId {
     List<Node> result = new ArrayList<>();
     for (Block b : getAllBlocks()) {
       result.addAll(b.getNodes());
+    }
+    return result;
+  }
+
+  public List<Node> getAllNodes(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> f) {
+    List<Node> result = new ArrayList<>();
+    for (Block b : getAllBlocks()) {
+      boolean notDead = false;
+      for (Block q : b.getPredecessors()) {
+        if (q.getType() != BlockType.EXCEPTION_BLOCK) {
+          notDead = true;
+          break;
+        } else {
+          for (Map.Entry<TypeMirror, Set<Block>> entry :
+              ((ExceptionBlock) q).getExceptionalSuccessors().entrySet()) {
+            if (entry.getValue().contains(b) && !f.apply(entry.getKey())) {
+              notDead = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (notDead) {
+        result.addAll(b.getNodes());
+      }
     }
     return result;
   }

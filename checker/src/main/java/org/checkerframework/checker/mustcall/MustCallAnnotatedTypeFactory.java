@@ -1,5 +1,6 @@
 package org.checkerframework.checker.mustcall;
 
+import com.google.common.collect.ImmutableSet;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,6 +24,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -495,5 +499,37 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         return qualifier2;
       }
     }
+  }
+
+  /**
+   * The fully-qualified names of the exception types that are ignored by this checker when
+   * computing dataflow stores.
+   */
+  protected static final Set<String> ignoredExceptionTypes =
+      new HashSet<>(
+          ImmutableSet.of(
+              // Use the Nullness Checker instead.
+              NullPointerException.class.getCanonicalName(),
+              // Ignore run-time errors, which cannot be predicted statically. Doing
+              // so is unsound in the sense that they could still occur - e.g., the
+              // program could run out of memory - but if they did, the checker's
+              // results would be useless anyway.
+              Error.class.getCanonicalName(),
+              RuntimeException.class.getCanonicalName()));
+
+  /**
+   * Ignore exceptional control flow due to ignored exception types.
+   *
+   * @param exceptionType exception type
+   * @return {@code true} if {@code exceptionType} is a member of {@link #ignoredExceptionTypes},
+   *     {@code false} otherwise
+   */
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ignoredExceptionTypes.contains(
+          TypesUtils.getQualifiedName((DeclaredType) exceptionType));
+    }
+    return false;
   }
 }
