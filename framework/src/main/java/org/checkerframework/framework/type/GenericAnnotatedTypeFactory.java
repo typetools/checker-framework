@@ -1064,8 +1064,8 @@ public abstract class GenericAnnotatedTypeFactory<
   public boolean isUnreachable(ExpressionTree exprTree) {
     Set<Node> nodes = getNodesForTree(exprTree);
     if (nodes != null) {
-      for (Node node : nodes) {
-        if (reachableNodes.contains(node)) {
+      for (Node n : nodes) {
+        if (n.getTree() != null && reachableNodes.contains(n.getTree())) {
           return false;
         }
       }
@@ -1091,8 +1091,13 @@ public abstract class GenericAnnotatedTypeFactory<
   /** Map from ClassTree to their dataflow analysis state. */
   protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
 
-  /** A set of nodes that are reachable. */
-  public Set<Node> reachableNodes = new HashSet<>();
+  /**
+   * A set of trees whose corresponding nodes are reachable. This is not an exhaustive set of
+   * reachable trees. Use {@link #isUnreachable(ExpressionTree)} instead of this set directly.
+   */
+  // This should be a set of Nodes, but two LocalVariableNodes are equal if they have the same name
+  // but represent different uses of the variable.  So instead store the result of Node#getTree.
+  private final Set<Tree> reachableNodes = new HashSet<>();
 
   /**
    * The result of the flow analysis. Invariant:
@@ -1555,7 +1560,16 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isStatic,
       @Nullable Store capturedStore) {
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
-    reachableNodes.addAll(cfg.getAllNodes());
+    cfg.getAllNodes()
+        .forEach(
+            node -> {
+              if (node.getTree() != null) {
+                // Can't store the node directly because two LocalVariableNodes are equal if they
+                // have the same name even if they have different trees. So instead store the result
+                // of Node#getTree.
+                reachableNodes.add(node.getTree());
+              }
+            });
     if (isInitializationCode) {
       Store initStore = !isStatic ? initializationStore : initializationStaticStore;
       if (initStore != null) {
