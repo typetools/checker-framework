@@ -995,8 +995,8 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns the method parameters for the invoked method (or constructor), with the same number of
-   * arguments passed to the invocation tree.
+   * Returns the method parameters for the invoked method (or constructor). The result has the same
+   * number of arguments as passed to the invocation tree.
    *
    * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
    * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
