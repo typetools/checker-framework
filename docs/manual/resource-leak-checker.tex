@@ -189,12 +189,16 @@ refer to the same underlying resource.)
 For example, consider the following code that safely closes a \<Socket>:
 
 \begin{verbatim}
-  void example(String myHost, int myPort) {
+  void example(String myHost, int myPort) throws IOException {
     Socket s = new Socket(myHost, myPort);
     closeSocket(s);
   }
   void closeSocket(@Owning @MustCall("close") Socket t) {
-    t.close();
+    try {
+      t.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 \end{verbatim}
 
@@ -221,6 +225,25 @@ Writing \<@Owning> or \<@NotOwning> can never make the checker
 unsound:  a real warning can never be hidden by them.
 As with any annotation, incorrect or missing annotations can lead to false positive warnings.
 
+When \<@Owning> is written on a method parameter, the method only takes ownership of the
+parameter when it returns normally.  In this example, the Resource Leak Checker will report
+an error in the \<example> method and allow the definition of \<closeSocket>:
+
+\begin{verbatim}
+  void example(String myHost, int myPort) throws Exception {
+    // Error: `s` is not closed on all paths
+    Socket s = new Socket(myHost, myPort);
+
+    // `closeSocket` does not have to close `s` when it throws IOException.
+    // Instead, this method has to catch the exception and close `s`.
+    closeSocket(s);
+  }
+
+  void closeSocket(@Owning Socket t) throws IOException {
+    throw new IOException();
+  }
+\end{verbatim}
+
 
 \subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
 
@@ -242,6 +265,29 @@ on all exceptional paths.
 \textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
 when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
 more details on how to annotate a non-final, non-static owning field.
+
+Owning fields are treated slightly differently in constructors versus normal methods.
+In normal methods, assigning a value to an owning field always satisfies the object's
+must-call obligations.  However, within a constructor, those obligations are only
+satisfied if the constructor returns normally.  If the constructor throws an exception,
+the constructed object will not be accessible afterward, and therefore its fields need
+to be closed before it exits.
+
+This constructor safely closes the object it allocates before throwing an exception:
+\begin{verbatim}
+  private final @Owning Socket socket;
+
+  public ConstructorThatCanThrow() throws IOException {
+    Socket s = new Socket(myHost, myPort);
+    try {
+      initialize(s); // may throw IOException
+    } catch (Exception e) {
+      s.close();
+      throw e;
+    }
+    this.socket = s;
+  }
+\end{verbatim}
 
 An assignment to a \textbf{static owning field} does not satisfy a
 must-call obligation; for example,
