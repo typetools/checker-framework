@@ -165,10 +165,10 @@ public interface TypeHierarchy {
   boolean isSubtypeShallowEffective(AnnotationMirror subQualifier, AnnotatedTypeMirror supertype);
 
   /**
-   * Returns a list of the index of the type arguments that are covariant.
+   * Returns a list of the indices of the type arguments that are covariant.
    *
    * @param type a type
-   * @return a list of the index of the type arguments that are covariant
+   * @return a list of the indices of the type arguments that are covariant
    */
   List<Integer> getCovariantArgIndexes(AnnotatedDeclaredType type);
 }
