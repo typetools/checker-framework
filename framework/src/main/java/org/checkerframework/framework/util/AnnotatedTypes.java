@@ -1012,7 +1012,6 @@ public class AnnotatedTypes {
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
-    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     // Handle anonymous constructors that extend a class with an enclosing type.
