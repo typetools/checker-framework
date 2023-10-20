@@ -1,12 +1,8 @@
 package org.checkerframework.checker.resourceleak;
 
-import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.code.Type;
-import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.signature.qual.CanonicalName;
 
 /**
  * This variant of CFAnalysis extends the set of ignored exception types.
@@ -15,7 +11,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
  */
 public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
 
-  private final Set<@CanonicalName String> ignoredExceptions;
+  private final SetOfTypes ignoredExceptions;
 
   /**
    * Creates a new {@code CalledMethodsAnalysis}.
@@ -26,11 +22,11 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
   protected ResourceLeakAnalysis(
       ResourceLeakChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
-    this.ignoredExceptions = ImmutableSet.copyOf(checker.getIgnoredExceptions());
+    this.ignoredExceptions = checker.getIgnoredExceptions();
   }
 
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptions.contains(((Type) exceptionType).tsym.getQualifiedName().toString());
+    return ignoredExceptions.contains(getTypes(), exceptionType);
   }
 }

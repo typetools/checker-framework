@@ -12,7 +12,7 @@ public class ResourceLeakCustomIgnoredExceptionsTest extends CheckerFrameworkPer
         testFiles,
         ResourceLeakChecker.class,
         "resourceleak-customignoredexceptions",
-        "-AresourceLeakIgnoredExceptions=java.lang.Error,java.lang.ClassCircularityError,java.lang.ClassFormatError,java.lang.NoClassDefFoundError,java.lang.OutOfMemoryError,java.lang.NullPointerException",
+        "-AresourceLeakIgnoredExceptions=? extends java.lang.Error, java.lang.NullPointerException",
         "-AwarnUnneededSuppressions",
         "-encoding",
         "UTF-8");

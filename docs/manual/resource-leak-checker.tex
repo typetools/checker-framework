@@ -514,15 +514,18 @@ verification tool.
 
 The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
-fully-qualified exception types.  For example, a very pedantic set of ignored
-exceptions might be
+fully-qualified exception types.  It can also include \<? extends TYPE> to ignore all
+subtypes of an exception.  For example, for a very pedantic set of ignored exceptions use:
 
 \begin{verbatim}
-  -AresourceLeakIgnoredExceptions=java.lang.Error,java.lang.NullPointerException
+  -AresourceLeakIgnoredExceptions=? extends java.lang.Error, java.lang.NullPointerException
 \end{verbatim}
 
+which ignores \<java.lang.Error> (and all its subclasses) as well as
+\<java.lang.NullPointerException> (but not its subclasses).
+
 The keyword \<default> will expand to the default set of ignored exceptions.  So,
-to add an exception to the set of ignored exceptions, use e.g.
+to add an additional exception to the set of ignored exceptions, use:
 
 \begin{verbatim}
   -AresourceLeakIgnoredExceptions=default,package.MyCustomException

@@ -2,10 +2,13 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.UnsupportedEncodingException;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
@@ -13,8 +16,6 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
@@ -53,33 +54,34 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * errors that the JVM can issue on any statement, and errors that can be prevented by running
    * some other CF checker.
    */
-  private static final Set<@CanonicalName String> DEFAULT_IGNORED_EXCEPTIONS =
-      ImmutableSet.of(
-          // Any method call has a CFG edge for Throwable/RuntimeException/Error
-          // to represent run-time misbehavior. Ignore it.
-          Throwable.class.getCanonicalName(),
-          Error.class.getCanonicalName(),
-          RuntimeException.class.getCanonicalName(),
-          // Use the Nullness Checker to prove this won't happen.
-          NullPointerException.class.getCanonicalName(),
-          // These errors can't be predicted statically, so ignore them and assume
-          // they won't happen.
-          ClassCircularityError.class.getCanonicalName(),
-          ClassFormatError.class.getCanonicalName(),
-          NoClassDefFoundError.class.getCanonicalName(),
-          OutOfMemoryError.class.getCanonicalName(),
-          // It's not our problem if the Java type system is wrong.
-          ClassCastException.class.getCanonicalName(),
-          // It's not our problem if the code is going to divide by zero.
-          ArithmeticException.class.getCanonicalName(),
-          // Use the Index Checker to prevent these errors.
-          ArrayIndexOutOfBoundsException.class.getCanonicalName(),
-          NegativeArraySizeException.class.getCanonicalName(),
-          // Most of the time, this exception is infeasible, as the charset used
-          // is guaranteed to be present by the Java spec (e.g., "UTF-8").
-          // Eventually, this exclusion could be refined by looking at the charset
-          // being requested.
-          UnsupportedEncodingException.class.getCanonicalName());
+  private static final SetOfTypes DEFAULT_IGNORED_EXCEPTIONS =
+      SetOfTypes.anyOfTheseNames(
+          ImmutableSet.of(
+              // Any method call has a CFG edge for Throwable/RuntimeException/Error
+              // to represent run-time misbehavior. Ignore it.
+              Throwable.class.getCanonicalName(),
+              Error.class.getCanonicalName(),
+              RuntimeException.class.getCanonicalName(),
+              // Use the Nullness Checker to prove this won't happen.
+              NullPointerException.class.getCanonicalName(),
+              // These errors can't be predicted statically, so ignore them and assume
+              // they won't happen.
+              ClassCircularityError.class.getCanonicalName(),
+              ClassFormatError.class.getCanonicalName(),
+              NoClassDefFoundError.class.getCanonicalName(),
+              OutOfMemoryError.class.getCanonicalName(),
+              // It's not our problem if the Java type system is wrong.
+              ClassCastException.class.getCanonicalName(),
+              // It's not our problem if the code is going to divide by zero.
+              ArithmeticException.class.getCanonicalName(),
+              // Use the Index Checker to prevent these errors.
+              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
+              NegativeArraySizeException.class.getCanonicalName(),
+              // Most of the time, this exception is infeasible, as the charset used
+              // is guaranteed to be present by the Java spec (e.g., "UTF-8").
+              // Eventually, this exclusion could be refined by looking at the charset
+              // being requested.
+              UnsupportedEncodingException.class.getCanonicalName()));
 
   /**
    * Command-line option for controlling which exceptions are ignored.
@@ -93,7 +95,22 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * A pattern that matches one or more consecutive commas, optionally preceded and followed by
    * whitespace.
    */
-  private static final Pattern COMMAS = Pattern.compile("\\s*(:?" + Pattern.quote(",") + "\\s*)+");
+  private static final Pattern COMMAS = Pattern.compile("\\s*(?:" + Pattern.quote(",") + "\\s*)+");
+
+  /**
+   * A pattern that matches an exception specifier for the {@link #IGNORED_EXCEPTIONS} option: an
+   * optional "? extends" followed by a qualified name. The whole thing can be padded with
+   * whitespace.
+   */
+  private static final Pattern EXCEPTION_SPECIFIER =
+      Pattern.compile(
+          "^\\s*"
+              + "("
+              + Pattern.quote("?")
+              + "\\s+extends\\s+"
+              + ")?"
+              + "(\\w+(?:\\.\\w+)*)"
+              + "\\s*$");
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the
@@ -113,7 +130,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    *
    * @see #getIgnoredExceptions()
    */
-  private @MonotonicNonNull Set<@CanonicalName String> ignoredExceptions = null;
+  private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
 
   @Override
   protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
@@ -165,8 +182,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    *
    * @return the set of exceptions to ignore
    */
-  public Set<@CanonicalName String> getIgnoredExceptions() {
-    Set<@CanonicalName String> result = ignoredExceptions;
+  public SetOfTypes getIgnoredExceptions() {
+    SetOfTypes result = ignoredExceptions;
     if (result == null) {
       String ignoredExceptionsOptionValue = getOption(IGNORED_EXCEPTIONS);
       result =
@@ -179,57 +196,82 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   }
 
   /**
-   * Parse the argument given for the {@link #IGNORED_EXCEPTIONS} option. A warning will be issued
-   * if any of the named exceptions cannot be found.
+   * Parse the argument given for the {@link #IGNORED_EXCEPTIONS} option. Warnings will be issued
+   * for any problems in the argument, for instance if any of the named exceptions cannot be found.
    *
    * @param ignoredExceptionsOptionValue the value given for {@link #IGNORED_EXCEPTIONS}
    * @return the set of ignored exceptions
    */
-  protected Set<@CanonicalName String> parseIgnoredExceptions(String ignoredExceptionsOptionValue) {
+  protected SetOfTypes parseIgnoredExceptions(String ignoredExceptionsOptionValue) {
     String[] exceptions = COMMAS.split(ignoredExceptionsOptionValue);
-    Set<@CanonicalName String> result = new LinkedHashSet<>();
+    List<SetOfTypes> sets = new ArrayList<>();
     for (String e : exceptions) {
-      e = e.trim();
-      if (!e.isEmpty()) {
-        if (e.equalsIgnoreCase("default")) {
-          result.addAll(DEFAULT_IGNORED_EXCEPTIONS);
-        } else {
-          String exceptionName = checkCanonicalName(e);
-          if (exceptionName == null) {
-            message(
-                Diagnostic.Kind.WARNING,
-                "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
-                e,
-                IGNORED_EXCEPTIONS,
-                ignoredExceptionsOptionValue);
-          } else {
-            result.add(exceptionName);
-          }
-        }
+      SetOfTypes set = parseExceptionSpecifier(e, ignoredExceptionsOptionValue);
+      if (set != null) {
+        sets.add(set);
       }
     }
-    return result;
+    return SetOfTypes.union(sets.toArray(new SetOfTypes[0]));
+  }
+
+  /**
+   * Parse a single exception specifier from the {@link #IGNORED_EXCEPTIONS} option and issue
+   * warnings if it does not parse. See {@link #EXCEPTION_SPECIFIER} for a description of the
+   * syntax.
+   *
+   * @param exceptionSpecifier the exception specifier to parse
+   * @param ignoredExceptionsOptionValue the whole value of the {@link #IGNORED_EXCEPTIONS} option;
+   *     only used for error reporting
+   * @return the parsed set of types, or null if the value does not parse
+   */
+  protected @Nullable SetOfTypes parseExceptionSpecifier(
+      String exceptionSpecifier, String ignoredExceptionsOptionValue) {
+    Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
+    if (m.matches()) {
+      @Nullable String questionMarkExtendsClause = m.group(1);
+      String qualifiedName = m.group(2);
+
+      if (qualifiedName.equalsIgnoreCase("default")) {
+        return DEFAULT_IGNORED_EXCEPTIONS;
+      }
+      TypeMirror type = checkCanonicalName(qualifiedName);
+      if (type == null) {
+        message(
+            Diagnostic.Kind.WARNING,
+            "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
+            exceptionSpecifier,
+            IGNORED_EXCEPTIONS,
+            ignoredExceptionsOptionValue);
+      } else {
+        return questionMarkExtendsClause != null
+            ? SetOfTypes.allSubtypes(type)
+            : SetOfTypes.singleton(type);
+      }
+    } else if (!exceptionSpecifier.trim().isEmpty()) {
+      message(
+          Diagnostic.Kind.WARNING,
+          "The string '%s' appears in the -A%s=%s option, but it is not a legal exception specifier",
+          exceptionSpecifier,
+          IGNORED_EXCEPTIONS,
+          ignoredExceptionsOptionValue);
+    }
+    return null;
   }
 
   /**
    * Check if the given String refers to an actual type.
    *
    * @param s any string
-   * @return the canonical name of the referenced type, or null if it does not exist
+   * @return the referenced type, or null if it does not exist
    */
   @SuppressWarnings({
     "signature:argument", // `s` is not a qualified name, but we pass it to getTypeElement anyway
-    "signature:assignment", // Name.toString() is not properly annotated
   })
-  protected @Nullable @CanonicalName String checkCanonicalName(String s) {
+  protected @Nullable TypeMirror checkCanonicalName(String s) {
     TypeElement elem = getProcessingEnvironment().getElementUtils().getTypeElement(s);
     if (elem == null) {
       return null;
     }
-    @CanonicalNameOrEmpty String result = elem.getQualifiedName().toString();
-    if (result.isEmpty()) {
-      return null;
-    }
-    return result;
+    return types.getDeclaredType(elem);
   }
 }
