@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -139,7 +140,7 @@ public class MustCallInference {
   /** The element referring to the enclosing class of the current method. */
   private final @Nullable TypeElement classElt;
 
-  private Integer indexOfParamAliasWithReturn = null;
+  private Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
 
   /**
    * Creates a MustCallInference instance.
@@ -251,7 +252,8 @@ public class MustCallInference {
    * <ul>
    *   <li>If the return node is a field with non-empty must-call obligations, adds a {@link
    *       NotOwning} annotation to the return type of the current method.
-   *   <li>Compute the index of the parameter that is an alias of the return node.
+   *   <li>Compute the index of the parameter that is an alias of the return node and add it the
+   *       {@link #returnNodeToParameterIndexMap} map.
    * </ul>
    *
    * @param obligations set of obligations associated with the current block
@@ -267,14 +269,12 @@ public class MustCallInference {
     if (returnNode instanceof FieldAccessNode) {
       addNotOwning();
     } else {
-      if (indexOfParamAliasWithReturn != null && indexOfParamAliasWithReturn == -1) {
-        return;
-      }
-      Obligation argObligation =
+      Obligation returnNodeObligation =
           MustCallConsistencyAnalyzer.getObligationForVar(
               obligations, (LocalVariableNode) returnNode);
-      if (argObligation != null) {
-        indexOfParamAliasWithReturn = getIndexOfParam(argObligation);
+      if (returnNodeObligation != null) {
+        returnNodeToParameterIndexMap.put(
+            returnNodeObligation, getIndexOfParam(returnNodeObligation));
       }
     }
   }
@@ -294,8 +294,13 @@ public class MustCallInference {
       addEnsuresCalledMethods();
     }
 
-    if (indexOfParamAliasWithReturn != null && indexOfParamAliasWithReturn != -1) {
-      addMustCallAlias(indexOfParamAliasWithReturn + 1);
+    // If all return statements alias the same parameter index, then add the @MustCallAlias
+    // annotation to that parameter.
+    if (!returnNodeToParameterIndexMap.isEmpty()) {
+      if (returnNodeToParameterIndexMap.values().stream().distinct().count() == 1) {
+        int indexOfParam = returnNodeToParameterIndexMap.values().iterator().next();
+        addMustCallAlias(indexOfParam + 1);
+      }
     }
 
     addOrUpdateClassMustCall();
