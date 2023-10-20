@@ -265,7 +265,7 @@ public final class TreePathUtil {
    * Implementation of {@link #getContextForPolyExpression(TreePath)}.
    *
    * @param treePath a path
-   * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference.
+   * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference
    * @return the assignment context as described, {@code null} otherwise
    */
   private static @Nullable Tree getContextForPolyExpression(
