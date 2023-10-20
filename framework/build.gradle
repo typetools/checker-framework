@@ -123,6 +123,8 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
     }
     javaexec {
       classpath = sourceSets.main.runtimeClasspath
+      standardOutput = System.out
+      errorOutput = System.err
 
       mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
       args outputDir
