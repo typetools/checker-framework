@@ -1062,6 +1062,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return true if the {@code exprTree} is unreachable
    */
   public boolean isUnreachable(ExpressionTree exprTree) {
+    if (!everUseFlow) {
+      return false;
+    }
     Set<Node> nodes = getNodesForTree(exprTree);
     if (nodes != null) {
       for (Node n : nodes) {
