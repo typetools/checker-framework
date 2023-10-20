@@ -30,6 +30,7 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.BlockWithObligations;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -333,7 +334,9 @@ public class MustCallInference {
         }
         result.add(
             new Obligation(
-                ImmutableSet.of(new ResourceAlias(new LocalVariable(paramElement), param))));
+                ImmutableSet.of(
+                    new ResourceAlias(new LocalVariable(paramElement), paramElement, param)),
+                Collections.singleton(MethodExitKind.NORMAL_RETURN)));
       }
     }
     return result != null ? result : Collections.emptySet();
@@ -470,7 +473,7 @@ public class MustCallInference {
     List<VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias resourceAlias : resourceAliases) {
-      Element rElt = resourceAlias.reference.getElement();
+      Element rElt = resourceAlias.element;
       int i = paramElts.indexOf(rElt);
       if (i != -1) {
         return i;
@@ -634,7 +637,7 @@ public class MustCallInference {
       Set<Obligation> obligations, Node node, VariableElement element) {
     Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, node);
     for (ResourceAlias nodeAlias : nodeAliases) {
-      Element nodeAliasElt = nodeAlias.reference.getElement();
+      Element nodeAliasElt = nodeAlias.element;
       if (nodeAliasElt.equals(element)) {
         return true;
       }

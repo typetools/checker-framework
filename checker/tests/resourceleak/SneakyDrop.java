@@ -56,6 +56,10 @@ public class SneakyDrop {
 
   public static void main6(String[] args) throws Exception {
     Resource x = new Resource();
-    sneakyDropCorrect(x);
+    try {
+      sneakyDropCorrect(x);
+    } catch (Exception e) {
+      x.close();
+    }
   }
 }
