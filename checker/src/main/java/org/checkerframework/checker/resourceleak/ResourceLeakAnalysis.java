@@ -11,6 +11,10 @@ import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFact
  */
 public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
 
+  /**
+   * The set of exceptions to ignore, cached from {@link
+   * ResourceLeakChecker#getIgnoredExceptions()}.
+   */
   private final SetOfTypes ignoredExceptions;
 
   /**
