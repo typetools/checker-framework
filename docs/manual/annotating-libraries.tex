@@ -696,6 +696,55 @@ find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
 
 % That file will contain many non-unique import statements, but that shouldn't be harmful.
 
+\subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
+
+If you do not have access to the library source code, then you can create a
+stub file by hand,
+and then annotate it.  The rest of this section describes this approach.
+
+To write a stub file by hand, you need the following information about the
+element that you want to annotate:
+\begin{itemize}
+\item the name of the class that contains the element you wish to annotate
+\item the package of that class
+\item if the element is a field, the type of the field
+\item if the element is a method, the types of its parameters (equivalently, its signature)
+\item the name of the element
+\end{itemize}
+
+If you have access to the Javadoc for the element you wish to annotate, it is often
+easiest to collect the information above from the Javadoc. This also avoids common
+mistakes when writing stub files by hand, such as typos in the package name or
+in a method signature: instead, you can copy-paste this information directly
+from the Javadoc webpage.
+
+Here are steps to write a stub file by hand:
+\begin{enumerate}
+\item create a stub file (the file can have any name, but must end in \<.astub>)
+\item enter the package name after the keyword \<package>, exactly as if you are
+writing a Java file for the target class. Typically, it is easiest to copy-paste
+this package name from either Javadoc or an import statement in the code that you
+are typechecking.
+\item on another line, write \<class> followed by the class name. The stub file
+format does not care whether the actual element within which the target element
+is defined is a class, interface, etc., so you can write "class" regardless of
+how the element was actually defined in its own source code. A common mistake at
+this stage is that the target method or field may be defined in a superclass of the
+static type of the class that is actually being used in the code you are trying
+to analyze. For example, suppose that you are trying to annotate the
+\<drawImage(Image,int,int,int,int,ImageObserver)> method of an object whose static
+type is \<java.awt.Graphics2D>. This method is actually defined in the abstract
+\<Graphics> class (which is the superclass of \<Graphics2D>), so your stub would need to
+be for \<Graphics> rather than \<Graphics2D>.
+\item Add the method or field signature that you are trying to annotate. For fields,
+you must match the static type of the field. For methods, the method name and the
+types of the parameters must be correct, but the return type can be anything
+(so it is easiest to just write \<Object> for all return types, if you are not
+copy-pasting a method signature from the Javadoc for the target).
+\item add a \<;> after the declaration (do not include a method body or an initializer
+for a field).
+\item add import statements for any annotations you intend to use.
+\item annotate the target declaration.
 
 %% Changes in JDK 11 have broken StubGenerator.
 % \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
