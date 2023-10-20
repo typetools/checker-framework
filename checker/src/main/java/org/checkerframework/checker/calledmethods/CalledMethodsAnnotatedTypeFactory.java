@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.builder.AutoValueSupport;
@@ -39,6 +40,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 
 /** The annotated type factory for the Called Methods Checker. */
@@ -427,5 +429,21 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
     builder.setValue("methods", calledMethods.toArray(new String[calledMethods.size()]));
     AnnotationMirror am = builder.build();
     return am;
+  }
+
+  /**
+   * Ignore exceptional control flow due to ignored exception types.
+   *
+   * @param exceptionType exception type
+   * @return {@code true} if {@code exceptionType} is a member of {@link
+   *     CalledMethodsAnalysis#ignoredExceptionTypes}, {@code false} otherwise
+   */
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return CalledMethodsAnalysis.ignoredExceptionTypes.contains(
+          TypesUtils.getQualifiedName((DeclaredType) exceptionType));
+    }
+    return false;
   }
 }
