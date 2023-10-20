@@ -27,7 +27,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
    * @param type2 a type
    * @return true if {@code type1} and {@code type2} have equivalent sets of annotations
    */
-  protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+  protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     return AnnotationUtils.areSame(type1.getPrimaryAnnotations(), type2.getPrimaryAnnotations());
   }
 
@@ -50,7 +50,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
 
     @SuppressWarnings("TypeEquals") // TODO
     boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
-    return sameUnderlyingType && arePrimeAnnosEqual(type1, type2);
+    return sameUnderlyingType && arePrimaryAnnosEqual(type1, type2);
   }
 
   @SuppressWarnings("interning:not.interned")
