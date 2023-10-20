@@ -995,8 +995,8 @@ public class AnnotatedTypes {
   }
 
   /**
-   * Returns the method parameters for the invoked method (or constructor). The result has the same
-   * number of arguments as passed to the invocation tree.
+   * Returns the method parameters for the invoked method (or constructor), with the same number of
+   * arguments as passed to the invocation tree.
    *
    * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
    * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
@@ -1005,12 +1005,15 @@ public class AnnotatedTypes {
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
    * @param args the arguments to the method or constructor invocation
-   * @return the types that the invocation arguments need to be subtype of
+   * @return a list of the types that the invocation arguments need to be subtype of; has the same
+   *     length as {@code args}
    */
   public static List<AnnotatedTypeMirror> adaptParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
       List<? extends ExpressionTree> args) {
+    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
+
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
     // Handle anonymous constructors that extend a class with an enclosing type.
     if (method.getElement().getKind() == ElementKind.CONSTRUCTOR
