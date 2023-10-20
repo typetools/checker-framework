@@ -1296,6 +1296,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
    *
+   * @param tree a tree
    * @return the {@link Node}s for a given {@link Tree}
    * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
    */
@@ -1651,6 +1652,12 @@ public abstract class GenericAnnotatedTypeFactory<
     postAnalyze(cfg);
   }
 
+  /**
+   * Returns true if the {@code typeMirror} is an exception type that should be ignored
+   *
+   * @param typeMirror an exception type
+   * @return true if the {@code typeMirror} is an exception type that should be ignored
+   */
   public boolean isIgnoredExceptionType(TypeMirror typeMirror) {
     return false;
   }

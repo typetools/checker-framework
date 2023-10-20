@@ -26,7 +26,6 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
@@ -279,30 +278,74 @@ public class ControlFlowGraph implements UniqueId {
     return result;
   }
 
-  public List<Node> getAllNodes(
+  /**
+   * Returns the set of all basic blocks in this control flow graph except those that are only
+   * reachable via an exception whose type is ignored by {@code shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if the passed {@code TypeMirror} should be ignored
+   * @return the set of all basic blocks in this control flow graph except those that are only
+   *     reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
-      Function<TypeMirror, Boolean> f) {
-    List<Node> result = new ArrayList<>();
-    for (Block b : getAllBlocks()) {
-      boolean notDead = !b.getPredecessors().isEmpty();
-      for (Block q : b.getPredecessors()) {
-        if (q.getType() != BlockType.EXCEPTION_BLOCK) {
-          notDead = true;
-          break;
-        } else {
-          for (Map.Entry<TypeMirror, Set<Block>> entry :
-              ((ExceptionBlock) q).getExceptionalSuccessors().entrySet()) {
-            if (entry.getValue().contains(b) && !f.apply(entry.getKey())) {
-              notDead = true;
-              break;
-            }
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    Set<Block> visited = new LinkedHashSet<>();
+    // worklist is always a subset of visited; any block in worklist is also in visited.
+    Queue<Block> worklist = new ArrayDeque<>();
+    Block cur = entryBlock;
+    visited.add(entryBlock);
+
+    // traverse the whole control flow graph
+    while (true) {
+      if (cur == null) {
+        break;
+      }
+
+      if (cur instanceof ExceptionBlock) {
+        ((ExceptionBlock) cur)
+            .getExceptionalSuccessors()
+            .forEach(
+                (key, value) -> {
+                  if (!shouldIgnoreException.apply(key)) {
+                    for (Block b : value) {
+                      if (visited.add(b)) {
+                        worklist.add(b);
+                      }
+                    }
+                  }
+                });
+        Block b = ((SingleSuccessorBlockImpl) cur).getSuccessor();
+        if (b != null && visited.add(b)) {
+          worklist.add(b);
+        }
+
+      } else {
+        for (Block b : cur.getSuccessors()) {
+          if (visited.add(b)) {
+            worklist.add(b);
           }
         }
       }
+      cur = worklist.poll();
+    }
 
-      if (notDead) {
-        result.addAll(b.getNodes());
-      }
+    return visited;
+  }
+
+  /**
+   * Returns the list of all nodes in this control flow graph except those that are only reachable
+   * via an exception whose type is ignored by {@code shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if the passed {@code TypeMirror} should be ignored
+   * @return the list of all nodes in this control flow graph except those that are only reachable
+   *     via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public List<Node> getAllNodes(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    List<Node> result = new ArrayList<>();
+    for (Block b : getAllBlocks(shouldIgnoreException)) {
+      result.addAll(b.getNodes());
     }
     return result;
   }
