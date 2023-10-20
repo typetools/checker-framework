@@ -140,7 +140,12 @@ public class MustCallInference {
   /** The element referring to the enclosing class of the current method. */
   private final @Nullable TypeElement classElt;
 
-  private Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
+  /**
+   * This map is used to track alias relationships between return nodes and method parameters. The
+   * keys are the obligation of return nodes, and the values are the index of current method formal
+   * parameter (0-based) that is alias with the return node.
+   */
+  private final Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
 
   /**
    * Creates a MustCallInference instance.
