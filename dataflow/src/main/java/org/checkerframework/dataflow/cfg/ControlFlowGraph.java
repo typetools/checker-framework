@@ -299,11 +299,7 @@ public class ControlFlowGraph implements UniqueId {
     visited.add(entryBlock);
 
     // traverse the whole control flow graph
-    while (true) {
-      if (cur == null) {
-        break;
-      }
-
+    while (cur != null) {
       if (cur instanceof ExceptionBlock) {
         ((ExceptionBlock) cur)
             .getExceptionalSuccessors()
