@@ -292,13 +292,14 @@ public class ControlFlowGraph implements UniqueId {
   public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
       Function<TypeMirror, Boolean> shouldIgnoreException) {
+    // This is the return value of the method.
     Set<Block> visited = new LinkedHashSet<>();
-    // worklist is always a subset of visited; any block in worklist is also in visited.
+    // `worklist` is always a subset of `visited`; any block in `worklist` is also in `visited`.
     Queue<Block> worklist = new ArrayDeque<>();
     Block cur = entryBlock;
     visited.add(entryBlock);
 
-    // traverse the whole control flow graph
+    // Traverse the whole control flow graph.
     while (cur != null) {
       if (cur instanceof ExceptionBlock) {
         ((ExceptionBlock) cur)
