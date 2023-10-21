@@ -433,7 +433,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
   /**
    * Returns true if the checker should ignore exceptional control flow due to the given exception
-   * types.
+   * type.
    *
    * @param exceptionType exception type
    * @return {@code true} if {@code exceptionType} is a member of {@link

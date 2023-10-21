@@ -1056,7 +1056,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and may
-   * return {@code false} when the {@code exprTree} is unreachable.
+   * return {@code false} even though the {@code exprTree} is unreachable.
    *
    * @param exprTree an expression tree
    * @return true if the {@code exprTree} is unreachable
@@ -1066,18 +1066,18 @@ public abstract class GenericAnnotatedTypeFactory<
       return false;
     }
     Set<Node> nodes = getNodesForTree(exprTree);
-    if (nodes != null) {
-      for (Node n : nodes) {
-        if (n.getTree() != null && reachableNodes.contains(n.getTree())) {
-          return false;
-        }
-      }
-      // None of the corresponding nodes are reachable, so this tree is dead.
-      return true;
+    if (nodes == null) {
+      // Dataflow has no any information about the tree, so conservatively consider the tree
+      // reachable.
+      return false;
     }
-    // Dataflow doesn't have any information about the tree, so conservatively consider the tree
-    // reachable.
-    return false;
+    for (Node n : nodes) {
+      if (n.getTree() != null && reachableNodes.contains(n.getTree())) {
+        return false;
+      }
+    }
+    // None of the corresponding nodes is reachable, so this tree is dead.
+    return true;
   }
 
   /**
@@ -1097,9 +1097,11 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * A set of trees whose corresponding nodes are reachable. This is not an exhaustive set of
    * reachable trees. Use {@link #isUnreachable(ExpressionTree)} instead of this set directly.
+   *
+   * <p>This cannot be a set of Nodes, because two LocalVariableNodes are equal if they have the
+   * same name but represent different uses of the variable. So instead of storing Nodes, it stores
+   * the result of {@code Node#getTree}.
    */
-  // This should be a set of Nodes, but two LocalVariableNodes are equal if they have the same name
-  // but represent different uses of the variable.  So instead store the result of Node#getTree.
   private final Set<Tree> reachableNodes = new HashSet<>();
 
   /**
@@ -1568,9 +1570,6 @@ public abstract class GenericAnnotatedTypeFactory<
         .forEach(
             node -> {
               if (node.getTree() != null) {
-                // Can't store the node directly because two LocalVariableNodes are equal if they
-                // have the same name even if they have different trees. So instead store the result
-                // of Node#getTree.
                 reachableNodes.add(node.getTree());
               }
             });
@@ -1653,10 +1652,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if the {@code typeMirror} is an exception type that should be ignored
+   * Returns true if {@code typeMirror} is an exception type that should be ignored.
    *
    * @param typeMirror an exception type
-   * @return true if the {@code typeMirror} is an exception type that should be ignored
+   * @return true if {@code typeMirror} is an exception type that should be ignored
    */
   public boolean isIgnoredExceptionType(TypeMirror typeMirror) {
     return false;

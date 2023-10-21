@@ -281,11 +281,13 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Returns the set of all basic blocks in this control flow graph, <b>except</b> those that are
-   * only reachable via an exception whose type is ignored by {@code shouldIgnoreException}.
+   * only reachable via an exception whose type is ignored by parameter {@code
+   * shouldIgnoreException}.
    *
-   * @param shouldIgnoreException returns true if the passed {@code TypeMirror} should be ignored
-   * @return the set of all basic blocks in this control flow graph except those that are only
-   *     reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
+   * @return the set of all basic blocks in this control flow graph, <b>except</b> those that are
+   *     only reachable via an exception whose type is ignored by {@code shouldIgnoreException}
    */
   public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
@@ -334,10 +336,11 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Returns the list of all nodes in this control flow graph except those that are only reachable
-   * via an exception whose type is ignored by parameter {@code shouldIgnoreException}.
+   * Returns the list of all nodes in this control flow graph, <b>except</b> those that are only
+   * reachable via an exception whose type is ignored by parameter {@code shouldIgnoreException}.
    *
-   * @param shouldIgnoreException returns true if the passed {@code TypeMirror} should be ignored
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
    * @return the list of all nodes in this control flow graph, <b>except</b> those that are only
    *     reachable via an exception whose type is ignored by {@code shouldIgnoreException}
    */
