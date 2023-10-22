@@ -2403,6 +2403,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
+    if (relevantJavaTypes == null) {
+      return true;
+    }
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
@@ -2444,7 +2447,11 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected boolean isRelevantImpl(TypeMirror tm) {
 
-    if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
+    if (relevantJavaTypes == null) {
+      return true;
+    }
+
+    if (relevantJavaTypes.contains(tm)) {
       return true;
     }
 
