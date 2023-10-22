@@ -1077,7 +1077,12 @@ public class WholeProgramInferenceJavaParserStorage
    * @return true if the annotation might be relevant
    */
   boolean annotationIsRelevant(AnnotationExpr anno) {
-    // This is a fully-qualified name.
+    GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf = (GenericAnnotatedTypeFactory) atypeFactory;
+    if (gatf.relevantJavaTypes == null) {
+      return true;
+    }
+
+    // `aname` is a fully-qualified name.
     String aName = anno.getNameAsString();
     if (!atypeFactory.isSupportedQualifier(aName)) {
       // The annotation might be a declaration qualifier, such as a side effect specification.
@@ -1086,27 +1091,34 @@ public class WholeProgramInferenceJavaParserStorage
     Node parentNode = anno.getParentNode().get();
 
     if (parentNode instanceof ArrayType) {
-      return ((GenericAnnotatedTypeFactory) atypeFactory).arraysAreRelevant();
+      return gatf.arraysAreRelevant();
     }
     if (parentNode instanceof ClassOrInterfaceType) {
       ClassOrInterfaceType classType = (ClassOrInterfaceType) parentNode;
       String simpleName = classType.getName().toString();
       String scopedName = classType.getNameWithScope();
       // TODO: Do I need to remove type parameters?
-      return ((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(simpleName)
-          || ((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(scopedName);
+      return gatf.isRelevant(simpleName) || gatf.isRelevant(scopedName);
     }
     if (parentNode instanceof IntersectionType) {
       return true; // TODO
     }
+    if (parentNode instanceof Parameter) {
+      Parameter param = (Parameter) parentNode;
+      if (param.isVarArgs()) {
+        return gatf.arraysAreRelevant();
+      } else {
+        throw new Error("Unexpected type annotation on non-varargs Parameter: " + param);
+      }
+    }
     if (parentNode instanceof PrimitiveType) {
-      return ((GenericAnnotatedTypeFactory) atypeFactory).isRelevant(parentNode.toString());
+      return gatf.isRelevant(parentNode.toString());
     }
     if (parentNode instanceof UnionType) {
       return true; // TODO
     }
     if (parentNode instanceof VarType) {
-      return ((GenericAnnotatedTypeFactory) atypeFactory).nonprimitivesAreRelevant();
+      return gatf.nonprimitivesAreRelevant();
     }
     if (parentNode instanceof WildcardType) {
       return true; // TODO
