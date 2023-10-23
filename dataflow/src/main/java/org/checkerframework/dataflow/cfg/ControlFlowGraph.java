@@ -302,18 +302,16 @@ public class ControlFlowGraph implements UniqueId {
     // Traverse the whole control flow graph.
     while (cur != null) {
       if (cur instanceof ExceptionBlock) {
-        ((ExceptionBlock) cur)
-            .getExceptionalSuccessors()
-            .forEach(
-                (key, value) -> {
-                  if (!shouldIgnoreException.apply(key)) {
-                    for (Block b : value) {
-                      if (visited.add(b)) {
-                        worklist.add(b);
-                      }
-                    }
-                  }
-                });
+        for (Map.Entry<TypeMirror, Set<Block>> entry :
+            ((ExceptionBlock) cur).getExceptionalSuccessors().entrySet()) {
+          if (!shouldIgnoreException.apply(entry.getKey())) {
+            for (Block b : entry.getValue()) {
+              if (visited.add(b)) {
+                worklist.add(b);
+              }
+            }
+          }
+        }
         Block b = ((SingleSuccessorBlockImpl) cur).getSuccessor();
         if (b != null && visited.add(b)) {
           worklist.add(b);
@@ -345,9 +343,7 @@ public class ControlFlowGraph implements UniqueId {
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
       Function<TypeMirror, Boolean> shouldIgnoreException) {
     List<Node> result = new ArrayList<>();
-    for (Block b : getAllBlocks(shouldIgnoreException)) {
-      result.addAll(b.getNodes());
-    }
+    getAllBlocks(shouldIgnoreException).forEach(b -> result.addAll(b.getNodes()));
     return result;
   }
 
