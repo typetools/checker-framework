@@ -59,11 +59,13 @@ public class DependentTypesViewpointAdaptationTest {
 
   public void compute5(
       DependentTypesViewpointAdaptationTest this, DependentTypesViewpointAdaptationTest other) {
-    DependentTypesViewpointAdaptationTest myOther = other;
+    // :: warning: (assignment)
+    @SameLen("this") DependentTypesViewpointAdaptationTest myOther = other;
   }
 
   // Same as compute5, but without an explicit this parameter.
   public void compute6(DependentTypesViewpointAdaptationTest other) {
-    DependentTypesViewpointAdaptationTest myOther = other;
+    // :: warning: (assignment)
+    @SameLen("this") DependentTypesViewpointAdaptationTest myOther = other;
   }
 }
