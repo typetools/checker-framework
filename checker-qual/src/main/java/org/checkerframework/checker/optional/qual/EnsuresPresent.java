@@ -9,10 +9,10 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the expression or value is an instance of a non-empty Optional, if the method
- * terminates successfully.
+ * Indicates that the expression evaluates to a non-empty Optional, if the method terminates
+ * successfully.
  *
- * <p>This postcondition annotation is useful for methods that construct a non-empty Optional
+ * <p>This postcondition annotation is useful for methods that construct a non-empty Optional:
  *
  * <pre><code>
  *   {@literal @}EnsuresPresent("optStr")
@@ -25,9 +25,9 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * the argument is null is the method returns normally:
  *
  * <pre><code>
- *   /** throws an exception if the argument is empty. *&#47;
+ *   /** Throws an exception if the argument is empty. *&#47;
  *   {@literal @}EnsuresPresent("#1")
- *   void assertPresent(Optional&lt;T&gt; arg) { ... }
+ *   void useTheOptional(Optional&lt;T&gt; arg) { ... }
  * </code></pre>
  *
  * @see Present
@@ -40,5 +40,10 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @PostconditionAnnotation(qualifier = Present.class)
 @InheritedAnnotation
 public @interface EnsuresPresent {
+  /**
+   * The expression that is present, if the method returns normally.
+   *
+   * @return the expression that is present, if the method returns normally
+   */
   String[] value();
 }
