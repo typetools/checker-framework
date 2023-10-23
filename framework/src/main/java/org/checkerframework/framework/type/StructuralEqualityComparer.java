@@ -295,7 +295,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   @Override
   public Boolean visitNull_Null(AnnotatedNullType type1, AnnotatedNullType type2, Void unused) {
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
   }
 
   /**
