@@ -614,7 +614,7 @@ public class MustCallInference {
           continue;
         }
 
-        Node arg = mcca.removeCastsAndGetTmpVarIfPresent(arguments.get(i));
+        Node arg = NodeUtils.removeCasts(arguments.get(i));
         VariableElement paramElt = TreeUtils.elementFromDeclaration(paramOfCurrMethod);
         if (nodeAndElementResourceAliased(obligations, arg, paramElt)) {
           addOwningToParam(j + 1);
