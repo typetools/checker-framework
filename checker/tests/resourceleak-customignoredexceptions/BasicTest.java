@@ -41,4 +41,19 @@ abstract class BasicTest {
     }
     r.close();
   }
+
+  static class CustomNPESubtype extends NullPointerException {
+    static final CustomNPESubtype INSTANCE = new CustomNPESubtype();
+  }
+
+  public void doNotIgnoreNPESubtype() throws IOException {
+    // Only NullPointerException should be ignored, not its subtypes, since the options
+    // specified "=java.lang.NullPointerException".
+    // ::error: (required.method.not.called)
+    Closeable r = alloc();
+    if (true) {
+      throw CustomNPESubtype.INSTANCE;
+    }
+    r.close();
+  }
 }

@@ -99,18 +99,11 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
 
   /**
    * A pattern that matches an exception specifier for the {@link #IGNORED_EXCEPTIONS} option: an
-   * optional "? extends" followed by a qualified name. The whole thing can be padded with
-   * whitespace.
+   * optional "=" followed by a qualified name. The whole thing can be padded with whitespace.
    */
   private static final Pattern EXCEPTION_SPECIFIER =
       Pattern.compile(
-          "^\\s*"
-              + "("
-              + Pattern.quote("?")
-              + "\\s+extends\\s+"
-              + ")?"
-              + "(\\w+(?:\\.\\w+)*)"
-              + "\\s*$");
+          "^\\s*" + "(" + Pattern.quote("=") + "\\s*" + ")?" + "(\\w+(?:\\.\\w+)*)" + "\\s*$");
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the
@@ -233,7 +226,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
     Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
     if (m.matches()) {
-      @Nullable String questionMarkExtendsClause = m.group(1);
+      @Nullable String equalsSign = m.group(1);
       String qualifiedName = m.group(2);
 
       if (qualifiedName.equalsIgnoreCase("default")) {
@@ -246,8 +239,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
         // ignored anyway (in case it's just an inaccessible type).
         //
         // Note that if the user asked to ignore subtypes of this exception, this code won't do it
-        // because we can't know what those subtypes are. We have to ignore the
-        // `questionMarkExtendsClause` if it was provided.
+        // because we can't know what those subtypes are. We have to treat this as if it were
+        // "=qualifiedName" even if no equals sign was provided.
         message(
             Diagnostic.Kind.WARNING,
             "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
@@ -256,9 +249,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
             ignoredExceptionsOptionValue);
         return SetOfTypes.anyOfTheseNames(ImmutableSet.of(qualifiedName));
       } else {
-        return questionMarkExtendsClause != null
-            ? SetOfTypes.allSubtypes(type)
-            : SetOfTypes.singleton(type);
+        return equalsSign == null ? SetOfTypes.allSubtypes(type) : SetOfTypes.singleton(type);
       }
     } else if (!exceptionSpecifier.trim().isEmpty()) {
       message(
