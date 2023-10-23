@@ -362,7 +362,8 @@ public abstract class GenericAnnotatedTypeFactory<
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
-      this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
+      Set<TypeMirror> relevantJavaTypesTemp =
+          new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
       boolean arraysAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
@@ -373,9 +374,11 @@ public abstract class GenericAnnotatedTypeFactory<
                   + this.getClass().getSimpleName());
         } else {
           TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
-          relevantJavaTypes.add(types.erasure(relevantType));
+          TypeMirror erased = types.erasure(relevantType);
+          relevantJavaTypesTemp.add(erased);
         }
       }
+      this.relevantJavaTypes = Collections.unmodifiableSet(relevantJavaTypesTemp);
       this.arraysAreRelevant = arraysAreRelevantTemp;
     }
 
@@ -2395,8 +2398,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
-   * elements of the type).
+   * <p>For a compound type, returns true only if a programmer may write a type qualifier on the top
+   * level of the compound type. That is, this method may return false, when it is possible to write
+   * type qualifiers on elements of the type.
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
@@ -2405,6 +2409,9 @@ public abstract class GenericAnnotatedTypeFactory<
    *     Java type
    */
   public final boolean isRelevant(TypeMirror tm) {
+    if (relevantJavaTypes == null) {
+      return true;
+    }
     if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
       tm = types.erasure(tm);
     }
@@ -2421,8 +2428,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>May return false for a compound type (for which it is possible to write type qualifiers on
-   * elements of the type).
+   * <p>For a compound type, returns true only if it a programmer may write a type qualifier on the
+   * top level of the compound type. That is, this method may return false, when it is possible to
+   * write type qualifiers on elements of the type.
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
@@ -2446,7 +2454,11 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected boolean isRelevantImpl(TypeMirror tm) {
 
-    if (relevantJavaTypes == null || relevantJavaTypes.contains(tm)) {
+    if (relevantJavaTypes == null) {
+      return true;
+    }
+
+    if (relevantJavaTypes.contains(tm)) {
       return true;
     }
 

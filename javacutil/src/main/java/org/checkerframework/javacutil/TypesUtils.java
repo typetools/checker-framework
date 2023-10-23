@@ -174,10 +174,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the simple type name, without annotations.
+   * Returns the simple type name, without annotations but including array brackets.
    *
    * @param type a type
-   * @return the simple type name, without annotations
+   * @return the simple type name
    */
   public static String simpleTypeName(TypeMirror type) {
     switch (type.getKind()) {
@@ -221,10 +221,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the binary name.
+   * Returns the binary name of a type.
    *
    * @param type a type
-   * @return the binary name
+   * @return its binary name
    */
   public static @BinaryName String binaryName(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {

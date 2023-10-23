@@ -357,7 +357,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       public StructuralEqualityComparer createEqualityComparer() {
         return new StructuralEqualityComparer(areEqualVisitHistory) {
           @Override
-          protected boolean arePrimeAnnosEqual(
+          protected boolean arePrimaryAnnosEqual(
               AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
             type1.replaceAnnotation(
                 convertToUnknown(
@@ -368,7 +368,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     convertSpecialIntRangeToStandardIntRange(
                         type2.getPrimaryAnnotationInHierarchy(UNKNOWNVAL))));
 
-            return super.arePrimeAnnosEqual(type1, type2);
+            return super.arePrimaryAnnosEqual(type1, type2);
           }
         };
       }
