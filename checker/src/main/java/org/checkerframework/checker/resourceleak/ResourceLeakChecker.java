@@ -224,6 +224,11 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    *     only used for error reporting
    * @return the parsed set of types, or null if the value does not parse
    */
+  @SuppressWarnings({
+    // user input might not be a legal @CanonicalName, but it should be safe to pass to
+    // `SetOfTypes.anyOfTheseNames`
+    "signature:argument",
+  })
   protected @Nullable SetOfTypes parseExceptionSpecifier(
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
     Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
@@ -236,12 +241,20 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
       }
       TypeMirror type = checkCanonicalName(qualifiedName);
       if (type == null) {
+        // There is a chance that the user named a real type, but the class is not accessible for
+        // some reason. We'll issue a warning (in case this was a typo) but add the type as
+        // ignored anyway (in case it's just an inaccessible type).
+        //
+        // Note that if the user asked to ignore subtypes of this exception, this code won't do it
+        // because we can't know what those subtypes are. We have to ignore the
+        // `questionMarkExtendsClause` if it was provided.
         message(
             Diagnostic.Kind.WARNING,
             "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
             exceptionSpecifier,
             IGNORED_EXCEPTIONS,
             ignoredExceptionsOptionValue);
+        return SetOfTypes.anyOfTheseNames(ImmutableSet.of(qualifiedName));
       } else {
         return questionMarkExtendsClause != null
             ? SetOfTypes.allSubtypes(type)
