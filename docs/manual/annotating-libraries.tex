@@ -738,7 +738,8 @@ analyze. For example, suppose that you are trying to annotate the
 \<drawImage(Image,int,int,int,int,ImageObserver)> method of an object whose static
 type is \<java.awt.Graphics2D>\@.  This method is actually defined in the abstract
 \<Graphics> class (which is the superclass of \<Graphics2D>), so it needs
-to appear in file \<Graphics.astub> rather than \<Graphics2D.astub>.
+to appear within the class \<Graphics> rather than the class \<Graphics2D>
+in the stub file.
 \item Write the element declaration that you wish to annotate, within the class you just created.  \\
 For a method, this is the method signature, followed by ``\<;>''. \\
 For a field, this is the type, field name, and ``\<;>'', without an initializer.
