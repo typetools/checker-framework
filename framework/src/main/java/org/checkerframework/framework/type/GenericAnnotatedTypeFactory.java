@@ -363,7 +363,8 @@ public abstract class GenericAnnotatedTypeFactory<
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
-      this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
+      Set<TypeMirror> relevantJavaTypesTemp =
+          new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
       boolean arraysAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
@@ -374,9 +375,11 @@ public abstract class GenericAnnotatedTypeFactory<
                   + this.getClass().getSimpleName());
         } else {
           TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
-          relevantJavaTypes.add(types.erasure(relevantType));
+          TypeMirror erased = types.erasure(relevantType);
+          relevantJavaTypesTemp.add(erased);
         }
       }
+      this.relevantJavaTypes = Collections.unmodifiableSet(relevantJavaTypesTemp);
       this.arraysAreRelevant = arraysAreRelevantTemp;
     }
 
