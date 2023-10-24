@@ -1,6 +1,11 @@
 \htmlhr
 \chapterAndLabel{Optional Checker for possibly-present data}{optional-checker}
 
+Use of the Optional Checker guarantees that your program will not suffer
+a \<NoSuchElementException> when calling
+methods on an expression of \<Optional> type.
+The Optional Checker also enforces Stuart Marks's style guidelines (see below).
+
 Java 8 introduced the \sunjavadoc{java.base/java/util/Optional.html}{Optional}
 class, a container that is either empty or contains a non-null value.
 
@@ -45,10 +50,6 @@ Rules \#2--\#7 are guaranteed by the Optional Checker, described in this chapter
 (Exception:  Rule \#5 is not yet implemented and will be checked by the
 Optional Checker in the future.)
 % They are all AST checks that would be easy to add later.
-
-Use of the Optional Checker guarantees that your program will not suffer a
-\<NullPointerException> nor a \<NoSuchElementException> when calling
-methods on an expression of \<Optional> type.
 
 
 \sectionAndLabel{How to run the Optional Checker}{optional-run-checker}
@@ -98,16 +99,25 @@ Figure~\ref{fig-optional-hierarchy}.
 
 \sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
 
-The Optional Checker guarantees that your code will not throw an exception
+The Optional Checker guarantees that your code will not throw a \<NoSuchElementException> exception
 due to use of an absent \<Optional> where a present \<Optional> is needed.
 More specifically, the Optional Checker will issue an error if you call
-\sunjavadoc{java.base/java/util/Optional.html\#get()
-}{get}
+\sunjavadoc{java.base/java/util/Optional.html\#get()}{get}
 or
-\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow(java.util.function.Supplier)}{orElseThrow}
+\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()}
 on a \<@MaybePresent Optional> receiver, because each of these methods
-throws an exception if the receiver is an absent
+throws a \<NoSuchElementException> exception if the receiver is a possibly-absent
 \<Optional>.
+
+By contrast, the Optional Checker does not issue an error if you call
+\sunjavadoc{java.base/java/util/Optional.html\#orElseThrow(java.util.function.Supplier)}{orElseThrow(Supplier)}
+with a possibly-absent \<Optional>.  That method call does not
+% necessarily
+throw \<NoSuchElementException>.  The Optional Checker assumes that the
+programmer has mechanisms in place to handle whatever exception it throws.
+If you wish for the Optional Checker to warn about calling
+\<orElseThrow(Supplier)> on a possibly-absent \<Optional>, then you can use
+a stub file (\sectionpageref{stub}) to annotate its receiver as \<@Present>.
 
 The Optional Checker does not check nullness properties, such as requiring
 that the argument to

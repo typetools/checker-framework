@@ -386,7 +386,6 @@ public class MustCallInference {
         // TODO: generalize this to MustCall annotations with more than one element.
         assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
         disposedFields.add((VariableElement) nodeElt);
-        owningFields.add((VariableElement) nodeElt);
       }
     }
   }
@@ -434,7 +433,9 @@ public class MustCallInference {
 
       // If the owning field is present in the disposedFields set and there is an assignment to the
       // field, it must be removed from the set. This is essential since the disposedFields set is
-      // used for adding @EnsuresCalledMethods annotations to the current method later.
+      // used for adding @EnsuresCalledMethods annotations to the current method later. Note that
+      // this removal doesn't affect the owning annotation we inferred for the field, as the
+      // owningField set is updated before this line through the 'updateOwningFields' method.
       if (!TreeUtils.isConstructor(methodTree)) {
         disposedFields.remove((VariableElement) lhsElement);
       }

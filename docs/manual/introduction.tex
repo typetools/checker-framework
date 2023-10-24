@@ -1300,14 +1300,15 @@ occur at run time.
 
 \paragraphAndLabel{Optional example}{annotate-normal-behavior-optional-example}
 Another example is the Optional Checker (\chapterpageref{optional-checker})
-and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} method.
+and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()} method.
 The goal of the Optional Checker is to ensure that the program does not
 crash due to use of a non-present Optional value.  Therefore, the receiver
 of
-\<orElseThrow> is annotated as
+\<orElseThrow()> is annotated as
 \refqualclass{checker/optional/qual}{Present},
 and the Optional Checker issues an error if the client calls
-\<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
+\<orElseThrow()> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
+(For details, see Section~\ref{optional-guarantees}.)
 
 
 \paragraphAndLabel{Permitting crashes in some called methods}{annotate-normal-behavior-skip-libraries}
@@ -1684,3 +1685,6 @@ or suppress warnings.
 % LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
 % LocalWords:  requireNonNull ApermitUnsupportedJdkVersion AstubWarnNote
+% LocalWords:  AwarnRedundantAnnotations AinferOutputOriginal
+% LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
+% LocalWords:  AshowWpiFailedInferences
