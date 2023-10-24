@@ -21,8 +21,8 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  */
 @SuppressWarnings({
-    "optional", // Optional utilities are trusted regarding the Optional type.
-    "cast" // Casts look redundant if Optional Checker is not run.
+  "optional", // Optional utilities are trusted regarding the Optional type.
+  "cast" // Casts look redundant if Optional Checker is not run.
 })
 @AnnotatedFor("optional")
 public final class OptionalUtil {
