@@ -1,3 +1,4 @@
+@SuppressWarning("unchecked")
 public class Issue6259 {
   public interface A {
     interface Builder<AT extends A> {
