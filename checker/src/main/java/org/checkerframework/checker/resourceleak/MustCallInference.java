@@ -144,7 +144,7 @@ public class MustCallInference {
   /**
    * This map is used to track alias relationships between return nodes and method parameters. The
    * keys are the obligation of return nodes, and the values are the index of current method formal
-   * parameter (0-based) that is alias with the return node.
+   * parameter (1-based) that is alias with the return node.
    */
   private final Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
 
@@ -280,7 +280,7 @@ public class MustCallInference {
               obligations, (LocalVariableNode) returnNode);
       if (returnNodeObligation != null) {
         returnNodeToParameterIndexMap.put(
-            returnNodeObligation, getIndexOfParam(returnNodeObligation));
+            returnNodeObligation, getIndexOfParam(returnNodeObligation) + 1);
       }
     }
   }
@@ -305,7 +305,9 @@ public class MustCallInference {
     if (!returnNodeToParameterIndexMap.isEmpty()) {
       if (returnNodeToParameterIndexMap.values().stream().distinct().count() == 1) {
         int indexOfParam = returnNodeToParameterIndexMap.values().iterator().next();
-        addMustCallAlias(indexOfParam + 1);
+        if (indexOfParam > 0) {
+          addMustCallAlias(indexOfParam);
+        }
       }
     }
 
