@@ -27,6 +27,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("optional")
 public final class OptionalUtil {
 
+  /** The OptionalUtil class should not be instantiated. */
   private OptionalUtil() {
     throw new AssertionError("shouldn't be instantiated");
   }
