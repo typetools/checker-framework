@@ -20,9 +20,22 @@ class AddNotOwning {
       return f;
     }
 
+    Foo getFieldOnSomePath() {
+      if (true) {
+        return null;
+      } else {
+        return f;
+      }
+    }
+
     void testNotOwningOnFinal() {
       // :: warning: (required.method.not.called)
       Foo f = getField();
+    }
+
+    void testNotOwningOnGetFieldOnSomePath() {
+      // :: warning: (required.method.not.called)
+      Foo f = getFieldOnSomePath();
     }
 
     @EnsuresCalledMethods(
@@ -48,9 +61,22 @@ class AddNotOwning {
       return f;
     }
 
+    Foo getFieldOnSomePath() {
+      if (true) {
+        return null;
+      } else {
+        return f;
+      }
+    }
+
     void testNotOwningOnNonFinal() {
       // :: warning: (required.method.not.called)
       Foo f = getField();
+    }
+
+    void testNotOwningOnGetFieldOnSomePath() {
+      // :: warning: (required.method.not.called)
+      Foo f = getFieldOnSomePath();
     }
 
     @EnsuresCalledMethods(
