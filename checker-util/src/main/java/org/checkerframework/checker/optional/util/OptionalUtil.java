@@ -21,8 +21,8 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  */
 @SuppressWarnings({
-  "optional", // Optional utilities are trusted regarding the Optional type.
-  "cast" // Casts look redundant if Optional Checker is not run.
+    "optional", // Optional utilities are trusted regarding the Optional type.
+    "cast" // Casts look redundant if Optional Checker is not run.
 })
 @AnnotatedFor("optional")
 public final class OptionalUtil {
@@ -61,7 +61,7 @@ public final class OptionalUtil {
    * empty. If the exception is ever thrown, then that indicates that the programmer misused the
    * method by using it in a circumstance where its argument can be empty.
    *
-   * @param <T> type of content of the Optional
+   * @param <T> the type of content of the Optional
    * @param ref an Optional reference of @MaybePresent type, that is present at run time
    * @return the argument, casted to have the type qualifier @Present
    */
