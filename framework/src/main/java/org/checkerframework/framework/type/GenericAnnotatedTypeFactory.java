@@ -445,6 +445,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     super.setRoot(root);
     this.scannedClasses.clear();
+    this.reachableNodes.clear();
     this.flowResult = null;
     this.regularExitStores.clear();
     this.exceptionalExitStores.clear();
@@ -1057,6 +1058,32 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and may
+   * return {@code false} even though the {@code exprTree} is unreachable.
+   *
+   * @param exprTree an expression tree
+   * @return true if the {@code exprTree} is unreachable
+   */
+  public boolean isUnreachable(ExpressionTree exprTree) {
+    if (!everUseFlow) {
+      return false;
+    }
+    Set<Node> nodes = getNodesForTree(exprTree);
+    if (nodes == null) {
+      // Dataflow has no any information about the tree, so conservatively consider the tree
+      // reachable.
+      return false;
+    }
+    for (Node n : nodes) {
+      if (n.getTree() != null && reachableNodes.contains(n.getTree())) {
+        return false;
+      }
+    }
+    // None of the corresponding nodes is reachable, so this tree is dead.
+    return true;
+  }
+
+  /**
    * Track the state of org.checkerframework.dataflow analysis scanning for each class tree in the
    * compilation unit.
    */
@@ -1069,6 +1096,16 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /** Map from ClassTree to their dataflow analysis state. */
   protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
+
+  /**
+   * A set of trees whose corresponding nodes are reachable. This is not an exhaustive set of
+   * reachable trees. Use {@link #isUnreachable(ExpressionTree)} instead of this set directly.
+   *
+   * <p>This cannot be a set of Nodes, because two LocalVariableNodes are equal if they have the
+   * same name but represent different uses of the variable. So instead of storing Nodes, it stores
+   * the result of {@code Node#getTree}.
+   */
+  private final Set<Tree> reachableNodes = new HashSet<>();
 
   /**
    * The result of the flow analysis. Invariant:
@@ -1264,10 +1301,11 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
    *
+   * @param tree a tree
    * @return the {@link Node}s for a given {@link Tree}
    * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
    */
-  public Set<Node> getNodesForTree(Tree tree) {
+  public @Nullable Set<Node> getNodesForTree(Tree tree) {
     return flowResult.getNodesForTree(tree);
   }
 
@@ -1531,7 +1569,13 @@ public abstract class GenericAnnotatedTypeFactory<
       boolean isStatic,
       @Nullable Store capturedStore) {
     ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
-
+    cfg.getAllNodes(this::isIgnoredExceptionType)
+        .forEach(
+            node -> {
+              if (node.getTree() != null) {
+                reachableNodes.add(node.getTree());
+              }
+            });
     if (isInitializationCode) {
       Store initStore = !isStatic ? initializationStore : initializationStaticStore;
       if (initStore != null) {
@@ -1608,6 +1652,16 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     postAnalyze(cfg);
+  }
+
+  /**
+   * Returns true if {@code typeMirror} is an exception type that should be ignored.
+   *
+   * @param typeMirror an exception type
+   * @return true if {@code typeMirror} is an exception type that should be ignored
+   */
+  public boolean isIgnoredExceptionType(TypeMirror typeMirror) {
+    return false;
   }
 
   /**
