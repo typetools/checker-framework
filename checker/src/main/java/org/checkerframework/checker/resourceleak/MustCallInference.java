@@ -256,7 +256,7 @@ public class MustCallInference {
    * Analyzes a return statement and performs two computations:
    *
    * <ul>
-   *   <li>If the return node is a field with non-empty must-call obligations, adds a {@link
+   *   <li>If the returned expression is a field with non-empty must-call obligations, adds a {@link
    *       NotOwning} annotation to the return type of the current method.
    *   <li>Compute the index of the parameter that is an alias of the return node and add it the
    *       {@link #returnNodeToParameterIndexMap} map.
@@ -775,8 +775,8 @@ public class MustCallInference {
   }
 
   /**
-   * Adds @MustCallAlias annotation to a parameter of the current method when it is passed in
-   * a @MustCallAlias position in a {@literal this} or {@literal super} call.
+   * Adds the @MustCallAlias annotation to a method parameter when it is passed in a @MustCallAlias
+   * position during a constructor call using {@literal this} or {@literal super}.
    *
    * @param obligations the set of obligations associated with the current block
    * @param node a method invocation node
