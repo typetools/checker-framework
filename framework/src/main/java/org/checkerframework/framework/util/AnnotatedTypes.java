@@ -595,11 +595,11 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfMember);
         AnnotatedDeclaredType erasedEnclosingType =
             atypeFactory.getAnnotatedType(enclosingClassOfMember);
-        Iterator<AnnotatedTypeMirror> typeArgsIterator =
+        Iterator<AnnotatedTypeMirror> erasedTypeArgsIterator =
             erasedEnclosingType.getTypeArguments().iterator();
         for (AnnotatedTypeMirror type : enclosingType.getTypeArguments()) {
           AnnotatedTypeVariable typeParameter = (AnnotatedTypeVariable) type;
-          mappings.put(typeParameter.getUnderlyingType(), typeArgsIterator.next());
+          mappings.put(typeParameter.getUnderlyingType(), erasedTypeArgsIterator.next());
         }
       }
       enclosingClassOfMember =
