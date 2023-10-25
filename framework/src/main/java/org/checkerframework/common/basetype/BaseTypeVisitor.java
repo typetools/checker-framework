@@ -3563,7 +3563,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * like var args.
    *
    * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
-   * @param requiredArgs the required types. This may differ from the formal parameter types,
+   * @param requiredTypes the required types. This may differ from the formal parameter types,
    *     because it replaces a varargs parameter by multiple parameters with the vararg's element
    *     type.
    * @param passedArgs the expressions passed to the corresponding types
@@ -3571,14 +3571,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param paramNames the names of the callee's formal parameters
    */
   protected void checkArguments(
-      List<? extends AnnotatedTypeMirror> requiredArgs,
+      List<? extends AnnotatedTypeMirror> requiredTypes,
       List<? extends ExpressionTree> passedArgs,
       CharSequence executableName,
       List<?> paramNames) {
-    int size = requiredArgs.size();
+    int size = requiredTypes.size();
     assert size == passedArgs.size()
-        : "mismatch between required args ("
-            + requiredArgs
+        : "size mismatch between required args ("
+            + requiredTypes
             + ") and passed args ("
             + passedArgs
             + ")";
@@ -3590,27 +3590,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             size,
             passedArgs.size(),
             paramNames.size(),
-            listToString(requiredArgs),
+            listToString(requiredTypes),
             listToString(passedArgs),
             executableName,
             listToString(paramNames));
 
     for (int i = 0; i < size; ++i) {
-      AnnotatedTypeMirror requiredType = requiredArgs.get(i);
+      AnnotatedTypeMirror requiredType = requiredTypes.get(i);
       ExpressionTree passedArg = passedArgs.get(i);
       Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
 
       if (passedArg.getKind() == Kind.CONDITIONAL_EXPRESSION) {
         ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) passedArg;
         commonAssignmentCheck(
-            requiredArg,
+            requiredType,
             condExprTree.getTrueExpression(),
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
             paramName,
             executableName);
         commonAssignmentCheck(
-            requiredArg,
+            requiredType,
             condExprTree.getFalseExpression(),
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
@@ -3618,7 +3618,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             executableName);
       } else {
         commonAssignmentCheck(
-            requiredArg,
+            requiredType,
             passedArg,
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
