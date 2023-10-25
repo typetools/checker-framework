@@ -243,11 +243,11 @@ public final class TreePathUtil {
 
   /**
    * Returns the tree representing the context for the poly expression which is the leaf of {@code
-   * treePath}. If the leaf of {@code treePath} is not a poly expression, the null is returned. The
-   * context then can be used to find the target type of the poly expression.
+   * treePath}. The context then can be used to find the target type of the poly expression. Returns
+   * null if the leaf of {@code treePath} is not a poly expression.
    *
-   * @param treePath a path, if the leaf of the path is a poly expression, then the context is
-   *     returned
+   * @param treePath a path. If the leaf of the path is a poly expression, then its context is
+   *     returned.
    * @return the tree representing the context for the poly expression which is the leaf of {@code
    *     treePath}; or null if the leaf is not a poly expression
    */
@@ -311,13 +311,13 @@ public final class TreePathUtil {
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
+          // A yield statement is only legal within a switch expression.
           parentPath = parentPath.getParentPath();
           // The first parent is a case statement.
           parentPath = parentPath.getParentPath();
           parent = parentPath.getLeaf();
         }
         if (TreeUtils.isSwitchExpression(parent)) {
-
           @SuppressWarnings("interning:not.interned") // AST node comparison
           boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
           if (switchIsLeaf) {
