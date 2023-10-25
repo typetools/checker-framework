@@ -172,7 +172,9 @@ public class InferenceType extends AbstractType {
   }
 
   /**
-   * @return all inference variables mentioned in this type.
+   * Returns all inference variables mentioned in this type.
+   *
+   * @return all inference variables mentioned in this type
    */
   @Override
   public Collection<Variable> getInferenceVariables() {
@@ -227,7 +229,7 @@ public class InferenceType extends AbstractType {
   /**
    * Is {@code this} a subtype of {@code superType}?
    *
-   * @param superType super type; declared type with no parameters.
+   * @param superType the potential supertype; is a declared type with no parameters
    * @return if {@code this} is a subtype of {@code superType}, then return {@link
    *     ConstraintSet#TRUE}; otherwise, a false bound is returned
    */

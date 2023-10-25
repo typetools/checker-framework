@@ -2318,7 +2318,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * arguments.
    *
    * @param tree a method invocation tree
-   * @return the method type being invoked with tree without inferring type arguments.
+   * @return the method type being invoked with tree without inferring type arguments
    */
   public ParameterizedExecutableType methodFromUseWithoutTypeArgInference(
       MethodInvocationTree tree) {
@@ -2398,7 +2398,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree either a MethodInvocationTree or a MemberReferenceTree
    * @param methodElt the element of the referenced method
    * @param receiverType the type of the receiver
-   * @return the method type being invoked with tree without inferring type arguments.
+   * @return the method type being invoked with tree without inferring type arguments
    */
   public final ParameterizedExecutableType methodFromUseWithoutTypeArgInference(
       ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
@@ -4445,7 +4445,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Whether the {@code type} contains any captured type variables.
    *
    * @param type type to check
-   * @return whether the {@code type} contains any captured type variables.
+   * @return whether the {@code type} contains any captured type variables
    */
   public boolean containsCapturedTypes(AnnotatedTypeMirror type) {
     return containsCapturedTypes.visit(type);

@@ -463,7 +463,7 @@ public class InvocationTypeInference {
    * @param fi type that is the formal parameter to a method whose corresponding argument is {@code
    *     ei}
    * @param map map from type variable to inference variable
-   * @return the additional argument constraints.
+   * @return the additional argument constraints
    */
   private ConstraintSet createAdditionalArgConstraints(
       ExpressionTree ei, AbstractType fi, Theta map) {

@@ -296,7 +296,7 @@ public class ConstraintSet implements ReductionResult {
    * Reduce one constraint in this set.
    *
    * @param context the context
-   * @return the result of reducing one constraint in this set.
+   * @return the result of reducing one constraint in this set
    */
   public BoundSet reduceOneStep(Java8InferenceContext context) {
     boolean alreadyFailed = this.annotationFailure;

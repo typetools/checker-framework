@@ -896,7 +896,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * Whether this contains any captured type variables.
    *
-   * @return whether the {@code type} contains any captured type variables.
+   * @return whether the {@code type} contains any captured type variables
    */
   public boolean containsCapturedTypes() {
     return atypeFactory.containsCapturedTypes(this);

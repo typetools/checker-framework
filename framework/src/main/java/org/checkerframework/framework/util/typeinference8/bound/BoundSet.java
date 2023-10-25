@@ -228,7 +228,7 @@ public class BoundSet implements ReductionResult {
   /**
    * Resolve all inference variables mentioned in any bound.
    *
-   * @return a list of resolved variables in this bounds set.
+   * @return a list of resolved variables in this bounds set
    */
   public List<Variable> resolve() {
     BoundSet b = Resolution.resolve(new ArrayList<>(variables), this, context);
@@ -238,7 +238,7 @@ public class BoundSet implements ReductionResult {
   /**
    * Returns the dependencies between variables.
    *
-   * @return the dependencies between variables.
+   * @return the dependencies between variables
    */
   public Dependencies getDependencies() {
     return getDependencies(new ArrayList<>());

@@ -2637,7 +2637,7 @@ public final class TreeUtils {
    * explicitly typed lambda. (See JLS 15.27.1)
    *
    * @param tree any kind of tree
-   * @return true iff {@code tree} is an implicitly typed lambda.
+   * @return true iff {@code tree} is an implicitly typed lambda
    */
   public static boolean isExplicitlyTypeLambda(Tree tree) {
     return tree.getKind() == Tree.Kind.LAMBDA_EXPRESSION

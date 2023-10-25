@@ -601,7 +601,7 @@ public abstract class AbstractType {
   /**
    * Return the array component type fo this type or null if on does not exist.
    *
-   * @return the array component type of this type or null if one does not exist.
+   * @return the array component type of this type or null if one does not exist
    */
   public final AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {

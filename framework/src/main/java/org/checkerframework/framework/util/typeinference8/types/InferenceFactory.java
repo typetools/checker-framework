@@ -474,7 +474,7 @@ public class InferenceFactory {
    * @param processingEnv the processing environment
    * @param tm1 a type
    * @param tm2 a type
-   * @return the least upper bound of {@code tm1} and {@code tm2}.
+   * @return the least upper bound of {@code tm1} and {@code tm2}
    */
   public static TypeMirror lub(
       ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
@@ -492,7 +492,7 @@ public class InferenceFactory {
    * @param processingEnv the processing environment
    * @param tm1 a type
    * @param tm2 a type
-   * @return the greatest lower bound of {@code tm1} and {@code tm2}.
+   * @return the greatest lower bound of {@code tm1} and {@code tm2}
    */
   public static TypeMirror glb(
       ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {

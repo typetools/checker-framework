@@ -49,7 +49,7 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Returns a collection of all inference variables mentioned by this constraint.
    *
-   * @return a collection of all inference variables mentioned by this constraint.
+   * @return a collection of all inference variables mentioned by this constraint
    */
   public Collection<Variable> getInferenceVariables() {
     return T.getInferenceVariables();

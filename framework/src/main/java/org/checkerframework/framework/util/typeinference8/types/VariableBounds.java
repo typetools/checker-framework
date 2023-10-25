@@ -327,7 +327,7 @@ public class VariableBounds {
    *
    * @param s a type argument
    * @param t a type argument
-   * @return the constraints between the type arguments to {@code s} and {@code t}.
+   * @return the constraints between the type arguments to {@code s} and {@code t}
    */
   private List<Typing> getConstraintsFromParameterized(AbstractType s, AbstractType t) {
     IPair<AbstractType, AbstractType> pair =
