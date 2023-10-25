@@ -9,7 +9,7 @@ plugins {
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.2.0' apply false
+  id 'org.ajoberstar.grgit' version '5.2.1' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
@@ -799,6 +799,9 @@ subprojects {
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
 
+    // The checkNullness task runs on all code, but it only *checks* the following code:
+    //  * All files outside the 'framework' and 'checker' subprojects.
+    //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
     if (project.name.is('framework') || project.name.is('checker')) {
       createCheckTypeTask(project.name, 'Nullness',
           'org.checkerframework.checker.nullness.NullnessChecker',
