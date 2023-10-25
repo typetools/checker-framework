@@ -1752,10 +1752,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (shouldSkipUses(tree)) {
       return super.visitMethodInvocation(tree, p);
     }
-    ParameterizedExecutableType preI = atypeFactory.methodFromUseWithoutTypeArgInference(tree);
-    if (!preI.executableType.getElement().getTypeParameters().isEmpty()
-        && preI.typeArgs.isEmpty()) {
-      if (checkTypeArgumentInference(tree, preI.executableType)) {
+    ParameterizedExecutableType preInference =
+        atypeFactory.methodFromUseWithoutTypeArgInference(tree);
+    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
+        && preInference.typeArgs.isEmpty()) {
+      if (checkTypeArgumentInference(tree, preInference.executableType)) {
         return null;
       }
     }
@@ -1812,7 +1813,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree a tree that requires type argument inference
    * @param methodType the type of the method before type argument substitution
-   * @return whether type argument inference succeeds.
+   * @return whether type argument inference succeeds
    */
   private boolean checkTypeArgumentInference(
       ExpressionTree tree, AnnotatedExecutableType methodType) {
@@ -1821,18 +1822,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (args != null && !args.inferenceFailed()) {
       return false;
     }
-    String error;
-    if (args != null) {
-      error = args.getErrorMsg();
-    } else {
-      error = "";
-    }
-
     checker.reportError(
         tree,
         "type.arguments.not.inferred",
         ElementUtils.getSimpleDescription(methodType.getElement()),
-        error);
+        args == null ? "" : args.getErrorMsg());
     return true;
   }
 
@@ -2090,10 +2084,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitNewClass(tree, p);
     }
 
-    ParameterizedExecutableType preI = atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
-    if (!preI.executableType.getElement().getTypeParameters().isEmpty()
+    ParameterizedExecutableType preInference =
+        atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
+    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
         || TreeUtils.isDiamondTree(tree)) {
-      if (checkTypeArgumentInference(tree, preI.executableType)) {
+      if (checkTypeArgumentInference(tree, preInference.executableType)) {
         return null;
       }
     }
@@ -3818,11 +3813,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement compileTimeDeclaration =
         (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
 
-    ParameterizedExecutableType preI =
+    ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(
             memberReferenceTree, compileTimeDeclaration, enclosingType);
     if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
-      if (checkTypeArgumentInference(memberReferenceTree, preI.executableType)) {
+      if (checkTypeArgumentInference(memberReferenceTree, preInference.executableType)) {
         return true;
       }
     }
