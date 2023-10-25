@@ -3596,33 +3596,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             listToString(paramNames));
 
     for (int i = 0; i < size; ++i) {
-      if (passedArgs.get(i).getKind() == Kind.CONDITIONAL_EXPRESSION) {
-        ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) passedArgs.get(i);
+      AnnotatedTypeMirror requiredType = requiredArgs.get(i);
+      ExpressionTree passedArg = passedArgs.get(i);
+      Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
+
+      if (passedArg.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+        ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) passedArg;
         commonAssignmentCheck(
-            requiredArgs.get(i),
+            requiredArg,
             condExprTree.getTrueExpression(),
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
-            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            paramName,
             executableName);
         commonAssignmentCheck(
-            requiredArgs.get(i),
+            requiredArg,
             condExprTree.getFalseExpression(),
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
-            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            paramName,
             executableName);
-
       } else {
         commonAssignmentCheck(
-            requiredArgs.get(i),
-            passedArgs.get(i),
+            requiredArg,
+            passedArg,
             "argument",
             // TODO: for expanded varargs parameters, maybe adjust the name
-            paramNames.get(Math.min(i, maxParamNamesIndex)),
+            paramName,
             executableName);
       }
-      scan(passedArgs.get(i), null);
+      scan(passedArg, null);
     }
   }
 
