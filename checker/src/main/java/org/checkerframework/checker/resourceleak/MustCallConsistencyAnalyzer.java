@@ -2166,12 +2166,12 @@ class MustCallConsistencyAnalyzer {
             cmStoreAfter.put(last, cmStore);
           }
 
-           if (mcStoreAfter.containsKey(last)) {
-             mcStore = mcStoreAfter.get(last);
-           } else {
-             mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
-             mcStoreAfter.put(last, mcStore);
-           }
+          if (mcStoreAfter.containsKey(last)) {
+            mcStore = mcStoreAfter.get(last);
+          } else {
+            mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
+            mcStoreAfter.put(last, mcStore);
+          }
         }
 
         MethodExitKind exitKind =
