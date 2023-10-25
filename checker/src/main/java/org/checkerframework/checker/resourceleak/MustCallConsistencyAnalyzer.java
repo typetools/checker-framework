@@ -2622,7 +2622,7 @@ class MustCallConsistencyAnalyzer {
      * @param bwos a collection of BlockWithObligations, to format
      * @return a printed representation of a collection of BlockWithObligations
      */
-    public String collectionToString(Collection<BlockWithObligations> bwos) {
+    public static String collectionToString(Collection<BlockWithObligations> bwos) {
       List<Block> blocksWithDuplicates = new ArrayList<>();
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
@@ -2635,12 +2635,12 @@ class MustCallConsistencyAnalyzer {
           result.add(
               String.format(
                   "BWO{%s %d, %d obligations %s}",
-                  block.getType(), block.getUid(), obligations.size(), obligations));
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size(), obligations));
         } else {
           result.add(
               String.format(
                   "BWO{%s %d, %d obligations}",
-                  block.getType(), block.getUid(), obligations.size()));
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size()));
         }
       }
       return result.toString();
