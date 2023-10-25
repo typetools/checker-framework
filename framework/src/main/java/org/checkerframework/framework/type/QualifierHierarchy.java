@@ -328,10 +328,10 @@ public abstract class QualifierHierarchy {
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
-   * Returns the least upper bound of the all the collections of qualifiers. The result is the lub
-   * of the qualifier for the same hierarchy in each set.
+   * Returns the least upper bound of all the collections of qualifiers. The result is the lub of
+   * the qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers A collection of collections of qualifiers
+   * @param qualifiers a collection of collections of qualifiers
    * @return the least upper bound of the collections of qualifiers
    */
   public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
@@ -637,10 +637,10 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the all the collections of qualifiers. The result is the
-   * glb of the qualifier for the same hierarchy in each set.
+   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
+   * of the qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers A collection of collections of qualifiers
+   * @param qualifiers a collection of collections of qualifiers
    * @return the greatest lower bound of the collections of qualifiers
    */
   public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
