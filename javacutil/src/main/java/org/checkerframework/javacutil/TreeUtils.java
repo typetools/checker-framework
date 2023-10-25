@@ -2739,9 +2739,7 @@ public final class TreeUtils {
 
   /**
    * Is the tree a reference to a constructor of a generic class whose type argument isn't
-   * specified?
-   *
-   * <p>For example, {@code HashSet::new)}.
+   * specified? For example, {@code HashSet::new)}.
    *
    * @param tree may or may not be a {@link MemberReferenceTree}
    * @return true if tree is a reference to a constructor of a generic class whose type argument
@@ -2754,8 +2752,8 @@ public final class TreeUtils {
     MemberReferenceTree memRef = (MemberReferenceTree) tree;
     TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (memRef.getMode() == ReferenceMode.NEW && type.getKind() == TypeKind.DECLARED) {
-      TypeElement classEle = (TypeElement) ((Type) type).asElement();
-      DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
+      TypeElement classElt = (TypeElement) ((Type) type).asElement();
+      DeclaredType classTypeMirror = (DeclaredType) classElt.asType();
       return !classTypeMirror.getTypeArguments().isEmpty()
           && ((Type) type).getTypeArguments().isEmpty();
     }
@@ -2763,12 +2761,11 @@ public final class TreeUtils {
   }
 
   /**
-   * Return whether {@code tree} is a method reference that with a raw type to the left of {@code
-   * ::}. For example, {@code Class::getName}.
+   * Return whether {@code tree} is a method reference with a raw type to the left of {@code ::}.
+   * For example, {@code Class::getName}.
    *
    * @param tree a tree
-   * @return whether {@code tree} is a method reference that with a raw type to the left of {@code
-   *     ::}
+   * @return whether {@code tree} is a method reference with a raw type to the left of {@code ::}
    */
   public static boolean isLikeDiamondMemberReference(ExpressionTree tree) {
     if (tree.getKind() != Tree.Kind.MEMBER_REFERENCE) {

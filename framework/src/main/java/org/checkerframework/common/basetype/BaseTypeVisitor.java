@@ -1533,8 +1533,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedTypeLhs(tree);
 
     atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, tree);
-    Element varEle = TreeUtils.elementFromDeclaration(tree);
-    if (varEle.getKind() == ElementKind.ENUM_CONSTANT) {
+    Element varElt = TreeUtils.elementFromDeclaration(tree);
+    if (varElt.getKind() == ElementKind.ENUM_CONSTANT) {
       commonAssignmentCheck(tree, tree.getInitializer(), "enum.declaration");
     } else if (tree.getInitializer() != null) {
       // If there's no assignment in this variable declaration, skip it.
@@ -3799,8 +3799,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
     if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
-      TypeElement typeEle = TypesUtils.getTypeElement(TreeUtils.typeOf(qualifierExpression));
-      enclosingType = atypeFactory.getAnnotatedType(typeEle);
+      TypeElement typeElt = TypesUtils.getTypeElement(TreeUtils.typeOf(qualifierExpression));
+      enclosingType = atypeFactory.getAnnotatedType(typeElt);
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
         || memRefKind == MemberReferenceKind.UNBOUND
         || memRefKind == MemberReferenceKind.STATIC) {
