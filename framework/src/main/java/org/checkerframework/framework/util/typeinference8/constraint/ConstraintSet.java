@@ -142,7 +142,7 @@ public class ConstraintSet implements ReductionResult {
   /**
    * Remove all constraints in {@code subset} from this constraint set.
    *
-   * @param subset set of constraints to remove from this set
+   * @param subset the set of constraints to remove from this set
    */
   @SuppressWarnings("interning:not.interned")
   public void remove(ConstraintSet subset) {

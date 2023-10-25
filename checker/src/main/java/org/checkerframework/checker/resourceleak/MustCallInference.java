@@ -121,7 +121,7 @@ public class MustCallInference {
    * #owningFields}.
    *
    * @param curBlock the current block
-   * @param visited set of blocks already on the worklist
+   * @param visited the set of blocks already on the worklist
    * @param worklist current worklist
    */
   private void propagateRegPaths(Block curBlock, Set<Block> visited, Deque<Block> worklist) {

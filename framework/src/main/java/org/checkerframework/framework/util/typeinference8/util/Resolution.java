@@ -126,7 +126,7 @@ public class Resolution {
    * Resolve all the variables in {@code unresolvedVars}.
    *
    * @param boundSet current bound set
-   * @param unresolvedVars set of unresolved variables that includes all dependencies
+   * @param unresolvedVars a set of unresolved variables that includes all dependencies
    * @return the bounds set with the resolved bounds
    */
   private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
