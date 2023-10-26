@@ -144,7 +144,7 @@ public class MustCallInference {
   /**
    * This map is used to track alias relationships between return nodes and method parameters. The
    * keys are the obligation of return nodes, and the values are the index of current method formal
-   * parameter (1-based) that is alias with the return node.
+   * parameter (1-based) that is aliased with the return node.
    */
   private final Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
 
@@ -256,8 +256,10 @@ public class MustCallInference {
    * Analyzes a return statement and performs two computations:
    *
    * <ul>
-   *   <li>If the returned expression is a field with non-empty must-call obligations, adds a {@link
-   *       NotOwning} annotation to the return type of the current method.
+   *   <li>If the returned expression is an owning field with non-empty must-call obligations, adds
+   *       a {@link NotOwning} annotation to the return type of the current method. Note the
+   *       implication: if a method returns an owned field of this class at <i>any</i> return site,
+   *       the return type is inferred to be non-owning.
    *   <li>Compute the index of the parameter that is an alias of the return node and add it the
    *       {@link #returnNodeToParameterIndexMap} map.
    * </ul>
@@ -280,7 +282,7 @@ public class MustCallInference {
               obligations, (LocalVariableNode) returnNode);
       if (returnNodeObligation != null) {
         returnNodeToParameterIndexMap.put(
-            returnNodeObligation, getIndexOfParam(returnNodeObligation) + 1);
+            returnNodeObligation, getIndexOfParam(returnNodeObligation));
       }
     }
   }
@@ -301,11 +303,11 @@ public class MustCallInference {
     }
 
     // If all return statements alias the same parameter index, then add the @MustCallAlias
-    // annotation to that parameter.
+    // annotation to that parameter and the return type.
     if (!returnNodeToParameterIndexMap.isEmpty()) {
       if (returnNodeToParameterIndexMap.values().stream().distinct().count() == 1) {
         int indexOfParam = returnNodeToParameterIndexMap.values().iterator().next();
-        if (indexOfParam > 0) {
+        if (indexOfParam != -1) {
           addMustCallAlias(indexOfParam);
         }
       }
@@ -428,6 +430,11 @@ public class MustCallInference {
       return;
     }
 
+    int paramIndex = getIndexOfParam(rhsObligation);
+    if (paramIndex == -1) {
+      return;
+    }
+
     if (lhsElement.getKind() == ElementKind.FIELD) {
       if (!updateOwningFields().contains(lhsElement)) {
         return;
@@ -442,20 +449,14 @@ public class MustCallInference {
         disposedFields.remove((VariableElement) lhsElement);
       }
 
-      int paramIndex = getIndexOfParam(rhsObligation);
-      if (paramIndex == -1) {
-        return;
-      }
-
       if (TreeUtils.isConstructor(methodTree) && updateOwningFields().size() == 1) {
-        addMustCallAlias(paramIndex + 1);
+        addMustCallAlias(paramIndex);
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       } else {
-        addOwningToParam(paramIndex + 1);
+        addOwningToParam(paramIndex);
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
-      int paramIndex = getIndexOfParam(rhsObligation);
       addOwningToParam(paramIndex);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
@@ -464,8 +465,8 @@ public class MustCallInference {
   }
 
   /**
-   * Return the index of the method parameter that is an alias of the given {@code obligation}, if
-   * one exists; otherwise, return -1.
+   * Return the (1-based) index of the method parameter that is an alias of the given {@code
+   * obligation}, if one exists; otherwise, return -1.
    *
    * @param obligation the obligation
    * @return the index of the current method parameter that is alias of the given obligation, if one
@@ -475,11 +476,19 @@ public class MustCallInference {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
     List<VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+    VariableTree receiverTree = methodTree.getReceiverParameter();
+    VariableElement receiverElt = null;
+    if (receiverTree != null) {
+      receiverElt = TreeUtils.elementFromDeclaration(receiverTree);
+    }
     for (ResourceAlias resourceAlias : resourceAliases) {
       Element rElt = resourceAlias.element;
       int i = paramElts.indexOf(rElt);
       if (i != -1) {
-        return i;
+        return i + 1;
+      }
+      if (receiverElt != null && rElt.equals(receiverElt)) {
+        return 0;
       }
     }
     return -1;
@@ -804,7 +813,7 @@ public class MustCallInference {
       }
       int index = getIndexOfParam(argObligation);
       if (index != -1) {
-        addMustCallAlias(index + 1);
+        addMustCallAlias(index);
         break;
       }
     }
