@@ -321,7 +321,7 @@ public final class TreePathUtil {
           @SuppressWarnings("interning:not.interned") // AST node comparison
           boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
           if (switchIsLeaf) {
-            // The assignment context for the switch(ex) is simply boolean.
+            // The assignment context for the switch selector expression is simply boolean.
             // No point in going on.
             return null;
           }

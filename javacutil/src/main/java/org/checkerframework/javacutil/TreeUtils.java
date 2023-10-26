@@ -997,17 +997,16 @@ public final class TreeUtils {
    * @param tree a new class tree
    * @return the type arguments to the given new class tree
    */
-  public static List<? extends Tree> getTypeArgumentsToNewClassTree(Tree tree) {
-    switch (tree.getKind()) {
-      case ANNOTATED_TYPE:
-        return getTypeArgumentsToNewClassTree(((AnnotatedTypeTree) tree).getUnderlyingType());
-      case PARAMETERIZED_TYPE:
-        return ((ParameterizedTypeTree) tree).getTypeArguments();
-      case NEW_CLASS:
-        return getTypeArgumentsToNewClassTree(((NewClassTree) tree).getIdentifier());
-      default:
-        return new ArrayList<>();
+  public static List<? extends Tree> getTypeArgumentsToNewClassTree(NewClassTree tree) {
+    Tree typeTree = tree.getIdentifier();
+    if (typeTree.getKind() == Kind.ANNOTATED_TYPE) {
+      typeTree = ((AnnotatedTypeTree) tree).getUnderlyingType();
     }
+
+    if (typeTree.getKind() == Kind.PARAMETERIZED_TYPE) {
+      return ((ParameterizedTypeTree) tree).getTypeArguments();
+    }
+    return Collections.emptyList();
   }
 
   /**
@@ -2724,7 +2723,7 @@ public final class TreeUtils {
    * invocation actually used that fact to invoke the method.
    *
    * @param methodInvocation a method or constructor invocation
-   * @return whether applicability by variable arity invocation necessary to determine the method
+   * @return whether applicability by variable arity invocation is necessary to determine the method
    *     signature
    */
   public static boolean isVarArgMethodCall(ExpressionTree methodInvocation) {
@@ -2752,6 +2751,7 @@ public final class TreeUtils {
     MemberReferenceTree memRef = (MemberReferenceTree) tree;
     TypeMirror type = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (memRef.getMode() == ReferenceMode.NEW && type.getKind() == TypeKind.DECLARED) {
+      // No need to check array::new because the generic arrays can't be created.
       TypeElement classElt = (TypeElement) ((Type) type).asElement();
       DeclaredType classTypeMirror = (DeclaredType) classElt.asType();
       return !classTypeMirror.getTypeArguments().isEmpty()

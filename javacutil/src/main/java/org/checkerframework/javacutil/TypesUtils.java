@@ -1381,8 +1381,8 @@ public final class TypesUtils {
   }
 
   /**
-   * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * This method returns the type of the single abstract method declared by {@code
+   * functionalInterfaceType}.
    *
    * @param functionalInterfaceType functional interface
    * @param env ProcessingEnvironment
@@ -1435,7 +1435,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} is a parameterized type.
+   * Returns true if {@code type} is a parameterized type. A declared type is parameterized if it
+   * has parameters. An array type is parameterized if the inner-most component type has parameters.
    *
    * @param type type to check
    * @return true if {@code type} is a parameterized type
@@ -1445,11 +1446,11 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if {@code typeMirror} is a declared type with at least one wildcard as a type
+   * Return true if {@code typeMirror} is a declared type that has at least one wildcard as a type
    * argument.
    *
    * @param typeMirror type to check
-   * @return true if {@code typeMirror} is a declared type with at least one wildcard as a type
+   * @return true if {@code typeMirror} is a declared type that has at least one wildcard as a type
    *     argument
    */
   public static boolean isWildcardParameterized(TypeMirror typeMirror) {
@@ -1464,14 +1465,14 @@ public final class TypesUtils {
   }
 
   /**
-   * Creates a wildcard with the given bounds. If {@code upperBound} is Object, then the created
-   * wildcard will not have an upper bound. If {@code upperBound} is {@code null}, then {@code
-   * lowerBound} must not be null.
+   * Creates a wildcard with the given bounds. If {@code lowerBound} is non-null, the {@code
+   * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
+   * {@code Object}, then {@code lowerBound} must be {@code null};
    *
    * @param lowerBound the lower bound for the wildcard
-   * @param upperBound the upper bound for the wilcard
+   * @param upperBound the upper bound for the wildcard
    * @param types TypesUtils
-   * @return a wildcard with the given bound
+   * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
       TypeMirror lowerBound, TypeMirror upperBound, Types types) {

@@ -2043,7 +2043,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** Upper ({@code extends} bound. */
     private AnnotatedTypeMirror extendsBound;
 
-    /** Whether this wildcard is a type argument to a raw type. */
+    /**
+     * Whether this is a type argument to for a type whose {@code #underlyingType} is raw. The
+     * Checker Framework gives raw types wildcard type arguments so that the annotated type can be
+     * used as if the annotated type was not raw.
+     */
     private boolean typeArgOfRawType = false;
 
     /**

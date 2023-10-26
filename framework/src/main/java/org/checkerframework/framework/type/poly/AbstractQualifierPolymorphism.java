@@ -181,8 +181,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       return;
     }
     if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
-      // TODO: This is a work around.  We need to implement a way to resolve polymorphic in this
-      // case.
+      // TODO: This is a workaround.  We need to implement a way to resolve polymorphic qualifiers
+      //  in this case.
       completer.visit(type);
       return;
     }
@@ -223,13 +223,13 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   }
 
   /**
-   * If the type of any {@code argTrees} requires the type of the parameter it is psuedo-assigned
-   * to, then this method returns true.
+   * Returns true if type argument inference is required to find the type of any argument in {@code
+   * argTrees}.
    *
    * @param argTrees argument trees
    * @param path path to the method or constructor invocation
-   * @return true, if the type of any {@code argTrees} requires the type of the parameter it is
-   *     psuedo-assigned to
+   * @return true, if type argument inference is required to find the type of any argument in {@code
+   *     argTrees}.
    */
   @SuppressWarnings("interning:not.interned") // Looking for exact object.
   private boolean needsInference(List<? extends ExpressionTree> argTrees, TreePath path) {
@@ -252,8 +252,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
-      // TODO: This is a work around.  We need to implement a way to resolve polymorphic in this
-      // case.
+      // TODO: This is a workaround.  We need to implement a way to resolve polymorphic qualifiers
+      //  in this case.
       completer.visit(type);
       return;
     }
