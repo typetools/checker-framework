@@ -1,7 +1,5 @@
 package org.checkerframework.javacutil;
 
-import static org.plumelib.util.CollectionsPlume.mapList;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -2848,7 +2846,8 @@ public final class TreeUtils {
         || memberReferenceTree.getTypeArguments().isEmpty()) {
       return type;
     }
-    List<TypeMirror> args = mapList(TreeUtils::typeOf, memberReferenceTree.getTypeArguments());
+    List<TypeMirror> args =
+        CollectionsPlume.mapList(TreeUtils::typeOf, memberReferenceTree.getTypeArguments());
     return (ExecutableType) TypesUtils.substitute(type, type.getTypeVariables(), args, env);
   }
 }
