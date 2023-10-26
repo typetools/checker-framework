@@ -22,7 +22,7 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * </code></pre>
  *
  * It can also be used for a method that fails if a given Optional value is empty, indicating that
- * the argument is null is the method returns normally:
+ * the argument is null if the method returns normally:
  *
  * <pre><code>
  *   /** Throws an exception if the argument is empty. *&#47;
@@ -41,9 +41,9 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresPresent {
   /**
-   * The expression that is present, if the method returns normally.
+   * The expression (of Optional type) that is present, if the method returns normally.
    *
-   * @return the expression that is present, if the method returns normally
+   * @return the expression (of Optional type) that is present, if the method returns normally
    */
   String[] value();
 }

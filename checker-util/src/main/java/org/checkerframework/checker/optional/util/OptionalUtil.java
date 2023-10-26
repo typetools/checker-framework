@@ -29,7 +29,7 @@ public final class OptionalUtil {
 
   /** The OptionalUtil class should not be instantiated. */
   private OptionalUtil() {
-    throw new AssertionError("shouldn't be instantiated");
+    throw new AssertionError("do not instantiate");
   }
 
   /**

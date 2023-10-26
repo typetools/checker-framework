@@ -3,9 +3,8 @@ Version 3.40.0 (November 1, 2023)
 
 **User-visible changes:**
 
-Optional Checker:  `checker-qual.jar` contains a new class, which contains
-method `castPresent()` for suppressing false positive warnings from the
-Optional Checker.
+Optional Checker:  `checker-qual.jar` defines `OptionalUtil.castPresent()` for
+suppressing false positive warnings from the Optional Checker.
 
 **Implementation details:**
 
