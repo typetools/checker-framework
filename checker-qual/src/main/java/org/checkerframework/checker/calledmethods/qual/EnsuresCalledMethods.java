@@ -44,6 +44,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @PostconditionAnnotation(qualifier = CalledMethods.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Repeatable(EnsuresCalledMethods.List.class)
+@InheritedAnnotation
 public @interface EnsuresCalledMethods {
   /**
    * The Java expressions that will have methods called on them.
@@ -72,6 +73,7 @@ public @interface EnsuresCalledMethods {
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @InheritedAnnotation
+  @PostconditionAnnotation(qualifier = CalledMethods.class)
   public static @interface List {
     /**
      * Return the repeatable annotations.
