@@ -174,7 +174,7 @@ public class Expression extends TypeConstraint {
     MemberReferenceTree memRef = (MemberReferenceTree) expression;
     if (TreeUtils.isExactMethodReference(memRef)) {
       InvocationType typeOfPoAppMethod =
-          context.inferenceTypeFactory.compileTimeDeclarationType(memRef, T);
+          context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
 
       ConstraintSet constraintSet = new ConstraintSet();
       List<AbstractType> ps = T.getFunctionTypeParameterTypes();
@@ -212,7 +212,7 @@ public class Expression extends TypeConstraint {
 
     // Compile-time declaration of the member reference expression
     InvocationType compileTimeDecl =
-        context.inferenceTypeFactory.compileTimeDeclarationType(memRef, T);
+        context.inferenceTypeFactory.compileTimeDeclarationType(memRef);
     if (compileTimeDecl.isVoid()) {
       return ConstraintSet.TRUE;
     }

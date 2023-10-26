@@ -742,15 +742,13 @@ public class InferenceFactory {
    * Comparator<MyClass> func = MyClass::compareByField;
    * }</pre>
    *
-   * The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where as
-   * the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
+   * <p>The function type is {@code compare(Comparator<MyClass> this, MyClass o1, MyClass o2)} where
+   * as the compile-time declaration type is {@code compareByField(MyClass a, MyClass b)}.
    *
    * @param memRef method reference tree
-   * @param targetType {@code memRef}'s target type
    * @return the compile-time declaration of the method reference
    */
-  public InvocationType compileTimeDeclarationType(
-      MemberReferenceTree memRef, AbstractType targetType) {
+  public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
     // The type of the expression or type use, <expression>::method or <type use>::method.
     final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
@@ -997,7 +995,7 @@ public class InferenceFactory {
       thrownTypeMirrors =
           TypesUtils.findFunctionType(TreeUtils.typeOf(expression), context.env).getThrownTypes();
       thrownTypes =
-          compileTimeDeclarationType((MemberReferenceTree) expression, targetType)
+          compileTimeDeclarationType((MemberReferenceTree) expression)
               .getAnnotatedType()
               .getThrownTypes();
     }

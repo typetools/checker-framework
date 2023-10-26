@@ -197,7 +197,7 @@ public class InvocationTypeInference {
     }
 
     InvocationType compileTimeDecl =
-        context.inferenceTypeFactory.compileTimeDeclarationType(invocation, target);
+        context.inferenceTypeFactory.compileTimeDeclarationType(invocation);
     Theta map =
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, context);
