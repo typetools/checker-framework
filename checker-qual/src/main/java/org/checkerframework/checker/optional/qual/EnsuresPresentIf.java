@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * returns true if they are both equal <i>and</i> present might be annotated as follows:
  *
  * <pre>{@code @EnsuresPresentIf(expression="#1", result=true)
- * public boolean isPresentAndEqual(Optional<T> optA, Optional<T> optB) { ... }}</pre>
+ * public <T> boolean isPresentAndEqual(Optional<T> optA, Optional<T> optB) { ... }}</pre>
  *
  * because, if {@code isPresentAndEqual} returns true, then the first (#1) argument to {@code
  * isPresentAndEqual} was present.
@@ -45,7 +45,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre><code>
  * &nbsp;   @EnsuresNonNullIf(expression="#1", result=true)
  * &nbsp;   @EnsuresNonNullIf(expression="#2", result=false)
- *     public boolean isPresentAndEqual(Optional<T> optA, Optional<T> optB) { ... }
+ *     public &lt;T&gt; boolean isPresentAndEqual(Optional&lt;T&gt; optA, Optional&lt;T&gt; optB) { ... }
  * </code></pre>
  *
  * @see Present
