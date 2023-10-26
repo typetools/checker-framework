@@ -3,6 +3,7 @@ package org.checkerframework.checker.mustcall;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
@@ -14,6 +15,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -59,6 +61,12 @@ public class MustCallTransfer extends CFTransfer {
   private final boolean noCreatesMustCallFor;
 
   /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
+  private final boolean enableWpiForRlc;
+
+  /**
    * Create a MustCallTransfer.
    *
    * @param analysis the analysis
@@ -68,6 +76,7 @@ public class MustCallTransfer extends CFTransfer {
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
     noCreatesMustCallFor =
         atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     ProcessingEnvironment env = atypeFactory.getChecker().getProcessingEnvironment();
     treeBuilder = new TreeBuilder(env);
   }
@@ -173,6 +182,41 @@ public class MustCallTransfer extends CFTransfer {
     CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
     store.clearValue(expr);
     store.insertValue(expr, newValue);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param tree a tree
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param expressionTree a tree
+   * @param lhsTree its element
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override
@@ -298,5 +342,15 @@ public class MustCallTransfer extends CFTransfer {
    */
   protected String uniqueName(String prefix) {
     return prefix + "-" + uid.getAndIncrement();
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 }

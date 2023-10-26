@@ -910,7 +910,8 @@ task wpiManyTest(group: 'Verification') {
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
             '-o', "${project.projectDir}/build/wpi-many-tests",
             '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak'
+            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+            '--extraJavacArgs=-AenableWpiForRlc'
       }
     } catch (Exception e) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')

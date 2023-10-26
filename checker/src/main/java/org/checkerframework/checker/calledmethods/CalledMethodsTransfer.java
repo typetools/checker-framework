@@ -1,5 +1,6 @@
 package org.checkerframework.checker.calledmethods;
 
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -11,6 +12,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -51,6 +53,12 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private final ExecutableElement calledMethodsValueElement;
 
   /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
+  private final boolean enableWpiForRlc;
+
+  /**
    * Create a new CalledMethodsTransfer.
    *
    * @param analysis the analysis
@@ -59,6 +67,40 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+  }
+
+  /**
+   * @param tree a tree
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) is not passed
+   *     as a command line argument, otherwise returns the result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param expressionTree a tree
+   * @param lhsTree its element
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override
@@ -228,5 +270,15 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
 
     return atypeFactory.createAccumulatorAnnotation(newList);
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 }
