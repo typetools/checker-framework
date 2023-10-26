@@ -1281,10 +1281,9 @@ public final class TypesUtils {
   /**
    * Creates a fresh type variable with bounds {@code upper} and {@code lower}.
    *
-   * @param upper the upper bound to use, or if {@code null}, then {@code Object} is the upper
-   *     bound.
-   * @param lower the lower bound to use, or if {@code null}, then a {@code NullType} is the lower
-   *     bound.
+   * @param upper the upper bound to use, or if {@code null}, then {@code Object} is the upper bound
+   * @param lower the lower bound to use, or if {@code null}, then {@code NullType} is the lower
+   *     bound
    * @param env processing environment
    * @return a fresh type variable
    */
@@ -1299,7 +1298,6 @@ public final class TypesUtils {
         && (lower.getKind() == TypeKind.ARRAY
             || lower.getKind() == TypeKind.DECLARED
             || lower.getKind() == TypeKind.TYPEVAR)) {
-
       wildcardType = env.getTypeUtils().getWildcardType(null, lower);
     } else if (upper != null
         && (upper.getKind() == TypeKind.ARRAY
@@ -1370,9 +1368,9 @@ public final class TypesUtils {
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
    * (The type of this method is referred to as the function type.)
    *
-   * @param functionalInterfaceType functional interface
-   * @param env ProcessingEnvironment
-   * @return the single abstract method declared by the type of the tree
+   * @param functionalInterfaceType a functional interface type
+   * @param env the processing environment
+   * @return the single abstract method declared by the type
    */
   public static ExecutableElement findFunction(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
@@ -1400,26 +1398,26 @@ public final class TypesUtils {
   /**
    * Return whether or not {@code type} is raw.
    *
-   * @param type type to check
+   * @param type the type to check
    * @return whether or not {@code type} is raw
    */
   public static boolean isRaw(TypeMirror type) {
-    if (type.getKind() == TypeKind.DECLARED) {
-      TypeElement typeelem = (TypeElement) ((DeclaredType) type).asElement();
-      DeclaredType declty = (DeclaredType) typeelem.asType();
-      return !declty.getTypeArguments().isEmpty()
-          && ((DeclaredType) type).getTypeArguments().isEmpty();
+    if (type.getKind() != TypeKind.DECLARED) {
+      return false;
     }
-    return false;
+    TypeElement typeelem = (TypeElement) ((DeclaredType) type).asElement();
+    DeclaredType declType = (DeclaredType) typeelem.asType();
+    return !declType.getTypeArguments().isEmpty()
+        && ((DeclaredType) type).getTypeArguments().isEmpty();
   }
 
   /**
-   * Returns the most specific super type of {@code type} that is an array or null if {@code type}
+   * Returns the most specific supertype of {@code type} that is an array, or null if {@code type}
    * is not a subtype of an array.
    *
    * @param type a type
    * @param types TypesUtils
-   * @return the most specific super type of {@code type} that is an array or null if {@code type}
+   * @return the most specific supertype of {@code type} that is an array, or null if {@code type}
    *     is not a subtype of an array
    */
   public static @Nullable TypeMirror getMostSpecificArrayType(TypeMirror type, Types types) {
@@ -1437,10 +1435,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether {@code type} is a parameterized type.
+   * Returns true if {@code type} is a parameterized type.
    *
    * @param type type to check
-   * @return whether {@code type} is a parameterized type
+   * @return true if {@code type} is a parameterized type
    */
   public static boolean isParameterizedType(TypeMirror type) {
     return ((Type) type).isParameterized();
@@ -1466,9 +1464,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Creates a wildcard with the given bounds. If upper bound is Object, then the created wildcard
-   * will not have an upper bound. If {@code upperBound} is {@code null}, the {@code lowerBound}
-   * must not be null.
+   * Creates a wildcard with the given bounds. If {@code upperBound} is Object, then the created
+   * wildcard will not have an upper bound. If {@code upperBound} is {@code null}, then {@code
+   * lowerBound} must not be null.
    *
    * @param lowerBound the lower bound for the wildcard
    * @param upperBound the upper bound for the wilcard
