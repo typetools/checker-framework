@@ -331,11 +331,15 @@ public abstract class QualifierHierarchy {
    * Returns the least upper bound of all the collections of qualifiers. The result is the lub of
    * the qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers a collection of collections of qualifiers
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
    * @return the least upper bound of the collections of qualifiers
    */
   public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
       Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
     Set<? extends AnnotationMirror> result = null;
     for (Collection<? extends AnnotationMirror> annos : qualifiers) {
       if (result == null) {
@@ -343,9 +347,6 @@ public abstract class QualifierHierarchy {
       } else {
         result = leastUpperBoundsQualifiersOnly(result, annos);
       }
-    }
-    if (result == null) {
-      return AnnotationMirrorSet.emptySet();
     }
     return result;
   }
@@ -640,11 +641,15 @@ public abstract class QualifierHierarchy {
    * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
    * of the qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers a collection of collections of qualifiers
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
    * @return the greatest lower bound of the collections of qualifiers
    */
   public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
       Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
     Set<? extends AnnotationMirror> result = null;
     for (Collection<? extends AnnotationMirror> annos : qualifiers) {
       if (result == null) {
@@ -652,9 +657,6 @@ public abstract class QualifierHierarchy {
       } else {
         result = greatestLowerBoundsQualifiersOnly(result, annos);
       }
-    }
-    if (result == null) {
-      return AnnotationMirrorSet.emptySet();
     }
     return result;
   }
