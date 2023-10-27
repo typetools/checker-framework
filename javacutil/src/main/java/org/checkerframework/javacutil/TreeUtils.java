@@ -1000,11 +1000,11 @@ public final class TreeUtils {
   public static List<? extends Tree> getTypeArgumentsToNewClassTree(NewClassTree tree) {
     Tree typeTree = tree.getIdentifier();
     if (typeTree.getKind() == Kind.ANNOTATED_TYPE) {
-      typeTree = ((AnnotatedTypeTree) tree).getUnderlyingType();
+      typeTree = ((AnnotatedTypeTree) typeTree).getUnderlyingType();
     }
 
     if (typeTree.getKind() == Kind.PARAMETERIZED_TYPE) {
-      return ((ParameterizedTypeTree) tree).getTypeArguments();
+      return ((ParameterizedTypeTree) typeTree).getTypeArguments();
     }
     return Collections.emptyList();
   }
