@@ -590,19 +590,19 @@ public class InferenceFactory {
     }
 
     Theta map = new Theta();
-    TypeMirror qualifierExpressionType = TreeUtils.typeOf(memRef.getQualifierExpression());
+    TypeMirror preColonTreeType = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (TreeUtils.isDiamondMemberReference(memRef)
         || TreeUtils.isLikeDiamondMemberReference(memRef)) {
       // If memRef is a constructor or method of a generic class whose type argument isn't specified
       // such as HashSet::new or HashSet::put
       // then add variables for the type arguments to the class.
-      TypeElement classEle = (TypeElement) ((Type) qualifierExpressionType).asElement();
+      TypeElement classEle = (TypeElement) ((Type) preColonTreeType).asElement();
       DeclaredType classTypeMirror = (DeclaredType) classEle.asType();
 
       AnnotatedDeclaredType classType =
           (AnnotatedDeclaredType) typeFactory.getAnnotatedType(classTypeMirror.asElement());
 
-      if (((Type) qualifierExpressionType).getTypeArguments().isEmpty()) {
+      if (((Type) preColonTreeType).getTypeArguments().isEmpty()) {
         Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
         for (TypeMirror typeMirror : classTypeMirror.getTypeArguments()) {
           if (typeMirror.getKind() != TypeKind.TYPEVAR) {
@@ -750,12 +750,12 @@ public class InferenceFactory {
    */
   public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
     // The type of the expression or type use, <expression>::method or <type use>::method.
-    final ExpressionTree qualifierExpression = memRef.getQualifierExpression();
+    final ExpressionTree preColonTree = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
     AnnotatedTypeMirror enclosingType;
 
     if (memRef.getMode() == ReferenceMode.NEW) {
-      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
       if (TreeUtils.isDiamondMemberReference(memRef)) {
         // The member reference is HashMap::new so the type arguments for HashMap must be
         // inferred.
@@ -764,7 +764,7 @@ public class InferenceFactory {
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.UNBOUND) {
-      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
       if (enclosingType.getKind() == TypeKind.DECLARED
           && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
@@ -772,10 +772,10 @@ public class InferenceFactory {
       }
     } else if (memRefKind == MemberReferenceKind.STATIC) {
       // The "qualifier expression" is a type tree.
-      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+      enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
     } else { // memRefKind == MemberReferenceKind.BOUND
       // The "qualifier expression" is an expression.
-      enclosingType = typeFactory.getAnnotatedType(qualifierExpression);
+      enclosingType = typeFactory.getAnnotatedType(preColonTree);
     }
 
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference

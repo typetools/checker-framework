@@ -182,18 +182,18 @@ public class Expression extends TypeConstraint {
 
       if (ps.size() == fs.size() + 1) {
         AbstractType targetReference = ps.remove(0);
-        ExpressionTree qualifierExp = memRef.getQualifierExpression();
+        ExpressionTree preColonTree = memRef.getQualifierExpression();
         AbstractType referenceType;
-        if (context.isLambdaParam(qualifierExp)) {
-          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(qualifierExp);
+        if (context.isLambdaParam(preColonTree)) {
+          AnnotatedTypeMirror atm = context.typeFactory.getAnnotatedType(preColonTree);
           referenceType = T.create(atm, atm.getUnderlyingType());
         } else {
           if (MemberReferenceKind.getMemberReferenceKind(memRef).isUnbound()) {
             AnnotatedTypeMirror atm =
-                context.typeFactory.getAnnotatedTypeFromTypeTree(qualifierExp);
+                context.typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
             referenceType = new ProperType(atm, atm.getUnderlyingType(), context);
           } else {
-            referenceType = new ProperType(qualifierExp, context);
+            referenceType = new ProperType(preColonTree, context);
           }
         }
         constraintSet.add(new Typing(targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
