@@ -33,7 +33,8 @@ import org.checkerframework.framework.source.SupportedOptions;
   ResourceLeakChecker.IGNORED_EXCEPTIONS,
   MustCallChecker.NO_CREATES_MUSTCALLFOR,
   MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP,
-  MustCallChecker.NO_RESOURCE_ALIASES
+  MustCallChecker.NO_RESOURCE_ALIASES,
+  ResourceLeakChecker.ENABLE_WPI_FOR_RLC,
 })
 @StubFiles("IOUtils.astub")
 public class ResourceLeakChecker extends CalledMethodsChecker {
@@ -104,6 +105,15 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
   private static final Pattern EXCEPTION_SPECIFIER =
       Pattern.compile(
           "^\\s*" + "(" + Pattern.quote("=") + "\\s*" + ")?" + "(\\w+(?:\\.\\w+)*)" + "\\s*$");
+
+  /**
+   * Ordinarily, when the -Ainfer flag is used, whole-program inference is run for every checker and
+   * sub-checker. However, the Resource Leak Checker is different. The -Ainfer flag enables the
+   * RLC's own (non-WPI) inference mechanism ({@link MustCallInference}). To use WPI in addition to
+   * this mechanism for its sub-checkers, use the -AenableWpiForRlc flag, which is intended only for
+   * testing and experiments.
+   */
+  public static final String ENABLE_WPI_FOR_RLC = "enableWpiForRlc";
 
   /**
    * The number of expressions with must-call obligations that were checked. Incremented only if the

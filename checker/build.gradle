@@ -68,7 +68,7 @@ dependencies {
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.14.0'
+  testImplementation 'commons-io:commons-io:2.15.0'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -910,7 +910,8 @@ task wpiManyTest(group: 'Verification') {
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
             '-o', "${project.projectDir}/build/wpi-many-tests",
             '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak'
+            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+            '--extraJavacArgs=-AenableWpiForRlc'
       }
     } catch (Exception e) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')

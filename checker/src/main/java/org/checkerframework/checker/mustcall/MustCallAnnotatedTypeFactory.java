@@ -31,6 +31,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
@@ -117,6 +118,12 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private final boolean noLightweightOwnership;
 
   /**
+   * True if -AenableWpiForRlc (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) was passed on
+   * the command line.
+   */
+  private final boolean enableWpiForRlc;
+
+  /**
    * Creates a MustCallAnnotatedTypeFactory.
    *
    * @param checker the checker associated with this type factory
@@ -132,6 +139,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
   }
 
@@ -223,6 +231,13 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
+    // Formal parameters without a declared owning annotation are disregarded by the RLC _analysis_,
+    // as their @MustCall obligation is set to Top in this method. However, this computation is not
+    // desirable for RLC _inference_ in unannotated programs, where a goal is to infer and add
+    // @Owning annotations to formal parameters.
+    if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
+      return;
+    }
     List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
     for (int i = 0; i < parameterTypes.size(); i++) {
       Element paramDecl = declaration.getParameters().get(i);
@@ -416,7 +431,11 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromUse(tree);
-      if (elt.getKind() == ElementKind.PARAMETER
+      // The following changes are not desired for RLC _inference_ in unannotated programs, where a
+      // goal is to infer and add @Owning annotations to formal parameters. Therefore, if WPI is
+      // enabled, they should not be executed.
+      if (getWholeProgramInference() == null
+          && elt.getKind() == ElementKind.PARAMETER
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         if (!type.hasPrimaryAnnotation(POLY)) {
           // Parameters that are not annotated with @Owning should be treated as bottom
@@ -441,6 +460,16 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public @Nullable LocalVariableNode getTempVar(Node node) {
     return tempVars.get(node.getTree());
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 
   /**

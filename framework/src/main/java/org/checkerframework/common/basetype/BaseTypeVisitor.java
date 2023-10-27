@@ -1024,7 +1024,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkContractsAtMethodDeclaration(tree, methodElement, formalParamNames, abstractMethod);
 
       // Infer postconditions
-      if (atypeFactory.getWholeProgramInference() != null) {
+      if (shouldPerformContractInference()) {
         assert ElementUtils.isElementFromSourceCode(methodElement);
 
         // TODO: Infer conditional postconditions too.
@@ -1044,6 +1044,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } finally {
       methodTree = preMT;
     }
+  }
+
+  /**
+   * Should Whole Program Inference attempt to infer contract annotations? Typically, the answer is
+   * "yes" whenever WPI is enabled, but this method exists to allow subclasses to customize that
+   * behavior.
+   *
+   * @return true if contract inference should be performed, false if it should be disabled (even
+   *     when WPI is enabled)
+   */
+  protected boolean shouldPerformContractInference() {
+    return atypeFactory.getWholeProgramInference() != null;
   }
 
   /**
@@ -4815,7 +4827,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected final boolean shouldSkipUses(ExpressionTree exprTree) {
     // System.out.printf("shouldSkipUses: %s: %s%n", exprTree.getClass(), exprTree);
-
+    if (atypeFactory.isUnreachable(exprTree)) {
+      return true;
+    }
     Element elm = TreeUtils.elementFromTree(exprTree);
     return checker.shouldSkipUses(elm);
   }

@@ -1071,11 +1071,10 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
-      // JavaParser can output using lexical preserving printing, which writes the file such
-      // that its formatting is close to the original source file it was parsed from as
-      // possible. Currently, this feature is very buggy and crashes when adding annotations
-      // in certain locations. This implementation could be used instead if it's fixed in
-      // JavaParser.
+      // This implementation uses JavaParser's lexical preserving printing, which writes the file
+      // such that its formatting is close to the original source file it was parsed from as
+      // possible. It is commented out because, this feature is very buggy and crashes when adding
+      // annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
@@ -1906,10 +1905,6 @@ public class WholeProgramInferenceJavaParserStorage
      * nodes for that field.
      */
     public void transferAnnotations() {
-      if (type == null) {
-        return;
-      }
-
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration
