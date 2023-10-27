@@ -697,6 +697,14 @@ public class AnnotatedTypes {
   }
 
   /**
+   * A pair of an empty map and false. Used in {@link #findTypeArguments(AnnotatedTypeFactory,
+   * ExpressionTree, ExecutableElement, AnnotatedExecutableType, boolean)}.
+   */
+  private static final IPair<Map<TypeVariable, AnnotatedTypeMirror>, Boolean> emptyFalsePair =
+      IPair.of(Collections.emptyMap(), false);
+  ;
+
+  /**
    * Given a method or constructor invocation, return a mapping of the type variables to their type
    * arguments, if any exist.
    *
@@ -724,7 +732,7 @@ public class AnnotatedTypes {
     if (expr.getKind() != Kind.MEMBER_REFERENCE
         && elt.getTypeParameters().isEmpty()
         && !TreeUtils.isDiamondTree(expr)) {
-      return IPair.of(Collections.emptyMap(), false);
+      return emptyFalsePair;
     }
 
     List<? extends Tree> targs;
@@ -743,7 +751,7 @@ public class AnnotatedTypes {
       }
       targs = memRef.getTypeArguments();
       if (memRef.getTypeArguments() == null) {
-        return IPair.of(Collections.emptyMap(), false);
+        return emptyFalsePair;
       }
     } else {
       // This case should never happen.
@@ -754,7 +762,7 @@ public class AnnotatedTypes {
       DeclaredType receiverTypeMirror = preType.getReceiverType().getUnderlyingType();
       if (TypesUtils.isRaw(receiverTypeMirror)
           && elt.getEnclosingElement().equals(receiverTypeMirror.asElement())) {
-        return IPair.of(Collections.emptyMap(), false);
+        return emptyFalsePair;
       }
     }
 
@@ -763,7 +771,7 @@ public class AnnotatedTypes {
       List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
       if (tvars.isEmpty()) {
         // This happens when the method is invoked with a raw receiver.
-        return IPair.of(Collections.emptyMap(), false);
+        return emptyFalsePair;
       }
 
       Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
@@ -783,7 +791,7 @@ public class AnnotatedTypes {
             inferenceResult.getTypeArgumentsForExpression(expr),
             inferenceResult.isUncheckedConversion());
       } else {
-        return IPair.of(Collections.emptyMap(), false);
+        return emptyFalsePair;
       }
     }
   }
