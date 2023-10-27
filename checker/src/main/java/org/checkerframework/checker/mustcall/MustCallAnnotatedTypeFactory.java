@@ -26,7 +26,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
-import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
@@ -136,7 +135,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     addAliasedTypeAnnotation(InheritableMustCall.class, MustCall.class, true);
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
       // In NO_RESOURCE_ALIASES mode, all @MustCallAlias annotations are ignored.
-      addAliasedTypeAnnotation(MustCallAlias.class, POLY);
+      // addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
