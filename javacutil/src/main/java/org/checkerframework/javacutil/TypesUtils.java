@@ -1427,6 +1427,7 @@ public final class TypesUtils {
       for (TypeMirror superType : types.directSupertypes(type)) {
         TypeMirror arrayType = getMostSpecificArrayType(superType, types);
         if (arrayType != null) {
+          // Only one of the types can be an array type, so return the first one found.
           return arrayType;
         }
       }
@@ -1439,7 +1440,7 @@ public final class TypesUtils {
    * has parameters. An array type is parameterized if the inner-most component type has parameters.
    *
    * @param type type to check
-   * @return true if {@code type} is a parameterized type
+   * @return true if {@code type} is a parameterized declared type or array type
    */
   public static boolean isParameterizedType(TypeMirror type) {
     return ((Type) type).isParameterized();
