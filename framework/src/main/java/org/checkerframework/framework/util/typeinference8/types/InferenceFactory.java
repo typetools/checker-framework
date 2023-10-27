@@ -749,7 +749,7 @@ public class InferenceFactory {
    * @return the compile-time declaration of the method reference
    */
   public InvocationType compileTimeDeclarationType(MemberReferenceTree memRef) {
-    // The type of the expression or type use, <expression>::method or <type use>::method.
+    // The tree before :: is an expression or type use.
     final ExpressionTree preColonTree = memRef.getQualifierExpression();
     final MemberReferenceKind memRefKind = MemberReferenceKind.getMemberReferenceKind(memRef);
     AnnotatedTypeMirror enclosingType;
@@ -771,10 +771,10 @@ public class InferenceFactory {
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.STATIC) {
-      // The "qualifier expression" is a type tree.
+      // The tree before :: is a type tree.
       enclosingType = typeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
     } else { // memRefKind == MemberReferenceKind.BOUND
-      // The "qualifier expression" is an expression.
+      // The tree before :: is an expression.
       enclosingType = typeFactory.getAnnotatedType(preColonTree);
     }
 

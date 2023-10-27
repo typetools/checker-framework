@@ -312,9 +312,12 @@ public final class TreePathUtil {
       default:
         if (TreeUtils.isYield(parent)) {
           // A yield statement is only legal within a switch expression. Walk up the path to the
-          // case tree instead of the switch expression
-          // tree so the code remains backward compatible.
-          parentPath = pathTillOfKind(parentPath, Kind.CASE).getParentPath();
+          // case tree instead of the switch expression tree so the code remains backward
+          // compatible.
+          TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
+          assert pathToCase != null
+              : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
+          parentPath = pathToCase.getParentPath();
           parent = parentPath.getLeaf();
         }
         if (TreeUtils.isSwitchExpression(parent)) {

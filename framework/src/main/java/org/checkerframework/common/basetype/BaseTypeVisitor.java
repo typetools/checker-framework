@@ -3792,7 +3792,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // enclosing method.
     // That is handled separately in method receiver check.
 
-    // preColonTree is an expression or type use, <expression>::method or <type use>::method.
+    // The tree before :: is an expression or type use.
     ExpressionTree preColonTree = memberReferenceTree.getQualifierExpression();
     MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
@@ -3803,10 +3803,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
         || memRefKind == MemberReferenceKind.UNBOUND
         || memRefKind == MemberReferenceKind.STATIC) {
-      // The "qualifier expression" is a type tree.
+      // The tree before :: is a type tree.
       enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
     } else {
-      // The "qualifier expression" is an expression.
+      // The tree before :: is an expression.
       enclosingType = atypeFactory.getAnnotatedType(preColonTree);
     }
 
