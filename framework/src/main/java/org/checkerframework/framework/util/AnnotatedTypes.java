@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -595,8 +594,6 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfMember);
         AnnotatedDeclaredType erasedEnclosingType =
             atypeFactory.getAnnotatedType(enclosingClassOfMember);
-        Iterator<AnnotatedTypeMirror> erasedTypeArgsIterator =
-            erasedEnclosingType.getTypeArguments().iterator();
         List<AnnotatedTypeMirror> typeArguments = enclosingType.getTypeArguments();
         for (int i = 0; i < typeArguments.size(); i++) {
           AnnotatedTypeMirror type = typeArguments.get(i);
