@@ -92,7 +92,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
               atypeFactory.fromElement(declaredType.getUnderlyingType().asElement());
       List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
       for (int i = 0; i < typeArgs.size(); i++) {
-        if (AnnotatedTypes.isTypeArgOfRawType(typeArgs.get(i))) {
+        if (!AnnotatedTypes.isTypeArgOfRawType(typeArgs.get(i))) {
           // Sometimes the framework infers a more precise type argument, so just use it.
           continue;
         }
