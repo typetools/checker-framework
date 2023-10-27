@@ -391,7 +391,7 @@ public class AnnotatedTypes {
             member,
             memberType);
       case WILDCARD:
-        if (((AnnotatedWildcardType) receiverType).isTypeArgOfRawType()) {
+        if (AnnotatedTypes.isTypeArgOfRawType(receiverType)) {
           return substituteTypeArgsFromRawTypes(atypeFactory, member, memberType);
         }
         return asMemberOf(
@@ -1719,5 +1719,10 @@ public class AnnotatedTypes {
       annotatedDeclaredType = annotatedDeclaredType.getEnclosingType();
       underlyingTypeMirror = ((DeclaredType) underlyingTypeMirror).getEnclosingType();
     }
+  }
+
+  public static boolean isTypeArgOfRawType(AnnotatedTypeMirror typeArg) {
+    return typeArg.getKind() == TypeKind.WILDCARD
+        && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType();
   }
 }

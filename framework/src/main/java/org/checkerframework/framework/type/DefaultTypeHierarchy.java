@@ -449,9 +449,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    *     issue warnings about such type arguments.
    */
   private boolean shouldIgnoreRawTypeArgs(AnnotatedTypeMirror type) {
-    return this.ignoreRawTypes
-        && type.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
+    return this.ignoreRawTypes && AnnotatedTypes.isTypeArgOfRawType(type);
   }
 
   // ------------------------------------------------------------------------
@@ -1222,8 +1220,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    */
   protected boolean visitType_Wildcard(
       AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype) {
-    if (supertype.isTypeArgOfRawType()) { // TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
-      // Can't call isSubtype because underlying Java types won't be subtypes.
+    if (supertype.isTypeArgOfRawType()) {
       return ignoreRawTypes;
     }
     return isSubtype(subtype, supertype.getSuperBound(), currentTop);

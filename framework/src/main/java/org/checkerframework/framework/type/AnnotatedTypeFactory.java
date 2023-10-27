@@ -2354,8 +2354,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     AnnotatedExecutableType method = result.executableType;
-    if (method.getReturnType().getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) method.getReturnType()).isTypeArgOfRawType()) {
+    if (AnnotatedTypes.isTypeArgOfRawType(method.getReturnType())) {
       // Get the correct Java type from the tree and use it as the upper bound of the
       // wildcard.
       TypeMirror tm = TreeUtils.typeOf(tree);
@@ -4815,8 +4814,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     for (AnnotatedTypeMirror typeArg : uncapturedType.getTypeArguments()) {
-      if (typeArg.getKind() == TypeKind.WILDCARD
-          && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType()) {
+      if (AnnotatedTypes.isTypeArgOfRawType(typeArg)) {
         return false;
       }
     }
@@ -4883,8 +4881,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       boolean fromRawType = false;
       AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
       for (AnnotatedTypeMirror typeArg : uncapturedType.getTypeArguments()) {
-        if (typeArg.getKind() == TypeKind.WILDCARD
-            && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType()) {
+        if (AnnotatedTypes.isTypeArgOfRawType(typeArg)) {
           fromRawType = true;
           break;
         }
