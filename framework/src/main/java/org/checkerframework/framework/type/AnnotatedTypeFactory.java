@@ -2307,7 +2307,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * expression.
    *
    * @param tree the method invocation tree
-   * @return the method type being invoked with tree and the (inferred) type arguments
+   * @return the type of the invoked method and any (explict or inferred) type arguments
    */
   public final ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
     return methodFromUse(tree, true);
@@ -2318,7 +2318,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * arguments.
    *
    * @param tree a method invocation tree
-   * @return the method type being invoked with tree without inferring type arguments
+   * @return the type of the invoked method and any explicit type arguments
    */
   public ParameterizedExecutableType methodFromUseWithoutTypeArgInference(
       MethodInvocationTree tree) {
@@ -2331,7 +2331,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree a method invocation tree
    * @param inferTypeArgs whether type arguments should be inferred
-   * @return the method type being invoked with tree
+   * @return the type of the invoked method, any explicit type arguments, and if {@code
+   *     inferTypeArgs} is true, any inferred type arguments
    */
   protected ParameterizedExecutableType methodFromUse(
       MethodInvocationTree tree, boolean inferTypeArgs) {
@@ -2413,7 +2414,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param methodElt the element of the referenced method
    * @param receiverType the type of the receiver
    * @param inferTypeArgs whether type arguments should be inferred
-   * @return the type of the method being invoked with tree
+   * @return the type of the invoked method
    */
   protected ParameterizedExecutableType methodFromUse(
       ExpressionTree tree,

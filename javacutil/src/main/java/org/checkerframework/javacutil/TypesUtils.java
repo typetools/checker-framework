@@ -1390,9 +1390,7 @@ public final class TypesUtils {
    */
   public static ExecutableType findFunctionType(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
-    Context ctx = ((JavacProcessingEnvironment) env).getContext();
-    com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (ExecutableType) javacTypes.findDescriptorType((Type) functionalInterfaceType);
+    return (ExecutableType) findFunction(functionalInterfaceType, env).asType();
   }
 
   /**
