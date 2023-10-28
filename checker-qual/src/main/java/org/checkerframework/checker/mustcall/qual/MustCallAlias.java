@@ -42,7 +42,9 @@ import java.lang.annotation.Target;
  *   <li>In all other cases, the return type has the same {@code @MustCall} type as {@code p}.
  * </ul>
  *
- * {@link PolyMustCall} has an identical type system semantics.
+ * {@link PolyMustCall} has an identical type system semantics. This special treatment is required
+ * to allow for a wrapper object to have a must-call method with a different name than the must-call
+ * method name for the wrapped object.
  *
  * <h2>Verifying {@code @MustCallAlias} annotations</h2>
  *
