@@ -185,4 +185,6 @@ public interface NodeVisitor<R, P> {
    * @return the return value of the operation implemented by this visitor
    */
   R visitDeconstructorPattern(DeconstructorPatternNode n, P p);
+
+  R visitResource(ResourceNode resourceNode, P p);
 }

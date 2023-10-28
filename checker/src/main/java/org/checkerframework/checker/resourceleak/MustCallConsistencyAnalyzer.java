@@ -67,6 +67,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ResourceNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -2003,6 +2004,8 @@ class MustCallConsistencyAnalyzer {
           updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+        } else if (node instanceof ResourceNode) {
+          updateObligationsForResourceNode(obligations, (ResourceNode) node);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2016,6 +2019,18 @@ class MustCallConsistencyAnalyzer {
           successorAndExceptionType.second,
           visited,
           worklist);
+    }
+  }
+
+  private void updateObligationsForResourceNode(Set<Obligation> obligations, ResourceNode node) {
+    Node declOrLocalVarNode = node.getDeclOrLocalVarNode();
+    if (declOrLocalVarNode instanceof LocalVariableNode) {
+      LocalVariableNode localVarNode = (LocalVariableNode) declOrLocalVarNode;
+      removeObligationsContainingVar(
+          obligations,
+          localVarNode,
+          MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+          MethodExitKind.ALL);
     }
   }
 

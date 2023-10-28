@@ -145,6 +145,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.PackageNameNode;
 import org.checkerframework.dataflow.cfg.node.ParameterizedTypeNode;
 import org.checkerframework.dataflow.cfg.node.PrimitiveTypeNode;
+import org.checkerframework.dataflow.cfg.node.ResourceNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
@@ -3575,7 +3576,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // automatically closing the resources?
     List<? extends Tree> resources = tree.getResources();
     for (Tree resource : resources) {
-      scan(resource, p);
+      Node node = scan(resource, p);
+      ResourceNode resourceNode = new ResourceNode(node, resource);
+      extendWithNode(resourceNode);
     }
 
     extendWithNode(
