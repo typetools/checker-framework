@@ -1248,6 +1248,28 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Updates a set of obligations to account for a resource declaration in a try-with-resources
+   * tree. If the resource is a local variable (<em>not</em> a variable declaration), remove all
+   * obligations containing that variable. The case where the resource is a variable declaration is
+   * handled in {@link #updateObligationsForAssignment(Set, ControlFlowGraph, AssignmentNode)}.
+   *
+   * @param obligations the set of Obligations to update
+   * @param resourceNode the resource declaration
+   */
+  private void updateObligationsForResourceNode(
+      Set<Obligation> obligations, ResourceNode resourceNode) {
+    Node declOrLocalVarNode = resourceNode.getDeclOrLocalVarNode();
+    if (declOrLocalVarNode instanceof LocalVariableNode) {
+      LocalVariableNode localVarNode = (LocalVariableNode) declOrLocalVarNode;
+      removeObligationsContainingVar(
+          obligations,
+          localVarNode,
+          MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+          MethodExitKind.ALL);
+    }
+  }
+
+  /**
    * Returns true iff the given type element has 0 or 1 @Owning fields.
    *
    * @param element an element for a class
@@ -2019,18 +2041,6 @@ class MustCallConsistencyAnalyzer {
           successorAndExceptionType.second,
           visited,
           worklist);
-    }
-  }
-
-  private void updateObligationsForResourceNode(Set<Obligation> obligations, ResourceNode node) {
-    Node declOrLocalVarNode = node.getDeclOrLocalVarNode();
-    if (declOrLocalVarNode instanceof LocalVariableNode) {
-      LocalVariableNode localVarNode = (LocalVariableNode) declOrLocalVarNode;
-      removeObligationsContainingVar(
-          obligations,
-          localVarNode,
-          MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
-          MethodExitKind.ALL);
     }
   }
 

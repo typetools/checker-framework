@@ -186,5 +186,12 @@ public interface NodeVisitor<R, P> {
    */
   R visitDeconstructorPattern(DeconstructorPatternNode n, P p);
 
-  R visitResource(ResourceNode resourceNode, P p);
+  /**
+   * Visits a resource node.
+   *
+   * @param n the {@link ResourceNode} to be visited
+   * @param p the argument for the operation implemented by this visitor
+   * @return the return value of the operation implemented by this visitor
+   */
+  R visitResource(ResourceNode n, P p);
 }

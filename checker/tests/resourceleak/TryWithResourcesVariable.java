@@ -1,4 +1,4 @@
-// Test for try-with-resources where a variable is not declared in the try
+// Test for try-with-resources where the resource is a variable rather than a declaration
 
 import java.net.Socket;
 import org.checkerframework.checker.mustcall.qual.Owning;
