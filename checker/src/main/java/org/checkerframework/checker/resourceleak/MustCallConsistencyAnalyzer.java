@@ -324,13 +324,14 @@ class MustCallConsistencyAnalyzer {
 
     /**
      * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
-     * must-call obligation) of the resource represented by this Obligation.
+     * must-call obligation) of each resource alias represented by this Obligation.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
      *     null, then the default MustCall type of each variable's class will be used.
-     * @return the list of must-call method names, or null if the resource's must-call obligations
-     *     are unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
+     * @return a map from each resource alias of this to a list of its must-call method names, or
+     *     null if the must-call obligations are unsatisfiable (i.e. the value of some tracked
+     *     resource alias of this in the Must Call store is MustCallUnknown)
      */
     public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         ResourceLeakAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
