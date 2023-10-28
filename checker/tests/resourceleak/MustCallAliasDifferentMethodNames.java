@@ -1,3 +1,7 @@
+// Test case to check that a wrapper type can have a @MustCall method with a different name than
+// the @MustCall method of the type it wraps.
+// See https://github.com/typetools/checker-framework/issues/4947
+
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
@@ -26,9 +30,17 @@ class MustCallAliasDifferentMethodNames {
     }
   }
 
-  void testField() {
-    Foo f = new Foo(); // False Positive for this line
-    FooField fooField12345 = new FooField(f);
-    fooField12345.b();
+  void testField1() {
+    Foo f = new Foo();
+    FooField fooFieldWrapper = new FooField(f);
+    // Either calling f.a() or fooFieldWrapper.b() satisfies the obligation
+    fooFieldWrapper.b();
+  }
+
+  void testField2() {
+    Foo f = new Foo();
+    FooField fooFieldWrapper = new FooField(f);
+    // Either calling f.a() or fooFieldWrapper.b() satisfies the obligation
+    f.a();
   }
 }
