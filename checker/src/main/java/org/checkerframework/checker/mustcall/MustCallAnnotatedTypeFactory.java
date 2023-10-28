@@ -245,7 +245,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       if (typeElement != null) {
         if (replacements.size() == 1 && replacements.containsKey(POLY)) {
           other = replacements.get(POLY);
-          if (AnnotationUtils.annotationName(other).equals(MustCall.class.getCanonicalName())) {
+          if (AnnotationUtils.areSameByName(other, MustCall.class.getCanonicalName())) {
             List<String> otherVals =
                 AnnotationUtils.getElementValueArray(
                     other, getMustCallValueElement(), String.class);

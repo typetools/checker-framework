@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -79,7 +80,6 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -332,27 +332,25 @@ class MustCallConsistencyAnalyzer {
      * @return the list of must-call method names, or null if the resource's must-call obligations
      *     are unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
      */
-    public @Nullable List<String> getMustCallMethods(
+    public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         ResourceLeakAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
+      Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-      // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
-      // method was called on just one of the aliases then they all need to be treated as if
-      // they need to call the relevant methods.
-      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
-      AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        TypeMirror aliasTm = alias.reference.getType();
-        mcLub = qualHierarchy.leastUpperBoundShallow(mcLub, aliasTm, mcAnno, aliasTm);
+        if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
+          // MustCallUnknown; cannot be satisfied
+          return null;
+        }
+        List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
+        // Really, annoVals should never be empty here; we should not have created the obligation in
+        // the first place
+        // TODO: add an assertion that annoVals is non-empty and address any failures
+        result.put(alias, annoVals);
       }
-      if (AnnotationUtils.areSameByName(
-          mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-        return rlAtf.getMustCallValues(mcLub);
-      } else {
-        return null;
-      }
+      return result;
     }
 
     /**
@@ -2329,12 +2327,12 @@ class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
-    // TODO this is broken, as different aliases may have different @MustCall requirements
-    List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+    Map<ResourceAlias, List<String>> mustCallValues =
+        obligation.getMustCallMethods(typeFactory, mcStore);
 
-    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // optimization: if mustCallValues is null, always issue a warning (there is no way to satisfy
     // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
-    if (mustCallValue == null) {
+    if (mustCallValues == null) {
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -2351,13 +2349,19 @@ class MustCallConsistencyAnalyzer {
       }
       return;
     }
-    // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue.isEmpty()) {
-      return;
+    if (mustCallValues.isEmpty()) {
+      throw new TypeSystemError("unexpected empty must-call values for obligation " + obligation);
     }
 
     boolean mustCallSatisfied = false;
     for (ResourceAlias alias : obligation.resourceAliases) {
+
+      List<String> mustCallValuesForAlias = mustCallValues.get(alias);
+      // optimization when there are no methods to call
+      if (mustCallValuesForAlias.isEmpty()) {
+        mustCallSatisfied = true;
+        break;
+      }
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
@@ -2384,7 +2388,7 @@ class MustCallConsistencyAnalyzer {
                 .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
-      if (calledMethodsSatisfyMustCall(mustCallValue, cmAnno)) {
+      if (calledMethodsSatisfyMustCall(mustCallValuesForAlias, cmAnno)) {
         mustCallSatisfied = true;
         break;
       }
@@ -2400,7 +2404,7 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
-              formatMissingMustCallMethods(mustCallValue),
+              formatMissingMustCallMethods(mustCallValues.get(firstAlias)),
               firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
