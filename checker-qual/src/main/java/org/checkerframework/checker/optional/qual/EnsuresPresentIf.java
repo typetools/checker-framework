@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
  * Indicates that the given expressions of type Optional&lt;T&gt; are present, if the method returns
- * the given result (either true or false).FOO
+ * the given result (either true or false).
  *
  * <p>Here are ways this conditional postcondition annotation can be used:
  *
