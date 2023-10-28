@@ -2329,6 +2329,7 @@ class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
+    // TODO this is broken, as different aliases may have different @MustCall requirements
     List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
 
     // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy

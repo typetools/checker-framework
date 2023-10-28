@@ -22,10 +22,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
@@ -37,6 +39,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -44,12 +47,15 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.QualifierUpperBounds;
 import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
+import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
+import org.checkerframework.framework.type.poly.QualifierPolymorphism;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.DefaultQualifierForUseTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -135,7 +141,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     addAliasedTypeAnnotation(InheritableMustCall.class, MustCall.class, true);
     if (!checker.hasOption(MustCallChecker.NO_RESOURCE_ALIASES)) {
       // In NO_RESOURCE_ALIASES mode, all @MustCallAlias annotations are ignored.
-      // addAliasedTypeAnnotation(MustCallAlias.class, POLY);
+      addAliasedTypeAnnotation(MustCallAlias.class, POLY);
     }
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
@@ -217,6 +223,60 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     ExecutableElement declaration = TreeUtils.elementFromUse(tree);
     changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type);
+  }
+
+  private class MustCallQualifierPolymorphism extends DefaultQualifierPolymorphism {
+    /**
+     * Creates a {@link MustCallQualifierPolymorphism}.
+     *
+     * @param env the processing environment
+     * @param factory the factory for the current checker
+     */
+    public MustCallQualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
+      super(env, factory);
+    }
+
+    @Override
+    protected void replace(
+        AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
+      boolean changedIt = false;
+      AnnotationMirror other = null;
+      TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
+      if (typeElement != null) {
+        if (replacements.size() == 1 && replacements.containsKey(POLY)) {
+          other = replacements.get(POLY);
+          if (AnnotationUtils.annotationName(other).equals(MustCall.class.getCanonicalName())) {
+            List<String> otherVals =
+                AnnotationUtils.getElementValueArray(
+                    other, getMustCallValueElement(), String.class);
+            if (!otherVals.isEmpty()) {
+              AnnotationMirror inheritableMustCall =
+                  getDeclAnnotation(typeElement, InheritableMustCall.class);
+              if (inheritableMustCall != null) {
+                List<String> mustCallVal =
+                    AnnotationUtils.getElementValueArray(
+                        inheritableMustCall, inheritableMustCallValueElement, String.class);
+                if (!mustCallVal.equals(otherVals)) {
+                  AnnotationMirror mustCall = createMustCall(mustCallVal);
+                  // System.out.println(mustCall);
+                  replacements.put(POLY, mustCall);
+                  changedIt = true;
+                }
+              }
+            }
+          }
+        }
+      }
+      super.replace(type, replacements);
+      if (changedIt) {
+        replacements.put(POLY, other);
+      }
+    }
+  }
+
+  @Override
+  protected QualifierPolymorphism createQualifierPolymorphism() {
+    return new MustCallQualifierPolymorphism(processingEnv, this);
   }
 
   /**
