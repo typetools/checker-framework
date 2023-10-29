@@ -25,7 +25,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * because, if {@code isPresentAndEqual} returns true, then the first (#1) argument to {@code
  * isPresentAndEqual} was present, and so was the second (#2) argument. Note that you can write two
- * {@code @EnsurePresentIf} annotations on a single method.
+ * {@code @EnsuresPresentIf} annotations on a single method.
  *
  * <p><b>Fields:</b> The value expressions can refer to fields, even private ones. For example:
  *
