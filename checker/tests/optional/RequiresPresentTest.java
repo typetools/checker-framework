@@ -11,7 +11,7 @@ public class RequiresPresentTest {
   @RequiresPresent("field1")
   void method1() {
     field1.get().length(); // OK, field1 is known to be present (non-empty)
-    this.field1.get().length(); // OK, field1 is known to be present (non-emmpty)
+    this.field1.get().length(); // OK, field1 is known to be present (non-empty)
     // :: error: (method.invocation)
     field2.get().length(); // error, might throw NoSuchElementException
   }
@@ -49,5 +49,24 @@ public class RequiresPresentTest {
 
     // OK, field is known to be present.
     arg2.requiresPresentField();
+  }
+
+  @RequiresPresent({"field1", "field2"})
+  void method4() {
+    field1.get().length(); // OK, field1 is known to be present (non-empty)
+    this.field1.get().length(); // OK, field1 is known to be present (non-empty)
+
+    field2.get().length(); // OK, field2 is known to be preent (non-empty)
+    this.field2.get().length(); // OK, field2 is known to be present (non-empty)
+  }
+
+  void method5() {
+    field1 = Optional.of("abc");
+    // :: error: (contracts.precondition)
+    method4(); // error, not enough for only field1 to be present.
+
+    field1 = Optional.of("abc");
+    field2 = Optional.of("def");
+    method4(); // OK, both precondition now hold at this point.
   }
 }
