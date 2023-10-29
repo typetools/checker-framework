@@ -1253,9 +1253,9 @@ class MustCallConsistencyAnalyzer {
    */
   private void updateObligationsForResourceNode(
       Set<Obligation> obligations, ResourceNode resourceNode) {
-    Node declOrLocalVarNode = resourceNode.getDeclOrLocalVarNode();
-    if (declOrLocalVarNode instanceof LocalVariableNode) {
-      LocalVariableNode localVarNode = (LocalVariableNode) declOrLocalVarNode;
+    Node assignOrLocalVarNode = resourceNode.getAssignOrLocalVarNode();
+    if (assignOrLocalVarNode instanceof LocalVariableNode) {
+      LocalVariableNode localVarNode = (LocalVariableNode) assignOrLocalVarNode;
       removeObligationsContainingVar(
           obligations,
           localVarNode,
