@@ -62,11 +62,11 @@ public class RequiresPresentTest {
 
   void method5() {
     field1 = Optional.of("abc");
-    // :: error: (contracts.precondition)
-    method4(); // error, not enough for only field1 to be present.
-
-    field1 = Optional.of("abc");
     field2 = Optional.of("def");
-    method4(); // OK, both precondition now hold at this point.
+    method4(); // OK, both preconditions now hold at this point.
+
+    field1 = Optional.empty();
+    // :: error: (contracts.precondition)
+    method4(); // error, field1 is no longer present.
   }
 }
