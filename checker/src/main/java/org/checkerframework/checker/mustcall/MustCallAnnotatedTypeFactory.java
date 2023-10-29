@@ -255,7 +255,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               extantPolyAnnoReplacement, MustCall.class.getCanonicalName())) {
             List<String> extentReplacementVals =
                 AnnotationUtils.getElementValueArray(
-                    extantPolyAnnoReplacement, getMustCallValueElement(), String.class);
+                    extantPolyAnnoReplacement,
+                    getMustCallValueElement(),
+                    String.class,
+                    Collections.emptyList());
             // replacement only customized when parameter type has a non-empty must-call obligation
             if (!extentReplacementVals.isEmpty()) {
               AnnotationMirror inheritableMustCall =
