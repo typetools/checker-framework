@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * Indicates a method precondition: the method expects the specified expressions of type Optional to
- * be present (i.e., non-empty) when the annotated method is invoked.
+ * Indicates a method precondition: the specified expressions of type Optional must be present
+ * (i.e., non-empty) when the annotated method is invoked.
  *
  * <p>For example:
  *
@@ -20,10 +20,10 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * import org.checkerframework.checker.optional.qual.Present;
  *
  * class MyClass {
- * &nbsp; Optional&lt;String&gt; optId1;
- * &nbsp; Optional&lt;String&gt; optId2;
+ *   Optional&lt;String&gt; optId1;
+ *   Optional&lt;String&gt; optId2;
  *
- * &nbsp; RequiresPresent({"optId1", "#1.optId1"})
+ * &nbsp; @RequiresPresent({"optId1", "#1.optId1"})
  *   void method1(MyClass other) {
  *     optId1.get().length()       // OK, this.optID1 is known to be present.
  *     optId2.get().length()       // error, might throw NoSuchElementException.
@@ -51,8 +51,8 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * </pre>
  *
  * Do not use this annotation for formal parameters (instead, give them a {@code @Present} type).
- * The {@code @RequiresNonNull} annotation is intended for other expressions, such as field accesses
- * or method calls.
+ * The {@code @RequiresNonNull} annotation is intended for non-parameter expressions, such as field
+ * accesses or method calls.
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
@@ -62,11 +62,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresPresent {
 
   /**
-   * The Java expressions that that need to be {@link
-   * org.checkerframework.checker.optional.qual.Present}.
+   * The Java expressions that that need to be {@link Present}.
    *
-   * @return the Java expressions that need to be {@link
-   *     org.checkerframework.checker.optional.qual.Present}.
+   * @return the Java expressions that need to be {@link Present}
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] value();
@@ -85,7 +83,7 @@ public @interface RequiresPresent {
     /**
      * Returns the repeatable annotations.
      *
-     * @return the repeatable annotations.
+     * @return the repeatable annotations
      */
     RequiresPresent[] value();
   }

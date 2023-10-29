@@ -32,16 +32,15 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * <pre><code> &nbsp;@EnsuresPresentIf(expression="this.optShape", result=true)
  *  public boolean isShape() {
  *    return (this.optShape != null &amp;&amp; this.optShape.isPresent());
- * }</code></pre>
+ *  }</code></pre>
  *
  * An {@code @EnsuresPresentIf} annotation that refers to a private field is useful for verifying
- * that client code performs needed checks in the right order, even if the client code cannot
- * directly affect the field.
+ * that a method establishes a property, even though client code cannot directly affect the field.
  *
  * <p><b>Method postconditions:</b> Suppose that if a method {@code isRectangle()} returns true,
  * then {@code getRectangle()} will return a present Optional. You an express this relationship as:
  *
- * <pre>{@code @EnsuresPresentIf(result=true, expression="getRectangle()")
+ * <pre>{@code  @EnsuresPresentIf(result=true, expression="getRectangle()")
  * public @Pure isRectangle() { ... }}</pre>
  *
  * @see Present
@@ -55,21 +54,21 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresPresentIf {
   /**
+   * Returns the return value of the method under which the postcondition holds.
+   *
+   * @return the return value of the method under which the postcondition holds
+   */
+  boolean result();
+
+  /**
    * Returns the Java expressions of type Optional&lt;T&gt; that are present after the method
    * returns the given result.
    *
    * @return the Java expressions of type Optional&lt;T&gt; that are present after the method
-   *     returns the given result. value {@link #result()}
+   *     returns the given result.
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();
-
-  /**
-   * Returns the return value of the method under which the postcondition holds.
-   *
-   * @return the return value of the method under which the postcondition holds.
-   */
-  boolean result();
 
   /**
    * A wrapper annotation that makes the {@link EnsuresPresentIf} annotation repeatable.
@@ -84,7 +83,7 @@ public @interface EnsuresPresentIf {
     /**
      * Returns the repeatable annotations.
      *
-     * @return the repeatable annotations.
+     * @return the repeatable annotations
      */
     EnsuresPresentIf[] value();
   }
