@@ -20,12 +20,4 @@ class TryWithResourcesVariable {
 
     }
   }
-
-  static void testWorks() {
-    try (Socket socket = new Socket("127.0.0.1", 5050)) {
-
-    } catch (Exception e) {
-
-    }
-  }
 }
