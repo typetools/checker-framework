@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This represents a resource declaration in a try-with-resources tree. A resource declaration can
@@ -72,7 +73,7 @@ public class ResourceNode extends Node {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ResourceNode that = (ResourceNode) o;
