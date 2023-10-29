@@ -266,7 +266,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               if (inheritableMustCall != null) {
                 List<String> inheritableMustCallVals =
                     AnnotationUtils.getElementValueArray(
-                        inheritableMustCall, inheritableMustCallValueElement, String.class);
+                        inheritableMustCall,
+                        inheritableMustCallValueElement,
+                        String.class,
+                        Collections.emptyList());
                 if (!inheritableMustCallVals.equals(extentReplacementVals)) {
                   // Use the must call values from the @InheritableMustCall annotation instead.
                   // This allows for wrapper types to have a must-call method with a different
