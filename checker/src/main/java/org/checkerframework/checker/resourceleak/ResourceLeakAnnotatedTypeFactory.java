@@ -131,7 +131,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-        new MustCallConsistencyAnalyzer(this, this.analysis);
+        new MustCallConsistencyAnalyzer(this, (ResourceLeakAnalysis) this.analysis);
     mustCallConsistencyAnalyzer.analyze(cfg);
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
@@ -148,7 +148,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   protected ResourceLeakAnalysis createFlowAnalysis() {
-    return new ResourceLeakAnalysis(checker, this);
+    return new ResourceLeakAnalysis((ResourceLeakChecker) checker, this);
   }
 
   /**
