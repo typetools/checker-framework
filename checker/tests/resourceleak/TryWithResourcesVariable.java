@@ -1,7 +1,8 @@
 // Test for try-with-resources where the resource is a variable rather than a declaration
 
 import java.net.Socket;
-import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.calledmethods.qual.*;
+import org.checkerframework.checker.mustcall.qual.*;
 
 class TryWithResourcesVariable {
   static void test1() throws Exception {
@@ -21,13 +22,19 @@ class TryWithResourcesVariable {
     }
   }
 
+  @InheritableMustCall("disposer")
   static class FinalResourceField {
-    private final Socket socketField;
+    final Socket socketField;
 
-    FinalResourceField() throws Exception {
-      socketField = new Socket("127.0.0.1", 5050);
+    FinalResourceField() {
+      try {
+        socketField = new Socket("127.0.0.1", 5050);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
 
+    @EnsuresCalledMethods(value = "this.socketField", methods = "close")
     void disposer() {
       try (socketField) {
 
@@ -35,5 +42,17 @@ class TryWithResourcesVariable {
 
       }
     }
+  }
+
+  static void closeFinalFieldUnsupported() throws Exception {
+    try (new FinalResourceField().socketField) {}
+  }
+
+  static class FinalResourceFieldWrapper {
+    final FinalResourceField frField = new FinalResourceField();
+  }
+
+  static void closeWrapperUnsupported() throws Exception {
+    try (new FinalResourceFieldWrapper().frField.socketField) {}
   }
 }
