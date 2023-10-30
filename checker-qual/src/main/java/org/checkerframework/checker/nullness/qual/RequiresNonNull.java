@@ -55,7 +55,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * Do not use this annotation for formal parameters (instead, give them a {@code @NonNull} type,
  * which is the default and need not be written). The {@code @RequiresNonNull} annotation is
- * intended for other expressions, such as field accesses or method calls.
+ * intended for non-parameter, such as field accesses or method calls.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  */

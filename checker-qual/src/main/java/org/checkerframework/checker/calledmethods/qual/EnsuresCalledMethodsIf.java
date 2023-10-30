@@ -26,6 +26,13 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Repeatable(EnsuresCalledMethodsIf.List.class)
 public @interface EnsuresCalledMethodsIf {
   /**
+   * Returns the return value of the method under which the postcondition holds.
+   *
+   * @return the return value of the method under which the postcondition holds
+   */
+  boolean result();
+
+  /**
    * Returns Java expressions that have had the given methods called on them after the method
    * returns {@link #result}.
    *
@@ -33,13 +40,6 @@ public @interface EnsuresCalledMethodsIf {
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();
-
-  /**
-   * Returns the return value of the method under which the postcondition holds.
-   *
-   * @return the return value of the method under which the postcondition holds
-   */
-  boolean result();
 
   /**
    * The methods guaranteed to be invoked on the expressions if the result of the method is {@link
