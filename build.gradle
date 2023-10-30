@@ -258,6 +258,12 @@ allprojects {
     }
   }
 
+  test {
+    minHeapSize = "256m" // initial heap size
+    maxHeapSize = "4g" // maximum heap size
+    jvmArgs '-XX:MaxPermSize=4g' // mem argument for the test JVM
+  }
+
   // After all the tasks have been created, modify some of them.
   afterEvaluate {
     configurations {
