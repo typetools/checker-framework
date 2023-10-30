@@ -23,6 +23,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -232,9 +233,24 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     // Note that isValidUse does not need to consider component types, on which it should be
     // called separately.
     Element elt = TreeUtils.elementFromTree(tree);
-    if (elt != null
-        && AnnotationUtils.containsSameByClass(elt.getAnnotationMirrors(), MustCallAlias.class)) {
-      return true;
+    if (elt != null) {
+      if (AnnotationUtils.containsSameByClass(elt.getAnnotationMirrors(), MustCallAlias.class)) {
+        return true;
+      }
+      // Need to check the type mirror for ajava-derived annotations and the element itself
+      // for human-written annotations from the source code. Getting to the ajava file directly
+      // at this point is impossible, so we approximate "the ajava file has an @MustCallAlias
+      // annotation" with "there is an @PolyMustCall annotation on the use type, but not in the
+      // source code". This only works because none of our inference techniques infer @PolyMustCall,
+      // so if @PolyMustCall is present but wasn't in the source, it must have been derived from
+      // an @MustCallAlias annotation (which we do infer).
+      boolean ajavaFileHasMustCallAlias =
+          useType.hasPrimaryAnnotation(PolyMustCall.class)
+              && !AnnotationUtils.containsSameByClass(
+                  elt.getAnnotationMirrors(), PolyMustCall.class);
+      if (ajavaFileHasMustCallAlias) {
+        return true;
+      }
     }
     return super.isValidUse(declarationType, useType, tree);
   }

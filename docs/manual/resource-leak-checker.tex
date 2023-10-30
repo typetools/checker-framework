@@ -51,13 +51,18 @@ javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker M
 
 The Resource Leak Checker supports all the command-line arguments
 listed in Section~\ref{called-methods-run-checker} for
-the Called Methods Checker, plus two others:
+the Called Methods Checker, plus three others:
 
 \begin{description}
 \item[\<-ApermitStaticOwning>]
   See Section~\ref{resource-leak-owning-fields}.
+\item[\<-AresourceLeakIgnoredExceptions=...>]
+  See Section~\ref{resource-leak-ignored-exceptions}.
 \item[\<-ApermitInitializationLeak>]
   See Section~\ref{resource-leak-field-initialization}.
+%% TODO: Uncomment when the feature is ready to be publicized.
+% \item[\<-AenableWpiForRlc>]
+%   See Section~\ref{resource-leak-checker-inference-algo}.
 \end{description}
 
 If you are running the Resource Leak Checker, then there is no need to run
@@ -485,12 +490,14 @@ The Resource Leak Checker ignores control flow due to some exceptions.
 
 \begin{itemize}
 \item
-The Resource Leak Checker ignores run-time errors that can occur
+By default the Resource Leak Checker ignores run-time errors that can occur
 unpredictably at most points in the program. For example, the JVM can throw
 an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
 may occur at any reference to a class.  Such exceptions usually terminate
 the program, and in that case unclosed resources do not matter.
+Furthermore, any method can throw \<RuntimeException>, and the Checker
+Framework pessimistically assumes one can be thrown at every call site.
 Accounting for such exceptions would lead to vast numbers of
 false positive warnings, so the Resource Leak Checker assumes they are
 never thrown.  Strictly speaking, this is an unsoundness:  it can lead to
@@ -508,6 +515,25 @@ be ignored by filing an issue listing both the exception type and the
 verification tool.
 \end{itemize}
 
+The set of ignored exception types can be controlled with the option
+\<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
+fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
+that type and not its subclasses.  For example, for a very pedantic set of ignored
+exceptions use:
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions=java.lang.Error, =java.lang.NullPointerException
+\end{verbatim}
+
+which ignores \<java.lang.Error> (and all its subclasses) as well as
+\<java.lang.NullPointerException> (but not its subclasses).
+
+The keyword \<default> will expand to the default set of ignored exceptions.  So,
+to add an additional exception to the set of ignored exceptions, use:
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions=default,package.MyCustomException
+\end{verbatim}
 
 \sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
 
@@ -584,6 +610,19 @@ The recommended way to use the Resource Leak Checker in this situation is
 to rewrite the code to avoid a \<List> of owning resources. If rewriting is
 not possible, the programmer will probably need to suppress a warning and
 then verify the code using a method other than the Resource Leak Checker.
+
+
+%% TODO: Uncomment when the feature is ready to be publicized.
+% \sectionAndLabel{Resource Leak Checker Annotation Inference Algorithm}{resource-leak-checker-inference-algo}
+%
+% We are developing a special inference mechanism to infer annotations for
+% the Resource Leak Checker. By default, this mechanism operates when the
+% -Ainfer flag is enabled. To utilize the whole-program inference mechanism outlined in
+% section \ref{whole-program-inference} in addition to this mechanism for the Resource
+% Leak Checker and its sub-checkers, you should provide the \<-AenableWpiForRlc> flag.
+%
+% The paper \href={https://arxiv.org/pdf/2306.11953.pdf}{Automatic Inference of Resource Leak Specifications}, published at OOPSLA 2023, gives more details on the inference algorithm. Currently, only the first phase of the algorithm described in the paper is available, and the complete implementation will be available soon.
+
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
 % LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite

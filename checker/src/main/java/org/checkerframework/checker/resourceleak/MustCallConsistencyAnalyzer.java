@@ -10,10 +10,9 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -27,12 +26,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -46,8 +45,6 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -180,7 +177,7 @@ class MustCallConsistencyAnalyzer {
   private final ResourceLeakChecker checker;
 
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final AccumulationAnalysis analysis;
+  private final ResourceLeakAnalysis analysis;
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
@@ -559,7 +556,7 @@ class MustCallConsistencyAnalyzer {
    *     so this constructor cannot get it directly.
    */
   /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, AccumulationAnalysis analysis) {
+      ResourceLeakAnnotatedTypeFactory typeFactory, ResourceLeakAnalysis analysis) {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
@@ -839,7 +836,8 @@ class MustCallConsistencyAnalyzer {
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
    */
-  private void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
+  /*package-private*/ void updateObligationsWithInvocationResult(
+      Set<Obligation> obligations, Node node) {
     Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
@@ -1106,7 +1104,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return the temporary for node, or node if no temporary exists
    */
-  private Node getTempVarOrNode(Node node) {
+  /*package-private*/ Node getTempVarOrNode(Node node) {
     Node temp = typeFactory.getTempVarForNode(node);
     if (temp != null) {
       return temp;
@@ -1274,7 +1272,7 @@ class MustCallConsistencyAnalyzer {
    * @param node the node
    * @return true if must-call type of node only contains close
    */
-  private boolean isMustCallClose(Node node) {
+  /*package-private*/ boolean isMustCallClose(Node node) {
     MustCallAnnotatedTypeFactory mcAtf =
         typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
@@ -1318,7 +1316,8 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the set of Obligations to modify
    * @param var a variable
    */
-  private void removeObligationsContainingVar(Set<Obligation> obligations, LocalVariableNode var) {
+  /*package-private*/ void removeObligationsContainingVar(
+      Set<Obligation> obligations, LocalVariableNode var) {
     removeObligationsContainingVar(
         obligations, var, MustCallAliasHandling.NO_SPECIAL_HANDLING, MethodExitKind.ALL);
   }
@@ -1404,7 +1403,7 @@ class MustCallConsistencyAnalyzer {
    *     temporary variable (via a call to {@link
    *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode})
    */
-  private void updateObligationsForPseudoAssignment(
+  /*package-private*/ void updateObligationsForPseudoAssignment(
       Set<Obligation> obligations, Node node, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
@@ -1831,7 +1830,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a MethodInvocation or ObjectCreation node
    * @return the arguments, in order
    */
-  private List<Node> getArgumentsOfInvocation(Node node) {
+  /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
       return invocationNode.getArguments();
@@ -1850,7 +1849,7 @@ class MustCallConsistencyAnalyzer {
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  private List<? extends VariableElement> getParametersOfInvocation(Node node) {
+  /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode) {
       MethodInvocationNode invocationNode = (MethodInvocationNode) node;
@@ -1902,8 +1901,8 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types. See {@link #ignoredExceptionTypes}. Each exceptional successor is paired with the type
-   * of exception that leads to it, for use in error messages.
+   * types. See {@link ResourceLeakAnalysis#isIgnoredExceptionType(TypeMirror)}. Each exceptional
+   * successor is paired with the type of exception that leads to it, for use in error messages.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
@@ -1923,7 +1922,7 @@ class MustCallConsistencyAnalyzer {
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
-        if (!isIgnoredExceptionType(((Type) exceptionType).tsym.getQualifiedName())) {
+        if (!analysis.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
             result.add(IPair.of(exSucc, exceptionType));
           }
@@ -2269,7 +2268,7 @@ class MustCallConsistencyAnalyzer {
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation
    */
-  private static @Nullable Obligation getObligationForVar(
+  /*package-private*/ static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
@@ -2430,7 +2429,7 @@ class MustCallConsistencyAnalyzer {
    * @return true iff cmAnno is a subtype of a called-methods annotation with the same values as
    *     mustCallValues
    */
-  private boolean calledMethodsSatisfyMustCall(
+  /*package-private*/ boolean calledMethodsSatisfyMustCall(
       List<String> mustCallValues, AnnotationMirror cmAnno) {
     // Create this annotation and use a subtype test because there's no guarantee that
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
@@ -2439,58 +2438,6 @@ class MustCallConsistencyAnalyzer {
     return typeFactory
         .getQualifierHierarchy()
         .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
-  }
-
-  /**
-   * The exception types in this set are ignored in the CFG when determining if a resource leaks
-   * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
-   * errors that the JVM can issue on any statement, and errors that can be prevented by running
-   * some other CF checker.
-   *
-   * <p>Package-private to permit access from {@link ResourceLeakAnalysis}.
-   */
-  /*package-private*/ static final Set<String> ignoredExceptionTypes =
-      new HashSet<>(
-          ImmutableSet.of(
-              // Any method call has a CFG edge for Throwable/RuntimeException/Error
-              // to represent run-time misbehavior. Ignore it.
-              Throwable.class.getCanonicalName(),
-              Error.class.getCanonicalName(),
-              RuntimeException.class.getCanonicalName(),
-              // Use the Nullness Checker to prove this won't happen.
-              NullPointerException.class.getCanonicalName(),
-              // These errors can't be predicted statically, so ignore them and assume
-              // they won't happen.
-              ClassCircularityError.class.getCanonicalName(),
-              ClassFormatError.class.getCanonicalName(),
-              NoClassDefFoundError.class.getCanonicalName(),
-              OutOfMemoryError.class.getCanonicalName(),
-              // It's not our problem if the Java type system is wrong.
-              ClassCastException.class.getCanonicalName(),
-              // It's not our problem if the code is going to divide by zero.
-              ArithmeticException.class.getCanonicalName(),
-              // Use the Index Checker to prevent these errors.
-              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
-              NegativeArraySizeException.class.getCanonicalName(),
-              // Most of the time, this exception is infeasible, as the charset used
-              // is guaranteed to be present by the Java spec (e.g., "UTF-8").
-              // Eventually, this exclusion could be refined by looking at the charset
-              // being requested.
-              UnsupportedEncodingException.class.getCanonicalName()));
-
-  /**
-   * Is {@code exceptionClassName} an exception type the checker ignores, to avoid excessive false
-   * positives? For now the checker ignores most runtime exceptions (especially the runtime
-   * exceptions that can occur at any point during the program due to something going wrong in the
-   * JVM, like OutOfMemoryError and ClassCircularityError) and exceptions that can be proved to
-   * never occur by another Checker Framework built-in checker, such as null-pointer dereferences
-   * (the Nullness Checker) and out-of-bounds array indexing (the Index Checker).
-   *
-   * @param exceptionClassName the fully-qualified name of the exception
-   * @return true if the given exception class should be ignored
-   */
-  private static boolean isIgnoredExceptionType(@FullyQualifiedName Name exceptionClassName) {
-    return ignoredExceptionTypes.contains(exceptionClassName.toString());
   }
 
   /**
@@ -2534,7 +2481,7 @@ class MustCallConsistencyAnalyzer {
    * consists of BlockWithObligations objects, each representing the need to handle the set of
    * dataflow facts reaching the block during analysis.
    */
-  private static class BlockWithObligations {
+  /*package-private*/ static class BlockWithObligations {
 
     /** The block. */
     public final Block block;
@@ -2570,5 +2517,58 @@ class MustCallConsistencyAnalyzer {
     public int hashCode() {
       return Objects.hash(block, obligations);
     }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "BWO{%s %d, %d obligations %d}",
+          block.getType(), block.getUid(), obligations.size(), obligations.hashCode());
+    }
+
+    /**
+     * Returns a printed representation of a collection of BlockWithObligations. If a
+     * BlockWithObligations appears multiple times in the collection, it is printed more succinctly
+     * after the first time.
+     *
+     * @param bwos a collection of BlockWithObligations, to format
+     * @return a printed representation of a collection of BlockWithObligations
+     */
+    public static String collectionToString(Collection<BlockWithObligations> bwos) {
+      List<Block> blocksWithDuplicates = new ArrayList<>();
+      for (BlockWithObligations bwo : bwos) {
+        blocksWithDuplicates.add(bwo.block);
+      }
+      List<Block> duplicateBlocks = duplicates(blocksWithDuplicates);
+      StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
+      for (BlockWithObligations bwo : bwos) {
+        ImmutableSet<Obligation> obligations = bwo.obligations;
+        if (duplicateBlocks.contains(bwo.block)) {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations %s}",
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size(), obligations));
+        } else {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations}",
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size()));
+        }
+      }
+      return result.toString();
+    }
+  }
+
+  // TODO: Use from plume-lib's CollectionsPlume once version 1.9.0 is released.
+  /**
+   * Returns the elements (once each) that appear more than once in the given collection.
+   *
+   * @param <T> the type of elements
+   * @param c a collection
+   * @return the elements (once each) that appear more than once in the given collection
+   */
+  public static <T> List<T> duplicates(Collection<T> c) {
+    // Inefficient (because of streams) but simple implementation.
+    Set<T> withoutDuplicates = new HashSet<>();
+    return c.stream().filter(n -> !withoutDuplicates.add(n)).collect(Collectors.toList());
   }
 }

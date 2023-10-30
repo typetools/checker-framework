@@ -46,8 +46,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *   }}</pre>
  *
  * An {@code EnsuresNonNullIf} annotation that refers to a private field is useful for verifying
- * that client code performs needed checks in the right order, even if the client code cannot
- * directly affect the field.
+ * that a method establishes a property, even though client code cannot directly affect the field.
  *
  * <p><b>Method calls:</b> If {@link Class#isArray()} returns true, then {@link
  * Class#getComponentType()} returns non-null. You can express this relationship as:
@@ -76,19 +75,19 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
   /**
+   * Returns the return value of the method under which the postcondition holds.
+   *
+   * @return the return value of the method under which the postcondition holds
+   */
+  boolean result();
+
+  /**
    * Returns Java expression(s) that are non-null after the method returns the given result.
    *
    * @return Java expression(s) that are non-null after the method returns the given result
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();
-
-  /**
-   * Returns the return value of the method under which the postcondition holds.
-   *
-   * @return the return value of the method under which the postcondition holds
-   */
-  boolean result();
 
   /**
    * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
