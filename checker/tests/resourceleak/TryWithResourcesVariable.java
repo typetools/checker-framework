@@ -20,4 +20,20 @@ class TryWithResourcesVariable {
 
     }
   }
+
+  static class FinalResourceField {
+    private final Socket socketField;
+
+    FinalResourceField() throws Exception {
+      socketField = new Socket("127.0.0.1", 5050);
+    }
+
+    void disposer() {
+      try (socketField) {
+
+      } catch (Exception e) {
+
+      }
+    }
+  }
 }
