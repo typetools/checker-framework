@@ -1726,8 +1726,16 @@ public class AnnotatedTypes {
     }
   }
 
-  public static boolean isTypeArgOfRawType(AnnotatedTypeMirror typeArg) {
-    return typeArg.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) typeArg).isTypeArgOfRawType();
+  /**
+   * Returns whether {@code type} is a type argument to a type whose {@code #underlyingType} is raw.
+   * The Checker Framework gives raw types wildcard type arguments so that the annotated type can be
+   * used as if the annotated type was not raw.
+   *
+   * @param type an annotated type
+   * @return whether this is a type argument to a type whose {@code #underlyingType} is raw
+   */
+  public static boolean isTypeArgOfRawType(AnnotatedTypeMirror type) {
+    return type.getKind() == TypeKind.WILDCARD
+        && ((AnnotatedWildcardType) type).isTypeArgOfRawType();
   }
 }
