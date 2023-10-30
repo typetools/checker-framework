@@ -258,6 +258,11 @@ allprojects {
     }
   }
 
+  test {
+    minHeapSize = "256m" // initial heap size
+    maxHeapSize = "4g" // maximum heap size
+  }
+
   // After all the tasks have been created, modify some of them.
   afterEvaluate {
     configurations {
