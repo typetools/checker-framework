@@ -20,7 +20,7 @@ public class MustCallAliasOnReceiver {
     return new MustCallAliasOnReceiver(is, false);
   }
 
-  // :: error: required.method.not.called
+  // :: warning: (required.method.not.called)
   public static void testUse3(@Owning InputStream inputStream) throws Exception {
     // if mcaneFactory throws, then inputStream goes out of scope w/o being closed
     MustCallAliasOnReceiver mcane = mcaneFactory(inputStream);
