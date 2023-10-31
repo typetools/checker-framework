@@ -6,8 +6,11 @@ import java.util.Objects;
  * A contract that a method calls the given method on the given expression when that method throws
  * an exception.
  *
+ * <p>Instances of this class are plain old immutable data with no interesting behavior.
+ *
  * @see org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException
  */
+// TODO: In the future, this class should be a record.
 public class EnsuredCalledMethodOnException {
 
   /** The expression described by this postcondition. */
