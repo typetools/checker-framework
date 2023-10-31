@@ -243,52 +243,45 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     protected void replace(
         AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
-      boolean replacementsModified = false;
+      AnnotationMirrorMap<AnnotationMirror> realReplacements = replacements;
       AnnotationMirror extantPolyAnnoReplacement = null;
       TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
       // only customize replacement for type elements
       if (typeElement != null) {
-        // TODO: should we assert that replacements.size() == 1?
-        if (replacements.size() == 1 && replacements.containsKey(POLY)) {
-          extantPolyAnnoReplacement = replacements.get(POLY);
-          if (AnnotationUtils.areSameByName(
-              extantPolyAnnoReplacement, MustCall.class.getCanonicalName())) {
-            List<String> extentReplacementVals =
-                AnnotationUtils.getElementValueArray(
-                    extantPolyAnnoReplacement,
-                    getMustCallValueElement(),
-                    String.class,
-                    Collections.emptyList());
-            // replacement only customized when parameter type has a non-empty must-call obligation
-            if (!extentReplacementVals.isEmpty()) {
-              AnnotationMirror inheritableMustCall =
-                  getDeclAnnotation(typeElement, InheritableMustCall.class);
-              if (inheritableMustCall != null) {
-                List<String> inheritableMustCallVals =
-                    AnnotationUtils.getElementValueArray(
-                        inheritableMustCall,
-                        inheritableMustCallValueElement,
-                        String.class,
-                        Collections.emptyList());
-                if (!inheritableMustCallVals.equals(extentReplacementVals)) {
-                  // Use the must call values from the @InheritableMustCall annotation instead.
-                  // This allows for wrapper types to have a must-call method with a different
-                  // name than the must-call method for the wrapped type
-                  // TODO should we just copy the map instead of modifying it?
-                  AnnotationMirror mustCall = createMustCall(inheritableMustCallVals);
-                  replacements.put(POLY, mustCall);
-                  replacementsModified = true;
-                }
+        assert replacements.size() == 1;
+        extantPolyAnnoReplacement = replacements.get(POLY);
+        if (AnnotationUtils.areSameByName(
+            extantPolyAnnoReplacement, MustCall.class.getCanonicalName())) {
+          List<String> extentReplacementVals =
+              AnnotationUtils.getElementValueArray(
+                  extantPolyAnnoReplacement,
+                  getMustCallValueElement(),
+                  String.class,
+                  Collections.emptyList());
+          // replacement only customized when parameter type has a non-empty must-call obligation
+          if (!extentReplacementVals.isEmpty()) {
+            AnnotationMirror inheritableMustCall =
+                getDeclAnnotation(typeElement, InheritableMustCall.class);
+            if (inheritableMustCall != null) {
+              List<String> inheritableMustCallVals =
+                  AnnotationUtils.getElementValueArray(
+                      inheritableMustCall,
+                      inheritableMustCallValueElement,
+                      String.class,
+                      Collections.emptyList());
+              if (!inheritableMustCallVals.equals(extentReplacementVals)) {
+                // Use the must call values from the @InheritableMustCall annotation instead.
+                // This allows for wrapper types to have a must-call method with a different
+                // name than the must-call method for the wrapped type
+                AnnotationMirror mustCall = createMustCall(inheritableMustCallVals);
+                realReplacements = new AnnotationMirrorMap<>();
+                realReplacements.put(POLY, mustCall);
               }
             }
           }
         }
       }
-      super.replace(type, replacements);
-      // restore the previous replacement if needed
-      if (replacementsModified) {
-        replacements.put(POLY, extantPolyAnnoReplacement);
-      }
+      super.replace(type, realReplacements);
     }
   }
 
