@@ -142,9 +142,9 @@ public class MustCallInference {
   private final @Nullable TypeElement classElt;
 
   /**
-   * This map is used to track alias relationships between return nodes and method parameters. The
-   * keys are the obligation of return nodes, and the values are the index of current method formal
-   * parameter (1-based) that is aliased with the return node.
+   * This map is used to track must-alias relationships between return nodes and method parameters.
+   * The keys are the obligation of return nodes, and the values are the index of current method
+   * formal parameter (1-based) that is aliased with the return node.
    */
   private final Map<Obligation, Integer> returnNodeToParameterIndexMap = new HashMap<>();
 
@@ -261,7 +261,8 @@ public class MustCallInference {
    *       implication: if a method returns an owned field of this class at <i>any</i> return site,
    *       the return type is inferred to be non-owning.
    *   <li>Compute the index of the parameter that is an alias of the return node and add it the
-   *       {@link #returnNodeToParameterIndexMap} map.
+   *       {@link #returnNodeToParameterIndexMap} map. This map will be used later to infer the
+   *       {@link MustCallAlias} annotation for method parameters.
    * </ul>
    *
    * @param obligations set of obligations associated with the current block
@@ -395,7 +396,7 @@ public class MustCallInference {
   }
 
   /**
-   * Analyzes an assignment statement and performs four computations:
+   * Analyzes an assignment statement and performs the following computations:
    *
    * <ul>
    *   <li>If the current method under analysis is a constructor, the left-hand side of the
@@ -472,8 +473,8 @@ public class MustCallInference {
    * obligation}, if one exists; otherwise, return -1.
    *
    * @param obligation the obligation
-   * @return the index of the current method parameter that is alias of the given obligation, if one
-   *     exists; otherwise, return -1.
+   * @return the index of the current method parameter that is must-aliased to the given obligation,
+   *     if one exists; otherwise, return -1.
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
