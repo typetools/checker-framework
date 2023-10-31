@@ -82,7 +82,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
       EnsuredCalledMethodOnException postcond, MethodTree tree) {
     CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(tree);
     if (exitStore == null) {
-      // If there is no regular exitStore, then the method cannot throw exceptions and
+      // If there is no exceptional exitStore, then the method cannot throw exceptions and
       // there is no need to check anything.
       return;
     }
