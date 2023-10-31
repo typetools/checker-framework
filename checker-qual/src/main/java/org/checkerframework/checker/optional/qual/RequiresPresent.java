@@ -56,6 +56,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @PreconditionAnnotation(qualifier = Present.class)
