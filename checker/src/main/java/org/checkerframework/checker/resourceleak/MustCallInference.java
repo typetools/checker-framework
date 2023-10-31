@@ -418,8 +418,7 @@ public class MustCallInference {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = mcca.getTempVarOrNode(rhs);
+    Node rhs = mcca.removeCastsAndGetTmpVarIfPresent(assignmentNode.getExpression());
 
     if (!(rhs instanceof LocalVariableNode)) {
       return;
@@ -427,11 +426,6 @@ public class MustCallInference {
     Obligation rhsObligation =
         MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) rhs);
     if (rhsObligation == null) {
-      return;
-    }
-
-    int paramIndex = getIndexOfParam(rhsObligation);
-    if (paramIndex == -1) {
       return;
     }
 
@@ -449,6 +443,11 @@ public class MustCallInference {
         disposedFields.remove((VariableElement) lhsElement);
       }
 
+      int paramIndex = getIndexOfParam(rhsObligation);
+      if (paramIndex == -1) {
+        return;
+      }
+
       if (TreeUtils.isConstructor(methodTree) && updateOwningFields().size() == 1) {
         addMustCallAlias(paramIndex);
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
@@ -456,8 +455,12 @@ public class MustCallInference {
         addOwningToParam(paramIndex);
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
+
     } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
-      addOwningToParam(paramIndex);
+      int paramIndex = getIndexOfParam(rhsObligation);
+      if (paramIndex > 0) {
+        addOwningToParam(paramIndex);
+      }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
@@ -476,21 +479,22 @@ public class MustCallInference {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
     List<VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+
     VariableTree receiverTree = methodTree.getReceiverParameter();
-    VariableElement receiverElt = null;
-    if (receiverTree != null) {
-      receiverElt = TreeUtils.elementFromDeclaration(receiverTree);
-    }
+    VariableElement receiverElt =
+        (receiverTree != null) ? TreeUtils.elementFromDeclaration(receiverTree) : null;
+
     for (ResourceAlias resourceAlias : resourceAliases) {
-      Element rElt = resourceAlias.element;
-      int i = paramElts.indexOf(rElt);
-      if (i != -1) {
-        return i + 1;
+      int paramIndex = paramElts.indexOf(resourceAlias.element);
+      if (paramIndex != -1) {
+        return paramIndex + 1;
       }
-      if (receiverElt != null && rElt.equals(receiverElt)) {
+
+      if (receiverElt != null && receiverElt.equals(resourceAlias.element)) {
         return 0;
       }
     }
+
     return -1;
   }
 
