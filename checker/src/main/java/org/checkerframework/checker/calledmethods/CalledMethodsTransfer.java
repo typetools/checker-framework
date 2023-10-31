@@ -279,6 +279,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         // postcondition and move on to the others.
         continue;
       }
+
+      // NOTE: this code is a little inefficient; it creates a single-method annotation and calls
+      // `insertOrRefine` in a loop.  Even worse, this code appears within a loop.  For now we
+      // aren't too worried about it, since the number of EnsuresCalledMethodsOnException
+      // annotations should be small.
       AnnotationMirror calledMethod =
           atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
       for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
