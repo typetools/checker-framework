@@ -248,7 +248,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
       // only customize replacement for type elements
       if (typeElement != null) {
-        assert replacements.size() == 1;
+        assert replacements.size() == 1 && replacements.containsKey(POLY);
         extantPolyAnnoReplacement = replacements.get(POLY);
         if (AnnotationUtils.areSameByName(
             extantPolyAnnoReplacement, MustCall.class.getCanonicalName())) {
