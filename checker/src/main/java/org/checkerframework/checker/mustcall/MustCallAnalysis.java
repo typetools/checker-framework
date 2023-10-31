@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.sun.tools.javac.code.Type;
 import java.util.HashSet;
 import java.util.Set;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -49,7 +50,10 @@ public class MustCallAnalysis extends CFAnalysis {
    */
   @Override
   protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptionTypes.contains(
-        ((Type) exceptionType).tsym.getQualifiedName().toString());
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ignoredExceptionTypes.contains(
+          ((Type) exceptionType).tsym.getQualifiedName().toString());
+    }
+    return false;
   }
 }
