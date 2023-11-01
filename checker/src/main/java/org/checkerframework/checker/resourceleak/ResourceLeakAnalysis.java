@@ -1,5 +1,7 @@
 package org.checkerframework.checker.resourceleak;
 
+import com.sun.tools.javac.code.Type;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
@@ -31,6 +33,10 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
 
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptions.contains(getTypes(), exceptionType);
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return ignoredExceptionTypes.contains(
+          ((Type) exceptionType).tsym.getQualifiedName().toString());
+    }
+    return false;
   }
 }
