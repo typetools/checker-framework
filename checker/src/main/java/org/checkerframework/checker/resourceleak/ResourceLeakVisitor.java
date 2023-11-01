@@ -483,6 +483,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
     } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      // The parsing error will be reported elsewhere, assuming e was derived from an annotation.
       return false;
     }
   }
