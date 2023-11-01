@@ -429,7 +429,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                     rlTypeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
-              if (value.contains(field.getSimpleName().toString())) {
+              if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
@@ -465,6 +465,18 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           field.asType().toString(),
           error);
     }
+  }
+
+  /**
+   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   *
+   * @param e the expression
+   * @param field the field
+   * @return true if <code>e</code> refers to <code>this.field</code>
+   */
+  private boolean expressionEqualsField(String e, Element field) {
+    // TODO: this is very wrong
+    return e.contains(field.getSimpleName().toString());
   }
 
   /**
