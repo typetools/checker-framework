@@ -466,6 +466,12 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     //
     // It should be possible to remove this override entirely without sacrificing any soundness.
     // However, that is undesirable at this point because it would be a breaking change.
+    //
+    // TODO: gradually remove this override.
+    //   1. When this override adds an implicit annotation, the Checker Framework should issue
+    //      a warning along with a suggestion to add the right annotations.
+    //   2. After a few months we should remove this override and require proper annotations on
+    //      all destructors.
 
     if (isMustCallMethod(methodOrConstructor)) {
       Set<Contract.Postcondition> normalPostconditions =
