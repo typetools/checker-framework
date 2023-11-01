@@ -446,6 +446,9 @@ public class MustCallInference {
 
       int paramIndex = getIndexOfParam(rhsObligation);
       if (paramIndex == -1) {
+        // We are only tracking formal parameter aliases. If the rhsObligation is not an alias of
+        // any of the formal parameters, it won't be present in the obligations set. Thus, skipping
+        // the rest of this method is fine.
         return;
       }
 
