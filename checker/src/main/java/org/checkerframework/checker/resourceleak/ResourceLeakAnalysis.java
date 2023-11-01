@@ -14,12 +14,6 @@ import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFact
 public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
 
   /**
-   * The set of exceptions to ignore, cached from {@link
-   * ResourceLeakChecker#getIgnoredExceptions()}.
-   */
-  private final SetOfTypes ignoredExceptions;
-
-  /**
    * Creates a new {@code CalledMethodsAnalysis}.
    *
    * @param checker the checker
@@ -28,7 +22,6 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
   protected ResourceLeakAnalysis(
       ResourceLeakChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
-    this.ignoredExceptions = checker.getIgnoredExceptions();
   }
 
   @Override
