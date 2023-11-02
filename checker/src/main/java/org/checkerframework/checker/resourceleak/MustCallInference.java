@@ -256,10 +256,10 @@ public class MustCallInference {
    * Analyzes a return statement and performs two computations:
    *
    * <ul>
-   *   <li>If the returned expression is an owning field with non-empty must-call obligations, adds
-   *       a {@link NotOwning} annotation to the return type of the current method. Note the
-   *       implication: if a method returns an owned field of this class at <i>any</i> return site,
-   *       the return type is inferred to be non-owning.
+   *   <li>If the returned expression is a field with non-empty must-call obligations, adds a {@link
+   *       NotOwning} annotation to the return type of the current method. Note the implication: if
+   *       a method returns a field of this class at <i>any</i> return site, the return type is
+   *       inferred to be non-owning.
    *   <li>Compute the index of the parameter that is an alias of the return node and add it the
    *       {@link #returnNodeToParameterIndexMap} map. This map will be used later to infer the
    *       {@link MustCallAlias} annotation for method parameters.
