@@ -28,7 +28,6 @@ class AssignNullInExceptionBlock {
       fooField = makeFoo();
     } catch (Exception e) {
       Foo f = null;
-      // :: error: (assignment)
       fooField = f;
     }
   }
@@ -38,7 +37,6 @@ class AssignNullInExceptionBlock {
       fooField = makeFoo1();
     } catch (Exception e) {
       Foo f = null;
-      // :: error: (assignment)
       fooField = f;
     }
   }
@@ -48,7 +46,6 @@ class AssignNullInExceptionBlock {
     try {
       fooField = makeFoo1();
     } catch (Exception e) {
-      // :: error: (assignment)
       fooField = f;
     }
   }

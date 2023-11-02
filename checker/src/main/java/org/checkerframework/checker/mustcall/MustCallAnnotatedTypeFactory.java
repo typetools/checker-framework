@@ -23,6 +23,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -228,6 +230,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     ExecutableElement declaration = TreeUtils.elementFromUse(tree);
     changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type);
+  }
+
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    if (exceptionType.getKind() == TypeKind.DECLARED) {
+      return MustCallAnalysis.ignoredExceptionTypes.contains(
+          TypesUtils.getQualifiedName((DeclaredType) exceptionType));
+    }
+    return false;
   }
 
   /**
