@@ -114,7 +114,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.39.1-SNAPSHOT'
+  version '3.40.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -256,6 +256,11 @@ allprojects {
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
     }
+  }
+
+  test {
+    minHeapSize = "256m" // initial heap size
+    maxHeapSize = "4g" // maximum heap size
   }
 
   // After all the tasks have been created, modify some of them.

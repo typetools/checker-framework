@@ -832,7 +832,7 @@ public class MustCallInference {
    *
    * @param invocation the MethodInvocationNode
    * @param varJe a Java expression
-   * @return the called methods annotation for the {@code varJe} after the {@code invocation} node.
+   * @return the called methods annotation for the {@code varJe} after the {@code invocation} node
    */
   private AnnotationMirror getCalledMethodsAnno(
       MethodInvocationNode invocation, JavaExpression varJe) {
