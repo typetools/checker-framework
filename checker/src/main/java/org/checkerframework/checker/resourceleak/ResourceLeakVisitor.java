@@ -11,6 +11,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
@@ -20,10 +21,13 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -355,7 +359,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    Element varElement = TreeUtils.elementFromDeclaration(tree);
+    VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
 
     if (varElement.getKind().isField()
         && !noLightweightOwnership
@@ -375,7 +379,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    *
    * @param field the declaration of the field to check
    */
-  private void checkOwningField(Element field) {
+  private void checkOwningField(VariableElement field) {
 
     if (checker.shouldSkipUses(field)) {
       return;
@@ -429,7 +433,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
                     rlTypeFactory.ensuresCalledMethodsValueElement,
                     String.class);
             for (String value : values) {
-              if (value.contains(field.getSimpleName().toString())) {
+              if (expressionEqualsField(value, field)) {
                 List<String> methods =
                     AnnotationUtils.getElementValueArray(
                         ensuresCalledMethodsAnno,
@@ -464,6 +468,23 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
           "field " + field.getSimpleName().toString(),
           field.asType().toString(),
           error);
+    }
+  }
+
+  /**
+   * Determine if the given expression <code>e</code> refers to <code>this.field</code>.
+   *
+   * @param e the expression
+   * @param field the field
+   * @return true if <code>e</code> refers to <code>this.field</code>
+   */
+  private boolean expressionEqualsField(String e, VariableElement field) {
+    try {
+      JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
+      return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
+    } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+      // The parsing error will be reported elsewhere, assuming e was derived from an annotation.
+      return false;
     }
   }
 
