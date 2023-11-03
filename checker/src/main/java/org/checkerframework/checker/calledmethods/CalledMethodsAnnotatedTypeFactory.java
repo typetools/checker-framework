@@ -6,6 +6,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -408,7 +409,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    */
   protected List<String> getCalledMethods(AnnotationMirror calledMethodsAnnotation) {
     return AnnotationUtils.getElementValueArray(
-        calledMethodsAnnotation, calledMethodsValueElement, String.class);
+        calledMethodsAnnotation, calledMethodsValueElement, String.class, Collections.emptyList());
   }
 
   @Override
@@ -509,7 +510,10 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     List<AnnotationMirror> annotations =
         AnnotationUtils.getElementValueArray(
-            annotation, ensuresCalledMethodsOnExceptionListValueElement, AnnotationMirror.class);
+            annotation,
+            ensuresCalledMethodsOnExceptionListValueElement,
+            AnnotationMirror.class,
+            Collections.emptyList());
 
     for (AnnotationMirror a : annotations) {
       parseEnsuresCalledMethodOnExceptionAnnotation(a, out);
@@ -531,10 +535,16 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     List<String> expressions =
         AnnotationUtils.getElementValueArray(
-            annotation, ensuresCalledMethodsOnExceptionValueElement, String.class);
+            annotation,
+            ensuresCalledMethodsOnExceptionValueElement,
+            String.class,
+            Collections.emptyList());
     List<String> methods =
         AnnotationUtils.getElementValueArray(
-            annotation, ensuresCalledMethodsOnExceptionMethodsElement, String.class);
+            annotation,
+            ensuresCalledMethodsOnExceptionMethodsElement,
+            String.class,
+            Collections.emptyList());
 
     for (String expr : expressions) {
       for (String method : methods) {
