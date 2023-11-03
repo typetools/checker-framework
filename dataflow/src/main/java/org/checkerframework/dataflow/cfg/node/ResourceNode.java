@@ -8,15 +8,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * This represents a resource declaration in a try-with-resources tree. A resource declaration can
- * be either a variable declaration or just a final (or effectively final) local variable.
+ * be a variable declaration, a use of a final (or effectively final) local variable, or a use of a
+ * final field.
  */
 public class ResourceNode extends Node {
 
   /**
-   * The {@link Node} for the resource declaration, which must be either an {@link AssignmentNode}
-   * or a {@link LocalVariableNode}
+   * The {@link Node} for the resource declaration, which must be an {@link AssignmentNode}, a
+   * {@link LocalVariableNode}, or a {@link FieldAccessNode}
    */
-  private final Node assignOrLocalVarNode;
+  private final Node resourceDeclarationNode;
 
   /** The tree for the resource declaration */
   private final Tree resourceTree;
@@ -24,26 +25,27 @@ public class ResourceNode extends Node {
   /**
    * Construct a {@code ResourceNode}
    *
-   * @param assignOrLocalVarNode the node for the resource declaration
+   * @param resourceDeclarationNode the node for the resource declaration
    * @param resourceTree the tree for the resource declaration
    */
-  public ResourceNode(Node assignOrLocalVarNode, Tree resourceTree) {
-    super(assignOrLocalVarNode.getType());
-    assert assignOrLocalVarNode instanceof AssignmentNode
-            || assignOrLocalVarNode instanceof LocalVariableNode
-        : assignOrLocalVarNode.getClass();
-    this.assignOrLocalVarNode = assignOrLocalVarNode;
+  public ResourceNode(Node resourceDeclarationNode, Tree resourceTree) {
+    super(resourceDeclarationNode.getType());
+    assert resourceDeclarationNode instanceof AssignmentNode
+            || resourceDeclarationNode instanceof LocalVariableNode
+            || resourceDeclarationNode instanceof FieldAccessNode
+        : resourceDeclarationNode.getClass();
+    this.resourceDeclarationNode = resourceDeclarationNode;
     this.resourceTree = resourceTree;
   }
 
   /**
-   * Returns the node for the resource declaration, which is guaranteed to be either an {@link
-   * AssignmentNode} or a {@link LocalVariableNode}.
+   * Returns the node for the resource declaration, which is guaranteed to be an {@link
+   * AssignmentNode}, a {@link LocalVariableNode}, or a {@link FieldAccessNode}.
    *
    * @return the node for the resource declaration.
    */
-  public Node getAssignOrLocalVarNode() {
-    return assignOrLocalVarNode;
+  public Node getResourceDeclarationNode() {
+    return resourceDeclarationNode;
   }
 
   @Override
@@ -58,15 +60,14 @@ public class ResourceNode extends Node {
 
   @Override
   public Collection<Node> getOperands() {
-    // TODO what is the right answer here?
-    return Collections.emptyList();
+    return Collections.singleton(resourceDeclarationNode);
   }
 
   @Override
   public String toString() {
     return "ResourceNode{"
-        + "assignOrLocalVarNode="
-        + assignOrLocalVarNode
+        + "resourceDeclarationNode="
+        + resourceDeclarationNode
         + ", resourceTree="
         + resourceTree
         + '}';
@@ -77,12 +78,12 @@ public class ResourceNode extends Node {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ResourceNode that = (ResourceNode) o;
-    return assignOrLocalVarNode.equals(that.assignOrLocalVarNode)
+    return resourceDeclarationNode.equals(that.resourceDeclarationNode)
         && resourceTree.equals(that.resourceTree);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(assignOrLocalVarNode, resourceTree);
+    return Objects.hash(resourceDeclarationNode, resourceTree);
   }
 }

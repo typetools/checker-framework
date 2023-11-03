@@ -24,7 +24,7 @@ class TryWithResourcesVariable {
 
   @InheritableMustCall("disposer")
   static class FinalResourceField {
-    final Socket socketField;
+    final @Owning Socket socketField;
 
     FinalResourceField() {
       try {
@@ -45,14 +45,25 @@ class TryWithResourcesVariable {
   }
 
   static void closeFinalFieldUnsupported() throws Exception {
-    try (new FinalResourceField().socketField) {}
+    // :: error: (required.method.not.called)
+    FinalResourceField finalResourceField = new FinalResourceField();
+    try (finalResourceField.socketField) {}
   }
 
+  @InheritableMustCall("disposer")
   static class FinalResourceFieldWrapper {
-    final FinalResourceField frField = new FinalResourceField();
+
+    final @Owning FinalResourceField frField = new FinalResourceField();
+
+    @EnsuresCalledMethods(value = "this.frField", methods = "disposer")
+    void disposer() {
+      this.frField.disposer();
+    }
   }
 
   static void closeWrapperUnsupported() throws Exception {
-    try (new FinalResourceFieldWrapper().frField.socketField) {}
+    // :: error: (required.method.not.called)
+    FinalResourceFieldWrapper finalResourceFieldWrapper = new FinalResourceFieldWrapper();
+    try (finalResourceFieldWrapper.frField.socketField) {}
   }
 }
