@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Indicates that the method, if it terminates by throwing an exception, always invokes the given
- * methods on the given expressions. This annotation is repeatable, which means that users can write
- * more than one instance of it on the same method (users should NOT manually write an
+ * Indicates that the method, if it terminates by throwing an {@link Exception}, always invokes the
+ * given methods on the given expressions. This annotation is repeatable, which means that users can
+ * write more than one instance of it on the same method (users should NOT manually write an
  * {@code @EnsuresCalledMethodsOnException.List} annotation, which the checker will create from
  * multiple copies of this annotation automatically).
  *
@@ -22,8 +22,12 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  * public void callM(T t) { ... }
  * </pre>
  *
- * <p>This method guarantees that {@code t.m()} is always called before the method throws an
- * exception.
+ * <p>The <code>callM</code> method promises to always call {@code t.m()} before throwing any kind
+ * of {@link Exception}.
+ *
+ * <p>Note that {@code EnsuresCalledMethodsOnException} only describes behavior for {@link
+ * Exception} (and by extension {@link RuntimeException}, {@link NullPointerException}, etc.) but
+ * not {@link Error} or other throwables.
  *
  * @see EnsuresCalledMethods
  * @checker_framework.manual #called-methods-checker Called Methods Checker
