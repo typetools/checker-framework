@@ -1243,9 +1243,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Updates a set of obligations to account for a resource declaration in a try-with-resources
-   * tree. If the resource is a local variable (<em>not</em> a variable declaration), remove all
-   * obligations containing that variable. The case where the resource is a variable declaration is
-   * handled in {@link #updateObligationsForAssignment(Set, ControlFlowGraph, AssignmentNode)}.
+   * tree. If the resource is a use of a local variable, remove all obligations containing that
+   * variable. The case where the resource is a variable declaration is handled in {@link
+   * #updateObligationsForAssignment(Set, ControlFlowGraph, AssignmentNode)}.
    *
    * @param obligations the set of Obligations to update
    * @param resourceNode the resource declaration
