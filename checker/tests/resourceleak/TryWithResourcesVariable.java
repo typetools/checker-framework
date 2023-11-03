@@ -1,6 +1,6 @@
 // Test for try-with-resources where the resource is a variable rather than a declaration
 
-import java.net.Socket;
+import java.net.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
@@ -17,6 +17,18 @@ class TryWithResourcesVariable {
   static void test2(@Owning Socket socket) {
     try (socket) {
 
+    } catch (Exception e) {
+
+    }
+  }
+
+  static void test3(InetSocketAddress isa) {
+    Socket socket = new Socket();
+    try (socket) {
+      // We get a false positive reset.not.owning error here.  MustCallConsistencyAnalyzer has a
+      // special-case hack for variables declared in a try-with-resources, but that does not work
+      // for variables used in try-with-resources but declared beforehand.
+      socket.connect(isa);
     } catch (Exception e) {
 
     }
