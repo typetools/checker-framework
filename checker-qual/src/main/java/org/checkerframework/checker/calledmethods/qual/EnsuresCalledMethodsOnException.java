@@ -48,8 +48,18 @@ public @interface EnsuresCalledMethodsOnException {
   String[] value();
 
   // NOTE 2023/10/6: There seems to be a fundamental limitation in the dataflow framework that
-  // prevent this feature.  Specifically, every method has a SINGLE exceptional exit block, meaning
-  // all information about what happens down different exception paths gets totally erased.
+  // prevent us from supporting a custom set of exceptions.  Specifically, in the following code:
+  //
+  //     try {
+  //       m1();
+  //     } finally {
+  //       m2();
+  //     }
+  //
+  // all exceptional edges out of the `m1()` call will flow to the same place: the start of the
+  // `m2()` call in the finally block.  Any information about what `m1()` promised on specific
+  // exception types will be lost.
+  //
   //  /**
   //   * Returns the exception types under which the postcondition holds.
   //   *
