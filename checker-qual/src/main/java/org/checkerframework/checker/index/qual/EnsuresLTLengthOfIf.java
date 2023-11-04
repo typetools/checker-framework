@@ -59,15 +59,21 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Repeatable(EnsuresLTLengthOfIf.List.class)
 public @interface EnsuresLTLengthOfIf {
   /**
+   * The return value of the method that needs to hold for the postcondition to hold.
+   *
+   * @return the return value of the method that needs to hold for the postcondition to hold
+   */
+  boolean result();
+
+  /**
    * Java expression(s) that are less than the length of the given sequences after the method
    * returns the given result.
    *
+   * @return Java expression(s) that are less than the length of the given sequences after the
+   *     method returns the given result
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();
-
-  /** The return value of the method that needs to hold for the postcondition to hold. */
-  boolean result();
 
   /**
    * Sequences, each of which is longer than each of the expressions' value after the method returns

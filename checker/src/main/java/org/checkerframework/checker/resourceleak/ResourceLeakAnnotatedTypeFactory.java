@@ -135,7 +135,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   @Override
   public void postAnalyze(ControlFlowGraph cfg) {
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
-        new MustCallConsistencyAnalyzer(this, this.analysis);
+        new MustCallConsistencyAnalyzer(this, (ResourceLeakAnalysis) this.analysis);
     mustCallConsistencyAnalyzer.analyze(cfg);
 
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
@@ -152,7 +152,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   protected ResourceLeakAnalysis createFlowAnalysis() {
-    return new ResourceLeakAnalysis(checker, this);
+    return new ResourceLeakAnalysis((ResourceLeakChecker) checker, this);
   }
 
   /**
@@ -210,7 +210,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * Returns the {@link MustCall#value} element/argument of the @MustCall annotation on the class
    * type of {@code element}. If there is no such annotation, returns the empty list.
    *
-   * <p>Do not use this method to get the MustCall value of an {@link
+   * <p>Do not use this method to get the MustCall values of an {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation}. Instead, use
    * {@link
    * org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation#getMustCallMethods(ResourceLeakAnnotatedTypeFactory,

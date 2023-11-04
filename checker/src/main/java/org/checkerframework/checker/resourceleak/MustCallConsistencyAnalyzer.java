@@ -10,14 +10,13 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -34,7 +33,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -48,8 +46,6 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -79,7 +75,6 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -182,7 +177,7 @@ class MustCallConsistencyAnalyzer {
   private final ResourceLeakChecker checker;
 
   /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final AccumulationAnalysis analysis;
+  private final ResourceLeakAnalysis analysis;
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
@@ -324,35 +319,34 @@ class MustCallConsistencyAnalyzer {
 
     /**
      * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
-     * must-call obligation) of the resource represented by this Obligation.
+     * must-call obligation) of each resource alias represented by this Obligation.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
      *     null, then the default MustCall type of each variable's class will be used.
-     * @return the list of must-call method names, or null if the resource's must-call obligations
-     *     are unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
+     * @return a map from each resource alias of this to a list of its must-call method names, or
+     *     null if the must-call obligations are unsatisfiable (i.e. the value of some tracked
+     *     resource alias of this in the Must Call store is MustCallUnknown)
      */
-    public @Nullable List<String> getMustCallMethods(
+    public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
         ResourceLeakAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
+      Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-      // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
-      // method was called on just one of the aliases then they all need to be treated as if
-      // they need to call the relevant methods.
-      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
-      AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        TypeMirror aliasTm = alias.reference.getType();
-        mcLub = qualHierarchy.leastUpperBoundShallow(mcLub, aliasTm, mcAnno, aliasTm);
+        if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
+          // MustCallUnknown; cannot be satisfied
+          return null;
+        }
+        List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
+        // Really, annoVals should never be empty here; we should not have created the obligation in
+        // the first place
+        // TODO: add an assertion that annoVals is non-empty and address any failures
+        result.put(alias, annoVals);
       }
-      if (AnnotationUtils.areSameByName(
-          mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-        return rlAtf.getMustCallValues(mcLub);
-      } else {
-        return null;
-      }
+      return result;
     }
 
     /**
@@ -561,7 +555,7 @@ class MustCallConsistencyAnalyzer {
    *     so this constructor cannot get it directly.
    */
   /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, AccumulationAnalysis analysis) {
+      ResourceLeakAnnotatedTypeFactory typeFactory, ResourceLeakAnalysis analysis) {
     this.typeFactory = typeFactory;
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
@@ -1906,8 +1900,8 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types. See {@link #ignoredExceptionTypes}. Each exceptional successor is paired with the type
-   * of exception that leads to it, for use in error messages.
+   * types. See {@link ResourceLeakAnalysis#isIgnoredExceptionType(TypeMirror)}. Each exceptional
+   * successor is paired with the type of exception that leads to it, for use in error messages.
    *
    * @param block input block
    * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
@@ -1927,7 +1921,7 @@ class MustCallConsistencyAnalyzer {
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
-        if (!isIgnoredExceptionType(((Type) exceptionType).tsym.getQualifiedName())) {
+        if (!analysis.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
             result.add(IPair.of(exSucc, exceptionType));
           }
@@ -2329,11 +2323,12 @@ class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
-    List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
+    Map<ResourceAlias, List<String>> mustCallValues =
+        obligation.getMustCallMethods(typeFactory, mcStore);
 
-    // optimization: if mustCallValue is null, always issue a warning (there is no way to satisfy
+    // optimization: if mustCallValues is null, always issue a warning (there is no way to satisfy
     // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
-    if (mustCallValue == null) {
+    if (mustCallValues == null) {
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.
       ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
@@ -2350,13 +2345,19 @@ class MustCallConsistencyAnalyzer {
       }
       return;
     }
-    // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue.isEmpty()) {
-      return;
+    if (mustCallValues.isEmpty()) {
+      throw new TypeSystemError("unexpected empty must-call values for obligation " + obligation);
     }
 
     boolean mustCallSatisfied = false;
     for (ResourceAlias alias : obligation.resourceAliases) {
+
+      List<String> mustCallValuesForAlias = mustCallValues.get(alias);
+      // optimization when there are no methods to call
+      if (mustCallValuesForAlias.isEmpty()) {
+        mustCallSatisfied = true;
+        break;
+      }
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
@@ -2383,7 +2384,7 @@ class MustCallConsistencyAnalyzer {
                 .getEffectiveAnnotationInHierarchy(typeFactory.top);
       }
 
-      if (calledMethodsSatisfyMustCall(mustCallValue, cmAnno)) {
+      if (calledMethodsSatisfyMustCall(mustCallValuesForAlias, cmAnno)) {
         mustCallSatisfied = true;
         break;
       }
@@ -2399,7 +2400,7 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
-              formatMissingMustCallMethods(mustCallValue),
+              formatMissingMustCallMethods(mustCallValues.get(firstAlias)),
               firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
@@ -2475,58 +2476,6 @@ class MustCallConsistencyAnalyzer {
     return typeFactory
         .getQualifierHierarchy()
         .isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
-  }
-
-  /**
-   * The exception types in this set are ignored in the CFG when determining if a resource leaks
-   * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
-   * errors that the JVM can issue on any statement, and errors that can be prevented by running
-   * some other CF checker.
-   *
-   * <p>Package-private to permit access from {@link ResourceLeakAnalysis}.
-   */
-  /*package-private*/ static final Set<String> ignoredExceptionTypes =
-      new HashSet<>(
-          ImmutableSet.of(
-              // Any method call has a CFG edge for Throwable/RuntimeException/Error
-              // to represent run-time misbehavior. Ignore it.
-              Throwable.class.getCanonicalName(),
-              Error.class.getCanonicalName(),
-              RuntimeException.class.getCanonicalName(),
-              // Use the Nullness Checker to prove this won't happen.
-              NullPointerException.class.getCanonicalName(),
-              // These errors can't be predicted statically, so ignore them and assume
-              // they won't happen.
-              ClassCircularityError.class.getCanonicalName(),
-              ClassFormatError.class.getCanonicalName(),
-              NoClassDefFoundError.class.getCanonicalName(),
-              OutOfMemoryError.class.getCanonicalName(),
-              // It's not our problem if the Java type system is wrong.
-              ClassCastException.class.getCanonicalName(),
-              // It's not our problem if the code is going to divide by zero.
-              ArithmeticException.class.getCanonicalName(),
-              // Use the Index Checker to prevent these errors.
-              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
-              NegativeArraySizeException.class.getCanonicalName(),
-              // Most of the time, this exception is infeasible, as the charset used
-              // is guaranteed to be present by the Java spec (e.g., "UTF-8").
-              // Eventually, this exclusion could be refined by looking at the charset
-              // being requested.
-              UnsupportedEncodingException.class.getCanonicalName()));
-
-  /**
-   * Is {@code exceptionClassName} an exception type the checker ignores, to avoid excessive false
-   * positives? For now the checker ignores most runtime exceptions (especially the runtime
-   * exceptions that can occur at any point during the program due to something going wrong in the
-   * JVM, like OutOfMemoryError and ClassCircularityError) and exceptions that can be proved to
-   * never occur by another Checker Framework built-in checker, such as null-pointer dereferences
-   * (the Nullness Checker) and out-of-bounds array indexing (the Index Checker).
-   *
-   * @param exceptionClassName the fully-qualified name of the exception
-   * @return true if the given exception class should be ignored
-   */
-  private static boolean isIgnoredExceptionType(@FullyQualifiedName Name exceptionClassName) {
-    return ignoredExceptionTypes.contains(exceptionClassName.toString());
   }
 
   /**
