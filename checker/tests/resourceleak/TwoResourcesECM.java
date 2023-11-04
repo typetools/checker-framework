@@ -17,10 +17,15 @@ class TwoResourcesECM {
   // even on the non-exceptional path. See ReplicaInputStreams.java for a variant
   // of this test where such an error is not issued. Because this method can leak
   // along both regular and exceptional exits, both errors are issued.
+  //
+  // The contracts.exceptional.postcondition error is thrown because destructors
+  // have to close their resources even on exception.  If s1.close() throws an
+  // exception, then s2.close() will not be called.
   @EnsuresCalledMethods(
       value = {"this.s1", "this.s2"},
       methods = {"close"})
   // :: error: (contracts.postcondition)
+  // :: error: (contracts.exceptional.postcondition)
   public void dispose() throws IOException {
     s1.close();
     s2.close();

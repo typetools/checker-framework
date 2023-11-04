@@ -27,7 +27,7 @@ public abstract class EnsuresCalledMethodsOnExceptionTest {
   }
 
   @EnsuresCalledMethodsOnException(value = "#1", methods = "a")
-  // :: error: (contracts.postcondition)
+  // :: error: (contracts.exceptional.postcondition)
   void callAfterThrow(Resource r) throws Exception {
     if (arbitraryChoice()) {
       // Not OK: r.a() has not been called yet
@@ -62,7 +62,7 @@ public abstract class EnsuresCalledMethodsOnExceptionTest {
   }
 
   @EnsuresCalledMethodsOnException(value = "#1", methods = "a")
-  // :: error: (contracts.postcondition)
+  // :: error: (contracts.exceptional.postcondition)
   void callInSpecificCatchBlock(Resource r) throws Exception {
     try {
       if (arbitraryChoice()) {

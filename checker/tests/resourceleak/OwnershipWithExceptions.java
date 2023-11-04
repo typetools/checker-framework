@@ -154,7 +154,7 @@ abstract class OwnershipWithExceptions {
     @EnsuresCalledMethods(
         value = "this.resource",
         methods = {"close"})
-    // ::error: (contracts.postcondition)
+    // ::error: (contracts.exceptional.postcondition)
     public void close() throws IOException {
       throw new IOException();
     }
@@ -229,7 +229,7 @@ abstract class OwnershipWithExceptions {
     @EnsuresCalledMethods(
         value = {"this.resource", "this.unused"},
         methods = {"close"})
-    // ::error: (contracts.postcondition)
+    // ::error: (contracts.exceptional.postcondition)
     public void close() throws IOException {
       if (unused != null) unused.close();
       if (resource != null) resource.close();
