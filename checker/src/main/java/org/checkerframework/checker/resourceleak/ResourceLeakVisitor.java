@@ -307,6 +307,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * An obligation that must be satisfied by a destructor. Helper type for {@link
    * #checkOwningField(VariableElement)}.
    */
+  // TODO: In the future, this class should be a record.
   private static final class DestructorObligation {
     /** The method that must be called on the field. */
     final String mustCallMethod;
