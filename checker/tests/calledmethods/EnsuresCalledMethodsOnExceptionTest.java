@@ -1,7 +1,8 @@
+// Test that @EnsuresCalledMethodsOnException behaves as expected.
+
 import java.io.IOException;
 import org.checkerframework.checker.calledmethods.qual.*;
 
-/** Test for postcondition support via @EnsureCalledMethodsOnException. */
 public abstract class EnsuresCalledMethodsOnExceptionTest {
 
   static class Resource {

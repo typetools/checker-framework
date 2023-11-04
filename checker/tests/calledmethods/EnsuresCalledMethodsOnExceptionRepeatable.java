@@ -1,3 +1,5 @@
+// Test that @EnsuresCalledMethodsOnException can be repeated.
+
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException;
 

@@ -1,3 +1,5 @@
+// Test that @EnsuresCalledMethodsOnException is inherited by overridden methods.
+
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException;
 

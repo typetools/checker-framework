@@ -1,3 +1,5 @@
+// Test case for https://github.com/typetools/checker-framework/issues/6204
+
 import java.io.Closeable;
 import java.io.IOException;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;

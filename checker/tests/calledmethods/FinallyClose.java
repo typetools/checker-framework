@@ -1,6 +1,7 @@
+// Test case involving some complicated try-finally control flow.
+
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
 
 abstract class FinallyClose {
 
@@ -52,7 +53,7 @@ abstract class FinallyClose {
   @EnsuresCalledMethodsOnException(
       value = "#1",
       methods = {"close"})
-  void closeResource(@Nullable Closeable resource) throws IOException {
+  void closeResource(Closeable resource) throws IOException {
     if (resource != null) {
       try {
         resource.close();
