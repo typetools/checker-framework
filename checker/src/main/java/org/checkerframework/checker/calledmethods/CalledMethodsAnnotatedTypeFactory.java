@@ -482,9 +482,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @return the exceptional postconditions on the given method; the return value is newly-allocated
    *     and can be freely modified by callers
    */
-  public Set<EnsuredCalledMethodOnException> getExceptionalPostconditions(
+  public Set<EnsuresCalledMethodOnExceptionContract> getExceptionalPostconditions(
       ExecutableElement methodOrConstructor) {
-    Set<EnsuredCalledMethodOnException> result = new LinkedHashSet<>();
+    Set<EnsuresCalledMethodOnExceptionContract> result = new LinkedHashSet<>();
 
     parseEnsuresCalledMethodOnExceptionListAnnotation(
         getDeclAnnotation(methodOrConstructor, EnsuresCalledMethodsOnException.List.class), result);
@@ -503,7 +503,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param out the output collection
    */
   private void parseEnsuresCalledMethodOnExceptionListAnnotation(
-      @Nullable AnnotationMirror annotation, Set<EnsuredCalledMethodOnException> out) {
+      @Nullable AnnotationMirror annotation, Set<EnsuresCalledMethodOnExceptionContract> out) {
     if (annotation == null) {
       return;
     }
@@ -528,7 +528,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * @param out the output collection
    */
   private void parseEnsuresCalledMethodOnExceptionAnnotation(
-      @Nullable AnnotationMirror annotation, Set<EnsuredCalledMethodOnException> out) {
+      @Nullable AnnotationMirror annotation, Set<EnsuresCalledMethodOnExceptionContract> out) {
     if (annotation == null) {
       return;
     }
@@ -548,7 +548,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
 
     for (String expr : expressions) {
       for (String method : methods) {
-        out.add(new EnsuredCalledMethodOnException(expr, method));
+        out.add(new EnsuresCalledMethodOnExceptionContract(expr, method));
       }
     }
   }

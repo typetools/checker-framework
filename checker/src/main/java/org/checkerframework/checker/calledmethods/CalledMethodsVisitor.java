@@ -65,7 +65,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
       }
     }
-    for (EnsuredCalledMethodOnException postcond :
+    for (EnsuresCalledMethodOnExceptionContract postcond :
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
       checkExceptionalPostcondition(postcond, tree);
     }
@@ -79,7 +79,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
    * @param tree the method
    */
   protected void checkExceptionalPostcondition(
-      EnsuredCalledMethodOnException postcond, MethodTree tree) {
+      EnsuresCalledMethodOnExceptionContract postcond, MethodTree tree) {
     CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(tree);
     if (exitStore == null) {
       // If there is no exceptional exitStore, then the method cannot throw exceptions and

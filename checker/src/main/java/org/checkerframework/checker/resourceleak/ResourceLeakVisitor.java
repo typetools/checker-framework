@@ -15,7 +15,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
-import org.checkerframework.checker.calledmethods.EnsuredCalledMethodOnException;
+import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -428,9 +428,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               }
             }
 
-            Set<EnsuredCalledMethodOnException> exceptionalPostconds =
+            Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
                 rlTypeFactory.getExceptionalPostconditions(siblingMethod);
-            for (EnsuredCalledMethodOnException postcond : exceptionalPostconds) {
+            for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
               if (expressionEqualsField(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(
                     new DestructorObligation(

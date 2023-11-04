@@ -13,7 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.calledmethods.EnsuredCalledMethodOnException;
+import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
@@ -444,9 +444,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   @Override
-  public Set<EnsuredCalledMethodOnException> getExceptionalPostconditions(
+  public Set<EnsuresCalledMethodOnExceptionContract> getExceptionalPostconditions(
       ExecutableElement methodOrConstructor) {
-    Set<EnsuredCalledMethodOnException> result =
+    Set<EnsuresCalledMethodOnExceptionContract> result =
         super.getExceptionalPostconditions(methodOrConstructor);
 
     // This override is a sneaky way to satisfy a few subtle design constraints:
@@ -479,7 +479,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       for (Contract.Postcondition normalPostcondition : normalPostconditions) {
         for (String method : getCalledMethods(normalPostcondition.annotation)) {
           result.add(
-              new EnsuredCalledMethodOnException(normalPostcondition.expressionString, method));
+              new EnsuresCalledMethodOnExceptionContract(
+                  normalPostcondition.expressionString, method));
         }
       }
     }

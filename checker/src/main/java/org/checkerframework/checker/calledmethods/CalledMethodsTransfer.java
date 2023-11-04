@@ -267,7 +267,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       ExecutableElement method,
       Map<TypeMirror, AccumulationStore> exceptionalStores) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
-    for (EnsuredCalledMethodOnException postcond :
+    for (EnsuresCalledMethodOnExceptionContract postcond :
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(method)) {
       JavaExpression e;
       try {
