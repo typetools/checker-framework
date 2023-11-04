@@ -3,7 +3,6 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -366,20 +365,21 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       }
     }
 
-    // This value is side-effected.
     List<String> mustCallObligationsOfOwningField = rlTypeFactory.getMustCallValues(field);
 
     if (mustCallObligationsOfOwningField.isEmpty()) {
       return;
     }
 
-    Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField =
-        mustCallObligationsOfOwningField.stream()
-            .flatMap(
-                method ->
-                    Arrays.stream(MustCallConsistencyAnalyzer.MethodExitKind.values())
-                        .map(exitKind -> new DestructorObligation(method, exitKind)))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+    // This value is side-effected.
+    Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
+    for (String mustCallMethod : mustCallObligationsOfOwningField) {
+      for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
+          MustCallConsistencyAnalyzer.MethodExitKind.values()) {
+        unsatisfiedMustCallObligationsOfOwningField.add(
+            new DestructorObligation(mustCallMethod, exitKind));
+      }
+    }
 
     String error;
     Element enclosingElement = field.getEnclosingElement();
