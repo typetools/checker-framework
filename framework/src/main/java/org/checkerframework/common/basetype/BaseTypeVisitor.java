@@ -1414,7 +1414,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param qualifier the expression's type, or null if no information is available
    * @return a string representation of the expression and type qualifier
    */
-  private String contractExpressionAndType(
+  protected String contractExpressionAndType(
       String expression, @Nullable AnnotationMirror qualifier) {
     if (qualifier == null) {
       return "no information about " + expression;
