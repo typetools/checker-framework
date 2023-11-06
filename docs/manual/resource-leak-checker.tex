@@ -87,8 +87,9 @@ See Section~\ref{must-call-annotations}.
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
 on any classes defined in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
 
-\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods}] on a method in
-your code that fulfills a must-call obligation of one of its parameters or of a field.
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods} and/or
+      \refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsOnException}]
+on a method in your code that fulfills a must-call obligation of one of its parameters or of a field.
 See Section~\ref{called-methods-ensurescalledmethods}.
 
 \end{description}
@@ -230,6 +231,8 @@ Writing \<@Owning> or \<@NotOwning> can never make the checker
 unsound:  a real warning can never be hidden by them.
 As with any annotation, incorrect or missing annotations can lead to false positive warnings.
 
+\subsectionAndLabel{Owning parameters and exceptions}{resource-leak-owning-parameters-and-exceptions}
+
 When \<@Owning> is written on a method parameter, the method only takes ownership of the
 parameter when it returns normally.  In this example, the Resource Leak Checker will report
 an error in the \<example> method and allow the definition of \<closeSocket>:
@@ -249,6 +252,23 @@ an error in the \<example> method and allow the definition of \<closeSocket>:
   }
 \end{verbatim}
 
+Sometimes a method really does promise to call some methods on an \<@Owning> parameter,
+even if it throws an exception.  The annotation \<@EnsuresCalledMethodsOnException> can
+overcome this limitation.  For example, a constructor that throws an exception might
+choose to close an \<@Owning> parameter instead of letting ownership remain with the caller:
+
+\begin{verbatim}
+  @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+  public Constructor(@Owning Closeable resource) {
+    this.resource = resource;
+    try {
+      initialize();
+    } catch (Exception e) {
+      resource.close();
+      throw e;
+    }
+  }
+\end{verbatim}
 
 \subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
 

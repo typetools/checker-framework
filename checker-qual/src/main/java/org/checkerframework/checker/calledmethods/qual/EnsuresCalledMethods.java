@@ -39,6 +39,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * </pre>
  *
  * @see EnsuresCalledMethodsIf
+ * @see EnsuresCalledMethodsOnException
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
 @PostconditionAnnotation(qualifier = CalledMethods.class)

@@ -37,9 +37,17 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
    */
   default String defaultErrorMessage(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
+    // Message is on one line, without line breaks, because in a stack trace only the first line of
+    // the message may be shown.
     return String.format(
-        "%s: unexpected combination:%n  type: %s %s%n  superType: %s %s",
-        this.getClass().getSimpleName(), type1.getKind(), type1, type2.getKind(), type2);
+        "%s: unexpected combination:  type: [%s %s] %s  supertype: [%s %s] %s",
+        this.getClass().getSimpleName(),
+        type1.getKind(),
+        type1.getClass(),
+        type1,
+        type2.getKind(),
+        type2.getClass(),
+        type2);
   }
 
   /**
