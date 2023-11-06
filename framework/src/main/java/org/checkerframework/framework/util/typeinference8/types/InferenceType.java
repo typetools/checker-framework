@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -19,6 +20,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -42,20 +44,29 @@ public class InferenceType extends AbstractType {
   /** A mapping of type variables to inference variables. */
   private final Theta map;
 
+  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  private final AnnotationMirrorMap<QualifierVar> qualifierVars;
+
   /**
    * Creates an inference type.
    *
    * @param type the annotated type mirror
    * @param typeMirror the type mirror
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param map a mapping from type variable to inference variablef
    * @param context the context
    */
   private InferenceType(
-      AnnotatedTypeMirror type, TypeMirror typeMirror, Theta map, Java8InferenceContext context) {
+      AnnotatedTypeMirror type,
+      TypeMirror typeMirror,
+      Theta map,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context) {
     super(context);
     assert type.getKind() == typeMirror.getKind();
     this.type = type.asUse();
     this.typeMirror = typeMirror;
+    this.qualifierVars = qualifierVars;
     this.map = map;
   }
 
@@ -68,7 +79,7 @@ public class InferenceType extends AbstractType {
    * Creates an abstract type for the given TypeMirror. The created type is an {@link InferenceType}
    * if {@code type} contains any type variables that are mapped to inference variables as specified
    * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference variable,
-   * it will return that {@link Variable}. Or if {@code type} contains no type variables that are
+   * that {@link Variable} is returned. Or if {@code type} contains no type variables that are
    * mapped in an inference variable, a {@link ProperType} is returned.
    *
    * @param type the annotated type mirror
@@ -82,17 +93,42 @@ public class InferenceType extends AbstractType {
       TypeMirror typeMirror,
       @Nullable Theta map,
       Java8InferenceContext context) {
+
+    return create(type, typeMirror, map, AnnotationMirrorMap.emptyMap(), context);
+  }
+
+  /**
+   * Creates an abstract type for the given TypeMirror. The created type is an {@link InferenceType}
+   * if {@code type} contains any type variables that are mapped to inference variables as specified
+   * by {@code map}. Or if {@code type} is a type variable that is mapped to an inference variable,
+   * that {@link Variable} is returned. Or if {@code type} contains no type variables that are
+   * mapped in an inference variable, a {@link ProperType} is returned.
+   *
+   * @param type the annotated type mirror
+   * @param typeMirror the java type
+   * @param map a mapping from type variable to inference variable
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param context the context
+   * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
+   */
+  public static AbstractType create(
+      AnnotatedTypeMirror type,
+      TypeMirror typeMirror,
+      @Nullable Theta map,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context) {
     assert type != null;
     if (map == null) {
-      return new ProperType(type, typeMirror, context);
+      return new ProperType(type, typeMirror, qualifierVars, context);
     }
+
     if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
       return new UseOfVariable(
-          (AnnotatedTypeVariable) type, map.get(type.getUnderlyingType()), context);
+          (AnnotatedTypeVariable) type, map.get(type.getUnderlyingType()), qualifierVars, context);
     } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(map.keySet(), type)) {
-      return new InferenceType(type, typeMirror, map, context);
+      return new InferenceType(type, typeMirror, map, qualifierVars, context);
     } else {
-      return new ProperType(type, typeMirror, context);
+      return new ProperType(type, typeMirror, qualifierVars, context);
     }
   }
 
@@ -106,6 +142,7 @@ public class InferenceType extends AbstractType {
    * @param types the annotated type mirrors
    * @param typeMirrors the java types
    * @param map a mapping from type variable to inference variable
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
    * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
    */
@@ -113,18 +150,19 @@ public class InferenceType extends AbstractType {
       List<AnnotatedTypeMirror> types,
       List<? extends TypeMirror> typeMirrors,
       Theta map,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context) {
     List<AbstractType> abstractTypes = new ArrayList<>();
     Iterator<? extends TypeMirror> iter = typeMirrors.iterator();
     for (AnnotatedTypeMirror type : types) {
-      abstractTypes.add(create(type, iter.next(), map, context));
+      abstractTypes.add(create(type, iter.next(), map, qualifierVars, context));
     }
     return abstractTypes;
   }
 
   @Override
   public AbstractType create(AnnotatedTypeMirror type, TypeMirror typeMirror) {
-    return create(type, typeMirror, map, context);
+    return create(type, typeMirror, map, qualifierVars, context);
   }
 
   @Override
@@ -224,6 +262,12 @@ public class InferenceType extends AbstractType {
   @Override
   public String toString() {
     return "inference type: " + typeMirror;
+  }
+
+  @Override
+  public Set<AbstractQualifier> getQualifiers() {
+    return AbstractQualifier.create(
+        getAnnotatedType().getPrimaryAnnotations(), qualifierVars, context);
   }
 
   /**

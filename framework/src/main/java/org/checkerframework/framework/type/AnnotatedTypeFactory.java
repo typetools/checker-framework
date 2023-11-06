@@ -2426,7 +2426,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedExecutableType memberTypeWithOverrides =
         applyFakeOverrides(receiverType, methodElt, memberTypeWithoutOverrides);
     memberTypeWithOverrides = applyRecordTypesToAccessors(methodElt, memberTypeWithOverrides);
-    methodFromUsePreSubstitution(tree, memberTypeWithOverrides);
+    methodFromUsePreSubstitution(tree, memberTypeWithOverrides, inferTypeArgs);
 
     AnnotatedExecutableType methodType =
         AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt, memberTypeWithOverrides);
@@ -2514,8 +2514,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree either a method invocation or a member reference tree
    * @param type declared method type before type variable substitution
+   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
    */
-  protected void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+  protected void methodFromUsePreSubstitution(
+      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     assert tree instanceof MethodInvocationTree || tree instanceof MemberReferenceTree;
   }
 
@@ -2722,7 +2724,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     ExecutableElement ctor = TreeUtils.elementFromUse(tree);
     AnnotatedExecutableType con = getAnnotatedType(ctor); // get unsubstituted type
-    constructorFromUsePreSubstitution(tree, con);
+    constructorFromUsePreSubstitution(tree, con, inferTypeArgs);
 
     if (tree.getClassBody() != null) {
       // Because the anonymous constructor can't have explicit annotations on its parameters,
@@ -2733,7 +2735,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // 3. copy the parameters to the anonymous constructor, `con`.
       // 4. copy annotations on the return type to `con`.
       AnnotatedExecutableType superCon = getAnnotatedType(TreeUtils.getSuperConstructor(tree));
-      constructorFromUsePreSubstitution(tree, superCon);
+      constructorFromUsePreSubstitution(tree, superCon, inferTypeArgs);
       // no viewpoint adaptation needed for super invocation
       superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
       if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
@@ -2859,9 +2861,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param tree a NewClassTree from constructorFromUse()
    * @param type declared method type before type variable substitution
+   * @param resolvePolyQuals whether to resolve polymorphic qualifiers
    */
   protected void constructorFromUsePreSubstitution(
-      NewClassTree tree, AnnotatedExecutableType type) {}
+      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {}
 
   /**
    * Returns the return type of the method {@code m}.

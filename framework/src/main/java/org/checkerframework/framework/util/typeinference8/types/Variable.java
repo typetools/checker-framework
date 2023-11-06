@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.Iterator;
+import java.util.Set;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -12,6 +13,7 @@ import org.checkerframework.framework.util.typeinference8.types.AbstractType.Kin
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -28,7 +30,8 @@ import org.checkerframework.javacutil.TypesUtils;
 
   /**
    * The expression for which this variable is being solved. Used to differentiate inference
-   * variables for two different invocations of the same method.
+   * variables for two different invocations of the same method or constructor. This is set during
+   * inference.
    */
   protected final ExpressionTree invocation;
 
@@ -127,8 +130,12 @@ import org.checkerframework.javacutil.TypesUtils;
         break;
     }
 
-    variableBounds.addQualifierBound(
-        BoundKind.LOWER, typeVariable.getLowerBound().getPrimaryAnnotations());
+    Set<? extends AbstractQualifier> quals =
+        AbstractQualifier.create(
+            typeVariable.getLowerBound().getPrimaryAnnotations(),
+            AnnotationMirrorMap.emptyMap(),
+            context);
+    variableBounds.addQualifierBound(BoundKind.LOWER, quals);
   }
 
   /**

@@ -5,6 +5,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -13,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -26,6 +28,9 @@ public class ProperType extends AbstractType {
   /** The Java type. */
   private final TypeMirror properType;
 
+  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  private final AnnotationMirrorMap<QualifierVar> qualifierVars;
+
   /**
    * Creates a proper type.
    *
@@ -35,9 +40,26 @@ public class ProperType extends AbstractType {
    */
   public ProperType(
       AnnotatedTypeMirror type, TypeMirror properType, Java8InferenceContext context) {
+    this(type, properType, AnnotationMirrorMap.emptyMap(), context);
+  }
+
+  /**
+   * Creates a proper type.
+   *
+   * @param type the annotated type
+   * @param properType the java type
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param context the context
+   */
+  public ProperType(
+      AnnotatedTypeMirror type,
+      TypeMirror properType,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context) {
     super(context);
     this.properType = properType;
     this.type = type;
+    this.qualifierVars = qualifierVars;
     verifyTypeKinds(type, properType);
   }
 
@@ -51,6 +73,7 @@ public class ProperType extends AbstractType {
     super(context);
     this.type = context.typeFactory.getAnnotatedType(tree);
     this.properType = type.getUnderlyingType();
+    this.qualifierVars = AnnotationMirrorMap.emptyMap();
     verifyTypeKinds(type, properType);
   }
 
@@ -64,6 +87,7 @@ public class ProperType extends AbstractType {
     super(context);
     this.type = context.typeFactory.getAnnotatedType(varTree);
     this.properType = TreeUtils.typeOf(varTree);
+    this.qualifierVars = AnnotationMirrorMap.emptyMap();
     verifyTypeKinds(type, properType);
   }
 
@@ -88,7 +112,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return new ProperType(atm, type, context);
+    return new ProperType(atm, type, qualifierVars, context);
   }
 
   /**
@@ -237,6 +261,12 @@ public class ProperType extends AbstractType {
   @Override
   public AbstractType applyInstantiations() {
     return this;
+  }
+
+  @Override
+  public Set<AbstractQualifier> getQualifiers() {
+    return AbstractQualifier.create(
+        getAnnotatedType().getPrimaryAnnotations(), qualifierVars, context);
   }
 
   @Override

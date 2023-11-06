@@ -8,6 +8,8 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.ExecutableType;
@@ -19,8 +21,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
@@ -34,7 +39,7 @@ public class InvocationType {
   /** The annotated method type. */
   private final AnnotatedExecutableType annotatedExecutableType;
 
-  /** The Java method type */
+  /** The Java method type. */
   private final ExecutableType methodType;
 
   /** The context. */
@@ -42,6 +47,9 @@ public class InvocationType {
 
   /** The annotated type factory. */
   private final AnnotatedTypeFactory typeFactory;
+
+  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  private final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
    * Creates an invocation type.
@@ -62,6 +70,24 @@ public class InvocationType {
     this.invocation = invocation;
     this.context = context;
     this.typeFactory = context.typeFactory;
+
+    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> s =
+        new SimpleAnnotatedTypeScanner<>(
+            (type, polys) -> {
+              for (AnnotationMirror a : type.getPrimaryAnnotations()) {
+                if (typeFactory.getQualifierHierarchy().isPolymorphicQualifier(a)) {
+                  polys.add(a);
+                }
+              }
+              return null;
+            });
+    Set<AnnotationMirror> polys = new AnnotationMirrorSet();
+    s.visit(annotatedExecutableType, polys);
+    AnnotationMirrorMap<QualifierVar> qualifierVars = new AnnotationMirrorMap<>();
+    for (AnnotationMirror poly : polys) {
+      qualifierVars.put(poly, new QualifierVar(invocation, poly, context));
+    }
+    this.qualifierVars = qualifierVars;
   }
 
   /**
@@ -165,7 +191,7 @@ public class InvocationType {
       params.add(0, annotatedExecutableType.getReceiverType());
       paramsJava.add(0, annotatedExecutableType.getReceiverType().getUnderlyingType());
     }
-    return InferenceType.create(params, paramsJava, map, context);
+    return InferenceType.create(params, paramsJava, map, qualifierVars, context);
   }
 
   /**

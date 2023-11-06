@@ -50,7 +50,7 @@ public class VariableBounds {
    * a set of {@link AnnotationMirror}s. A qualifier bound is a bound on the primary annotation of
    * this variable.
    */
-  public final EnumMap<BoundKind, Set<Set<AnnotationMirror>>> qualifierBounds =
+  public final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds =
       new EnumMap<>(BoundKind.class);
 
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
@@ -63,7 +63,7 @@ public class VariableBounds {
   public EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = null;
 
   /** Saved qualifier bounds used in the event the first attempt at resolution fails. */
-  public EnumMap<BoundKind, LinkedHashSet<Set<AnnotationMirror>>> savedQualifierBounds = null;
+  public EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds = null;
 
   /**
    * Creates bounds for {@code variable}.
@@ -158,8 +158,8 @@ public class VariableBounds {
     }
     if (bounds.get(kind).add(otherType)) {
       addConstraintsFromComplementaryBounds(kind, otherType);
-      addConstraintsFromComplementaryQualifierBounds(
-          kind, otherType.getAnnotatedType().getEffectiveAnnotations());
+      Set<AbstractQualifier> aQuals = otherType.getQualifiers();
+      addConstraintsFromComplementaryQualifierBounds(kind, aQuals);
       return true;
     }
     return false;
@@ -171,53 +171,55 @@ public class VariableBounds {
    * @param kind the kind of bound
    * @param qualifiers the qualifiers
    */
-  public void addQualifierBound(BoundKind kind, Set<AnnotationMirror> qualifiers) {
+  public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
     addConstraintsFromComplementaryBounds(kind, qualifiers);
-    qualifierBounds.get(kind).add(qualifiers);
+    qualifierBounds.get(kind).addAll(qualifiers);
   }
 
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
    * @param kind the kind of bound
-   * @param s the qualifiers
+   * @param qualifiers the qualifiers
    */
-  @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryQualifierBounds(
-      BoundKind kind, Set<AnnotationMirror> s) {
+      BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
+    Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
     if (kind == BoundKind.EQUAL) {
-      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
-        }
-      }
+      addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
     } else if (kind == BoundKind.LOWER) {
-      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
-        }
-      }
+      addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
     } else { // UPPER
-      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
-        }
-      }
+      addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.LOWER)) {
-        if (s != t) {
-          constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
-        }
-      }
+      addQualifierConstraint(
+          qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      for (Set<AnnotationMirror> t : qualifierBounds.get(BoundKind.UPPER)) {
-        if (s != t) {
-          constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
+      addQualifierConstraint(
+          qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+    }
+  }
+
+  /**
+   * Add a {@link QualifierTyping} constraint for a qualifier in {@code setT} and the qualifier in
+   * {@code setS} in the same hierarchy.
+   *
+   * @param setT a set of abstract qualifiers on the left side of the constraint
+   * @param setS a set of abstract qualifiers on the right side of the constraint
+   * @param kind the kind of constraint
+   */
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
+  private void addQualifierConstraint(
+      Set<? extends AbstractQualifier> setT, Set<? extends AbstractQualifier> setS, Kind kind) {
+    for (AbstractQualifier t : setT) {
+      for (AbstractQualifier s : setS) {
+        if (s != t && s.sameHierarchy(t)) {
+          constraints.add(new QualifierTyping(t, s, kind));
         }
       }
     }
@@ -231,24 +233,28 @@ public class VariableBounds {
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(BoundKind kind, AbstractType s) {
-    if (kind == BoundKind.EQUAL) {
-      for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new Typing(s, t, Kind.TYPE_EQUALITY));
+    switch (kind) {
+      case EQUAL:
+        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+          if (s != t) {
+            constraints.add(new Typing(s, t, Kind.TYPE_EQUALITY));
+          }
         }
-      }
-    } else if (kind == BoundKind.LOWER) {
-      for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new Typing(s, t, Kind.SUBTYPE));
+        break;
+      case LOWER:
+        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+          if (s != t) {
+            constraints.add(new Typing(s, t, Kind.SUBTYPE));
+          }
         }
-      }
-    } else { // UPPER
-      for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
-        if (s != t) {
-          constraints.add(new Typing(t, s, Kind.SUBTYPE));
+        break;
+      case UPPER:
+        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+          if (s != t) {
+            constraints.add(new Typing(t, s, Kind.SUBTYPE));
+          }
         }
-      }
+        break;
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
@@ -289,12 +295,13 @@ public class VariableBounds {
    * @param kind kind of bound
    * @param s qualifiers
    */
-  public void addConstraintsFromComplementaryBounds(BoundKind kind, Set<AnnotationMirror> s) {
+  public void addConstraintsFromComplementaryBounds(
+      BoundKind kind, Set<? extends AbstractQualifier> s) {
     // Copy bound to equal variables
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isUseOfVariable()) {
         VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-        otherBounds.qualifierBounds.get(kind).add(s);
+        otherBounds.qualifierBounds.get(kind).addAll(s);
       }
     }
 
@@ -302,7 +309,7 @@ public class VariableBounds {
       for (AbstractType t : bounds.get(BoundKind.LOWER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.UPPER).add(s);
+          otherBounds.qualifierBounds.get(BoundKind.UPPER).addAll(s);
         }
       }
     }
@@ -311,7 +318,7 @@ public class VariableBounds {
       for (AbstractType t : bounds.get(BoundKind.UPPER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.LOWER).add(s);
+          otherBounds.qualifierBounds.get(BoundKind.LOWER).addAll(s);
         }
       }
     }

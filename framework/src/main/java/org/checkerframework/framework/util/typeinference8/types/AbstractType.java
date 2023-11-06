@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -611,6 +612,13 @@ public abstract class AbstractType {
       return null;
     }
   }
+
+  /**
+   * Returns the primary qualifiers on this type.
+   *
+   * @return the primary qualifiers on this type
+   */
+  public abstract Set<AbstractQualifier> getQualifiers();
 
   @Override
   public boolean equals(Object o) {

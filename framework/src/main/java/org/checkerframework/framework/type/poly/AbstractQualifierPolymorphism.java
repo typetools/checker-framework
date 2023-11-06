@@ -1,9 +1,7 @@
 package org.checkerframework.framework.type.poly;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -30,7 +28,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
@@ -159,13 +156,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     polyInstantiationForQualifierParameter.clear();
   }
 
-  /**
-   * Returns true if {@code type} has any polymorphic qualifiers
-   *
-   * @param type a type that might have polymorphic qualifiers
-   * @return true if {@code type} has any polymorphic qualifiers
-   */
-  protected boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
+  @Override
+  public boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
     return polyScanner.visit(type);
   }
 
@@ -178,12 +170,6 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   @Override
   public void resolve(MethodInvocationTree tree, AnnotatedExecutableType type) {
     if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
-      return;
-    }
-    if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
-      // TODO: This is a workaround.  We need to implement a way to resolve polymorphic qualifiers
-      //  in this case.
-      completer.visit(type);
       return;
     }
 
@@ -222,39 +208,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     reset();
   }
 
-  /**
-   * Returns true if type argument inference is required to find the type of any argument in {@code
-   * argTrees}.
-   *
-   * @param argTrees argument trees
-   * @param path path to the method or constructor invocation
-   * @return true, if type argument inference is required to find the type of any argument in {@code
-   *     argTrees}.
-   */
-  @SuppressWarnings("interning:not.interned") // Looking for exact object.
-  private boolean needsInference(List<? extends ExpressionTree> argTrees, TreePath path) {
-
-    for (ExpressionTree argTree : argTrees) {
-      if (DefaultTypeArgumentInference.outerInference(argTree, path) != argTree) {
-        return true;
-      }
-      if (TreeUtils.isPolyExpression(argTree)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   @Override
   public void resolve(NewClassTree tree, AnnotatedExecutableType type) {
     if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
-      return;
-    }
-
-    if (needsInference(tree.getArguments(), atypeFactory.getPath(tree))) {
-      // TODO: This is a workaround.  We need to implement a way to resolve polymorphic qualifiers
-      //  in this case.
-      completer.visit(type);
       return;
     }
 

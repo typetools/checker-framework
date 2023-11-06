@@ -97,12 +97,10 @@ public class Java8Lambdas {
     // :: error: (call.ui)
     runner.doUI(e -> e.dangerous()); // Not allowed in safe context
     runner.doEither(e -> e.repaint());
-    // :: error: (argument)
     runner.doEither(e -> e.dangerous());
     runner.doUISafely(e -> e.dangerous());
     @AlwaysSafe PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
     safePolymorphicLambdaRunner.doEither(e -> e.repaint());
-    // :: error: (argument)
     safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
     safePolymorphicLambdaRunner.doEither(
         new @UI PolymorphicFunctionalInterface<UIElement>() {
@@ -114,7 +112,7 @@ public class Java8Lambdas {
     // :: error: (call.ui)
     uiPolymorphicLambdaRunner.doEither(
         e -> e.repaint()); // Safe at runtime, but not by the type system!
-    // :: error: (call.ui) :: error: (argument)
+    // :: error: (call.ui)
     uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
     PolymorphicFunctionalInterface<UIElement> func1 = e -> e.repaint();
     // :: error: (assignment)
@@ -145,10 +143,8 @@ public class Java8Lambdas {
     runner.doUI(e -> e.repaint());
     runner.doUI(e -> e.dangerous());
     PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
-    // :: error: (argument)
     safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
     @UI PolymorphicLambdaRunner uiPolymorphicLambdaRunner = new @UI PolymorphicLambdaRunner(elem);
-    // :: error: (argument)
     uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());
   }
 

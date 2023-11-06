@@ -58,11 +58,14 @@ public class Java8InferenceContext {
    */
   public final Map<ExpressionTree, Theta> maps;
 
-  /** Number of non-capture variables. */
+  /** Number of non-capture variables in this inference problem. */
   private int variableCount = 1;
 
-  /** Number of capture variables. */
+  /** Number of capture variables in this inference problem. */
   private int captureVariableCount = 1;
+
+  /** Number of qualifier variables in this inference problem. */
+  private int qualifierVarCount = 1;
 
   /** TypeMirror for java.lang.RuntimeException. */
   public final TypeMirror runtimeEx;
@@ -102,7 +105,8 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Returns the next number to use as the id for a non-capture variable.
+   * Returns the next number to use as the id for a non-capture variable. This id is only unique for
+   * this inference problem.
    *
    * @return the next number to use as the id for a non-capture variable
    */
@@ -111,12 +115,23 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Return the next number to use as the id for a capture variable.
+   * Return the next number to use as the id for a capture variable. This id is only unique for this
+   * inference problem.
    *
    * @return the next number to use as the id for a capture variable
    */
   public int getNextCaptureVariableId() {
     return captureVariableCount++;
+  }
+
+  /**
+   * Returns the next number to use as the id for a qualifier variable. This id is only unique for
+   * this inference problem.
+   *
+   * @return the next number to use as the id for a qualifier variable
+   */
+  public int getNextQualifierVariableId() {
+    return qualifierVarCount++;
   }
 
   /**

@@ -15,13 +15,13 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
+import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
@@ -278,12 +278,11 @@ public class Resolution {
 
     if (!lowerBounds.isEmpty()) {
       ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
-      Set<Set<AnnotationMirror>> qualifierLowerBounds =
+      Set<AbstractQualifier> qualifierLowerBounds =
           ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        Set<AnnotationMirror> lubAnnos =
-            new AnnotationMirrorSet(qh.leastUpperBoundsQualifiersOnly(qualifierLowerBounds));
+        Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
         if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
           Set<? extends AnnotationMirror> newLubAnnos =
               qh.leastUpperBoundsQualifiersOnly(
@@ -358,12 +357,11 @@ public class Resolution {
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
 
       Set<? extends AnnotationMirror> lowerBoundAnnos;
-      Set<Set<AnnotationMirror>> qualifierLowerBounds =
+      Set<AbstractQualifier> qualifierLowerBounds =
           ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        lowerBoundAnnos =
-            new AnnotationMirrorSet(qh.leastUpperBoundsQualifiersOnly(qualifierLowerBounds));
+        lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
         if (lowerBound != null) {
           if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
             Set<? extends AnnotationMirror> newLubAnnos =
@@ -387,14 +385,10 @@ public class Resolution {
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       Set<? extends AnnotationMirror> upperBoundAnnos;
-      Set<Set<AnnotationMirror>> qualifierUpperBounds =
+      Set<AbstractQualifier> qualifierUpperBounds =
           ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
-        upperBoundAnnos =
-            context
-                .typeFactory
-                .getQualifierHierarchy()
-                .greatestLowerBoundsQualifiersOnly(qualifierUpperBounds);
+        upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {
           upperBoundAnnos =
               context
