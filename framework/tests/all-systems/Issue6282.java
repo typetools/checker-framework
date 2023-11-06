@@ -1,6 +1,7 @@
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AccessibleObject;
 
+@SuppressWarnings("ainfertest") // only check WPI for crashes
 public class Issue6282 {
   public static final MethodHandle setAccessible0_Method = setAccessible0_Method();
 
