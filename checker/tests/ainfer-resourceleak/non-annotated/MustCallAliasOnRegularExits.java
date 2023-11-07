@@ -15,7 +15,7 @@ class MustCallAliasOnRegularExits {
 
   private class MCAConstructor extends Foo {
 
-    protected final @Owning Foo f; // expect owning annotation for this field
+    protected final @Owning Foo f;
     protected long s = 0L;
 
     // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a

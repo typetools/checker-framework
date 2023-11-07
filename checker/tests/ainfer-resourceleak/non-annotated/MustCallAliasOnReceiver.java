@@ -1,3 +1,4 @@
+// @skip-test until we have support for adding annotation on the receiver parameter
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
@@ -11,6 +12,16 @@ public class MustCallAliasOnReceiver {
     this.is = p;
   }
 
+  MustCallAliasOnReceiver returnReceiver(MustCallAliasOnReceiver this) {
+    return this;
+  }
+
+  // :: warning: (required.method.not.called)
+  void testReceiverMCAAnnotation(@Owning InputStream inputStream) throws IOException {
+    MustCallAliasOnReceiver mcar = new MustCallAliasOnReceiver(is, false);
+    mcar.returnReceiver().close();
+  }
+
   @EnsuresCalledMethods(value = "this.is", methods = "close")
   public void close() throws IOException {
     this.is.close();
@@ -21,8 +32,7 @@ public class MustCallAliasOnReceiver {
   }
 
   // :: warning: (required.method.not.called)
-  public static void testUse3(@Owning InputStream inputStream) throws Exception {
-    // if mcaneFactory throws, then inputStream goes out of scope w/o being closed
+  public static void testUse(@Owning InputStream inputStream) throws Exception {
     MustCallAliasOnReceiver mcane = mcaneFactory(inputStream);
     mcane.close();
   }

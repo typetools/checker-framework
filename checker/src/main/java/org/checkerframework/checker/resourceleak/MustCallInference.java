@@ -277,7 +277,7 @@ public class MustCallInference {
 
     if (returnNode instanceof FieldAccessNode) {
       addNotOwning();
-    } else {
+    } else if (returnNode instanceof LocalVariableNode) {
       Obligation returnNodeObligation =
           MustCallConsistencyAnalyzer.getObligationForVar(
               obligations, (LocalVariableNode) returnNode);
@@ -308,7 +308,7 @@ public class MustCallInference {
     if (!returnNodeToParameterIndexMap.isEmpty()) {
       if (returnNodeToParameterIndexMap.values().stream().distinct().count() == 1) {
         int indexOfParam = returnNodeToParameterIndexMap.values().iterator().next();
-        if (indexOfParam != -1) {
+        if (indexOfParam > 0) {
           addMustCallAlias(indexOfParam);
         }
       }
@@ -483,19 +483,10 @@ public class MustCallInference {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
     List<VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
-
-    VariableTree receiverTree = methodTree.getReceiverParameter();
-    VariableElement receiverElt =
-        (receiverTree != null) ? TreeUtils.elementFromDeclaration(receiverTree) : null;
-
     for (ResourceAlias resourceAlias : resourceAliases) {
       int paramIndex = paramElts.indexOf(resourceAlias.element);
       if (paramIndex != -1) {
         return paramIndex + 1;
-      }
-
-      if (receiverElt != null && receiverElt.equals(resourceAlias.element)) {
-        return 0;
       }
     }
 
