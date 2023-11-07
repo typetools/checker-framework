@@ -6,7 +6,7 @@ import java.nio.channels.*;
 import java.util.*;
 
 class TryWithResourcesSimple {
-  static void test(String address, int port) {
+  static void testsimple333(String address, int port) {
     try (Socket socket = new Socket(address, port)) {
 
     } catch (Exception e) {

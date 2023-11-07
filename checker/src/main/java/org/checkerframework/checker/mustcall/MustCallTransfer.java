@@ -12,7 +12,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -31,7 +30,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -121,18 +119,18 @@ public class MustCallTransfer extends CFTransfer {
     // Remove "close" from the type in the store for resource variables.
     // The Resource Leak Checker relies on this code to avoid checking that
     // resource variables are closed.
-    if (ElementUtils.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
-      CFStore store = result.getRegularStore();
-      JavaExpression expr = JavaExpression.fromNode(n.getTarget());
-      CFValue value = store.getValue(expr);
-      AnnotationMirror withClose =
-          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
-      if (withClose == null) {
-        return result;
-      }
-      AnnotationMirror withoutClose = atypeFactory.withoutClose(withClose);
-      insertIntoStores(result, expr, withoutClose);
-    }
+    //    if (ElementUtils.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
+    //      CFStore store = result.getRegularStore();
+    //      JavaExpression expr = JavaExpression.fromNode(n.getTarget());
+    //      CFValue value = store.getValue(expr);
+    //      AnnotationMirror withClose =
+    //          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
+    //      if (withClose == null) {
+    //        return result;
+    //      }
+    //      AnnotationMirror withoutClose = atypeFactory.withoutClose(withClose);
+    //      insertIntoStores(result, expr, withoutClose);
+    //    }
     return result;
   }
 

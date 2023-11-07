@@ -63,7 +63,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ResourceNode;
+import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -740,11 +740,11 @@ class MustCallConsistencyAnalyzer {
         // formal parameters are also represented by LocalVariable in the bodies of methods.
         // This satisfies case 1.
         return true;
-      } else if (ElementUtils.isResourceVariable(elt)) {
-        // The expression is a resource variable, and therefore will be closed, so we can
-        // treat it as owning (case 4).
-        return true;
-      } else {
+      } /*else if (ElementUtils.isResourceVariable(elt)) {
+          // The expression is a resource variable, and therefore will be closed, so we can
+          // treat it as owning (case 4).
+          return true;
+        } */ else {
         Obligation toRemove = null;
         Obligation toAdd = null;
         for (Obligation obligation : obligations) {
@@ -1225,17 +1225,17 @@ class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      if (rhs instanceof FieldAccessNode) {
-        // Handling of @Owning fields is a completely separate check.
-      } else if (rhs instanceof LocalVariableNode) {
-        removeObligationsContainingVar(
-            obligations,
-            (LocalVariableNode) rhs,
-            MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
-            MethodExitKind.ALL);
-      }
-    } else if (lhs instanceof LocalVariableNode) {
+    } /*else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
+        if (rhs instanceof FieldAccessNode) {
+          // Handling of @Owning fields is a completely separate check.
+        } else if (rhs instanceof LocalVariableNode) {
+          removeObligationsContainingVar(
+              obligations,
+              (LocalVariableNode) rhs,
+              MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+              MethodExitKind.ALL);
+        }
+      } */ else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
@@ -1250,18 +1250,18 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the set of Obligations to update
    * @param resourceNode the resource declaration
    */
-  private void updateObligationsForResourceNode(
-      Set<Obligation> obligations, ResourceNode resourceNode) {
-    Node resourceDeclarationNode = resourceNode.getResourceDeclarationNode();
-    if (resourceDeclarationNode instanceof LocalVariableNode) {
-      LocalVariableNode localVarNode = (LocalVariableNode) resourceDeclarationNode;
-      removeObligationsContainingVar(
-          obligations,
-          localVarNode,
-          MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
-          MethodExitKind.ALL);
-    }
-  }
+  //  private void updateObligationsForResourceNode(
+  //      Set<Obligation> obligations, ResourceCloseNode resourceNode) {
+  //    Node resourceDeclarationNode = resourceNode.getResourceDeclarationNode();
+  //    if (resourceDeclarationNode instanceof LocalVariableNode) {
+  //      LocalVariableNode localVarNode = (LocalVariableNode) resourceDeclarationNode;
+  //      removeObligationsContainingVar(
+  //          obligations,
+  //          localVarNode,
+  //          MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+  //          MethodExitKind.ALL);
+  //    }
+  //  }
 
   /**
    * Returns true iff the given type element has 0 or 1 @Owning fields.
@@ -2020,8 +2020,8 @@ class MustCallConsistencyAnalyzer {
           updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
-        } else if (node instanceof ResourceNode) {
-          updateObligationsForResourceNode(obligations, (ResourceNode) node);
+        } else if (node instanceof ResourceCloseNode) {
+          // updateObligationsForResourceNode(obligations, (ResourceCloseNode) node);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is

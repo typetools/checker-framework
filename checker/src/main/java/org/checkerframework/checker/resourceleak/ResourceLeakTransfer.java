@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ResourceNode;
+import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -130,7 +130,7 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
 
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitResource(
-      ResourceNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+      ResourceCloseNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     TransferResult<AccumulationValue, AccumulationStore> superResult =
         super.visitResource(node, input);
     Node receiver = node.getResourceDeclarationNode();

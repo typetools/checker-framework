@@ -145,7 +145,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.PackageNameNode;
 import org.checkerframework.dataflow.cfg.node.ParameterizedTypeNode;
 import org.checkerframework.dataflow.cfg.node.PrimitiveTypeNode;
-import org.checkerframework.dataflow.cfg.node.ResourceNode;
+import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
@@ -3548,10 +3548,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
 
+    Label doneLabel = new Label();
+
+    tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+
+    // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
+    // blocks.
+    List<? extends Tree> resources = tree.getResources();
+    List<ResourceCloseNode> resourceCloseNodes;
+    if (!resources.isEmpty()) {
+      // Create the list of ResourceCloseNodes here, where we process the resource declarations.
+      // The nodes will be inserted into the CFG at the point where the close operations occur.
+      resourceCloseNodes = new ArrayList<>(resources.size());
+      for (Tree resource : resources) {
+        Node node = scan(resource, p);
+        if (node instanceof AssignmentNode) {
+          // variable declaration, just use the LHS
+          node = ((AssignmentNode) node).getTarget();
+        }
+        resourceCloseNodes.add(new ResourceCloseNode(node, resource));
+      }
+    } else {
+      resourceCloseNodes = Collections.emptyList();
+    }
+
     Label finallyLabel = null;
     Label exceptionalFinallyLabel = null;
 
-    if (finallyBlock != null) {
+    if (finallyBlock != null || !resourceCloseNodes.isEmpty()) {
       finallyLabel = new Label();
 
       exceptionalFinallyLabel = new Label();
@@ -3564,21 +3588,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       continueTargetLC = new LabelCell();
       continueLabels = new TryFinallyScopeMap();
-    }
-
-    Label doneLabel = new Label();
-
-    tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
-
-    // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
-    // blocks.
-    // TODO: Should we handle try-with-resources blocks by also generating code for
-    // automatically closing the resources?
-    List<? extends Tree> resources = tree.getResources();
-    for (Tree resource : resources) {
-      Node node = scan(resource, p);
-      ResourceNode resourceNode = new ResourceNode(node, resource);
-      extendWithNode(resourceNode);
     }
 
     extendWithNode(
@@ -3617,7 +3626,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        scan(finallyBlock, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
         extendWithNode(
             new MarkerNode(
                 tree, "end of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
@@ -3636,7 +3645,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 "start of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
 
-        scan(finallyBlock, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
 
         NodeWithExceptionsHolder throwing =
             extendWithNodeWithException(
@@ -3658,7 +3667,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for return #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        scan(finallyBlock, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3678,7 +3687,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for break #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        scan(finallyBlock, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3703,7 +3712,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(tree),
                   env.getTypeUtils()));
-          scan(finallyBlock, p);
+          addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
           extendWithNode(
               new MarkerNode(
                   tree,
@@ -3727,7 +3736,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for continue #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        scan(finallyBlock, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3753,7 +3762,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(tree),
                   env.getTypeUtils()));
-          scan(finallyBlock, p);
+          addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
           extendWithNode(
               new MarkerNode(
                   tree,
@@ -3772,6 +3781,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     addLabelForNextNode(doneLabel);
 
     return null;
+  }
+
+  private void addFinallyBlockNodes(
+      BlockTree finallyBlock, List<ResourceCloseNode> resourceCloseNodes, Void p) {
+    if (finallyBlock != null) {
+      scan(finallyBlock, p);
+    }
+    for (int i = resourceCloseNodes.size() - 1; i >= 0; i--) {
+      extendWithNode(resourceCloseNodes.get(i));
+    }
   }
 
   /**

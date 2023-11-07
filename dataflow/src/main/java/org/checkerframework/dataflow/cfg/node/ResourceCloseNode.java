@@ -7,11 +7,11 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * This represents a resource declaration in a try-with-resources tree. A resource declaration can
- * be a variable declaration, a use of a final (or effectively final) local variable, or a use of a
- * final field.
+ * TODO UPDATE This represents a resource declaration in a try-with-resources tree. A resource
+ * declaration can be a variable declaration, a use of a final (or effectively final) local
+ * variable, or a use of a final field.
  */
-public class ResourceNode extends Node {
+public class ResourceCloseNode extends Node {
 
   /**
    * The {@link Node} for the resource declaration, which must be an {@link AssignmentNode}, a
@@ -28,7 +28,7 @@ public class ResourceNode extends Node {
    * @param resourceDeclarationNode the node for the resource declaration
    * @param resourceTree the tree for the resource declaration
    */
-  public ResourceNode(Node resourceDeclarationNode, Tree resourceTree) {
+  public ResourceCloseNode(Node resourceDeclarationNode, Tree resourceTree) {
     super(resourceDeclarationNode.getType());
     assert resourceDeclarationNode instanceof AssignmentNode
             || resourceDeclarationNode instanceof LocalVariableNode
@@ -77,7 +77,7 @@ public class ResourceNode extends Node {
   public boolean equals(@Nullable Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ResourceNode that = (ResourceNode) o;
+    ResourceCloseNode that = (ResourceCloseNode) o;
     return resourceDeclarationNode.equals(that.resourceDeclarationNode)
         && resourceTree.equals(that.resourceTree);
   }

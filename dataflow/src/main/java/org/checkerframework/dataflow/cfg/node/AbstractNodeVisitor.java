@@ -391,7 +391,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
   }
 
   @Override
-  public R visitResource(ResourceNode n, P p) {
+  public R visitResource(ResourceCloseNode n, P p) {
     return visitNode(n, p);
   }
 }

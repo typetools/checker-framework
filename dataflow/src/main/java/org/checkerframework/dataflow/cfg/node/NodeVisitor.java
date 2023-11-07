@@ -189,9 +189,9 @@ public interface NodeVisitor<R, P> {
   /**
    * Visits a resource node.
    *
-   * @param n the {@link ResourceNode} to be visited
+   * @param n the {@link ResourceCloseNode} to be visited
    * @param p the argument for the operation implemented by this visitor
    * @return the return value of the operation implemented by this visitor
    */
-  R visitResource(ResourceNode n, P p);
+  R visitResource(ResourceCloseNode n, P p);
 }
