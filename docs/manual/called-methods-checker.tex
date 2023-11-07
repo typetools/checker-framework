@@ -255,6 +255,27 @@ There are also method annotations:
   that the named methods are actually called on every element of the varargs parameter via some
   other method (such as manual inspection) and then suppress the warning.
 
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsOnException}]
+  This declaration annotation specifies a post-condition on a method, indicating the methods it
+  guarantees to call when it throws an exception.  Like most post-condition annotations, the
+  other Called Methods post-condition annotations (\<@EnsuresCalledMethods>,
+  \<@EnsuresCalledMethodsIf>, and \<@EnsuresCalledMethodsVarArgs>) only specify behavior for
+  normal returns.  The annotation \<@EnsuresCalledMethodsOnException> allows you to write
+  stronger specifications indicating that a method \emph{always} calls the given methods:
+
+  \begin{Verbatim}
+    @EnsuresCalledMethods(expression = "#1", methods = {"close"})
+    @EnsuresCalledMethodsOnException(expression = "#1", methods = {"close"})
+    void closeIfNonNull(Closeable p) {
+      if (p != null) {
+        p.close();
+      }
+    }
+  \end{Verbatim}
+
+  \<@EnsuresCalledMethodsOnException> can also be used together with the Resource Leak Checker's
+  \<@Owning> annotation.  See~\ref{resource-leak-owning-parameters-and-exceptions}.
+
 \item[\refqualclass{checker/calledmethods/qual}{RequiresCalledMethods}]
   This declaration annotation specifies a pre-condition on a method, indicating that the expressions
   in its \<value> argument must have called-methods types that include all the methods named

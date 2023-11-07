@@ -732,15 +732,15 @@ public final class TreeUtils {
           type);
     }
     ExecutableType executableType = (ExecutableType) type;
-    if (((ExecutableType) type).getParameterTypes().isEmpty() && elementFromUse(tree).isVarArgs()) {
+    ExecutableElement element = elementFromUse(tree);
+    if (((ExecutableType) type).getParameterTypes().size() != element.getParameters().size()) {
       // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
       // just return the declared type.
       // For example,
       // static void call(MethodHandle methodHandle) throws Throwable {
       //   methodHandle.invoke();
       // }
-      ExecutableElement ele = elementFromUse(tree);
-      return (ExecutableType) ele.asType();
+      return (ExecutableType) element.asType();
     }
     return executableType;
   }
