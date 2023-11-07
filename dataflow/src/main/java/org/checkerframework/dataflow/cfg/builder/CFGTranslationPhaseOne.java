@@ -3527,13 +3527,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitTry(TryTree tree, Void p) {
-    List<? extends CatchTree> catches = tree.getCatches();
-    BlockTree finallyBlock = tree.getFinallyBlock();
+    List<? extends Tree> resources = tree.getResources();
+
+    return visitTryHelper(tree, p, resources);
+  }
+
+  @Nullable private Node visitTryHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
+    Tree tree;
+    boolean doingResourceTry;
+    List<? extends CatchTree> catches;
+    BlockTree finallyBlock;
+    if (!resources.isEmpty()) {
+      doingResourceTry = true;
+      tree = resources.get(0);
+      catches = Collections.emptyList();
+      finallyBlock = null;
+    } else {
+      doingResourceTry = false;
+      tree = tryTree;
+      catches = tryTree.getCatches();
+      finallyBlock = tryTree.getFinallyBlock();
+    }
 
     extendWithNode(
         new MarkerNode(
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
+    // if we're doing a resource try, we should ignore the catch blocks and finally block; we just
+    // have the "synthetic" finally for cleaning up the resources
     List<IPair<TypeMirror, Label>> catchLabels =
         CollectionsPlume.mapList(
             (CatchTree c) -> {
@@ -3554,28 +3575,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
     // blocks.
-    List<? extends Tree> resources = tree.getResources();
-    List<ResourceCloseNode> resourceCloseNodes;
-    if (!resources.isEmpty()) {
-      // Create the list of ResourceCloseNodes here, where we process the resource declarations.
-      // The nodes will be inserted into the CFG at the point where the close operations occur.
-      resourceCloseNodes = new ArrayList<>(resources.size());
-      for (Tree resource : resources) {
-        Node node = scan(resource, p);
-        if (node instanceof AssignmentNode) {
-          // variable declaration, just use the LHS
-          node = ((AssignmentNode) node).getTarget();
-        }
-        resourceCloseNodes.add(new ResourceCloseNode(node, resource));
+    ResourceCloseNode resourceCloseNode;
+    if (doingResourceTry) {
+      // tree is the tree for the resource declaration
+      Node node = scan(tree, p);
+      if (node instanceof AssignmentNode) {
+        // variable declaration, just use the LHS
+        node = ((AssignmentNode) node).getTarget();
       }
+      resourceCloseNode = new ResourceCloseNode(node, tree);
     } else {
-      resourceCloseNodes = Collections.emptyList();
+      resourceCloseNode = null;
     }
 
     Label finallyLabel = null;
     Label exceptionalFinallyLabel = null;
 
-    if (finallyBlock != null || !resourceCloseNodes.isEmpty()) {
+    if (finallyBlock != null || doingResourceTry) {
       finallyLabel = new Label();
 
       exceptionalFinallyLabel = new Label();
@@ -3593,7 +3609,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     extendWithNode(
         new MarkerNode(
             tree, "start of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-    scan(tree.getBlock(), p);
+    if (doingResourceTry) {
+      visitTryHelper(tryTree, p, resources.subList(1, resources.size()));
+    } else {
+      scan(((TryTree) tree).getBlock(), p);
+    }
     extendWithNode(
         new MarkerNode(
             tree, "end of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
@@ -3626,7 +3646,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
         extendWithNode(
             new MarkerNode(
                 tree, "end of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
@@ -3645,7 +3665,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 "start of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
 
-        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
 
         NodeWithExceptionsHolder throwing =
             extendWithNodeWithException(
@@ -3667,7 +3687,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for return #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3687,7 +3707,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for break #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3712,7 +3732,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(tree),
                   env.getTypeUtils()));
-          addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+          addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
           extendWithNode(
               new MarkerNode(
                   tree,
@@ -3736,7 +3756,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 tree,
                 "start of finally block for continue #" + TreeUtils.treeUids.get(tree),
                 env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
         extendWithNode(
             new MarkerNode(
                 tree,
@@ -3762,7 +3782,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                       + " #"
                       + TreeUtils.treeUids.get(tree),
                   env.getTypeUtils()));
-          addFinallyBlockNodes(finallyBlock, resourceCloseNodes, p);
+          addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
           extendWithNode(
               new MarkerNode(
                   tree,
@@ -3784,12 +3804,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   private void addFinallyBlockNodes(
-      BlockTree finallyBlock, List<ResourceCloseNode> resourceCloseNodes, Void p) {
+      @Nullable BlockTree finallyBlock, @Nullable ResourceCloseNode resourceCloseNode, Void p) {
     if (finallyBlock != null) {
+      assert resourceCloseNode == null;
       scan(finallyBlock, p);
     }
-    for (int i = resourceCloseNodes.size() - 1; i >= 0; i--) {
-      extendWithNode(resourceCloseNodes.get(i));
+    if (resourceCloseNode != null) {
+      assert finallyBlock == null;
+      extendWithNode(resourceCloseNode);
     }
   }
 
