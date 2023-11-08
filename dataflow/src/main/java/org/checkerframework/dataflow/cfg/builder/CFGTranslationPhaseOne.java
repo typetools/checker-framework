@@ -3553,8 +3553,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MarkerNode(
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
-    // if we're doing a resource try, we should ignore the catch blocks and finally block; we just
-    // have the "synthetic" finally for cleaning up the resources
     List<IPair<TypeMirror, Label>> catchLabels =
         CollectionsPlume.mapList(
             (CatchTree c) -> {
@@ -3568,6 +3566,24 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Map<Name, Label> oldBreakLabels = breakLabels;
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
+
+    Label finallyLabel = null;
+    Label exceptionalFinallyLabel = null;
+
+    if (finallyBlock != null || doingResourceTry) {
+      finallyLabel = new Label();
+
+      exceptionalFinallyLabel = new Label();
+      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+      returnTargetLC = new LabelCell();
+
+      breakTargetLC = new LabelCell();
+      breakLabels = new TryFinallyScopeMap();
+
+      continueTargetLC = new LabelCell();
+      continueLabels = new TryFinallyScopeMap();
+    }
 
     Label doneLabel = new Label();
 
@@ -3586,24 +3602,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       resourceCloseNode = new ResourceCloseNode(node, tree);
     } else {
       resourceCloseNode = null;
-    }
-
-    Label finallyLabel = null;
-    Label exceptionalFinallyLabel = null;
-
-    if (finallyBlock != null || doingResourceTry) {
-      finallyLabel = new Label();
-
-      exceptionalFinallyLabel = new Label();
-      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
-
-      returnTargetLC = new LabelCell();
-
-      breakTargetLC = new LabelCell();
-      breakLabels = new TryFinallyScopeMap();
-
-      continueTargetLC = new LabelCell();
-      continueLabels = new TryFinallyScopeMap();
     }
 
     extendWithNode(
