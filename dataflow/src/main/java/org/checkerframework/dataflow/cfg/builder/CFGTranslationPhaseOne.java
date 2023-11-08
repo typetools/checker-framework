@@ -3532,7 +3532,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return visitTryHelper(tree, p, resources);
   }
 
-  @Nullable private Node visitTryHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
+  /**
+   * TODO better docs; recursive helper function for visitTry
+   *
+   * @param tryTree the try tree
+   * @param p void value
+   * @param resources resoure declarations to handle
+   * @return {@code null}
+   */
+  private @Nullable Node visitTryHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
     Tree tree;
     boolean doingResourceTry;
     List<? extends CatchTree> catches;
@@ -3801,6 +3809,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  /**
+   * TODO better docs add nodes for a finally or resource block
+   *
+   * @param finallyBlock finally block
+   * @param resourceCloseNode resource close node
+   * @param p void value
+   */
   private void addFinallyBlockNodes(
       @Nullable BlockTree finallyBlock, @Nullable ResourceCloseNode resourceCloseNode, Void p) {
     if (finallyBlock != null) {
