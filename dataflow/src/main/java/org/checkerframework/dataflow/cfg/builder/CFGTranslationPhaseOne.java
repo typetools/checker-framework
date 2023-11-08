@@ -3578,7 +3578,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Label finallyLabel = null;
     Label exceptionalFinallyLabel = null;
 
-    if (finallyBlock != null || doingResourceTry) {
+    if (finallyBlock != null) {
       finallyLabel = new Label();
 
       exceptionalFinallyLabel = new Label();
@@ -3595,7 +3595,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Label doneLabel = new Label();
 
-    tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+    if (!doingResourceTry) {
+      tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
+    }
 
     // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
     // blocks.
@@ -3608,6 +3610,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = ((AssignmentNode) node).getTarget();
       }
       resourceCloseNode = new ResourceCloseNode(node, tree);
+
+      finallyLabel = new Label();
+
+      exceptionalFinallyLabel = new Label();
+      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+      returnTargetLC = new LabelCell();
+
+      breakTargetLC = new LabelCell();
+      breakLabels = new TryFinallyScopeMap();
+
+      continueTargetLC = new LabelCell();
+      continueLabels = new TryFinallyScopeMap();
     } else {
       resourceCloseNode = null;
     }
@@ -3626,7 +3641,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
-    tryStack.popFrame();
+    if (!doingResourceTry) {
+      // this is for the catch frame
+      tryStack.popFrame();
+    }
 
     int catchIndex = 0;
     for (CatchTree c : catches) {

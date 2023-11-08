@@ -2,7 +2,6 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -18,10 +17,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
-import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer function for the resource-leak extension to the called-methods type system. */
@@ -178,23 +174,5 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
         }
       }
     }
-  }
-
-  @Override
-  public TransferResult<AccumulationValue, AccumulationStore> visitVariableDeclaration(
-      VariableDeclarationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> result =
-        super.visitVariableDeclaration(node, input);
-    VariableElement elt = TreeUtils.elementFromDeclaration(node.getTree());
-    if (ElementUtils.isResourceVariable(elt)) {
-      JavaExpression localExp = JavaExpression.fromVariableTree(node.getTree());
-      if (result.containsTwoStores()) {
-        result.getThenStore().insertValue(localExp, rlTypeFactory.top);
-        result.getElseStore().insertValue(localExp, rlTypeFactory.top);
-      } else {
-        result.getRegularStore().insertValue(localExp, rlTypeFactory.top);
-      }
-    }
-    return result;
   }
 }
