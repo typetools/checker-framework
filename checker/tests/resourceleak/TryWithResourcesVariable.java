@@ -1,4 +1,4 @@
-// Test for try-with-resources where the resource is a variable rather than a declaration
+// Test for try-with-resources where the resource declaration uses an existing variable
 
 import java.net.*;
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -25,26 +25,11 @@ class TryWithResourcesVariable {
   static void test3a(InetSocketAddress isa) {
     Socket socket = new Socket();
     try (socket) {
-      // We get a false positive reset.not.owning error here.  MustCallConsistencyAnalyzer has a
-      // special-case hack for variables declared in a try-with-resources, but that does not work
-      // for variables used in try-with-resources but declared beforehand.
       socket.connect(isa);
     } catch (Exception e) {
 
     }
   }
-
-  //  static void test3b(InetSocketAddress isa) {
-  //    try (Socket socket = new Socket()) {
-  //      Socket socket2 = socket;
-  //      // Another false positive reset.not.owning warning, showing the existing hack for
-  // variables
-  //      // declared in try-with-resources is limited
-  //      socket2.connect(isa);
-  //    } catch (Exception e) {
-  //
-  //    }
-  //  }
 
   @InheritableMustCall("disposer")
   static class FinalResourceField {

@@ -1,12 +1,12 @@
-// A simple test that a try-with-resources socket doesn't issue a false positive.
+// Tests for try-with-resources that declare local variables in the resource declaration.
 
 import java.io.*;
 import java.net.Socket;
 import java.nio.channels.*;
 import java.util.*;
 
-class TryWithResourcesSimple {
-  static void testsimple333(String address, int port) {
+class TryWithResourcesDeclaration {
+  static void test(String address, int port) {
     try (Socket socket = new Socket(address, port)) {
 
     } catch (Exception e) {
@@ -29,6 +29,15 @@ class TryWithResourcesSimple {
       oldFile.seek(0);
       int oldVersion = oldFile.readInt();
       return false;
+    }
+  }
+
+  public void testNestedTryWithResourcesDecls(Properties prop, ClassLoader cl, String propfile)
+      throws Exception {
+    try (InputStream in = cl.getResourceAsStream(propfile)) {
+      try (InputStream fis = new FileInputStream(propfile)) {
+        prop.load(fis);
+      }
     }
   }
 }
