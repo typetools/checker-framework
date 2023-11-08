@@ -6,10 +6,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -26,8 +28,11 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -52,6 +57,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private final ExecutableElement calledMethodsValueElement;
 
+  /** The type mirror for {@link Exception}. */
+  protected final TypeMirror javaLangExceptionType;
+
   /**
    * True if -AenableWpiForRlc was passed on the command line. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
@@ -68,6 +76,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
     enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    javaLangExceptionType =
+        env.getTypeUtils().getDeclaredType(ElementUtils.getTypeElement(env, Exception.class));
   }
 
   /**
@@ -109,7 +121,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     exceptionalStores = makeExceptionalStores(node, input);
     TransferResult<AccumulationValue, AccumulationStore> superResult =
         super.visitMethodInvocation(node, input);
-    handleEnsuresCalledMethodsVarArgs(node, superResult);
+
+    ExecutableElement method = TreeUtils.elementFromUse(node.getTree());
+    handleEnsuresCalledMethodsVarArgs(node, method, superResult);
+    handleEnsuresCalledMethodsOnException(node, method, exceptionalStores);
+
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
@@ -196,11 +212,13 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * present.
    *
    * @param node the method invocation node
+   * @param elt the method being invoked
    * @param result the current result
    */
   private void handleEnsuresCalledMethodsVarArgs(
-      MethodInvocationNode node, TransferResult<AccumulationValue, AccumulationStore> result) {
-    ExecutableElement elt = TreeUtils.elementFromUse(node.getTree());
+      MethodInvocationNode node,
+      ExecutableElement elt,
+      TransferResult<AccumulationValue, AccumulationStore> result) {
     AnnotationMirror annot = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
     if (annot == null) {
       return;
@@ -231,6 +249,49 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         JavaExpression receiverReceiver = JavaExpression.fromNode(arg);
         thenStore.insertValue(receiverReceiver, newType);
         elseStore.insertValue(receiverReceiver, newType);
+      }
+    }
+  }
+
+  /**
+   * Update the given <code>exceptionalStores</code> for the {@link
+   * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException} annotations
+   * written on the given <code>method</code>.
+   *
+   * @param node a method invocation
+   * @param method the method being invoked
+   * @param exceptionalStores the stores to update
+   */
+  private void handleEnsuresCalledMethodsOnException(
+      MethodInvocationNode node,
+      ExecutableElement method,
+      Map<TypeMirror, AccumulationStore> exceptionalStores) {
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    for (EnsuresCalledMethodOnExceptionContract postcond :
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(method)) {
+      JavaExpression e;
+      try {
+        e =
+            StringToJavaExpression.atMethodInvocation(
+                postcond.getExpression(), node.getTree(), atypeFactory.getChecker());
+      } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+        // This parse error will be reported later. For now, we'll skip this malformed
+        // postcondition and move on to the others.
+        continue;
+      }
+
+      // NOTE: this code is a little inefficient; it creates a single-method annotation and calls
+      // `insertOrRefine` in a loop.  Even worse, this code appears within a loop.  For now we
+      // aren't too worried about it, since the number of EnsuresCalledMethodsOnException
+      // annotations should be small.
+      AnnotationMirror calledMethod =
+          atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+      for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
+        TypeMirror caughtException = successor.getKey();
+        if (types.isSubtype(caughtException, javaLangExceptionType)) {
+          AccumulationStore resultStore = successor.getValue();
+          resultStore.insertOrRefine(e, calledMethod);
+        }
       }
     }
   }
