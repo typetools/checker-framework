@@ -319,6 +319,7 @@ public class OptionalVisitor
 
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+    handleOptionalOfNull(tree);
     handleCreationElimination(tree);
     return super.visitMethodInvocation(tree, p);
   }
@@ -343,6 +344,29 @@ public class OptionalVisitor
     }
 
     checker.reportWarning(tree, "introduce.eliminate");
+  }
+
+  /**
+   * Pattern match for: Optional.of(NULL_LITERAL);
+   *
+   * <p>Calling Optional.of on a null value or literal is almost certainly a bug.
+   *
+   * <p>In fact, the Java documentation for Optional.of (see <a
+   * href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html#of-T-">...</a>) states
+   * that it returns an Optional with the specified present non-null value.
+   *
+   * @param tree a method invocation.
+   */
+  public void handleOptionalOfNull(MethodInvocationTree tree) {
+    ProcessingEnvironment env = checker.getProcessingEnvironment();
+    boolean isCallToOptionalOf = TreeUtils.isMethodInvocation(tree, optionalOf, env);
+    boolean isCallToOptionalOfWithNullLiteral =
+        isCallToOptionalOf && tree.getArguments().get(0).getKind() == Tree.Kind.NULL_LITERAL;
+    if (!isCallToOptionalOfWithNullLiteral) {
+      return;
+    }
+
+    checker.reportError(tree, "optional.of.null");
   }
 
   /**
