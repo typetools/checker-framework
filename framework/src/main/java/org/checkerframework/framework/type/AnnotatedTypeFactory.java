@@ -2371,8 +2371,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       wildcard.setExtendsBound(t);
       addDefaultAnnotations(wildcard);
-    } else if (TypesUtils.isRaw(TreeUtils.typeOf(tree))) {
-      method.setReturnType(method.getReturnType().getErased());
     }
 
     return result;

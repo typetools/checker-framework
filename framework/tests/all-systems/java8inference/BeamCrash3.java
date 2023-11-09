@@ -1,3 +1,4 @@
+@SuppressWarnings("all") // Just check for crashes.
 public class BeamCrash3<T> {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
