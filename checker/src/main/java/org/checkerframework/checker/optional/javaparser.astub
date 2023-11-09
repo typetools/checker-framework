@@ -1,0 +1,11 @@
+import org.checkerframework.checker.optional.qual.Present;
+
+package com.github.javaparser.ast.body;
+
+class BodyDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+
+class VariableDeclarator
+  @Present Optional<Node> getParentNode();
+}

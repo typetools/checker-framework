@@ -1316,25 +1316,23 @@ public class AnnotationFileParser {
               "parseParameter: constructor %s of a top-level class"
                   + " cannot have receiver annotations %s",
               methodType,
-              decl.getReceiverParameter().get().getAnnotations());
+              receiverParameter.getAnnotations());
         } else {
           warn(
               receiverParameter,
               "parseParameter: static method %s cannot have receiver annotations %s",
               methodType,
-              decl.getReceiverParameter().get().getAnnotations());
+              receiverParameter.getAnnotations());
         }
       } else {
         // Add declaration annotations.
         annotate(
-            methodType.getReceiverType(),
-            decl.getReceiverParameter().get().getAnnotations(),
-            receiverParameter);
+            methodType.getReceiverType(), receiverParameter.getAnnotations(), receiverParameter);
         // Add type annotations.
         annotate(
             methodType.getReceiverType(),
-            decl.getReceiverParameter().get().getType(),
-            decl.getReceiverParameter().get().getAnnotations(),
+            receiverParameter.getType(),
+            receiverParameter.getAnnotations(),
             receiverParameter);
       }
     }
@@ -1532,23 +1530,18 @@ public class AnnotationFileParser {
         if (declType.getTypeArguments().isPresent()
             && !declType.getTypeArguments().get().isEmpty()
             && !adeclType.getTypeArguments().isEmpty()) {
-          if (declType.getTypeArguments().get().size() != adeclType.getTypeArguments().size()) {
+          NodeList<Type> declTypeArgs = declType.getTypeArguments().get();
+          List<AnnotatedTypeMirror> adeclTypeArgs = adeclType.getTypeArguments();
+          if (declTypeArgs.size() != adeclTypeArgs.size()) {
             warn(
                 astNode,
                 String.format(
                     "Mismatch in type argument size between %s (%d) and %s (%d)",
-                    declType,
-                    declType.getTypeArguments().get().size(),
-                    adeclType,
-                    adeclType.getTypeArguments().size()));
+                    declType, declTypeArgs.size(), adeclType, adeclTypeArgs.size()));
             break;
           }
-          for (int i = 0; i < declType.getTypeArguments().get().size(); ++i) {
-            annotate(
-                adeclType.getTypeArguments().get(i),
-                declType.getTypeArguments().get().get(i),
-                null,
-                astNode);
+          for (int i = 0; i < declTypeArgs.size(); ++i) {
+            annotate(adeclTypeArgs.get(i), declTypeArgs.get(i), null, astNode);
           }
         }
         break;

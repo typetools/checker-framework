@@ -9,7 +9,8 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-// TODO: For a call to ofNullable, if the argument has type @NonNull, make the return type have type
-// @Present.  Make Optional Checker a subchecker of the Nullness Checker.
+// TODO: If the Nullness Checker is running, then for a call to ofNullable, if the argument has type
+// @NonNull, make the return type have type @Present.
 @RelevantJavaTypes(Optional.class)
+@StubFiles({"javaparser.astub"})
 public class OptionalChecker extends BaseTypeChecker {}
