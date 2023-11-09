@@ -2452,7 +2452,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       methodType =
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
     }
-    if (pair.second) {
+
+    if (pair.second || TypesUtils.isRaw(TreeUtils.typeOf(tree))) {
       methodType.setReturnType(methodType.getReturnType().getErased());
     }
 
