@@ -3529,7 +3529,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitTry(TryTree tree, Void p) {
     List<? extends Tree> resources = tree.getResources();
 
-    return visitTryHelper(tree, p, resources);
+    return visitTryHelper(tree, p, resources, true);
   }
 
   /**
@@ -3540,21 +3540,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param resources resoure declarations to handle
    * @return {@code null}
    */
-  private @Nullable Node visitTryHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
+  private @Nullable Node visitTryHelper(
+      TryTree tryTree, Void p, List<? extends Tree> resources, boolean topLevel) {
     Tree tree;
-    boolean doingResourceTry;
     List<? extends CatchTree> catches;
     BlockTree finallyBlock;
-    if (!resources.isEmpty()) {
-      doingResourceTry = true;
-      tree = resources.get(0);
-      catches = Collections.emptyList();
-      finallyBlock = null;
-    } else {
-      doingResourceTry = false;
+    if (topLevel) {
       tree = tryTree;
       catches = tryTree.getCatches();
       finallyBlock = tryTree.getFinallyBlock();
+    } else {
+      // handling a resource declaration
+      tree = resources.get(0);
+      catches = Collections.emptyList();
+      finallyBlock = null;
     }
 
     extendWithNode(
@@ -3595,14 +3594,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Label doneLabel = new Label();
 
-    if (!doingResourceTry) {
+    if (topLevel) {
       tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
     }
 
     // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
     // blocks.
     ResourceCloseNode resourceCloseNode;
-    if (doingResourceTry) {
+    if (!topLevel) {
       // tree is the tree for the resource declaration
       Node node = scan(tree, p);
       if (node instanceof AssignmentNode) {
@@ -3630,8 +3629,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     extendWithNode(
         new MarkerNode(
             tree, "start of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-    if (doingResourceTry) {
-      visitTryHelper(tryTree, p, resources.subList(1, resources.size()));
+    if (!resources.isEmpty()) {
+      if (topLevel) {
+        visitTryHelper(tryTree, p, resources, false);
+      } else {
+        if (resources.size() == 1) {
+          scan(tryTree.getBlock(), p);
+        } else {
+          visitTryHelper(tryTree, p, resources.subList(1, resources.size()), false);
+        }
+      }
     } else {
       scan(((TryTree) tree).getBlock(), p);
     }
@@ -3641,7 +3648,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
-    if (!doingResourceTry) {
+    if (topLevel) {
       // this is for the catch frame
       tryStack.popFrame();
     }
