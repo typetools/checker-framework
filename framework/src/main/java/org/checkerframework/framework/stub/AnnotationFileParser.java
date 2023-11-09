@@ -1527,11 +1527,13 @@ public class AnnotationFileParser {
         }
         AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
         // Process type arguments.
-        if (declType.getTypeArguments().isPresent()
-            && !declType.getTypeArguments().get().isEmpty()
-            && !adeclType.getTypeArguments().isEmpty()) {
-          NodeList<Type> declTypeArgs = declType.getTypeArguments().get();
-          List<AnnotatedTypeMirror> adeclTypeArgs = adeclType.getTypeArguments();
+        @SuppressWarnings("optional:optional.collection") // JavaParser uses Optional<NodeList>
+        Optional<NodeList<Type>> oDeclTypeArgs = declType.getTypeArguments();
+        List<? extends AnnotatedTypeMirror> adeclTypeArgs = adeclType.getTypeArguments();
+        if (oDeclTypeArgs.isPresent()
+            && !oDeclTypeArgs.get().isEmpty()
+            && !adeclTypeArgs.isEmpty()) {
+          NodeList<Type> declTypeArgs = oDeclTypeArgs.get();
           if (declTypeArgs.size() != adeclTypeArgs.size()) {
             warn(
                 astNode,

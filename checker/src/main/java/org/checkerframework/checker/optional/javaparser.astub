@@ -6,6 +6,10 @@ class BodyDeclaration<T extends BodyDeclaration<?>> {
   @Present Optional<Node> getParentNode();
 }
 
+class MethodDeclaration {
+  @Present Optional<Node> getParentNode();
+}
+
 class VariableDeclarator {
   @Present Optional<Node> getParentNode();
 }
