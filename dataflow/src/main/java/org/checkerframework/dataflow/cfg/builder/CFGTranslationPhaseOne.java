@@ -3538,6 +3538,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param tryTree the try tree
    * @param p void value
    * @param resources resoure declarations to handle
+   * @param topLevel whether this is a top level call
    * @return {@code null}
    */
   private @Nullable Node visitTryHelper(
