@@ -17,7 +17,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -110,28 +109,6 @@ public class MustCallTransfer extends CFTransfer {
       assert this.defaultStringType != null : "@AssumeAssertion(nullness): same hierarchy";
     }
     return this.defaultStringType;
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitAssignment(
-      AssignmentNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
-    // Remove "close" from the type in the store for resource variables.
-    // The Resource Leak Checker relies on this code to avoid checking that
-    // resource variables are closed.
-    //    if (ElementUtils.isResourceVariable(TreeUtils.elementFromTree(n.getTarget().getTree()))) {
-    //      CFStore store = result.getRegularStore();
-    //      JavaExpression expr = JavaExpression.fromNode(n.getTarget());
-    //      CFValue value = store.getValue(expr);
-    //      AnnotationMirror withClose =
-    //          atypeFactory.getAnnotationByClass(value.getAnnotations(), MustCall.class);
-    //      if (withClose == null) {
-    //        return result;
-    //      }
-    //      AnnotationMirror withoutClose = atypeFactory.withoutClose(withClose);
-    //      insertIntoStores(result, expr, withoutClose);
-    //    }
-    return result;
   }
 
   @Override
