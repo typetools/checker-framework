@@ -2371,6 +2371,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       wildcard.setExtendsBound(t);
       addDefaultAnnotations(wildcard);
+    } else if (TypesUtils.isRaw(TreeUtils.typeOf(tree))) {
+      method.setReturnType(method.getReturnType().getErased());
     }
 
     return result;
@@ -2453,7 +2455,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           (AnnotatedExecutableType) typeVarSubstitutor.substitute(typeParamToTypeArg, methodType);
     }
 
-    if (pair.second || TypesUtils.isRaw(TreeUtils.typeOf(tree))) {
+    if (pair.second) {
       methodType.setReturnType(methodType.getReturnType().getErased());
     }
 
@@ -2791,7 +2793,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // Reset the enclosing type because it can be substituted incorrectly.
       ((AnnotatedDeclaredType) con.getReturnType()).setEnclosingType(enclosingType);
     }
-    if (type.isUnderlyingTypeRaw()) {
+    if (type.isUnderlyingTypeRaw() || TypesUtils.isRaw(TreeUtils.typeOf(tree))) {
       ((AnnotatedDeclaredType) con.getReturnType()).setIsUnderlyingTypeRaw();
     }
     if (ctor.getEnclosingElement().getKind() == ElementKind.ENUM) {
