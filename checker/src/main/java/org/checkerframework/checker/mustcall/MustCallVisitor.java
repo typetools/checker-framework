@@ -316,6 +316,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
 
+    // TODO delete this??
     if (commonAssignmentCheckOnResourceVariable) {
       commonAssignmentCheckOnResourceVariable = false;
       // The LHS has been marked as a resource variable.  Skip the standard common assignment
