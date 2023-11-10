@@ -3617,12 +3617,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Helper function to handle the resource declarations in a {@link TryTree} and its main block.
-   * The logic here follows JLS 14.20.3.1. A resource declaration <emph>r</emph> is handled by
-   * adding the nodes for r itself to the CFG, followed by a simulated nested try block
-   * <emph>t1</emph> for any remaining resource declarations and the original try block (handled
-   * with a recursive call). A call to {@code close} for <emph>r</emph> is added in a simulated
-   * "finally" block for <emph>t1</emph>, guaranteeing that on every path through the CFG,
-   * <emph>r</emph> is closed.
+   * The logic here follows JLS 14.20.3.1. A resource declaration <i>r</i> is handled by adding the
+   * nodes for <i>r</i> itself to the CFG, followed by a simulated nested try block <i>t1</i> for
+   * any remaining resource declarations and the original try block (handled with a recursive call).
+   * A call to {@code close} for <i>r</i> is added in a simulated "finally" block for <i>t1</i>,
+   * guaranteeing that on every path through the CFG, <i>r</i> is closed.
    *
    * @param tryTree the original try tree from the AST
    * @param p value to pass to calls to {@code scan}
