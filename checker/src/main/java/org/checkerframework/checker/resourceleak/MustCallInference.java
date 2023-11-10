@@ -44,7 +44,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -218,10 +217,7 @@ public class MustCallInference {
           computeOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
           analyzeOwnershipTransferAtAssignment(obligations, (AssignmentNode) node);
-        } /*else if (node instanceof ResourceCloseNode) {
-            computeOwningForArgument(
-                obligations, node, ((ResourceCloseNode) node).getResourceDeclarationNode());
-          }*/
+        }
       }
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);
@@ -304,19 +300,18 @@ public class MustCallInference {
    * obligation is satisfied by the given method call. If so, it will be given an @Owning annotation
    * later.
    *
-   * @param fieldAccessNode possibly an owning field
-   * @param operation either a {@link MethodInvocationNode} invoked on the possible owning field, or
-   *     a {@link ResourceCloseNode} for the field
+   * @param node possibly an owning field
+   * @param invocation method invoked on the possible owning field
    */
-  private void inferOwningField(Node fieldAccessNode, Node operation) {
-    Element nodeElt = TreeUtils.elementFromTree(fieldAccessNode.getTree());
+  private void inferOwningField(Node node, MethodInvocationNode invocation) {
+    Element nodeElt = TreeUtils.elementFromTree(node.getTree());
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
     }
     if (resourceLeakAtf.isFieldWithNonemptyMustCallValue(nodeElt)) {
-      fieldAccessNode = NodeUtils.removeCasts(fieldAccessNode);
-      JavaExpression nodeJe = JavaExpression.fromNode(fieldAccessNode);
-      AnnotationMirror cmAnno = getCalledMethodsAnno(operation, nodeJe);
+      node = NodeUtils.removeCasts(node);
+      JavaExpression nodeJe = JavaExpression.fromNode(node);
+      AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, nodeJe);
       List<String> mustCallValues = resourceLeakAtf.getMustCallValues(nodeElt);
       if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
         // This assumes that any MustCall annotation has at most one element.
@@ -590,15 +585,16 @@ public class MustCallInference {
    * into a method call.
    *
    * @param obligations set of obligations associated with the current block
-   * @param operation the method invocation node to check
+   * @param invocation the method invocation node to check
    * @param arg a receiver or an argument passed to the method call
    */
-  private void computeOwningForArgument(Set<Obligation> obligations, Node operation, Node arg) {
+  private void computeOwningForArgument(
+      Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
     Element argElt = TreeUtils.elementFromTree(arg.getTree());
     // The must-call obligation of a field can be satisfied either through a call where it serves as
     // a receiver or within the callee method when it is passed as an argument.
     if (argElt != null && argElt.getKind().isField()) {
-      inferOwningField(arg, operation);
+      inferOwningField(arg, invocation);
       return;
     }
 
@@ -620,7 +616,7 @@ public class MustCallInference {
       assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
       Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, arg);
       for (ResourceAlias resourceAlias : nodeAliases) {
-        AnnotationMirror cmAnno = getCalledMethodsAnno(operation, resourceAlias.reference);
+        AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, resourceAlias.reference);
         if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
           addOwningToParam(i + 1);
           break outerLoop;
@@ -679,14 +675,15 @@ public class MustCallInference {
   }
 
   /**
-   * Returns the called methods annotation for the given Java expression after the node.
+   * Returns the called methods annotation for the given Java expression after the invocation node.
    *
-   * @param node the CFG node
+   * @param invocation the MethodInvocationNode
    * @param varJe a Java expression
-   * @return the called methods annotation for the {@code varJe} after the node
+   * @return the called methods annotation for the {@code varJe} after the {@code invocation} node
    */
-  private AnnotationMirror getCalledMethodsAnno(Node node, JavaExpression varJe) {
-    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(node);
+  private AnnotationMirror getCalledMethodsAnno(
+      MethodInvocationNode invocation, JavaExpression varJe) {
+    AccumulationStore cmStoreAfter = resourceLeakAtf.getStoreAfter(invocation);
     AccumulationValue cmValue = cmStoreAfter == null ? null : cmStoreAfter.getValue(varJe);
 
     AnnotationMirror cmAnno = null;

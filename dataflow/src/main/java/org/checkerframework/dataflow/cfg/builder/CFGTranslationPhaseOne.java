@@ -145,7 +145,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.PackageNameNode;
 import org.checkerframework.dataflow.cfg.node.ParameterizedTypeNode;
 import org.checkerframework.dataflow.cfg.node.PrimitiveTypeNode;
-import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
@@ -3647,12 +3646,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Label doneLabel = new Label();
 
-    Node node = scan(resourceDeclarationTree, p);
-    if (node instanceof AssignmentNode) {
-      // variable declaration, just use the LHS
-      node = ((AssignmentNode) node).getTarget();
-    }
-    ResourceCloseNode resourceCloseNode = new ResourceCloseNode(node, resourceDeclarationTree);
+    Node resourceCloseNode = scan(resourceDeclarationTree, p);
 
     Label finallyLabel = new Label();
 
@@ -3684,7 +3678,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Runnable finallyBlockCFGGenerator =
         () -> {
           // extendWithNode(resourceCloseNode);
-          Tree receiverTree = resourceCloseNode.getTree();
+          Tree receiverTree = resourceDeclarationTree;
           if (receiverTree instanceof VariableTree) {
             receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
             handleArtificialTree(receiverTree);
@@ -3697,8 +3691,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
           handleArtificialTree(closeCall);
 
-          MethodAccessNode closeAccessNode =
-              new MethodAccessNode(closeSelect, resourceCloseNode.getResourceDeclarationNode());
+          Node receiverNode = resourceCloseNode;
+          if (receiverNode instanceof AssignmentNode) {
+            // variable declaration, use the LHS
+            receiverNode = ((AssignmentNode) resourceCloseNode).getTarget();
+          }
+          // TODO do we need to insert some kind of node representing a use of receiverNode
+          // (which can be either a LocalVariableNode or a FieldAccessNode)?
+          MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
           closeAccessNode.setInSource(false);
           extendWithNode(closeAccessNode);
           MethodInvocationNode closeCallNode =

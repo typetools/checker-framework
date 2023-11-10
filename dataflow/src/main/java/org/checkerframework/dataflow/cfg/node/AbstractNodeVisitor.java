@@ -389,9 +389,4 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
   public R visitDeconstructorPattern(DeconstructorPatternNode n, P p) {
     return visitNode(n, p);
   }
-
-  @Override
-  public R visitResource(ResourceCloseNode n, P p) {
-    return visitNode(n, p);
-  }
 }

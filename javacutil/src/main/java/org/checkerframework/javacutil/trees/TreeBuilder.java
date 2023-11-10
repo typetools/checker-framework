@@ -126,6 +126,13 @@ public class TreeBuilder {
     return iteratorAccess;
   }
 
+  /**
+   * Build a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
+   * implements {@link AutoCloseable}
+   *
+   * @param autoCloseableExpr the expression
+   * @return the member select tree
+   */
   public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
     DeclaredType exprType =
         (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(autoCloseableExpr));
