@@ -75,4 +75,26 @@ class TryWithResourcesVariable {
     FinalResourceFieldWrapper finalResourceFieldWrapper = new FinalResourceFieldWrapper();
     try (finalResourceFieldWrapper.frField.socketField) {}
   }
+
+  @InheritableMustCall("disposer")
+  static class TwoFinalResourceFields {
+    final @Owning Socket socketField1;
+    final @Owning Socket socketField2;
+
+    TwoFinalResourceFields(@Owning Socket socket1, @Owning Socket socket2) {
+      socketField1 = socket1;
+      socketField2 = socket2;
+    }
+
+    @EnsuresCalledMethods(value = "this.socketField1", methods = "close")
+    @EnsuresCalledMethods(value = "this.socketField2", methods = "close")
+    void disposer() {
+      try (socketField1;
+          socketField2) {
+
+      } catch (Exception e) {
+
+      }
+    }
+  }
 }
