@@ -3617,6 +3617,85 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * TODO better docs; recursive helper function for visitTry
+   *
+   * @param tryTree the try tree
+   * @param p void value
+   * @param resources resource declarations to handle
+   */
+  private void visitTryBodyHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
+    if (resources.isEmpty()) {
+      // Base case.  Just scan the main try block.
+      scan(tryTree.getBlock(), p);
+      return;
+    }
+
+    Tree resourceDeclarationTree = resources.get(0);
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    // Store return/break/continue labels, as we will have a finally block for closing the resource.
+    LabelCell oldReturnTargetLC = returnTargetLC;
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    Map<Name, Label> oldBreakLabels = breakLabels;
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    Map<Name, Label> oldContinueLabels = continueLabels;
+
+    Label doneLabel = new Label();
+
+    Node node = scan(resourceDeclarationTree, p);
+    if (node instanceof AssignmentNode) {
+      // variable declaration, just use the LHS
+      node = ((AssignmentNode) node).getTarget();
+    }
+    ResourceCloseNode resourceCloseNode = new ResourceCloseNode(node, resourceDeclarationTree);
+
+    Label finallyLabel = new Label();
+
+    Label exceptionalFinallyLabel = new Label();
+    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+    returnTargetLC = new LabelCell();
+
+    breakTargetLC = new LabelCell();
+    breakLabels = new TryFinallyScopeMap();
+
+    continueTargetLC = new LabelCell();
+    continueLabels = new TryFinallyScopeMap();
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+    visitTryBodyHelper(tryTree, p, resources.subList(1, resources.size()));
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "end of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
+
+    handleFinally(
+        resourceDeclarationTree,
+        finallyLabel,
+        () -> extendWithNode(resourceCloseNode),
+        doneLabel,
+        exceptionalFinallyLabel,
+        oldReturnTargetLC,
+        oldBreakTargetLC,
+        oldBreakLabels,
+        oldContinueTargetLC,
+        oldContinueLabels);
+    addLabelForNextNode(doneLabel);
+  }
+
+  /**
    * Handle a finally block. TODO improve docs
    *
    * @param tree the tree
@@ -3801,85 +3880,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       continueLabels = oldContinueLabels;
     }
-  }
-
-  /**
-   * TODO better docs; recursive helper function for visitTry
-   *
-   * @param tryTree the try tree
-   * @param p void value
-   * @param resources resource declarations to handle
-   */
-  private void visitTryBodyHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
-    if (resources.isEmpty()) {
-      // Base case.  Just scan the main try block.
-      scan(tryTree.getBlock(), p);
-      return;
-    }
-
-    Tree resourceDeclarationTree = resources.get(0);
-
-    extendWithNode(
-        new MarkerNode(
-            resourceDeclarationTree,
-            "start of try for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
-            env.getTypeUtils()));
-
-    // Store return/break/continue labels, as we will have a finally block for closing the resource.
-    LabelCell oldReturnTargetLC = returnTargetLC;
-    LabelCell oldBreakTargetLC = breakTargetLC;
-    Map<Name, Label> oldBreakLabels = breakLabels;
-    LabelCell oldContinueTargetLC = continueTargetLC;
-    Map<Name, Label> oldContinueLabels = continueLabels;
-
-    Label doneLabel = new Label();
-
-    Node node = scan(resourceDeclarationTree, p);
-    if (node instanceof AssignmentNode) {
-      // variable declaration, just use the LHS
-      node = ((AssignmentNode) node).getTarget();
-    }
-    ResourceCloseNode resourceCloseNode = new ResourceCloseNode(node, resourceDeclarationTree);
-
-    Label finallyLabel = new Label();
-
-    Label exceptionalFinallyLabel = new Label();
-    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
-
-    returnTargetLC = new LabelCell();
-
-    breakTargetLC = new LabelCell();
-    breakLabels = new TryFinallyScopeMap();
-
-    continueTargetLC = new LabelCell();
-    continueLabels = new TryFinallyScopeMap();
-
-    extendWithNode(
-        new MarkerNode(
-            resourceDeclarationTree,
-            "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
-            env.getTypeUtils()));
-    visitTryBodyHelper(tryTree, p, resources.subList(1, resources.size()));
-    extendWithNode(
-        new MarkerNode(
-            resourceDeclarationTree,
-            "end of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
-            env.getTypeUtils()));
-
-    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
-
-    handleFinally(
-        resourceDeclarationTree,
-        finallyLabel,
-        () -> extendWithNode(resourceCloseNode),
-        doneLabel,
-        exceptionalFinallyLabel,
-        oldReturnTargetLC,
-        oldBreakTargetLC,
-        oldBreakLabels,
-        oldContinueTargetLC,
-        oldContinueLabels);
-    addLabelForNextNode(doneLabel);
   }
 
   /**
