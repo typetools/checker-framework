@@ -3527,35 +3527,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitTry(TryTree tree, Void p) {
-    List<? extends Tree> resources = tree.getResources();
-
-    return visitTryHelper(tree, p, resources, true);
-  }
-
-  /**
-   * TODO better docs; recursive helper function for visitTry
-   *
-   * @param tryTree the try tree
-   * @param p void value
-   * @param resources resoure declarations to handle
-   * @param topLevel whether this is a top level call
-   * @return {@code null}
-   */
-  private @Nullable Node visitTryHelper(
-      TryTree tryTree, Void p, List<? extends Tree> resources, boolean topLevel) {
-    Tree tree;
-    List<? extends CatchTree> catches;
-    BlockTree finallyBlock;
-    if (topLevel) {
-      tree = tryTree;
-      catches = tryTree.getCatches();
-      finallyBlock = tryTree.getFinallyBlock();
-    } else {
-      // handling a resource declaration
-      tree = resources.get(0);
-      catches = Collections.emptyList();
-      finallyBlock = null;
-    }
+    List<? extends CatchTree> catches = tree.getCatches();
+    BlockTree finallyBlock = tree.getFinallyBlock();
 
     extendWithNode(
         new MarkerNode(
@@ -3595,64 +3568,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     Label doneLabel = new Label();
 
-    if (topLevel) {
-      tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
-    }
-
-    // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
-    // blocks.
-    ResourceCloseNode resourceCloseNode;
-    if (!topLevel) {
-      // tree is the tree for the resource declaration
-      Node node = scan(tree, p);
-      if (node instanceof AssignmentNode) {
-        // variable declaration, just use the LHS
-        node = ((AssignmentNode) node).getTarget();
-      }
-      resourceCloseNode = new ResourceCloseNode(node, tree);
-
-      finallyLabel = new Label();
-
-      exceptionalFinallyLabel = new Label();
-      tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
-
-      returnTargetLC = new LabelCell();
-
-      breakTargetLC = new LabelCell();
-      breakLabels = new TryFinallyScopeMap();
-
-      continueTargetLC = new LabelCell();
-      continueLabels = new TryFinallyScopeMap();
-    } else {
-      resourceCloseNode = null;
-    }
+    tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
     extendWithNode(
         new MarkerNode(
             tree, "start of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-    if (!resources.isEmpty()) {
-      if (topLevel) {
-        visitTryHelper(tryTree, p, resources, false);
-      } else {
-        if (resources.size() == 1) {
-          scan(tryTree.getBlock(), p);
-        } else {
-          visitTryHelper(tryTree, p, resources.subList(1, resources.size()), false);
-        }
-      }
-    } else {
-      scan(((TryTree) tree).getBlock(), p);
-    }
+
+    visitTryBodyHelper(tree, p, tree.getResources());
+
     extendWithNode(
         new MarkerNode(
             tree, "end of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
     extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
-    if (topLevel) {
-      // this is for the catch frame
-      tryStack.popFrame();
-    }
+    // this is for the catch frame
+    tryStack.popFrame();
 
     int catchIndex = 0;
     for (CatchTree c : catches) {
@@ -3667,167 +3598,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     if (finallyLabel != null) {
-      // Reset values before analyzing the finally block!
-
-      tryStack.popFrame();
-
-      { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
-        addLabelForNextNode(finallyLabel);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-        extendWithNode(
-            new MarkerNode(
-                tree, "end of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(doneLabel));
-      }
-
-      if (hasExceptionalPath(exceptionalFinallyLabel)) {
-        // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-        // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-        // is no successful path, it will be removed in later phase.
-        // TODO: Don't we need a separate finally block for each kind of exception?
-        addLabelForNextNode(exceptionalFinallyLabel);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-
-        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-
-        NodeWithExceptionsHolder throwing =
-            extendWithNodeWithException(
-                new MarkerNode(
-                    tree,
-                    "end of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
-                    env.getTypeUtils()),
-                throwableType);
-
-        throwing.setTerminatesExecution(true);
-      }
-
-      if (returnTargetLC.wasAccessed()) {
-        addLabelForNextNode(returnTargetLC.peekLabel());
-        returnTargetLC = oldReturnTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for return #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for return #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
-      } else {
-        returnTargetLC = oldReturnTargetLC;
-      }
-
-      if (breakTargetLC.wasAccessed()) {
-        addLabelForNextNode(breakTargetLC.peekLabel());
-        breakTargetLC = oldBreakTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for break #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for break #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
-      } else {
-        breakTargetLC = oldBreakTargetLC;
-      }
-
-      Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
-      if (!accessedBreakLabels.isEmpty()) {
-        breakLabels = oldBreakLabels;
-
-        for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
-          addLabelForNextNode(access.getValue());
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "start of finally block for break label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "end of finally block for break label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
-        }
-      } else {
-        breakLabels = oldBreakLabels;
-      }
-
-      if (continueTargetLC.wasAccessed()) {
-        addLabelForNextNode(continueTargetLC.peekLabel());
-        continueTargetLC = oldContinueTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for continue #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for continue #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
-      } else {
-        continueTargetLC = oldContinueTargetLC;
-      }
-
-      Map<Name, Label> accessedContinueLabels =
-          ((TryFinallyScopeMap) continueLabels).getAccessedNames();
-      if (!accessedContinueLabels.isEmpty()) {
-        continueLabels = oldContinueLabels;
-
-        for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
-          addLabelForNextNode(access.getValue());
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "start of finally block for continue label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          addFinallyBlockNodes(finallyBlock, resourceCloseNode, p);
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "end of finally block for continue label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
-        }
-      } else {
-        continueLabels = oldContinueLabels;
-      }
+      handleFinally(
+          tree,
+          finallyLabel,
+          () -> scan(finallyBlock, p),
+          doneLabel,
+          exceptionalFinallyLabel,
+          oldReturnTargetLC,
+          oldBreakTargetLC,
+          oldBreakLabels,
+          oldContinueTargetLC,
+          oldContinueLabels);
     }
 
     addLabelForNextNode(doneLabel);
@@ -3836,22 +3617,269 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * TODO better docs add nodes for a finally or resource block
+   * Handle a finally block. TODO improve docs
    *
-   * @param finallyBlock finally block
-   * @param resourceCloseNode resource close node
-   * @param p void value
+   * @param tree the tree
+   * @param finallyLabel label for the finally block
+   * @param finallyBlockCFGGenerator Runnable that generates CFG nodes and edges for the finally
+   *     block
+   * @param doneLabel label for done
+   * @param exceptionalFinallyLabel label for exception
+   * @param oldReturnTargetLC old return target label cell
+   * @param oldBreakTargetLC old break target label cell
+   * @param oldBreakLabels old break labels
+   * @param oldContinueTargetLC old continue target label cell
+   * @param oldContinueLabels old continue labels
    */
-  private void addFinallyBlockNodes(
-      @Nullable BlockTree finallyBlock, @Nullable ResourceCloseNode resourceCloseNode, Void p) {
-    if (finallyBlock != null) {
-      assert resourceCloseNode == null;
-      scan(finallyBlock, p);
+  private void handleFinally(
+      Tree tree,
+      Label finallyLabel,
+      Runnable finallyBlockCFGGenerator,
+      Label doneLabel,
+      Label exceptionalFinallyLabel,
+      LabelCell oldReturnTargetLC,
+      LabelCell oldBreakTargetLC,
+      Map<Name, Label> oldBreakLabels,
+      LabelCell oldContinueTargetLC,
+      Map<Name, Label> oldContinueLabels) {
+    // Reset values before analyzing the finally block!
+
+    tryStack.popFrame();
+
+    { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+      addLabelForNextNode(finallyLabel);
+      extendWithNode(
+          new MarkerNode(
+              tree, "start of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              tree, "end of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(doneLabel));
     }
-    if (resourceCloseNode != null) {
-      assert finallyBlock == null;
-      extendWithNode(resourceCloseNode);
+
+    if (hasExceptionalPath(exceptionalFinallyLabel)) {
+      // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+      // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+      // is no successful path, it will be removed in later phase.
+      // TODO: Don't we need a separate finally block for each kind of exception?
+      addLabelForNextNode(exceptionalFinallyLabel);
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "start of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+
+      finallyBlockCFGGenerator.run();
+
+      NodeWithExceptionsHolder throwing =
+          extendWithNodeWithException(
+              new MarkerNode(
+                  tree,
+                  "end of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
+                  env.getTypeUtils()),
+              throwableType);
+
+      throwing.setTerminatesExecution(true);
     }
+
+    if (returnTargetLC.wasAccessed()) {
+      addLabelForNextNode(returnTargetLC.peekLabel());
+      returnTargetLC = oldReturnTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "start of finally block for return #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "end of finally block for return #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
+    } else {
+      returnTargetLC = oldReturnTargetLC;
+    }
+
+    if (breakTargetLC.wasAccessed()) {
+      addLabelForNextNode(breakTargetLC.peekLabel());
+      breakTargetLC = oldBreakTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "start of finally block for break #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "end of finally block for break #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+    } else {
+      breakTargetLC = oldBreakTargetLC;
+    }
+
+    Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
+    if (!accessedBreakLabels.isEmpty()) {
+      breakLabels = oldBreakLabels;
+
+      for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
+        addLabelForNextNode(access.getValue());
+        extendWithNode(
+            new MarkerNode(
+                tree,
+                "start of finally block for break label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(tree),
+                env.getTypeUtils()));
+        finallyBlockCFGGenerator.run();
+        extendWithNode(
+            new MarkerNode(
+                tree,
+                "end of finally block for break label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(tree),
+                env.getTypeUtils()));
+        extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
+      }
+    } else {
+      breakLabels = oldBreakLabels;
+    }
+
+    if (continueTargetLC.wasAccessed()) {
+      addLabelForNextNode(continueTargetLC.peekLabel());
+      continueTargetLC = oldContinueTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "start of finally block for continue #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              tree,
+              "end of finally block for continue #" + TreeUtils.treeUids.get(tree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
+    } else {
+      continueTargetLC = oldContinueTargetLC;
+    }
+
+    Map<Name, Label> accessedContinueLabels =
+        ((TryFinallyScopeMap) continueLabels).getAccessedNames();
+    if (!accessedContinueLabels.isEmpty()) {
+      continueLabels = oldContinueLabels;
+
+      for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
+        addLabelForNextNode(access.getValue());
+        extendWithNode(
+            new MarkerNode(
+                tree,
+                "start of finally block for continue label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(tree),
+                env.getTypeUtils()));
+        finallyBlockCFGGenerator.run();
+        extendWithNode(
+            new MarkerNode(
+                tree,
+                "end of finally block for continue label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(tree),
+                env.getTypeUtils()));
+        extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
+      }
+    } else {
+      continueLabels = oldContinueLabels;
+    }
+  }
+
+  /**
+   * TODO better docs; recursive helper function for visitTry
+   *
+   * @param tryTree the try tree
+   * @param p void value
+   * @param resources resource declarations to handle
+   */
+  private void visitTryBodyHelper(TryTree tryTree, Void p, List<? extends Tree> resources) {
+    if (resources.isEmpty()) {
+      // Base case.  Just scan the main try block.
+      scan(tryTree.getBlock(), p);
+      return;
+    }
+
+    Tree resourceDeclarationTree = resources.get(0);
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    // Store return/break/continue labels, as we will have a finally block for closing the resource.
+    LabelCell oldReturnTargetLC = returnTargetLC;
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    Map<Name, Label> oldBreakLabels = breakLabels;
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    Map<Name, Label> oldContinueLabels = continueLabels;
+
+    Label doneLabel = new Label();
+
+    Node node = scan(resourceDeclarationTree, p);
+    if (node instanceof AssignmentNode) {
+      // variable declaration, just use the LHS
+      node = ((AssignmentNode) node).getTarget();
+    }
+    ResourceCloseNode resourceCloseNode = new ResourceCloseNode(node, resourceDeclarationTree);
+
+    Label finallyLabel = new Label();
+
+    Label exceptionalFinallyLabel = new Label();
+    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+    returnTargetLC = new LabelCell();
+
+    breakTargetLC = new LabelCell();
+    breakLabels = new TryFinallyScopeMap();
+
+    continueTargetLC = new LabelCell();
+    continueLabels = new TryFinallyScopeMap();
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+    visitTryBodyHelper(tryTree, p, resources.subList(1, resources.size()));
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "end of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
+
+    handleFinally(
+        resourceDeclarationTree,
+        finallyLabel,
+        () -> extendWithNode(resourceCloseNode),
+        doneLabel,
+        exceptionalFinallyLabel,
+        oldReturnTargetLC,
+        oldBreakTargetLC,
+        oldBreakLabels,
+        oldContinueTargetLC,
+        oldContinueLabels);
+    addLabelForNextNode(doneLabel);
   }
 
   /**
