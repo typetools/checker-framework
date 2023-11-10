@@ -126,6 +126,30 @@ public class TreeBuilder {
     return iteratorAccess;
   }
 
+  public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
+    DeclaredType exprType =
+        (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(autoCloseableExpr));
+    assert exprType != null : "expression must be of declared type AutoCloseable";
+
+    TypeElement exprElement = (TypeElement) exprType.asElement();
+
+    // Find the close() method
+    Symbol.MethodSymbol closeMethod = null;
+
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
+      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("close")) {
+        closeMethod = (Symbol.MethodSymbol) method;
+      }
+    }
+
+    assert closeMethod != null
+        : "@AssumeAssertion(nullness): no close method declared for expression type";
+
+    JCTree.JCFieldAccess closeAccess = TreeUtils.Select(maker, autoCloseableExpr, closeMethod);
+
+    return closeAccess;
+  }
+
   /**
    * Builds an AST Tree to access the hasNext() method of an iterator.
    *

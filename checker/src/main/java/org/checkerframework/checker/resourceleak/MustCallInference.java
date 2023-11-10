@@ -218,10 +218,10 @@ public class MustCallInference {
           computeOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
           analyzeOwnershipTransferAtAssignment(obligations, (AssignmentNode) node);
-        } else if (node instanceof ResourceCloseNode) {
-          computeOwningForArgument(
-              obligations, node, ((ResourceCloseNode) node).getResourceDeclarationNode());
-        }
+        } /*else if (node instanceof ResourceCloseNode) {
+            computeOwningForArgument(
+                obligations, node, ((ResourceCloseNode) node).getResourceDeclarationNode());
+          }*/
       }
 
       addNonExceptionalSuccessorsToWorklist(obligations, current.block, visited, worklist);

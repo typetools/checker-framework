@@ -14,7 +14,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ResourceCloseNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -128,17 +127,17 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
     return result;
   }
 
-  @Override
-  public TransferResult<AccumulationValue, AccumulationStore> visitResource(
-      ResourceCloseNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> superResult =
-        super.visitResource(node, input);
-    Node receiver = node.getResourceDeclarationNode();
-    if (receiver != null) {
-      accumulate(receiver, superResult, "close");
-    }
-    return superResult;
-  }
+  //  @Override
+  //  public TransferResult<AccumulationValue, AccumulationStore> visitResource(
+  //      ResourceCloseNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+  //    TransferResult<AccumulationValue, AccumulationStore> superResult =
+  //        super.visitResource(node, input);
+  //    Node receiver = node.getResourceDeclarationNode();
+  //    if (receiver != null) {
+  //      accumulate(receiver, superResult, "close");
+  //    }
+  //    return superResult;
+  //  }
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to

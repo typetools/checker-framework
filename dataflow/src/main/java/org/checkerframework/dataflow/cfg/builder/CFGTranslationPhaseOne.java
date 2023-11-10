@@ -3681,10 +3681,36 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     extendWithExtendedNode(new UnconditionalJump(finallyLabel));
 
+    Runnable finallyBlockCFGGenerator =
+        () -> {
+          // extendWithNode(resourceCloseNode);
+          Tree receiverTree = resourceCloseNode.getTree();
+          if (receiverTree instanceof VariableTree) {
+            receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
+            handleArtificialTree(receiverTree);
+          }
+          // get the close method select
+          MemberSelectTree closeSelect =
+              treeBuilder.buildCloseMethodAccess((ExpressionTree) receiverTree);
+          handleArtificialTree(closeSelect);
+
+          MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
+          handleArtificialTree(closeCall);
+
+          MethodAccessNode closeAccessNode =
+              new MethodAccessNode(closeSelect, resourceCloseNode.getResourceDeclarationNode());
+          closeAccessNode.setInSource(false);
+          extendWithNode(closeAccessNode);
+          MethodInvocationNode closeCallNode =
+              new MethodInvocationNode(
+                  closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
+          closeCallNode.setInSource(false);
+          extendWithNode(closeCallNode);
+        };
     handleFinally(
         resourceDeclarationTree,
         finallyLabel,
-        () -> extendWithNode(resourceCloseNode),
+        finallyBlockCFGGenerator,
         doneLabel,
         exceptionalFinallyLabel,
         oldReturnTargetLC,
