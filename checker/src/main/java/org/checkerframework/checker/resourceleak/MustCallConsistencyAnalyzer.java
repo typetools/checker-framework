@@ -74,7 +74,6 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1247,22 +1246,6 @@ class MustCallConsistencyAnalyzer {
     }
     // We haven't seen two owning fields, so there must be 1 or 0.
     return true;
-  }
-
-  /**
-   * Returns true if must-call type of node only contains close. This is a helper method for
-   * handling try-with-resources statements.
-   *
-   * @param node the node
-   * @return true if must-call type of node only contains close
-   */
-  /*package-private*/ boolean isMustCallClose(Node node) {
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
-    return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
   /**
