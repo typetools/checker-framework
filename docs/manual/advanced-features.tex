@@ -1178,8 +1178,8 @@ of the \<if> statement.
 
 If your code contains an \<assert> statement, then your code could behave
 in two different ways at run time, depending on whether assertions are
-enabled or disabled
-via the \<-ea> or \<-da> command-line options to java.
+enabled or disabled via the \<-ea>, \<-enableassertions>, \<-da>, or
+<-disableassertions> command-line options to \<java>.
 
 By default, the Checker Framework outputs warnings about any error that
 could happen at run time, whether assertions are enabled or disabled.
@@ -1623,7 +1623,7 @@ class @Marsupial-Animal {
 % TO DO:  give an example where @Dependent is actually needed
 
 
-% LocalWords:  MyClass qual DefaultQualifier subpackages lang
+% LocalWords:  MyClass qual DefaultQualifier subpackages lang de package1
 % LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
@@ -1632,7 +1632,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation
+% LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation package2
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
@@ -1645,5 +1645,7 @@ class @Marsupial-Animal {
 % LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
-% LocalWords:  Signedness MonotonicNonNull UpperBoundFor
-% LocalWords:  getTypeDeclarationBounds identityHashCode
+% LocalWords:  Signedness MonotonicNonNull UpperBoundFor enableassertions
+% LocalWords:  getTypeDeclarationBounds identityHashCode disableassertions
+% LocalWords:  AinvocationPreservesArgumentNullness RequiresPresent
+% LocalWords:  EnsuresPresent EnsuresPresentIf
