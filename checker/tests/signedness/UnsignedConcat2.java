@@ -9,7 +9,6 @@ public class UnsignedConcat2<T extends @NonNull Object> {
   protected Set<T> set;
 
   @Override
-  @SuppressWarnings("signedness:unsigned.concat") // don't restrict instantiation just for toString
   public String toString() {
     switch (set.size()) {
       case 0:
