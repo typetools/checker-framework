@@ -1185,10 +1185,13 @@ By default, the Checker Framework outputs warnings about any error that
 could happen at run time, whether assertions are enabled or disabled.
 
 If you supply the \<-AassumeAssertionsAreEnabled> command-line option, then
-the Checker Framework assumes assertions are enabled.  If you supply the
+the Checker Framework assumes assertions (that is, Java \<assert>
+statements) are enabled, as if Java is run with the \<-ea> or
+\<-enableassertions> command-line argument.  If you supply the
 \<-AassumeAssertionsAreDisabled> command-line option, then the Checker
-Framework assumes assertions are disabled.  You may not supply both
-command-line options.  It is uncommon to supply either one.
+Framework assumes assertions are disabled, as if Java is run with the
+\<-da> or \<-disableassertions> command-line argument.  You may not supply
+both command-line options.  It is uncommon to supply either one.
 
 These command-line arguments have no effect on processing of \<assert>
 statements whose message contains the text \<@AssumeAssertion>; see
