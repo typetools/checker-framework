@@ -373,6 +373,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final boolean assumeSideEffectFree;
 
+  /**
+   * True if all methods should be assumed to be @Deterministic, for the purposes of
+   * org.checkerframework.dataflow analysis.
+   */
+  private final boolean assumeDeterministic;
+
   /** True if -AmergeStubsWithSource was provided on the command line. */
   private final boolean mergeStubsWithSource;
 
@@ -563,6 +569,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.checker = checker;
     this.assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+    this.assumeDeterministic =
+        checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure");
 
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
