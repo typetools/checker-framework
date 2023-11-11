@@ -1098,4 +1098,23 @@ public class ElementUtils {
   public static boolean isResourceVariable(@Nullable Element elt) {
     return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
   }
+
+  /**
+   * Returns true if the given element is a getter method. A getter method is an instance method
+   * whose name starts with "get[A-Z]" and has no formal parameters.
+   *
+   * @param methodElt a method
+   * @return true if the given element is a getter method
+   */
+  public static boolean isGetter(@Nullable ExecutableElement methodElt) {
+    if (methodElt == null) {
+      return false;
+    }
+    // Constructors and initializers don't have name starting "get[A-Z]".
+    String name = methodElt.getSimpleName().toString();
+    // I expect this code is more efficient than use of a regular expression.
+    boolean isGetterName =
+        name.startsWith("get") && name.length() > 3 && Character.isUpperCase(name.charAt(3));
+    return isGetterName && !isStatic(methodElt) && methodElt.getParameters().isEmpty();
+  }
 }

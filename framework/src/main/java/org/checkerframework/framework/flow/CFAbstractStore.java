@@ -39,6 +39,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 import org.plumelib.util.ToStringComparator;
@@ -110,6 +111,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
   private final boolean assumeSideEffectFree;
 
+  /** True if -AassumePureGetters was passed on the command line. */
+  private final boolean assumePureGetters;
+
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);
 
@@ -143,6 +147,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
+    assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -160,6 +165,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
     assumeSideEffectFree = other.assumeSideEffectFree;
+    assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -229,7 +235,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     // case 1: remove information if necessary
-    if (!(assumeSideEffectFree || atypeFactory.isSideEffectFree(method))) {
+    boolean hasSideEffect =
+        !(assumeSideEffectFree
+            || (assumePureGetters && ElementUtils.isGetter(method))
+            || atypeFactory.isSideEffectFree(method));
+    System.out.printf(
+        "CFAS.updateForMethodCall(%s, %s, %s): hasSideEffect=%s%n",
+        methodInvocationNode, atypeFactory.getClass().getSimpleName(), val, hasSideEffect);
+    System.out.printf(" %s%n", this);
+    if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases =
           ((GenericAnnotatedTypeFactory) atypeFactory).sideEffectsUnrefineAliases;
@@ -305,9 +319,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
     }
 
+    System.out.printf(" %s%n", this);
+
     // store information about method call if possible
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
+    System.out.printf("about to replaceValue(%s, %s)%n", methodCall, val);
     replaceValue(methodCall, val);
+
+    System.out.printf(" %s%n", this);
+    System.out.printf("exited updateForMethodCall%n");
   }
 
   /**
@@ -460,9 +480,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * {@code nondet()} is 3, because it might not be 3 the next time {@code nondet()} is executed.
    *
    * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
-   * might have a postcondition that{@code nondet()} is odd. This means that the next call to{@code
-   * nondet()} will return odd. Such a postcondition may be evicted from the store by calling a
-   * side-effecting method.
+   * might have a postcondition that {@code nondet()} is odd. This means that the next call to
+   * {@code nondet()} will return odd. Such a postcondition may be evicted from the store by calling
+   * a side-effecting method.
    *
    * @param expr the expression to insert in the store
    * @param value the value of the expression
@@ -545,6 +565,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       BinaryOperator<V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
+      System.out.printf("shouldInsert(%s, %s, %s) => false%n", expr, value, permitNondeterministic);
       return;
     }
 
@@ -671,8 +692,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    */
   public void replaceValue(JavaExpression expr, @Nullable V value) {
+    System.out.printf("entered replaceValue(%s, %s)%n", expr, value);
+    System.out.printf(" %s%n", this);
     clearValue(expr);
+    System.out.printf(" %s%n", this);
     insertValue(expr, value);
+    System.out.printf(" %s%n", this);
+    System.out.printf("exited replaceValue(%s, %s)%n", expr, value);
   }
 
   /**

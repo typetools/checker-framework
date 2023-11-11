@@ -44,4 +44,16 @@ public interface AnnotationProvider {
    * @return true if a call to the method does not undo flow-sensitive type refinement
    */
   boolean isSideEffectFree(ExecutableElement methodElement);
+
+  /**
+   * Returns true if the given method is deterministic according to this AnnotationProvider &mdash;
+   * that is, if multiple calls to the given method (with the same arguments) return the same value.
+   *
+   * <p>Note that this method takes account of this AnnotationProvider's semantics, whereas {@code
+   * org.checkerframework.dataflow.util.PurityUtils#isDeterministic} does not.
+   *
+   * @param methodElement a method
+   * @return true if multiple calls to the method (with the same arguments) return the same value
+   */
+  boolean isDeterministic(ExecutableElement methodElement);
 }
