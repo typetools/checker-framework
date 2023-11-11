@@ -22,6 +22,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
+  /** Do not instantiate. */
+  private PurityUtils() {
+    throw new Error("Do not instantiate PurityUtils.");
+  }
+
   /** Represents a method that is both deterministic and side-effect free. */
   private static final EnumSet<Pure.Kind> detAndSeFree =
       EnumSet.of(Pure.Kind.DETERMINISTIC, Pure.Kind.SIDE_EFFECT_FREE);
