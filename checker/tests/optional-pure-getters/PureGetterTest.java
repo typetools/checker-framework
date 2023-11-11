@@ -39,6 +39,7 @@ class PureGetterTest {
     }
     if (getOptional().isPresent()) {
       sideEffect();
+      // :: error: method.invocation
       getOptional().get();
     }
     if (getOptional().isPresent()) {
@@ -47,11 +48,12 @@ class PureGetterTest {
     }
     if (getOptional().isPresent()) {
       otherOptional();
+      // :: error: method.invocation
       getOptional().get();
     }
 
     if (otherOptional().isPresent()) {
-      // :: error: method.invocation
+      // BUG: https://github.com/typetools/checker-framework/issues/6291 error: method.invocation
       otherOptional().get();
     }
     if (otherOptional().isPresent()) {
@@ -61,7 +63,7 @@ class PureGetterTest {
     }
     if (otherOptional().isPresent()) {
       getOptional();
-      // :: error: method.invocation
+      // BUG: https://github.com/typetools/checker-framework/issues/6291 error: method.invocation
       otherOptional().get();
     }
     if (otherOptional().isPresent()) {
@@ -69,9 +71,5 @@ class PureGetterTest {
       // :: error: method.invocation
       otherOptional().get();
     }
-  }
-
-  void bar(Optional<String> os) {
-    os.get();
   }
 }

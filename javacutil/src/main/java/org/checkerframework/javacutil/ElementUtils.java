@@ -1113,11 +1113,8 @@ public class ElementUtils {
     // Constructors and initializers don't have name starting "get[A-Z]".
     String name = methodElt.getSimpleName().toString();
     // I expect this code is more efficient than use of a regular expression.
-    boolean getterName =
+    boolean isGetterName =
         name.startsWith("get") && name.length() > 3 && Character.isUpperCase(name.charAt(3));
-    return getterName
-        // Ensure it is an instance method.
-        && methodElt.getReceiverType().getKind() != TypeKind.NONE
-        && methodElt.getParameters().isEmpty();
+    return isGetterName && !isStatic(methodElt) && methodElt.getParameters().isEmpty();
   }
 }
