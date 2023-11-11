@@ -383,7 +383,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * True if all getter methods should be assumed to be @SideEffectFree, for the purposes of
    * org.checkerframework.dataflow analysis.
    */
-  private final boolean assumeSideEffectFreeGetters;
+  private final boolean assumePureGetters;
 
   /** True if -AmergeStubsWithSource was provided on the command line. */
   private final boolean mergeStubsWithSource;
@@ -577,7 +577,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
     this.assumeDeterministic =
         checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure");
-    this.assumeSideEffectFreeGetters = checker.hasOption("assumePureGetters");
+    this.assumePureGetters = checker.hasOption("assumePureGetters");
 
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
@@ -5807,8 +5807,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   @Override
   public boolean isSideEffectFree(ExecutableElement methodElement) {
-    if (assumeSideEffectFree
-        || (assumeSideEffectFreeGetters && ElementUtils.isGetter(methodElement))) {
+    if (assumeSideEffectFree || (assumePureGetters && ElementUtils.isGetter(methodElement))) {
       return true;
     }
     if (ElementUtils.isRecordAccessor(methodElement)
@@ -5827,7 +5826,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   @Override
   public boolean isDeterministic(ExecutableElement methodElement) {
-    if (assumeDeterministic) {
+    if (assumeDeterministic || (assumePureGetters && ElementUtils.isGetter(methodElement))) {
       return true;
     }
     if (ElementUtils.isRecordAccessor(methodElement)

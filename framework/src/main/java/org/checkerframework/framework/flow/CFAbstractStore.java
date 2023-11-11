@@ -112,7 +112,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   private final boolean assumeSideEffectFree;
 
   /** True if -AassumePureGetters was passed on the command line. */
-  private final boolean assumeSideEffectFreeGetters;
+  private final boolean assumePureGetters;
 
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);
@@ -147,7 +147,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
-    assumeSideEffectFreeGetters = analysis.checker.hasOption("assumePureGetters");
+    assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -165,7 +165,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
     assumeSideEffectFree = other.assumeSideEffectFree;
-    assumeSideEffectFreeGetters = other.assumeSideEffectFreeGetters;
+    assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -237,7 +237,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // case 1: remove information if necessary
     boolean hasSideEffect =
         !(assumeSideEffectFree
-            || (assumeSideEffectFreeGetters && ElementUtils.isGetter(method))
+            || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
     System.out.printf(
         "CFAS.updateForMethodCall(%s, %s, %s): hasSideEffect=%s%n",
