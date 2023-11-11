@@ -125,6 +125,8 @@ import org.plumelib.util.UtilPlume;
   "assumeSideEffectFree",
   "assumeDeterministic",
   "assumePure",
+  // Unsoundly assume getter methods have no side effects and are deterministic.
+  "assumePureGetters",
 
   // Whether to assume that assertions are enabled or disabled
   // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder

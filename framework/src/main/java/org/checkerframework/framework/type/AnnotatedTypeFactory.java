@@ -373,6 +373,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private final boolean assumeSideEffectFree;
 
+  /**
+   * True if all getter methods should be assumed to be @SideEffectFree, for the purposes of
+   * org.checkerframework.dataflow analysis.
+   */
+  private final boolean assumeSideEffectFreeGetters;
+
   /** True if -AmergeStubsWithSource was provided on the command line. */
   private final boolean mergeStubsWithSource;
 
@@ -563,6 +569,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     this.checker = checker;
     this.assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+    this.assumeSideEffectFreeGetters = checker.hasOption("assumePureGetters");
 
     this.trees = Trees.instance(processingEnv);
     this.elements = processingEnv.getElementUtils();
@@ -5792,7 +5799,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   @Override
   public boolean isSideEffectFree(ExecutableElement methodElement) {
-    if (assumeSideEffectFree) {
+    if (assumeSideEffectFree
+        || (assumeSideEffectFreeGetters && ElementUtils.isGetter(methodElement))) {
       return true;
     }
     if (ElementUtils.isRecordAccessor(methodElement)
