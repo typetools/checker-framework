@@ -5,6 +5,8 @@ Version 3.40.1 (December 1, 2023)
 
 **Implementation details:**
 
+Added method `isDeterministic()` to the `AnnotationProvider` interface.
+
 **Closed issues:**
 
 
