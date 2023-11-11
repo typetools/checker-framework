@@ -44,6 +44,7 @@ class PureGetterTest {
     }
     if (getOptional().isPresent()) {
       getOptional();
+      // :: error: method.invocation
       getOptional().get();
     }
     if (getOptional().isPresent()) {

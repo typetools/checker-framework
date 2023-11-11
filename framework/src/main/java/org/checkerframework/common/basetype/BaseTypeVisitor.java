@@ -262,7 +262,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private final boolean assumeDeterministic;
 
   /** True if "-AassumePureGetters" was passed on the command line. */
-  private final boolean assumePureGetters;
+  public final boolean assumePureGetters;
 
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;

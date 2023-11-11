@@ -386,7 +386,9 @@ public class NullnessTransfer
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = TreeUtils.elementFromUse(tree);
 
-    boolean isMethodSideEffectFree = PurityUtils.isSideEffectFree(atypeFactory, method);
+    boolean isMethodSideEffectFree =
+        atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
+    System.out.printf("isMethodSideEffectFree(%s) = %s%n", method, isMethodSideEffectFree);
     Node receiver = n.getTarget().getReceiver();
     if (nonNullAssumptionAfterInvocation
         || isMethodSideEffectFree

@@ -73,6 +73,14 @@ public class PurityUtils {
    */
   public static boolean isDeterministic(
       AnnotationProvider provider, ExecutableElement methodElement) {
+    if (provider instanceof BaseTypeVisitor) {
+      BaseTypeVisitor<?, ?, ?, ?> typeVisitor = (BaseTypeVisitor<?, ?, ?, ?>) provider;
+      // TODO: Maybe add a method in BaseTypeVisitor that this code can call.
+      if (typeVisitor.assumePureGetters && ElementUtils.isGetter(methodElement)) {
+        return true;
+      }
+    }
+
     EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Pure.Kind.DETERMINISTIC);
   }
