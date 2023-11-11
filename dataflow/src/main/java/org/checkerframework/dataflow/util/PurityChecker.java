@@ -304,7 +304,10 @@ public class PurityChecker {
       boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
 
       ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
-      boolean deterministic = assumeDeterministic || okThrowDeterministic;
+      boolean deterministic =
+          assumeDeterministic
+              || okThrowDeterministic
+              || PurityUtils.isDeterministic(annoProvider, ctorElement);
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
       // This does not use "addNotBothReason" because the reasons are different:  one is

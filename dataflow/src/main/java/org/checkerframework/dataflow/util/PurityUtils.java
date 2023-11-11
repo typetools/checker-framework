@@ -22,6 +22,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class PurityUtils {
 
+  /** Do not instantiate. */
+  private PurityUtils() {
+    throw new Error("Do not instantiate PurityUtils.");
+  }
+
   /** Represents a method that is both deterministic and side-effect free. */
   private static final EnumSet<Pure.Kind> detAndSeFree =
       EnumSet.of(Pure.Kind.DETERMINISTIC, Pure.Kind.SIDE_EFFECT_FREE);
@@ -73,14 +78,6 @@ public class PurityUtils {
    */
   public static boolean isDeterministic(
       AnnotationProvider provider, ExecutableElement methodElement) {
-    if (provider instanceof BaseTypeVisitor) {
-      BaseTypeVisitor<?, ?, ?, ?> typeVisitor = (BaseTypeVisitor<?, ?, ?, ?>) provider;
-      // TODO: Maybe add a method in BaseTypeVisitor that this code can call.
-      if (typeVisitor.assumePureGetters && ElementUtils.isGetter(methodElement)) {
-        return true;
-      }
-    }
-
     EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
     return kinds.contains(Pure.Kind.DETERMINISTIC);
   }

@@ -8,6 +8,8 @@ New command-line options:
 
 **Implementation details:**
 
+Added method `isDeterministic()` to the `AnnotationProvider` interface.
+
 **Closed issues:**
 
 
