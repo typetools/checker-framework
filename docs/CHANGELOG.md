@@ -1,5 +1,69 @@
-Version 3.37.0 (July ?, 2023)
------------------------------
+Version 3.40.1 (December 1, 2023)
+---------------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+**Closed issues:**
+
+
+Version 3.40.0 (November 1, 2023)
+---------------------------------
+
+**User-visible changes:**
+
+Optional Checker:  `checker-util.jar` defines `OptionalUtil.castPresent()` for
+suppressing false positive warnings from the Optional Checker.
+
+**Closed issues:**
+
+#4947, #6179, #6215, #6218, #6222, #6247, #6259, #6260.
+
+
+Version 3.39.0 (October 2, 2023)
+--------------------------------
+
+**User-visible changes:**
+
+The Checker Framework runs on a version 21 JVM.
+It does not yet soundly check all new Java 21 language features, but it does not
+crash when compiling them.
+
+**Implementation details:**
+
+Dataflow supports all the new Java 21 language features.
+ * A new node,`DeconstructorPatternNode`, was added, so any implementation of
+   `NodeVisitor` must be updated.
+ * Method `InstanceOfNode.getBindingVariable()` is deprecated; use
+   `getPatternNode()` or `getBindingVariables()` instead.
+
+WPI uses 1-based indexing for formal parameters and arguments.
+
+**Closed issues:**
+
+#5911, #5967, #6155, #6173, #6201.
+
+
+Version 3.38.0 (September 1, 2023)
+----------------------------------
+
+**User-visible changes:**
+
+Eliminated the `@SignedPositiveFromUnsigned` annotation, which users were
+advised against using.
+
+**Implementation details:**
+
+Renamed `SourceChecker.processArg()' to `processErrorMessageArg()`.
+
+**Closed issues:**
+
+#2156, #5672, #6110, #6111, #6116, #6125, #6129, #6136.
+
+
+Version 3.37.0 (August 1, 2023)
+-------------------------------
 
 **User-visible changes:**
 
@@ -21,6 +85,8 @@ to be written on a non-integral type.
  * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 **Closed issues:**
+
+#6076, #6077, #6078, #6098, #6100, #6104, #6113.
 
 
 Version 3.36.0 (July 3, 2023)

@@ -22,7 +22,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -39,6 +38,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -215,10 +215,14 @@ public abstract class CFAbstractTransfer<
   }
 
   /** The fixed initial store. */
-  private @MonotonicNonNull S fixedInitialStore = null;
+  private @Nullable S fixedInitialStore = null;
 
-  /** Set a fixed initial Store. */
-  public void setFixedInitialStore(S s) {
+  /**
+   * Set a fixed initial Store.
+   *
+   * @param s initial store; possible null
+   */
+  public void setFixedInitialStore(@Nullable S s) {
     fixedInitialStore = s;
   }
 
@@ -284,15 +288,19 @@ public abstract class CFAbstractTransfer<
       }
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
-      // Create a copy and keep only the field values (nothing else applies).
-      store = analysis.createCopiedStore(fixedInitialStore);
-      // Allow that local variables are retained; they are effectively final,
-      // otherwise Java wouldn't allow access from within the lambda.
-      // TODO: what about the other information? Can code further down be simplified?
-      // store.localVariableValues.clear();
-      store.classValues.clear();
-      store.arrayValues.clear();
-      store.methodValues.clear();
+      if (fixedInitialStore != null) {
+        // Create a copy and keep only the field values (nothing else applies).
+        store = analysis.createCopiedStore(fixedInitialStore);
+        // Allow that local variables are retained; they are effectively final,
+        // otherwise Java wouldn't allow access from within the lambda.
+        // TODO: what about the other information? Can code further down be simplified?
+        // store.localVariableValues.clear();
+        store.classValues.clear();
+        store.arrayValues.clear();
+        store.methodValues.clear();
+      } else {
+        store = analysis.createEmptyStore(sequentialSemantics);
+      }
 
       for (LocalVariableNode p : parameters) {
         AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
@@ -962,11 +970,28 @@ public abstract class CFAbstractTransfer<
   }
 
   @Override
+  public TransferResult<V, S> visitDeconstructorPattern(
+      DeconstructorPatternNode n, TransferInput<V, S> in) {
+    // TODO: Implement getting the type of a DeconstructorPatternTree.
+    V value = null;
+    return createTransferResult(value, in);
+  }
+
+  @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
+    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+      JavaExpression expr = JavaExpression.fromNode(bindingVar);
+      AnnotatedTypeMirror expType =
+          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+        in.getRegularStore().insertOrRefine(expr, anno);
+      }
+    }
+
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = node.getTree().getType();
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+    if (refTypeTree != null && refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
@@ -980,15 +1005,6 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
       }
     }
-    // TODO: Should this be an else if?
-    if (node.getBindingVariable() != null) {
-      JavaExpression expr = JavaExpression.fromNode(node.getBindingVariable());
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
-      }
-    }
     return result;
   }
 
@@ -999,7 +1015,7 @@ public abstract class CFAbstractTransfer<
    * @param tree a tree
    * @return whether to perform whole-program inference on the tree
    */
-  private boolean shouldPerformWholeProgramInference(Tree tree) {
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
     TreePath path = this.analysis.atypeFactory.getPath(tree);
     return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
   }
@@ -1012,7 +1028,7 @@ public abstract class CFAbstractTransfer<
    * @param lhsTree the left-hand side of an assignment
    * @return whether to perform whole-program inference
    */
-  private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
     // before calling InternalUtils.symbol(lhs).
     if (!shouldPerformWholeProgramInference(expressionTree)) {

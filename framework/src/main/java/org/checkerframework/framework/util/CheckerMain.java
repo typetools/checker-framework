@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -503,7 +504,7 @@ public class CheckerMain {
   private String concatenatePaths(List<String> paths) {
     List<String> elements = new ArrayList<>();
     for (String path : paths) {
-      for (String element : path.split(File.pathSeparator)) {
+      for (String element : SystemUtil.pathSeparatorSplitter.split(path)) {
         elements.addAll(expandWildcards(element));
       }
     }
@@ -576,10 +577,12 @@ public class CheckerMain {
     if (outputFilename != null) {
       String errorMessage = null;
 
-      try (PrintWriter writer =
-          (outputFilename.equals("-")
-              ? new PrintWriter(System.out)
-              : new PrintWriter(outputFilename, "UTF-8"))) {
+      try {
+        @SuppressWarnings("builder:required.method.not.called") // don't want to close System.out
+        PrintWriter writer =
+            (outputFilename.equals("-")
+                ? new PrintWriter(System.out)
+                : new PrintWriter(outputFilename, "UTF-8"));
         for (int i = 0; i < args.size(); i++) {
           String arg = args.get(i);
 
@@ -604,6 +607,7 @@ public class CheckerMain {
             writer.print(arg);
             writer.print(" ");
           }
+          writer.flush();
         }
       } catch (IOException e) {
         errorMessage = e.toString();
@@ -870,7 +874,8 @@ public class CheckerMain {
    * Note, a processor entry only gets replaced if it contains NO "." (i.e., it is not qualified by
    * a package name) and can be found under the package org.checkerframework.checker in checker.jar.
    *
-   * @param processorsString a comma-separated string identifying processors
+   * @param processorsString a comma-separated string identifying processors; often just one
+   *     processor
    * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match
    *     processorsString against
    * @param allowSubcheckers whether to match against fully qualified checker names ending with
@@ -882,15 +887,15 @@ public class CheckerMain {
       String processorsString,
       List<@FullyQualifiedName String> fullyQualifiedCheckerNames,
       boolean allowSubcheckers) {
-    String[] processors = processorsString.split(",");
-    for (int i = 0; i < processors.length; i++) {
-      if (!processors[i].contains(".")) { // Not already fully qualified
-        processors[i] =
-            unshorthandProcessorName(processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
+    StringJoiner result = new StringJoiner(",");
+    for (String processor : SystemUtil.commaSplitter.split(processorsString)) {
+      if (!processor.contains(".")) { // Not already fully qualified
+        processor =
+            unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers);
       }
+      result.add(processor);
     }
-
-    return String.join(",", processors);
+    return result.toString();
   }
 
   /**

@@ -60,6 +60,7 @@ The process takes around 2 hours (including manual steps) when all goes accordin
     <ul>
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration tests</a></li>
+      <li><a href="#maven_local">Deploy to local Maven repository</a></li>
       <li><a href="#snapshot_release">Snapshot release</a></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
@@ -239,8 +240,32 @@ TreeAnnotator
     <li>Daikon: <a href="https://dev.azure.com/mernstdaikon/daikon/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/mernstdaikon/daikon/_apis/build/status%2Fcodespecs.daikon?branchName=master" alt="codespecs/daikon Azure Pipelines status"></a></li>
   </ul>
 
+  <h2 id="maven_local">Deploy to local Maven repository</h2>
+  <p>
+    To deploy to a <b>local</b> Maven repository, run <code>./gradlew
+    PublishToMavenLocal</code> in <code>checker-framework</code>.
+  </p>
+
+  <p>
+    Then, update your project's buildfile.  For Maven,
+    just <a href="https://checkerframework.org/manual/#maven-locally-built">update
+    the Checker Framework version number</a>.  For Gradle,
+    also <a href="https://github.com/kelloggm/checkerframework-gradle-plugin#specifying-a-checker-framework-version">add <code>repositories
+    { mavenLocal() }</code></a>.
+  </p>
+
+  <p>
+    Often, the version number in <code>checker-framework/build.gradle</code>
+    (in <code>allprojects { version ... }</code>) will end
+    in <code>-SNAPSHOT</code>, but this is not a requirement.  Regardless of the
+    version number, beware that you may get different results than on other
+    computers that have not deployed the same commit of the Checker Framework to
+    their local Maven repository.
+  </p>
+
+
   <h2 id="snapshot_release">Snapshot release</h2>
-  <p>This section explains how to release the Maven artifacts to the Maven Central snapshot repository.</p>
+  <p>To release the Maven artifacts to the Maven Central <b>snapshot</b> repository:</p>
   <ol>
     <li>
       Ensure that <code>~/.gradle/gradle.properties</code> includes your <code>SONATYPE_NEXUS_USERNAME</code>
@@ -380,7 +405,7 @@ git config --global user.email you@example.com</pre>
         <td></td>
         <td colspan="2">build</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
+          annotation-tools, checker-framework, plume-bib, plume-scripts<br/>
           These repositories are used to build the Checker Framework and its dependencies.
         </td>
       </tr>
@@ -388,12 +413,12 @@ git config --global user.email you@example.com</pre>
         <td></td>
         <td colspan="2">interm</td>
         <td>Contains repositories for:
-          annotation-tools, checker-framework, plume-bib, plume-scripts, stubparser<br/>
+          annotation-tools, checker-framework, plume-bib, plume-scripts<br/>
           The repositories in build are clones of repositories in interm.  The repositories
           in interm are clones of the GitHub repositories.  This is so that
           we can test and push the release to the interm repositories then check the
           release before we have made any irreversible changes.  Then, when the release
-          is validated, all we do is run &quot;git push&quot; or &quot;hg push&quot; on all of the repos in interm.
+          is validated, all we do is run &quot;git push&quot; on all of the repos in interm.
         </td>
       </tr>
       <tr>
@@ -712,7 +737,7 @@ git config --global user.email you@example.com</pre>
 
 <!--  LocalWords:  serif px pre CCC JDK AFS PAG mkdir cd svn co EFEFEF ul li Changelog stubparser JavaParser GenericAnnotatedTypeFactory CFTransfer CFAbstractTransfer CFAbstractAnalysis CFAnalysis CFAbstractStore CFStore CFAbstractValue CFValue BaseTypeVisitor BaseTypeChecker SourceChecker MultigraphQualifierHierarchy AbstractQualifierPolymorphism AnnotationUtils TreeAnnotator TODO typetools
  -->
-<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff hg buildfile kelloggm checkerframework gradle
+<!--  LocalWords:  xml ver dev yyyyMMDD URL url diff buildfile kelloggm checkerframework gradle
  -->
 <!--  LocalWords:  HandlerUtil macOS typecheck www Sonatype typetests html5validator config interm
  -->

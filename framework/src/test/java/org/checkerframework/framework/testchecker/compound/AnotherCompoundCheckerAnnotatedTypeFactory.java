@@ -18,6 +18,11 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 public class AnotherCompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  /**
+   * Creates a new AnotherCompoundCheckerAnnotatedTypeFactory.
+   *
+   * @param checker the checker
+   */
   public AnotherCompoundCheckerAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

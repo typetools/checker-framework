@@ -12,9 +12,8 @@ public class Exceptions {
 
   void exception(@Nullable Exception m) {
     try {
-
+      throwException();
     } catch (Exception e) {
-      // Note that this code is dead.
       e.getClass();
       // :: error: (dereference.of.nullable)
       m.getClass(); // should emit error
@@ -38,8 +37,8 @@ public class Exceptions {
 
   void reassignException() {
     try {
+      throwException();
     } catch (RuntimeException e) {
-      // Note that this code is dead.
       // :: error: (assignment)
       e = null;
       throw e;

@@ -63,6 +63,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The visitor for the nullness type-system. */
@@ -252,6 +253,9 @@ public class NullnessVisitor
   /** Case 1: Check for null dereferencing. */
   @Override
   public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+    if (atypeFactory.isUnreachable(tree)) {
+      return super.visitMemberSelect(tree, p);
+    }
     Element e = TreeUtils.elementFromUse(tree);
     if (e.getKind() == ElementKind.CLASS) {
       if (atypeFactory.containsNullnessAnnotation(null, tree.getExpression())) {
@@ -419,14 +423,16 @@ public class NullnessVisitor
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-      List<? extends AnnotationMirror> annotations =
-          TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
-      if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
-        checker.reportError(tree, "instanceof.nullable");
-      }
-      if (AnnotationUtils.containsSame(annotations, NONNULL)) {
-        checker.reportWarning(tree, "instanceof.nonnull.redundant");
+    if (refTypeTree != null) {
+      if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+        List<? extends AnnotationMirror> annotations =
+            TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
+        if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
+          checker.reportError(tree, "instanceof.nullable");
+        }
+        if (AnnotationUtils.containsSame(annotations, NONNULL)) {
+          checker.reportWarning(tree, "instanceof.nonnull.redundant");
+        }
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
@@ -711,8 +717,18 @@ public class NullnessVisitor
 
   @Override
   public Void visitSwitch(SwitchTree tree, Void p) {
-    checkForNullability(tree.getExpression(), SWITCHING_NULLABLE);
+    if (!TreeUtils.hasNullCaseLabel(tree)) {
+      checkForNullability(tree.getExpression(), SWITCHING_NULLABLE);
+    }
     return super.visitSwitch(tree, p);
+  }
+
+  @Override
+  public void visitSwitchExpression17(Tree switchExprTree) {
+    if (!TreeUtils.hasNullCaseLabel(switchExprTree)) {
+      checkForNullability(SwitchExpressionUtils.getExpression(switchExprTree), SWITCHING_NULLABLE);
+    }
+    super.visitSwitchExpression17(switchExprTree);
   }
 
   @Override

@@ -76,13 +76,6 @@ These are the qualifiers in the signedness type system:
     write \refqualclass{checker/signedness/qual}{Signed} or
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
-\item[\refqualclass{checker/signedness/qual}{SignedPositiveFromUnsigned}]
-    indicates that a value is in the non-negative signed range, as with
-    \refqualclass{checker/signedness/qual}{SignedPositive}.  Furthermore,
-    the value was derived from values that can be interpreted as
-    \refqualclass{checker/signedness/qual}{Unsigned}.  Programmers should
-    rarely write this annotation.
-
 \item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
     indicates that a value may be interpreted as unsigned or signed.  It
     covers the same cases as
@@ -351,6 +344,6 @@ $\Rightarrow$
 \end{figure}
 
 % LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
-% LocalWords:  SignedPositiveFromUnsigned SignednessGlb PolySigned qual
+% LocalWords:  SignednessGlb PolySigned qual
 % LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
 % LocalWords:  SignednessUtil SignednessUtilExtra

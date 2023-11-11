@@ -46,7 +46,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
     if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
       // If one of the types is the NULL type, compare main qualifiers only.
-      return arePrimeAnnosEqual(type1, type2);
+      return arePrimaryAnnosEqual(type1, type2);
     }
 
     if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
@@ -113,7 +113,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    * @param type2 a type
    * @return true if type1 and type2 have the same set of annotations
    */
-  protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+  protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (currentTop != null) {
       AnnotationMirror anno1 = type1.getPrimaryAnnotationInHierarchy(currentTop);
       AnnotationMirror anno2 = type2.getPrimaryAnnotationInHierarchy(currentTop);
@@ -187,7 +187,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    */
   @Override
   public Boolean visitArray_Array(AnnotatedArrayType type1, AnnotatedArrayType type2, Void p) {
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
 
@@ -213,7 +213,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     // TODO: same class/interface is not enforced. Why?
 
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
     // Prevent infinite recursion e.g. in Issue1587b
@@ -279,7 +279,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitIntersection_Intersection(
       AnnotatedIntersectionType type1, AnnotatedIntersectionType type2, Void p) {
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
 
@@ -298,7 +298,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitPrimitive_Primitive(
       AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, Void p) {
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
   }
 
   /**
@@ -384,7 +384,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
   }
 
   @Override
@@ -394,6 +394,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
   }
 }

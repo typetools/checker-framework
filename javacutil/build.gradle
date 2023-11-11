@@ -6,6 +6,10 @@ repositories {
   mavenCentral()
 }
 
+configurations {
+  implementation.extendsFrom(annotatedGuava)
+}
+
 dependencies {
   implementation project(':checker-qual')
 

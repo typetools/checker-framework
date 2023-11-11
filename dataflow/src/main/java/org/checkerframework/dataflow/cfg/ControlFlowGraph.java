@@ -12,12 +12,16 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -26,6 +30,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -136,6 +141,54 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
+   * Verify that this is a complete and well-formed CFG, i.e. that all internal invariants hold.
+   *
+   * @throws IllegalStateException if some internal invariant is violated
+   */
+  public void checkInvariants() {
+    // TODO: this is a big data structure with many more invariants...
+    for (Block b : getAllBlocks()) {
+
+      // Each node in the block should have this block as its parent.
+      for (Node n : b.getNodes()) {
+        if (!Objects.equals(n.getBlock(), b)) {
+          throw new IllegalStateException(
+              "Node "
+                  + n
+                  + " in block "
+                  + b
+                  + " incorrectly believes it belongs to "
+                  + n.getBlock());
+        }
+      }
+
+      // Each successor should have this block in its predecessors.
+      for (Block succ : b.getSuccessors()) {
+        if (!succ.getPredecessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has successor "
+                  + succ
+                  + " but does not appear in that successor's predecessors");
+        }
+      }
+
+      // Each predecessor should have this block in its successors.
+      for (Block pred : b.getPredecessors()) {
+        if (!pred.getSuccessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has predecessor "
+                  + pred
+                  + " but does not appear in that predecessor's successors");
+        }
+      }
+    }
+  }
+
+  /**
    * Returns the set of {@link Node}s to which the {@link Tree} {@code t} corresponds, or null for
    * trees that don't produce a value.
    *
@@ -188,7 +241,7 @@ public class ControlFlowGraph implements UniqueId {
    */
   public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
-    Set<Block> visited = new HashSet<>();
+    Set<Block> visited = new LinkedHashSet<>();
     // worklist is always a subset of visited; any block in worklist is also in visited.
     Queue<Block> worklist = new ArrayDeque<>();
     Block cur = entryBlock;
@@ -223,6 +276,74 @@ public class ControlFlowGraph implements UniqueId {
     for (Block b : getAllBlocks()) {
       result.addAll(b.getNodes());
     }
+    return result;
+  }
+
+  /**
+   * Returns the set of all basic blocks in this control flow graph, <b>except</b> those that are
+   * only reachable via an exception whose type is ignored by parameter {@code
+   * shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
+   * @return the set of all basic blocks in this control flow graph, <b>except</b> those that are
+   *     only reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public Set<Block> getAllBlocks(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    // This is the return value of the method.
+    Set<Block> visited = new LinkedHashSet<>();
+    // `worklist` is always a subset of `visited`; any block in `worklist` is also in `visited`.
+    Queue<Block> worklist = new ArrayDeque<>();
+    Block cur = entryBlock;
+    visited.add(entryBlock);
+
+    // Traverse the whole control flow graph.
+    while (cur != null) {
+      if (cur instanceof ExceptionBlock) {
+        for (Map.Entry<TypeMirror, Set<Block>> entry :
+            ((ExceptionBlock) cur).getExceptionalSuccessors().entrySet()) {
+          if (!shouldIgnoreException.apply(entry.getKey())) {
+            for (Block b : entry.getValue()) {
+              if (visited.add(b)) {
+                worklist.add(b);
+              }
+            }
+          }
+        }
+        Block b = ((SingleSuccessorBlockImpl) cur).getSuccessor();
+        if (b != null && visited.add(b)) {
+          worklist.add(b);
+        }
+
+      } else {
+        for (Block b : cur.getSuccessors()) {
+          if (visited.add(b)) {
+            worklist.add(b);
+          }
+        }
+      }
+      cur = worklist.poll();
+    }
+
+    return visited;
+  }
+
+  /**
+   * Returns the list of all nodes in this control flow graph, <b>except</b> those that are only
+   * reachable via an exception whose type is ignored by parameter {@code shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
+   * @return the list of all nodes in this control flow graph, <b>except</b> those that are only
+   *     reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public List<Node> getAllNodes(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    List<Node> result = new ArrayList<>();
+    getAllBlocks(shouldIgnoreException).forEach(b -> result.addAll(b.getNodes()));
     return result;
   }
 

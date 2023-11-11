@@ -43,9 +43,9 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Determine whether this is valid.
+   * Determine whether this QualifierHierarchy is valid.
    *
-   * @return true if this is valid
+   * @return true if this QualifierHierarchy is valid
    */
   public boolean isValid() {
     return true;
@@ -229,7 +229,7 @@ public abstract class QualifierHierarchy {
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
-  public boolean isSubtypeShallow(
+  public final boolean isSubtypeShallow(
       Collection<? extends AnnotationMirror> subQualifiers,
       TypeMirror subType,
       Collection<? extends AnnotationMirror> superQualifiers,
@@ -263,7 +263,7 @@ public abstract class QualifierHierarchy {
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
-  public boolean isSubtypeShallow(
+  public final boolean isSubtypeShallow(
       Collection<? extends AnnotationMirror> subQualifiers,
       Collection<? extends AnnotationMirror> superQualifiers,
       TypeMirror typeMirror) {
@@ -357,7 +357,7 @@ public abstract class QualifierHierarchy {
    * @param tm2 the type on which qualifiers2 appear
    * @return the least upper bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> leastUpperBoundsShallow(
+  public final Set<? extends AnnotationMirror> leastUpperBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
       TypeMirror tm1,
       Collection<? extends AnnotationMirror> qualifiers2,
@@ -490,7 +490,7 @@ public abstract class QualifierHierarchy {
    * @param tm2 the type that is annotated by qualifier2
    * @return the greatest lower bound of the two sets of qualifiers
    */
-  public Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
+  public final Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
       Collection<? extends AnnotationMirror> qualifiers1,
       TypeMirror tm1,
       Collection<? extends AnnotationMirror> qualifiers2,

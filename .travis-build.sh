@@ -40,7 +40,7 @@ SCRIPTDIR=$ROOTDIR/checker/bin-devel/
 "${SCRIPTDIR}/plume-scripts/ci-info" typetools
 eval $("${SCRIPTDIR}/plume-scripts/ci-info" typetools)
 
-source "$SCRIPTDIR/build.sh"
+source "$SCRIPTDIR/clone-related"
 
 ###
 ### Run the test

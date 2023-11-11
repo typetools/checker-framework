@@ -214,7 +214,7 @@ public final class CFGVisualizeLauncher {
    * @param method name of the method to generate the CFG for
    * @return control flow graph of the specified method
    */
-  private static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
+  public static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
 
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
@@ -223,9 +223,9 @@ public final class CFGVisualizeLauncher {
     JavaCompiler javac = new JavaCompiler(context);
 
     JavaFileObject l;
-    // The @MustCall annotation is required to avoid a warning about incompatible generic types
-    try (JavacFileManager fileManager =
-        (JavacFileManager) context.<@MustCall({}) JavaFileManager>get(JavaFileManager.class)) {
+    try (@SuppressWarnings(
+            "mustcall:type.argument") // Context isn't annotated for the Must Call Checker.
+        JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
       l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
     } catch (IOException e) {
       throw new Error(e);

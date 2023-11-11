@@ -58,20 +58,43 @@ public class TestUtilities {
   /** True if the JVM is version 18 or lower. */
   public static final boolean IS_AT_MOST_18_JVM = SystemUtil.jreVersion <= 18;
 
+  /** True if the JVM is version 21 or above. */
+  public static final boolean IS_AT_LEAST_21_JVM = SystemUtil.jreVersion >= 21;
+
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     OutputStream err = new ByteArrayOutputStream();
     compiler.run(null, null, err, "-version");
   }
 
+  /**
+   * Find test java sources within currentDir/tests.
+   *
+   * @param dirNames subdirectories of currentDir/tests
+   * @return found files
+   */
   public static List<File> findNestedJavaTestFiles(String... dirNames) {
     return findRelativeNestedJavaFiles(new File("tests"), dirNames);
   }
 
+  /**
+   * Find test java sources within {@code parent}.
+   *
+   * @param parent directory to search within
+   * @param dirNames subdirectories of {@code parent}
+   * @return found files
+   */
   public static List<File> findRelativeNestedJavaFiles(String parent, String... dirNames) {
     return findRelativeNestedJavaFiles(new File(parent), dirNames);
   }
 
+  /**
+   * Find test java sources within {@code parent}.
+   *
+   * @param parent directory to search within
+   * @param dirNames subdirectories of {@code parent}
+   * @return found files
+   */
   public static List<File> findRelativeNestedJavaFiles(File parent, String... dirNames) {
     File[] dirs = new File[dirNames.length];
 
@@ -237,7 +260,8 @@ public class TestUtilities {
             || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
             || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))
             || (!IS_AT_LEAST_18_JVM && nextLine.contains("@below-java18-jdk-skip-test"))
-            || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))) {
+            || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))
+            || (!IS_AT_LEAST_21_JVM && nextLine.contains("@below-java21-jdk-skip-test"))) {
           return false;
         }
       }

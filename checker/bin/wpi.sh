@@ -75,6 +75,13 @@ else
   has_java20="yes"
 fi
 
+# shellcheck disable=SC2153 # testing for JAVA21_HOME, not a typo of JAVA_HOME
+if [ "${JAVA21_HOME}" = "" ]; then
+  has_java21="no"
+else
+  has_java21="yes"
+fi
+
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
     echo "JAVA_HOME is set to a non-existent directory ${JAVA_HOME}"
     exit 1
@@ -98,6 +105,10 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA20_HOME="${JAVA_HOME}"
       has_java20="yes"
     fi
+    if [ "${has_java21}" = "no" ] && [ "${java_version}" = 21 ]; then
+      export JAVA21_HOME="${JAVA_HOME}"
+      has_java21="yes"
+    fi
 fi
 
 if [ "${has_java8}" = "yes" ] && [ ! -d "${JAVA8_HOME}" ]; then
@@ -120,17 +131,22 @@ if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA20_HOME}" ]; then
     exit 7
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java20}" = "no" ]; then
+if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
+    echo "JAVA21_HOME is set to a non-existent directory ${JAVA21_HOME}"
+    exit 7
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java20}" = "no" ] && [ "${has_java21}" = "no" ]; then
     if [ "${has_java_home}" = "yes" ]; then
       echo "Cannot determine Java version from JAVA_HOME"
     else
-      echo "No Java 8, 11, 17, or 20 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA20_HOME must be set."
+      echo "No Java 8, 11, 17, 20, or 21 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA21_HOME must be set."
     fi
     echo "JAVA_HOME = ${JAVA_HOME}"
     echo "JAVA8_HOME = ${JAVA8_HOME}"
     echo "JAVA11_HOME = ${JAVA11_HOME}"
     echo "JAVA17_HOME = ${JAVA17_HOME}"
-    echo "JAVA20_HOME = ${JAVA20_HOME}"
+    echo "JAVA21_HOME = ${JAVA21_HOME}"
     command -v java
     java -version
     exit 8
@@ -239,6 +255,7 @@ function configure_and_exec_dljc {
 
   # Remove old DLJC output.
   rm -rf dljc-out
+  mkdir -p "${DIR}/dljc-out/"
 
   # Ensure the project is clean before invoking DLJC.
   DLJC_CLEAN_STATUS=0
@@ -248,7 +265,10 @@ function configure_and_exec_dljc {
     echo "${WPI_RESULTS_AVAILABLE}"
     echo "Re-running clean command."
     # Cleaning failed.  Re-run without piping output to /dev/null.
-    eval "${CLEAN_CMD}" < /dev/null || true
+    echo "${CLEAN_CMD}" > "${DIR}/dljc-out/clean-output"
+    (eval "${CLEAN_CMD}" < /dev/null | tee -a "${DIR}/dljc-out/clean-output") || true
+    ls -al "${DIR}/dljc-out"
+    WPI_RESULTS_AVAILABLE="${WPI_RESULTS_AVAILABLE}"$'\n'"$(cat "${DIR}/dljc-out/clean-output")"
     return
   fi
 
@@ -272,11 +292,10 @@ function configure_and_exec_dljc {
   cat "${dljc_stdout}"
   echo "=== End of DLJC standard out/err.  ==="
 
-  # the wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
+  # The wpi.py script in do-like-javac outputs the following text if no build/whole-program-inference directory
   # exists, which means that WPI produced no output. When that happens, the reason is usually that the Checker
   # Framework crashed, so output the log file for easier debugging.
   wpi_no_output_message="No WPI outputs were discovered; it is likely that WPI failed or the Checker Framework crashed"
-  echo "About to test: \$(cat \"${dljc_stdout}\") == \"${wpi_no_output_message}\""
   if [[ $(cat "${dljc_stdout}") == *"${wpi_no_output_message}"* ]]; then
     wpi_log_path="${DIR}"/dljc-out/wpi-stdout.log
     echo "=== ${wpi_no_output_message}: start of ${wpi_log_path} ==="
@@ -310,12 +329,6 @@ stdout is in      $dljc_stdout"
 # Clone or update DLJC
 if [ "${DLJC}" = "" ]; then
   # The user did not set the DLJC environment variable.
-  (cd "${SCRIPTDIR}"/../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60s && ./gradlew --stacktrace getPlumeScripts)))
-  "${SCRIPTDIR}"/../bin-devel/.plume-scripts/git-clone-related kelloggm do-like-javac "${SCRIPTDIR}"/.do-like-javac
-  if [ ! -d "${SCRIPTDIR}/.do-like-javac" ]; then
-      echo "Failed to clone do-like-javac"
-      exit 1
-  fi
   DLJC="${SCRIPTDIR}/.do-like-javac/dljc"
 else
   # The user did set the DLJC environment variable.

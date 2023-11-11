@@ -36,6 +36,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -102,10 +103,11 @@ public class TreeBuilder {
       // Remove captured type variable from a wildcard.
       if (elementType instanceof Type.CapturedType) {
         elementType = ((Type.CapturedType) elementType).wildcard;
+        TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
+        assert iteratorElt != null
+            : "@AssumeAssertion(nullness): the iterator type always has an element";
 
-        iteratorType =
-            modelTypes.getDeclaredType(
-                (TypeElement) modelTypes.asElement(iteratorType), elementType);
+        iteratorType = modelTypes.getDeclaredType(iteratorElt, elementType);
       }
     }
 
@@ -118,8 +120,7 @@ public class TreeBuilder {
             com.sun.tools.javac.util.List.nil(),
             methodClass);
 
-    JCTree.JCFieldAccess iteratorAccess =
-        (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) iterableExpr, iteratorMethod);
+    JCTree.JCFieldAccess iteratorAccess = TreeUtils.Select(maker, iterableExpr, iteratorMethod);
     iteratorAccess.setType(updatedMethodType);
 
     return iteratorAccess;
@@ -143,13 +144,15 @@ public class TreeBuilder {
     for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
       if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("hasNext")) {
         hasNextMethod = (Symbol.MethodSymbol) method;
+        break;
       }
     }
 
-    assert hasNextMethod != null : "no hasNext method declared for expression type";
+    if (hasNextMethod == null) {
+      throw new BugInCF("no hasNext method declared for " + exprElement);
+    }
 
-    JCTree.JCFieldAccess hasNextAccess =
-        (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) iteratorExpr, hasNextMethod);
+    JCTree.JCFieldAccess hasNextAccess = TreeUtils.Select(maker, iteratorExpr, hasNextMethod);
     hasNextAccess.setType(hasNextMethod.asType());
 
     return hasNextAccess;
@@ -198,8 +201,7 @@ public class TreeBuilder {
             com.sun.tools.javac.util.List.nil(),
             methodClass);
 
-    JCTree.JCFieldAccess nextAccess =
-        (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) iteratorExpr, nextMethod);
+    JCTree.JCFieldAccess nextAccess = TreeUtils.Select(maker, iteratorExpr, nextMethod);
     nextAccess.setType(updatedMethodType);
 
     return nextAccess;
@@ -212,7 +214,7 @@ public class TreeBuilder {
    * @return a MemberSelectTree to dereference the length of the array
    */
   public MemberSelectTree buildArrayLengthAccess(ExpressionTree expression) {
-    return (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) expression, symtab.lengthVar);
+    return TreeUtils.Select(maker, expression, symtab.lengthVar);
   }
 
   /**
@@ -387,8 +389,7 @@ public class TreeBuilder {
 
     Type.MethodType methodType = (Type.MethodType) valueOfMethod.asType();
 
-    JCTree.JCFieldAccess valueOfAccess =
-        (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) expr, valueOfMethod);
+    JCTree.JCFieldAccess valueOfAccess = TreeUtils.Select(maker, expr, valueOfMethod);
     valueOfAccess.setType(methodType);
 
     return valueOfAccess;
@@ -446,8 +447,7 @@ public class TreeBuilder {
 
     Type.MethodType methodType = (Type.MethodType) primValueMethod.asType();
 
-    JCTree.JCFieldAccess primValueAccess =
-        (JCTree.JCFieldAccess) maker.Select((JCTree.JCExpression) expr, primValueMethod);
+    JCTree.JCFieldAccess primValueAccess = TreeUtils.Select(maker, expr, primValueMethod);
     primValueAccess.setType(methodType);
 
     return primValueAccess;

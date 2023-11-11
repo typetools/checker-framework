@@ -64,11 +64,11 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.500')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.581')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.13.0'
+  testImplementation 'commons-io:commons-io:2.15.0'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -138,6 +138,7 @@ task assembleForJavac(dependsOn: shadowJar, group: 'Build') {
 }
 
 assemble.dependsOn assembleForJavac
+assemble.dependsOn(':getDoLikeJavac')
 
 task allSourcesJar(type: Jar, group: 'Build') {
   description 'Creates a sources jar that includes sources for all Checker Framework classes in checker.jar'
@@ -885,6 +886,7 @@ task ainferTest(group: 'Verification') {
 task wpiManyTest(group: 'Verification') {
   description 'Tests the wpi-many.sh script (and indirectly the wpi.sh script). Requires an Internet connection.'
   dependsOn(assembleForJavac)
+  dependsOn(':getDoLikeJavac')
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }
 
@@ -908,7 +910,8 @@ task wpiManyTest(group: 'Verification') {
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
             '-o', "${project.projectDir}/build/wpi-many-tests",
             '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak'
+            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+            '--extraJavacArgs=-AenableWpiForRlc'
       }
     } catch (Exception e) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
@@ -1014,6 +1017,7 @@ task wpiManyTest(group: 'Verification') {
 task wpiPlumeLibTest(group: 'Verification') {
   description 'Tests whole-program inference on the plume-lib projects. Requires an Internet connection.'
   dependsOn(assembleForJavac)
+  dependsOn(':getDoLikeJavac')
 
   // This test must always be re-run when requested.
   outputs.upToDateWhen { false }

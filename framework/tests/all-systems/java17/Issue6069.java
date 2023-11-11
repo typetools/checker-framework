@@ -1,3 +1,5 @@
+// @infer-jaifs-skip-test The AFU's JAIF reading/writing libraries don't support records.
+// @infer-stubs-skip-test This test outputs a warning about records.
 // @below-java17-jdk-skip-test
 package issue6069;
 

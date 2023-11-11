@@ -4,18 +4,18 @@ plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
   id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.4.0'
+  id 'de.undercouch.download' version '5.5.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.2.0' apply false
+  id 'org.ajoberstar.grgit' version '5.2.1' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.19.0'
+  id 'com.diffplug.spotless' version '6.22.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -23,6 +23,7 @@ import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
   mavenCentral()
 }
 
@@ -32,21 +33,19 @@ ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2022-04-22, delombok doesn't yet support JDK 20; see https://projectlombok.org/changelog .
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_20
+  // As of 2023-09-23, delombok doesn't yet support JDK 22; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
-  stubparser = "${parentDir}/stubparser"
-  stubparserVersion = "3.25.3"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-${stubparserVersion}.jar"
-
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
+  doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
@@ -55,12 +54,12 @@ ext {
   localRepo = '.git'
 
   versions = [
-    autoValue       : '1.10.2',
-    lombok          : '1.18.28',
+    autoValue       : '1.10.4',
+    lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.0',
     plumeUtil : '1.8.1',
-    errorprone : '2.20.0',
+    errorprone : '2.22.0',
   ]
 }
 
@@ -114,7 +113,8 @@ allprojects {
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.36.1-SNAPSHOT'
+  // To make a snapshot release: ./gradlew publish
+  version '3.40.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -129,6 +129,7 @@ allprojects {
 
   // Keep in sync with "repositories { ... }" block above.
   repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
     mavenCentral()
   }
 
@@ -187,6 +188,7 @@ allprojects {
     // add them to the spotlessPredeclare block.
 
     def doNotFormat = [
+      'checker/bin-devel/.plume-scripts/**',
       'checker/tests/ainfer-*/annotated/*',
       'dataflow/manual/examples/',
       '**/nullness-javac-errors/*',
@@ -197,6 +199,16 @@ allprojects {
     ]
     if (!isJava17orHigher) {
       doNotFormat += ['**/java17/', '**/*record*/']
+    }
+
+    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+    // See https://github.com/google/google-java-format/releases.
+    if (true) {
+      doNotFormat += ['**/java21/']
+    }
+
+    if (!isJava21orHigher) {
+      doNotFormat += ['**/java21/']
     }
 
     format 'misc', {
@@ -244,6 +256,11 @@ allprojects {
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
     }
+  }
+
+  test {
+    minHeapSize = "256m" // initial heap size
+    maxHeapSize = "4g" // maximum heap size
   }
 
   // After all the tasks have been created, modify some of them.
@@ -298,6 +315,15 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
+      if (jdk17Compiler) {
+        // This uses the Java 17 compiler to compile all code.
+        //  https://docs.gradle.org/current/userguide/toolchains.html
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(17)
+        }
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
@@ -353,13 +379,18 @@ allprojects {
 
       options.failOnError = true
       options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      String lint =     '-Xlint:-options,-fallthrough'
+      if(isJava21orHigher && !jdk17Compiler) {
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+        lint +=',-this-escape'
+      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-options,-fallthrough',
+        lint,
         '-Xlint',
       ]
 
@@ -408,51 +439,6 @@ allprojects {
     }
   } // end afterEvaluate
 } // end allProjects
-
-task cloneAndBuildDependencies(type: Exec, group: 'Build') {
-  description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/build.sh'
-}
-
-task maybeCloneAndBuildDependencies() {
-  // No group so it does not show up in the output of `gradlew tasks`
-  description 'Clones (or updates) and builds all dependencies if they are not present.'
-  onlyIf {
-    !file(stubparserJar).exists()
-    // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
-    // the repository does not exist when building checker.jar.
-  }
-
-  doFirst {
-    if (file(stubparser).exists()) {
-      exec {
-        workingDir stubparser
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true  // because of the doLast block below
-      }
-      exec {
-        workingDir stubparser
-        executable "${stubparser}/.build-without-test.sh"
-      }
-    } else {
-      exec {
-        executable 'checker/bin-devel/build.sh'
-      }
-    }
-  }
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser-${stubparserVersion}.jar!) are:"
-      exec {
-        workingDir "${stubparser}/javaparser-core/target"
-        executable 'ls'
-        ignoreExitValue = true
-      }
-      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar + '; are you using an out-of-date Checker Framework or Stubparser?')
-    }
-  }
-}
 
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
@@ -687,6 +673,7 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
 
 createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
 createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
+createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
@@ -810,24 +797,29 @@ subprojects {
         [
           '-Astubs=javax-lang-model-element-name.astub'
         ])
-    createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        [
-          '-AskipUses=com\\.sun\\.*',
-          // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
-          '-AuseConservativeDefaultsForUncheckedCode=source'
-        ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
     createCheckTypeTask(project.name, 'ResourceLeak',
         'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
-    // These pass on some subprojects, which the `typecheck` task runs.
-    // TODO: Incrementally add @AnnotatedFor on more classes.
-    createCheckTypeTask(project.name, 'Nullness',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        ['-AskipUses=com.sun.*'])
+
+    // The checkNullness task runs on all code, but it only *checks* the following code:
+    //  * All files outside the 'framework' and 'checker' subprojects.
+    //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
+    if (project.name.is('framework') || project.name.is('checker')) {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          [
+            '-AskipUses=com\\.sun\\.*',
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            '-AuseConservativeDefaultsForUncheckedCode=source'
+          ])
+    } else {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          ['-AskipUses=com\\.sun\\.*'])
+    }
 
 
     // Add jtregTests to framework and checker modules
@@ -849,7 +841,7 @@ subprojects {
                 "-dir:${projectDir}/jtreg",
                 "-workDir:${jtregOutput}/${name}/work",
                 "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail',
+                '-verbose:error,fail,nopass',
                 // Don't add debugging information
                 //  '-javacoptions:-g',
                 '-keywords:!ignore',
@@ -994,7 +986,7 @@ subprojects {
       description 'Run the Checker Framework on itself (part 2)'
       dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
+        dependsOn('checkCompilerMessages')
       } else {
         dependsOn('checkNullness')
       }

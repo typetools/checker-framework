@@ -9,7 +9,13 @@ import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUseTop;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
+/** The type factory for forbidding use of the DisbarUse type. */
 public class DisbarUseTypeFactory extends BaseAnnotatedTypeFactory {
+  /**
+   * Creates a new DisbarUseTypeFactory.
+   *
+   * @param checker the checker
+   */
   public DisbarUseTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
