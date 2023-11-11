@@ -961,9 +961,9 @@ edges shown in \autoref{tab:nodesWithException}.
 
 Other AST constructs are desugared into the above nodes (see \autoref{sec:desugaring}).
 
-\begin{workinprogress}
-Can \code{StringConversionNode} be implicit?  I think so, but in any event discuss.
-\end{workinprogress}
+% \begin{workinprogress}
+% Can \code{StringConversionNode} be implicit?  I think so, but in any event discuss.
+% \end{workinprogress}
 
 
 \subsection{Noteworthy Translations and Node Types}
@@ -1266,15 +1266,6 @@ discarded.)
     A \emph{label} is a marker that is used to refer to extended
     nodes. It is used only temporarily during CFG construction.
 \end{definition}
-
-% I agree, we should keep this in mind in the future.
-%\begin{workinprogress}
-%I find it useful to never name phases ``one'', ``two'', ``three'', but
-%always to give them English names.  This makes the meaning clearer to
-%readers --- often because it forces the writer to think harder about the
-%meaning of each.  It can still be useful to number the phases even after
-%they have more mnemonic names.
-%\end{workinprogress}
 
 
 The process of translating an AST to a CFG proceeds in three distinct phases.
@@ -1841,9 +1832,9 @@ inequality tests to propagate the most precise qualifiers from the
 left or right-hand side to the true (resp. false) successor.  It also
 applies type qualifiers from method postconditions after calls.
 
-\begin{workinprogress}
-Preconditions are not mentioned at all in this manual. How are they handled?
-\end{workinprogress}
+% \begin{workinprogress}
+% Preconditions are not mentioned at all in this manual. How are they handled?
+% \end{workinprogress}
 
 
 \subsection{Interaction of the Checker Framework and the Dataflow Analysis}
@@ -1942,11 +1933,15 @@ The store maintains a mapping from field accesses (as defined in
 Section~\ref{sec:field-access}) to abstract values, and the subsequent
 sections describe the operations that keep this mapping up-to-date.
 
-\begin{workinprogress}
-  There hasn't been a good introduction of pure vs. non-pure methods.
-  Maybe this is a good location for a discussion?
-  Introduce the purity annotations somewhere.
-\end{workinprogress}
+A side-effect-free method has no visible side-effects, such
+as setting a field of an object that existed before the method was called.
+A deterministic method returns the same value (according to ==) every time it is called with the same parameters and in the same environment.
+A pure method is both side-effect-free and deterministic.
+The Dataflow Framework respects the
+\href{https://checkerframework.org/api/org/checkerframework/dataflow/qual/SideEffectFree.html}{\code{@SideEffectFree}},
+\href{https://checkerframework.org/api/org/checkerframework/dataflow/qual/Deterministic.html}{\code{@Deterministic}},and
+\href{https://checkerframework.org/api/org/checkerframework/dataflow/qual/Pure.html}{\code{@Pure}}
+annotations of the Checker Framework
 
 
 \subsubsection{Internal Representation of field access}
