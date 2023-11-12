@@ -808,7 +808,7 @@ subprojects {
           // '-AstubDebug',
           // '-AstubWarnNote',
           /// For debugging refinement
-          // '-Aflowdotdir=/scratch/mernst/flowdotdir',
+          // '-Aflowdotdir=/scratch/USER/flowdotdir',
         ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')

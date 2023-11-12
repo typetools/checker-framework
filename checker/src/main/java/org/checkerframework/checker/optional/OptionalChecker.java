@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.StubFiles;
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-// TODO: If the Nullness Checker is running, then for a call to ofNullable, if the argument has type
+// TODO: For a call to ofNullable, if the argument has type
 // @NonNull, make the return type have type @Present.
 @RelevantJavaTypes(Optional.class)
 @StubFiles({"javaparser.astub"})
