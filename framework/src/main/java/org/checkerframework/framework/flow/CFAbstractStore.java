@@ -239,10 +239,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         !(assumeSideEffectFree
             || (assumePureGetters && ElementUtils.isGetter(method))
             || atypeFactory.isSideEffectFree(method));
-    System.out.printf(
-        "CFAS.updateForMethodCall(%s, %s, %s): hasSideEffect=%s%n",
-        methodInvocationNode, atypeFactory.getClass().getSimpleName(), val, hasSideEffect);
-    System.out.printf(" %s%n", this);
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases =
@@ -319,15 +315,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
     }
 
-    System.out.printf(" %s%n", this);
-
     // store information about method call if possible
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
-    System.out.printf("about to replaceValue(%s, %s)%n", methodCall, val);
     replaceValue(methodCall, val);
-
-    System.out.printf(" %s%n", this);
-    System.out.printf("exited updateForMethodCall%n");
   }
 
   /**
@@ -565,7 +555,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       BinaryOperator<V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
-      System.out.printf("shouldInsert(%s, %s, %s) => false%n", expr, value, permitNondeterministic);
       return;
     }
 
@@ -692,13 +681,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    */
   public void replaceValue(JavaExpression expr, @Nullable V value) {
-    System.out.printf("entered replaceValue(%s, %s)%n", expr, value);
-    System.out.printf(" %s%n", this);
     clearValue(expr);
-    System.out.printf(" %s%n", this);
     insertValue(expr, value);
-    System.out.printf(" %s%n", this);
-    System.out.printf("exited replaceValue(%s, %s)%n", expr, value);
   }
 
   /**
