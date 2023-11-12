@@ -744,17 +744,17 @@ public class WholeProgramInferenceJavaParserStorage
               // method of computing the name is not 100% guaranteed to be reliable, but it should
               // be sufficient for WPI's purposes here: if the wrong name is computed, the worst
               // outcome is a false positive because WPI inferred an untrue annotation.
+              Optional<String> ofqn = javaParserClass.getFullyQualifiedName();
+              if (ofqn.isEmpty()) {
+                throw new BugInCF("Missing getFullyQualifiedName() for " + javaParserClass);
+              }
               if ("".contentEquals(tree.getSimpleName())) {
                 @SuppressWarnings("signature:assignment") // computed from string concatenation
-                @BinaryName String computedName =
-                    javaParserClass.getFullyQualifiedName().get() + "$" + ++innerClassCount;
+                @BinaryName String computedName = ofqn.get() + "$" + ++innerClassCount;
                 className = computedName;
               } else {
                 @SuppressWarnings("signature:assignment") // computed from string concatenation
-                @BinaryName String computedName =
-                    javaParserClass.getFullyQualifiedName().get()
-                        + "$"
-                        + tree.getSimpleName().toString();
+                @BinaryName String computedName = ofqn.get() + "$" + tree.getSimpleName().toString();
                 className = computedName;
               }
             } else {

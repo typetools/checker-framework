@@ -798,7 +798,10 @@ subprojects {
           '-Astubs=javax-lang-model-element-name.astub'
         ])
     createCheckTypeTask(project.name, 'Optional',
-        'org.checkerframework.checker.optional.OptionalChecker')
+        'org.checkerframework.checker.optional.OptionalChecker',
+        [
+          '-AassumePureGetters' // to avoid having to annotate JavaParser
+        ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
     createCheckTypeTask(project.name, 'ResourceLeak',

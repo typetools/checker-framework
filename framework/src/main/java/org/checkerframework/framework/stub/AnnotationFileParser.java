@@ -998,7 +998,8 @@ public class AnnotationFileParser {
     }
 
     if (typeDecl instanceof RecordDeclaration) {
-      NodeList<Parameter> recordMembers = ((RecordDeclaration) typeDecl).getParameters();
+      RecordDeclaration recordDecl = (RecordDeclaration) typeDecl;
+      NodeList<Parameter> recordMembers = recordDecl.getParameters();
       Map<String, RecordComponentStub> byName =
           ArrayMap.newArrayMapOrLinkedHashMap(recordMembers.size());
       for (Parameter recordMember : recordMembers) {
@@ -1009,7 +1010,7 @@ public class AnnotationFileParser {
         byName.put(recordMember.getNameAsString(), stub);
       }
       annotationFileAnnos.records.put(
-          typeDecl.getFullyQualifiedName().get(), new RecordStub(byName));
+          recordDecl.getFullyQualifiedName().get(), new RecordStub(byName));
     }
 
     IPair<Map<Element, BodyDeclaration<?>>, Map<Element, List<BodyDeclaration<?>>>> members =
