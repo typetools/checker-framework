@@ -157,7 +157,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
   public void visit(AnnotationMemberDeclaration node1, Node other) {
     AnnotationMemberDeclaration node2 = (AnnotationMemberDeclaration) other;
     defaultAction(node1, node2);
-    node1.getDefaultValue().ifPresent(l -> l.accept(this, node2.getDefaultValue().get()));
+    node1.getDefaultValue().ifPresent(dv -> dv.accept(this, node2.getDefaultValue().get()));
     visitLists(node1.getModifiers(), node2.getModifiers());
     node1.getName().accept(this, node2.getName());
     node1.getType().accept(this, node2.getType());
@@ -176,7 +176,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     ArrayCreationExpr node2 = (ArrayCreationExpr) other;
     defaultAction(node1, node2);
     node1.getElementType().accept(this, node2.getElementType());
-    node1.getInitializer().ifPresent(l -> l.accept(this, node2.getInitializer().get()));
+    node1.getInitializer().ifPresent(init -> init.accept(this, node2.getInitializer().get()));
     visitLists(node1.getLevels(), node2.getLevels());
   }
 
@@ -192,7 +192,7 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     AssertStmt node2 = (AssertStmt) other;
     defaultAction(node1, node2);
     node1.getCheck().accept(this, node2.getCheck());
-    node1.getMessage().ifPresent(l -> l.accept(this, node2.getMessage().get()));
+    node1.getMessage().ifPresent(m -> m.accept(this, node2.getMessage().get()));
   }
 
   @Override
@@ -280,18 +280,18 @@ public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
     ClassOrInterfaceType node2 = (ClassOrInterfaceType) other;
     defaultAction(node1, node2);
     node1.getName().accept(this, node2.getName());
-    node1.getScope().ifPresent(l -> l.accept(this, node2.getScope().get()));
-    node1.getTypeArguments().ifPresent(l -> visitLists(l, node2.getTypeArguments().get()));
+    node1.getScope().ifPresent(s -> s.accept(this, node2.getScope().get()));
+    node1.getTypeArguments().ifPresent(targs -> visitLists(targs, node2.getTypeArguments().get()));
   }
 
   @Override
   public void visit(CompilationUnit node1, Node other) {
     CompilationUnit node2 = (CompilationUnit) other;
     defaultAction(node1, node2);
-    node1.getModule().ifPresent(l -> l.accept(this, node2.getModule().get()));
+    node1.getModule().ifPresent(m -> m.accept(this, node2.getModule().get()));
     node1
         .getPackageDeclaration()
-        .ifPresent(l -> l.accept(this, node2.getPackageDeclaration().get()));
+        .ifPresent(pd -> pd.accept(this, node2.getPackageDeclaration().get()));
     visitLists(node1.getTypes(), node2.getTypes());
   }
 
