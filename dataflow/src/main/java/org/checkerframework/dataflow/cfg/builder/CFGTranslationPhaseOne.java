@@ -1533,8 +1533,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
-    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
-    return extendedNode;
+    return extendWithNodeWithExceptions(node, thrownSet);
   }
 
   @Override
@@ -3549,9 +3548,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<IPair<TypeMirror, Label>> catchLabels =
         CollectionsPlume.mapList(
-            (CatchTree c) -> {
-              return IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label());
-            },
+            (CatchTree c) -> IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label()),
             catches);
 
     // Store return/break/continue labels, just in case we need them for a finally block.
@@ -3691,7 +3688,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             resourceDeclarationTree,
             "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
             env.getTypeUtils()));
-    // Recursive handle any remaining resource declarations and the main block of the try
+    // Recursively handle any remaining resource declarations and the main block of the try
     visitTryResourcesAndBodyHelper(tryTree, p, resources.subList(1, resources.size()));
     extendWithNode(
         new MarkerNode(
@@ -3707,9 +3704,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> {
-          addCloseCallForResource(resourceDeclarationTree, resourceCloseNode);
-        },
+        () -> addCloseCallForResource(resourceDeclarationTree, resourceCloseNode),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
