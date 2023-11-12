@@ -800,7 +800,15 @@ subprojects {
     createCheckTypeTask(project.name, 'Optional',
         'org.checkerframework.checker.optional.OptionalChecker',
         [
-          '-AassumePureGetters' // to avoid having to annotate JavaParser
+          '-AassumePureGetters',
+          // to avoid having to annotate JavaParser
+          '-AassumeAssertionsAreEnabled',
+          /// For debugging stub files
+          // '-AstubWarnIfNotFound',
+          // '-AstubDebug',
+          // '-AstubWarnNote',
+          /// For debugging refinement
+          // '-Aflowdotdir=/scratch/mernst/flowdotdir',
         ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')

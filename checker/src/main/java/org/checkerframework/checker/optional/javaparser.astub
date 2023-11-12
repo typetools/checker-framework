@@ -1,9 +1,19 @@
-// Every getParent() method except that of `CompilationUnit`, `Node`, and `StubUnit` returns a @Present Optional.
+// Every `getParentNode()` method except that of `CompilationUnit`, `Node`, and `StubUnit` returns a @Present Optional.
 
 import org.checkerframework.checker.optional.qual.Present;
 
 
-package com.github.javaparser.ast.body;
+package com.github.javaparser;
+
+public class JavaToken {
+  @Present Optional<Range> getRange();
+}
+public class TokenRange implements Iterable<JavaToken> {
+  @Present Optional<Range> toRange();
+}
+
+
+package com.github.javaparser.ast;
 
 class ArrayCreationLevel {
   @Present Optional<Node> getParentNode();
@@ -14,7 +24,13 @@ class ImportDeclaration {
 class Modifier {
   @Present Optional<Node> getParentNode();
 }
-class NodeList {
+class Node {
+  // This might be unsound.
+  @Present Optional<Range> getRange();
+  // This might be unsound.
+  @Present Optional<TokenRange> getTokenRange();
+}
+class NodeList<N extends Node> {
   @Present Optional<Node> getParentNode();
 }
 class PackageDeclaration {
@@ -78,7 +94,7 @@ class VariableDeclarator {
 }
 
 
-package com.github.javaparser.ast.body.comments;
+package com.github.javaparser.ast.comments;
 
 class BlockComment {
   @Present Optional<Node> getParentNode();
@@ -94,7 +110,7 @@ class LineComment {
 }
 
 
-package com.github.javaparser.ast.body.expr;
+package com.github.javaparser.ast.expr;
 
 class AnnotationExpr {
   @Present Optional<Node> getParentNode();
@@ -221,7 +237,7 @@ class VariableDeclarationExpr {
 }
 
 
-package com.github.javaparser.ast.body.modules;
+package com.github.javaparser.ast.modules;
 
 class ModuleDeclaration {
   @Present Optional<Node> getParentNode();
@@ -243,6 +259,20 @@ class ModuleRequiresDirective {
 }
 class ModuleUsesDirective {
   @Present Optional<Node> getParentNode();
+}
+
+
+package com.github.javaparser.ast.nodeTypes;
+
+public interface NodeWithRange<N> {
+  // This might be unsound.
+  @Present Optional<Range> getRange();
+
+  // This might be unsound.
+  @Present Optional<Position> getBegin();
+
+  // This might be unsound.
+  @Present Optional<Position> getEnd();
 }
 
 
@@ -329,6 +359,12 @@ package com.github.javaparser.ast.type;
 
 class ArrayType {
   @Present Optional<Node> getParentNode();
+  // This might be unsound.
+  @Present Optional<TokenRange> getTokenRange();
+  class ArrayBracketPair {
+    // This might be unsound.
+    @Present Optional<TokenRange> getTokenRange();
+  }
 }
 class ClassOrInterfaceType {
   @Present Optional<Node> getParentNode();
@@ -362,4 +398,15 @@ class VoidType {
 }
 class WildcardType {
   @Present Optional<Node> getParentNode();
+  @Present Optional<ReferenceType> getSuperType();
+}
+
+
+package com.github.javaparser.printer.lexicalpreservation;
+
+public class TokenTextElement extends TextElement {
+  @Present Optional<Range> getRange();
+}
+public class ChildTextElement extends TextElement {
+  @Present Optional<Range> getRange();
 }

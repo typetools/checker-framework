@@ -772,9 +772,6 @@ public class AnnotationFileElementTypes {
   private void parseJdkJarEntry(String jarEntryName) {
     if (stubDebug) {
       System.out.printf("entered parseJdkJarEntry(%s)%n", jarEntryName);
-      if (jarEntryName.contains("String")) {
-        new Error("stack trace").printStackTrace();
-      }
     }
 
     JarURLConnection connection = getJarURLConnectionToJdk();

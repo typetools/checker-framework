@@ -800,6 +800,13 @@ public class AnnotationFileParser {
     } else {
       PackageDeclaration pDecl = cu.getPackageDeclaration().get();
       packageAnnos = pDecl.getAnnotations();
+      if (debugAnnotationFileParser
+          || (!warnIfNotFoundIgnoresClasses && !hasNoAnnotationFileParserWarning(packageAnnos))) {
+        String packageName = pDecl.getName().toString();
+        if (elements.getPackageElement(packageName) == null) {
+          stubWarnNotFound(pDecl, "Package not found: " + packageName);
+        }
+      }
       processPackage(pDecl);
     }
 
@@ -3119,7 +3126,8 @@ public class AnnotationFileParser {
         VariableElement elt = TreeUtils.elementFromDeclaration(javacTree);
         if (elt != null) {
           if (elt.getKind() == ElementKind.FIELD) {
-            processField((FieldDeclaration) javaParserNode.getParentNode().get(), elt);
+            VariableDeclarator varDecl = (VariableDeclarator) javaParserNode;
+            processField((FieldDeclaration) varDecl.getParentNode().get(), elt);
           }
 
           if (elt.getKind() == ElementKind.ENUM_CONSTANT) {
