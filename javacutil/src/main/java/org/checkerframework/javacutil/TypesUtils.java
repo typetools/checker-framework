@@ -207,6 +207,8 @@ public final class TypesUtils {
           sj.add(simpleTypeName(alternative));
         }
         return sj.toString();
+      case PACKAGE:
+        return "PACKAGE:" + type;
       default:
         if (type.getKind().isPrimitive()) {
           return TypeAnnotationUtils.unannotatedType(type).toString();
