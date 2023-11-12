@@ -14,4 +14,7 @@ import org.checkerframework.framework.qual.StubFiles;
 // @NonNull, make the return type have type @Present.
 @RelevantJavaTypes(Optional.class)
 @StubFiles({"javaparser.astub"})
-public class OptionalChecker extends BaseTypeChecker {}
+public class OptionalChecker extends BaseTypeChecker {
+  /** Create an OptionalChecker. */
+  public OptionalChecker() {}
+}
