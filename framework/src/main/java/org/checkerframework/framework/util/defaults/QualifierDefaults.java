@@ -675,10 +675,9 @@ public class QualifierDefaults {
         if (qualifiers == null) {
           qualifiers = new DefaultSet();
         }
-        @SuppressWarnings("unchecked")
         List<AnnotationMirror> values =
-            AnnotationUtils.getElementValue(
-                dqListAnno, defaultQualifierListValueElement, List.class);
+            AnnotationUtils.getElementValueArray(
+                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
         for (AnnotationMirror dqAnno : values) {
           Set<Default> p = fromDefaultQualifier(dqAnno);
           if (p != null) {
