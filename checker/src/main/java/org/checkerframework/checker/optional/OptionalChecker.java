@@ -12,4 +12,7 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
 // TODO: For a call to ofNullable, if the argument has type
 // @NonNull, make the return type have type @Present.
 @RelevantJavaTypes(Optional.class)
-public class OptionalChecker extends BaseTypeChecker {}
+public class OptionalChecker extends BaseTypeChecker {
+  /** Create an OptionalChecker. */
+  public OptionalChecker() {}
+}
