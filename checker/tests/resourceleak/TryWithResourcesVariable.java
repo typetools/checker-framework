@@ -1,5 +1,6 @@
 // Test for try-with-resources where the resource declaration uses an existing variable
 
+import java.io.*;
 import java.net.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
@@ -22,13 +23,32 @@ class TryWithResourcesVariable {
     }
   }
 
-  static void test3a(InetSocketAddress isa) {
+  static void test3(InetSocketAddress isa) {
     Socket socket = new Socket();
     try (socket) {
       socket.connect(isa);
     } catch (Exception e) {
 
     }
+  }
+
+  // :: error: (required.method.not.called)
+  static void test4(@Owning InputStream i1, @Owning InputStream i2) {
+    try {
+      try (i2) {}
+      // This will not run if i2.close() throws an IOException
+      i1.close();
+    } catch (Exception e) {
+
+    }
+  }
+
+  static void test4Fixed(@Owning InputStream i1, @Owning InputStream i2) throws IOException {
+    try {
+      try (i2) {}
+    } catch (Exception e) {
+    }
+    i1.close();
   }
 
   @InheritableMustCall("disposer")

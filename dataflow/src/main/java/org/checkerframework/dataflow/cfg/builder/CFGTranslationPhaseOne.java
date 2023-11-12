@@ -1503,15 +1503,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
-    Set<TypeMirror> thrownSet =
-        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
-    // Add exceptions explicitly mentioned in the throws clause.
-    thrownSet.addAll(thrownTypes);
-    // Add types to account for unchecked exceptions
-    thrownSet.addAll(uncheckedExceptionTypes);
-
-    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
+    ExtendedNode extendedNode = extendWithMethodInvocationNode(method, node);
 
     /* Check for the TerminatesExecution annotation. */
     boolean terminatesExecution =
@@ -1521,6 +1513,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     return node;
+  }
+
+  /**
+   * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
+   * invocation
+   *
+   * @param method invoked method
+   * @param node {@link MethodInvocationNode} representing the invocation
+   * @return ExtendedNode representing the invocation and its possible thrown exceptions
+   */
+  private ExtendedNode extendWithMethodInvocationNode(
+      ExecutableElement method, MethodInvocationNode node) {
+    List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
+    Set<TypeMirror> thrownSet =
+        new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
+    // Add exceptions explicitly mentioned in the throws clause.
+    thrownSet.addAll(thrownTypes);
+    // Add types to account for unchecked exceptions
+    thrownSet.addAll(uncheckedExceptionTypes);
+
+    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
+    return extendedNode;
   }
 
   @Override
@@ -3737,12 +3751,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
     closeAccessNode.setInSource(false);
     extendWithNode(closeAccessNode);
-    // TODO this does not reflect the fact that the close() call can throw an Exception.  Should it?
     MethodInvocationNode closeCallNode =
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
-    extendWithNode(closeCallNode);
+    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
   }
 
   /**
