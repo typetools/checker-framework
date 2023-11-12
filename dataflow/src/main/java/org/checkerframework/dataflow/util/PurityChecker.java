@@ -307,6 +307,7 @@ public class PurityChecker {
       boolean deterministic =
           assumeDeterministic
               || okThrowDeterministic
+              // No need to check assumePureGetters because a constructor is never a getter.
               || PurityUtils.isDeterministic(annoProvider, ctorElement);
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);

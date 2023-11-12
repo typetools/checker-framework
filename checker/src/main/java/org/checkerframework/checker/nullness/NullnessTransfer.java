@@ -388,7 +388,6 @@ public class NullnessTransfer
 
     boolean isMethodSideEffectFree =
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
-    System.out.printf("isMethodSideEffectFree(%s) = %s%n", method, isMethodSideEffectFree);
     Node receiver = n.getTarget().getReceiver();
     if (nonNullAssumptionAfterInvocation
         || isMethodSideEffectFree

@@ -5,6 +5,7 @@ class PureGetterTest {
   @SuppressWarnings("optional.field")
   Optional<String> field;
 
+  // This method will be treated as @Pure because of -AassumePureGetters.
   Optional<String> getOptional() {
     return null;
   }
@@ -44,7 +45,6 @@ class PureGetterTest {
     }
     if (getOptional().isPresent()) {
       getOptional();
-      // :: error: method.invocation
       getOptional().get();
     }
     if (getOptional().isPresent()) {
