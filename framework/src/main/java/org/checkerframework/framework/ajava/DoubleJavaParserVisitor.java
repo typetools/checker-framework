@@ -118,7 +118,7 @@ import java.util.List;
 public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
 
   /** Create a DoubleJavaParserVisitor. */
-  private DoubleJavaParserVisitor() {}
+  public DoubleJavaParserVisitor() {}
 
   /**
    * Default action performed on all pairs of nodes from matching ASTs.
