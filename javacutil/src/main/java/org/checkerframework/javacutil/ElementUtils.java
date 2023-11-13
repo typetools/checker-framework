@@ -1101,7 +1101,8 @@ public class ElementUtils {
 
   /**
    * Returns true if the given element is a getter method. A getter method is an instance method
-   * whose name starts with "get[A-Z]" and has no formal parameters.
+   * with no formal parameters, whose name starts with "get", "is", "not", or "has" followed by an
+   * upper-case letter.
    *
    * @param methodElt a method
    * @return true if the given element is a getter method
@@ -1110,11 +1111,41 @@ public class ElementUtils {
     if (methodElt == null) {
       return false;
     }
-    // Constructors and initializers don't have name starting "get[A-Z]".
+    if (isStatic(methodElt)) {
+      return false;
+    }
+    if (!methodElt.getParameters().isEmpty()) {
+      return false;
+    }
+
+    // I could check that the method has a non-void return type,
+    // and that methods with prefix "is", "has", and "not" return boolean.
+
+    // Constructors and initializers don't have a name starting with a character.
     String name = methodElt.getSimpleName().toString();
     // I expect this code is more efficient than use of a regular expression.
-    boolean isGetterName =
-        name.startsWith("get") && name.length() > 3 && Character.isUpperCase(name.charAt(3));
-    return isGetterName && !isStatic(methodElt) && methodElt.getParameters().isEmpty();
+    boolean nameOk =
+        nameStartsWith(name, "get")
+            || nameStartsWith(name, "is")
+            || nameStartsWith(name, "not")
+            || nameStartsWith(name, "has");
+    if (!nameOk) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns true if the name starts with the given prefix, followed by an upper-case letter.
+   *
+   * @param name a name
+   * @param prefix a prefix
+   * @return true if the name starts with the given prefix, followed by an upper-case letter
+   */
+  private static boolean nameStartsWith(String name, String prefix) {
+    return name.startsWith(prefix)
+        && name.length() > prefix.length()
+        && Character.isUpperCase(name.charAt(prefix.length()));
   }
 }

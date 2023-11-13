@@ -112,8 +112,9 @@ deterministic, or is both, respectively.
 The command-line option \<-AassumePureGetters> makes the Checker Framework
 unsoundly assume that every getter method is side-effect-free and
 deterministic.  For the purposes of \<-AassumePureGetters>, a getter method
-is defined as an instance method that starts with ``get[A-Z]'' and has no
-formal parameters.
+is defined as an instance method with no formal parameters, whose name
+starts with ``get'', ``is'', ``not'', or ``has'' followed by an uppercase
+letter.
 
 This can make
 flow-sensitive type refinement much more effective, since method calls will
