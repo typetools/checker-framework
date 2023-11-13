@@ -380,7 +380,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private final boolean assumeDeterministic;
 
   /**
-   * True if all getter methods should be assumed to be @SideEffectFree, for the purposes of
+   * True if all getter methods should be assumed to be @Pure, for the purposes of
    * org.checkerframework.dataflow analysis.
    */
   private final boolean assumePureGetters;
