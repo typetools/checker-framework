@@ -1,3 +1,6 @@
+// This test ensures that the all-paths condition for inferring the @MustCallAlias annotation is
+// restricted to the examination of 'Regular' paths.
+
 import java.io.IOException;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;

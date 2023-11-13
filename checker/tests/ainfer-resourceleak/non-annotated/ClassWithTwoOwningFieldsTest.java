@@ -1,3 +1,6 @@
+// This test ensures that the @MustCallAlias annotation is not inferred when the enclosing class has
+// more than one owning field.
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 

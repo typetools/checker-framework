@@ -1,3 +1,6 @@
+// This test ensures that the @NotOwning annotation is inferred for the return type of a method if
+// it returns a field.
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
