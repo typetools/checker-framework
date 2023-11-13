@@ -523,9 +523,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * {@code nondet()} is 3, because it might not be 3 the next time {@code nondet()} is executed.
    *
    * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
-   * might have a postcondition that{@code nondet()} is odd. This means that the next call to{@code
-   * nondet()} will return odd. Such a postcondition may be evicted from the store by calling a
-   * side-effecting method.
+   * might have a postcondition that {@code nondet()} is odd. This means that the next call to
+   * {@code nondet()} will return odd. Such a postcondition may be evicted from the store by calling
+   * a side-effecting method.
    *
    * @param expr the expression to insert in the store
    * @param value the value of the expression
