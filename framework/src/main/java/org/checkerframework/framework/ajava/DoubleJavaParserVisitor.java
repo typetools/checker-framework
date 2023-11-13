@@ -116,6 +116,12 @@ import java.util.List;
  */
 @SuppressWarnings("optional:method.invocation") // parallel structure of two data structures
 public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
+
+  /** Do not instantiate DoubleJavaParserVisitor. */
+  private DoubleJavaParserVisitor() {
+    throw new Error("Do not instantiate DoubleJavaParserVisitor.");
+  }
+
   /**
    * Default action performed on all pairs of nodes from matching ASTs.
    *
