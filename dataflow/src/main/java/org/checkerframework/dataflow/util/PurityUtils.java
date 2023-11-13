@@ -123,8 +123,8 @@ public class PurityUtils {
   /**
    * Returns the purity annotations on the method {@code methodTree}.
    *
-   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} method
-   *     is not used.
+   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
+   *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodTree a method to test
    * @return the types of purity of the method {@code methodTree}
    */
@@ -140,8 +140,8 @@ public class PurityUtils {
   /**
    * Returns the purity annotations on the method {@code methodElement}.
    *
-   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} method
-   *     is not used.
+   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
+   *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodElement a method to test
    * @return the types of purity of the method {@code methodElement}
    */
