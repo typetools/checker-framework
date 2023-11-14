@@ -128,7 +128,8 @@ public class TreeBuilder {
 
   /**
    * Build a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
-   * implements {@link AutoCloseable}
+   * implements {@link AutoCloseable}. This method is used when desugaring try-with-resources
+   * statements during CFG construction.
    *
    * @param autoCloseableExpr the expression
    * @return the member select tree
