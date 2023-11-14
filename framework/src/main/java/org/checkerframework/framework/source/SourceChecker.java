@@ -125,6 +125,8 @@ import org.plumelib.util.UtilPlume;
   "assumeSideEffectFree",
   "assumeDeterministic",
   "assumePure",
+  // Unsoundly assume getter methods have no side effects and are deterministic.
+  "assumePureGetters",
 
   // Whether to assume that assertions are enabled or disabled
   // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
@@ -747,7 +749,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public AnnotationProvider getAnnotationProvider() {
     throw new UnsupportedOperationException(
-        "getAnnotationProvider is not implemented for this class.");
+        "getAnnotationProvider is not implemented for " + this.getClass().getSimpleName() + ".");
   }
 
   /**
