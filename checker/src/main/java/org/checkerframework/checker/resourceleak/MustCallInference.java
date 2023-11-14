@@ -243,7 +243,7 @@ public class MustCallInference {
         // checking phase. However, calling updateObligationsWithInvocationResult() will not have
         // any side effects on the outcome of the Resource Leak Checker. This is because the
         // inference occurs within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory,
-        // once the consistency analyzer has completed its process
+        // once the consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
           computeOwningFromInvocation(obligations, node);
@@ -355,6 +355,9 @@ public class MustCallInference {
     return result != null ? result : Collections.emptySet();
   }
 
+  // TODO: It is a code smell for a method to both have a side effect and return a value.  Can this
+  // be replaced, in at least some locations, by a pair of methods that each have a simpler
+  // specification?
   /**
    * Updates the owning fields set for this class to include all fields inferred as owning in this
    * iteration.
