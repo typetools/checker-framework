@@ -1129,6 +1129,7 @@ public class ElementUtils {
             || nameStartsWith(name, "is")
             || nameStartsWith(name, "not")
             || nameStartsWith(name, "has");
+
     if (!nameOk) {
       return false;
     }
