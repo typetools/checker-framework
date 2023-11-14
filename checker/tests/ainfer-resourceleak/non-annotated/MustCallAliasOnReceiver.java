@@ -1,4 +1,5 @@
-// @skip-test until we have support for adding annotation on the receiver parameter
+// @skip-test until we have support for adding annotation on the receiver parameter.
+
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;

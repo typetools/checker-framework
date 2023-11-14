@@ -1,3 +1,5 @@
+// This test examines all scenarios for inferring the @MustCallAlias annotation.
+
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
@@ -11,7 +13,7 @@ class MustCallAliasParams {
   @InheritableMustCall("a")
   private class MCAConstructor {
 
-    final @Owning Foo f; // expect owning annotation for this field
+    final @Owning Foo f;
 
     // The Must Call Checker for assigning @MustCallAlias parameters to @Owning fields reports a
     // false positive.
