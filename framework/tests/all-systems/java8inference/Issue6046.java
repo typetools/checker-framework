@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("all")
 public class Issue6046 {
 
   public interface Record extends Comparable<Record>, Formattable {}
