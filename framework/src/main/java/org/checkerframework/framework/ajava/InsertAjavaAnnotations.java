@@ -316,10 +316,11 @@ public class InsertAjavaAnnotations {
         insertions.add(new Insertion(position, insertionContent));
       }
 
-      src.getModule().ifPresent(l -> l.accept(this, dest.getModule().get()));
+      src.getModule().ifPresent(m -> m.accept(this, dest.getModule().get()));
       src.getPackageDeclaration()
-          .ifPresent(l -> l.accept(this, dest.getPackageDeclaration().get()));
-      for (int i = 0; i < src.getTypes().size(); i++) {
+          .ifPresent(pd -> pd.accept(this, dest.getPackageDeclaration().get()));
+      int numTypes = src.getTypes().size();
+      for (int i = 0; i < numTypes; i++) {
         src.getTypes().get(i).accept(this, dest.getTypes().get(i));
       }
     }

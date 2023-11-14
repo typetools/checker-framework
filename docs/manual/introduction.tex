@@ -578,12 +578,14 @@ Unsound checking: ignore some errors
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
   Section~\ref{askipdefs}.
-\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>
+\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>, \<-AassumePureGetters>
   Unsoundly assume that every method is side-effect-free, deterministic, or
-  both; see
+  both; or that every getter method is pure.
+  See Section~\ref{purity-suppress-warnings} and
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
-  Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
+  Whether to assume that assertions (Java \<assert> statements) are enabled
+  or disabled; see Section~\ref{type-refinement-assertions}.
 \item \<-AignoreRangeOverflow>
   Ignore the possibility of overflow for range annotations such as
   \<@IntRange>; see Section~\ref{value-checker-overflow}.
@@ -1685,4 +1687,4 @@ or suppress warnings.
 % LocalWords:  requireNonNull ApermitUnsupportedJdkVersion AstubWarnNote
 % LocalWords:  AwarnRedundantAnnotations AinferOutputOriginal
 % LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
-% LocalWords:  AshowWpiFailedInferences
+% LocalWords:  AshowWpiFailedInferences AassumePureGetters

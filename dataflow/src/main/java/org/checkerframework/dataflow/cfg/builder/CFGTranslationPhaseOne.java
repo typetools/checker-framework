@@ -1458,7 +1458,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // First, compute the receiver, if any (15.12.4.1).
     // Second, evaluate the actual arguments, left to right and possibly some arguments are
-    // stored into an array for variable arguments calls (15.12.4.2).
+    // stored into an array for varargs calls (15.12.4.2).
     // Third, test the receiver, if any, for nullness (15.12.4.4).
     // Fourth, convert the arguments to the type of the formal parameters (15.12.4.5).
     // Fifth, if the method is synchronized, lock the receiving object or class (15.12.4.5).
@@ -1528,8 +1528,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // see JLS 14.10
 
-    // If assertions are enabled, then we can just translate the
-    // assertion.
+    // If assertions are enabled, then we can just translate the assertion.
     if (assumeAssertionsEnabled || assumeAssertionsEnabledFor(tree)) {
       translateAssertWithAssertionsEnabled(tree);
       return null;

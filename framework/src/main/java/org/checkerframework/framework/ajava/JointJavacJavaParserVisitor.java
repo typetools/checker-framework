@@ -2285,8 +2285,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit an optional syntax construct. Whether the javac tree is non-null must match whether the
-   * JavaParser optional is present.
+   * Visit an optional syntax construct. Iff the javac tree is non-null, the JavaParser optional is
+   * present.
    *
    * @param javacTree a javac tree or null
    * @param javaParserNode an optional JavaParser node, which might not be present
