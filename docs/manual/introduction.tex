@@ -578,9 +578,9 @@ Unsound checking: ignore some errors
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
   Section~\ref{askipdefs}.
-\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>
+\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>, \<-AassumePureGetters>
   Unsoundly assume that every method is side-effect-free, deterministic, or
-  both.
+  both; or that every getter method is pure.
   See Section~\ref{purity-suppress-warnings} and
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>

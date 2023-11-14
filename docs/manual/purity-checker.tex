@@ -105,9 +105,15 @@ from superclass definitions.
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
 
 The command-line options \<-AassumeSideEffectFree>,
-\<-AassumeDeterministic>, and \<-AassumePure> make the Checker Framework unsoundly
-assume that \emph{every} called method is side-effect-free, is
+\<-AassumeDeterministic>, and \<-AassumePure> make the Checker Framework
+unsoundly assume that \emph{every} called method is side-effect-free, is
 deterministic, or is both, respectively.
+
+The command-line option \<-AassumePureGetters> makes the Checker Framework
+unsoundly assume that every getter method is side-effect-free and
+deterministic.  For the purposes of \<-AassumePureGetters>, a getter method
+is defined as an instance method with no formal parameters, whose name
+starts with ``get'' followed by an uppercase letter.
 
 This can make
 flow-sensitive type refinement much more effective, since method calls will
@@ -120,6 +126,10 @@ of the following is true:
 \item
   You are using the Checker Framework to find bugs but not to give a
   guarantee that no more errors exist of the given type.
+\item
+  You are working with an unannotated library that makes the given
+  assumptions, in which case (say) using \<-AassumePureGetters> is easier
+  than writing stub files for all the library's getter methods.
 \end{itemize}
 
 

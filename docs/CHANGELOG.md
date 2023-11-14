@@ -3,6 +3,9 @@ Version 3.40.1 (December 1, 2023)
 
 **User-visible changes:**
 
+New command-line options:
+  -AassumePureGetters Unsoundly assume that every getter method is pure
+
 **Implementation details:**
 
 Added method `isDeterministic()` to the `AnnotationProvider` interface.

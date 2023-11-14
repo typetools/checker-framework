@@ -41,6 +41,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 import org.plumelib.util.ToStringComparator;
@@ -112,6 +113,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
   private final boolean assumeSideEffectFree;
 
+  /** True if -AassumePureGetters was passed on the command line. */
+  private final boolean assumePureGetters;
+
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);
 
@@ -145,6 +149,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     assumeSideEffectFree =
         analysis.checker.hasOption("assumeSideEffectFree")
             || analysis.checker.hasOption("assumePure");
+    assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -162,6 +167,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
     assumeSideEffectFree = other.assumeSideEffectFree;
+    assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -237,7 +243,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         (GenericAnnotatedTypeFactory<V, S, ?, ?>) atypeFactory;
 
     // Case 1: The method is side-effect-free.
-    if (!(assumeSideEffectFree || atypeFactory.isSideEffectFree(method))) {
+    boolean hasSideEffect =
+        !(assumeSideEffectFree
+            || (assumePureGetters && ElementUtils.isGetter(method))
+            || atypeFactory.isSideEffectFree(method));
+    if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
 
