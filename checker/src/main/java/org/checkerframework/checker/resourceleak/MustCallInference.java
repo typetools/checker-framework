@@ -379,6 +379,8 @@ public class MustCallInference {
     wpi.addDeclarationAnnotationToFormalParameter(methodElt, index, OWNING);
   }
 
+  // TODO: The documentation says "Adds the node to the disposedFields and owningFields sets", but I
+  // don't see any modification of owningFields.
   /**
    * Adds the node to the disposedFields and owningFields sets if it is a field and its must-call
    * obligation is satisfied by the given method call. If so, it will be given an @Owning annotation
@@ -542,6 +544,8 @@ public class MustCallInference {
       String mustCallValue = mustCallValues.get(0);
       String fieldName = "this." + disposedField.getSimpleName().toString();
 
+      // TODO: Use of a HashSet is not deterministic, but an algorithm can use a HashSet and still
+      // be deterministic.  Is that the case for this algorithm?
       methodToFields.computeIfAbsent(mustCallValue, k -> new HashSet<>()).add(fieldName);
     }
 
@@ -668,6 +672,9 @@ public class MustCallInference {
     return false;
   }
 
+  // TODO: should "parameters" be "parameters of the current method"?
+  // TODO: What is the relationship to "inferOwningParamsViaOwnershipTransfer"?  The specifications
+  // of the two methods seem similar.
   /**
    * Computes @Owning annotations for the parameters passed in the receiver or arguments position of
    * a call.
@@ -699,6 +706,9 @@ public class MustCallInference {
     }
   }
 
+  // TODO: arbitrary expressions such as `arg` don't have @Owning.  Is this for a field or a formal
+  // parmeter of the current method?
+  // TODO: what is "the current block"?
   /**
    * Computes an @Owning annotation for the {@code arg} that can be a receiver or an argument passed
    * into a method call.
