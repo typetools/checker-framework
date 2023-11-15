@@ -31,5 +31,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
-@DefaultFor(types = Void.class)
+@DefaultFor(types = Void.class, names = ".*OrNull$")
 public @interface Nullable {}
