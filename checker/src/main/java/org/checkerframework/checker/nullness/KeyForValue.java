@@ -84,8 +84,10 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   }
 
   @Override
-  public KeyForValue leastUpperBound(@Nullable KeyForValue other) {
-    KeyForValue lub = super.leastUpperBound(other);
+  protected KeyForValue upperBound(
+      @Nullable KeyForValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    KeyForValue lub = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+
     if (other == null || other.keyForMaps == null || this.keyForMaps == null) {
       return lub;
     }

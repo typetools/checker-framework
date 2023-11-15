@@ -673,16 +673,8 @@ public abstract class CFAbstractTransfer<
       // is `Object`, not `String`.)
       // So, use the Java type of the conditional expression and the annotations for each branch.
       TypeMirror ternaryType = TreeUtils.typeOf(n.getTree());
-      V thenTernaryValue = analysis.createAbstractValue(thenValue.annotations, ternaryType);
-      if (thenTernaryValue == null) {
-        thenTernaryValue = thenValue;
-      }
-      V elseTernaryValue = analysis.createAbstractValue(elseValue.annotations, ternaryType);
-      if (elseTernaryValue == null) {
-        elseTernaryValue = elseValue;
-      }
       // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenTernaryValue.leastUpperBound(elseTernaryValue);
+      resultValue = thenValue.leastUpperBound(elseValue, ternaryType);
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
