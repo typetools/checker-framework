@@ -797,6 +797,13 @@ subprojects {
         [
           '-Astubs=javax-lang-model-element-name.astub'
         ])
+    createCheckTypeTask(project.name, 'Optional',
+        'org.checkerframework.checker.optional.OptionalChecker',
+        [
+          // to avoid having to annotate JavaParser
+          '-AassumePureGetters',
+          '-AassumeAssertionsAreEnabled',
+        ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
     createCheckTypeTask(project.name, 'ResourceLeak',
@@ -980,7 +987,7 @@ subprojects {
     }
     tasks.create(name: 'typecheck-part1', group: 'Verification') {
       description 'Run the Checker Framework on itself (part 1)'
-      dependsOn('checkFormatter', 'checkInterning', 'checkPurity')
+      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
     }
     tasks.create(name: 'typecheck-part2', group: 'Verification') {
       description 'Run the Checker Framework on itself (part 2)'
