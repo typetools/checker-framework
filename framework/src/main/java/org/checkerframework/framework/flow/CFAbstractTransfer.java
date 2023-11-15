@@ -668,8 +668,22 @@ public abstract class CFAbstractTransfer<
     V elseValue = p.getValueOfSubNode(n.getElseOperand());
     V resultValue = null;
     if (thenValue != null && elseValue != null) {
+      // If a conditional expression is a poly expression, then its Java type is type of the its
+      // context. (For example,
+      // the type of the condition expression is in `Object o = b ? "" : "";` is `Object`, not
+      // `String`.)
+      // So, use the Java type of the conditional expression and the annotations for each branch.
+      TypeMirror ternaryType = TreeUtils.typeOf(n.getTree());
+      V thenTernaryValue = analysis.createAbstractValue(thenValue.annotations, ternaryType);
+      if (thenTernaryValue == null) {
+        thenTernaryValue = thenValue;
+      }
+      V elseTernaryValue = analysis.createAbstractValue(elseValue.annotations, ternaryType);
+      if (elseTernaryValue == null) {
+        elseTernaryValue = elseValue;
+      }
       // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenValue.leastUpperBound(elseValue);
+      resultValue = thenTernaryValue.leastUpperBound(elseTernaryValue);
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
