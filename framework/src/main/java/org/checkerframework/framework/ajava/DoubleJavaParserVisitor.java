@@ -114,7 +114,12 @@ import java.util.List;
  *
  * @checker_framework.manual #ajava-contents ways in which the two visited ASTs may differ
  */
+@SuppressWarnings("optional:method.invocation") // parallel structure of two data structures
 public abstract class DoubleJavaParserVisitor extends VoidVisitorAdapter<Node> {
+
+  /** Create a DoubleJavaParserVisitor. */
+  public DoubleJavaParserVisitor() {}
+
   /**
    * Default action performed on all pairs of nodes from matching ASTs.
    *
