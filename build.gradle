@@ -383,7 +383,7 @@ allprojects {
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
       String lint =     '-Xlint:-options,-fallthrough'
-      if(isJava21orHigher && !jdk17Compiler) {
+      if (isJava21orHigher && !jdk17Compiler) {
         // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
         lint +=',-this-escape'
       }
