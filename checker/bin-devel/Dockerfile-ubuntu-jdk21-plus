@@ -6,7 +6,7 @@
 # Checker Framework and Annotation Tools repositories) for: (java|jdk).?21\b
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
-# As of 2023-10-15, "ubuntu:rolling" is still 23.04.
+# As of 2023-11-15, "ubuntu:rolling" is still 23.04.
 FROM ubuntu:23.10
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
@@ -51,9 +51,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 # Maven 3.8.7 is the default on Ubuntu 23.04, so the below is not needed.
 # (Don't try to use a variable here for the Maven version.)
 # RUN export DEBIAN_FRONTEND=noninteractive \
-# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz \
-# && tar xzvf apache-maven-3.9.2-bin.tar.gz
-# ENV PATH="/apache-maven-3.9.2/bin:$PATH"
+# && wget https://mirrors.sonic.net/apache/maven/maven-3/3.9.5/binaries/apache-maven-3.9.5-bin.tar.gz \
+# && tar xzvf apache-maven-3.9.5-bin.tar.gz
+# ENV PATH="/apache-maven-3.9.5/bin:$PATH"
 
 # Bug fix to make jtreg runnable: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=754942;msg=2
 RUN export DEBIAN_FRONTEND=noninteractive \
