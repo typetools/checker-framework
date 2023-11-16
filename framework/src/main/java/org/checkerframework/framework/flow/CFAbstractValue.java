@@ -432,6 +432,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
   }
 
+  /**
+   * {@inheritDoc} Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror,
+   * boolean)} instead of this method.
+   *
+   * @param other
+   * @return
+   */
   @Override
   public final V leastUpperBound(@Nullable V other) {
     return upperBound(other, false);
@@ -441,6 +448,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * Compute the least upper bound of two values. The returned value with have a Java type of {@code
    * typeMirror}. {@code TypeMirror} should be an upper bound of the Java types of {@code this} an
    * {@code other}, but it does not have be to the leaster upper bound.
+   *
+   * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
+   * of this method.
    *
    * @param other another value
    * @param typeMirror the underlying Java type of the returned value, which may or may not be the
@@ -469,6 +479,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *       more permissive.
    *   <li>Is commutative.
    * </ul>
+   *
+   * Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead of
+   * this method.
    *
    * @param previous must be the previous value
    * @return an upper bound of two values that is wider than the least upper bound of the two values

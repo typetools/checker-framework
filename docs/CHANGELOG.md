@@ -10,6 +10,10 @@ New command-line options:
 
 Added method `isDeterministic()` to the `AnnotationProvider` interface.
 
+Marked `CFAbstractValue#leastUpperBound` and `CFAbstractValue#widenUpperBound`
+final.  Subclasses should override `CFAbstractValue#upperBound(V, TypeMirror,
+boolean)` instead.
+
 **Closed issues:**
 
 
