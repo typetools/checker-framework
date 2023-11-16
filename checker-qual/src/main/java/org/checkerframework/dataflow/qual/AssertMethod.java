@@ -25,12 +25,31 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
  *     qualifier inference)
  */
-// TODO: Make the following true like TerminatesExecution.
-// * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
-//    * {@code @InheritedAnnotation}.
-// @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
-// "framework" project.
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface AssertMethod {}
+public @interface AssertMethod {
+
+  /**
+   * The class of the exception thrown by this method. The default is {@link AssertionError}.
+   *
+   * @return class of the exception thrown by this method
+   */
+  Class<?> value() default AssertionError.class;
+
+  /**
+   * The one-based index of the boolean parameter that if {@code false}, the methods throws an
+   * exception.
+   *
+   * @return the one-based index of the boolean parameter that if {@code false}, the methods throws
+   *     an exception
+   */
+  int parameter() default 1;
+
+  /**
+   * On which result does the method throw an exception?
+   *
+   * @return the result on which the method throws an exception
+   */
+  boolean result() default true;
+}

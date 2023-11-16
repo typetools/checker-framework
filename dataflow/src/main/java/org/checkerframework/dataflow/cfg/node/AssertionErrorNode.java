@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -17,11 +17,11 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AssertionErrorNode extends Node {
 
-  protected final AssertTree tree;
+  protected final Tree tree;
   protected final Node condition;
   protected final Node detail;
 
-  public AssertionErrorNode(AssertTree tree, Node condition, Node detail, TypeMirror type) {
+  public AssertionErrorNode(Tree tree, Node condition, Node detail, TypeMirror type) {
     // TODO: Find out the correct "type" for statements.
     // Is it TypeKind.NONE?
     super(type);
@@ -39,7 +39,7 @@ public class AssertionErrorNode extends Node {
   }
 
   @Override
-  public AssertTree getTree() {
+  public Tree getTree() {
     return tree;
   }
 
