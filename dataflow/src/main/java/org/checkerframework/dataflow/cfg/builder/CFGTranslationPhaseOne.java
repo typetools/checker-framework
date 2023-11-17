@@ -58,6 +58,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1323,9 +1324,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (assertMethodAnno != null) {
       param =
           AnnotationUtils.getElementValue(
-              assertMethodAnno, assertMethodParameterElement, Integer.class);
-      Class<?> assertErrorClass =
-          AnnotationUtils.getElementValue(assertMethodAnno, assertMethodValueElement, Class.class);
+              assertMethodAnno, assertMethodParameterElement, Integer.class, 1);
+      TypeMirror assertErrorClass =
+          (Type.ClassType)
+              AnnotationUtils.getElementValue(
+                  assertMethodAnno, assertMethodValueElement, Type.ClassType.class);
       if (assertErrorClass == AssertionError.class) {
         assertType = assertionErrorType;
       } else {
@@ -1333,7 +1336,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
       assertTrue =
           AnnotationUtils.getElementValue(
-              assertMethodAnno, assertMethodResultElement, Boolean.class);
+              assertMethodAnno, assertMethodResultElement, Boolean.class, true);
     }
 
     int numActuals = actualExprs.size();
