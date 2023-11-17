@@ -393,6 +393,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final ExecutableElement assertMethodResultElement;
 
   /**
+   * Creates {@link CFGTranslationPhaseOne}.
+   *
    * @param treeBuilder builder for new AST nodes
    * @param annotationProvider extracts annotations from AST nodes
    * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
@@ -1296,6 +1298,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * list of {@link Node}s representing the arguments converted for a call of the method. This
    * method applies to both method invocations and constructor calls.
    *
+   * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
    * @param methodType an ExecutableType representing the type of the method call; the type must be
    *     viewpoint-adapted to the call

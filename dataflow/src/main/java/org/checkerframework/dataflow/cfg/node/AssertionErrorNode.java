@@ -9,7 +9,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
- * A node for the {@link AssertionError} when an assertion fails.
+ * A node for the {@link AssertionError} when an assertion fails or when a method call marked {@link
+ * org.checkerframework.dataflow.qual.AssertMethod}. fails.
  *
  * <pre>
  *   assert <em>condition</em> : <em>detail</em> ;
@@ -17,11 +18,24 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  */
 public class AssertionErrorNode extends Node {
 
+  /** Tree for the assert statement or assert method. */
   protected final Tree tree;
-  protected final Node condition;
-  protected final Node detail;
 
-  public AssertionErrorNode(Tree tree, Node condition, Node detail, TypeMirror type) {
+  /** The condition when if false the assertion exception is thrown. */
+  protected final Node condition;
+
+  /** The node for the expression after {@code :} in the assert statement or null. */
+  protected final @Nullable Node detail;
+
+  /**
+   * Creates an AssertionErrorNode.
+   *
+   * @param tree tree for the assert statement or assert method.
+   * @param condition the node of the condition when if false the assertion exception is thrown
+   * @param detail node for the expression after {@code :} in the assert statement or null
+   * @param type the type of the assert statement
+   */
+  public AssertionErrorNode(Tree tree, Node condition, @Nullable Node detail, TypeMirror type) {
     // TODO: Find out the correct "type" for statements.
     // Is it TypeKind.NONE?
     super(type);
