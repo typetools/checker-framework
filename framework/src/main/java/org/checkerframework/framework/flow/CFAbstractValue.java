@@ -433,11 +433,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * {@inheritDoc} Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror,
-   * boolean)} instead of this method.
+   * {@inheritDoc}
    *
-   * @param other
-   * @return
+   * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
+   * of this method.
    */
   @Override
   public final V leastUpperBound(@Nullable V other) {
