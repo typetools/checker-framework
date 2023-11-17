@@ -93,15 +93,17 @@ import org.plumelib.util.CollectionsPlume;
 public class MustCallInference {
 
   /**
-   * The fields that have been inferred to be disposed within the current method. When inference
-   * finishes, all of the fields in this set will be given an @Owning annotation. Note that this set
-   * is not monotonically-increasing: fields may be added to this set and then removed during
-   * inference. For example, if a field's must-call method is called, it is added to this set. If,
+   * This map keeps the fields that have been inferred to be disposed within the current method.
+   * Keys represent inferred owning fields, and values contain the must-call method names (Note:
+   * currently this code assumes that the must-call set only contains one element). When inference
+   * finishes, all of the fields in this map will be given an @Owning annotation. Note that this map
+   * is not monotonically-increasing: fields may be added to this map and then removed during
+   * inference. For example, if a field's must-call method is called, it is added to this map. If,
    * in a later statement in the same method, the same field is re-assigned, it will be removed from
-   * this set (since the field assignment invalidated the previously-inferred disposing of the
+   * this map (since the field assignment invalidated the previously-inferred disposing of the
    * obligation).
    */
-  private final Set<VariableElement> disposedFields = new LinkedHashSet<>();
+  private final Map<VariableElement, String> disposedFields = new LinkedHashMap<>();
 
   /**
    * The owned fields. This includes:
@@ -111,7 +113,7 @@ public class MustCallInference {
    *   <li>the inferred owning fields in this analysis.
    * </ul>
    *
-   * This set is a superset of the {@code disposedFields} set.
+   * This set is a superset of the key set in the {@code disposedFields} map.
    */
   private final Set<VariableElement> owningFields = new HashSet<>();
 
@@ -212,9 +214,11 @@ public class MustCallInference {
   }
 
   /**
-   * Runs the inference algorithm on the current method (the {@link #cfg} field). If it discovers
-   * that a must-call obligations was satisfied (on any path to a regular exit point), it updates
-   * the {@link #disposedFields} set or adds @Owning to the formal parameter.
+   * Runs the inference algorithm on the current method (the {@link #cfg} field). It discovers
+   * annotations such as {@code @}{@link Owning} on owning fields and parameters, {@code @}{@link
+   * NotOwning} on return types, {@code @}{@link EnsuresCalledMethods} on methods, {@code @}{@link
+   * MustCallAlias} on parameters and return types, and {@code @}{@link InheritableMustCall} on
+   * class declarations.
    *
    * <p>Operationally, it checks method invocations for fields and parameters (with
    * non-empty @MustCall obligations) along all paths to the regular exit point.
@@ -376,9 +380,9 @@ public class MustCallInference {
   }
 
   /**
-   * Adds the node to the disposedFields and owningFields sets if it is a field and its must-call
-   * obligation is satisfied by the given method call. If so, it will be given an @Owning annotation
-   * later.
+   * Adds the node to the disposedFields map and the owningFields set if it is a field and its
+   * must-call obligation is satisfied by the given method call. If so, it will be given an @Owning
+   * annotation later.
    *
    * @param node possibly an owning field
    * @param invocation method invoked on the possible owning field
@@ -394,10 +398,13 @@ public class MustCallInference {
       AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, nodeJe);
       List<String> mustCallValues = resourceLeakAtf.getMustCallValues(nodeElt);
       if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
-        // This assumes that any MustCall annotation has at most one element.
+        assert !mustCallValues.isEmpty()
+            : "Must-call obligation of owning field " + nodeElt + " is empty.";
         // TODO: generalize this to MustCall annotations with more than one element.
-        assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
-        disposedFields.add((VariableElement) nodeElt);
+        // Currently, this code assumes that the must-call set has only one element.
+        assert mustCallValues.size() == 1
+            : "The must-call set of " + nodeElt + "should be a singleton: " + mustCallValues;
+        disposedFields.put((VariableElement) nodeElt, mustCallValues.get(0));
         owningFields.add((VariableElement) nodeElt);
       }
     }
@@ -444,11 +451,11 @@ public class MustCallInference {
         return;
       }
 
-      // If the owning field is present in the disposedFields set and there is an assignment to the
-      // field, it must be removed from the set. This is essential since the disposedFields set is
+      // If the owning field is present in the disposedFields map and there is an assignment to the
+      // field, it must be removed from the set. This is essential since the disposedFields map is
       // used for adding @EnsuresCalledMethods annotations to the current method later. Note that
       // this removal doesn't affect the owning annotation we inferred for the field, as the
-      // owningField set is updated before this line through the 'updateOwningFields' method.
+      // owningField set is updated with the inferred owning field in the 'inferOwningField' method.
       if (!TreeUtils.isConstructor(methodTree)) {
         disposedFields.remove((VariableElement) lhsElement);
       }
@@ -533,14 +540,8 @@ public class MustCallInference {
     // methods are called. This map is used to create a @EnsuresCalledMethods annotation for each
     // set of fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
-    for (VariableElement disposedField : disposedFields) {
-      List<String> mustCallValues = resourceLeakAtf.getMustCallValues(disposedField);
-      assert !mustCallValues.isEmpty()
-          : "Must-call obligation of owning field " + disposedField + " is empty.";
-      // Currently, this code assumes that the must-call set has only one element.
-      assert mustCallValues.size() == 1
-          : "The must-call set of " + disposedField + "should be a singleton: " + mustCallValues;
-      String mustCallValue = mustCallValues.get(0);
+    for (VariableElement disposedField : disposedFields.keySet()) {
+      String mustCallValue = disposedFields.get(disposedField);
       String fieldName = "this." + disposedField.getSimpleName().toString();
       methodToFields.computeIfAbsent(mustCallValue, k -> new LinkedHashSet<>()).add(fieldName);
     }
@@ -600,8 +601,8 @@ public class MustCallInference {
     // fields, then add (to the class) an InheritableMustCall annotation with the name of this
     // method.
     if (!methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-      // Since the result of getOwningFields() is a superset of disposedFields, it is sufficient
-      // to check the equality of their sizes to determine if both sets are equal.
+      // Since the result of getOwningFields() is a superset of the key set in disposedFields map,
+      // it is sufficient to check the equality of their sizes to determine if both sets are equal.
       if (!disposedFields.isEmpty() && disposedFields.size() == getOwningFields().size()) {
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
