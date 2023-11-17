@@ -446,7 +446,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /**
    * Compute the least upper bound of two values. The returned value with have a Java type of {@code
    * typeMirror}. {@code TypeMirror} should be an upper bound of the Java types of {@code this} an
-   * {@code other}, but it does not have be to the leaster upper bound.
+   * {@code other}, but it does not have be to the least upper bound.
    *
    * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
    * of this method.
