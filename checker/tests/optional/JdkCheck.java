@@ -88,6 +88,7 @@ public class JdkCheck {
   String mapTestGetOnEmpty(@Nullable String s1, String s2) {
     Optional<String> optS1 = Optional.ofNullable(s1); // optS1 has type @MaybePresent
     if (optS1.isPresent()) {
+      // optS1 now has the refined type @Present
       return optS1.map(s -> s + s2).get();
     } else {
       // Still has type @MaybePresent
