@@ -511,12 +511,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns an upper bound of this and {@code other}.
+   * Returns an upper bound of {@code this} and {@code other}. The underlying type of the value
+   * returned, is {@code upperBoundTypeMirror}. If {@code shouldWiden} is false, this method returns
+   * the least upper bound of {@code this} and {@code other}.
+   *
+   * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
+   * #leastUpperBound(CFAbstractValue)}, and {@link #upperBound(CFAbstractValue, boolean)}.
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
    * @param shouldWiden true if the lub should perform widening
-   * @return the least upper bound of this and {@code other}
+   * @return an upper bound of this and {@code other}
    */
   protected V upperBound(@Nullable V other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     ValueLub valueLub = new ValueLub(shouldWiden);
