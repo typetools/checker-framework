@@ -1324,16 +1324,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (assertMethodAnno != null) {
       param =
           AnnotationUtils.getElementValue(
-              assertMethodAnno, assertMethodParameterElement, Integer.class, 1);
-      TypeMirror assertErrorClass =
-          (Type.ClassType)
-              AnnotationUtils.getElementValue(
-                  assertMethodAnno, assertMethodValueElement, Type.ClassType.class);
-      if (assertErrorClass == AssertionError.class) {
-        assertType = assertionErrorType;
-      } else {
-        assertType = TypesUtils.typeFromClass(assertErrorClass, types, elements);
-      }
+                  assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
+              - 1;
+      assertType =
+          AnnotationUtils.getElementValue(
+              assertMethodAnno,
+              assertMethodValueElement,
+              Type.ClassType.class,
+              (Type.ClassType) assertionErrorType);
       assertTrue =
           AnnotationUtils.getElementValue(
               assertMethodAnno, assertMethodResultElement, Boolean.class, true);
@@ -1694,18 +1692,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodInvocationTree tree, TypeMirror assertType, boolean assertTrue, Node condition) {
 
     // all necessary labels
-    Label assertEnd = new Label();
-    Label exception = new Label();
-
-    ConditionalJump cjump =
-        assertTrue
-            ? new ConditionalJump(assertEnd, exception)
-            : new ConditionalJump(exception, assertEnd);
+    Label thenLabel = new Label();
+    Label elseLabel = new Label();
+    ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
     extendWithExtendedNode(cjump);
+    if (!assertTrue) {
+      Label oldThenLabel = thenLabel;
+      thenLabel = elseLabel;
+      elseLabel = oldThenLabel;
+    }
 
-    // else branch
     Node detail = null;
-    addLabelForNextNode(exception);
+    addLabelForNextNode(elseLabel);
     AssertionErrorNode assertNode = new AssertionErrorNode(tree, condition, detail, assertType);
     extendWithNode(assertNode);
     NodeWithExceptionsHolder exNode =
@@ -1713,8 +1711,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new ThrowNode(null, assertNode, env.getTypeUtils()), assertType);
     exNode.setTerminatesExecution(true);
 
-    // then branch
-    addLabelForNextNode(assertEnd);
+    addLabelForNextNode(thenLabel);
   }
 
   @Override
