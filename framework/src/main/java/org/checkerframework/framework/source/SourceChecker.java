@@ -816,10 +816,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (options.containsKey(patternName)) {
       pattern = options.get(patternName);
       if (pattern == null) {
-        message(
-            Diagnostic.Kind.WARNING,
+        throw new UserError(
             "The " + patternName + " property is empty; please fix your command line");
-        pattern = "";
       }
     } else {
       pattern = System.getProperty("checkers." + patternName);
@@ -832,8 +830,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (pattern.indexOf("/") != -1) {
-      message(
-          Diagnostic.Kind.WARNING,
+      throw new UserError(
           "The "
               + patternName
               + " property contains \"/\", which will never match a class name: "
@@ -844,7 +841,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       pattern = defaultPattern;
     }
 
-    return Pattern.compile(pattern);
+    try {
+      return Pattern.compile(pattern);
+    } catch (PatternSyntaxException e) {
+      throw new UserError(
+          "The " + patternName + " property is not a regular expression: " + pattern);
+    }
   }
 
   private Pattern getSkipUsesPattern(Map<String, String> options) {
