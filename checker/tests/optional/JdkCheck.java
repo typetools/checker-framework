@@ -74,4 +74,26 @@ public class JdkCheck {
   Optional<String> ofNullableTestMNn(String s) {
     return Optional.ofNullable(s);
   }
+
+  /* TODO: these will fail until Optional#map is properly annotated in the JDK.
+  String mapTestGetOnPresent(@Nullable String s1, String s2) {
+    Optional<String> optS1 = Optional.ofNullable(s1); // optS1 has type @MaybePresent
+    if (!optS1.isPresent()) {
+      return "Empty";
+    }
+    // From here, optS1 has the refined type @Present.
+    return optS1.map(s -> s + s2).get();
+  }
+
+  String mapTestGetOnEmpty(@Nullable String s1, String s2) {
+    Optional<String> optS1 = Optional.ofNullable(s1); // optS1 has type @MaybePresent
+    if (optS1.isPresent()) {
+      return optS1.map(s -> s + s2).get();
+    } else {
+      // Still has type @MaybePresent
+      // :: error: (method.invocation)
+      return optS1.map(s -> s + s2).get();
+    }
+  }
+   */
 }
