@@ -368,8 +368,11 @@ public class OptionalVisitor
   /**
    * Handles Rule #5, part of Rule #6, and also Rule #7.
    *
-   * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional value.
+   * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
+   * value.
+   *
    * <p>Rule #6: Don't use Optional in fields, parameters, and collections.
+   *
    * <p>Rule #7: Don't use Optional to wrap any collection type.
    */
   private final class OptionalTypeValidator extends BaseTypeValidator {
@@ -382,8 +385,11 @@ public class OptionalVisitor
     /**
      * Handles Rule #5, part of Rule #6, and also Rule #7.
      *
-     * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional value.
+     * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
+     * value.
+     *
      * <p>Rule #6: Don't use Optional in fields, parameters, and collections.
+     *
      * <p>Rule #7: Don't use Optional to wrap any collection type.
      */
     @Override
