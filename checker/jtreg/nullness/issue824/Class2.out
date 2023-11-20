@@ -8,5 +8,5 @@ Class2.java:19:27: compiler.err.proc.messager: (type.arguments.not.inferred)
 Class2.java:20:26: compiler.err.proc.messager: (argument)
 Class2.java:24:14: compiler.err.proc.messager: (override.return)
 Class2.java:25:33: compiler.err.proc.messager: (type.arguments.not.inferred)
-9 errors
+8 errors
 2 warnings
