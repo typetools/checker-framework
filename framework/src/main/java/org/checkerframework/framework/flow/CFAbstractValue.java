@@ -433,11 +433,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * {@inheritDoc} Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror,
-   * boolean)} instead of this method.
+   * {@inheritDoc}
    *
-   * @param other
-   * @return
+   * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
+   * of this method.
    */
   @Override
   public final V leastUpperBound(@Nullable V other) {
@@ -447,7 +446,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   /**
    * Compute the least upper bound of two values. The returned value with have a Java type of {@code
    * typeMirror}. {@code TypeMirror} should be an upper bound of the Java types of {@code this} an
-   * {@code other}, but it does not have be to the leaster upper bound.
+   * {@code other}, but it does not have be to the least upper bound.
    *
    * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
    * of this method.
@@ -511,12 +510,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns an upper bound of this and {@code other}.
+   * Returns an upper bound of {@code this} and {@code other}. The underlying type of the value
+   * returned, is {@code upperBoundTypeMirror}. If {@code shouldWiden} is false, this method returns
+   * the least upper bound of {@code this} and {@code other}.
+   *
+   * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
+   * #leastUpperBound(CFAbstractValue)}, and {@link #upperBound(CFAbstractValue, boolean)}.
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
    * @param shouldWiden true if the lub should perform widening
-   * @return the least upper bound of this and {@code other}
+   * @return an upper bound of this and {@code other}
    */
   protected V upperBound(@Nullable V other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     ValueLub valueLub = new ValueLub(shouldWiden);
