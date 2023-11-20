@@ -1,3 +1,4 @@
+- compiler.warn.proc.messager: junit-assertions.astub:(line 1,col 1): Package not found: org.junit.jupiter.api
 - compiler.warn.proc.messager: junit-assertions.astub:(line 14,col 1): Type not found: org.junit.jupiter.api.Assertions
 Class2.java:14:39: compiler.err.proc.messager: (type.argument)
 Class2.java:15:20: compiler.err.proc.messager: (type.argument)
@@ -7,5 +8,5 @@ Class2.java:19:27: compiler.err.proc.messager: (type.arguments.not.inferred)
 Class2.java:20:26: compiler.err.proc.messager: (argument)
 Class2.java:24:14: compiler.err.proc.messager: (override.return)
 Class2.java:25:33: compiler.err.proc.messager: (type.arguments.not.inferred)
-8 errors
-1 warning
+9 errors
+2 warnings
