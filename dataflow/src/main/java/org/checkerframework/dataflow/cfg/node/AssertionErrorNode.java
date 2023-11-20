@@ -21,7 +21,7 @@ public class AssertionErrorNode extends Node {
   /** Tree for the assert statement or assert method. */
   protected final Tree tree;
 
-  /** The condition when if false the assertion exception is thrown. */
+  /** The condition that if it is false, the assertion exception is thrown. */
   protected final Node condition;
 
   /** The node for the expression after {@code :} in the assert statement or null. */
@@ -44,11 +44,21 @@ public class AssertionErrorNode extends Node {
     this.detail = detail;
   }
 
+  /**
+   * The node of the condition that if it is false, the assertion exception is thrown.
+   *
+   * @return the node of the condition that if it is false, the assertion exception is thrown
+   */
   public Node getCondition() {
     return condition;
   }
 
-  public Node getDetail() {
+  /**
+   * The node for the expression after {@code :} in the assert statement or null.
+   *
+   * @return node for the expression after {@code :} in the assert statement or null
+   */
+  public @Nullable Node getDetail() {
     return detail;
   }
 
