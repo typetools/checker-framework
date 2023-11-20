@@ -3,9 +3,11 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -49,6 +51,7 @@ public class AssertionErrorNode extends Node {
    *
    * @return the node of the condition that if it is false, the assertion exception is thrown
    */
+  @Pure
   public Node getCondition() {
     return condition;
   }
@@ -58,6 +61,7 @@ public class AssertionErrorNode extends Node {
    *
    * @return node for the expression after {@code :} in the assert statement or null
    */
+  @Pure
   public @Nullable Node getDetail() {
     return detail;
   }
@@ -95,6 +99,9 @@ public class AssertionErrorNode extends Node {
   @Override
   @SideEffectFree
   public Collection<Node> getOperands() {
+    if (getDetail() == null) {
+      return Collections.singleton(getCondition());
+    }
     return Arrays.asList(getCondition(), getDetail());
   }
 }
