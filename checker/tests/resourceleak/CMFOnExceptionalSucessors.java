@@ -1,8 +1,12 @@
+// This test checks whether methods with the @CreatesMustCallFor annotation create obligations on
+// both normal and exceptional successors.
+// See https://github.com/typetools/checker-framework/issues/6050
+
 import java.net.*;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-public class BindFail {
+public class CMFOnExceptionalSucessors {
 
   @InheritableMustCall("a")
   class Foo {
@@ -75,11 +79,22 @@ public class BindFail {
   public Bar test4() throws Exception {
     try {
       // :: error: required.method.not.called
-      Bar c = new Bar();
-      c.overwrite();
-      return c;
+      Bar b = new Bar();
+      b.overwrite();
+      return b;
     } catch (Exception e) {
 
+    }
+    return null;
+  }
+
+  public Bar test5() throws Exception {
+    Bar b = new Bar();
+    try {
+      b.overwrite();
+      return b;
+    } catch (Exception e) {
+      b.a();
     }
     return null;
   }

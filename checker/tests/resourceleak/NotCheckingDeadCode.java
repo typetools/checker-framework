@@ -1,7 +1,7 @@
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
-class AssignNullInExceptionBlock {
+class NotCheckingDeadCode {
 
   static class Foo {}
 

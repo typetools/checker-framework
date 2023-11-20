@@ -65,9 +65,6 @@ public class MustCallTransfer extends CFTransfer {
   /** True if -AnoCreatesMustCallFor was passed on the command line. */
   private final boolean noCreatesMustCallFor;
 
-  /** A set of stores for the exceptional paths */
-  private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
-
   /**
    * True if -AenableWpiForRlc was passed on the command line. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
@@ -173,7 +170,7 @@ public class MustCallTransfer extends CFTransfer {
       }
 
       if (n.getBlock() instanceof ExceptionBlock) {
-        exceptionalStores = makeExceptionalStores(n, result);
+        Map<TypeMirror, CFStore> exceptionalStores = makeExceptionalStores(n, result);
         // Update stores for the exceptional paths to handle cases like:
         // https://github.com/typetools/checker-framework/issues/6050
         if (result.containsTwoStores()) {
@@ -188,7 +185,6 @@ public class MustCallTransfer extends CFTransfer {
               new RegularTransferResult<>(
                   result.getResultValue(), result.getRegularStore().copy(), exceptionalStores);
         }
-        exceptionalStores = null;
       }
     }
 
