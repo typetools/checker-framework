@@ -168,7 +168,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   @Override
   protected MustCallAnalysis createFlowAnalysis() {
-    return new MustCallAnalysis(checker, this);
+    return new MustCallAnalysis((MustCallChecker) checker, this);
   }
 
   @Override

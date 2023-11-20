@@ -1,11 +1,9 @@
 package org.checkerframework.checker.mustcall;
 
 import com.google.common.collect.ImmutableSet;
-import com.sun.tools.javac.code.Type;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalName;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAnalysis;
 
 /**
@@ -15,13 +13,19 @@ import org.checkerframework.framework.flow.CFAnalysis;
 public class MustCallAnalysis extends CFAnalysis {
 
   /**
+   * The set of exceptions to ignore, cached from {@link MustCallChecker#getIgnoredExceptions()}.
+   */
+  private final SetOfTypes ignoredExceptions;
+
+  /**
    * Constructs an MustCallAnalysis.
    *
    * @param checker the checker
    * @param factory the type factory
    */
-  public MustCallAnalysis(BaseTypeChecker checker, MustCallAnnotatedTypeFactory factory) {
+  public MustCallAnalysis(MustCallChecker checker, MustCallAnnotatedTypeFactory factory) {
     super(checker, factory);
+    this.ignoredExceptions = checker.getIgnoredExceptions();
   }
 
   /**
@@ -39,16 +43,8 @@ public class MustCallAnalysis extends CFAnalysis {
           Error.class.getCanonicalName(),
           RuntimeException.class.getCanonicalName());
 
-  /**
-   * Ignore exceptional control flow due to ignored exception types.
-   *
-   * @param exceptionType exception type
-   * @return {@code true} if {@code exceptionType} is a member of {@link #ignoredExceptionTypes},
-   *     {@code false} otherwise
-   */
   @Override
-  protected boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptionTypes.contains(
-        ((Type) exceptionType).tsym.getQualifiedName().toString());
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return ignoredExceptions.contains(getTypes(), exceptionType);
   }
 }
