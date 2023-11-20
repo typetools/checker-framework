@@ -13,6 +13,7 @@ import java.util.List;
 import javax.lang.model.SourceVersion;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * This class contains util methods for reflective accessing Tree classes and methods that were
@@ -452,6 +453,7 @@ public class TreeUtilsAfterJava11 {
      * @param instanceOfTree the {@link InstanceOfTree} whose pattern is returned
      * @return the {@code PatternTree} of {@code instanceOfTree} or null if it doesn't exist
      */
+    @Pure
     public static @Nullable Tree getPattern(InstanceOfTree instanceOfTree) {
       if (sourceVersionNumber < 16) {
         return null;
