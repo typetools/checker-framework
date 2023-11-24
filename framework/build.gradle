@@ -77,8 +77,7 @@ task cloneTypetoolsJdk() {
         args = [
           'clone',
           '-q',
-          '--depth',
-          '1',
+          '--filter=blob:none',
           'https://github.com/typetools/jdk.git',
           'jdk'
         ]
