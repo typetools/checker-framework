@@ -1684,7 +1684,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Translates a method marked as {@link AssertMethod} in to the correct CFG nodes.
+   * Translates a method marked as {@link AssertMethod} into the correct CFG nodes.
    *
    * @param tree the method invocation tree
    * @param assertType the type of the exception thrown by the assert method

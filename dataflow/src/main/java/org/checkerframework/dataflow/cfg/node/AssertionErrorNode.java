@@ -12,7 +12,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A node for the {@link AssertionError} when an assertion fails or when a method call marked {@link
- * org.checkerframework.dataflow.qual.AssertMethod}. fails.
+ * org.checkerframework.dataflow.qual.AssertMethod} fails.
  *
  * <pre>
  *   assert <em>condition</em> : <em>detail</em> ;
@@ -26,15 +26,15 @@ public class AssertionErrorNode extends Node {
   /** The condition that if it is false, the assertion exception is thrown. */
   protected final Node condition;
 
-  /** The node for the expression after {@code :} in the assert statement or null. */
+  /** The node for the expression after {@code :} in the assert statement, or null. */
   protected final @Nullable Node detail;
 
   /**
    * Creates an AssertionErrorNode.
    *
-   * @param tree tree for the assert statement or assert method.
+   * @param tree tree for the assert statement or assert method
    * @param condition the node of the condition when if false the assertion exception is thrown
-   * @param detail node for the expression after {@code :} in the assert statement or null
+   * @param detail node for the expression after {@code :} in the assert statement, or null
    * @param type the type of the assert statement
    */
   public AssertionErrorNode(Tree tree, Node condition, @Nullable Node detail, TypeMirror type) {
@@ -57,9 +57,9 @@ public class AssertionErrorNode extends Node {
   }
 
   /**
-   * The node for the expression after {@code :} in the assert statement or null.
+   * The node for the expression after {@code :} in the assert statement, or null.
    *
-   * @return node for the expression after {@code :} in the assert statement or null
+   * @return node for the expression after {@code :} in the assert statement, or null
    */
   @Pure
   public @Nullable Node getDetail() {
