@@ -669,7 +669,7 @@ public abstract class CFAbstractTransfer<
     V resultValue = null;
     if (thenValue != null && elseValue != null) {
       // If a conditional expression is a poly expression, then its Java type is the type of its
-      // context. (For example, the type of the condition expression is in `Object o = b ? "" : "";`
+      // context. (For example, the type of the conditional expression in `Object o = b ? "" : "";`
       // is `Object`, not `String`.)
       // So, use the Java type of the conditional expression and the annotations for each branch.
       TypeMirror ternaryType = TreeUtils.typeOf(n.getTree());

@@ -444,9 +444,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Compute the least upper bound of two values. The returned value with have a Java type of {@code
-   * typeMirror}. {@code TypeMirror} should be an upper bound of the Java types of {@code this} an
-   * {@code other}, but it does not have be to the least upper bound.
+   * Compute the least upper bound of two abstract values. The returned value has a Java type of
+   * {@code typeMirror}. {@code typeMirror} should be an upper bound of the Java types of {@code
+   * this} an {@code other}, but it does not have be to the least upper bound.
    *
    * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
    * of this method.
@@ -454,7 +454,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param other another value
    * @param typeMirror the underlying Java type of the returned value, which may or may not be the
    *     least upper bound
-   * @return the least upper bound of two values
+   * @return the least upper bound of two abstract values
    */
   public final V leastUpperBound(@Nullable V other, TypeMirror typeMirror) {
     return upperBound(other, typeMirror, false);
@@ -516,6 +516,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
    * #leastUpperBound(CFAbstractValue)}, and {@link #upperBound(CFAbstractValue, boolean)}.
+   * Subclasses may override it.
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
