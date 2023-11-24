@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  *
  * the Optional Checker can determine that {@code optional} has a value.
  *
- * <p>The annotation is a <em>trusted</em> annotation, meaning that it is not checked whether the
+ * <p>This annotation is a <em>trusted</em> annotation, meaning that it is not checked whether the
  * annotated method really does throw an exception if the boolean expression is true.
  *
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
@@ -38,18 +38,18 @@ public @interface AssertMethod {
   Class<?> value() default AssertionError.class;
 
   /**
-   * The one-based index of the boolean parameter that if {@code false}, the methods throws an
-   * exception.
+   * The one-based index of the boolean parameter that is tested. If the parameter is false, the
+   * method throws an exception. The check can be reversed by use of the {@link #result} element; if
+   * {@link result} is false, then the method throws an exception if the parameter is true.
    *
-   * @return the one-based index of the boolean parameter that if {@code false}, the methods throws
-   *     an exception
+   * @return the one-based index of the boolean parameter that is tested
    */
   int parameter() default 1;
 
   /**
-   * On which result does the method throw an exception?
+   * On which value for {@link #parameter} does the method throw an exception?
    *
-   * @return the result on which the method throws an exception
+   * @return the result for {@link #parameter} on which the method throws an exception
    */
   boolean result() default true;
 }
