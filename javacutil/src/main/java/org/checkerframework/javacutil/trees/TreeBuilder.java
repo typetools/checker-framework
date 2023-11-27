@@ -137,7 +137,8 @@ public class TreeBuilder {
   public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
     DeclaredType exprType =
         (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(autoCloseableExpr));
-    assert exprType != null : "expression must be of declared type AutoCloseable";
+    assert exprType != null
+        : "expression must be of declared type AutoCloseable: " + autoCloseableExpr;
 
     TypeElement exprElement = (TypeElement) exprType.asElement();
 
@@ -147,6 +148,7 @@ public class TreeBuilder {
     for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
       if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("close")) {
         closeMethod = (Symbol.MethodSymbol) method;
+        break;
       }
     }
 
