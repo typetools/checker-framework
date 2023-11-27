@@ -3754,18 +3754,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Shared logic for handling CFG generation for a finally block. The block may corresponding to a
-   * {@link TryTree} originally in the source code, or it may be an artificial finally block used to
-   * model closing of a resource due to try-with-resources.
+   * Shared logic for CFG generation for a finally block. The block may correspond to a {@link
+   * TryTree} originally in the source code, or it may be an artificial finally block used to model
+   * closing of a resource due to try-with-resources.
    *
    * @param markerTree tree to reference when creating {@link MarkerNode}s for the finally block
-   * @param doneLabel label for the CFG point for the normal successor of the try block (no
-   *     exceptions, returns, breaks, or continues)
+   * @param doneLabel label for the normal successor of the try block (no exceptions, returns,
+   *     breaks, or continues)
    * @param finallyLabel label for the entry of the finally block for the normal case
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
-   * @param finallyBlockCFGGenerator Runnable that generates CFG nodes and edges for the finally
-   *     block
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
    * @param oldReturnTargetLC old return target label cell
    * @param oldBreakTargetLC old break target label cell
    * @param oldBreakLabels old break labels
