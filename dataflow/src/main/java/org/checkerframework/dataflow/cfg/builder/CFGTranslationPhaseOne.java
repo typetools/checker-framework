@@ -3645,7 +3645,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return;
     }
 
-    // We handle the first resource declaration in the list
+    // Handle the first resource declaration in the list.  The rest will be handled by a recursive
+    // call.
     Tree resourceDeclarationTree = resources.get(0);
 
     extendWithNode(
@@ -3664,10 +3665,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these nodes
     // *before* pushing a TryFinallyFrame for the finally block that will close the resource.  If
     // any exception occurs due to code within the resource declaration, the corresponding variable
-    // or field is *not* automatically closed (as it was never assigned a value)
+    // or field is *not* automatically closed (as it was never assigned a value).
     Node resourceCloseNode = scan(resourceDeclarationTree, p);
 
-    // Now, set things up for our simulated finally block that closes the resource
+    // Now, set things up for our simulated finally block that closes the resource.
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
@@ -3715,9 +3716,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Adds an artificial {@code close} call to the CFG to close some resource variable declared or
-   * used in a try-with-resources
+   * used in a try-with-resources.
    *
-   * @param resourceDeclarationTree the tree for the resource declaration
+   * @param resourceDeclarationTree the resource declaration
    * @param resourceCloseNode node represented the variable or field on which {@code close} should
    *     be invoked
    */
