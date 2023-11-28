@@ -3635,7 +3635,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * recursion). A call to {@code close} for <i>r</i> is added in a synthetic {@code finally} block
    * for <i>t1</i>, guaranteeing that on every path through the CFG, <i>r</i> is closed.
    *
-   * @param tryTree the original try tree from the AST
+   * @param tryTree the original try tree (with 0 or more resources) from the AST
    * @param p value to pass to calls to {@code scan}
    * @param resources remaining resource declarations to handle
    */
