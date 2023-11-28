@@ -672,9 +672,9 @@ public abstract class CFAbstractTransfer<
       // context. (For example, the type of the conditional expression in `Object o = b ? "" : "";`
       // is `Object`, not `String`.)
       // So, use the Java type of the conditional expression and the annotations for each branch.
-      TypeMirror ternaryType = TreeUtils.typeOf(n.getTree());
+      TypeMirror conditionalType = TreeUtils.typeOf(n.getTree());
       // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenValue.leastUpperBound(elseValue, ternaryType);
+      resultValue = thenValue.leastUpperBound(elseValue, conditionalType);
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);

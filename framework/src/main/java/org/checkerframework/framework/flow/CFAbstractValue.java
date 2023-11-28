@@ -520,7 +520,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
-   * @param shouldWiden true if the lub should perform widening
+   * @param shouldWiden true if the method should perform widening
    * @return an upper bound of this and {@code other}
    */
   protected V upperBound(@Nullable V other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {

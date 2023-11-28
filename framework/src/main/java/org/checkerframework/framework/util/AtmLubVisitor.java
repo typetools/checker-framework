@@ -91,7 +91,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     } else {
       otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
     }
-    TypeMirror otherTM = otherType.getUnderlyingType();
+    TypeMirror otherTM = otherAsLub.getUnderlyingType();
 
     lub = otherAsLub.deepCopy();
 
