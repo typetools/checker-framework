@@ -3626,12 +3626,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Helper function to handle the resource declarations in a {@link TryTree} and its main block.
-   * The logic here follows JLS 14.20.3.1. A resource declaration <i>r</i> is handled by adding the
-   * nodes for <i>r</i> itself to the CFG, followed by a simulated nested try block <i>t1</i> for
-   * any remaining resource declarations and the original try block (handled with a recursive call).
-   * A call to {@code close} for <i>r</i> is added in a simulated {@code finally} block for
-   * <i>t1</i>, guaranteeing that on every path through the CFG, <i>r</i> is closed.
+   * A recursive helper method to handle the resource declarations (if any) in a {@link TryTree} and
+   * its main block. If the {@code resources} list is empty, the method scans the main block of the
+   * try statement and returns. Otherwise, the first resource declaration in {@code resources} is
+   * desugared, following the logic in JLS 14.20.3.1. A resource declaration <i>r</i> is desugared
+   * by adding the nodes for <i>r</i> itself to the CFG, followed by a synthetic nested try block
+   * <i>t1</i> for any remaining resource declarations and the original try block (handled via
+   * recursion). A call to {@code close} for <i>r</i> is added in a synthetic {@code finally} block
+   * for <i>t1</i>, guaranteeing that on every path through the CFG, <i>r</i> is closed.
    *
    * @param tryTree the original try tree from the AST
    * @param p value to pass to calls to {@code scan}
@@ -3655,7 +3657,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             "start of try for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
             env.getTypeUtils()));
 
-    // Store return/break/continue labels, as we will have a finally block for closing the resource.
+    // Store return/break/continue labels.  Generating a synthetic finally block for closing the
+    // resource requires creating fresh return/break/continue labels and then restoring the old
+    // labels afterward.
     LabelCell oldReturnTargetLC = returnTargetLC;
     LabelCell oldBreakTargetLC = breakTargetLC;
     Map<Name, Label> oldBreakLabels = breakLabels;
@@ -3715,14 +3719,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Adds an artificial {@code close} call to the CFG to close some resource variable declared or
-   * used in a try-with-resources.
+   * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
+   * in a try-with-resources.
    *
    * @param resourceDeclarationTree the resource declaration
-   * @param resourceCloseNode node represented the variable or field on which {@code close} should
+   * @param resourceToCloseNode node represented the variable or field on which {@code close} should
    *     be invoked
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Node resourceCloseNode) {
+  private void addCloseCallForResource(Tree resourceDeclarationTree, Node resourceToCloseNode) {
     Tree receiverTree = resourceDeclarationTree;
     if (receiverTree instanceof VariableTree) {
       receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
@@ -3736,10 +3740,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
     handleArtificialTree(closeCall);
 
-    Node receiverNode = resourceCloseNode;
+    Node receiverNode = resourceToCloseNode;
     if (receiverNode instanceof AssignmentNode) {
       // variable declaration; use the LHS
-      receiverNode = ((AssignmentNode) resourceCloseNode).getTarget();
+      receiverNode = ((AssignmentNode) resourceToCloseNode).getTarget();
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
@@ -3755,7 +3759,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Shared logic for CFG generation for a finally block. The block may correspond to a {@link
-   * TryTree} originally in the source code, or it may be an artificial finally block used to model
+   * TryTree} originally in the source code, or it may be a synthetic finally block used to model
    * closing of a resource due to try-with-resources.
    *
    * @param markerTree tree to reference when creating {@link MarkerNode}s for the finally block
@@ -3765,11 +3769,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
    *     throws an exception
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
-   * @param oldReturnTargetLC old return target label cell
-   * @param oldBreakTargetLC old break target label cell
-   * @param oldBreakLabels old break labels
-   * @param oldContinueTargetLC old continue target label cell
-   * @param oldContinueLabels old continue labels
+   * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
+   *     #returnTargetLC} while handling the finally block.
+   * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
+   *     #breakTargetLC} while handling the finally block.
+   * @param oldBreakLabels old break labels, which get restored to {@link #breakLabels} while
+   *     handling the finally block.
+   * @param oldContinueTargetLC old continue target label cell, which gets restored to {@link
+   *     #continueTargetLC} while handling the finally block.
+   * @param oldContinueLabels old continue labels, which get restored to {@link #continueLabels}
+   *     while handling the finally block.
    */
   private void handleFinally(
       Tree markerTree,
