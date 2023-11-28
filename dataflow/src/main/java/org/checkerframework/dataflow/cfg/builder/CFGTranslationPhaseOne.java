@@ -1321,6 +1321,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
     AnnotationMirror assertMethodAnno =
         annotationProvider.getDeclAnnotation(method, AssertMethod.class);
+    // 0-based index of the parameter of the expression that is tested by the assert method. (Or -1
+    // is assertMethodAnno is null.)
     int param;
     TypeMirror exceptionType;
     boolean isAssertTrue;
