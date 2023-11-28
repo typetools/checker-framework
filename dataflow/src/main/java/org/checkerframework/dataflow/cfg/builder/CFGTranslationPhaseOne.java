@@ -3673,7 +3673,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // or field is *not* automatically closed (as it was never assigned a value).
     Node resourceCloseNode = scan(resourceDeclarationTree, p);
 
-    // Now, set things up for our simulated finally block that closes the resource.
+    // Now, set things up for our synthetic finally block that closes the resource.
     Label doneLabel = new Label();
     Label finallyLabel = new Label();
 
