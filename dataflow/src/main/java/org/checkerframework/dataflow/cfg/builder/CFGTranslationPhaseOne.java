@@ -1321,23 +1321,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
     AnnotationMirror assertMethodAnno =
         annotationProvider.getDeclAnnotation(method, AssertMethod.class);
-    int param = -1;
-    TypeMirror assertType = null;
-    boolean assertTrue = true;
+    int param;
+    TypeMirror exceptionType;
+    boolean isAssertTrue;
     if (assertMethodAnno != null) {
       param =
           AnnotationUtils.getElementValue(
                   assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
               - 1;
-      assertType =
+      exceptionType =
           AnnotationUtils.getElementValue(
               assertMethodAnno,
               assertMethodValueElement,
               Type.ClassType.class,
               (Type.ClassType) assertionErrorType);
-      assertTrue =
+      isAssertTrue =
           AnnotationUtils.getElementValue(
               assertMethodAnno, assertMethodResultElement, Boolean.class, true);
+    } else {
+      param = -1;
+      exceptionType = null;
+      isAssertTrue = true;
     }
 
     int numActuals = actualExprs.size();
@@ -1353,7 +1357,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (int i = 0; i < numActuals; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
           if (param != -1 && i == param) {
-            treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+            treatMethodAsAssert(
+                (MethodInvocationTree) tree, exceptionType, isAssertTrue, actualVal);
           }
           if (actualVal == null) {
             throw new BugInCF(
@@ -1369,7 +1374,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
           if (i == param) {
-            treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+            treatMethodAsAssert(
+                (MethodInvocationTree) tree, exceptionType, isAssertTrue, actualVal);
           }
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
@@ -1401,7 +1407,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       for (int i = 0; i < numActuals; i++) {
         Node actualVal = scan(actualExprs.get(i), null);
         if (i == param) {
-          treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+          treatMethodAsAssert((MethodInvocationTree) tree, exceptionType, isAssertTrue, actualVal);
         }
         convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
       }
@@ -1687,34 +1693,29 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Translates a method marked as {@link AssertMethod} into the correct CFG nodes.
    *
    * @param tree the method invocation tree
-   * @param assertType the type of the exception thrown by the assert method
+   * @param exceptionType the type of the exception thrown by the assert method
    * @param assertTrue whether this is an assert true or assert false method.
    * @param condition the node for the condition that is true if the method completes normally
    */
   protected void treatMethodAsAssert(
-      MethodInvocationTree tree, TypeMirror assertType, boolean assertTrue, Node condition) {
+      MethodInvocationTree tree, TypeMirror exceptionType, boolean assertTrue, Node condition) {
 
     // all necessary labels
     Label thenLabel = new Label();
     Label elseLabel = new Label();
     ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
     extendWithExtendedNode(cjump);
-    if (!assertTrue) {
-      Label oldThenLabel = thenLabel;
-      thenLabel = elseLabel;
-      elseLabel = oldThenLabel;
-    }
 
     Node detail = null;
-    addLabelForNextNode(elseLabel);
-    AssertionErrorNode assertNode = new AssertionErrorNode(tree, condition, detail, assertType);
+    addLabelForNextNode(assertTrue ? elseLabel : thenLabel);
+    AssertionErrorNode assertNode = new AssertionErrorNode(tree, condition, detail, exceptionType);
     extendWithNode(assertNode);
     NodeWithExceptionsHolder exNode =
         extendWithNodeWithException(
-            new ThrowNode(null, assertNode, env.getTypeUtils()), assertType);
+            new ThrowNode(null, assertNode, env.getTypeUtils()), exceptionType);
     exNode.setTerminatesExecution(true);
 
-    addLabelForNextNode(thenLabel);
+    addLabelForNextNode(assertTrue ? thenLabel : elseLabel);
   }
 
   @Override

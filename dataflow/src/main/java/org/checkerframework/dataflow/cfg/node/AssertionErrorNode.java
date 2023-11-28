@@ -35,7 +35,7 @@ public class AssertionErrorNode extends Node {
    * @param tree tree for the assert statement or assert method
    * @param condition the node of the condition when if false the assertion exception is thrown
    * @param detail node for the expression after {@code :} in the assert statement, or null
-   * @param type the type of the assert statement
+   * @param type the type of the exception thrown
    */
   public AssertionErrorNode(Tree tree, Node condition, @Nullable Node detail, TypeMirror type) {
     // TODO: Find out the correct "type" for statements.

@@ -40,16 +40,16 @@ public @interface AssertMethod {
   /**
    * The one-based index of the boolean parameter that is tested. If the parameter is false, the
    * method throws an exception. The check can be reversed by use of the {@link #result} element; if
-   * {@link result} is false, then the method throws an exception if the parameter is true.
+   * {@link #result} is false, then the method throws an exception if the parameter is true.
    *
    * @return the one-based index of the boolean parameter that is tested
    */
   int parameter() default 1;
 
   /**
-   * On which value for {@link #parameter} does the method throw an exception?
+   * On which value for {@link #parameter} does the method complete normally?
    *
-   * @return the result for {@link #parameter} on which the method throws an exception
+   * @return the result for {@link #parameter} on which the method completes normally
    */
   boolean result() default true;
 }
