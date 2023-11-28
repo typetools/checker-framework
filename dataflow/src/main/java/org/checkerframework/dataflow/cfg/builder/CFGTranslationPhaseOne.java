@@ -3630,19 +3630,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * its main block. If the {@code resources} list is empty, the method scans the main block of the
    * try statement and returns. Otherwise, the first resource declaration in {@code resources} is
    * desugared, following the logic in JLS 14.20.3.1. A resource declaration <i>r</i> is desugared
-   * by adding the nodes for <i>r</i> itself to the CFG, followed by a synthetic nested try block
-   * <i>t1</i> for any remaining resource declarations and the original try block (handled via
-   * recursion). A call to {@code close} for <i>r</i> is added in a synthetic {@code finally} block
-   * for <i>t1</i>, guaranteeing that on every path through the CFG, <i>r</i> is closed.
+   * by adding the nodes for <i>r</i> itself to the CFG, followed by a synthetic nested {@code try}
+   * block and {@code finally} block. The synthetic {@code try} block contains any remaining
+   * resource declarations and the original try block (handled via recursion). The synthetic {@code
+   * finally} block contains a call to {@code close} for <i>r</i>, guaranteeing that on every path
+   * through the CFG, <i>r</i> is closed.
    *
    * @param tryTree the original try tree (with 0 or more resources) from the AST
-   * @param p value to pass to calls to {@code scan}
-   * @param resources remaining resource declarations to handle
+   * @param p the value to pass to calls to {@code scan}
+   * @param resources the remaining resource declarations to handle
    */
   private void visitTryResourcesAndBodyHelper(
       TryTree tryTree, Void p, List<? extends Tree> resources) {
     if (resources.isEmpty()) {
-      // Base case.  Just scan the main try block.
+      // Either `tryTree` was not a try-with-resources, or this method was called recursively and
+      // all the resources have been handled.  Just scan the main try block.
       scan(tryTree.getBlock(), p);
       return;
     }
@@ -3770,15 +3772,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     throws an exception
    * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
    * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
-   *     #returnTargetLC} while handling the finally block.
+   *     #returnTargetLC} while handling the finally block
    * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
-   *     #breakTargetLC} while handling the finally block.
+   *     #breakTargetLC} while handling the finally block
    * @param oldBreakLabels old break labels, which get restored to {@link #breakLabels} while
-   *     handling the finally block.
+   *     handling the finally block
    * @param oldContinueTargetLC old continue target label cell, which gets restored to {@link
-   *     #continueTargetLC} while handling the finally block.
+   *     #continueTargetLC} while handling the finally block
    * @param oldContinueLabels old continue labels, which get restored to {@link #continueLabels}
-   *     while handling the finally block.
+   *     while handling the finally block
    */
   private void handleFinally(
       Tree markerTree,
