@@ -17,7 +17,7 @@ public class Objects {
 }
 
 
-// No annotations for com.google.common.base.Preconditions or
+// No type annotations for com.google.common.base.Preconditions or
 // com.google.common.base.Verify are needed because they are annotated with
 // @CheckForNull and the Checker Framework treats @CheckForNull as @Nullable.
 
@@ -25,8 +25,11 @@ public class Objects {
 package org.junit;
 
 public class Assertions {
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual);
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual, String message);
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
 }
 
@@ -34,7 +37,10 @@ public class Assertions {
 package org.junit.jupiter.api;
 
 public class Assertions {
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual);
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual, String message);
+  @EnsuresNonNull("#1")
   public static void assertNotNull(@Nullable Object actual, Supplier<String> messageSupplier);
 }
