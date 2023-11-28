@@ -81,7 +81,8 @@ public final class NullnessUtil {
    * @param message text to include if this method is misused
    * @return the argument, casted to have the type qualifier @NonNull
    */
-  public static @EnsuresNonNull("#1") <T extends @Nullable Object> @NonNull T castNonNull(
+  @EnsuresNonNull("#1")
+  public static <T extends @Nullable Object> @NonNull T castNonNull(
       @Nullable T ref, String message) {
     assert ref != null : "Misuse of castNonNull: called with a null argument: " + message;
     return (@NonNull T) ref;
