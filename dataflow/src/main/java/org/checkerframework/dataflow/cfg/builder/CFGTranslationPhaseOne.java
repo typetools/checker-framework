@@ -3583,7 +3583,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MarkerNode(
             tree, "start of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
-    visitTryResourcesAndBodyHelper(tree, p, tree.getResources());
+    handleTryResourcesAndBlock(tree, p, tree.getResources());
 
     extendWithNode(
         new MarkerNode(
@@ -3640,8 +3640,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param p the value to pass to calls to {@code scan}
    * @param resources the remaining resource declarations to handle
    */
-  private void visitTryResourcesAndBodyHelper(
-      TryTree tryTree, Void p, List<? extends Tree> resources) {
+  private void handleTryResourcesAndBlock(TryTree tryTree, Void p, List<? extends Tree> resources) {
     if (resources.isEmpty()) {
       // Either `tryTree` was not a try-with-resources, or this method was called recursively and
       // all the resources have been handled.  Just scan the main try block.
@@ -3695,7 +3694,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
             env.getTypeUtils()));
     // Recursively handle any remaining resource declarations and the main block of the try
-    visitTryResourcesAndBodyHelper(tryTree, p, resources.subList(1, resources.size()));
+    handleTryResourcesAndBlock(tryTree, p, resources.subList(1, resources.size()));
     extendWithNode(
         new MarkerNode(
             resourceDeclarationTree,
