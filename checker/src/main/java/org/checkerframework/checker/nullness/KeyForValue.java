@@ -84,19 +84,21 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   }
 
   @Override
-  public KeyForValue leastUpperBound(@Nullable KeyForValue other) {
-    KeyForValue lub = super.leastUpperBound(other);
+  protected KeyForValue upperBound(
+      @Nullable KeyForValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    KeyForValue upperBound = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+
     if (other == null || other.keyForMaps == null || this.keyForMaps == null) {
-      return lub;
+      return upperBound;
     }
     // Lub the keyForMaps by intersecting the sets.
-    lub.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
-    lub.keyForMaps.addAll(this.keyForMaps);
-    lub.keyForMaps.retainAll(other.keyForMaps);
-    if (lub.keyForMaps.isEmpty()) {
-      lub.keyForMaps = null;
+    upperBound.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
+    upperBound.keyForMaps.addAll(this.keyForMaps);
+    upperBound.keyForMaps.retainAll(other.keyForMaps);
+    if (upperBound.keyForMaps.isEmpty()) {
+      upperBound.keyForMaps = null;
     }
-    return lub;
+    return upperBound;
   }
 
   @Override
