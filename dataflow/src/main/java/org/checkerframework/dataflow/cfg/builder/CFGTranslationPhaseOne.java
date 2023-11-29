@@ -1745,10 +1745,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
     extendWithExtendedNode(cjump);
 
-    Node detail = null;
     addLabelForNextNode(assertMethodTuple.isAssertFalse ? thenLabel : elseLabel);
     AssertionErrorNode assertNode =
-        new AssertionErrorNode(tree, condition, detail, assertMethodTuple.exceptionType);
+        new AssertionErrorNode(tree, condition, null, assertMethodTuple.exceptionType);
     extendWithNode(assertNode);
     NodeWithExceptionsHolder exNode =
         extendWithNodeWithException(
