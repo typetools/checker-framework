@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * the value of a boolean argument is false. This can be used to annotate methods such as JUnit's
  * {@code Assertions.assertTrue(...)}.
  *
- * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, is
+ * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, if
  * {@code Assertions.assertTrue} is annotated as follows:
  *
  * <pre><code>@AssertMethod(value = AssertionFailedError.class)
@@ -63,7 +63,7 @@ public @interface AssertMethod {
    * public static void assertFalse(boolean condition);
    * </code></pre>
    *
-   * @return the value for {@link #parameter} on which the method throw an exception
+   * @return the value for {@link #parameter} on which the method throws an exception
    */
   boolean isAssertFalse() default false;
 }
