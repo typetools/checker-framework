@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * {@code AssertMethod} is a method annotation that indicates that a method throws an exception if
- * the value of a boolean argument is false. This can be used to annotate methods such as Junit's
+ * the value of a boolean argument is false. This can be used to annotate methods such as JUnit's
  * {@code Assertions.assertTrue(...)}.
  *
  * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, after
@@ -19,8 +19,9 @@ import java.lang.annotation.Target;
  *
  * the Optional Checker can determine that {@code optional} has a value.
  *
- * <p>This annotation is a <em>trusted</em> annotation, meaning that it is not checked whether the
- * annotated method really does throw an exception if the boolean expression is true.
+ * <p>This annotation is a <em>trusted</em> annotation, meaning that the Checker Framework does not
+ * check whether the annotated method really does throw an exception depending on the boolean
+ * expression.
  *
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
  *     qualifier inference)
@@ -38,9 +39,7 @@ public @interface AssertMethod {
   Class<?> value() default AssertionError.class;
 
   /**
-   * The one-based index of the boolean parameter that is tested. If the parameter is false, the
-   * method throws an exception. The check can be reversed by use of the {@link #result} element; if
-   * {@link result} is false, then the method throws an exception if the parameter is true.
+   * The one-based index of the boolean parameter that is tested.
    *
    * @return the one-based index of the boolean parameter that is tested
    */
@@ -49,7 +48,11 @@ public @interface AssertMethod {
   /**
    * On which value for {@link #parameter} does the method throw an exception?
    *
-   * @return the result for {@link #parameter} on which the method throws an exception
+   * <p>If the given argument is the same as {@code exceptionalResult}, then the method throws an
+   * exception. For example, {@code exceptionalResult} is true for the {@code assert} and {@code
+   * assertTrue} methods, and it is false for the {@code assertFalse} method.
+   *
+   * @return the value for {@link #parameter} on which the method throw an exception
    */
-  boolean result() default true;
+  boolean exceptionalResult() default false;
 }

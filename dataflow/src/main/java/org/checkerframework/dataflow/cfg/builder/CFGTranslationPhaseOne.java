@@ -389,8 +389,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The AssertMethod.parameter argument/element. */
   protected final ExecutableElement assertMethodParameterElement;
 
-  /** The AssertMethod.result argument/element. */
-  protected final ExecutableElement assertMethodResultElement;
+  /** The {@link AssertMethod#exceptionalResult()} argument/element. */
+  protected final ExecutableElement assertMethodExceptionalResultElement;
 
   /**
    * Creates {@link CFGTranslationPhaseOne}.
@@ -461,7 +461,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     assertMethodValueElement = TreeUtils.getMethod(AssertMethod.class, "value", 0, env);
     assertMethodParameterElement = TreeUtils.getMethod(AssertMethod.class, "parameter", 0, env);
-    assertMethodResultElement = TreeUtils.getMethod(AssertMethod.class, "result", 0, env);
+    assertMethodExceptionalResultElement =
+        TreeUtils.getMethod(AssertMethod.class, "exceptionalResult", 0, env);
   }
 
   /**
@@ -1319,26 +1320,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
-    AnnotationMirror assertMethodAnno =
-        annotationProvider.getDeclAnnotation(method, AssertMethod.class);
-    int param = -1;
-    TypeMirror assertType = null;
-    boolean assertTrue = true;
-    if (assertMethodAnno != null) {
-      param =
-          AnnotationUtils.getElementValue(
-                  assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
-              - 1;
-      assertType =
-          AnnotationUtils.getElementValue(
-              assertMethodAnno,
-              assertMethodValueElement,
-              Type.ClassType.class,
-              (Type.ClassType) assertionErrorType);
-      assertTrue =
-          AnnotationUtils.getElementValue(
-              assertMethodAnno, assertMethodResultElement, Boolean.class, true);
-    }
+    AssertMethodTuple assertMethodTuple = getAssertMethodTuple(method);
 
     int numActuals = actualExprs.size();
     if (method.isVarArgs()) {
@@ -1352,8 +1334,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // invocation conversion to all arguments.
         for (int i = 0; i < numActuals; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
-          if (param != -1 && i == param) {
-            treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+          if (i == assertMethodTuple.param) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
           }
           if (actualVal == null) {
             throw new BugInCF(
@@ -1368,8 +1350,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // remaining ones to initialize an array.
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
-          if (i == param) {
-            treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+          if (i == assertMethodTuple.param) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
           }
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
@@ -1400,14 +1382,78 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       for (int i = 0; i < numActuals; i++) {
         Node actualVal = scan(actualExprs.get(i), null);
-        if (i == param) {
-          treatMethodAsAssert((MethodInvocationTree) tree, assertType, assertTrue, actualVal);
+        if (i == assertMethodTuple.param) {
+          treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
         }
         convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
       }
     }
 
     return convertedNodes;
+  }
+
+  /**
+   * Returns the AssertMethodTuple for {@code method}. If {@code method} is not an assert method,
+   * then {@link AssertMethodTuple#NONE} is returned.
+   *
+   * @param method a method element that might be an assert method
+   * @return the AssertMethodTuple for {@code method}
+   */
+  protected AssertMethodTuple getAssertMethodTuple(ExecutableElement method) {
+    AnnotationMirror assertMethodAnno =
+        annotationProvider.getDeclAnnotation(method, AssertMethod.class);
+    if (assertMethodAnno == null) {
+      return AssertMethodTuple.NONE;
+    }
+
+    int booleanParam =
+        AnnotationUtils.getElementValue(
+                assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
+            - 1;
+    TypeMirror exceptionType =
+        AnnotationUtils.getElementValue(
+            assertMethodAnno,
+            assertMethodValueElement,
+            Type.ClassType.class,
+            (Type.ClassType) assertionErrorType);
+    boolean isAssertTrue =
+        AnnotationUtils.getElementValue(
+            assertMethodAnno, assertMethodExceptionalResultElement, Boolean.class, false);
+    return new AssertMethodTuple(booleanParam, exceptionType, isAssertTrue);
+  }
+
+  /** Holds the elements of an {@link AssertMethod} annotation. */
+  protected static class AssertMethodTuple {
+
+    /** A tuple representing the lack of an {@link AssertMethodTuple}. */
+    protected static final AssertMethodTuple NONE = new AssertMethodTuple(-1, null, false);
+
+    /**
+     * 0-based index of the parameter of the expression that is tested by the assert method. (Or -1
+     * if this isn't an assert method.)
+     */
+    public final int booleanParam;
+
+    /** The type of the exception thrown by the assert method. */
+    public final TypeMirror exceptionType;
+
+    /** Which value results in an exception. */
+    public final boolean exceptionOnResult;
+
+    /**
+     * Creates an AssertMethodTuple.
+     *
+     * @param booleanParam 0-based index of the parameter of the expression that is tested by the
+     *     assert method
+     * @param exceptionType the type of the exception thrown by the assert method
+     * @param exceptionOnResult Which value results in an exception
+     */
+    public AssertMethodTuple(
+        int booleanParam, TypeMirror exceptionType, boolean exceptionOnResult) {
+      this.booleanParam = booleanParam;
+      this.exceptionType = exceptionType;
+      this.exceptionOnResult = exceptionOnResult;
+    }
   }
 
   /**
@@ -1688,34 +1734,29 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * assert} statement.
    *
    * @param tree the method invocation tree for a method marked as {@link AssertMethod}
-   * @param assertType the type of the exception thrown by the assert method
-   * @param assertTrue whether this is an assert true or assert false method.
-   * @param condition the node for the condition that is true if the method completes normally
+   * @param assertMethodTuple the assert method tuple for the method
+   * @param condition the boolean expression node for the argument that the method tests
    */
   protected void treatMethodAsAssert(
-      MethodInvocationTree tree, TypeMirror assertType, boolean assertTrue, Node condition) {
+      MethodInvocationTree tree, AssertMethodTuple assertMethodTuple, Node condition) {
 
     // all necessary labels
     Label thenLabel = new Label();
     Label elseLabel = new Label();
     ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
     extendWithExtendedNode(cjump);
-    if (!assertTrue) {
-      Label oldThenLabel = thenLabel;
-      thenLabel = elseLabel;
-      elseLabel = oldThenLabel;
-    }
 
     Node detail = null;
-    addLabelForNextNode(elseLabel);
-    AssertionErrorNode assertNode = new AssertionErrorNode(tree, condition, detail, assertType);
+    addLabelForNextNode(assertMethodTuple.exceptionOnResult ? thenLabel : elseLabel);
+    AssertionErrorNode assertNode =
+        new AssertionErrorNode(tree, condition, detail, assertMethodTuple.exceptionType);
     extendWithNode(assertNode);
     NodeWithExceptionsHolder exNode =
         extendWithNodeWithException(
-            new ThrowNode(null, assertNode, env.getTypeUtils()), assertType);
+            new ThrowNode(null, assertNode, env.getTypeUtils()), assertMethodTuple.exceptionType);
     exNode.setTerminatesExecution(true);
 
-    addLabelForNextNode(thenLabel);
+    addLabelForNextNode(assertMethodTuple.exceptionOnResult ? elseLabel : thenLabel);
   }
 
   @Override
