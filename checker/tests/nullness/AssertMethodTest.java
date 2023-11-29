@@ -72,7 +72,7 @@ public class AssertMethodTest {
     field.toString();
   }
 
-  @AssertMethod(exceptionalResult = true)
+  @AssertMethod(isAssertFalse = true)
   @SideEffectFree
   void assertFalse(boolean b) {
     if (b) {

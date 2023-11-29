@@ -11,13 +11,20 @@ import java.lang.annotation.Target;
  * the value of a boolean argument is false. This can be used to annotate methods such as JUnit's
  * {@code Assertions.assertTrue(...)}.
  *
- * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, after
+ * <p>The annotation enables flow-sensitive type refinement to be more precise. For example, is
+ * {@code Assertions.assertTrue} is annotated as follows:
+ *
+ * <pre><code>@AssertMethod(value = AssertionFailedError.class)
+ * public static void assertFalse(boolean condition);
+ * </code></pre>
+ *
+ * Then, in the code below, the Optional Checker can determine that {@code optional} has a value and
+ * the call to {@code Optional#get} will not throw an exception.
  *
  * <pre>
- *   Assertions.assertTrue(optional.isPresent());
+ * Assertions.assertTrue(optional.isPresent());
+ * Object o = optional.get();
  * </pre>
- *
- * the Optional Checker can determine that {@code optional} has a value.
  *
  * <p>This annotation is a <em>trusted</em> annotation, meaning that the Checker Framework does not
  * check whether the annotated method really does throw an exception depending on the boolean
@@ -46,13 +53,17 @@ public @interface AssertMethod {
   int parameter() default 1;
 
   /**
-   * On which value for {@link #parameter} does the method throw an exception?
+   * Returns whether this method asserts that the boolean expression is false.
    *
-   * <p>If the given argument is the same as {@code exceptionalResult}, then the method throws an
-   * exception. For example, {@code exceptionalResult} is true for the {@code assert} and {@code
-   * assertTrue} methods, and it is false for the {@code assertFalse} method.
+   * <p>For example, Junit's <a
+   * href="https://junit.org/junit5/docs/5.0.1/api/org/junit/jupiter/api/Assertions.html#assertFalse-boolean-">Assertions.assertFalse(...)</a>
+   * throws an exception if the first argument is false. So it is annotated as follows:
+   *
+   * <pre><code>@AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
+   * public static void assertFalse(boolean condition);
+   * </code></pre>
    *
    * @return the value for {@link #parameter} on which the method throw an exception
    */
-  boolean exceptionalResult() default false;
+  boolean isAssertFalse() default false;
 }

@@ -39,13 +39,13 @@ public class Assertions {
 
 	public static void assertTrue(BooleanSupplier booleanSupplier, Supplier<String> messageSupplier);
 
-	@AssertMethod(value = AssertionFailedError.class, exceptionalResult = true)
+	@AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
 	public static void assertFalse(boolean condition);
 
-	@AssertMethod(value = AssertionFailedError.class, exceptionalResult = true)
+	@AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
 	public static void assertFalse(boolean condition, String message);
 
-	@AssertMethod(value = AssertionFailedError.class, exceptionalResult = true)
+	@AssertMethod(value = AssertionFailedError.class, isAssertFalse = true)
 	public static void assertFalse(boolean condition, Supplier<String> messageSupplier);
 
 	public static void assertFalse(BooleanSupplier booleanSupplier);
