@@ -369,8 +369,6 @@ public class MustCallInference {
         disposedFields.remove((VariableElement) lhsElement);
       }
       addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
-      addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);

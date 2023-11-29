@@ -64,7 +64,7 @@ test_wpi_plume_lib() {
 
     rm -rf "$project"
     # Try twice in case of network lossage
-    git clone -q --depth 1 "https://github.com/plume-lib/$project.git" || (sleep 60 && git clone -q --depth 1 "https://github.com/plume-lib/$project.git")
+    git clone -q --filter=blob:none "https://github.com/plume-lib/$project.git" || (sleep 60 && git clone -q --filter=blob:none "https://github.com/plume-lib/$project.git")
 
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
