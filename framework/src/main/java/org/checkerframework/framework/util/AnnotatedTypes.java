@@ -140,6 +140,16 @@ public class AnnotatedTypes {
       return copy;
     }
 
+    Elements elements = atypeFactory.getProcessingEnv().getElementUtils();
+    if (supertype != null
+        && AnnotatedTypes.isEnum(supertype)
+        && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
+      // Don't return the asSuper result because is causes infinite loop.
+      @SuppressWarnings("unchecked")
+      T result = (T) supertype.deepCopy();
+      return result;
+    }
+
     T asSuperType = AnnotatedTypes.asSuper(atypeFactory, subtype, supertype);
 
     fixUpRawTypes(subtype, asSuperType, supertype, types);
