@@ -511,12 +511,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
   /**
    * Returns an upper bound of {@code this} and {@code other}. The underlying type of the value
-   * returned, is {@code upperBoundTypeMirror}. If {@code shouldWiden} is false, this method returns
+   * returned is {@code upperBoundTypeMirror}. If {@code shouldWiden} is false, this method returns
    * the least upper bound of {@code this} and {@code other}.
    *
    * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
-   * #leastUpperBound(CFAbstractValue)}, and {@link #upperBound(CFAbstractValue, boolean)}.
-   * Subclasses may override it.
+   * #leastUpperBound(CFAbstractValue)}, {@link #widenUpperBound(CFAbstractValue)}, and {@link
+   * #upperBound(CFAbstractValue, boolean)}. Subclasses may override it.
    *
    * @param other an abstract value
    * @param upperBoundTypeMirror the underlying type of the returned value
