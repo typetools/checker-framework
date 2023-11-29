@@ -1334,7 +1334,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // invocation conversion to all arguments.
         for (int i = 0; i < numActuals; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
-          if (i == assertMethodTuple.param) {
+          if (i == assertMethodTuple.booleanParam) {
             treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
           }
           if (actualVal == null) {
@@ -1350,7 +1350,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // remaining ones to initialize an array.
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
-          if (i == assertMethodTuple.param) {
+          if (i == assertMethodTuple.booleanParam) {
             treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
           }
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
@@ -1382,7 +1382,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       for (int i = 0; i < numActuals; i++) {
         Node actualVal = scan(actualExprs.get(i), null);
-        if (i == assertMethodTuple.param) {
+        if (i == assertMethodTuple.booleanParam) {
           treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
         }
         convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
