@@ -144,7 +144,7 @@ public class AnnotatedTypes {
     if (supertype != null
         && AnnotatedTypes.isEnum(supertype)
         && AnnotatedTypes.isDeclarationOfJavaLangEnum(types, elements, supertype)) {
-      // Don't return the asSuper result because is causes infinite loop.
+      // Don't return the asSuper result because it causes an infinite loop.
       @SuppressWarnings("unchecked")
       T result = (T) supertype.deepCopy();
       return result;
