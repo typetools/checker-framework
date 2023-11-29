@@ -396,6 +396,15 @@ public class InvocationTypeInference {
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
       }
+      if (target.isProper()) {
+        // From the JLS:
+        // "T is a primitive type, and one of the primitive wrapper classes mentioned in 5.1.7 is
+        // an instantiation, upper bound, or lower bound for [the variable] in B2."
+        ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.SUBTYPE));
+        BoundSet newBounds = constraintSet.reduce(context);
+        b2.incorporateToFixedPoint(newBounds);
+        return b2;
+      }
     }
 
     ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.TYPE_COMPATIBILITY));
