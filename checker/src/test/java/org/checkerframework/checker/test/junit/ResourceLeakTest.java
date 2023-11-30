@@ -20,6 +20,6 @@ public class ResourceLeakTest extends CheckerFrameworkPerDirectoryTest {
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"resourceleak"};
+    return new String[] {"rlc-tmp"};
   }
 }
