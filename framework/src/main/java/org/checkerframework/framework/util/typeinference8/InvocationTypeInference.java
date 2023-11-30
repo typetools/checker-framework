@@ -18,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.bound.CaptureBound;
+import org.checkerframework.framework.util.typeinference8.constraint.AdditionalArgument;
 import org.checkerframework.framework.util.typeinference8.constraint.CheckedExceptionConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -425,7 +426,7 @@ public class InvocationTypeInference {
    * @return the constraints between the formal parameters and arguments that are not pertinent to
    *     applicability
    */
-  private ConstraintSet createC(
+  public ConstraintSet createC(
       InvocationType methodType, List<? extends ExpressionTree> args, Theta map) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
@@ -481,26 +482,9 @@ public class InvocationTypeInference {
         }
         break;
       case METHOD_INVOCATION:
-        if (TreeUtils.isPolyExpression(ei)) {
-          MethodInvocationTree methodInvocation = (MethodInvocationTree) ei;
-          InvocationType methodType =
-              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(methodInvocation);
-          Theta newMap =
-              context.inferenceTypeFactory.createThetaForInvocation(
-                  methodInvocation, methodType, context);
-          c.addAll(createC(methodType, methodInvocation.getArguments(), newMap));
-        }
-        break;
       case NEW_CLASS:
         if (TreeUtils.isPolyExpression(ei)) {
-          NewClassTree newClassTree = (NewClassTree) ei;
-          InvocationType methodType =
-              context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(newClassTree);
-
-          Theta newMap =
-              context.inferenceTypeFactory.createThetaForInvocation(
-                  newClassTree, methodType, context);
-          c.addAll(createC(methodType, newClassTree.getArguments(), newMap));
+          c.add(new AdditionalArgument(ei));
         }
         break;
       case PARENTHESIZED:

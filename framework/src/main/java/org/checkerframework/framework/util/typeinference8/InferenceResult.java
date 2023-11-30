@@ -2,10 +2,10 @@ package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
@@ -58,7 +58,7 @@ public class InferenceResult {
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
-      List<Variable> variables,
+      Collection<Variable> variables,
       boolean uncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
@@ -105,7 +105,7 @@ public class InferenceResult {
    * @return a map from expression tree to a map from type variable to its type argument
    */
   private static Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> convert(
-      List<Variable> variables) {
+      Collection<Variable> variables) {
     Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> map = new HashMap<>();
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =

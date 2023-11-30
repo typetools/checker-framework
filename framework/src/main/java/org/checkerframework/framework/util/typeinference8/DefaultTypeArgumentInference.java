@@ -20,7 +20,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
+import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
+import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -55,7 +57,22 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // Inference is running and is asking for the type of the method before type arguments are
         // substituted. So don't infer any type arguments.  This happens when getting the type of a
         // lambda's returned expression.
-        return InferenceResult.emptyResult();
+        List<Variable> instantiated = new ArrayList<>();
+        Theta m = i.context.maps.get(expressionTree);
+        if (m == null) {
+          return InferenceResult.emptyResult();
+        }
+        m.values()
+            .forEach(
+                var -> {
+                  if (var.getInstantiation() != null) {
+                    instantiated.add(var);
+                  }
+                });
+        if (instantiated.isEmpty()) {
+          return InferenceResult.emptyResult();
+        }
+        return new InferenceResult(instantiated, false, false, "");
       }
     }
     AnnotatedExecutableType outerMethodType;

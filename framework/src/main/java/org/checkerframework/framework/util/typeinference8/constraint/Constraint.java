@@ -62,5 +62,8 @@ public interface Constraint extends ReductionResult {
 
     /** {@code < Q = R >}: A qualifier R is the same as a qualifier R. */
     QUALIFIER_EQUALITY,
+
+    /** A single constraint, that when reduced, generates additional argument constraints. */
+    ADDITIONAL_ARG,
   }
 }

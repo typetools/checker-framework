@@ -36,7 +36,7 @@ public class InferenceType extends AbstractType {
   private final TypeMirror typeMirror;
 
   /**
-   * The underlying Java type. It contains type variables that are mapped to inference variables in
+   * The AnnotatedTypeMirror. It contains type variables that are mapped to inference variables in
    * {@code map}.
    */
   private final AnnotatedTypeMirror type;

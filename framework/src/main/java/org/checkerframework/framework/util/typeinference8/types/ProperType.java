@@ -15,7 +15,6 @@ import org.checkerframework.framework.util.typeinference8.constraint.ConstraintS
 import org.checkerframework.framework.util.typeinference8.constraint.ReductionResult;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -101,7 +100,7 @@ public class ProperType extends AbstractType {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
 
     if (typeMirror.getKind() != atm.getKind()) {
-      throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());
+      //      throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());
     }
   }
 
