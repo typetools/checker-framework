@@ -86,7 +86,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -383,24 +382,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * from JLS 15.10.1 "Run-Time Evaluation of Array Creation Expressions".
    */
   protected final Set<TypeMirror> newArrayExceptionTypes;
-
-  /**
-   * The AssertMethod.value argument/element. This field is lazily initialized so that it does not
-   * have to be on the users classpath.
-   */
-  protected @MonotonicNonNull ExecutableElement assertMethodValueElement;
-
-  /**
-   * The AssertMethod.parameter argument/element. This field is lazily initialized so that it does
-   * not have to be on the users classpath.
-   */
-  protected @MonotonicNonNull ExecutableElement assertMethodParameterElement;
-
-  /**
-   * The {@link AssertMethod#isAssertFalse()} argument/element. This field is lazily initialized so
-   * that it does not have to be on the users classpath.
-   */
-  protected @MonotonicNonNull ExecutableElement assertMethodIsAssertFalseElement;
 
   /**
    * Creates {@link CFGTranslationPhaseOne}.
@@ -1411,25 +1392,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return AssertMethodTuple.NONE;
     }
 
-    if (assertMethodParameterElement == null) {
-      assertMethodValueElement = TreeUtils.getMethod(AssertMethod.class, "value", 0, env);
-      assertMethodParameterElement = TreeUtils.getMethod(AssertMethod.class, "parameter", 0, env);
-      assertMethodIsAssertFalseElement =
-          TreeUtils.getMethod(AssertMethod.class, "isAssertFalse", 0, env);
-    }
+    // Dataflow does not require checker-qual.jar to be on the users classpath, so
+    // AnnotationUtils.getElementValue(...) cannot be used.
+
     int booleanParam =
-        AnnotationUtils.getElementValue(
-                assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
+        AnnotationUtils.getElementValueNotOnClasspath(
+                assertMethodAnno, "parameter", Integer.class, 1)
             - 1;
+
     TypeMirror exceptionType =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno,
-            assertMethodValueElement,
-            Type.ClassType.class,
-            (Type.ClassType) assertionErrorType);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "value", Type.ClassType.class, (Type.ClassType) assertionErrorType);
     boolean isAssertFalse =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno, assertMethodIsAssertFalseElement, Boolean.class, false);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "isAssertFalse", Boolean.class, false);
     return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
   }
 
