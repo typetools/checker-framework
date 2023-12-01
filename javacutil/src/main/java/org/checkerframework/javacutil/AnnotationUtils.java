@@ -558,9 +558,10 @@ public class AnnotationUtils {
    * has type {@code expectedType}. If there is no value for {@code elementName}, {@code
    * defaultValue} is returned
    *
-   * <p>This method is intended only for use when the class of the annotation is not on the users
-   * classpath. Checkers can assume that checker-qual.jar is on the classpath and should use {@link
-   * #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
+   * <p>This method is intended only for use when the class of the annotation is not on the user's
+   * classpath. This is for users of the Dataflow Framework that do not use the rest of the Checker
+   * Framework. Type-checkers can assume that checker-qual.jar is on the classpath and should use
+   * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    * #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
    *
    * @param anno the annotation whose element to access
@@ -642,7 +643,7 @@ public class AnnotationUtils {
    * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
    */
-  @Deprecated // for use only by the framework
+  @Deprecated // for use only by the framework, not by clients
   public static <T> T getElementValue(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
