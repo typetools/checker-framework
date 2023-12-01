@@ -583,7 +583,7 @@ public class AnnotationUtils {
           return expectedType.cast(val.getValue());
         } catch (ClassCastException e) {
           throw new BugInCF(
-              "getElementValue(%s, %s, %s): val=%s, val.getValue()=%s [%s]",
+              "getElementValueNotOnClasspath(%s, %s, %s): val=%s, val.getValue()=%s [%s]",
               anno, elementName, expectedType, val, val.getValue(), val.getValue().getClass());
         }
       }
