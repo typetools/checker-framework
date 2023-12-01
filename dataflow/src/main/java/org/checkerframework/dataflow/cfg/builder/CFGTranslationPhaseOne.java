@@ -383,15 +383,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
-  /** The AssertMethod.value argument/element. */
-  protected final ExecutableElement assertMethodValueElement;
-
-  /** The AssertMethod.parameter argument/element. */
-  protected final ExecutableElement assertMethodParameterElement;
-
-  /** The {@link AssertMethod#isAssertFalse()} argument/element. */
-  protected final ExecutableElement assertMethodIsAssertFalseElement;
-
   /**
    * Creates {@link CFGTranslationPhaseOne}.
    *
@@ -458,11 +449,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (outOfMemoryErrorType != null) {
       newArrayExceptionTypes.add(outOfMemoryErrorType);
     }
-
-    assertMethodValueElement = TreeUtils.getMethod(AssertMethod.class, "value", 0, env);
-    assertMethodParameterElement = TreeUtils.getMethod(AssertMethod.class, "parameter", 0, env);
-    assertMethodIsAssertFalseElement =
-        TreeUtils.getMethod(AssertMethod.class, "isAssertFalse", 0, env);
   }
 
   /**
@@ -1406,19 +1392,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return AssertMethodTuple.NONE;
     }
 
+    // Dataflow does not require checker-qual.jar to be on the users classpath, so
+    // AnnotationUtils.getElementValue(...) cannot be used.
+
     int booleanParam =
-        AnnotationUtils.getElementValue(
-                assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
+        AnnotationUtils.getElementValueNotOnClasspath(
+                assertMethodAnno, "parameter", Integer.class, 1)
             - 1;
+
     TypeMirror exceptionType =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno,
-            assertMethodValueElement,
-            Type.ClassType.class,
-            (Type.ClassType) assertionErrorType);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "value", Type.ClassType.class, (Type.ClassType) assertionErrorType);
     boolean isAssertFalse =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno, assertMethodIsAssertFalseElement, Boolean.class, false);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "isAssertFalse", Boolean.class, false);
     return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
   }
 
