@@ -942,9 +942,9 @@ public class ElementUtils {
   /** Returns true if the given element is, or overrides, method. */
   public static boolean isMethod(
       ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
-    TypeElement enclosing = (TypeElement) questioned.getEnclosingElement();
     return questioned.equals(method)
-        || env.getElementUtils().overrides(questioned, method, enclosing);
+        || env.getElementUtils()
+            .overrides(questioned, method, (TypeElement) questioned.getEnclosingElement());
   }
 
   /**
