@@ -112,7 +112,7 @@ public final class Effect {
     if (o instanceof Effect) {
       return this.equals((Effect) o);
     } else {
-      return super.equals(o);
+      return this == o;
     }
   }
 
