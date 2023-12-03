@@ -11,9 +11,9 @@ abstract class TestCase {
 
   void method() throws IOException {
 
-    //    if (arbitraryChoice()) {
-    //      return;
-    //    }
+    if (arbitraryChoice()) {
+      return;
+    }
 
     Closeable r1 = alloc();
     if (r1 == null) {

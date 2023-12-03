@@ -53,6 +53,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -77,6 +78,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -2098,8 +2100,7 @@ class MustCallConsistencyAnalyzer {
         // Which stores from the called-methods and must-call checkers are used in
         // the consistency check varies depending on the context. The rules are:
         // 1. if the current block has no nodes (and therefore the store must come from
-        // a block
-        //    rather than a node):
+        // a block rather than a node):
         //    1a. if there is information about any alias in the resource alias set
         //        in the successor store, use the successor's CM and MC stores, which
         //        contain whatever information is true after this block finishes.
@@ -2120,14 +2121,17 @@ class MustCallConsistencyAnalyzer {
         //        the block.
         CFStore mcStore;
         AccumulationStore cmStore;
-        if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
-          cmStore =
-              obligationGoesOutOfScopeBeforeSuccessor
-                  ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
-                  : regularStoreOfSuccessor; // 1b. (CM)
+        if (currentBlockNodes.size() == 0) {
+          //          assert currentBlock.getType() == BlockType.CONDITIONAL_BLOCK :
+          //              String.format("current block %s, successor block %s, obligation %s",
+          //                  currentBlock, successor, obligation);
+          //          cmStore =
+          //              obligationGoesOutOfScopeBeforeSuccessor
+          //                  ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
+          //                  : regularStoreOfSuccessor; // 1b. (CM)
+          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor);
           mcStore =
-              mcAtf.getStoreForBlock(
-                  obligationGoesOutOfScopeBeforeSuccessor,
+              mcAtf.getStoreForEdgeFromEmptyBlock(
                   currentBlock, // 1a. (MC)
                   successor); // 1b. (MC)
         } else {
@@ -2175,6 +2179,27 @@ class MustCallConsistencyAnalyzer {
     }
 
     propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
+  }
+
+  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+    Set<Block> successors = currentBlock.getSuccessors();
+    if (successors.size() == 1) {
+      return analysis.getInput(successor).getRegularStore();
+    } else {
+      switch (currentBlock.getType()) {
+        case CONDITIONAL_BLOCK:
+          ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
+          if (condBlock.getThenSuccessor() == successor) {
+            return analysis.getInput(successor).getThenStore();
+          } else if (condBlock.getElseSuccessor() == successor) {
+            return analysis.getInput(successor).getElseStore();
+          } else {
+            throw new BugInCF("successor not found");
+          }
+        default:
+          throw new BugInCF("unexpected block type " + currentBlock.getType());
+      }
+    }
   }
 
   /**
