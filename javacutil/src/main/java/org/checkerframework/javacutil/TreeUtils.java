@@ -1225,12 +1225,12 @@ public final class TreeUtils {
    * that overrides them.
    */
   public static boolean isMethodInvocation(
-      Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
-    if (!(methodTree instanceof MethodInvocationTree)) {
+      Tree tree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
+    if (!(tree instanceof MethodInvocationTree)) {
       return false;
     }
     for (ExecutableElement Method : methods) {
-      if (isMethodInvocation(methodTree, Method, processingEnv)) {
+      if (isMethodInvocation(tree, Method, processingEnv)) {
         return true;
       }
     }
