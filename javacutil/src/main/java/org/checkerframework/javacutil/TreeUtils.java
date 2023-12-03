@@ -1223,6 +1223,12 @@ public final class TreeUtils {
   /**
    * Returns true if the argument is an invocation of one of the given methods, or of any method
    * that overrides them.
+   *
+   * @param tree a tree that might be a method invocation
+   * @param methods the methods to check for
+   * @param processingEnv the processing environment
+   * @return true if the argument is an invocation of one of the given methods, or of any method
+   *     that overrides them
    */
   public static boolean isMethodInvocation(
       Tree tree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
