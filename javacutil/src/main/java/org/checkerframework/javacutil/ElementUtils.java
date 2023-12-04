@@ -939,12 +939,19 @@ public class ElementUtils {
     return true;
   }
 
-  /** Returns true if the given element is, or overrides, method. */
+  /**
+   * Returns true if the given element is, or overrides, {@code method}.
+   *
+   * @param questioned an element that might override {@code method}
+   * @param method a method that might be overridden
+   * @param env the processing environment
+   * @return true if {@code questioned} is, or overrides, {@code method}
+   */
   public static boolean isMethod(
       ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
-    TypeElement enclosing = (TypeElement) questioned.getEnclosingElement();
     return questioned.equals(method)
-        || env.getElementUtils().overrides(questioned, method, enclosing);
+        || env.getElementUtils()
+            .overrides(questioned, method, (TypeElement) questioned.getEnclosingElement());
   }
 
   /**

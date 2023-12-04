@@ -25,7 +25,6 @@
   <li><a href="#evaluate-type-system">Evaluate a type system or a Checker Framework feature</a>
     <ul>
       <li><a href="#case-study-signature">Signature strings</a></li>
-      <li><a href="#optional-case-study">Detecting errors in use of the Optional class</a></li>
       <li><a href="#case-study-signedness">Preventing mixed signed/unsigned computations</a></li>
       <li><a href="#Whole-program_type_inference">Whole-program type inference</a></li>
       <li><a href="#sound-by-default">Sound checking by default</a></li>
@@ -395,68 +394,6 @@ some other library, properly handles signature strings.
     string format is not defined.
   </li>
 </ul>
-
-
-<h2 id="optional-case-study">Detecting errors in use of the Optional class</h2>
-
-<!-- This project is duplicated in the highlight section and in
-the Checker Framework's new-contributor-projects.html . -->
-
-<p>
-Java 8 introduced the
-<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html"><code>Optional</code></a>
-class, a container that is either empty or contains a non-null value.
-It is intended to solve the problem of null
-pointer exceptions.  However, <code>Optional</code>
-has <a href="https://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html">its
-  own problems</a>, leading
-to <a href="https://stuartmarks.wordpress.com/2016/09/27/vjug24-session-on-optional/">extensive
-  advice</a> on when and how to use Optional.  It is difficult for
-programmers to remember all these rules.
-</p>
-
-<p>
-The goal of this project is to build a tool to check uses of Optional and run it on open-source projects.  The research questions are:
-</p>
-<ul>
-  <li>Is it possible to build a tool that enforces good style in using Optional?
-  </li>
-  <li>How much effort is is for programmers to use such a tool?
-  </li>
-  <li>Does real-world code obey the rules about use of Optional, or not?
-  </li>
-</ul>
-
-<p>
-We have
-a <a href="https://checkerframework.org/manual/#optional-checker">prototype
-    verification tool</a> that checks some but not all rules about use of
-Optional (https://checkerframework.org/manual/#optional-checker).  This
-project will do case studies of it and extend it.
-</p>
-
-<p>
-The methodology is to find open-source projects that use Optional(you can
-do this by searching GitHub, for example), run the tool on them, and read
-the tool's warnings.  Each warning will lead to either a bug report against
-an open-source project or an improvement to the verification tool.
-</p>
-
-<!--
-
-For the Optional Class project, the first task is to run the existing
-verification tool:  https://checkerframework.org/manual/#optional-checker .
-Doing so will give you a feel for its strengths and weaknesses (and the latter
-may suggest ways to improve it).  First, read parts of the Checker Framework
-manual first (the "How to read this manual" section tells you what to read).  In
-addition to reading the section about the Optional Checker, do follow the link
-to the webpage “Nothing is better than the Optional type”.  Once you have done
-that reading, you need to choose a project to type-check.  You can choose a
-program that you know uses Optional, or search GitHub for one.  For each warning
-issued by the Optional Checker, follow the methodology at
-https://checkerframework.org/manual/#handling-warnings .
-
--->
 
 
 <h2 id="case-study-signedness">Preventing mixed signed/unsigned computations</h2>
