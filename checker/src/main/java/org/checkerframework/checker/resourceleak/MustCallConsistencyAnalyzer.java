@@ -74,7 +74,6 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -711,8 +710,7 @@ class MustCallConsistencyAnalyzer {
    *   <li>2) the expression already has a tracked Obligation (i.e. there is already a resource
    *       alias in some Obligation's resource alias set that refers to the expression), or
    *   <li>3) the method in which the invocation occurs also has an @CreatesMustCallFor annotation,
-   *       with the same expression, or
-   *   <li>4) the expression is a resource variable.
+   *       with the same expression.
    * </ul>
    *
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
@@ -738,10 +736,6 @@ class MustCallConsistencyAnalyzer {
         // the @Owning annotation can only be written on methods, parameters, and fields;
         // formal parameters are also represented by LocalVariable in the bodies of methods.
         // This satisfies case 1.
-        return true;
-      } else if (ElementUtils.isResourceVariable(elt)) {
-        // The expression is a resource variable, and therefore will be closed, so we can
-        // treat it as owning (case 4).
         return true;
       } else {
         Obligation toRemove = null;
@@ -1224,16 +1218,6 @@ class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      if (rhs instanceof FieldAccessNode) {
-        // Handling of @Owning fields is a completely separate check.
-      } else if (rhs instanceof LocalVariableNode) {
-        removeObligationsContainingVar(
-            obligations,
-            (LocalVariableNode) rhs,
-            MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
-            MethodExitKind.ALL);
-      }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
@@ -1262,22 +1246,6 @@ class MustCallConsistencyAnalyzer {
     }
     // We haven't seen two owning fields, so there must be 1 or 0.
     return true;
-  }
-
-  /**
-   * Returns true if must-call type of node only contains close. This is a helper method for
-   * handling try-with-resources statements.
-   *
-   * @param node the node
-   * @return true if must-call type of node only contains close
-   */
-  /*package-private*/ boolean isMustCallClose(Node node) {
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
-    return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
   /**

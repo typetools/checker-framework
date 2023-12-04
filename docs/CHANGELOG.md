@@ -1,4 +1,4 @@
-Version 3.40.1 (December 1, 2023)
+Version 3.41.0 (December 4, 2023)
 ---------------------------------
 
 **User-visible changes:**
@@ -10,7 +10,13 @@ New command-line options:
 
 Added method `isDeterministic()` to the `AnnotationProvider` interface.
 
+`CFAbstractValue#leastUpperBound` and `CFAbstractValue#widenUpperBound` are now
+final.  Subclasses should override method `CFAbstractValue#upperBound(V,
+TypeMirror, boolean)` instead.
+
 **Closed issues:**
+
+#1497, #3345, #6037, #6204, #6276, #6282, #6290, #6296, #6319, #6327.
 
 
 Version 3.40.0 (November 1, 2023)
