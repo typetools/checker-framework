@@ -632,16 +632,17 @@ not possible, the programmer will probably need to suppress a warning and
 then verify the code using a method other than the Resource Leak Checker.
 
 
-%% TODO: Uncomment when the feature is ready to be publicized.
-% \sectionAndLabel{Resource Leak Checker Annotation Inference Algorithm}{resource-leak-checker-inference-algo}
-%
-% We are developing a special inference mechanism to infer annotations for
-% the Resource Leak Checker. By default, this mechanism operates when the
-% -Ainfer flag is enabled. To utilize the whole-program inference mechanism outlined in
-% section \ref{whole-program-inference} in addition to this mechanism for the Resource
-% Leak Checker and its sub-checkers, you should provide the \<-AenableWpiForRlc> flag.
-%
-% The paper \href={https://arxiv.org/pdf/2306.11953.pdf}{Automatic Inference of Resource Leak Specifications}, published at OOPSLA 2023, gives more details on the inference algorithm. Currently, only the first phase of the algorithm described in the paper is available, and the complete implementation will be available soon.
+\sectionAndLabel{Resource Leak Checker Annotation Inference Algorithm}{resource-leak-checker-inference-algo}
+
+We have developed a specialized algorithm to infer annotations for
+the Resource Leak Checker. This algorithm runs by default when the
+\<-Ainfer> flag is enabled. To utilize the whole-program inference mechanism outlined in
+section \ref{whole-program-inference} in addition to this mechanism for the Resource
+Leak Checker and its sub-checkers, you should provide the \<-AenableWpiForRlc> flag.  The paper
+``Inference of Resource Management Specifications''~\cite{ShadabGTEKLLS2023} (OOPSLA 2023,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-inference-oopsla2023-abstract.html})
+gives more details about the inference algorithm.
+
 
 
 % LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
