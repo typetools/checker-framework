@@ -84,10 +84,10 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The default analysis transfer function for the Checker Framework propagates information through
- * assignments and uses the {@link AnnotatedTypeFactory} to provide checker-specific logic how to
- * combine types (e.g., what is the type of a string concatenation, given the types of the two
- * operands) and as an abstraction function (e.g., determine the annotations on literals).
+ * The default analysis transfer function for the Checker Framework. It propagates information
+ * through assignments. It uses the {@link AnnotatedTypeFactory} to provide checker-specific logic
+ * to combine types (e.g., what is the type of a string concatenation, given the types of the two
+ * operands) and acts as an abstraction function (e.g., determine the annotations on literals).
  *
  * <p>Design note: CFAbstractTransfer and its subclasses are supposed to act as transfer functions.
  * But, since the AnnotatedTypeFactory already existed and performed checker-independent type
