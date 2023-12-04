@@ -366,8 +366,14 @@ public class OptionalVisitor
   }
 
   /**
-   * Handles part of Rule #6, and also Rule #7: Don't permit {@code Collection<Optional<...>>} or
-   * {@code Optional<Collection<...>>}.
+   * Handles Rule #5, part of Rule #6, and also Rule #7.
+   *
+   * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
+   * value.
+   *
+   * <p>Rule #6: Don't use Optional in fields, parameters, and collections.
+   *
+   * <p>Rule #7: Don't use Optional to wrap any collection type.
    */
   private final class OptionalTypeValidator extends BaseTypeValidator {
 
@@ -377,8 +383,14 @@ public class OptionalVisitor
     }
 
     /**
-     * Rules 6 (partial) and 7: Don't permit {@code Collection<Optional<...>>} or {@code
-     * Optional<Collection<...>>}.
+     * Handles Rule #5, part of Rule #6, and also Rule #7.
+     *
+     * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
+     * value.
+     *
+     * <p>Rule #6: Don't use Optional in fields, parameters, and collections.
+     *
+     * <p>Rule #7: Don't use Optional to wrap any collection type.
      */
     @Override
     public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
@@ -399,6 +411,9 @@ public class OptionalVisitor
           TypeMirror typeArg = typeArgs.get(0);
           if (isCollectionType(typeArg)) {
             checker.reportWarning(tree, "optional.collection");
+          }
+          if (isOptionalType(typeArg)) {
+            checker.reportWarning(tree, "optional.nesting");
           }
         }
       }
