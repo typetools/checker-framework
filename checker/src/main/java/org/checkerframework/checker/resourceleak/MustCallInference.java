@@ -421,10 +421,7 @@ public class MustCallInference {
    *       and the result type of the constructor.
    *   <li>2) If the left-hand side of the assignment is an owning field, and the rhs is an alias of
    *       a formal parameter, it adds an {@code @Owning} annotation to the formal parameter.
-   *   <li>3) If the left-hand side of the assignment is a resource variable, and the right-hand
-   *       side is an alias of a formal parameter that has a must-call-close type, it adds the
-   *       {@code @Owning} annotation to the formal parameter.
-   *   <li>4) Otherwise, updates the set of tracked obligations to account for the
+   *   <li>3) Otherwise, updates the set of tracked obligations to account for the
    *       (pseudo-)assignment, as in a gen-kill dataflow analysis problem.
    * </ul>
    *
@@ -478,12 +475,6 @@ public class MustCallInference {
         mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
       }
 
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && mcca.isMustCallClose(rhs)) {
-      // case 3 is satisfied.
-      int paramIndex = getIndexOfParam(rhsObligation);
-      if (paramIndex > 0) {
-        addOwningToParam(paramIndex);
-      }
     } else if (lhs instanceof LocalVariableNode) {
       // Updates the set of tracked obligations. (case 4)
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
