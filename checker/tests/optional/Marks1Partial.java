@@ -9,6 +9,9 @@ import java.util.Optional;
  */
 public class Marks1Partial {
 
+  @SuppressWarnings("optional.field")
+  Optional<String> optField = Optional.ofNullable("f1");
+
   @SuppressWarnings("optional.parameter")
   void simpleEqualsCheck(Optional<String> o1) {
     // :: warning: (optional.null.comparison)
@@ -35,5 +38,17 @@ public class Marks1Partial {
     if (o1 != null || 1 + 2 == 4) {
       System.out.println("Don't compare optionals (lhs) to null literals.");
     }
+  }
+
+  @SuppressWarnings("optional.parameter")
+  void checkAgainstOptionalField() {
+    // :: warning: (optional.null.comparison)
+    if (this.getOptField() != null || 1 + 2 == 4) {
+      System.out.println("Don't compare optionals (lhs) to null literals.");
+    }
+  }
+
+  public Optional<String> getOptField() {
+    return optField;
   }
 }
