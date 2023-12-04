@@ -201,14 +201,14 @@ import org.plumelib.util.IdentityArraySet;
  * <p>The return type of this scanner is {@link Node}. For expressions, the corresponding node is
  * returned to allow linking between different nodes.
  *
- * <p>However, for statements there is usually no single {@link Node} that is created, and thus no
- * node is returned (rather, null is returned).
+ * <p>However, for statements there is usually no single {@link Node} that is created, and thus null
+ * is returned.
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
- * UnderlyingAST)}.
+ * <p>The entry point to process a single body (e.g., method, lambda, top-level block) is {@link
+ * #process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
