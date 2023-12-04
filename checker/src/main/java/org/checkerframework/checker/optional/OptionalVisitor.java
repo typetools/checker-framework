@@ -339,7 +339,7 @@ public class OptionalVisitor
    * @param tree a binary tree representing a binary operation.
    */
   private void handleCompareToNull(BinaryTree tree) {
-    if (!isPrimitiveEqualsComparison(tree)) {
+    if (!isEqualityOperation(tree)) {
       return;
     }
     ExpressionTree leftOp = tree.getLeftOperand();
@@ -355,8 +355,13 @@ public class OptionalVisitor
     }
   }
 
-  /** Returns true if the binary operation is a primitive equals operation. */
-  private boolean isPrimitiveEqualsComparison(BinaryTree tree) {
+  /**
+   * Returns true if the binary operation is {@code ==} or {@code !=}.
+   *
+   * @param tree a binary operation
+   * @return true if the binary operation is {@code ==} or {@code !=}
+   */
+  private boolean isEqualityOperation(BinaryTree tree) {
     return tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO;
   }
 
