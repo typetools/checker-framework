@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -321,6 +322,42 @@ public class OptionalVisitor
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     return super.visitMethodInvocation(tree, p);
+  }
+
+  @Override
+  public Void visitBinary(BinaryTree tree, Void p) {
+    handleCompareToNull(tree);
+    return super.visitBinary(tree, p);
+  }
+
+  /**
+   * Partially enforces Rule #1.
+   *
+   * <p>If an Optional value is compared with null literals, it indicates that the programmer
+   * expects it to have been assigned a null value (or no value at all) somewhere in the code.
+   *
+   * @param tree a binary tree representing a binary operation.
+   */
+  private void handleCompareToNull(BinaryTree tree) {
+    if (!isPrimitiveEqualsComparison(tree)) {
+      return;
+    }
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
+    TypeMirror leftOpType = TreeUtils.typeOf(leftOp);
+    TypeMirror rightOpType = TreeUtils.typeOf(rightOp);
+
+    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(rightOpType)) {
+      checker.reportWarning(tree, "optional.null.comparison");
+    }
+    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(leftOpType)) {
+      checker.reportWarning(tree, "optional.null.comparison");
+    }
+  }
+
+  /** Returns true if the binary operation is a primitive equals operation. */
+  private boolean isPrimitiveEqualsComparison(BinaryTree tree) {
+    return tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO;
   }
 
   /**
