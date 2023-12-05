@@ -32,7 +32,7 @@ public final class TreePathUtil {
   }
 
   ///
-  /// Retrieving a path
+  /// Retrieving a path (from another path)
   ///
 
   /**
@@ -86,7 +86,7 @@ public final class TreePathUtil {
   }
 
   ///
-  /// Retrieving a tree
+  /// Retrieving a tree (from a path)
   ///
 
   /**

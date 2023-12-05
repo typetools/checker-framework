@@ -201,14 +201,14 @@ import org.plumelib.util.IdentityArraySet;
  * <p>The return type of this scanner is {@link Node}. For expressions, the corresponding node is
  * returned to allow linking between different nodes.
  *
- * <p>However, for statements there is usually no single {@link Node} that is created, and thus no
- * node is returned (rather, null is returned).
+ * <p>However, for statements there is usually no single {@link Node} that is created, and thus null
+ * is returned.
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
- * UnderlyingAST)}.
+ * <p>The entry point to process a single body (e.g., method, lambda, top-level block) is {@link
+ * #process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
@@ -383,15 +383,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
-  /** The AssertMethod.value argument/element. */
-  protected final ExecutableElement assertMethodValueElement;
-
-  /** The AssertMethod.parameter argument/element. */
-  protected final ExecutableElement assertMethodParameterElement;
-
-  /** The {@link AssertMethod#isAssertFalse()} argument/element. */
-  protected final ExecutableElement assertMethodIsAssertFalseElement;
-
   /**
    * Creates {@link CFGTranslationPhaseOne}.
    *
@@ -458,11 +449,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (outOfMemoryErrorType != null) {
       newArrayExceptionTypes.add(outOfMemoryErrorType);
     }
-
-    assertMethodValueElement = TreeUtils.getMethod(AssertMethod.class, "value", 0, env);
-    assertMethodParameterElement = TreeUtils.getMethod(AssertMethod.class, "parameter", 0, env);
-    assertMethodIsAssertFalseElement =
-        TreeUtils.getMethod(AssertMethod.class, "isAssertFalse", 0, env);
   }
 
   /**
@@ -1406,19 +1392,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return AssertMethodTuple.NONE;
     }
 
+    // Dataflow does not require checker-qual.jar to be on the users classpath, so
+    // AnnotationUtils.getElementValue(...) cannot be used.
+
     int booleanParam =
-        AnnotationUtils.getElementValue(
-                assertMethodAnno, assertMethodParameterElement, Integer.class, 1)
+        AnnotationUtils.getElementValueNotOnClasspath(
+                assertMethodAnno, "parameter", Integer.class, 1)
             - 1;
+
     TypeMirror exceptionType =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno,
-            assertMethodValueElement,
-            Type.ClassType.class,
-            (Type.ClassType) assertionErrorType);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "value", Type.ClassType.class, (Type.ClassType) assertionErrorType);
     boolean isAssertFalse =
-        AnnotationUtils.getElementValue(
-            assertMethodAnno, assertMethodIsAssertFalseElement, Boolean.class, false);
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "isAssertFalse", Boolean.class, false);
     return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
   }
 
