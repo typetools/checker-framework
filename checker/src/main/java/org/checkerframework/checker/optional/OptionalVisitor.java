@@ -1,5 +1,6 @@
 package org.checkerframework.checker.optional;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -20,6 +21,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -27,6 +29,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -321,6 +324,79 @@ public class OptionalVisitor
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
     return super.visitMethodInvocation(tree, p);
+  }
+
+  @Override
+  public Void visitBinary(BinaryTree tree, Void p) {
+    handleCompareToNull(tree);
+    return super.visitBinary(tree, p);
+  }
+
+  /**
+   * Partially enforces Rule #1.
+   *
+   * <p>If an Optional value is compared with the null literal, it indicates that the programmer
+   * expects it might have been assigned a null value (or no value at all) somewhere in the code.
+   *
+   * @param tree a binary tree representing a binary operation.
+   */
+  private void handleCompareToNull(BinaryTree tree) {
+    if (!isEqualityOperation(tree)) {
+      return;
+    }
+    ExpressionTree leftOp = TreeUtils.withoutParens(tree.getLeftOperand());
+    ExpressionTree rightOp = TreeUtils.withoutParens(tree.getRightOperand());
+    TypeMirror leftOpType = TreeUtils.typeOf(leftOp);
+    TypeMirror rightOpType = TreeUtils.typeOf(rightOp);
+
+    if (leftOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(rightOpType)) {
+      checker.reportWarning(tree, "optional.null.comparison");
+    }
+    if (rightOp.getKind() == Tree.Kind.NULL_LITERAL && isOptionalType(leftOpType)) {
+      checker.reportWarning(tree, "optional.null.comparison");
+    }
+  }
+
+  /**
+   * Returns true if the binary operation is {@code ==} or {@code !=}.
+   *
+   * @param tree a binary operation
+   * @return true if the binary operation is {@code ==} or {@code !=}
+   */
+  private boolean isEqualityOperation(BinaryTree tree) {
+    return tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO;
+  }
+
+  // Partially enforces Rule #1.  (Only handles the literal `null`, not all nullable expressions.)
+  @Override
+  protected boolean commonAssignmentCheck(
+      AnnotatedTypeMirror varType,
+      AnnotatedTypeMirror valueType,
+      Tree valueExpTree,
+      @CompilerMessageKey String errorKey,
+      Object... extraArgs) {
+
+    boolean result =
+        super.commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
+
+    ExpressionTree rhsTree;
+    if (valueExpTree.getKind() == Tree.Kind.VARIABLE) {
+      rhsTree = ((VariableTree) valueExpTree).getInitializer();
+      if (rhsTree == null) {
+        return result;
+      }
+    } else {
+      rhsTree = (ExpressionTree) valueExpTree;
+    }
+    rhsTree = TreeUtils.withoutParens(rhsTree);
+
+    if (rhsTree.getKind() == Tree.Kind.NULL_LITERAL
+        && isOptionalType(varType.getUnderlyingType())) {
+      checker.reportWarning((ExpressionTree) valueExpTree, "optional.null.assignment");
+      result = false;
+    }
+
+    return result;
   }
 
   /**

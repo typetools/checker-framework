@@ -441,6 +441,7 @@ public class NullnessVisitor
 
   /**
    * Reports an error if a comparison of a @NonNull expression with the null literal is performed.
+   * Does nothing unless {@code -Alint=redundantNullComparison} is passed on the command line.
    *
    * @param tree a tree that might be a comparison of a @NonNull expression with the null literal
    */
