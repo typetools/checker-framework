@@ -11,6 +11,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -41,9 +42,10 @@ import org.plumelib.util.IPair;
 public class OptionalVisitor
     extends BaseTypeVisitor</* OptionalAnnotatedTypeFactory*/ BaseAnnotatedTypeFactory> {
 
+  /** The Collection type. */
   private final TypeMirror collectionType;
 
-  /** The element for java.util.Optional.Empty(). */
+  /** The element for java.util.Optional.empty(). */
   private final ExecutableElement optionalEmpty;
 
   /** The element for java.util.Optional.filter(). */
@@ -85,7 +87,20 @@ public class OptionalVisitor
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
 
-  /** Create an OptionalVisitor. */
+  /** Static methods that create an Optional. */
+  private final List<ExecutableElement> optionalCreators;
+
+  /** Methods whose receiver is an Optional, and return an Optional. */
+  private final List<ExecutableElement> optionalPropagators;
+
+  /** Methods whose receiver is an Optional, and return a non-optional. */
+  private final List<ExecutableElement> optionalEliminators;
+
+  /**
+   * Create an OptionalVisitor.
+   *
+   * @param checker the associated OptionalChecker
+   */
   public OptionalVisitor(BaseTypeChecker checker) {
     super(checker);
     collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
@@ -105,6 +120,29 @@ public class OptionalVisitor
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
     optionalOrElseThrow = TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
     optionalOrElseThrowSupplier = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
+
+    optionalCreators = Arrays.asList(optionalEmpty, optionalOf, optionalOfNullable);
+    optionalPropagators =
+        optionalOr == null
+            ? Arrays.asList(optionalFilter, optionalFlatMap, optionalMap)
+            : Arrays.asList(optionalFilter, optionalFlatMap, optionalMap, optionalOr);
+    // TODO: add these eliminators:
+    //   hashCode, ifPresent, ifPresentOrElse, isEmpty, isPresent, toString, Object.getClass
+    optionalEliminators =
+        optionalIsEmpty == null
+            ? Arrays.asList(
+                optionalGet,
+                optionalOrElse,
+                optionalOrElseGet,
+                optionalOrElseThrow,
+                optionalOrElseThrowSupplier)
+            : Arrays.asList(
+                optionalGet,
+                optionalIsEmpty,
+                optionalOrElse,
+                optionalOrElseGet,
+                optionalOrElseThrow,
+                optionalOrElseThrowSupplier);
   }
 
   @Override
@@ -169,10 +207,8 @@ public class OptionalVisitor
    * @return true iff the method being called is Optional creation: empty, of, ofNullable
    */
   private boolean isOptionalCreation(MethodInvocationTree methInvok) {
-    ProcessingEnvironment env = checker.getProcessingEnvironment();
-    return TreeUtils.isMethodInvocation(methInvok, optionalEmpty, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalOf, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalOfNullable, env);
+    return TreeUtils.isMethodInvocation(
+        methInvok, optionalCreators, checker.getProcessingEnvironment());
   }
 
   /**
@@ -182,11 +218,8 @@ public class OptionalVisitor
    * @return true true iff the method being called is Optional propagation: filter, flatMap, map, or
    */
   private boolean isOptionalPropagation(MethodInvocationTree methInvok) {
-    ProcessingEnvironment env = checker.getProcessingEnvironment();
-    return TreeUtils.isMethodInvocation(methInvok, optionalFilter, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalFlatMap, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalMap, env)
-        || (optionalOr != null && TreeUtils.isMethodInvocation(methInvok, optionalOr, env));
+    return TreeUtils.isMethodInvocation(
+        methInvok, optionalPropagators, checker.getProcessingEnvironment());
   }
 
   /**
@@ -198,13 +231,8 @@ public class OptionalVisitor
    *     orElseThrow
    */
   private boolean isOptionalElimination(MethodInvocationTree methInvok) {
-    ProcessingEnvironment env = checker.getProcessingEnvironment();
-    return TreeUtils.isMethodInvocation(methInvok, optionalGet, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalOrElse, env)
-        || TreeUtils.isMethodInvocation(methInvok, optionalOrElseGet, env)
-        || (optionalIsEmpty != null
-            && TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrow, env))
-        || TreeUtils.isMethodInvocation(methInvok, optionalOrElseThrowSupplier, env);
+    return TreeUtils.isMethodInvocation(
+        methInvok, optionalEliminators, checker.getProcessingEnvironment());
   }
 
   @Override
