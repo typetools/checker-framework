@@ -152,7 +152,8 @@ import org.plumelib.util.IPair;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
- * invocation checking, and assignability checking.
+ * invocation checking, and assignability checking. The visitor visits every construct in a program,
+ * not just types.
  *
  * <p>This implementation uses the {@link AnnotatedTypeFactory} implementation provided by an
  * associated {@link BaseTypeChecker}; its visitor methods will invoke this factory on parts of the

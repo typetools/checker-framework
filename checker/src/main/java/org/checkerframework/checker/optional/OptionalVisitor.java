@@ -27,6 +27,7 @@ import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -320,6 +321,7 @@ public class OptionalVisitor
   @Override
   public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     handleCreationElimination(tree);
+    handleNestedOptionalCreation(tree);
     return super.visitMethodInvocation(tree, p);
   }
 
@@ -343,6 +345,37 @@ public class OptionalVisitor
     }
 
     checker.reportWarning(tree, "introduce.eliminate");
+  }
+
+  /**
+   * Partial support for Rule #5 and Rule #7.
+   *
+   * <p>Rule #5: Avoid nested Optional chains, or operations that have an intermediate Optional
+   * value.
+   *
+   * <p>Rule #7: Don't use Optional to wrap any collection type.
+   *
+   * <p>Certain types are illegal, such as {@code Optional<Optional>}. The type validator may see a
+   * supertype of the most precise run-time type; for example, it may see the type as {@code
+   * Optional<? extends Object>}, and it would not flag any problem with such a type. This method
+   * checks at {@code Optional} creation sites. TODO: Also check at collection creation sites, but
+   * there are so many of them, and there often are not values of the element type at the collection
+   * creation site.
+   *
+   * @param tree a method invocation that might create an Optional of an illegal type
+   */
+  public void handleNestedOptionalCreation(MethodInvocationTree tree) {
+    if (!isOptionalCreation(tree)) {
+      return;
+    }
+    ExpressionTree arg = tree.getArguments().get(0);
+    AnnotatedTypeMirror argAtm = atypeFactory.getAnnotatedType(arg);
+    TypeMirror argType = argAtm.getUnderlyingType();
+    if (isOptionalType(argType)) {
+      checker.reportWarning(tree, "optional.nesting");
+    } else if (isCollectionType(argType)) {
+      checker.reportWarning(tree, "optional.collection");
+    }
   }
 
   /**
@@ -374,6 +407,12 @@ public class OptionalVisitor
    * <p>Rule #6: Don't use Optional in fields, parameters, and collections.
    *
    * <p>Rule #7: Don't use Optional to wrap any collection type.
+   *
+   * <p>The validator is called on the type of every expression, such as on the right-hand side of
+   * {@code x = Optional.of(Optional.of("baz"));}. However, the type of the right-hand side is
+   * {@code Optional<? extends Object>}, not {@code Optional<Optional<String>>}. Therefore, to fully
+   * check for improper types, it is necessary to examine, in the type checker, the argument to
+   * construction of an Optional. Method {@link handleNestedOptionalCreation} does so.
    */
   private final class OptionalTypeValidator extends BaseTypeValidator {
 
