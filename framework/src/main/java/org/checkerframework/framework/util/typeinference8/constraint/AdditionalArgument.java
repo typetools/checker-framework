@@ -30,7 +30,10 @@ public class AdditionalArgument implements Constraint {
       Theta newMap =
           context.inferenceTypeFactory.createThetaForInvocation(
               methodInvocation, methodType, context);
-      return context.inference.createC(methodType, methodInvocation.getArguments(), newMap);
+      ConstraintSet set =
+          context.inference.createC(methodType, methodInvocation.getArguments(), newMap);
+      set.applyInstantiations();
+      return set;
     } else {
       NewClassTree newClassTree = (NewClassTree) methodOrConstructorInvocation;
       InvocationType methodType =
@@ -38,7 +41,10 @@ public class AdditionalArgument implements Constraint {
 
       Theta newMap =
           context.inferenceTypeFactory.createThetaForInvocation(newClassTree, methodType, context);
-      return context.inference.createC(methodType, newClassTree.getArguments(), newMap);
+      ConstraintSet set =
+          context.inference.createC(methodType, newClassTree.getArguments(), newMap);
+      set.applyInstantiations();
+      return set;
     }
   }
 }
