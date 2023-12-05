@@ -358,9 +358,15 @@ public class OptionalVisitor
    * <p>Certain types are illegal, such as {@code Optional<Optional>}. The type validator may see a
    * supertype of the most precise run-time type; for example, it may see the type as {@code
    * Optional<? extends Object>}, and it would not flag any problem with such a type. This method
-   * checks at {@code Optional} creation sites. TODO: Also check at collection creation sites, but
-   * there are so many of them, and there often are not values of the element type at the collection
-   * creation site.
+   * checks at {@code Optional} creation sites.
+   *
+   * <p>TODO: This finds only some {@code Optional<Optional>}: those that consist of {@code
+   * Optional.of(optionalExpr)} or {@code Optional.ofNullable(optionalExpr)}, where {@code
+   * optionalExpr} has type {@code Optional}. There are other ways that {@code Optional<Optional>}
+   * can be created, such as {@code optionalExpr.map(Optional::of)}.
+   *
+   * <p>TODO: Also check at collection creation sites, but there are so many of them, and there
+   * often are not values of the element type at the collection creation site.
    *
    * @param tree a method invocation that might create an Optional of an illegal type
    */
