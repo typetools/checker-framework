@@ -22,7 +22,7 @@ public class AdditionalArgument implements Constraint {
   }
 
   @Override
-  public ReductionResult reduce(Java8InferenceContext context) {
+  public ConstraintSet reduce(Java8InferenceContext context) {
     if (methodOrConstructorInvocation.getKind() == Tree.Kind.METHOD_INVOCATION) {
       MethodInvocationTree methodInvocation = (MethodInvocationTree) methodOrConstructorInvocation;
       InvocationType methodType =

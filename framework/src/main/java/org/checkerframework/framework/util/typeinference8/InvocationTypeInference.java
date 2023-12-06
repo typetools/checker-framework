@@ -437,7 +437,14 @@ public class InvocationTypeInference {
       if (notPertinentToApplicability(ei, fi.isUseOfVariable())) {
         c.add(new Expression(ei, fi));
       }
-      c.addAll(createAdditionalArgConstraints(ei, fi, map));
+      if (ei.getKind() == Tree.Kind.METHOD_INVOCATION || ei.getKind() == Tree.Kind.NEW_CLASS) {
+        if (TreeUtils.isPolyExpression(ei)) {
+          AdditionalArgument aa = new AdditionalArgument(ei);
+          c.addAll(aa.reduce(context));
+        }
+      } else {
+        c.addAll(createAdditionalArgConstraints(ei, fi, map));
+      }
     }
 
     return c;
@@ -585,6 +592,7 @@ public class InvocationTypeInference {
     // C might contain new variables that have not yet been added to the b3 bound set.
     Set<Variable> newVariables = c.getAllInferenceVariables();
     while (!c.isEmpty()) {
+
       ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
