@@ -518,7 +518,11 @@ public class OptionalVisitor
    * @param tree a method invocation that might create an Optional of an illegal type
    */
   public void handleNestedOptionalCreation(MethodInvocationTree tree) {
-    if (tree.getArguments().isEmpty() || !isOptionalCreation(tree)) {
+    if (!isOptionalCreation(tree)) {
+      return;
+    }
+    if (tree.getArguments().isEmpty()) {
+      // This is a call to Optional.empty(), which takes no argument.
       return;
     }
     ExpressionTree arg = tree.getArguments().get(0);
