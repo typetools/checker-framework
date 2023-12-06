@@ -46,6 +46,10 @@ import org.plumelib.util.IPair;
 /**
  * A visitor to validate the types in a tree.
  *
+ * <p>The validator is called on the type of every expression, such as on the right-hand side of
+ * {@code x = Optional.of(Optional.of("baz"));}. However, note that the type of the right-hand side
+ * is {@code Optional<? extends Object>}, not {@code Optional<Optional<String>>}.
+ *
  * <p>Note: A TypeValidator (this class and its subclasses) cannot tell whether an annotation was
  * written by a programmer or defaulted/inferred/computed by the Checker Framework, because the
  * AnnotatedTypeMirror does not make distinctions about which annotations in an AnnotatedTypeMirror
