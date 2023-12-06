@@ -44,5 +44,9 @@ public class BeamCrash2Full {
   static class AnnotationPredicates {
 
     Predicate<Annotation> forAnnotation;
+
+    AnnotationPredicates(Predicate<Annotation> forAnnotation) {
+      this.forAnnotation = forAnnotation;
+    }
   }
 }
