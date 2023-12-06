@@ -1235,8 +1235,8 @@ public final class TreeUtils {
     if (!(tree instanceof MethodInvocationTree)) {
       return false;
     }
-    for (ExecutableElement Method : methods) {
-      if (isMethodInvocation(tree, Method, processingEnv)) {
+    for (ExecutableElement method : methods) {
+      if (isMethodInvocation(tree, method, processingEnv)) {
         return true;
       }
     }
