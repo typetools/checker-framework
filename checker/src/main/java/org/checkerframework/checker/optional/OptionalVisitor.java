@@ -521,6 +521,10 @@ public class OptionalVisitor
     if (!isOptionalCreation(tree)) {
       return;
     }
+    if (tree.getArguments().isEmpty()) {
+      // This is a call to Optional.empty(), which takes no argument.
+      return;
+    }
     ExpressionTree arg = tree.getArguments().get(0);
     AnnotatedTypeMirror argAtm = atypeFactory.getAnnotatedType(arg);
     TypeMirror argType = argAtm.getUnderlyingType();
