@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Arrays;
@@ -32,8 +33,6 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.SwitchExpressionScanner;
-import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
@@ -442,42 +441,12 @@ public class OptionalVisitor
       Object... extraArgs) {
     boolean result = super.commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
 
-    if (isOptionalType(varType.getUnderlyingType())) {
-      result = warnNullLiteral(valueExpTree);
+    if (valueExpTree.getKind() == Kind.NULL_LITERAL
+        && isOptionalType(varType.getUnderlyingType())) {
+      checker.reportWarning(valueExpTree, "optional.null.assignment");
+      return false;
     }
     return result;
-  }
-
-  /**
-   * Reports a {@code 'optional.null.assignment'} warning and returns false if {@code
-   * expressionTree} is a null literal, a parenthesized null literal, a conditional whose true or
-   * false expression is a null literal, or a switch expression that has a result expression that is
-   * a null literal.
-   *
-   * @param expressionTree an expression tree
-   * @return returns false if {@code expressionTree} is a null literal or an expression whose value
-   *     may be a null literal
-   */
-  private boolean warnNullLiteral(ExpressionTree expressionTree) {
-    switch (expressionTree.getKind()) {
-      case NULL_LITERAL:
-        checker.reportWarning(expressionTree, "optional.null.assignment");
-        return false;
-      case PARENTHESIZED:
-        return warnNullLiteral(TreeUtils.withoutParens(expressionTree));
-      case CONDITIONAL_EXPRESSION:
-        return warnNullLiteral(((ConditionalExpressionTree) expressionTree).getTrueExpression())
-            && warnNullLiteral(((ConditionalExpressionTree) expressionTree).getFalseExpression());
-      default:
-        if (TreeUtils.isSwitchExpression(expressionTree)) {
-          SwitchExpressionScanner<Boolean, Void> scanner =
-              new FunctionalSwitchExpressionScanner<>(
-                  (tree, unused) -> warnNullLiteral(tree),
-                  (r1, r2) -> (r1 != null && r1) || (r2 != null && r2));
-          return scanner.scanSwitchExpression(expressionTree, null);
-        }
-    }
-    return true;
   }
 
   /**
