@@ -1720,13 +1720,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
-    if (tree.getExpression().getKind() == Kind.CONDITIONAL_EXPRESSION) {
-      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) tree.getExpression();
-      commonAssignmentCheck(tree.getVariable(), condExprTree.getTrueExpression(), "assignment");
-      commonAssignmentCheck(tree.getVariable(), condExprTree.getFalseExpression(), "assignment");
-    } else {
-      commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
-    }
+    commonAssignmentCheck(tree.getVariable(), tree.getExpression(), "assignment");
     return super.visitAssignment(tree, p);
   }
 
@@ -2314,11 +2308,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     if (TreeUtils.isPolyExpression(tree)) {
-      // Poly expressions are checked for compatibility with their target types in
-      // visitAssignment and visitMethodInvocation.
       // From the JLS:
       // A poly reference conditional expression is compatible with a target type T if its second
-      // and third operand expressions are compatible with T.
+      // and third operand expressions are compatible with T.  In the Checker Framework this check
+      // happens in #commonAssignmentCheck.
       return super.visitConditionalExpression(tree, p);
     }
 
@@ -2952,6 +2945,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    if (valueExpTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) valueExpTree;
+      boolean trueResult =
+          commonAssignmentCheck(varTree, condExprTree.getTrueExpression(), "assignment");
+      boolean falseResult =
+          commonAssignmentCheck(varTree, condExprTree.getFalseExpression(), "assignment");
+      return trueResult && falseResult;
+    }
+
     AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
     assert varType != null : "no variable found for tree: " + varTree;
 
@@ -3617,32 +3619,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeMirror requiredType = requiredTypes.get(i);
       ExpressionTree passedArg = passedArgs.get(i);
       Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
-
-      if (passedArg.getKind() == Kind.CONDITIONAL_EXPRESSION) {
-        ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) passedArg;
-        commonAssignmentCheck(
-            requiredType,
-            condExprTree.getTrueExpression(),
-            "argument",
-            // TODO: for expanded varargs parameters, maybe adjust the name
-            paramName,
-            executableName);
-        commonAssignmentCheck(
-            requiredType,
-            condExprTree.getFalseExpression(),
-            "argument",
-            // TODO: for expanded varargs parameters, maybe adjust the name
-            paramName,
-            executableName);
-      } else {
-        commonAssignmentCheck(
-            requiredType,
-            passedArg,
-            "argument",
-            // TODO: for expanded varargs parameters, maybe adjust the name
-            paramName,
-            executableName);
-      }
+      commonAssignmentCheck(
+          requiredType,
+          passedArg,
+          "argument",
+          // TODO: for expanded varargs parameters, maybe adjust the name
+          paramName,
+          executableName);
       scan(passedArg, null);
     }
   }
