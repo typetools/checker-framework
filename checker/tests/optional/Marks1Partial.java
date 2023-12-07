@@ -73,6 +73,6 @@ public class Marks1Partial {
 
   public Optional<String> returnNullOptional() {
     // :: warning: (optional.null.assignment)
-    return null;
+    return (null);
   }
 }
