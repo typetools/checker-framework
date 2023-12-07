@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("all") // Just check for crashes.
 public class BeamCrash2Full {
 
   private static void validateGettersHaveConsistentAnnotation(
