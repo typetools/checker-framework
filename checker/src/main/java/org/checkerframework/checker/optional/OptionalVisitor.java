@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Arrays;
@@ -435,31 +436,16 @@ public class OptionalVisitor
   @Override
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
-      AnnotatedTypeMirror valueType,
-      Tree valueExpTree,
+      ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-
-    boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueExpTree, errorKey, extraArgs);
-
-    ExpressionTree rhsTree;
-    if (valueExpTree.getKind() == Tree.Kind.VARIABLE) {
-      rhsTree = ((VariableTree) valueExpTree).getInitializer();
-      if (rhsTree == null) {
-        return result;
-      }
-    } else {
-      rhsTree = (ExpressionTree) valueExpTree;
-    }
-    rhsTree = TreeUtils.withoutParens(rhsTree);
-
-    if (rhsTree.getKind() == Tree.Kind.NULL_LITERAL
+    boolean result = super.commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
+    ExpressionTree valueWithoutParens = TreeUtils.withoutParens(valueExpTree);
+    if (valueWithoutParens.getKind() == Kind.NULL_LITERAL
         && isOptionalType(varType.getUnderlyingType())) {
-      checker.reportWarning((ExpressionTree) valueExpTree, "optional.null.assignment");
-      result = false;
+      checker.reportWarning(valueWithoutParens, "optional.null.assignment");
+      return false;
     }
-
     return result;
   }
 
