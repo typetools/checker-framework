@@ -440,10 +440,10 @@ public class OptionalVisitor
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     boolean result = super.commonAssignmentCheck(varType, valueExpTree, errorKey, extraArgs);
-
-    if (valueExpTree.getKind() == Kind.NULL_LITERAL
+    ExpressionTree valueWithoutParens = TreeUtils.withoutParens(valueExpTree);
+    if (valueWithoutParens.getKind() == Kind.NULL_LITERAL
         && isOptionalType(varType.getUnderlyingType())) {
-      checker.reportWarning(valueExpTree, "optional.null.assignment");
+      checker.reportWarning(valueWithoutParens, "optional.null.assignment");
       return false;
     }
     return result;
