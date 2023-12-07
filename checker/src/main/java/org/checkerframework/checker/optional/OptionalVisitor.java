@@ -466,7 +466,7 @@ public class OptionalVisitor
   /**
    * Rule #4.
    *
-   * <p>Pattern match for: {@code CREATION().ELIMINATION()}
+   * <p>Pattern match for: {@code CREATION().PROPAGATION()*.ELIMINATION()}
    *
    * <p>Prefer: {@code VAR.ifPresent(METHOD);}
    *
