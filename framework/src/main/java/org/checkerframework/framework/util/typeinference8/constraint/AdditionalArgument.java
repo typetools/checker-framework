@@ -9,9 +9,21 @@ import org.checkerframework.framework.util.typeinference8.types.InvocationType;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
+/**
+ * A constraint the represent additional argument constraints generated from a method or constructor
+ * invocation.
+ */
 public class AdditionalArgument implements Constraint {
-  ExpressionTree methodOrConstructorInvocation;
 
+  /** The tree for the method or constructor invocation for this constraint. */
+  private ExpressionTree methodOrConstructorInvocation;
+
+  /**
+   * Creates a new constraint.
+   *
+   * @param methodOrConstructorInvocation tree for the method or constructor invocation for this
+   *     constraint
+   */
   public AdditionalArgument(ExpressionTree methodOrConstructorInvocation) {
     this.methodOrConstructorInvocation = methodOrConstructorInvocation;
   }
