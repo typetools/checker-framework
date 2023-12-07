@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Arrays;
@@ -241,6 +242,18 @@ public class OptionalVisitor
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     handleTernaryIsPresentGet(tree);
+    if (tree.getFalseExpression().getKind() == Tree.Kind.NULL_LITERAL
+        || tree.getTrueExpression().getKind() == Kind.NULL_LITERAL) {
+      AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
+      if (isOptionalType(cond.getUnderlyingType())) {
+        if (tree.getFalseExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+          checker.reportWarning(tree.getFalseExpression(), "optional.null.assignment");
+        } else if (tree.getTrueExpression().getKind() == Tree.Kind.NULL_LITERAL) {
+          checker.reportWarning(tree.getTrueExpression(), "optional.null.assignment");
+        }
+      }
+    }
+
     return super.visitConditionalExpression(tree, p);
   }
 
