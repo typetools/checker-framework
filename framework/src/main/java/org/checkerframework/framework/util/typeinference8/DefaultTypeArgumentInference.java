@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -21,7 +22,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -113,14 +113,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         return result.swapTypeVariables(methodType, expressionTree);
       }
-    } catch (FalseBoundException ex) {
-      // TODO: For now, rethrow the exception so that the tests crash.
+    } catch (Exception ex) {
       // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
-      //      checker.reportError(invocation, "type.inference.failed");
-      throw ex;
-      //      return null;
+      return new InferenceResult(Collections.emptyList(), false, true, ex.getLocalizedMessage());
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();

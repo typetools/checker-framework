@@ -16,6 +16,6 @@ public class FalseBoundException extends RuntimeException {
    * @param result the result of reduction
    */
   public FalseBoundException(Constraint constraint, ReductionResult result) {
-    super("Constraint: " + constraint + " Result: " + result);
+    super(" False bound for: Constraint: " + constraint + " Result: " + result);
   }
 }
