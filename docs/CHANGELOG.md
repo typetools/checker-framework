@@ -4,8 +4,8 @@ Version 3.42.0 (January 2, 2023)
 **User-visible changes:**
 
 Method, constructor, lambda, and method reference type inference has been
-greatly improved. And so, infered type arguments are not checked by default and
-the `-AconservativeUninferredTypeArguments` option has been removed.
+greatly improved.  The `-AconservativeUninferredTypeArguments` option is
+no longer necessary and has been removed.
 
 **Implementation details:**
 
