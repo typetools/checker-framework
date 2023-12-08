@@ -117,7 +117,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // This should never happen, if javac infers type arguments so should the Checker
       // Framework. However, given how buggy javac inference is, this probably will, so deal with it
       // gracefully.
-      return new InferenceResult(Collections.emptyList(), false, true, ex.getLocalizedMessage());
+      return new InferenceResult(
+          Collections.emptyList(),
+          false,
+          true,
+          "An exception occurred: " + ex.getLocalizedMessage());
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();
