@@ -122,7 +122,7 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     boolean result = true;
@@ -148,12 +148,15 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // It is legal to use a format string with fewer format specifiers
         // than required, but a warning is issued.
         checker.reportWarning(
-            valueTree, "i18nformat.missing.arguments", varType.toString(), valueType.toString());
+            errorLocation,
+            "i18nformat.missing.arguments",
+            varType.toString(),
+            valueType.toString());
       } else if (rhsArgTypes.length > lhsArgTypes.length) {
         // Since it is known that too many conversion categories were provided, issue a more
         // specific error message to that effect than "assignment".
         checker.reportError(
-            valueTree, "i18nformat.excess.arguments", varType.toString(), valueType.toString());
+            errorLocation, "i18nformat.excess.arguments", varType.toString(), valueType.toString());
         result = false;
       }
     }
@@ -165,7 +168,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     // message issued for a given line of code will take precedence over the "assignment"
     // issued by super.commonAssignmentCheck().
     result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs) && result;
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs)
+            && result;
     return result;
   }
 }
