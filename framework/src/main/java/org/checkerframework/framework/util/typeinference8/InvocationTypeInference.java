@@ -443,6 +443,9 @@ public class InvocationTypeInference {
           c.addAll(aa.reduce(context));
         }
       } else {
+        // Wait to reduce additional argument constraints from lambdas and method references because
+        // the additional constraints might require other inference variables to be resolved before
+        // the constraint can be created.
         c.addAll(createAdditionalArgConstraints(ei, fi, map));
       }
     }

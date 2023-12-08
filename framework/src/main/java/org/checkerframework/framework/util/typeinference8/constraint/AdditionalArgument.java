@@ -11,7 +11,11 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /**
  * A constraint the represent additional argument constraints generated from a method or constructor
- * invocation.
+ * invocation that is a part of a larger inference problem. When this constraint is reduced it will
+ * generate more constraints from the invocaton. This is because created the constraints might use
+ * the type of an implicit lambda parameter for which the larger inference problem has not yet found
+ * a type. So, the additional constraints can be created until after the implicit lambda parameter
+ * has a type.
  */
 public class AdditionalArgument implements Constraint {
 
