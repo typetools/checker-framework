@@ -57,7 +57,7 @@ ext {
     autoValue       : '1.10.4',
     lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
-    reflectionUtil : '1.1.0',
+    reflectionUtil : '1.1.1',
     plumeUtil : '1.9.0',
     errorprone : '2.23.0',
   ]
