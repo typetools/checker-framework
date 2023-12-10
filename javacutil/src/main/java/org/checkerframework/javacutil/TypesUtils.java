@@ -357,11 +357,32 @@ public final class TypesUtils {
    * Check if the type represents a declared type of the given qualified name.
    *
    * @param type the type
-   * @return type iff type represents a declared type of the qualified name
+   * @param qualifiedName the name to check {@code type} against
+   * @return true iff type represents a declared type of the qualified name
    */
   public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
     return type.getKind() == TypeKind.DECLARED
         && getQualifiedName((DeclaredType) type).contentEquals(qualifiedName);
+  }
+
+  /**
+   * Check if the type represents a declared type of any of the given qualified names.
+   *
+   * @param type the type
+   * @param qualifiedNames the names to check {@code type} against
+   * @return true iff type represents a declared type of any of the qualified names
+   */
+  public static boolean isDeclaredOfName(TypeMirror type, CharSequence... qualifiedNames) {
+    if (type.getKind() != TypeKind.DECLARED) {
+      return false;
+    }
+    String typeName = getQualifiedName((DeclaredType) type);
+    for (CharSequence qualifiedName : qualifiedNames) {
+      if (typeName.contentEquals(qualifiedName)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
