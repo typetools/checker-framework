@@ -118,7 +118,7 @@ public class OptionalVisitor
     optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
     optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
     optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
-    optionalOr = TreeUtils.getMethod("java.util.Optional", "or", 1, env);
+    optionalOr = TreeUtils.getMethodOrNull("java.util.Optional", "or", 1, env);
     optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
     optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
