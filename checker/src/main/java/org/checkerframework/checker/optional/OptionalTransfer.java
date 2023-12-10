@@ -12,6 +12,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
