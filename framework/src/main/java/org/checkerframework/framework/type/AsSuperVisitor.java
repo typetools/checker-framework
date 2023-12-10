@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
@@ -252,13 +253,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return copyPrimaryAnnos(type, superType);
   }
 
+  private static List<String> cloneableOrSerializable =
+      Arrays.asList("java.lang.Cloneable", "java.io.Serializable");
+
   @Override
   public AnnotatedTypeMirror visitArray_Intersection(
       AnnotatedArrayType type, AnnotatedIntersectionType superType, Void p) {
     for (AnnotatedTypeMirror bounds : superType.getBounds()) {
       if (!(TypesUtils.isObject(bounds.getUnderlyingType())
-          || TypesUtils.isDeclaredOfName(bounds.getUnderlyingType(), "java.lang.Cloneable")
-          || TypesUtils.isDeclaredOfName(bounds.getUnderlyingType(), "java.io.Serializable"))) {
+          || TypesUtils.isDeclaredOfName(bounds.getUnderlyingType(), cloneableOrSerializable))) {
         return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
       }
       copyPrimaryAnnos(type, bounds);
@@ -279,8 +282,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     if (isArrayClass
         || TypesUtils.isObject(superType.getUnderlyingType())
-        || TypesUtils.isDeclaredOfName(superType.getUnderlyingType(), "java.lang.Cloneable")
-        || TypesUtils.isDeclaredOfName(superType.getUnderlyingType(), "java.io.Serializable")) {
+        || TypesUtils.isDeclaredOfName(superType.getUnderlyingType(), cloneableOrSerializable)) {
       return copyPrimaryAnnos(type, superType);
     }
     return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);

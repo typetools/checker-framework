@@ -15,7 +15,9 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -603,14 +605,26 @@ public class OptionalVisitor
     }
   }
 
-  /** Return true if tm represents a subtype of Collection (other than the Null type). */
+  /** Return true if tm is a subtype of Collection (other than the Null type). */
   private boolean isCollectionType(TypeMirror tm) {
     return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
   }
 
-  /** Return true if tm represents java.util.Optional. */
+  private static Set<String> fqOptionalTypes =
+      new HashSet<>(
+          Arrays.asList(
+              "java.util.Optional",
+              "java.util.OptionalDouble",
+              "java.util.OptionalInt",
+              "java.util.OptionalLong"));
+
+  /**
+   * Return true if tm is class Optional, OptionalDouble, OptionalInt, or OptionalLong in java.util.
+   *
+   * @return true if tm is Optional, OptionalDouble, OptionalInt, or OptionalLong.
+   */
   private boolean isOptionalType(TypeMirror tm) {
-    return TypesUtils.isDeclaredOfName(tm, "java.util.Optional");
+    return TypesUtils.isDeclaredOfName(tm, fqOptionalTypes);
   }
 
   /**
