@@ -277,10 +277,10 @@ TreeAnnotator
     <li>
       Run <code>./gradlew publish</code> in <code>checker-framework</code>.
     </li>
-    <li>
-      In the <code>build.gradle</code> file of a project that you want
-      to use the snapshot version of the Checker Framework:
-      <pre>
+  </ol>
+  In the <code>build.gradle</code> file of a project that you want
+  to use the snapshot version of the Checker Framework:
+  <pre>
 repositories {
   ...
   maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
@@ -295,9 +295,7 @@ dependencies {
 configurations.all {
   resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
-      </pre>
-    </li>
-  </ol>
+  </pre>
 
   <h2 id="pre_release_checklist">Pre-release Checklist</h2>
   <p>If you have not performed a release before you must follow these steps.</p>
