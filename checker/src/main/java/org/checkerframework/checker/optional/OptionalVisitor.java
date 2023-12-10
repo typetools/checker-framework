@@ -714,6 +714,10 @@ public class OptionalVisitor
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
     while (true) {
+      if (receiver == null) {
+        // The receiver can be null if the receiver is the implicit "this.".
+        return;
+      }
       if (receiver.getKind() != Tree.Kind.METHOD_INVOCATION) {
         return;
       }
