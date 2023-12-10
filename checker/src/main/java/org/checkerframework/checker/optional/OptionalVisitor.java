@@ -71,8 +71,8 @@ public class OptionalVisitor
   /** The element for java.util.Optional.ifPresent(). */
   private final ExecutableElement optionalIfPresent;
 
-  /** The element for java.util.Optional.ifPresentOrElse(). */
-  private final ExecutableElement optionalIfPresentOrElse;
+  /** The element for java.util.Optional.ifPresentOrElse(), or null. */
+  private final @Nullable ExecutableElement optionalIfPresentOrElse;
 
   /** The element for java.util.Optional.isPresent(). */
   private final ExecutableElement optionalIsPresent;
@@ -119,8 +119,8 @@ public class OptionalVisitor
   /** The element for java.util.OptionalDouble.ifPresent(). */
   private final ExecutableElement optionalDoubleIfPresent;
 
-  /** The element for java.util.OptionalDouble.ifPresentOrElse(). */
-  private final ExecutableElement optionalDoubleIfPresentOrElse;
+  /** The element for java.util.OptionalDouble.ifPresentOrElse(), or null. */
+  private final @Nullable ExecutableElement optionalDoubleIfPresentOrElse;
 
   /** The element for java.util.OptionalDouble.isPresent(). */
   private final ExecutableElement optionalDoubleIsPresent;
@@ -160,8 +160,8 @@ public class OptionalVisitor
   /** The element for java.util.OptionalInt.ifPresent(). */
   private final ExecutableElement optionalIntIfPresent;
 
-  /** The element for java.util.OptionalInt.ifPresentOrElse(). */
-  private final ExecutableElement optionalIntIfPresentOrElse;
+  /** The element for java.util.OptionalInt.ifPresentOrElse(), or null. */
+  private final @Nullable ExecutableElement optionalIntIfPresentOrElse;
 
   /** The element for java.util.OptionalInt.isPresent(). */
   private final ExecutableElement optionalIntIsPresent;
@@ -201,8 +201,8 @@ public class OptionalVisitor
   /** The element for java.util.OptionalLong.ifPresent(). */
   private final ExecutableElement optionalLongIfPresent;
 
-  /** The element for java.util.OptionalLong.ifPresentOrElse(). */
-  private final ExecutableElement optionalLongIfPresentOrElse;
+  /** The element for java.util.OptionalLong.ifPresentOrElse(), or null. */
+  private final @Nullable ExecutableElement optionalLongIfPresentOrElse;
 
   /** The element for java.util.OptionalLong.isEmpty(), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalLongIsEmpty;
@@ -259,7 +259,8 @@ public class OptionalVisitor
     optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
     optionalHashCode = TreeUtils.getMethod("java.util.Optional", "hashCode", 0, env);
     optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
-    optionalIfPresentOrElse = TreeUtils.getMethod("java.util.Optional", "ifPresentOrElse", 2, env);
+    optionalIfPresentOrElse =
+        TreeUtils.getMethodOrNull("java.util.Optional", "ifPresentOrElse", 2, env);
     optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
     optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
     optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
@@ -278,7 +279,7 @@ public class OptionalVisitor
     optionalDoubleHashCode = TreeUtils.getMethod("java.util.OptionalDouble", "hashCode", 0, env);
     optionalDoubleIfPresent = TreeUtils.getMethod("java.util.OptionalDouble", "ifPresent", 1, env);
     optionalDoubleIfPresentOrElse =
-        TreeUtils.getMethod("java.util.OptionalDouble", "ifPresentOrElse", 2, env);
+        TreeUtils.getMethodOrNull("java.util.OptionalDouble", "ifPresentOrElse", 2, env);
     optionalDoubleIsEmpty =
         TreeUtils.getMethodOrNull("java.util.OptionalDouble", "isEmpty", 0, env);
     optionalDoubleIsPresent = TreeUtils.getMethod("java.util.OptionalDouble", "isPresent", 0, env);
@@ -296,7 +297,7 @@ public class OptionalVisitor
     optionalIntHashCode = TreeUtils.getMethod("java.util.OptionalInt", "hashCode", 0, env);
     optionalIntIfPresent = TreeUtils.getMethod("java.util.OptionalInt", "ifPresent", 1, env);
     optionalIntIfPresentOrElse =
-        TreeUtils.getMethod("java.util.OptionalInt", "ifPresentOrElse", 2, env);
+        TreeUtils.getMethodOrNull("java.util.OptionalInt", "ifPresentOrElse", 2, env);
     optionalIntIsEmpty = TreeUtils.getMethodOrNull("java.util.OptionalInt", "isEmpty", 0, env);
     optionalIntIsPresent = TreeUtils.getMethod("java.util.OptionalInt", "isPresent", 0, env);
     optionalIntOf = TreeUtils.getMethod("java.util.OptionalInt", "of", 1, env);
@@ -313,7 +314,7 @@ public class OptionalVisitor
     optionalLongHashCode = TreeUtils.getMethod("java.util.OptionalLong", "hashCode", 0, env);
     optionalLongIfPresent = TreeUtils.getMethod("java.util.OptionalLong", "ifPresent", 1, env);
     optionalLongIfPresentOrElse =
-        TreeUtils.getMethod("java.util.OptionalLong", "ifPresentOrElse", 2, env);
+        TreeUtils.getMethodOrNull("java.util.OptionalLong", "ifPresentOrElse", 2, env);
     optionalLongIsEmpty = TreeUtils.getMethodOrNull("java.util.OptionalLong", "isEmpty", 0, env);
     optionalLongIsPresent = TreeUtils.getMethod("java.util.OptionalLong", "isPresent", 0, env);
     optionalLongOf = TreeUtils.getMethod("java.util.OptionalLong", "of", 1, env);
