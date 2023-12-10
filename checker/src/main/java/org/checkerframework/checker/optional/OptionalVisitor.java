@@ -13,8 +13,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +65,15 @@ public class OptionalVisitor
   /** The element for java.util.Optional.get(). */
   private final ExecutableElement optionalGet;
 
+  /** The element for java.util.Optional.hashCode(). */
+  private final ExecutableElement optionalHashCode;
+
+  /** The element for java.util.Optional.ifPresent(). */
+  private final ExecutableElement optionalIfPresent;
+
+  /** The element for java.util.Optional.ifPresentOrElse(). */
+  private final ExecutableElement optionalIfPresentOrElse;
+
   /** The element for java.util.Optional.isPresent(). */
   private final ExecutableElement optionalIsPresent;
 
@@ -87,11 +98,140 @@ public class OptionalVisitor
   /** The element for java.util.Optional.orElseGet(). */
   private final ExecutableElement optionalOrElseGet;
 
-  /** The element for java.util.Optional.orElseThrow(). */
+  /** The element for java.util.Optional.orElseThrow(), or null if running below Java 10. */
   private final @Nullable ExecutableElement optionalOrElseThrow;
 
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
+
+  /** The element for java.util.Optional.toString(). */
+  private final @Nullable ExecutableElement optionalToString;
+
+  /** The element for java.util.OptionalDouble.empty(). */
+  private final ExecutableElement optionalDoubleEmpty;
+
+  /** The element for java.util.OptionalDouble.getAsDouble(). */
+  private final ExecutableElement optionalDoubleGetAsDouble;
+
+  /** The element for java.util.OptionalDouble.hashCode(). */
+  private final ExecutableElement optionalDoubleHashCode;
+
+  /** The element for java.util.OptionalDouble.ifPresent(). */
+  private final ExecutableElement optionalDoubleIfPresent;
+
+  /** The element for java.util.OptionalDouble.ifPresentOrElse(). */
+  private final ExecutableElement optionalDoubleIfPresentOrElse;
+
+  /** The element for java.util.OptionalDouble.isPresent(). */
+  private final ExecutableElement optionalDoubleIsPresent;
+
+  /** The element for java.util.OptionalDouble.isEmpty(), or null if running under JDK 8. */
+  private final @Nullable ExecutableElement optionalDoubleIsEmpty;
+
+  /** The element for java.util.OptionalDouble.of(). */
+  private final ExecutableElement optionalDoubleOf;
+
+  /** The element for java.util.OptionalDouble.orElse(). */
+  private final ExecutableElement optionalDoubleOrElse;
+
+  /** The element for java.util.OptionalDouble.orElseGet(). */
+  private final ExecutableElement optionalDoubleOrElseGet;
+
+  /** The element for java.util.OptionalDouble.orElseThrow(), or null if running below Java 10. */
+  private final @Nullable ExecutableElement optionalDoubleOrElseThrow;
+
+  /**
+   * The element for java.util.OptionalDouble.orElseThrow(Supplier), or null if running under JDK 8.
+   */
+  private final @Nullable ExecutableElement optionalDoubleOrElseThrowSupplier;
+
+  /** The element for java.util.OptionalDouble.toString(). */
+  private final @Nullable ExecutableElement optionalDoubleToString;
+
+  /** The element for java.util.OptionalInt.empty(). */
+  private final ExecutableElement optionalIntEmpty;
+
+  /** The element for java.util.OptionalInt.getAsInt(). */
+  private final ExecutableElement optionalIntGetAsInt;
+
+  /** The element for java.util.OptionalInt.hashCode(). */
+  private final ExecutableElement optionalIntHashCode;
+
+  /** The element for java.util.OptionalInt.ifPresent(). */
+  private final ExecutableElement optionalIntIfPresent;
+
+  /** The element for java.util.OptionalInt.ifPresentOrElse(). */
+  private final ExecutableElement optionalIntIfPresentOrElse;
+
+  /** The element for java.util.OptionalInt.isPresent(). */
+  private final ExecutableElement optionalIntIsPresent;
+
+  /** The element for java.util.OptionalInt.isEmpty(), or null if running under JDK 8. */
+  private final @Nullable ExecutableElement optionalIntIsEmpty;
+
+  /** The element for java.util.OptionalInt.of(). */
+  private final ExecutableElement optionalIntOf;
+
+  /** The element for java.util.OptionalInt.orElse(). */
+  private final ExecutableElement optionalIntOrElse;
+
+  /** The element for java.util.OptionalInt.orElseGet(). */
+  private final ExecutableElement optionalIntOrElseGet;
+
+  /** The element for java.util.OptionalInt.orElseThrow(), or null if running below Java 10. */
+  private final @Nullable ExecutableElement optionalIntOrElseThrow;
+
+  /**
+   * The element for java.util.OptionalInt.orElseThrow(Supplier), or null if running under JDK 8.
+   */
+  private final @Nullable ExecutableElement optionalIntOrElseThrowSupplier;
+
+  /** The element for java.util.OptionalInt.toString(). */
+  private final @Nullable ExecutableElement optionalIntToString;
+
+  /** The element for java.util.OptionalLong.empty(). */
+  private final ExecutableElement optionalLongEmpty;
+
+  /** The element for java.util.OptionalLong.getAsLong(). */
+  private final ExecutableElement optionalLongGetAsLong;
+
+  /** The element for java.util.OptionalLong.hashCode(). */
+  private final ExecutableElement optionalLongHashCode;
+
+  /** The element for java.util.OptionalLong.ifPresent(). */
+  private final ExecutableElement optionalLongIfPresent;
+
+  /** The element for java.util.OptionalLong.ifPresentOrElse(). */
+  private final ExecutableElement optionalLongIfPresentOrElse;
+
+  /** The element for java.util.OptionalLong.isEmpty(), or null if running under JDK 8. */
+  private final @Nullable ExecutableElement optionalLongIsEmpty;
+
+  /** The element for java.util.OptionalLong.isPresent(). */
+  private final ExecutableElement optionalLongIsPresent;
+
+  /** The element for java.util.OptionalLong.of(). */
+  private final ExecutableElement optionalLongOf;
+
+  /** The element for java.util.OptionalLong.orElse(). */
+  private final ExecutableElement optionalLongOrElse;
+
+  /** The element for java.util.OptionalLong.orElseGet(). */
+  private final ExecutableElement optionalLongOrElseGet;
+
+  /** The element for java.util.OptionalLong.orElseThrow(), or null if running below Java 10. */
+  private final @Nullable ExecutableElement optionalLongOrElseThrow;
+
+  /**
+   * The element for java.util.OptionalLong.orElseThrow(Supplier), or null if running under JDK 8.
+   */
+  private final @Nullable ExecutableElement optionalLongOrElseThrowSupplier;
+
+  /** The element for java.util.OptionalLong.toString(). */
+  private final @Nullable ExecutableElement optionalLongToString;
+
+  /** The element for java.lang.Object.getClass(). */
+  private final ExecutableElement objectGetClass;
 
   /** Static methods that create an Optional. */
   private final List<ExecutableElement> optionalCreators;
@@ -112,43 +252,151 @@ public class OptionalVisitor
     collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
 
     ProcessingEnvironment env = checker.getProcessingEnvironment();
+
     optionalEmpty = TreeUtils.getMethod("java.util.Optional", "empty", 0, env);
     optionalFilter = TreeUtils.getMethod("java.util.Optional", "filter", 1, env);
     optionalFlatMap = TreeUtils.getMethod("java.util.Optional", "flatMap", 1, env);
     optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
-    optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
+    optionalHashCode = TreeUtils.getMethod("java.util.Optional", "hashCode", 0, env);
+    optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
+    optionalIfPresentOrElse = TreeUtils.getMethod("java.util.Optional", "ifPresentOrElse", 2, env);
     optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
+    optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
     optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
     optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
-    optionalOr = TreeUtils.getMethod("java.util.Optional", "or", 1, env);
+    optionalOr = TreeUtils.getMethodOrNull("java.util.Optional", "or", 1, env);
     optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
     optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
     optionalOrElseThrow = TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
     optionalOrElseThrowSupplier = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
+    optionalToString = TreeUtils.getMethod("java.util.Optional", "toString", 0, env);
 
-    optionalCreators = Arrays.asList(optionalEmpty, optionalOf, optionalOfNullable);
+    optionalDoubleEmpty = TreeUtils.getMethod("java.util.OptionalDouble", "empty", 0, env);
+    optionalDoubleGetAsDouble =
+        TreeUtils.getMethod("java.util.OptionalDouble", "getAsDouble", 0, env);
+    optionalDoubleHashCode = TreeUtils.getMethod("java.util.OptionalDouble", "hashCode", 0, env);
+    optionalDoubleIfPresent = TreeUtils.getMethod("java.util.OptionalDouble", "ifPresent", 1, env);
+    optionalDoubleIfPresentOrElse =
+        TreeUtils.getMethod("java.util.OptionalDouble", "ifPresentOrElse", 2, env);
+    optionalDoubleIsEmpty =
+        TreeUtils.getMethodOrNull("java.util.OptionalDouble", "isEmpty", 0, env);
+    optionalDoubleIsPresent = TreeUtils.getMethod("java.util.OptionalDouble", "isPresent", 0, env);
+    optionalDoubleOf = TreeUtils.getMethod("java.util.OptionalDouble", "of", 1, env);
+    optionalDoubleOrElse = TreeUtils.getMethod("java.util.OptionalDouble", "orElse", 1, env);
+    optionalDoubleOrElseGet = TreeUtils.getMethod("java.util.OptionalDouble", "orElseGet", 1, env);
+    optionalDoubleOrElseThrow =
+        TreeUtils.getMethodOrNull("java.util.OptionalDouble", "orElseThrow", 0, env);
+    optionalDoubleOrElseThrowSupplier =
+        TreeUtils.getMethod("java.util.OptionalDouble", "orElseThrow", 1, env);
+    optionalDoubleToString = TreeUtils.getMethod("java.util.OptionalDouble", "toString", 0, env);
+
+    optionalIntEmpty = TreeUtils.getMethod("java.util.OptionalInt", "empty", 0, env);
+    optionalIntGetAsInt = TreeUtils.getMethod("java.util.OptionalInt", "getAsInt", 0, env);
+    optionalIntHashCode = TreeUtils.getMethod("java.util.OptionalInt", "hashCode", 0, env);
+    optionalIntIfPresent = TreeUtils.getMethod("java.util.OptionalInt", "ifPresent", 1, env);
+    optionalIntIfPresentOrElse =
+        TreeUtils.getMethod("java.util.OptionalInt", "ifPresentOrElse", 2, env);
+    optionalIntIsEmpty = TreeUtils.getMethodOrNull("java.util.OptionalInt", "isEmpty", 0, env);
+    optionalIntIsPresent = TreeUtils.getMethod("java.util.OptionalInt", "isPresent", 0, env);
+    optionalIntOf = TreeUtils.getMethod("java.util.OptionalInt", "of", 1, env);
+    optionalIntOrElse = TreeUtils.getMethod("java.util.OptionalInt", "orElse", 1, env);
+    optionalIntOrElseGet = TreeUtils.getMethod("java.util.OptionalInt", "orElseGet", 1, env);
+    optionalIntOrElseThrow =
+        TreeUtils.getMethodOrNull("java.util.OptionalInt", "orElseThrow", 0, env);
+    optionalIntOrElseThrowSupplier =
+        TreeUtils.getMethod("java.util.OptionalInt", "orElseThrow", 1, env);
+    optionalIntToString = TreeUtils.getMethod("java.util.OptionalInt", "toString", 0, env);
+
+    optionalLongEmpty = TreeUtils.getMethod("java.util.OptionalLong", "empty", 0, env);
+    optionalLongGetAsLong = TreeUtils.getMethod("java.util.OptionalLong", "getAsLong", 0, env);
+    optionalLongHashCode = TreeUtils.getMethod("java.util.OptionalLong", "hashCode", 0, env);
+    optionalLongIfPresent = TreeUtils.getMethod("java.util.OptionalLong", "ifPresent", 1, env);
+    optionalLongIfPresentOrElse =
+        TreeUtils.getMethod("java.util.OptionalLong", "ifPresentOrElse", 2, env);
+    optionalLongIsEmpty = TreeUtils.getMethodOrNull("java.util.OptionalLong", "isEmpty", 0, env);
+    optionalLongIsPresent = TreeUtils.getMethod("java.util.OptionalLong", "isPresent", 0, env);
+    optionalLongOf = TreeUtils.getMethod("java.util.OptionalLong", "of", 1, env);
+    optionalLongOrElse = TreeUtils.getMethod("java.util.OptionalLong", "orElse", 1, env);
+    optionalLongOrElseGet = TreeUtils.getMethod("java.util.OptionalLong", "orElseGet", 1, env);
+    optionalLongOrElseThrow =
+        TreeUtils.getMethodOrNull("java.util.OptionalLong", "orElseThrow", 0, env);
+    optionalLongOrElseThrowSupplier =
+        TreeUtils.getMethod("java.util.OptionalLong", "orElseThrow", 1, env);
+    optionalLongToString = TreeUtils.getMethod("java.util.OptionalLong", "toString", 0, env);
+
+    objectGetClass = TreeUtils.getMethod("java.lang.Object", "getClass", 0, env);
+
+    optionalCreators =
+        Arrays.asList(
+            optionalEmpty,
+            optionalOf,
+            optionalOfNullable,
+            optionalDoubleEmpty,
+            optionalDoubleOf,
+            optionalIntEmpty,
+            optionalIntOf,
+            optionalLongEmpty,
+            optionalLongOf);
+
+    // There are no propagators in OptionalDouble, OptionalInt, or OptionalLong.
     optionalPropagators =
         optionalOr == null
             ? Arrays.asList(optionalFilter, optionalFlatMap, optionalMap)
             : Arrays.asList(optionalFilter, optionalFlatMap, optionalMap, optionalOr);
-    // TODO: add these eliminators:
-    //   hashCode, ifPresent, ifPresentOrElse, isEmpty, isPresent, toString, Object.getClass
+
+    // Iterating through this is inefficient.  I should find a better way.
+    // One idea: check the class that declares the method (using isOptionalType) and then the name
+    // as a string.  Is there a better way?
     optionalEliminators =
-        optionalIsEmpty == null
-            ? Arrays.asList(
+        new ArrayList<>(
+            Arrays.asList(
                 optionalGet,
-                optionalOrElse,
-                optionalOrElseGet,
-                optionalOrElseThrow,
-                optionalOrElseThrowSupplier)
-            : Arrays.asList(
-                optionalGet,
+                optionalHashCode,
+                optionalIfPresent,
+                optionalIfPresentOrElse,
                 optionalIsEmpty,
+                optionalIsPresent,
                 optionalOrElse,
                 optionalOrElseGet,
                 optionalOrElseThrow,
-                optionalOrElseThrowSupplier);
+                optionalOrElseThrowSupplier,
+                optionalToString,
+                optionalDoubleGetAsDouble,
+                optionalDoubleHashCode,
+                optionalDoubleIfPresent,
+                optionalDoubleIfPresentOrElse,
+                optionalDoubleIsEmpty,
+                optionalDoubleIsPresent,
+                optionalDoubleOrElse,
+                optionalDoubleOrElseGet,
+                optionalDoubleOrElseThrow,
+                optionalDoubleOrElseThrowSupplier,
+                optionalDoubleToString,
+                optionalIntGetAsInt,
+                optionalIntHashCode,
+                optionalIntIfPresent,
+                optionalIntIfPresentOrElse,
+                optionalIntIsEmpty,
+                optionalIntIsPresent,
+                optionalIntOrElse,
+                optionalIntOrElseGet,
+                optionalIntOrElseThrow,
+                optionalIntOrElseThrowSupplier,
+                optionalIntToString,
+                optionalLongGetAsLong,
+                optionalLongHashCode,
+                optionalLongIfPresent,
+                optionalLongIfPresentOrElse,
+                optionalLongIsEmpty,
+                optionalLongIsPresent,
+                optionalLongOrElse,
+                optionalLongOrElseGet,
+                optionalLongOrElseThrow,
+                optionalLongOrElseThrowSupplier,
+                optionalLongToString,
+                objectGetClass));
+    optionalEliminators.removeAll(Collections.singleton(null));
   }
 
   @Override

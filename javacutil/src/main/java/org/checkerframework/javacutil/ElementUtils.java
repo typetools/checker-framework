@@ -948,7 +948,10 @@ public class ElementUtils {
    * @return true if {@code questioned} is, or overrides, {@code method}
    */
   public static boolean isMethod(
-      ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
+      ExecutableElement questioned, @Nullable ExecutableElement method, ProcessingEnvironment env) {
+    if (method == null) {
+      return false;
+    }
     return questioned.equals(method)
         || env.getElementUtils()
             .overrides(questioned, method, (TypeElement) questioned.getEnclosingElement());
