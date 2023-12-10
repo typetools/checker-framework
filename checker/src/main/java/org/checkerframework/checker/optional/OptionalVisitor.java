@@ -131,7 +131,8 @@ public class OptionalVisitor
             ? Arrays.asList(optionalFilter, optionalFlatMap, optionalMap)
             : Arrays.asList(optionalFilter, optionalFlatMap, optionalMap, optionalOr);
     // TODO: add these eliminators:
-    //   hashCode, ifPresent, ifPresentOrElse, isEmpty, isPresent, toString, Object.getClass
+    //   hashCode, ifPresent, ifPresentOrElse (Java 9+ only), isEmpty, isPresent, toString,
+    //   Object.getClass
     optionalEliminators =
         optionalIsEmpty == null
             ? Arrays.asList(
