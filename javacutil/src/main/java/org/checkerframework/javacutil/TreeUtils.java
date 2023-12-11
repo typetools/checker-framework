@@ -1241,7 +1241,9 @@ public final class TreeUtils {
       return false;
     }
     for (ExecutableElement method : methods) {
-      if (ElementUtils.isMethod(invoked, method, processingEnv)) return true;
+      if (ElementUtils.isMethod(invoked, method, processingEnv)) {
+        return true;
+      }
     }
     return false;
   }
