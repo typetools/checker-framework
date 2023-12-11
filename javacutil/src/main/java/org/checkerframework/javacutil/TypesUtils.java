@@ -366,10 +366,13 @@ public final class TypesUtils {
   }
 
   /**
-   * Check if the type represents a declared type of the given qualified name.
+   * Check if the type represents a declared type whose fully-qualified name is any of the given
+   * names.
    *
    * @param type the type
-   * @return type iff type represents a declared type of the qualified name
+   * @param qualifiedNames fully-qualified type names to check for
+   * @return type iff type represents a declared type whose fully-qualified name is one of the given
+   *     names
    */
   public static boolean isDeclaredOfName(TypeMirror type, Collection<String> qualifiedNames) {
     return type.getKind() == TypeKind.DECLARED

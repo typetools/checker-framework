@@ -253,6 +253,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     return copyPrimaryAnnos(type, superType);
   }
 
+  /** The fully-qualified names of java.lang.Cloneable and java.io.Serializable. */
   private static List<String> cloneableOrSerializable =
       Arrays.asList("java.lang.Cloneable", "java.io.Serializable");
 

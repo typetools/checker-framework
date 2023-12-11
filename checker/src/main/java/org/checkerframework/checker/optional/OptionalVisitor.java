@@ -858,11 +858,17 @@ public class OptionalVisitor
     }
   }
 
-  /** Return true if tm is a subtype of Collection (other than the Null type). */
+  /**
+   * Return true if tm is a subtype of Collection (other than the Null type).
+   *
+   * @param tm a type
+   * @return true if the given type is a subtype of Collection
+   */
   private boolean isCollectionType(TypeMirror tm) {
     return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
   }
 
+  /** The fully-qualified names of the 4 optional classes in java.util. */
   private static Set<String> fqOptionalTypes =
       new HashSet<>(
           Arrays.asList(
@@ -874,7 +880,8 @@ public class OptionalVisitor
   /**
    * Return true if tm is class Optional, OptionalDouble, OptionalInt, or OptionalLong in java.util.
    *
-   * @return true if tm is Optional, OptionalDouble, OptionalInt, or OptionalLong.
+   * @param tm a type
+   * @return true if the given type is Optional, OptionalDouble, OptionalInt, or OptionalLong
    */
   private boolean isOptionalType(TypeMirror tm) {
     return TypesUtils.isDeclaredOfName(tm, fqOptionalTypes);
