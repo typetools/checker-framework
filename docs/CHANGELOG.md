@@ -3,6 +3,10 @@ Version 3.41.1 (January 2, 2023)
 
 **User-visible changes:**
 
+Method annotation `@AssertMethod` indicates that a method checks a value and
+possibly throws an assertion.  Using it can make flow-sensitive type refinement
+more effective.
+
 **Implementation details:**
 
 **Closed issues:**
