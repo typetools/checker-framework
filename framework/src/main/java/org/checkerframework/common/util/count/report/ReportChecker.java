@@ -33,4 +33,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * @see org.checkerframework.common.util.count.JavaCodeStatistics
  */
 @SupportedOptions({"reportTreeKinds", "reportModifiers"})
-public class ReportChecker extends BaseTypeChecker {}
+public class ReportChecker extends BaseTypeChecker {
+
+  /** Creates a ReportChecker. */
+  public ReportChecker() {}
+}

@@ -16,6 +16,9 @@ import javax.lang.model.element.TypeElement;
 @SupportedAnnotationTypes("*")
 public class DoNothingProcessor extends AbstractProcessor {
 
+  /** Creates a DoNothingProcessor. */
+  public DoNothingProcessor() {}
+
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
     return false;
