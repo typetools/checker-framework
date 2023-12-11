@@ -12,6 +12,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
@@ -33,8 +34,8 @@ public class OptionalTransfer extends CFTransfer {
   /** The element for java.util.Optional.ifPresent(). */
   private final ExecutableElement optionalIfPresent;
 
-  /** The element for java.util.Optional.ifPresentOrElse(). */
-  private final ExecutableElement optionalIfPresentOrElse;
+  /** The element for java.util.Optional.ifPresentOrElse(), or null. */
+  private final @Nullable ExecutableElement optionalIfPresentOrElse;
 
   /** The type factory associated with this transfer function. */
   private final AnnotatedTypeFactory atypeFactory;
@@ -51,7 +52,8 @@ public class OptionalTransfer extends CFTransfer {
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
-    optionalIfPresentOrElse = TreeUtils.getMethod("java.util.Optional", "ifPresentOrElse", 2, env);
+    optionalIfPresentOrElse =
+        TreeUtils.getMethodOrNull("java.util.Optional", "ifPresentOrElse", 2, env);
   }
 
   @Override
