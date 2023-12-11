@@ -1438,7 +1438,7 @@ class MustCallConsistencyAnalyzer {
         replacements.put(obligation, null);
       } else {
         replacements.put(
-            obligation, new Obligation(newResourceAliasesForObligation, MethodExitKind.ALL));
+            obligation, new Obligation(newResourceAliasesForObligation, obligation.whenToEnforce));
       }
     }
 
