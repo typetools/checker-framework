@@ -1,3 +1,6 @@
+// TODO: This file does not belong in the Optional Checker.  It should be in checker.jar in a
+// location that can be used by any checker.
+
 package com.google.common.base;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
