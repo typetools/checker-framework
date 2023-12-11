@@ -6,6 +6,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
@@ -13,6 +14,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +35,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
@@ -91,6 +94,12 @@ public class OptionalVisitor
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
 
+  /** The element for java.util.stream.Stream.filter(). */
+  private final ExecutableElement streamFilter;
+
+  /** The element for java.util.stream.Stream.map(). */
+  private final ExecutableElement streamMap;
+
   /** Static methods that create an Optional. */
   private final List<ExecutableElement> optionalCreators;
 
@@ -124,6 +133,9 @@ public class OptionalVisitor
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
     optionalOrElseThrow = TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
     optionalOrElseThrowSupplier = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
+
+    streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
+    streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
 
     optionalCreators = Arrays.asList(optionalEmpty, optionalOf, optionalOfNullable);
     optionalPropagators =
@@ -636,5 +648,50 @@ public class OptionalVisitor
       }
     }
     return s;
+  }
+
+  // TODO: This needs to be inside an OverrideChecker.
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This implementation looks for the pattern {@code
+   * Stream.filter(Optional::isPresent).map(Optional::get)}, where {@code memberTree} is {@code
+   * Optional::get}.
+   */
+  @Override
+  protected boolean permitMethodrefReceiver(
+      MemberReferenceTree memberRefTree, AnnotatedExecutableType overrider) {
+    ExecutableElement memberRefElement = overrider.getUnderlyingType().asElement();
+    if (memberRefElement.equals(optionalGet)) {
+      // "getPath" means "the path to the node `Optional::get`".
+      TreePath getPath = atypeFactory.getPath(memberRefTree);
+      TreePath getParentPath = getPath.getParentPath();
+      // "getParent" means "the parent of the node `Optional::get`".
+      Tree getParent = getParentPath.getLeaf();
+      if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+        ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
+        if (hasGetAsArgumentElement.equals(streamMap)) {
+          MethodInvocationTree mapInvocationTree = hasGetAsArgumentTree;
+          Tree mapParent = getParentPath.getParentPath();
+          // Perhaps mapParent is the call `Stream.filter(Optional::isPresent)`.
+          if (mapParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapParent;
+            ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
+            if (fluentToMapElement.equals(streamFilter)) {
+              MethodInvocationTree filterInvocationTree = fluentToMapTree;
+              ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
+              if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
+                ExecutableElement filterArgElement = TreeUtils.elementFromUse(filterArgTree);
+                if (filterArgElement.equals(optionalIsPresent)) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return false;
   }
 }

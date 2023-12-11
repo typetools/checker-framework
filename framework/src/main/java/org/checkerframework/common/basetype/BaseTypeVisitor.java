@@ -3715,7 +3715,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-   * created by {@link #createOverrideChecker}. This version of the method exposes
+   * created by {@link #createOverrideChecker}. This version of the method exposes the
    * AnnotatedExecutableType of the overriding method. Override this version of the method if you
    * need to access that type.
    *
@@ -3756,7 +3756,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that a method reference is allowed. Using the OverrideChecker class.
+   * Check that a method reference is allowed. Uses the OverrideChecker class.
    *
    * @param memberReferenceTree the tree for the method reference
    * @return true if the method reference is allowed
@@ -3934,7 +3934,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public class OverrideChecker {
 
-    /** The declaration of an overriding method. */
+    /**
+     * The declaration of an overriding method. Or, it could be a method reference that is being
+     * passed to a method.
+     */
     protected final Tree overriderTree;
 
     /** True if {@link #overriderTree} is a MEMBER_REFERENCE. */
@@ -4114,7 +4117,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private boolean checkMemberReferenceReceivers() {
       if (overriderType.getKind() == TypeKind.ARRAY) {
-        // Assume the receiver for all method on arrays are @Top
+        // Assume the receiver for all method on arrays are @Top.
         // This simplifies some logic because an AnnotatedExecutableType for an array method
         // (ie String[]::clone) has a receiver of "Array." The UNBOUND check would then
         // have to compare "Array" to "String[]".
@@ -4128,6 +4131,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
         AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
         boolean success = typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
+        if (!success) {
+          success = permitMethodrefReceiver(memberTree, overrider);
+        }
         if (!success) {
           checker.reportError(
               overriderTree,
@@ -4199,6 +4205,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       return success;
+    }
+
+    // TODO: Make this more general, call it from reportError for *every* error.
+    /**
+     * This method is called when a "methodref.receiver" warning is about to be issued.
+     *
+     * @return true if the code should be permitted and the error should be suppressed
+     */
+    protected boolean permitMethodrefReceiver(
+        MemberReferenceTree memberRefTree, AnnotatedExecutableType overrider) {
+      return false;
     }
 
     /**
