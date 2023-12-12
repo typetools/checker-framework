@@ -3794,9 +3794,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // ========= Overriding Executable =========
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-    ExecutableElement compileTimeDeclaration =
-        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
-
+    ExecutableElement compileTimeDeclaration = TreeUtils.elementFromUse(memberReferenceTree);
     if (enclosingType.getKind() == TypeKind.DECLARED
         && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
       if (memRefKind == MemberReferenceKind.UNBOUND) {
@@ -4132,9 +4130,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
         boolean success = typeHierarchy.isSubtype(overriddenReceiver, overriderReceiver);
         if (!success) {
-          success = permitMethodrefReceiver(memberTree, overrider);
-        }
-        if (!success) {
           checker.reportError(
               overriderTree,
               "methodref.receiver",
@@ -4205,20 +4200,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       return success;
-    }
-
-    // TODO: Make this more general, call it from reportError for *every* error.
-    /**
-     * This method is called when a "methodref.receiver" warning is about to be issued.
-     *
-     * @param memberRefTree a method reference tree where a "methodref.receiver" warning is about to
-     *     be issued
-     * @param overrider the type of the given tree
-     * @return true if the code should be permitted and the error should be suppressed
-     */
-    protected boolean permitMethodrefReceiver(
-        MemberReferenceTree memberRefTree, AnnotatedExecutableType overrider) {
-      return false;
     }
 
     /**

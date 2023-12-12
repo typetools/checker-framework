@@ -35,7 +35,6 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
@@ -650,123 +649,61 @@ public class OptionalVisitor
     return s;
   }
 
-  /**
-   * Create an OverrideChecker.
-   *
-   * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
-   * of using OverrideChecker itself.
-   *
-   * @param overriderTree the AST node of the overriding method or method reference
-   * @param overriderMethodType the type of the overriding method
-   * @param overriderType the type enclosing the overrider method, usually an AnnotatedDeclaredType;
-   *     for Method References may be something else
-   * @param overriderReturnType the return type of the overriding method
-   * @param overriddenMethodType the type of the overridden method
-   * @param overriddenType the declared type enclosing the overridden method
-   * @param overriddenReturnType the return type of the overridden method
-   * @return an OverrideChecker
-   */
   @Override
-  protected OptionalOverrideChecker createOverrideChecker(
-      Tree overriderTree,
-      AnnotatedExecutableType overriderMethodType,
-      AnnotatedTypeMirror overriderType,
-      AnnotatedTypeMirror overriderReturnType,
-      AnnotatedExecutableType overriddenMethodType,
-      AnnotatedDeclaredType overriddenType,
-      AnnotatedTypeMirror overriddenReturnType) {
-    return new OptionalOverrideChecker(
-        overriderTree,
-        overriderMethodType,
-        overriderType,
-        overriderReturnType,
-        overriddenMethodType,
-        overriddenType,
-        overriddenReturnType);
+  public Void visitMemberReference(MemberReferenceTree tree, Void p) {
+    if (isFilterIsPresentMapGet(tree)) {
+      // TODO: This is a work around until
+      // https://github.com/typetools/checker-framework/issues/1345
+      // is fixed.
+      return null;
+    }
+    return super.visitMemberReference(tree, p);
   }
 
-  /** An OverrideChecker that permits certain uses of {@code Optional.get()}. */
-  class OptionalOverrideChecker extends OverrideChecker {
-
-    /**
-     * Create an OptionalOverrideChecker.
-     *
-     * <p>Notice that the return types are passed in separately. This is to support some types of
-     * method references where the overrider's return type is not the appropriate type to check.
-     *
-     * @param overriderTree the AST node of the overriding method or method reference
-     * @param overrider the type of the overriding method
-     * @param overriderType the type enclosing the overrider method, usually an
-     *     AnnotatedDeclaredType; for Method References may be something else
-     * @param overriderReturnType the return type of the overriding method
-     * @param overridden the type of the overridden method
-     * @param overriddenType the declared type enclosing the overridden method
-     * @param overriddenReturnType the return type of the overridden method
-     */
-    public OptionalOverrideChecker(
-        Tree overriderTree,
-        AnnotatedExecutableType overrider,
-        AnnotatedTypeMirror overriderType,
-        AnnotatedTypeMirror overriderReturnType,
-        AnnotatedExecutableType overridden,
-        AnnotatedDeclaredType overriddenType,
-        AnnotatedTypeMirror overriddenReturnType) {
-      super(
-          overriderTree,
-          overrider,
-          overriderType,
-          overriderReturnType,
-          overridden,
-          overriddenType,
-          overriddenReturnType);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>This implementation looks for the pattern {@code
-     * Stream.filter(Optional::isPresent).map(Optional::get)}, where {@code memberTree} is {@code
-     * Optional::get}.
-     */
-    @Override
-    protected boolean permitMethodrefReceiver(
-        MemberReferenceTree memberRefTree, AnnotatedExecutableType overrider) {
-      ExecutableElement memberRefElement =
-          (ExecutableElement) ((DeclaredType) overrider.getUnderlyingType()).asElement();
-      if (memberRefElement.equals(optionalGet)) {
-        // "getPath" means "the path to the node `Optional::get`".
-        TreePath getPath = atypeFactory.getPath(memberRefTree);
-        TreePath getParentPath = getPath.getParentPath();
-        // "getParent" means "the parent of the node `Optional::get`".
-        Tree getParent = getParentPath.getLeaf();
-        if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-          MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
-          ExecutableElement hasGetAsArgumentElement =
-              TreeUtils.elementFromUse(hasGetAsArgumentTree);
-          if (hasGetAsArgumentElement.equals(streamMap)) {
-            // hasGetAsArgumentTree is an invocation of Stream::map.
-            TreePath mapParentPath = getParentPath.getParentPath();
-            Tree mapParentTree = mapParentPath.getLeaf();
-            // Perhaps mapParent is the call `Stream.filter(Optional::isPresent)`.
-            if (mapParentTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
-              MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapParentTree;
-              ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
-              if (fluentToMapElement.equals(streamFilter)) {
-                MethodInvocationTree filterInvocationTree = fluentToMapTree;
-                ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
-                if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-                  ExecutableElement filterArgElement =
-                      (ExecutableElement) TreeUtils.elementFromUse(filterArgTree);
-                  if (filterArgElement.equals(optionalIsPresent)) {
-                    return true;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+  /**
+   * Returns true if {@code memberRefTree} the {@code Optional::get} in {@code
+   * Stream.filter(Optional::isPresent).map(Optional::get)}.
+   *
+   * @param memberRefTree a member reference tree
+   * @return true if {@code memberRefTree} the {@code Optional::get} in {@code
+   *     Stream.filter(Optional::isPresent).map(Optional::get)}
+   */
+  private boolean isFilterIsPresentMapGet(MemberReferenceTree memberRefTree) {
+    if (!TreeUtils.elementFromUse(memberRefTree).equals(optionalGet)) {
+      // The method reference is not Optional::get
       return false;
     }
+    // "getPath" means "the path to the node `Optional::get`".
+    TreePath getPath = getCurrentPath();
+    TreePath getParentPath = getPath.getParentPath();
+    // "getParent" means "the parent of the node `Optional::get`".
+    Tree getParent = getParentPath.getLeaf();
+    if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+      ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
+      if (!hasGetAsArgumentElement.equals(streamMap)) {
+        // Optional::get is not an argument to stream#map
+        return false;
+      }
+      // hasGetAsArgumentTree is an invocation of Stream#map(...).
+      Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
+      // Perhaps mapParent is the call `Stream.filter(Optional::isPresent)`.
+      if (mapReceiverTree != null && mapReceiverTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
+        ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
+        if (!fluentToMapElement.equals(streamFilter)) {
+          // The receiver of map(Optional::get) is not Stream#filter
+          return false;
+        }
+        MethodInvocationTree filterInvocationTree = fluentToMapTree;
+        ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
+        if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
+          ExecutableElement filterArgElement =
+              TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
+          return filterArgElement.equals(optionalIsPresent);
+        }
+      }
+    }
+    return false;
   }
 }
