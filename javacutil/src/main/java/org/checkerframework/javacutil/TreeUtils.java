@@ -1235,8 +1235,13 @@ public final class TreeUtils {
     if (!(tree instanceof MethodInvocationTree)) {
       return false;
     }
+    MethodInvocationTree methInvok = (MethodInvocationTree) tree;
+    ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
+    if (invoked == null) {
+      return false;
+    }
     for (ExecutableElement method : methods) {
-      if (isMethodInvocation(tree, method, processingEnv)) {
+      if (ElementUtils.isMethod(invoked, method, processingEnv)) {
         return true;
       }
     }
