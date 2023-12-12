@@ -13,6 +13,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -536,7 +537,13 @@ public class OptionalVisitor
       if (ekind.isField()) {
         checker.reportWarning(tree, "optional.field");
       } else if (ekind == ElementKind.PARAMETER) {
-        checker.reportWarning(tree, "optional.parameter");
+        TreePath paramPath = atypeFactory.getPath(tree);
+        Tree parent = paramPath.getParentPath().getLeaf();
+        if (parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+          // Exception to rule: lambda parameters can have type Optional.
+        } else {
+          checker.reportWarning(tree, "optional.parameter");
+        }
       }
     }
     return super.visitVariable(tree, p);
