@@ -712,6 +712,10 @@ public class OptionalVisitor
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
     while (true) {
+      if (receiver == null) {
+        // The receiver can be null if the receiver is the implicit "this.".
+        return;
+      }
       if (receiver.getKind() != Tree.Kind.METHOD_INVOCATION) {
         return;
       }
@@ -851,7 +855,12 @@ public class OptionalVisitor
     }
   }
 
-  /** Return true if tm represents a subtype of Collection (other than the Null type). */
+  /**
+   * Return true if tm is a subtype of Collection (other than the Null type).
+   *
+   * @param tm a type
+   * @return true if the given type is a subtype of Collection
+   */
   private boolean isCollectionType(TypeMirror tm) {
     return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
   }
