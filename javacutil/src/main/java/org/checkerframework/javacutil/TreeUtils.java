@@ -474,6 +474,23 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the ExecutableElement for the method reference.
+   *
+   * @param tree a method reference
+   * @return the ExecutableElement for the method reference
+   */
+  @Pure
+  public static ExecutableElement elementFromUse(MemberReferenceTree tree) {
+    Element result = elementFromUse((ExpressionTree) tree);
+    if (!(result instanceof ExecutableElement)) {
+      throw new BugInCF(
+          "Method reference elements should be ExecutableElement. Found: %s [%s]",
+          result, result.getClass());
+    }
+    return (ExecutableElement) result;
+  }
+
+  /**
    * Returns the ExecutableElement for the given method declaration.
    *
    * <p>The result can be null, when {@code tree} is a method in an anonymous class.
