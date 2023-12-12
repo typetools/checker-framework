@@ -59,6 +59,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * </ul>
  *
  * @see JavaCodeStatistics
+ * @see org.checkerframework.common.util.count.report.ReportChecker
  */
 /*
  * TODO: add an option to only list declaration or type annotations.
