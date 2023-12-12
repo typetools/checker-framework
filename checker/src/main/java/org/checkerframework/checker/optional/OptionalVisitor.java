@@ -537,7 +537,7 @@ public class OptionalVisitor
       if (ekind.isField()) {
         checker.reportWarning(tree, "optional.field");
       } else if (ekind == ElementKind.PARAMETER) {
-        TreePath paramPath = atypeFactory.getPath(tree);
+        TreePath paramPath = getCurrentPath();
         Tree parent = paramPath.getParentPath().getLeaf();
         if (parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
           // Exception to rule: lambda parameters can have type Optional.
