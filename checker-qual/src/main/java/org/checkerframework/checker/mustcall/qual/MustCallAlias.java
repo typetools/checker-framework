@@ -11,7 +11,9 @@ import java.lang.annotation.Target;
  * always be used in pairs. On a method, it is written on some formal parameter type and on the
  * method return type. On a constructor, it is written on some formal parameter type and on the
  * result type. Fulfilling the must-call obligation of one is equivalent to fulfilling the must-call
- * obligation of the other.
+ * obligation of the other. Beyond its impact as a polymorphic annotation on {@code MustCall} types,
+ * the Resource Leak Checker uses {@link MustCallAlias} annotations to more precisely determine when
+ * a must-call obligation has been satisfied.
  *
  * <p>This annotation is useful for wrapper objects. For example, consider the declaration of {@code
  * java.net.Socket#getOutputStream}:
@@ -24,6 +26,25 @@ import java.lang.annotation.Target;
  *
  * Calling {@code close()} on the returned {@code OutputStream} will close the underlying socket,
  * but the Socket may also be closed directly, which has the same effect.
+ *
+ * <h2>Type system semantics</h2>
+ *
+ * Within the Must Call Checker's type system, {@code @MustCallAlias} annotations have a semantics
+ * different from a standard polymorphic annotation, in that the relevant actual parameter type and
+ * return type at a call site are not equated in all cases. Given an actual parameter {@code p}
+ * passed in a {@code @MustCallAlias} position at a call site, the return type of the call is
+ * defined as follows:
+ *
+ * <ul>
+ *   <li>If the base return type has a non-empty {@code @InheritableMustCall("m")} annotation on its
+ *       declaration, and {@code p} has a non-empty {@code @MustCall} type, then the return type is
+ *       {@code @MustCall("m")}.
+ *   <li>In all other cases, the return type has the same {@code @MustCall} type as {@code p}.
+ * </ul>
+ *
+ * {@link PolyMustCall} has an identical type system semantics. This special treatment is required
+ * to allow for a wrapper object to have a must-call method with a different name than the must-call
+ * method name for the wrapped object.
  *
  * <h2>Verifying {@code @MustCallAlias} annotations</h2>
  *
@@ -47,7 +68,10 @@ import java.lang.annotation.Target;
  * </ul>
  *
  * When the -AnoResourceAliases command-line argument is passed to the checker, this annotation is
- * treated identically to {@link PolyMustCall}.
+ * treated identically to {@link PolyMustCall}. That is, the annotation still impacts {@link
+ * MustCall} types as a polymorphic annotation (see "Type system semantics" above), but it is not
+ * used by the Resource Leak Checker to more precisely reason about when obligations have been
+ * satisfied.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism

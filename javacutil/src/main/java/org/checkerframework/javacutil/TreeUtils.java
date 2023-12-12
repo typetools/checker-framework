@@ -732,15 +732,15 @@ public final class TreeUtils {
           type);
     }
     ExecutableType executableType = (ExecutableType) type;
-    if (((ExecutableType) type).getParameterTypes().isEmpty() && elementFromUse(tree).isVarArgs()) {
+    ExecutableElement element = elementFromUse(tree);
+    if (((ExecutableType) type).getParameterTypes().size() != element.getParameters().size()) {
       // Sometimes when the method type is viewpoint-adapted, the vararg parameter disappears,
       // just return the declared type.
       // For example,
       // static void call(MethodHandle methodHandle) throws Throwable {
       //   methodHandle.invoke();
       // }
-      ExecutableElement ele = elementFromUse(tree);
-      return (ExecutableType) ele.asType();
+      return (ExecutableType) element.asType();
     }
     return executableType;
   }
@@ -1223,14 +1223,20 @@ public final class TreeUtils {
   /**
    * Returns true if the argument is an invocation of one of the given methods, or of any method
    * that overrides them.
+   *
+   * @param tree a tree that might be a method invocation
+   * @param methods the methods to check for
+   * @param processingEnv the processing environment
+   * @return true if the argument is an invocation of one of the given methods, or of any method
+   *     that overrides them
    */
   public static boolean isMethodInvocation(
-      Tree methodTree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
-    if (!(methodTree instanceof MethodInvocationTree)) {
+      Tree tree, List<ExecutableElement> methods, ProcessingEnvironment processingEnv) {
+    if (!(tree instanceof MethodInvocationTree)) {
       return false;
     }
-    for (ExecutableElement Method : methods) {
-      if (isMethodInvocation(methodTree, Method, processingEnv)) {
+    for (ExecutableElement method : methods) {
+      if (isMethodInvocation(tree, method, processingEnv)) {
         return true;
       }
     }

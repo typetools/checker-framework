@@ -66,7 +66,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Then, when check a client of the library,
+  Then, when checking a client of the library,
   supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
@@ -439,7 +439,7 @@ There are two types of annotation files, which are files containing annotations 
 can be read by the Checker Framework.
 This section describes stub files, which are used by programmers and
 type system designers.
-Section~\ref{ajava-files} dscribes ajava files, which are used by
+Section~\ref{ajava-files} describes ajava files, which are used by
 tools, such as type inference.
 
 
@@ -585,9 +585,10 @@ SecureRandom sr = ...;
 \subsectionAndLabel{Stub file format}{stub-format}
 
 Every Java file is a valid stub file.  However, you can omit information
-that is not relevant to pluggable type-checking; this makes the stub file
+that is not relevant to pluggable type-checking, as explained below;
+this makes the stub file
 smaller and easier for people to read and write.
-Also note that the stub file's extension must be \<.astub>, not \<.java>.
+The stub file's extension must be \<.astub>, not \<.java>.
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -613,8 +614,9 @@ following ways:
 \item{\textbf{Method declarations:}}
   You only have to specify the methods that you need to annotate.
   Any method declaration may be omitted, in which case the checker reads
-  its annotations from library's \<.class> files.  (If you are using a stub class, then
-  typically the library is unannotated.)
+  its annotations from library's \<.class> files.  If you are using a stub class, then
+  often the library is unannotated, but you can use stub files to override
+  library annotations.
 
 \item{\textbf{Declaration specifiers:}}
   Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
@@ -625,19 +627,29 @@ following ways:
   In particular, it is valid to use \<java.lang.Object> for every method.
   This simplifies the creation of stub files.
 
-\item{\textbf{Import statements:}}
-  Imports may appear at the beginning of the file or after any package declaration.
-  The only required import statements are the ones to import type
-  annotations.  Import statements for types are optional.
-
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
   The packages are separated by a package statement:
   \<package my.package;>.  Each package declaration may occur only once; in
   other words, all classes from a package must appear together.
 
+\item{\textbf{Import statements:}}
+  Imports may appear at the beginning of the file or after any package declaration.
+  The only required import statements are the ones to import type
+  annotations.  Import statements for types are optional.  If you omit an
+  import statement for an annotation, occurrences of that annotation are
+  silently ignored; this is a common error in stub files.
+
 \end{description}
 
+When you create a stub file, it is recommended that validate it by copying
+the stub file to a file with the \<.java> extension and running the
+type-checker.  This will ensure that your annotations are syntactically
+valid, are written in the correct locations, and are properly imported.
+When you run the type-checker on your annotations, there should not be any
+stub file that also contains annotations for the class.  In particular, if
+you are type-checking a stub file for a class in the JDK, then you should
+use the\<-Aignorejdkastub> command-line option.
 
 
 \subsectionAndLabel{Creating a stub file}{stub-creating}
@@ -651,26 +663,21 @@ annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
 
-Optionally (but highly recommended!), run the type-checker to verify that
-your annotations are correct.  When you run the type-checker on your
-annotations, there should not be any stub file that also contains
-annotations for the class.  In particular, if you are type-checking the JDK
-itself, then you should use the \<-Aignorejdkastub> command-line option.
-
-This approach retains the original
+This copy-and-annotate approach retains the original
 documentation and source code, making it easier for a programmer to
 double-check the annotations.  It also enables creation of diffs, easing
 the process of upgrading when a library adds new methods.  And, the
 annotations are in a format that the library maintainers can even
 incorporate.
 
-The downside of this approach is that the stub files are larger.  This can
+The downside of the copy-and-annotate approach is that the stub files are
+larger.  This can
 slow down the Checker Framework, because it parses the stub files each time
 it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
 
-Alternatively, you can minimize source files to make them more suitable as stub files.
+You can minimize source files to speed up parsing them.
 Use the \<JavaStubifier> to convert, in-place, all \<.java> files in given directories into
 minimal stub files.
 
@@ -696,6 +703,49 @@ find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
 
 % That file will contain many non-unique import statements, but that shouldn't be harmful.
 
+\subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
+
+If you do not have access to the library source code, you can create a stub
+file by hand.
+
+If you have access to the API documentation for the element you wish to
+annotate, it is often easiest to copy--paste names, types, and signatures
+from the API documentation.  (The API documentation is a \<.html> file that
+is sometimes colloquially called the ``Javadoc''.)  This avoids common
+mistakes when writing stub files by hand, such as typos in the package name
+or in a method signature.
+
+
+Here are steps to write a stub file by hand:
+\begin{enumerate}
+\item Create a file whose name ends in \<.astub>, or use an existing one.
+\item Write a package declaration, exactly as if you are
+writing a Java file for the target class.  (If the file already contains a
+declaration for that package, re-use it by doing the rest of your work
+under it; don't write a duplicate package declaration in the file.)
+Typically, it is easiest to copy--paste the package name from API
+documentation or from an import statement in the code that you are
+type-checking, to avoid typos.
+\item Write a class declaration header:  \<class> followed by the
+class name. The stub file format does not care whether the enclosing type
+is a class, interface, etc., so you can write ``\<class>'' regardless of
+what kind of type it is.
+
+A common mistake at this stage is that the
+target method or field may be defined in a superclass of the static type of
+the class that is actually being used in the code you are trying to
+analyze. For example, suppose that you are trying to annotate the
+\<drawImage(Image,int,int,int,int,ImageObserver)> method of an object whose static
+type is \<java.awt.Graphics2D>\@.  This method is actually defined in the abstract
+\<Graphics> class (which is the superclass of \<Graphics2D>), so it needs
+to appear within the class \<Graphics> rather than the class \<Graphics2D>
+in the stub file.
+\item Write the element declaration that you wish to annotate, within the class you just created.  \\
+For a method, this is the method signature, followed by ``\<;>''. \\
+For a field, this is the type, field name, and ``\<;>'', without an initializer.
+\item Annotate the declaration that you just wrote.
+\item Add import statements for any annotations you wrote.
+\end{enumerate}
 
 %% Changes in JDK 11 have broken StubGenerator.
 % \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
@@ -900,7 +950,7 @@ There are two types of annotation files, which are files containing annotations 
 can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
-This section dscribes ajava files.
+This section describes ajava files.
 Ajava files are read and written by tools, such as whole-program type
 inference (see Section~\ref{whole-program-inference}).  This section about
 ajava files is primarily of interest to the maintainers of such tools.
@@ -1031,7 +1081,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 % LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-% LocalWords: enableForgroundNdefPush BCEL getopt
+% LocalWords: enableForgroundNdefPush BCEL getopt ajava html drawImage
 % LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 % LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
 % LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
@@ -1043,4 +1093,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: AuseConservativeDefaultsForUncheckedCodesource nextInt
 % LocalWords: AstubWarnIfNotFoundIgnoresClasses AmergeStubsWithSource
 % LocalWords:  AstubWarnIfRedundantWithBytecode JavaStubifier StubFiles
-% LocalWords:  BaseTypeChecker
+% LocalWords:  BaseTypeChecker ImageObserver Graphics2D AstubWarnNote
+% LocalWords:  AstubNoWarnIfNotFound NoStubParserWarning AstubWarn Werror
+% LocalWords:  Aajava substring outerpackage innerpackage myMethod MyClass
+% LocalWords:  InsertAjavaAnnotations

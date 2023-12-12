@@ -744,17 +744,17 @@ public class WholeProgramInferenceJavaParserStorage
               // method of computing the name is not 100% guaranteed to be reliable, but it should
               // be sufficient for WPI's purposes here: if the wrong name is computed, the worst
               // outcome is a false positive because WPI inferred an untrue annotation.
+              Optional<String> ofqn = javaParserClass.getFullyQualifiedName();
+              if (ofqn.isEmpty()) {
+                throw new BugInCF("Missing getFullyQualifiedName() for " + javaParserClass);
+              }
               if ("".contentEquals(tree.getSimpleName())) {
                 @SuppressWarnings("signature:assignment") // computed from string concatenation
-                @BinaryName String computedName =
-                    javaParserClass.getFullyQualifiedName().get() + "$" + ++innerClassCount;
+                @BinaryName String computedName = ofqn.get() + "$" + ++innerClassCount;
                 className = computedName;
               } else {
                 @SuppressWarnings("signature:assignment") // computed from string concatenation
-                @BinaryName String computedName =
-                    javaParserClass.getFullyQualifiedName().get()
-                        + "$"
-                        + tree.getSimpleName().toString();
+                @BinaryName String computedName = ofqn.get() + "$" + tree.getSimpleName().toString();
                 className = computedName;
               }
             } else {
@@ -1071,11 +1071,10 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
-      // JavaParser can output using lexical preserving printing, which writes the file such
-      // that its formatting is close to the original source file it was parsed from as
-      // possible. Currently, this feature is very buggy and crashes when adding annotations
-      // in certain locations. This implementation could be used instead if it's fixed in
-      // JavaParser.
+      // This implementation uses JavaParser's lexical preserving printing, which writes the file
+      // such that its formatting is close to the original source file it was parsed from as
+      // possible. It is commented out because, this feature is very buggy and crashes when adding
+      // annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
       // Do not print invisible qualifiers, to avoid cluttering the output.
@@ -1906,10 +1905,6 @@ public class WholeProgramInferenceJavaParserStorage
      * nodes for that field.
      */
     public void transferAnnotations() {
-      if (type == null) {
-        return;
-      }
-
       if (declarationAnnotations != null) {
         // Don't add directly to the type of the variable declarator,
         // because declaration annotations need to be attached to the FieldDeclaration

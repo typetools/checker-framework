@@ -253,6 +253,9 @@ public class NullnessVisitor
   /** Case 1: Check for null dereferencing. */
   @Override
   public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+    if (atypeFactory.isUnreachable(tree)) {
+      return super.visitMemberSelect(tree, p);
+    }
     Element e = TreeUtils.elementFromUse(tree);
     if (e.getKind() == ElementKind.CLASS) {
       if (atypeFactory.containsNullnessAnnotation(null, tree.getExpression())) {
@@ -438,6 +441,7 @@ public class NullnessVisitor
 
   /**
    * Reports an error if a comparison of a @NonNull expression with the null literal is performed.
+   * Does nothing unless {@code -Alint=redundantNullComparison} is passed on the command line.
    *
    * @param tree a tree that might be a comparison of a @NonNull expression with the null literal
    */

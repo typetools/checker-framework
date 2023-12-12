@@ -5,6 +5,11 @@
 # To invoke it, pass a type system name; for example:
 #   count-suppression-reasons nullness
 # The argument to this script is actually a regular expression.
+# Command-line arguments (which must appear before the type system name):
+#   -d       debug
+#   -i REGEX include matches for the grep basic regex
+#   -x REGEX exclude matches for the grep basic regex
+# The -i argument (if any) is processed before the -x argument (if any).
 
 # The "reason" for a warning suppression is the Java line comment after it:
 #   @SuppressWarnings("nullness") // here is the reason
@@ -19,14 +24,28 @@
 #     "interning:type.incompatible" // reason for interning suppression
 #   })
 
+# Some reasons are ignored, notably "true positive" and
+# "count-suppression-reasons-ignore"; see below for the full list.
+
 # This script is useful to determine the most frequent reasons for warning
 # suppressions, to help checker developers decide what featuers to add to
 # their type systems.  However, use common.util.count.AnnotationStatistics
 # to count the total number of warning suppressions (for example, to report
 # in a paper), because this script gives only an approximate count.
 
-# To debug, pass --debug as the first command-line argument.
+# To debug, pass the -d command-line argument.
 debug=0
+
+while getopts dx:i: flag
+do
+    case "${flag}" in
+        d) debug=1;;
+        x) exclude=${OPTARG};;
+        i) include=${OPTARG};;
+        \?) echo "Invalid option -$OPTARG"; exit 1;;
+    esac
+done
+shift $((OPTIND-1))
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     SED="gsed"
@@ -34,11 +53,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     SED="sed"
     GREP="grep"
-fi
-
-if [ "$1" == "--debug" ] ; then
-    debug=1
-    shift
 fi
 
 if [ "$#" -ne 1 ]; then
@@ -60,7 +74,9 @@ if [ "$regex" = "resourceleak" ]; then
 fi
 
 # Diagnostics
-# echo "regex=${regex}"
+if [ "$debug" -ne "0" ]; then
+  echo "checker regex=${regex}"
+fi
 
 greplines=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
 countedreasons=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
@@ -71,10 +87,20 @@ countedreasons=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-
 #    include "@SuppressWarnings" because it might appear on the previous line.
 #  * @AssumeAssertion(checkername)
 # This grep command captures a few stray lines; users should ignore them.
-# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "// TP" (as an alias for "true positive"), and "count-suppression-reasons-ignore".
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "TP" (as an alias for "true positive"), and "count-suppression-reasons-ignore".
 ${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
     | grep -v "@AnnotatedFor" | grep -v "/tests/" \
     | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppression-reasons-ignore" > "${greplines}"
+
+if [ -n "$include" ] ; then
+    mv "${greplines}" "${greplines}-i"
+    grep -- "$include" "${greplines}-i" > "${greplines}"
+fi
+if [ -n "$exclude" ] ; then
+    mv "${greplines}" "${greplines}-x"
+    grep -v -- "$exclude" "${greplines}-x" > "${greplines}"
+fi
+
 
 total=$(wc -l < "${greplines}")
 ## Don't output a total, to avoid people using this approximate count.

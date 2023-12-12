@@ -105,15 +105,34 @@ from superclass definitions.
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
 
 The command-line options \<-AassumeSideEffectFree>,
-\<-AassumeDeterministic>, \<-AassumePure> make the Checker Framework unsoundly
-assume that \emph{every} called method is side-effect-free, is
-deterministic, or is both, respectively.  This can make
+\<-AassumeDeterministic>, and \<-AassumePure> make the Checker Framework
+unsoundly assume that \emph{every} called method is side-effect-free, is
+deterministic, or is both, respectively.
+
+The command-line option \<-AassumePureGetters> makes the Checker Framework
+unsoundly assume that every getter method is side-effect-free and
+deterministic.  For the purposes of \<-AassumePureGetters>, a getter method
+is defined as an instance method with no formal parameters, whose name
+starts with ``get'', ``is'', ``not'', or ``has'' followed by an uppercase
+letter.
+
+This can make
 flow-sensitive type refinement much more effective, since method calls will
 not cause the analysis to discard information that it has learned.
-However, this option can mask real errors.  It is most appropriate when you
-are starting out annotating a project, or if you are using the Checker
-Framework to find some bugs but not to give a guarantee that no more errors
-exist of the given type.
+However, this option can mask real errors.  It is most appropriate when one
+of the following is true:
+\begin{itemize}
+\item
+  You are starting out annotating a project.
+\item
+  You are using the Checker Framework to find bugs but not to give a
+  guarantee that no more errors exist of the given type.
+\item
+  You are working with an unannotated library that makes the given
+  assumptions, in which case (say) using \<-AassumePureGetters> is easier
+  than writing stub files for all the library's getter methods.
+\end{itemize}
+
 
 %%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
 %%  LocalWords:  AsuppressWarnings AassumeSideEffectFree

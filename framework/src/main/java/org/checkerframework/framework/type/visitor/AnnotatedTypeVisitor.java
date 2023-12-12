@@ -22,6 +22,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * <p>Classes implementing this interface may or may not throw a NullPointerException if the
  * additional parameter p is {@code null}; see documentation of the implementing class for details.
  *
+ * <p>This visitor visits every type that is written in the source code. It is not sufficient
+ * appropriate if you want to ensure that no expression of a given type ever exists.
+ *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
  * @param <P> the type of the additional parameter to this visitor's methods. Use Void for visitors

@@ -205,7 +205,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{https://checkerframework.org/checker-framework-3.39.0.zip}
+  \url{https://checkerframework.org/checker-framework-3.41.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework-\ReleaseVersion{}} directory.
@@ -578,12 +578,14 @@ Unsound checking: ignore some errors
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
   Section~\ref{askipdefs}.
-\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>
+\item \<-AassumeSideEffectFree>, \<-AassumeDeterministic>, \<-AassumePure>, \<-AassumePureGetters>
   Unsoundly assume that every method is side-effect-free, deterministic, or
-  both; see
+  both; or that every getter method is pure.
+  See Section~\ref{purity-suppress-warnings} and
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
-  Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
+  Whether to assume that assertions (Java \<assert> statements) are enabled
+  or disabled; see Section~\ref{type-refinement-assertions}.
 \item \<-AignoreRangeOverflow>
   Ignore the possibility of overflow for range annotations such as
   \<@IntRange>; see Section~\ref{value-checker-overflow}.
@@ -1300,14 +1302,15 @@ occur at run time.
 
 \paragraphAndLabel{Optional example}{annotate-normal-behavior-optional-example}
 Another example is the Optional Checker (\chapterpageref{optional-checker})
-and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow} method.
+and the \sunjavadoc{java.base/java/util/Optional.html\#orElseThrow()}{orElseThrow()} method.
 The goal of the Optional Checker is to ensure that the program does not
 crash due to use of a non-present Optional value.  Therefore, the receiver
 of
-\<orElseThrow> is annotated as
+\<orElseThrow()> is annotated as
 \refqualclass{checker/optional/qual}{Present},
 and the Optional Checker issues an error if the client calls
-\<orElseThrow> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
+\<orElseThrow()> on a \refqualclass{checker/optional/qual}{MaybePresent} value.
+(For details, see Section~\ref{optional-guarantees}.)
 
 
 \paragraphAndLabel{Permitting crashes in some called methods}{annotate-normal-behavior-skip-libraries}
@@ -1684,3 +1687,6 @@ or suppress warnings.
 % LocalWords:  AmergeStubsWithSource MyBatis AdumpOnErrors AutoValue
 % LocalWords:  specification'' AwarnUnneededSuppressionsExceptions
 % LocalWords:  requireNonNull ApermitUnsupportedJdkVersion AstubWarnNote
+% LocalWords:  AwarnRedundantAnnotations AinferOutputOriginal
+% LocalWords:  AshowPrefixInWarningMessages AstubNoWarnIfNotFound
+% LocalWords:  AshowWpiFailedInferences AassumePureGetters
