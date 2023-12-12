@@ -1,4 +1,4 @@
-package org.checkerframework.common.util.report;
+package org.checkerframework.common.util.count.report;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
@@ -29,13 +29,13 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.common.util.report.qual.ReportCall;
-import org.checkerframework.common.util.report.qual.ReportCreation;
-import org.checkerframework.common.util.report.qual.ReportInherit;
-import org.checkerframework.common.util.report.qual.ReportOverride;
-import org.checkerframework.common.util.report.qual.ReportReadWrite;
-import org.checkerframework.common.util.report.qual.ReportUse;
-import org.checkerframework.common.util.report.qual.ReportWrite;
+import org.checkerframework.common.util.count.report.qual.ReportCall;
+import org.checkerframework.common.util.count.report.qual.ReportCreation;
+import org.checkerframework.common.util.count.report.qual.ReportInherit;
+import org.checkerframework.common.util.count.report.qual.ReportOverride;
+import org.checkerframework.common.util.count.report.qual.ReportReadWrite;
+import org.checkerframework.common.util.count.report.qual.ReportUse;
+import org.checkerframework.common.util.count.report.qual.ReportWrite;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotatedTypes;

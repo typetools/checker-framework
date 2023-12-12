@@ -7,6 +7,10 @@ Method annotation `@AssertMethod` indicates that a method checks a value and
 possibly throws an assertion.  Using it can make flow-sensitive type refinement
 more effective.
 
+In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
+
 **Implementation details:**
 
 **Closed issues:**
