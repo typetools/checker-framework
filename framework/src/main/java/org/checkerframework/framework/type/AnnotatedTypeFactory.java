@@ -3730,6 +3730,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>Note that the given Tree has to be within the current compilation unit, otherwise null will
    * be returned.
    *
+   * <p>Within a subclass of BaseTypeVisitor, use {@code getCurrentPath()} rather than this method.
+   *
    * @param tree the {@link Tree} to get the path for
    * @return the path for {@code tree} under the current root. Returns null if {@code tree} is not
    *     within the current compilation unit.
