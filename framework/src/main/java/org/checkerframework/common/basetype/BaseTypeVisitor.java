@@ -3988,10 +3988,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriderTree = overriderTree;
       this.overrider = overrider;
       this.overriderType = overriderType;
+      this.overriderReturnType = overriderReturnType;
       this.overridden = overridden;
       this.overriddenType = overriddenType;
       this.overriddenReturnType = overriddenReturnType;
-      this.overriderReturnType = overriderReturnType;
 
       this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
