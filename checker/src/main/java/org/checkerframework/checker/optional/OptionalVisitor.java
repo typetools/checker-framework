@@ -652,7 +652,7 @@ public class OptionalVisitor
   @Override
   public Void visitMemberReference(MemberReferenceTree tree, Void p) {
     if (isFilterIsPresentMapGet(tree)) {
-      // TODO: This is a work around until
+      // TODO: This is a (sound) workaround until
       // https://github.com/typetools/checker-framework/issues/1345
       // is fixed.
       return null;
@@ -661,7 +661,7 @@ public class OptionalVisitor
   }
 
   /**
-   * Returns true if {@code memberRefTree} the {@code Optional::get} in {@code
+   * Returns true if {@code memberRefTree} is the {@code Optional::get} in {@code
    * Stream.filter(Optional::isPresent).map(Optional::get)}.
    *
    * @param memberRefTree a member reference tree
@@ -687,7 +687,7 @@ public class OptionalVisitor
       }
       // hasGetAsArgumentTree is an invocation of Stream#map(...).
       Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
-      // Perhaps mapParent is the call `Stream.filter(Optional::isPresent)`.
+      // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
       if (mapReceiverTree != null && mapReceiverTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
         MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
         ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
