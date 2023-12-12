@@ -85,7 +85,7 @@ public class OptionalVisitor
   /** The element for java.util.Optional.orElseGet(). */
   private final ExecutableElement optionalOrElseGet;
 
-  /** The element for java.util.Optional.orElseThrow(). */
+  /** The element for java.util.Optional.orElseThrow(), or null if running below Java 10. */
   private final @Nullable ExecutableElement optionalOrElseThrow;
 
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
@@ -118,7 +118,7 @@ public class OptionalVisitor
     optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
     optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
     optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
-    optionalOr = TreeUtils.getMethod("java.util.Optional", "or", 1, env);
+    optionalOr = TreeUtils.getMethodOrNull("java.util.Optional", "or", 1, env);
     optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
     optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
@@ -131,7 +131,8 @@ public class OptionalVisitor
             ? Arrays.asList(optionalFilter, optionalFlatMap, optionalMap)
             : Arrays.asList(optionalFilter, optionalFlatMap, optionalMap, optionalOr);
     // TODO: add these eliminators:
-    //   hashCode, ifPresent, ifPresentOrElse, isEmpty, isPresent, toString, Object.getClass
+    //   hashCode, ifPresent, ifPresentOrElse (Java 9+ only), isEmpty, isPresent, toString,
+    //   Object.getClass
     optionalEliminators =
         optionalIsEmpty == null
             ? Arrays.asList(
