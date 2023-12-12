@@ -3,6 +3,11 @@ Version 3.41.1 (January 2, 2023)
 
 **User-visible changes:**
 
+In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
+
+
 **Implementation details:**
 
 **Closed issues:**

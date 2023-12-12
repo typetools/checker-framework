@@ -61,7 +61,15 @@ The process takes around 2 hours (including manual steps) when all goes accordin
       <li><a href="#step_by_step">Step by Step</a></li>
       <li><a href="#continuous-integration">Continuous integration tests</a></li>
       <li><a href="#maven_local">Deploy to local Maven repository</a></li>
-      <li><a href="#snapshot_release">Snapshot release</a></li>
+      <li><a href="#snapshot_release">Snapshot release</a>
+        <ul>
+          <li><a href="#using_snapshot_release">Using a snapshot release</a>
+            <ul>
+              <li><a href="#using_snapshot_release_gradle_groovy">Gradle Groovy (<code>build.gradle</code> file)</a></li>
+              <li><a href="#using_snapshot_release_gradle_kotlin">Gradle Kotlin (<code>build.gradle.kts</code> file)</a></li>
+              <li><a href="#using_snapshot_release_maven">Maven (<code>pom.xml</code> file)</a></li>
+            </ul></li>
+        </ul></li>
       <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
       <li><a href="#release_process_overview">Release Process Overview</a>
         <ul>
@@ -278,6 +286,11 @@ TreeAnnotator
       Run <code>./gradlew publish</code> in <code>checker-framework</code>.
     </li>
   </ol>
+
+  <h3 id="using_snapshot_release">Using a snapshot release</h3>
+
+  <h4 id="using_snapshot_release_gradle_groovy">Gradle Groovy (<code>build.gradle</code> file)</h4>
+
   In the <code>build.gradle</code> file of a project that you want
   to use the snapshot version of the Checker Framework:
   <pre>
@@ -294,9 +307,36 @@ dependencies {
 }
 configurations.all {
   resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}</pre>
+
+  <h4 id="using_snapshot_release_gradle_kotlin">Gradle Kotlin (<code>build.gradle.kts</code> file)</h4>
+
+  In the <code>build.gradle.kts</code> file of a project that you want
+  to use the snapshot version of the Checker Framework:
+
+  <pre>
+ext.checkerFrameworkVersion = '3.41.1-SNAPSHOT'
+dependencies {
+  compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+  testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
 }
-  </pre>
-  TODO: add instructions for other build systems
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}</pre>
+
+  <h4 id="using_snapshot_release_maven">Maven (<code>pom.xml</code> file)</h4>
+
+  In the <code>pom.xml</code> file of a project that you want
+  to use the snapshot version of the Checker Framework:
+
+  <pre>
+    &lt;repository&gt;
+      &lt;id&gt;snapshots-repo&lt;/id&gt;
+      &lt;url&gt;https://oss.sonatype.org/content/repositories/snapshots&lt;/url&gt;
+      &lt;releases&gt;&lt;enabled&gt;false&lt;/enabled&gt;&lt;/releases&gt;
+      &lt;snapshots&gt;&lt;enabled&gt;true&lt;/enabled&gt;&lt;/snapshots&gt;
+    &lt;/repository&gt;</pre>
 
   <h2 id="pre_release_checklist">Pre-release Checklist</h2>
   <p>If you have not performed a release before you must follow these steps.</p>
