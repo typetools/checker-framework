@@ -7,6 +7,10 @@ Method, constructor, lambda, and method reference type inference has been
 greatly improved.  The `-AconservativeUninferredTypeArguments` option is
 no longer necessary and has been removed.
 
+In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
+
 **Implementation details:**
 
 **Closed issues:**

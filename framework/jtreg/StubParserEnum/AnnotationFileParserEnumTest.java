@@ -3,14 +3,14 @@
  * @summary Adapted test case for Issue 2147
  * https://github.com/typetools/checker-framework/issues/2147 using framework package quals
  *
- * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.report.ReportChecker -AstubWarnIfNotFound AnnotationFileParserEnumTest.java
- * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.report.ReportChecker -AstubWarnIfNotFound -Astubs=AnnotationFileParserEnum.astub AnnotationFileParserEnumTest.java
+ * @compile/fail/ref=WithoutStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.count.report.ReportChecker -AstubWarnIfNotFound AnnotationFileParserEnumTest.java
+ * @compile/fail/ref=WithStub.out -XDrawDiagnostics -processor org.checkerframework.common.util.count.report.ReportChecker -AstubWarnIfNotFound -Astubs=AnnotationFileParserEnum.astub AnnotationFileParserEnumTest.java
  */
 
 import static java.util.concurrent.TimeUnit.*;
 
 import java.util.concurrent.TimeUnit;
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class AnnotationFileParserEnumTest {
 
