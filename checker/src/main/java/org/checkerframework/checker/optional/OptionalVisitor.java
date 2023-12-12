@@ -14,7 +14,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -26,6 +25,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.optional.qual.OptionalCreator;
+import org.checkerframework.checker.optional.qual.OptionalEliminator;
+import org.checkerframework.checker.optional.qual.OptionalPropagator;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -50,15 +52,6 @@ public class OptionalVisitor
   /** The Collection type. */
   private final TypeMirror collectionType;
 
-  /** The element for java.util.Optional.empty(). */
-  private final ExecutableElement optionalEmpty;
-
-  /** The element for java.util.Optional.filter(). */
-  private final ExecutableElement optionalFilter;
-
-  /** The element for java.util.Optional.flatMap(). */
-  private final ExecutableElement optionalFlatMap;
-
   /** The element for java.util.Optional.get(). */
   private final ExecutableElement optionalGet;
 
@@ -67,39 +60,6 @@ public class OptionalVisitor
 
   /** The element for java.util.Optional.isEmpty(), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalIsEmpty;
-
-  /** The element for java.util.Optional.map(). */
-  private final ExecutableElement optionalMap;
-
-  /** The element for java.util.Optional.of(). */
-  private final ExecutableElement optionalOf;
-
-  /** The element for java.util.Optional.ofNullable(). */
-  private final ExecutableElement optionalOfNullable;
-
-  /** The element for java.util.Optional.or(), or null if running under JDK 8. */
-  private final @Nullable ExecutableElement optionalOr;
-
-  /** The element for java.util.Optional.orElse(). */
-  private final ExecutableElement optionalOrElse;
-
-  /** The element for java.util.Optional.orElseGet(). */
-  private final ExecutableElement optionalOrElseGet;
-
-  /** The element for java.util.Optional.orElseThrow(), or null if running below Java 10. */
-  private final @Nullable ExecutableElement optionalOrElseThrow;
-
-  /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
-  private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
-
-  /** Static methods that create an Optional. */
-  private final List<ExecutableElement> optionalCreators;
-
-  /** Methods whose receiver is an Optional, and return an Optional. */
-  private final List<ExecutableElement> optionalPropagators;
-
-  /** Methods whose receiver is an Optional, and return a non-optional. */
-  private final List<ExecutableElement> optionalEliminators;
 
   /**
    * Create an OptionalVisitor.
@@ -111,44 +71,9 @@ public class OptionalVisitor
     collectionType = types.erasure(TypesUtils.typeFromClass(Collection.class, types, elements));
 
     ProcessingEnvironment env = checker.getProcessingEnvironment();
-    optionalEmpty = TreeUtils.getMethod("java.util.Optional", "empty", 0, env);
-    optionalFilter = TreeUtils.getMethod("java.util.Optional", "filter", 1, env);
-    optionalFlatMap = TreeUtils.getMethod("java.util.Optional", "flatMap", 1, env);
     optionalGet = TreeUtils.getMethod("java.util.Optional", "get", 0, env);
     optionalIsPresent = TreeUtils.getMethod("java.util.Optional", "isPresent", 0, env);
     optionalIsEmpty = TreeUtils.getMethodOrNull("java.util.Optional", "isEmpty", 0, env);
-    optionalMap = TreeUtils.getMethod("java.util.Optional", "map", 1, env);
-    optionalOf = TreeUtils.getMethod("java.util.Optional", "of", 1, env);
-    optionalOr = TreeUtils.getMethodOrNull("java.util.Optional", "or", 1, env);
-    optionalOfNullable = TreeUtils.getMethod("java.util.Optional", "ofNullable", 1, env);
-    optionalOrElse = TreeUtils.getMethod("java.util.Optional", "orElse", 1, env);
-    optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
-    optionalOrElseThrow = TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
-    optionalOrElseThrowSupplier = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
-
-    optionalCreators = Arrays.asList(optionalEmpty, optionalOf, optionalOfNullable);
-    optionalPropagators =
-        optionalOr == null
-            ? Arrays.asList(optionalFilter, optionalFlatMap, optionalMap)
-            : Arrays.asList(optionalFilter, optionalFlatMap, optionalMap, optionalOr);
-    // TODO: add these eliminators:
-    //   hashCode, ifPresent, ifPresentOrElse (Java 9+ only), isEmpty, isPresent, toString,
-    //   Object.getClass
-    optionalEliminators =
-        optionalIsEmpty == null
-            ? Arrays.asList(
-                optionalGet,
-                optionalOrElse,
-                optionalOrElseGet,
-                optionalOrElseThrow,
-                optionalOrElseThrowSupplier)
-            : Arrays.asList(
-                optionalGet,
-                optionalIsEmpty,
-                optionalOrElse,
-                optionalOrElseGet,
-                optionalOrElseThrow,
-                optionalOrElseThrowSupplier);
   }
 
   @Override
@@ -213,8 +138,8 @@ public class OptionalVisitor
    * @return true iff the method being called is Optional creation: empty, of, ofNullable
    */
   private boolean isOptionalCreation(MethodInvocationTree methInvok) {
-    return TreeUtils.isMethodInvocation(
-        methInvok, optionalCreators, checker.getProcessingEnvironment());
+    ExecutableElement method = TreeUtils.elementFromUse(methInvok);
+    return atypeFactory.getDeclAnnotation(method, OptionalCreator.class) != null;
   }
 
   /**
@@ -224,8 +149,8 @@ public class OptionalVisitor
    * @return true true iff the method being called is Optional propagation: filter, flatMap, map, or
    */
   private boolean isOptionalPropagation(MethodInvocationTree methInvok) {
-    return TreeUtils.isMethodInvocation(
-        methInvok, optionalPropagators, checker.getProcessingEnvironment());
+    ExecutableElement method = TreeUtils.elementFromUse(methInvok);
+    return atypeFactory.getDeclAnnotation(method, OptionalPropagator.class) != null;
   }
 
   /**
@@ -237,8 +162,8 @@ public class OptionalVisitor
    *     orElseThrow
    */
   private boolean isOptionalElimination(MethodInvocationTree methInvok) {
-    return TreeUtils.isMethodInvocation(
-        methInvok, optionalEliminators, checker.getProcessingEnvironment());
+    ExecutableElement method = TreeUtils.elementFromUse(methInvok);
+    return atypeFactory.getDeclAnnotation(method, OptionalEliminator.class) != null;
   }
 
   @Override
