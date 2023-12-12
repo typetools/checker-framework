@@ -685,6 +685,7 @@ public class OptionalVisitor
         overriddenReturnType);
   }
 
+  /** An OverrideChecker that permits certain uses of {@code Optional.get()}. */
   class OptionalOverrideChecker extends OverrideChecker {
 
     /**

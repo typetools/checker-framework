@@ -4211,6 +4211,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * This method is called when a "methodref.receiver" warning is about to be issued.
      *
+     * @param memberRefTree a method reference tree where a "methodref.receiver" warning is about to
+     *     be issued
+     * @param overrider the type of the given tree
      * @return true if the code should be permitted and the error should be suppressed
      */
     protected boolean permitMethodrefReceiver(
