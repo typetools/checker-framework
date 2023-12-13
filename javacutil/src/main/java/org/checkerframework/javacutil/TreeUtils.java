@@ -2819,7 +2819,7 @@ public final class TreeUtils {
       return true;
     }
 
-    ExecutableElement element = (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
+    ExecutableElement element = TreeUtils.elementFromUse(memberReferenceTree);
     return !element.getTypeParameters().isEmpty()
         && (memberReferenceTree.getTypeArguments() == null
             || memberReferenceTree.getTypeArguments().isEmpty());
