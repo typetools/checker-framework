@@ -21,4 +21,15 @@ abstract class TestCase {
     }
     r1.close();
   }
+
+  public void parse(boolean b, boolean c) throws Exception {
+    if (c) {
+      FileInputStream fis1 = new FileInputStream("hi");
+      try {
+      } finally {
+        fis1.close();
+      }
+      if (b) {}
+    }
+  }
 }

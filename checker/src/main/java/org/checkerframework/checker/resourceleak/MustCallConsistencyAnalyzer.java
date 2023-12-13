@@ -2122,14 +2122,14 @@ class MustCallConsistencyAnalyzer {
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.size() == 0) {
-          //          assert currentBlock.getType() == BlockType.CONDITIONAL_BLOCK :
-          //              String.format("current block %s, successor block %s, obligation %s",
-          //                  currentBlock, successor, obligation);
-          //          cmStore =
-          //              obligationGoesOutOfScopeBeforeSuccessor
-          //                  ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
-          //                  : regularStoreOfSuccessor; // 1b. (CM)
-          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor);
+          assert currentBlock.getType() == BlockType.CONDITIONAL_BLOCK
+              : String.format(
+                  "current block %s, successor block %s, obligation %s",
+                  currentBlock, successor, obligation);
+          cmStore =
+              /*obligationGoesOutOfScopeBeforeSuccessor
+              ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
+              : */ getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1b. (CM)
           mcStore =
               mcAtf.getStoreForEdgeFromEmptyBlock(
                   currentBlock, // 1a. (MC)
@@ -2140,12 +2140,7 @@ class MustCallConsistencyAnalyzer {
           // currentBlock.
           Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
 
-          if (cmStoreAfter.containsKey(last)) {
-            cmStore = cmStoreAfter.get(last);
-          } else {
-            cmStore = typeFactory.getStoreAfter(last);
-            cmStoreAfter.put(last, cmStore);
-          }
+          cmStore = getCalledMethodsStoreAfter(last);
           // If this is an exceptional block, check the MC store beforehand to avoid
           // issuing an error about a call to a CreatesMustCallFor method that might
           // throw an exception. Otherwise, use the store after.
@@ -2181,24 +2176,32 @@ class MustCallConsistencyAnalyzer {
     propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
   }
 
-  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
-    Set<Block> successors = currentBlock.getSuccessors();
-    if (successors.size() == 1) {
-      return analysis.getInput(successor).getRegularStore();
+  private AccumulationStore getCalledMethodsStoreAfter(Node last) {
+    AccumulationStore cmStore;
+    if (cmStoreAfter.containsKey(last)) {
+      cmStore = cmStoreAfter.get(last);
     } else {
-      switch (currentBlock.getType()) {
-        case CONDITIONAL_BLOCK:
-          ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
-          if (condBlock.getThenSuccessor() == successor) {
-            return analysis.getInput(successor).getThenStore();
-          } else if (condBlock.getElseSuccessor() == successor) {
-            return analysis.getInput(successor).getElseStore();
-          } else {
-            throw new BugInCF("successor not found");
-          }
-        default:
-          throw new BugInCF("unexpected block type " + currentBlock.getType());
-      }
+      cmStore = typeFactory.getStoreAfter(last);
+      cmStoreAfter.put(last, cmStore);
+    }
+    return cmStore;
+  }
+
+  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+    switch (currentBlock.getType()) {
+      case CONDITIONAL_BLOCK:
+        ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
+        if (condBlock.getThenSuccessor() == successor) {
+          return analysis.getInput(currentBlock).getThenStore();
+        } else if (condBlock.getElseSuccessor() == successor) {
+          return analysis.getInput(currentBlock).getElseStore();
+        } else {
+          throw new BugInCF("successor not found");
+        }
+      case SPECIAL_BLOCK:
+        return analysis.getInput(successor).getRegularStore();
+      default:
+        throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
   }
 
@@ -2364,7 +2367,9 @@ class MustCallConsistencyAnalyzer {
         } else {
           for (AnnotationMirror anno : cmValue.getAnnotations()) {
             if (AnnotationUtils.areSameByName(
-                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")
+                || AnnotationUtils.areSameByName(
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
               cmAnno = anno;
             }
           }
