@@ -15,8 +15,11 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -401,6 +404,10 @@ public class OptionalVisitor
     }
     ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
     while (true) {
+      if (receiver == null) {
+        // The receiver can be null if the receiver is the implicit "this.".
+        return;
+      }
       if (receiver.getKind() != Tree.Kind.METHOD_INVOCATION) {
         return;
       }
@@ -546,14 +553,33 @@ public class OptionalVisitor
     }
   }
 
-  /** Return true if tm represents a subtype of Collection (other than the Null type). */
+  /**
+   * Return true if tm is a subtype of Collection (other than the Null type).
+   *
+   * @param tm a type
+   * @return true if the given type is a subtype of Collection
+   */
   private boolean isCollectionType(TypeMirror tm) {
     return tm.getKind() == TypeKind.DECLARED && types.isSubtype(tm, collectionType);
   }
 
-  /** Return true if tm represents java.util.Optional. */
+  /** The fully-qualified names of the 4 optional classes in java.util. */
+  private static final Set<String> fqOptionalTypes =
+      new HashSet<>(
+          Arrays.asList(
+              "java.util.Optional",
+              "java.util.OptionalDouble",
+              "java.util.OptionalInt",
+              "java.util.OptionalLong"));
+
+  /**
+   * Return true if tm is class Optional, OptionalDouble, OptionalInt, or OptionalLong in java.util.
+   *
+   * @param tm a type
+   * @return true if the given type is Optional, OptionalDouble, OptionalInt, or OptionalLong
+   */
   private boolean isOptionalType(TypeMirror tm) {
-    return TypesUtils.isDeclaredOfName(tm, "java.util.Optional");
+    return TypesUtils.isDeclaredOfName(tm, fqOptionalTypes);
   }
 
   /**
