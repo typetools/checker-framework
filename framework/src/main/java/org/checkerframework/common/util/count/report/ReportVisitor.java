@@ -23,7 +23,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -213,7 +212,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   @Override
   public Void visitAssignment(AssignmentTree tree, Void p) {
-    VariableElement member = (VariableElement) TreeUtils.elementFromUse(tree.getVariable());
+    Element member = TreeUtils.elementFromUse(tree.getVariable());
     boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
     if (report) {
