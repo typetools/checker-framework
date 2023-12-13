@@ -9,6 +9,7 @@
 #   -d       debug
 #   -i REGEX include matches for the grep basic regex
 #   -x REGEX exclude matches for the grep basic regex
+#   -y REGEX exclude matches for the grep basic regex
 # The -i argument (if any) is processed before the -x argument (if any).
 
 # The "reason" for a warning suppression is the Java line comment after it:
@@ -24,6 +25,8 @@
 #     "interning:type.incompatible" // reason for interning suppression
 #   })
 
+# Inclusions (-i) are processed before exclusions (-x, -y).
+
 # Some reasons are ignored, notably "true positive" and
 # "count-suppression-reasons-ignore"; see below for the full list.
 
@@ -33,15 +36,19 @@
 # to count the total number of warning suppressions (for example, to report
 # in a paper), because this script gives only an approximate count.
 
+# The -y command-line argument is exactly like -x, but avoids the need
+# for the user to write a complex regex.
+
 # To debug, pass the -d command-line argument.
 debug=0
 
-while getopts dx:i: flag
+while getopts di:x:y: flag
 do
     case "${flag}" in
         d) debug=1;;
-        x) exclude=${OPTARG};;
         i) include=${OPTARG};;
+        x) exclude=${OPTARG};;
+        y) excludey=${OPTARG};;
         \?) echo "Invalid option -$OPTARG"; exit 1;;
     esac
 done
@@ -99,6 +106,10 @@ fi
 if [ -n "$exclude" ] ; then
     mv "${greplines}" "${greplines}-x"
     grep -v -- "$exclude" "${greplines}-x" > "${greplines}"
+fi
+if [ -n "$excludey" ] ; then
+    mv "${greplines}" "${greplines}-y"
+    grep -v -- "$excludey" "${greplines}-y" > "${greplines}"
 fi
 
 
