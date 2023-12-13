@@ -65,21 +65,27 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param type a type that is side-effected by this method
    */
   private void optionalMapNonNull(Tree tree, AnnotatedTypeMirror type) {
-    if (!checker.hasOption("optionalMapAssumeNonNull")) {
-      return;
-    }
     if (!TreeUtils.isMethodInvocation(tree, optionalMap, processingEnv)) {
       return;
     }
     MethodInvocationTree mapTree = (MethodInvocationTree) tree;
     ExpressionTree argTree = mapTree.getArguments().get(0);
     if (argTree.getKind() == Kind.MEMBER_REFERENCE) {
+      MemberReferenceTree memberReferenceTree = (MemberReferenceTree) argTree;
       AnnotatedTypeMirror optType = getReceiverType(mapTree);
       if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
         return;
       }
-      ExecutableElement memberReferenceFuncType =
-          TreeUtils.elementFromUse((MemberReferenceTree) argTree);
+      if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
+          .isConstructorReference()) {
+        // Constructors are always non-null.
+        type.replaceAnnotation(PRESENT);
+        return;
+      }
+      if (!checker.hasOption("optionalMapAssumeNonNull")) {
+        return;
+      }
+      ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
       if (!containsNullable(memberReferenceFuncType.getAnnotationMirrors())
           && !containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors())) {
         type.replaceAnnotation(PRESENT);
