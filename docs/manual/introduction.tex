@@ -460,7 +460,7 @@ help you and all other Checker Framework users; see
 Some stub files are used automatically by a checker, without any action on
 your part.  For others, you must pass the \<-Astubs=...> command-line argument.
 As a special case, if an \<.astub> file appears in
-\<checker/resources/>, then pass the command-line option
+\<checker/src/main/resources/>, then pass the command-line option
 use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
 The ``\<checker.jar>'' should be literal --- don't provide a path.
 This special syntax only works for ``\<checker.jar>''.
@@ -530,7 +530,7 @@ available in \<org.checkerframework.annotatedlib>, then
 % distributed version of the library --- they behave identically.
 
 There is one special case.  If an \<.astub> file is shipped with the
-Checker Framework in \<checker/resources/>, then you can
+Checker Framework in \<checker/src/main/resources/>, then you can
 use \<-Astubs=checker.jar/\emph{stubfilename.astub}>.
 The ``\<checker.jar>'' should be literal --- don't provide a path.
 (This special syntax only works for ``\<checker.jar>''.)

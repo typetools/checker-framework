@@ -3732,7 +3732,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-   * created by {@link #createOverrideChecker}. This version of the method exposes
+   * created by {@link #createOverrideChecker}. This version of the method exposes the
    * AnnotatedExecutableType of the overriding method. Override this version of the method if you
    * need to access that type.
    *
@@ -3773,7 +3773,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that a method reference is allowed. Using the OverrideChecker class.
+   * Check that a method reference is allowed. Uses the OverrideChecker class.
    *
    * @param memberReferenceTree the tree for the method reference
    * @return true if the method reference is allowed
@@ -3814,8 +3814,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // ========= Overriding Executable =========
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-    ExecutableElement compileTimeDeclaration =
-        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
+    ExecutableElement compileTimeDeclaration = TreeUtils.elementFromUse(memberReferenceTree);
 
     ParameterizedExecutableType preInference =
         atypeFactory.methodFromUseWithoutTypeArgInference(
@@ -3900,7 +3899,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public class OverrideChecker {
 
-    /** The declaration of an overriding method. */
+    /**
+     * The declaration of an overriding method. Or, it could be a method reference that is being
+     * passed to a method.
+     */
     protected final Tree overriderTree;
 
     /** True if {@link #overriderTree} is a MEMBER_REFERENCE. */
@@ -3951,10 +3953,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriderTree = overriderTree;
       this.overrider = overrider;
       this.overriderType = overriderType;
+      this.overriderReturnType = overriderReturnType;
       this.overridden = overridden;
       this.overriddenType = overriddenType;
       this.overriddenReturnType = overriddenReturnType;
-      this.overriderReturnType = overriderReturnType;
 
       this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
@@ -4080,7 +4082,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private boolean checkMemberReferenceReceivers() {
       if (overriderType.getKind() == TypeKind.ARRAY) {
-        // Assume the receiver for all method on arrays are @Top
+        // Assume the receiver for all method on arrays are @Top.
         // This simplifies some logic because an AnnotatedExecutableType for an array method
         // (ie String[]::clone) has a receiver of "Array." The UNBOUND check would then
         // have to compare "Array" to "String[]".

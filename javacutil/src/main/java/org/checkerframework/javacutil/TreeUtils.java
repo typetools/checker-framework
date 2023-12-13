@@ -480,6 +480,23 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the ExecutableElement for the method reference.
+   *
+   * @param tree a method reference
+   * @return the ExecutableElement for the method reference
+   */
+  @Pure
+  public static ExecutableElement elementFromUse(MemberReferenceTree tree) {
+    Element result = elementFromUse((ExpressionTree) tree);
+    if (!(result instanceof ExecutableElement)) {
+      throw new BugInCF(
+          "Method reference elements should be ExecutableElement. Found: %s [%s]",
+          result, result.getClass());
+    }
+    return (ExecutableElement) result;
+  }
+
+  /**
    * Returns the ExecutableElement for the given method declaration.
    *
    * <p>The result can be null, when {@code tree} is a method in an anonymous class.
@@ -1265,8 +1282,13 @@ public final class TreeUtils {
     if (!(tree instanceof MethodInvocationTree)) {
       return false;
     }
+    MethodInvocationTree methInvok = (MethodInvocationTree) tree;
+    ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
+    if (invoked == null) {
+      return false;
+    }
     for (ExecutableElement method : methods) {
-      if (isMethodInvocation(tree, method, processingEnv)) {
+      if (ElementUtils.isMethod(invoked, method, processingEnv)) {
         return true;
       }
     }

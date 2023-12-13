@@ -6,6 +6,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
@@ -13,6 +14,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -91,6 +93,12 @@ public class OptionalVisitor
   /** The element for java.util.Optional.orElseThrow(Supplier), or null if running under JDK 8. */
   private final @Nullable ExecutableElement optionalOrElseThrowSupplier;
 
+  /** The element for java.util.stream.Stream.filter(). */
+  private final ExecutableElement streamFilter;
+
+  /** The element for java.util.stream.Stream.map(). */
+  private final ExecutableElement streamMap;
+
   /** Static methods that create an Optional. */
   private final List<ExecutableElement> optionalCreators;
 
@@ -124,6 +132,9 @@ public class OptionalVisitor
     optionalOrElseGet = TreeUtils.getMethod("java.util.Optional", "orElseGet", 1, env);
     optionalOrElseThrow = TreeUtils.getMethodOrNull("java.util.Optional", "orElseThrow", 0, env);
     optionalOrElseThrowSupplier = TreeUtils.getMethod("java.util.Optional", "orElseThrow", 1, env);
+
+    streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
+    streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
 
     optionalCreators = Arrays.asList(optionalEmpty, optionalOf, optionalOfNullable);
     optionalPropagators =
@@ -536,7 +547,13 @@ public class OptionalVisitor
       if (ekind.isField()) {
         checker.reportWarning(tree, "optional.field");
       } else if (ekind == ElementKind.PARAMETER) {
-        checker.reportWarning(tree, "optional.parameter");
+        TreePath paramPath = getCurrentPath();
+        Tree parent = paramPath.getParentPath().getLeaf();
+        if (parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+          // Exception to rule: lambda parameters can have type Optional.
+        } else {
+          checker.reportWarning(tree, "optional.parameter");
+        }
       }
     }
     return super.visitVariable(tree, p);
@@ -636,5 +653,63 @@ public class OptionalVisitor
       }
     }
     return s;
+  }
+
+  @Override
+  public Void visitMemberReference(MemberReferenceTree tree, Void p) {
+    if (isFilterIsPresentMapGet(tree)) {
+      // TODO: This is a (sound) workaround until
+      // https://github.com/typetools/checker-framework/issues/1345
+      // is fixed.
+      return null;
+    }
+    return super.visitMemberReference(tree, p);
+  }
+
+  /**
+   * Returns true if {@code memberRefTree} is the {@code Optional::get} in {@code
+   * Stream.filter(Optional::isPresent).map(Optional::get)}.
+   *
+   * @param memberRefTree a member reference tree
+   * @return true if {@code memberRefTree} the {@code Optional::get} in {@code
+   *     Stream.filter(Optional::isPresent).map(Optional::get)}
+   */
+  private boolean isFilterIsPresentMapGet(MemberReferenceTree memberRefTree) {
+    if (!TreeUtils.elementFromUse(memberRefTree).equals(optionalGet)) {
+      // The method reference is not Optional::get
+      return false;
+    }
+    // "getPath" means "the path to the node `Optional::get`".
+    TreePath getPath = getCurrentPath();
+    TreePath getParentPath = getPath.getParentPath();
+    // "getParent" means "the parent of the node `Optional::get`".
+    Tree getParent = getParentPath.getLeaf();
+    if (getParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      MethodInvocationTree hasGetAsArgumentTree = (MethodInvocationTree) getParent;
+      ExecutableElement hasGetAsArgumentElement = TreeUtils.elementFromUse(hasGetAsArgumentTree);
+      if (!hasGetAsArgumentElement.equals(streamMap)) {
+        // Optional::get is not an argument to stream#map
+        return false;
+      }
+      // hasGetAsArgumentTree is an invocation of Stream#map(...).
+      Tree mapReceiverTree = TreeUtils.getReceiverTree(hasGetAsArgumentTree);
+      // Will check whether mapParent is the call `Stream.filter(Optional::isPresent)`.
+      if (mapReceiverTree != null && mapReceiverTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+        MethodInvocationTree fluentToMapTree = (MethodInvocationTree) mapReceiverTree;
+        ExecutableElement fluentToMapElement = TreeUtils.elementFromUse(fluentToMapTree);
+        if (!fluentToMapElement.equals(streamFilter)) {
+          // The receiver of map(Optional::get) is not Stream#filter
+          return false;
+        }
+        MethodInvocationTree filterInvocationTree = fluentToMapTree;
+        ExpressionTree filterArgTree = filterInvocationTree.getArguments().get(0);
+        if (filterArgTree.getKind() == Tree.Kind.MEMBER_REFERENCE) {
+          ExecutableElement filterArgElement =
+              TreeUtils.elementFromUse((MemberReferenceTree) filterArgTree);
+          return filterArgElement.equals(optionalIsPresent);
+        }
+      }
+    }
+    return false;
   }
 }
