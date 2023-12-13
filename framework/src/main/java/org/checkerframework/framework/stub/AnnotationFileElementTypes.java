@@ -358,7 +358,7 @@ public class AnnotationFileElementTypes {
         // If the file has a prefix of "checker.jar/" then look for the file in the top
         // level directory of the jar that contains the checker.
         if (path.startsWith("checker.jar/")) {
-          path = path.substring("checker.jar/".length());
+          path = "/" + path.substring("checker.jar/".length());
         }
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
           if (in != null) {

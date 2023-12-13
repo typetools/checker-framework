@@ -339,12 +339,10 @@ public final class Verify {
   @AssertMethod(VerifyException.class)
   @Pure
   public static void verify(boolean expression, String errorMessageTemplate, long p1);
-  }
 
   @AssertMethod(VerifyException.class)
   @Pure
-  public static void verify(
-      boolean expression, String errorMessageTemplate,Object p1);
+  public static void verify(boolean expression, String errorMessageTemplate, Object p1);
 
   @AssertMethod(VerifyException.class)
   @Pure
