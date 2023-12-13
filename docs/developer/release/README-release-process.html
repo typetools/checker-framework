@@ -315,15 +315,15 @@ configurations.all {
   to use the snapshot version of the Checker Framework:
 
   <pre>
-ext.checkerFrameworkVersion = '3.41.1-SNAPSHOT'
+val checkerFrameworkVersion = "3.41.1-SNAPSHOT"
 dependencies {
-  compileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-  testCompileOnly "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
-  checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+   compileOnly("org.checkerframework:checker-qual:${checkerFrameworkVersion}")
+   testCompileOnly("org.checkerframework:checker-qual:${checkerFrameworkVersion}")
+   checkerFramework("org.checkerframework:checker:${checkerFrameworkVersion}")
 }
-configurations.all {
-  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}</pre>
+configurations.all({
+   resolutionStrategy.cacheChangingModulesFor(0, "seconds")
+})</pre>
 
   <h4 id="using_snapshot_release_maven">Maven (<code>pom.xml</code> file)</h4>
 
