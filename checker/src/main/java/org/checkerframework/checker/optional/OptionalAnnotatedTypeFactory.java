@@ -49,14 +49,17 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * If {@code tree} is a call to {@link java.util.Optional#map(Function)} whose argument is a
-   * method reference, then this method adds {@code @Present} to {@code type} if the follow is true:
+   * method reference, then this method adds {@code @Present} to {@code type} if the following is
+   * true:
    *
-   * <p>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present}
-   *
-   * <p>And {@link #returnsNonNull(MemberReferenceTree)} returns true.
+   * <ul>
+   *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
+   *       and
+   *   <li>{@link #returnsNonNull(MemberReferenceTree)} returns true.
+   * </ul>
    *
    * @param tree a tree
-   * @param type a type that is side-effected by this method
+   * @param type the type of the tree, which may be side-effected by this method
    */
   private void optionalMapNonNull(Tree tree, AnnotatedTypeMirror type) {
     if (!TreeUtils.isMethodInvocation(tree, optionalMap, processingEnv)) {
