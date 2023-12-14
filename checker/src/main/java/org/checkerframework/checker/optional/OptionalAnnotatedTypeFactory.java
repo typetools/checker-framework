@@ -5,14 +5,11 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.optional.qual.Present;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -21,7 +18,6 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** OptionalAnnotatedTypeFactory for the Optional Checker. */
@@ -93,18 +89,6 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /** A partial list of Nullable aliases. */
-  private static final List<@FullyQualifiedName String> NULLABLE_ALIASES =
-      Arrays.asList(
-          "com.hivemq.extension.sdk.api.annotations.Nullable",
-          "io.getunleash.lang.Nullable",
-          "io.reactivex.annotations.Nullable",
-          "javax.annotation.Nullable",
-          "org.checkerframework.checker.nullness.qual.Nullable",
-          "org.jetbrains.annotations.Nullable",
-          "org.springframework.lang.Nullable",
-          "se.llbit.util.annotation.Nullable");
-
   /**
    * Returns true if {@code annos} contains a nullable annotation.
    *
@@ -113,8 +97,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private boolean containsNullable(Collection<? extends AnnotationMirror> annos) {
     for (AnnotationMirror anno : annos) {
-      String annoName = AnnotationUtils.annotationName(anno);
-      if (NULLABLE_ALIASES.contains(annoName)) {
+      if (anno.getAnnotationType().asElement().getSimpleName().contentEquals("Nullable")) {
         return true;
       }
     }
