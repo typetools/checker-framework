@@ -55,7 +55,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <ul>
    *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
    *       and
-   *   <li>{@link #returnNotNullable(MemberReferenceTree)} returns true.
+   *   <li>{@link #returnHasNullable(MemberReferenceTree)} returns false.
    * </ul>
    *
    * @param tree a tree
@@ -73,31 +73,31 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
         return;
       }
-      if (returnNotNullable(memberReferenceTree)) {
+      if (!returnHasNullable(memberReferenceTree)) {
         type.replaceAnnotation(PRESENT);
       }
     }
   }
 
   /**
-   * Returns true if the return type of the function type of {@code memberReferenceTree} is not
+   * Returns true if the return type of the function type of {@code memberReferenceTree} is
    * annotation with a nullable annotation.
    *
    * @param memberReferenceTree a member reference
-   * @return true if the return type of the function type of {@code memberReferenceTree} is not
+   * @return true if the return type of the function type of {@code memberReferenceTree} is
    *     annotation with a nullable annotation
    */
-  private boolean returnNotNullable(MemberReferenceTree memberReferenceTree) {
+  private boolean returnHasNullable(MemberReferenceTree memberReferenceTree) {
     if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
         .isConstructorReference()) {
-      return true;
-    }
-    if (!checker.hasOption("optionalMapAssumeNonNull")) {
       return false;
     }
+    if (!checker.hasOption("optionalMapAssumeNonNull")) {
+      return true;
+    }
     ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
-    return !containsNullable(memberReferenceFuncType.getAnnotationMirrors())
-        && !containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors());
+    return containsNullable(memberReferenceFuncType.getAnnotationMirrors())
+        || containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors());
   }
 
   /**
