@@ -35,13 +35,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -61,7 +58,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -448,35 +444,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * true, then the store after {@code first} is returned; if {@code afterFirstStore} is false, the
    * store before {@code succ} is returned.
    *
+   * @param afterFirstStore whether to use the store after the first block or the store before its
+   *     successor, succ
    * @param first a block
    * @param succ first's successor
    * @return the appropriate CFStore, populated with MustCall annotations, from the results of
    *     running dataflow
    */
-  public CFStore getStoreForEdgeFromEmptyBlock(Block first, Block succ) {
-    Set<Block> successors = first.getSuccessors();
-    if (successors.size() == 1) {
-      return flowResult.getStoreAfter(first);
-    } else {
-      TransferInput<CFValue, CFStore> input = analysis.getInput(first);
-      if (input == null) {
-        // TODO what is going on here???  How can input be null?
-        return flowResult.getStoreAfter(first);
-      }
-      switch (first.getType()) {
-        case CONDITIONAL_BLOCK:
-          ConditionalBlock condBlock = (ConditionalBlock) first;
-          if (condBlock.getThenSuccessor() == succ) {
-            return input.getThenStore();
-          } else if (condBlock.getElseSuccessor() == succ) {
-            return input.getElseStore();
-          } else {
-            throw new BugInCF("successor not found");
-          }
-        default:
-          throw new BugInCF("unexpected block type " + first.getType());
-      }
-    }
+  public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
+    return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
 
   /**

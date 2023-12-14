@@ -2121,17 +2121,11 @@ class MustCallConsistencyAnalyzer {
         //        the block.
         CFStore mcStore;
         AccumulationStore cmStore;
-        if (currentBlockNodes.size() == 0) {
-          assert currentBlock.getType() == BlockType.CONDITIONAL_BLOCK
-              : String.format(
-                  "current block %s, successor block %s, obligation %s",
-                  currentBlock, successor, obligation);
-          cmStore =
-              /*obligationGoesOutOfScopeBeforeSuccessor
-              ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
-              : */ getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1b. (CM)
+        if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
+          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1b. (CM)
           mcStore =
-              mcAtf.getStoreForEdgeFromEmptyBlock(
+              mcAtf.getStoreForBlock(
+                  obligationGoesOutOfScopeBeforeSuccessor,
                   currentBlock, // 1a. (MC)
                   successor); // 1b. (MC)
         } else {
@@ -2140,7 +2134,12 @@ class MustCallConsistencyAnalyzer {
           // currentBlock.
           Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
 
-          cmStore = getCalledMethodsStoreAfter(last);
+          if (cmStoreAfter.containsKey(last)) {
+            cmStore = cmStoreAfter.get(last);
+          } else {
+            cmStore = typeFactory.getStoreAfter(last);
+            cmStoreAfter.put(last, cmStore);
+          }
           // If this is an exceptional block, check the MC store beforehand to avoid
           // issuing an error about a call to a CreatesMustCallFor method that might
           // throw an exception. Otherwise, use the store after.
@@ -2174,17 +2173,6 @@ class MustCallConsistencyAnalyzer {
     }
 
     propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
-  }
-
-  private AccumulationStore getCalledMethodsStoreAfter(Node last) {
-    AccumulationStore cmStore;
-    if (cmStoreAfter.containsKey(last)) {
-      cmStore = cmStoreAfter.get(last);
-    } else {
-      cmStore = typeFactory.getStoreAfter(last);
-      cmStoreAfter.put(last, cmStore);
-    }
-    return cmStore;
   }
 
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
