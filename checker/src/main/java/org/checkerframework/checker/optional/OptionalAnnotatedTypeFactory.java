@@ -55,7 +55,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <ul>
    *   <li>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present},
    *       and
-   *   <li>{@link #returnsNonNull(MemberReferenceTree)} returns true.
+   *   <li>{@link #returnNotNullable(MemberReferenceTree)} returns true.
    * </ul>
    *
    * @param tree a tree
@@ -73,7 +73,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
         return;
       }
-      if (returnsNonNull(memberReferenceTree)) {
+      if (returnNotNullable(memberReferenceTree)) {
         type.replaceAnnotation(PRESENT);
       }
     }
@@ -81,12 +81,13 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns true if the return type of the function type of {@code memberReferenceTree} is
-   * non-null.
+   * annotation with a nullable annotation.
    *
    * @param memberReferenceTree a member reference
-   * @return true if the return type of the function type of {@code memberReferenceTree} is non-null
+   * @return true if the return type of the function type of {@code memberReferenceTree} is
+   *     annotation with a nullable annotation
    */
-  private boolean returnsNonNull(MemberReferenceTree memberReferenceTree) {
+  private boolean returnNotNullable(MemberReferenceTree memberReferenceTree) {
     if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
         .isConstructorReference()) {
       return true;
