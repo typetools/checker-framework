@@ -80,11 +80,11 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns true if the return type of the function type of {@code memberReferenceTree} is
+   * Returns true if the return type of the function type of {@code memberReferenceTree} is not
    * annotation with a nullable annotation.
    *
    * @param memberReferenceTree a member reference
-   * @return true if the return type of the function type of {@code memberReferenceTree} is
+   * @return true if the return type of the function type of {@code memberReferenceTree} is not
    *     annotation with a nullable annotation
    */
   private boolean returnNotNullable(MemberReferenceTree memberReferenceTree) {
