@@ -80,7 +80,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns true if the return type of the function type of {@code memberReferenceTree} is
    * non-null.
    *
-   * @param memberReferenceTree a memberReferenceTree
+   * @param memberReferenceTree a member reference
    * @return true if the return type of the function type of {@code memberReferenceTree} is non-null
    */
   private boolean returnsNonNull(MemberReferenceTree memberReferenceTree) {
