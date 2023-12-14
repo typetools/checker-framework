@@ -2123,6 +2123,12 @@ class MustCallConsistencyAnalyzer {
         AccumulationStore cmStore;
         if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
           cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1b. (CM)
+          // TODO we would like to get the store for the specific control-flow edge that the
+          // Must Call Checker computed as well.  However, this does not seem to be possible with
+          // current APIs.  The MustCallAnnotatedTypeFactory keeps a flowResult field that
+          // internally holds the relevant TransferInput objects in its stores map, but it does not
+          // expose these objects via its API.  TransferInput objects keep the "then store" and
+          // "else store" information that we need
           mcStore =
               mcAtf.getStoreForBlock(
                   obligationGoesOutOfScopeBeforeSuccessor,
