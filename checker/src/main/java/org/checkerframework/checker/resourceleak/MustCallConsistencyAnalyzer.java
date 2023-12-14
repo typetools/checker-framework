@@ -2194,9 +2194,9 @@ class MustCallConsistencyAnalyzer {
     switch (currentBlock.getType()) {
       case CONDITIONAL_BLOCK:
         ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
-        if (condBlock.getThenSuccessor() == successor) {
+        if (condBlock.getThenSuccessor().equals(successor)) {
           return analysis.getInput(currentBlock).getThenStore();
-        } else if (condBlock.getElseSuccessor() == successor) {
+        } else if (condBlock.getElseSuccessor().equals(successor)) {
           return analysis.getInput(currentBlock).getElseStore();
         } else {
           throw new BugInCF("successor not found");
