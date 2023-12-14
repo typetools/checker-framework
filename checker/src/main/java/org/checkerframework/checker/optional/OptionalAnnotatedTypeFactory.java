@@ -32,7 +32,7 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates an OptionalAnnotatedTypeFactory.
    *
-   * @param checker a checker
+   * @param checker the Optional Checker associated with this type factory
    */
   public OptionalAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
