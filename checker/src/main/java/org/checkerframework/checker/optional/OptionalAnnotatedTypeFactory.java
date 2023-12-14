@@ -49,13 +49,11 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * If {@code tree} is a call to {@link java.util.Optional#map(Function)} whose argument is a
-   * method reference, and if the option {@code "optionalMapAssumeNonNull"} is passed, then this
-   * method adds {@code @Present} to {@code type} if the follow is true:
+   * method reference, then this method adds {@code @Present} to {@code type} if the follow is true:
    *
    * <p>The type of the receiver to {@link java.util.Optional#map(Function)} is {@code @Present}
    *
-   * <p>And the return type of the function type represented by the method reference that is an
-   * argument to {@code map}, is not explicitly annotated with a {@code Nullable} annotation.
+   * <p>And {@link #returnsNonNull(MemberReferenceTree)} returns true.
    *
    * @param tree a tree
    * @param type a type that is side-effected by this method
@@ -72,21 +70,30 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (optType == null || !optType.hasEffectiveAnnotation(Present.class)) {
         return;
       }
-      if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
-          .isConstructorReference()) {
-        // Constructors are always non-null.
-        type.replaceAnnotation(PRESENT);
-        return;
-      }
-      if (!checker.hasOption("optionalMapAssumeNonNull")) {
-        return;
-      }
-      ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
-      if (!containsNullable(memberReferenceFuncType.getAnnotationMirrors())
-          && !containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors())) {
+      if (returnsNonNull(memberReferenceTree)) {
         type.replaceAnnotation(PRESENT);
       }
     }
+  }
+
+  /**
+   * Returns true if the return type of the function type of {@code memberReferenceTree} is
+   * non-null.
+   *
+   * @param memberReferenceTree a memberReferenceTree
+   * @return true if the return type of the function type of {@code memberReferenceTree} is non-null
+   */
+  private boolean returnsNonNull(MemberReferenceTree memberReferenceTree) {
+    if (TreeUtils.MemberReferenceKind.getMemberReferenceKind(memberReferenceTree)
+        .isConstructorReference()) {
+      return true;
+    }
+    if (!checker.hasOption("optionalMapAssumeNonNull")) {
+      return false;
+    }
+    ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
+    return !containsNullable(memberReferenceFuncType.getAnnotationMirrors())
+        && !containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors());
   }
 
   /**
