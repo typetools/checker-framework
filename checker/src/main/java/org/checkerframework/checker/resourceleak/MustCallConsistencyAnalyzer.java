@@ -2181,6 +2181,15 @@ class MustCallConsistencyAnalyzer {
     propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
   }
 
+  /**
+   * Gets the store propagated by the {@link ResourceLeakAnalysis} (containing called methods
+   * information) along a particular CFG edge during local type inference. The source {@link Block}
+   * of the edge must contain no {@link Node}s.
+   *
+   * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
+   * @param successor target block of the CFG edge.
+   * @return store propagated by the {@link ResourceLeakAnalysis} along the CFG edge.
+   */
   private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
     switch (currentBlock.getType()) {
       case CONDITIONAL_BLOCK:
