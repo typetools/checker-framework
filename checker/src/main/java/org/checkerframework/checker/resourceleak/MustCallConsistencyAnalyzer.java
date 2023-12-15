@@ -2107,7 +2107,7 @@ class MustCallConsistencyAnalyzer {
         //    we use the following heuristics:
         //    1a. if there is information about any alias in the resource alias set
         //        in the successor store, use the successor's MC store, which
-        //        contain whatever information is true after this block finishes.
+        //        contains whatever information is true after this block finishes.
         //    1b. if there is not any information about any alias in the resource alias
         //        set in the successor store, use the current block's MC store,
         //        which contain whatever information is true before this (empty) block.
