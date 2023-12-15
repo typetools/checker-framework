@@ -8,6 +8,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -74,6 +75,10 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return;
       }
       if (!returnHasNullable(memberReferenceTree)) {
+        // The method still could have a @PolyNull on the return and might return null.
+        // If @PolyNull is the primary annotation on the parameter and not on any type arguments or
+        // array elements, then it is still safe to mark the optional type as present.
+        // TODO: Add the check for poly null on arguments.
         type.replaceAnnotation(PRESENT);
       }
     }
@@ -92,10 +97,15 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         .isConstructorReference()) {
       return false;
     }
+    ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
+    if (memberReferenceFuncType.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
+      // Annotation element accessor are always non-null;
+      return false;
+    }
+
     if (!checker.hasOption("optionalMapAssumeNonNull")) {
       return true;
     }
-    ExecutableElement memberReferenceFuncType = TreeUtils.elementFromUse(memberReferenceTree);
     return containsNullable(memberReferenceFuncType.getAnnotationMirrors())
         || containsNullable(memberReferenceFuncType.getReturnType().getAnnotationMirrors());
   }
