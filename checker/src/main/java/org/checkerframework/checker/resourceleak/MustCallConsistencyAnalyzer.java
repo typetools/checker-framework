@@ -2130,7 +2130,7 @@ class MustCallConsistencyAnalyzer {
           // For the Must Call Checker, we currently apply a less precise handling and do not get
           // the store for the specific CFG edge from currentBlock to successor.  We do not believe
           // this will impact precision except in convoluted and uncommon cases.  If we find that
-          // we need more precision, we can revisit this, but it will require additional API report
+          // we need more precision, we can revisit this, but it will require additional API support
           // in the AnalysisResult type to get the information that we need.
           mcStore =
               mcAtf.getStoreForBlock(
