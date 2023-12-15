@@ -1932,6 +1932,15 @@ public final class TreeUtils {
     }
 
     /**
+     * Returns whether this kind is a constructor reference.
+     *
+     * @return whether this kind is a constructor reference
+     */
+    public boolean isConstructorReference() {
+      return mode == ReferenceMode.NEW;
+    }
+
+    /**
      * Returns the kind of member reference {@code tree} is.
      *
      * @param tree a member reference tree
