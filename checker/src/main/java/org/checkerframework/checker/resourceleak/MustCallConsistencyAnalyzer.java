@@ -2097,15 +2097,19 @@ class MustCallConsistencyAnalyzer {
           continue;
         }
 
-        // Which stores from the called-methods and must-call checkers are used in
-        // the consistency check varies depending on the context. The rules are:
-        // 1. if the current block has no nodes (and therefore the store must come from
-        // a block rather than a node):
+        // Which stores from the called-methods and must-call checkers are used in the consistency
+        // check varies depending on the context.  Generally speaking, we would like to use the
+        // store propagated along the CFG edge from currentBlock to successor.  But, there are
+        // special cases to consider.  The rules are:
+        // 1. if the current block has no nodes, it is either a ConditionalBlock or a SpecialBlock.
+        //    For the called-methods store, we obtain the exact CFG edge store that we need (see
+        //    getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API limitations,
+        //    we use the following heuristics:
         //    1a. if there is information about any alias in the resource alias set
-        //        in the successor store, use the successor's CM and MC stores, which
+        //        in the successor store, use the successor's MC store, which
         //        contain whatever information is true after this block finishes.
         //    1b. if there is not any information about any alias in the resource alias
-        //        set in the successor store, use the current blocks' CM and MC stores,
+        //        set in the successor store, use the current block's MC store,
         //        which contain whatever information is true before this (empty) block.
         // 2. if the current block has one or more nodes, always use the CM store after
         //    the last node. To decide which MC store to use:
@@ -2122,13 +2126,12 @@ class MustCallConsistencyAnalyzer {
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
-          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1b. (CM)
-          // TODO we would like to get the store for the specific control-flow edge that the
-          // Must Call Checker computed as well.  However, this does not seem to be possible with
-          // current APIs.  The MustCallAnnotatedTypeFactory keeps a flowResult field that
-          // internally holds the relevant TransferInput objects in its stores map, but it does not
-          // expose these objects via its API.  TransferInput objects keep the "then store" and
-          // "else store" information that we need
+          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
+          // For the Must Call Checker, we currently apply a less precise handling and do not get
+          // the store for the specific CFG edge from currentBlock to successor.  We do not believe
+          // this will impact precision except in convoluted and uncommon cases.  If we find that
+          // we need more precision, we can revisit this, but it will require additional API report
+          // in the AnalysisResult type to get the information that we need.
           mcStore =
               mcAtf.getStoreForBlock(
                   obligationGoesOutOfScopeBeforeSuccessor,
