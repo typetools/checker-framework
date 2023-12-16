@@ -59,4 +59,10 @@ public class Accesses {
     // :: error: (methodcall)
     d.equals(d.foo(null));
   }
+
+  Object[] array = new Object[] {1, 2, 3};
+
+  void accessArray() {
+    array[0] = 1;
+  }
 }

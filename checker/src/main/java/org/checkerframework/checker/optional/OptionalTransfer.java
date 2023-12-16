@@ -18,9 +18,10 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
@@ -45,7 +46,7 @@ public class OptionalTransfer extends CFTransfer {
    *
    * @param analysis the Optional Checker instance
    */
-  public OptionalTransfer(CFAnalysis analysis) {
+  public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     atypeFactory = analysis.getTypeFactory();
     Elements elements = atypeFactory.getElementUtils();
