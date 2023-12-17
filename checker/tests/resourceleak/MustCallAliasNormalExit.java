@@ -66,7 +66,7 @@ public class MustCallAliasNormalExit {
   // the inputStream.close() call in the catch block must have executed, so this is a false
   // positive.  Removing this false positive would require greater path sensitivity in the
   // consistency analyzer, by tracking both resource aliases and @CalledMethods types for each path
-  // in an Obligation.
+  // in an Obligation.  See https://github.com/typetools/checker-framework/issues/5658
   // :: error: required.method.not.called
   public static void testUse4(@Owning InputStream inputStream) throws Exception {
     MustCallAliasNormalExit mcane = null;
