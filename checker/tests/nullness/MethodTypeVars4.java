@@ -23,7 +23,7 @@ public class MethodTypeVars4 {
   void f2(I i) {
     @NonNull String s = i.doit();
     s = i.doit3();
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     List<@Nullable String> ls = i.doit2();
   }
 }

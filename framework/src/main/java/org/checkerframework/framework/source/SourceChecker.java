@@ -175,10 +175,6 @@ import org.plumelib.util.UtilPlume;
   // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
   "concurrentSemantics",
 
-  // Whether to use a conservative value for type arguments that could not be inferred.
-  // See Issue 979.
-  "conservativeUninferredTypeArguments",
-
   // Issues a "redundant.anno" warning if the annotation explicitly written on the type is
   // the same as the default annotation for this type and location.
   "warnRedundantAnnotations",
@@ -347,10 +343,6 @@ import org.plumelib.util.UtilPlume;
   // Output all subtyping checks
   // org.checkerframework.common.basetype.BaseTypeVisitor
   "showchecks",
-
-  // Output information about intermediate steps in method type argument inference
-  // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
-  "showInferenceSteps",
 
   // Output a stack trace when reporting errors or warnings
   // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
