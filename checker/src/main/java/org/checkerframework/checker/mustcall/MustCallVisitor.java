@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +17,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -338,6 +340,26 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @param tree the method declaration.
    */
   private void checkMustCallAliasAnnotationForMethod(MethodTree tree) {
-    // TODO: implement me.
+    if (TreeUtils.isConstructor(tree)) {
+      return;
+    }
+
+    boolean mustCallAliasAnnoOnParameter = false;
+    for (VariableTree paramDecl : tree.getParameters()) {
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramDecl);
+      mustCallAliasAnnoOnParameter =
+          atypeFactory.getDeclAnnotation(paramElt, MustCallAlias.class) != null;
+    }
+
+    if (TreeUtils.isVoidReturn(tree) && mustCallAliasAnnoOnParameter) {
+      checker.reportWarning(tree, "mustcallalias.method.return.and.param");
+    }
+
+    AnnotatedTypeMirror returnType = atypeFactory.getMethodReturnType(tree);
+    boolean mustCallAliasAnnoOnReturnType = returnType.hasPrimaryAnnotation(MustCallAlias.class);
+
+    if (mustCallAliasAnnoOnParameter != mustCallAliasAnnoOnReturnType) {
+      checker.reportWarning(tree, "mustcallalias.method.return.and.param");
+    }
   }
 }
