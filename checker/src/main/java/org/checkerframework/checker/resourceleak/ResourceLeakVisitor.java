@@ -21,12 +21,15 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
@@ -91,6 +94,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
     }
     checkOwningOverrides(tree, elt, mcAtf);
+    checkMustCallAliasAnnotationForMethod(tree, mcAtf);
     return super.visitMethod(tree, p);
   }
 
@@ -198,6 +202,42 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             overridden.getSimpleName().toString(),
             ElementUtils.getEnclosingClassName(overridden));
       }
+    }
+  }
+
+  /**
+   * If a {@code @MustCallAlias} annotation appears in a method declaration, it must appear as an
+   * annotation on both the return type, and a parameter type.
+   *
+   * <p>The return type is checked if it is annotated with {@code @PolyMustCall} because the Must
+   * Call Checker treats {@code @MustCallAlias} as an alias of {@code @PolyMustCall}.
+   *
+   * @param tree the method declaration.
+   */
+  private void checkMustCallAliasAnnotationForMethod(
+      MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
+    if (TreeUtils.isConstructor(tree)) {
+      return;
+    }
+
+    boolean mustCallAliasAnnoOnParameter = false;
+    for (VariableTree paramDecl : tree.getParameters()) {
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramDecl);
+      mustCallAliasAnnoOnParameter = mcAtf.getDeclAnnotation(paramElt, MustCallAlias.class) != null;
+      if (mustCallAliasAnnoOnParameter) {
+        break;
+      }
+    }
+
+    if (TreeUtils.isVoidReturn(tree) && mustCallAliasAnnoOnParameter) {
+      checker.reportWarning(tree, "mustcallalias.method.return.and.param");
+    }
+
+    AnnotatedTypeMirror returnType = mcAtf.getMethodReturnType(tree);
+    boolean mustCallAliasAnnoOnReturnType = returnType.hasPrimaryAnnotation(PolyMustCall.class);
+
+    if (mustCallAliasAnnoOnParameter != mustCallAliasAnnoOnReturnType) {
+      checker.reportWarning(tree, "mustcallalias.method.return.and.param");
     }
   }
 
