@@ -55,6 +55,12 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   @Override
+  public Void visitMethod(MethodTree tree, Void p) {
+    checkMustCallAliasAnnotationForMethod(tree);
+    return super.visitMethod(tree, p);
+  }
+
+  @Override
   public Void visitReturn(ReturnTree tree, Void p) {
     // Only check return types if ownership is being transferred.
     if (!noLightweightOwnership) {
@@ -323,5 +329,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public Void visitAnnotation(AnnotationTree tree, Void p) {
     return null;
+  }
+
+  /**
+   * If a {@code @MustCallAlias} annotation appears in a method declaration, it must appear as an
+   * annotation on both the return type, and a parameter type.
+   *
+   * @param tree the method declaration.
+   */
+  private void checkMustCallAliasAnnotationForMethod(MethodTree tree) {
+    // TODO: implement me.
   }
 }
