@@ -3,6 +3,7 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -94,7 +95,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       checkCreatesMustCallForTargetsHaveNonEmptyMustCall(tree, mcAtf);
     }
     checkOwningOverrides(tree, elt, mcAtf);
-    checkMustCallAliasAnnotationForMethod(tree, mcAtf);
+    if (TreeUtils.isConstructor(tree)) {
+      checkMustCallAliasAnnotationForConstructor(tree, mcAtf);
+    } else {
+      checkMustCallAliasAnnotationForMethod(tree, mcAtf);
+    }
     return super.visitMethod(tree, p);
   }
 
@@ -216,21 +221,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private void checkMustCallAliasAnnotationForMethod(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
-    if (TreeUtils.isConstructor(tree)) {
-      return;
-    }
 
-    boolean mustCallAliasAnnoOnParameter = false;
-    for (VariableTree paramDecl : tree.getParameters()) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramDecl);
-      mustCallAliasAnnoOnParameter = mcAtf.getDeclAnnotation(paramElt, MustCallAlias.class) != null;
-      if (mustCallAliasAnnoOnParameter) {
-        break;
-      }
-    }
+    boolean mustCallAliasAnnoOnParameter = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
 
     if (TreeUtils.isVoidReturn(tree) && mustCallAliasAnnoOnParameter) {
       checker.reportWarning(tree, "mustcallalias.method.return.and.param");
+      return;
     }
 
     AnnotatedTypeMirror returnType = mcAtf.getMethodReturnType(tree);
@@ -239,6 +235,44 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     if (mustCallAliasAnnoOnParameter != mustCallAliasAnnoOnReturnType) {
       checker.reportWarning(tree, "mustcallalias.method.return.and.param");
     }
+  }
+
+  /**
+   * Given a constructor, a {@code @MustCallAlias} must appear in both the list of parameters and as
+   * an annotation on the constructor itself, if it is to appear at all.
+   *
+   * <p>That is, a {@code @MustCallAlias} annotation must appear on both the constructor and its
+   * parameter list, or not at all.
+   *
+   * @param tree the constructor.
+   * @param mcAtf a MustCallAnnotatedTypeFactory.
+   */
+  private void checkMustCallAliasAnnotationForConstructor(
+      MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
+    Collection<? extends AnnotationMirror> constructorResultAnnos =
+        AnnotationUtils.getExplicitAnnotationsOnConstructorResult(tree);
+    boolean isMustCallAliasAnnoOnConstructor = false;
+    for (AnnotationMirror anno : constructorResultAnnos) {
+      if (atypeFactory.areSameByClass(anno, MustCallAlias.class)) {
+        isMustCallAliasAnnoOnConstructor = true;
+      }
+    }
+    boolean isMustCallAliasAnnoOnParam = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
+
+    if (isMustCallAliasAnnoOnConstructor != isMustCallAliasAnnoOnParam) {
+      checker.reportWarning(tree, "mustcallalias.method.return.and.param");
+    }
+  }
+
+  private boolean isMustCallAliasAnnoPresentInParams(
+      MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
+    for (VariableTree paramDecl : tree.getParameters()) {
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramDecl);
+      if (mcAtf.getDeclAnnotation(paramElt, MustCallAlias.class) != null) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
