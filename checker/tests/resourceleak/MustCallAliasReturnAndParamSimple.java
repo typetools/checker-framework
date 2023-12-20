@@ -39,4 +39,9 @@ public class MustCallAliasReturnAndParamSimple {
       throws Exception {
     return new MustCallAliasReturnAndParamSimple(is, false);
   }
+
+  // No warning here; neither the return type or parameter is annotated with @MustCallAlias
+  public static MustCallAliasReturnAndParamSimple mcaneFactory4(InputStream is) throws Exception {
+    return new MustCallAliasReturnAndParamSimple(is, false);
+  }
 }
