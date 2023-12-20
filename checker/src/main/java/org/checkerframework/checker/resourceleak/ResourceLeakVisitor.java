@@ -264,6 +264,18 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     }
   }
 
+  /**
+   * Given a method and its parameter list, look through each of the parameters and see if any are
+   * annotated with the {@code @MustCallAlias} annotation.
+   *
+   * <p>Return true if at least one parameter has the {@code @MustCallAlias} annotation, otherwise
+   * return false.
+   *
+   * @param tree the method declaration.
+   * @param mcAtf a MustCallAnnotatedTypeFactory.
+   * @return true if and only if a {@code @MustCallAlias} annotation appears at least once in the
+   *     parameter list.
+   */
   private boolean isMustCallAliasAnnoPresentInParams(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
     for (VariableTree paramDecl : tree.getParameters()) {
