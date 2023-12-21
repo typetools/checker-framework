@@ -218,6 +218,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * Call Checker treats {@code @MustCallAlias} as an alias of {@code @PolyMustCall}.
    *
    * @param tree the method declaration.
+   * @param mcAtf the MustCallAnnotatedTypeFactory.
    */
   private void checkMustCallAliasAnnotationForMethod(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
