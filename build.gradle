@@ -108,7 +108,7 @@ spotlessPredeclare {
   }
 }
 
-allprojects {
+allprojects { currentProj ->
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
@@ -183,34 +183,47 @@ allprojects {
   }
 
   apply plugin: 'com.diffplug.spotless'
+  def doNotFormatMap = [
+    'checker': [
+      'bin-devel/.plume-scripts/**',
+      'tests/ainfer-*/annotated/*',
+      'tests/nullness-javac-errors/*',
+      'tests/calledmethods-delomboked/*',
+      'tests/build/**',
+      'dist/**'
+    ],
+    'dataflow': ['manual/examples/'],
+    'framework': [
+      'tests/returnsrcvrdelomboked/*',
+      'tests/build/**'
+    ],
+  ]
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
+    def doNotFormat = ['build/**']
+    if (currentProj != project.rootProject) {
+      if (doNotFormatMap.containsKey(currentProj.name)) {
+        doNotFormat += doNotFormatMap[currentProj.name]
+      }
 
-    def doNotFormat = [
-      'checker/bin-devel/.plume-scripts/**',
-      'checker/tests/ainfer-*/annotated/*',
-      'dataflow/manual/examples/',
-      '**/nullness-javac-errors/*',
-      '**/calledmethods-delomboked/*',
-      '**/returnsreceiverdelomboked/*',
-      '**/build/**',
-      '*/dist/**',
-    ]
-    if (!isJava17orHigher) {
-      doNotFormat += ['**/java17/', '**/*record*/']
+      if (!isJava17orHigher) {
+        doNotFormat += [
+          'tests/**/java17/',
+          'tests/*record*/'
+        ]
+      }
+
+      // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+      // See https://github.com/google/google-java-format/releases.
+      if (true) {
+        doNotFormat += ['tests/**/java21/']
+      }
+
+      if (!isJava21orHigher) {
+        doNotFormat += ['tests/**/java21/']
+      }
     }
-
-    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
-    // See https://github.com/google/google-java-format/releases.
-    if (true) {
-      doNotFormat += ['**/java21/']
-    }
-
-    if (!isJava21orHigher) {
-      doNotFormat += ['**/java21/']
-    }
-
     format 'misc', {
       // define the files to apply `misc` to
       target '*.md', '*.tex', '.gitignore', 'Makefile'
@@ -222,18 +235,10 @@ allprojects {
     }
 
     java {
-      def targets = [
-        // add target folders here
-        'checker',
-        'checker-qual',
-        'checker-util',
-        'dataflow',
+      def targets = (currentProj == currentProj.rootProject) ? [
         'docs/examples',
         'docs/tutorial',
-        'framework',
-        'framework-test',
-        'javacutil',
-      ]
+      ] : ['.']
       targets = targets.collectMany {
         [
           // must call toString() to convert GString to String
@@ -249,7 +254,11 @@ allprojects {
     }
 
     groovyGradle {
-      target '**/*.gradle'
+      if (currentProj == currentProj.rootProject) {
+        target '**/*.gradle'
+      } else {
+        target '*.gradle'
+      }
       targetExclude doNotFormat
       greclipse()  // which formatter Spotless should use to format .gradle files.
       indentWithSpaces(2)
