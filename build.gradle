@@ -114,7 +114,7 @@ allprojects {
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.42.1-SNAPSHOT'
+  version '3.43.0-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true

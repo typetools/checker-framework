@@ -2296,7 +2296,7 @@ class MustCallConsistencyAnalyzer {
    * Gets the Obligation whose resource aliase set contains the given local variable, if one exists
    * in {@code obligations}.
    *
-   * @param obligations set of Obligations
+   * @param obligations a set of Obligations
    * @param node variable of interest
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation

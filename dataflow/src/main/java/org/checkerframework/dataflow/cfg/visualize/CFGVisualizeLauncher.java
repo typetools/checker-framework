@@ -224,7 +224,8 @@ public final class CFGVisualizeLauncher {
 
     JavaFileObject l;
     try (@SuppressWarnings(
-            "mustcall:type.argument") // Context isn't annotated for the Must Call Checker.
+            "mustcall:type.arguments.not.inferred") // Context isn't annotated for the Must Call
+        // Checker.
         JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
       l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
     } catch (IOException e) {

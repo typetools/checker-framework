@@ -3,6 +3,10 @@ Version 3.43.0 (January 2, 2024)
 
 **User-visible changes:**
 
+Method, constructor, lambda, and method reference type inference has been
+greatly improved.  The `-AconservativeUninferredTypeArguments` option is
+no longer necessary and has been removed.
+
 **Implementation details:**
 
 **Closed issues:**

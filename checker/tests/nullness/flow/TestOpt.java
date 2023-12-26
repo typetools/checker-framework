@@ -65,8 +65,8 @@ public class TestOpt {
 
   void foo7b(@Nullable Object p) {
     try {
-      // :: error: (assignment) :: error: (type.argument)
-      // :: error: (return)
+      // :: error: (assignment)
+      // :: error: (type.arguments.not.inferred)
       @NonNull Object o = Opt.orElseThrow(p, () -> null);
     } catch (Throwable t) {
       // p was null
