@@ -257,28 +257,26 @@ allprojects { currentProj ->
       formatAnnotations()
     }
 
-    groovyGradle {
-      if (currentProj == currentProj.rootProject) {
-        target '*.gradle', 'docs/examples/**/*.gradle'
-      } else {
-        target '*.gradle'
+    if (currentProj == currentProj.rootProject) {
+      groovyGradle {
+        target '**/*.gradle'
+        targetExclude doNotFormat
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
       }
-      targetExclude doNotFormat
-      greclipse()  // which formatter Spotless should use to format .gradle files.
-      indentWithSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
     }
-  }
 
-  tasks.register('printSpotlessTaskInputs') {
-    doLast {
-      project.tasks.forEach { task ->
-        if (task.name.contains('spotless')) {
-          println "Inputs for task '${task.name}':"
+    tasks.register('printSpotlessTaskInputs') {
+      doLast {
+        project.tasks.forEach { task ->
+          if (task.name.contains('spotless')) {
+            println "Inputs for task '${task.name}':"
 
-          task.inputs.files.each { inputFile ->
-            println "  Input: $inputFile"
+            task.inputs.files.each { inputFile ->
+              println "  Input: $inputFile"
+            }
           }
         }
       }
