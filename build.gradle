@@ -183,7 +183,8 @@ allprojects { currentProj ->
   }
 
   apply plugin: 'com.diffplug.spotless'
-  def doNotFormatMap = [
+  // patterns of files to skip for individual sub-projects
+  def perProjectDoNotFormat = [
     'checker': [
       'bin-devel/.plume-scripts/**',
       'tests/ainfer-*/annotated/*',
@@ -201,10 +202,12 @@ allprojects { currentProj ->
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
+
+    // Always skip formatting of files under build directory
     def doNotFormat = ['build/**']
     if (currentProj != project.rootProject) {
-      if (doNotFormatMap.containsKey(currentProj.name)) {
-        doNotFormat += doNotFormatMap[currentProj.name]
+      if (perProjectDoNotFormat.containsKey(currentProj.name)) {
+        doNotFormat += perProjectDoNotFormat[currentProj.name]
       }
 
       if (!isJava17orHigher) {
@@ -224,6 +227,7 @@ allprojects { currentProj ->
         doNotFormat += ['tests/**/java21/']
       }
     }
+
     format 'misc', {
       // define the files to apply `misc` to
       target '*.md', '*.tex', '.gitignore', 'Makefile'
@@ -236,6 +240,7 @@ allprojects { currentProj ->
 
     java {
       if (currentProj == currentProj.rootProject) {
+        // format .java files outside of Gradle sub-projects
         def targets = [
           'docs/examples',
           'docs/tutorial',
@@ -249,6 +254,7 @@ allprojects { currentProj ->
         }
         target targets
       } else {
+        // not the root project; format all .java files in the sub-project
         target '**/*.java'
       }
       targetExclude doNotFormat
@@ -257,6 +263,7 @@ allprojects { currentProj ->
       formatAnnotations()
     }
 
+    // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
     if (currentProj == currentProj.rootProject) {
       groovyGradle {
         target '**/*.gradle'
@@ -268,6 +275,7 @@ allprojects { currentProj ->
       }
     }
 
+    // a useful task for debugging; prints exactly which files are getting formatted by spotless
     tasks.register('printSpotlessTaskInputs') {
       doLast {
         project.tasks.forEach { task ->
