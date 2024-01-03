@@ -3,7 +3,6 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -250,18 +249,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private void checkMustCallAliasAnnotationForConstructor(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
-    boolean isMustCallAliasAnnoOnConstructor = false;
     ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
-    if (constructorDecl != null) {
-      Collection<? extends AnnotationMirror> constructorResultAnnos =
-          constructorDecl.getAnnotationMirrors();
-      for (AnnotationMirror anno : constructorResultAnnos) {
-        if (atypeFactory.areSameByClass(anno, MustCallAlias.class)) {
-          isMustCallAliasAnnoOnConstructor = true;
-          break;
-        }
-      }
-    }
+    boolean isMustCallAliasAnnoOnConstructor =
+        constructorDecl != null
+            && constructorDecl.getAnnotationMirrors().stream()
+                .anyMatch(anno -> atypeFactory.areSameByClass(anno, MustCallAlias.class));
     boolean isMustCallAliasAnnoOnParam = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
 
     if (isMustCallAliasAnnoOnConstructor != isMustCallAliasAnnoOnParam) {
