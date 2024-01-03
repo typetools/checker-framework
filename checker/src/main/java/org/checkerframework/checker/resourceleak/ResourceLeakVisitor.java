@@ -250,12 +250,16 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private void checkMustCallAliasAnnotationForConstructor(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
-    Collection<? extends AnnotationMirror> constructorResultAnnos =
-        AnnotationUtils.getExplicitAnnotationsOnConstructorResult(tree);
     boolean isMustCallAliasAnnoOnConstructor = false;
-    for (AnnotationMirror anno : constructorResultAnnos) {
-      if (atypeFactory.areSameByClass(anno, MustCallAlias.class)) {
-        isMustCallAliasAnnoOnConstructor = true;
+    ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
+    if (constructorDecl != null) {
+      Collection<? extends AnnotationMirror> constructorResultAnnos =
+          constructorDecl.getAnnotationMirrors();
+      for (AnnotationMirror anno : constructorResultAnnos) {
+        if (atypeFactory.areSameByClass(anno, MustCallAlias.class)) {
+          isMustCallAliasAnnoOnConstructor = true;
+          break;
+        }
       }
     }
     boolean isMustCallAliasAnnoOnParam = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
@@ -279,13 +283,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private boolean isMustCallAliasAnnoPresentInParams(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
-    for (VariableTree paramDecl : tree.getParameters()) {
-      VariableElement paramElt = TreeUtils.elementFromDeclaration(paramDecl);
-      if (mcAtf.getDeclAnnotation(paramElt, MustCallAlias.class) != null) {
-        return true;
-      }
-    }
-    return false;
+    return tree.getParameters().stream()
+        .map(TreeUtils::elementFromDeclaration)
+        .anyMatch(element -> mcAtf.getDeclAnnotation(element, MustCallAlias.class) != null);
   }
 
   @Override
