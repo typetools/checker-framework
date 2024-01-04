@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
@@ -222,17 +223,17 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private void checkMustCallAliasAnnotationForMethod(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
 
-    boolean mustCallAliasAnnoOnParameter = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
+    boolean isMustCallAliasAnnoOnParameter = isMustCallAliasAnnoPresentInParams(tree, mcAtf);
 
-    if (TreeUtils.isVoidReturn(tree) && mustCallAliasAnnoOnParameter) {
+    if (TreeUtils.isVoidReturn(tree) && isMustCallAliasAnnoOnParameter) {
       checker.reportWarning(tree, "mustcallalias.method.return.and.param");
       return;
     }
 
     AnnotatedTypeMirror returnType = mcAtf.getMethodReturnType(tree);
-    boolean mustCallAliasAnnoOnReturnType = returnType.hasPrimaryAnnotation(PolyMustCall.class);
+    boolean isMustCallAliasAnnoOnReturnType = returnType.hasPrimaryAnnotation(PolyMustCall.class);
 
-    if (mustCallAliasAnnoOnParameter != mustCallAliasAnnoOnReturnType) {
+    if (isMustCallAliasAnnoOnParameter != isMustCallAliasAnnoOnReturnType) {
       checker.reportWarning(tree, "mustcallalias.method.return.and.param");
     }
   }
@@ -275,9 +276,17 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    */
   private boolean isMustCallAliasAnnoPresentInParams(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
-    return tree.getParameters().stream()
-        .map(TreeUtils::elementFromDeclaration)
-        .anyMatch(element -> mcAtf.getDeclAnnotation(element, MustCallAlias.class) != null);
+    VariableTree receiverParameter = tree.getReceiverParameter();
+    boolean isAnnoOnReceiverParameter =
+        Optional.ofNullable(receiverParameter)
+            .map(TreeUtils::elementFromDeclaration)
+            .filter(element -> mcAtf.getDeclAnnotation(element, MustCallAlias.class) != null)
+            .isPresent();
+    boolean isAnnoOnFormalParameter =
+        tree.getParameters().stream()
+            .map(TreeUtils::elementFromDeclaration)
+            .anyMatch(element -> mcAtf.getDeclAnnotation(element, MustCallAlias.class) != null);
+    return isAnnoOnReceiverParameter || isAnnoOnFormalParameter;
   }
 
   @Override

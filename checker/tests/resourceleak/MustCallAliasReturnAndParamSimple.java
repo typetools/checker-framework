@@ -9,6 +9,18 @@ public class MustCallAliasReturnAndParamSimple {
 
   final @Owning InputStream is;
 
+  // Should have no error here.
+  @MustCallAlias MustCallAliasReturnAndParamSimple someFluentMethod(
+      @MustCallAlias MustCallAliasReturnAndParamSimple this) {
+    return this;
+  }
+
+  // :: warning: (mustcallalias.method.return.and.param)
+  @MustCallAlias MustCallAliasReturnAndParamSimple someIncorrectlyAnnotatedFluentMethod(
+      MustCallAliasReturnAndParamSimple this) {
+    return this;
+  }
+
   @MustCallAlias MustCallAliasReturnAndParamSimple(@MustCallAlias InputStream p, boolean b) throws Exception {
     if (b) {
       throw new Exception("an exception!");
