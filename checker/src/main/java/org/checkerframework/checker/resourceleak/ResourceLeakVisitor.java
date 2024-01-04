@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
@@ -277,11 +276,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private boolean isMustCallAliasAnnoPresentInParams(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
     VariableTree receiverParameter = tree.getReceiverParameter();
-    boolean isAnnoOnReceiverParameter =
-        Optional.ofNullable(receiverParameter)
-            .map(TreeUtils::elementFromDeclaration)
-            .filter(element -> mcAtf.getDeclAnnotation(element, MustCallAlias.class) != null)
-            .isPresent();
+    boolean isAnnoOnReceiverParameter = false;
+    if (receiverParameter != null) {
+      VariableElement receiverElement = TreeUtils.elementFromDeclaration(receiverParameter);
+      isAnnoOnReceiverParameter =
+          mcAtf.getDeclAnnotation(receiverElement, MustCallAlias.class) != null;
+    }
     boolean isAnnoOnFormalParameter =
         tree.getParameters().stream()
             .map(TreeUtils::elementFromDeclaration)
