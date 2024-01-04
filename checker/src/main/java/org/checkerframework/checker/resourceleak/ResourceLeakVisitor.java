@@ -216,8 +216,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * <p>The return type is checked if it is annotated with {@code @PolyMustCall} because the Must
    * Call Checker treats {@code @MustCallAlias} as an alias of {@code @PolyMustCall}.
    *
-   * @param tree the method declaration.
-   * @param mcAtf the MustCallAnnotatedTypeFactory.
+   * @param tree the method declaration
+   * @param mcAtf the MustCallAnnotatedTypeFactory
    */
   private void checkMustCallAliasAnnotationForMethod(
       MethodTree tree, MustCallAnnotatedTypeFactory mcAtf) {
@@ -233,16 +233,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
 
     AnnotatedTypeMirror returnType = mcAtf.getMethodReturnType(tree);
     boolean isMustCallAliasAnnoOnReturnType = returnType.hasPrimaryAnnotation(PolyMustCall.class);
-
-    if (isMustCallAliasAnnoOnParameter != isMustCallAliasAnnoOnReturnType) {
-      String message =
-          isMustCallAliasAnnoOnParameter
-              ? String.format(
-                  "there is no @MustCallAlias annotation on the return type, even though parameter %s is annotated with @MustCallAlias",
-                  paramWithMustCallAliasAnno)
-              : "no parameter has a @MustCallAlias annotation, even though the return type is annotated with @MustCallAlias";
-      checker.reportWarning(tree, "mustcallalias.method.return.and.param", message);
-    }
+    checkMustCallAliasAnnoMismatch(
+        paramWithMustCallAliasAnno, isMustCallAliasAnnoOnReturnType, tree);
   }
 
   /**
@@ -252,21 +244,44 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * <p>That is, a {@code @MustCallAlias} annotation must appear on both the constructor and its
    * parameter list, or not at all.
    *
-   * @param tree the constructor.
+   * @param tree the constructor
    */
   private void checkMustCallAliasAnnotationForConstructor(MethodTree tree) {
     ExecutableElement constructorDecl = TreeUtils.elementFromDeclaration(tree);
     boolean isMustCallAliasAnnoOnConstructor =
         constructorDecl != null && rlTypeFactory.hasMustCallAlias(constructorDecl);
     Element paramWithMustCallAliasAnno = getParameterWithMustCallAliasAnno(tree);
-    boolean isMustCallAliasAnnoOnParameter = paramWithMustCallAliasAnno != null;
+    checkMustCallAliasAnnoMismatch(
+        paramWithMustCallAliasAnno, isMustCallAliasAnnoOnConstructor, tree);
+  }
 
-    if (isMustCallAliasAnnoOnConstructor != isMustCallAliasAnnoOnParameter) {
+  /**
+   * Construct the warning message for the case where a {@code @MustCallAlias} annotation does not
+   * appear in pairs in a method or constructor declaration.
+   *
+   * <p>If a parameter of a method or a constructor is annotated with a {@code @MustCallAlias}
+   * annotation, the return type (for a method) should also be annotated with
+   * {@code @MustCallAlias}. In the case of a constructor, which has no return type, a
+   * {@code @MustCallAlias} annotation must appear on its declaration.
+   *
+   * @param paramWithMustCallAliasAnno a parameter with a {@code @MustCallAlias} annotation, null if
+   *     there are none
+   * @param isMustCallAliasAnnoOnMethodOrConstructorDecl true if and only if a
+   *     {@code @MustCallAlias} annotation appears on a method or constructor declaration
+   * @param tree the method or constructor declaration
+   */
+  private void checkMustCallAliasAnnoMismatch(
+      @Nullable Element paramWithMustCallAliasAnno,
+      boolean isMustCallAliasAnnoOnMethodOrConstructorDecl,
+      MethodTree tree) {
+    boolean isMustCallAliasAnnotationOnParameter = paramWithMustCallAliasAnno != null;
+    String locationOfCheck = TreeUtils.isClassTree(tree) ? "this constructor" : "the return type";
+    if (isMustCallAliasAnnotationOnParameter != isMustCallAliasAnnoOnMethodOrConstructorDecl) {
       String message =
-          isMustCallAliasAnnoOnParameter
+          isMustCallAliasAnnotationOnParameter
               ? String.format(
-                  "there is no @MustCallAlias annotation on the return type, even though parameter %s is annotated with @MustCallAlias",
-                  paramWithMustCallAliasAnno)
+                  "there is no @MustCallAlias annotation on %s, even though the parameter %s is annotated with @MustCallAlias",
+                  locationOfCheck, paramWithMustCallAliasAnno)
               : "no parameter has a @MustCallAlias annotation, even though the return type is annotated with @MustCallAlias";
       checker.reportWarning(tree, "mustcallalias.method.return.and.param", message);
     }
@@ -279,9 +294,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * <p>Return the first parameter that is annotated with {@code @MustCallAlias}, otherwise return
    * null.
    *
-   * @param tree the method declaration.
+   * @param tree the method declaration
    * @return the first parameter that is annotated with {@code @MustCallAlias}, otherwise return
-   *     null.
+   *     null
    */
   private @Nullable Element getParameterWithMustCallAliasAnno(MethodTree tree) {
     VariableTree receiverParameter = tree.getReceiverParameter();
