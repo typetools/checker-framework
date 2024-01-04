@@ -468,8 +468,9 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree);
+  protected ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArgs) {
+    ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArgs);
     AnnotatedExecutableType method = mType.executableType;
 
     // Special cases for method invocations with specific arguments.

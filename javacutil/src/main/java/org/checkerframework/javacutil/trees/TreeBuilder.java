@@ -675,6 +675,7 @@ public class TreeBuilder {
    * @return a NewArrayTree to create a new array with initializers
    */
   public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<JCExpression> exprs = CollectionsPlume.mapList(JCExpression.class::cast, elems);
 
     JCTree.JCNewArray newArray =

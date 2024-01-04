@@ -57,8 +57,8 @@ ext {
     autoValue       : '1.10.4',
     lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
-    reflectionUtil : '1.1.0',
-    plumeUtil : '1.8.1',
+    reflectionUtil : '1.1.2',
+    plumeUtil : '1.9.0',
     errorprone : '2.23.0',
   ]
 }
@@ -108,13 +108,13 @@ spotlessPredeclare {
   }
 }
 
-allprojects {
+allprojects { currentProj ->
   // Increment the minor version (second number) rather than just the patch
   // level (third number) if:
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.41.0'
+  version '3.43.0-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -183,32 +183,49 @@ allprojects {
   }
 
   apply plugin: 'com.diffplug.spotless'
+  // patterns of files to skip for individual sub-projects
+  def perProjectDoNotFormat = [
+    'checker': [
+      'bin-devel/.plume-scripts/**',
+      'tests/ainfer-*/annotated/*',
+      'tests/nullness-javac-errors/*',
+      'tests/calledmethods-delomboked/*',
+      'tests/build/**',
+      'dist/**'
+    ],
+    'dataflow': ['manual/examples/'],
+    'framework': [
+      'tests/returnsrcvrdelomboked/*',
+      'tests/build/**'
+    ],
+  ]
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
     // add them to the spotlessPredeclare block.
 
-    def doNotFormat = [
-      'checker/bin-devel/.plume-scripts/**',
-      'checker/tests/ainfer-*/annotated/*',
-      'dataflow/manual/examples/',
-      '**/nullness-javac-errors/*',
-      '**/calledmethods-delomboked/*',
-      '**/returnsreceiverdelomboked/*',
-      '**/build/**',
-      '*/dist/**',
-    ]
-    if (!isJava17orHigher) {
-      doNotFormat += ['**/java17/', '**/*record*/']
-    }
+    // Always skip formatting of files under build directory
+    def doNotFormat = ['build/**']
+    if (currentProj != project.rootProject) {
+      if (perProjectDoNotFormat.containsKey(currentProj.name)) {
+        doNotFormat += perProjectDoNotFormat[currentProj.name]
+      }
 
-    // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
-    // See https://github.com/google/google-java-format/releases.
-    if (true) {
-      doNotFormat += ['**/java21/']
-    }
+      if (!isJava17orHigher) {
+        doNotFormat += [
+          'tests/**/java17/',
+          'tests/*record*/'
+        ]
+      }
 
-    if (!isJava21orHigher) {
-      doNotFormat += ['**/java21/']
+      // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
+      // See https://github.com/google/google-java-format/releases.
+      if (true) {
+        doNotFormat += ['tests/**/java21/']
+      }
+
+      if (!isJava21orHigher) {
+        doNotFormat += ['tests/**/java21/']
+      }
     }
 
     format 'misc', {
@@ -222,39 +239,55 @@ allprojects {
     }
 
     java {
-      def targets = [
-        // add target folders here
-        'checker',
-        'checker-qual',
-        'checker-util',
-        'dataflow',
-        'docs/examples',
-        'docs/tutorial',
-        'framework',
-        'framework-test',
-        'javacutil',
-      ]
-      targets = targets.collectMany {
-        [
-          // must call toString() to convert GString to String
-          "${it}/**/*.java".toString(),
-          // Not .ajava files because formatting would remove import statements.
+      if (currentProj == currentProj.rootProject) {
+        // format .java files outside of Gradle sub-projects
+        def targets = [
+          'docs/examples',
+          'docs/tutorial',
         ]
+        targets = targets.collectMany {
+          [
+            // must call toString() to convert GString to String
+            "${it}/**/*.java".toString(),
+            // Not .ajava files because formatting would remove import statements.
+          ]
+        }
+        target targets
+      } else {
+        // not the root project; format all .java files in the sub-project
+        target '**/*.java'
       }
-      target targets
       targetExclude doNotFormat
 
       googleJavaFormat() // the formatter to apply to Java files
       formatAnnotations()
     }
 
-    groovyGradle {
-      target '**/*.gradle'
-      targetExclude doNotFormat
-      greclipse()  // which formatter Spotless should use to format .gradle files.
-      indentWithSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
+    // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
+    if (currentProj == currentProj.rootProject) {
+      groovyGradle {
+        target '**/*.gradle'
+        targetExclude doNotFormat
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
+      }
+    }
+
+    // a useful task for debugging; prints exactly which files are getting formatted by spotless
+    tasks.register('printSpotlessTaskInputs') {
+      doLast {
+        project.tasks.forEach { task ->
+          if (task.name.contains('spotless')) {
+            println "Inputs for task '${task.name}':"
+
+            task.inputs.files.each { inputFile ->
+              println "  Input: $inputFile"
+            }
+          }
+        }
+      }
     }
   }
 

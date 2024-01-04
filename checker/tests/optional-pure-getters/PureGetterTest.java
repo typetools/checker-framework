@@ -7,11 +7,11 @@ class PureGetterTest {
 
   // This method will be treated as @Pure because of -AassumePureGetters.
   Optional<String> getOptional() {
-    return null;
+    return Optional.of("hello");
   }
 
   Optional<String> otherOptional() {
-    return null;
+    return Optional.of("hello");
   }
 
   void sideEffect() {}
