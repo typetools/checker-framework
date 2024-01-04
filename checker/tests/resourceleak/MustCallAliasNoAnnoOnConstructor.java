@@ -1,4 +1,4 @@
-// Test case for https://github.com/typetools/checker-framework/issues/5597
+// Test case for https://github.com/typetools/checker-framework/issues/6376
 
 import java.io.*;
 import org.checkerframework.checker.calledmethods.qual.*;
