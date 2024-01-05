@@ -275,8 +275,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       boolean isMustCallAliasAnnoOnMethodOrConstructorDecl,
       MethodTree tree) {
     boolean isMustCallAliasAnnotationOnParameter = paramWithMustCallAliasAnno != null;
-    String locationOfCheck = TreeUtils.isClassTree(tree) ? "this constructor" : "the return type";
     if (isMustCallAliasAnnotationOnParameter != isMustCallAliasAnnoOnMethodOrConstructorDecl) {
+      String locationOfCheck = TreeUtils.isClassTree(tree) ? "this constructor" : "the return type";
       String message =
           isMustCallAliasAnnotationOnParameter
               ? String.format(
