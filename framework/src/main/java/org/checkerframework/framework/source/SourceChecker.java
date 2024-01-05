@@ -868,6 +868,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     return getOnlyPattern("onlyDefs", options);
   }
 
+  /**
+   * Extract the value of the {@code skipDirs} option given the value of the options passed to the
+   * checker.
+   *
+   * @param options the map of options and their values passed to the checker
+   * @return the value of the {@code skipDirs} option
+   */
   private Pattern getSkipDirsPattern(Map<String, String> options) {
     return getSkipPattern("skipDirs", options);
   }
