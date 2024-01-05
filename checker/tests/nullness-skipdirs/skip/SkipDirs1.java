@@ -1,9 +1,10 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-public class SkipDefs1 {
+public class SkipDirs1 {
 
-  static class SkipMe {
+  static class DontSkipMe {
     static Object foo() {
+      // :: error: (return)
       return null;
     }
   }

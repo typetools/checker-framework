@@ -832,13 +832,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    if (pattern.indexOf("/") != -1) {
-      throw new UserError(
-          "The "
-              + patternName
-              + " property contains \"/\", which will never match a class name: "
-              + pattern);
-    }
+    //    if (pattern.indexOf("/") != -1) {
+    //      throw new UserError(
+    //          "The "
+    //              + patternName
+    //              + " property contains \"/\", which will never match a class name: "
+    //              + pattern);
+    //    }
 
     if (pattern.equals("")) {
       pattern = defaultPattern;
@@ -869,7 +869,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   private Pattern getSkipDirsPattern(Map<String, String> options) {
-    return getOnlyPattern("skipDirs", options);
+    return getSkipPattern("skipDirs", options);
   }
 
   ///////////////////////////////////////////////////////////////////////////
