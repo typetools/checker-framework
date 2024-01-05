@@ -832,14 +832,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    //    if (pattern.indexOf("/") != -1) {
-    //      throw new UserError(
-    //          "The "
-    //              + patternName
-    //              + " property contains \"/\", which will never match a class name: "
-    //              + pattern);
-    //    }
-
     if (pattern.equals("")) {
       pattern = defaultPattern;
     }
