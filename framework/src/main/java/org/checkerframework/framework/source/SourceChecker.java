@@ -121,6 +121,9 @@ import org.plumelib.util.UtilPlume;
   "skipDefs",
   "onlyDefs",
 
+  // Set inclusion/exclusion of files based on directory
+  "skipDirs",
+
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
   "assumeDeterministic",
