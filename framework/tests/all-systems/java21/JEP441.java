@@ -1,6 +1,7 @@
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats support the new Java 21 languages features, so skip inference until they do.
+// None of the WPI formats support the new Java 21 languages features, so skip inference until they
+// do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
@@ -33,57 +34,64 @@ public class JEP441 {
     }
     return formatted;
   }
+
   static void formatterPatternSwitchStatement(Object obj) {
-     switch (obj) {
-      case Integer i: String.format("int %d", i); break;
-      case Long l   : String.format("long %d", l); break;
-      case Double d : String.format("double %f", d); break;
-      case String s : String.format("String %s", s); break;
-      default       :  obj.toString();
-    };
+    switch (obj) {
+      case Integer i:
+        String.format("int %d", i);
+        break;
+      case Long l:
+        String.format("long %d", l);
+        break;
+      case Double d:
+        String.format("double %f", d);
+        break;
+      case String s:
+        String.format("String %s", s);
+        break;
+      default:
+        obj.toString();
+    }
+    ;
   }
 
   static String formatterPatternSwitch(Object obj) {
     return switch (obj) {
       case Integer i -> String.format("int %d", i);
-      case Long l    -> String.format("long %d", l);
-      case Double d  -> String.format("double %f", d);
-      case String s  -> String.format("String %s", s);
-      default        -> obj.toString();
+      case Long l -> String.format("long %d", l);
+      case Double d -> String.format("double %f", d);
+      case String s -> String.format("String %s", s);
+      default -> obj.toString();
     };
   }
+
   // As of Java 21
   static void testFooBarNew(String s) {
     switch (s) {
-      case null         -> System.out.println("Oops");
+      case null -> System.out.println("Oops");
       case "Foo", "Bar" -> System.out.println("Great");
-      default           -> System.out.println("Ok");
+      default -> System.out.println("Ok");
     }
   }
 
   static void testStringOld(String response) {
     switch (response) {
-      case null -> { }
+      case null -> {}
       case String s -> {
-        if (s.equalsIgnoreCase("YES"))
-          System.out.println("You got it");
-        else if (s.equalsIgnoreCase("NO"))
-          System.out.println("Shame");
-        else
-          System.out.println("Sorry?");
+        if (s.equalsIgnoreCase("YES")) System.out.println("You got it");
+        else if (s.equalsIgnoreCase("NO")) System.out.println("Shame");
+        else System.out.println("Sorry?");
       }
     }
   }
 
   static void testStringNew(String response) {
     switch (response) {
-      case null -> { }
-      case String s
-          when s.equalsIgnoreCase("YES") -> {
+      case null -> {}
+      case String s when s.equalsIgnoreCase("YES") -> {
         System.out.println("You got it");
       }
-      case String s
-          when s.equalsIgnoreCase("NO") -> {
+      case String s when s.equalsIgnoreCase("NO") -> {
         System.out.println("Shame");
       }
       case String s -> {
@@ -94,19 +102,17 @@ public class JEP441 {
 
   static void testStringEnhanced(String response) {
     switch (response) {
-      case null -> { }
+      case null -> {}
       case "y", "Y" -> {
         System.out.println("You got it");
       }
       case "n", "N" -> {
         System.out.println("Shame");
       }
-      case String s
-          when s.equalsIgnoreCase("YES") -> {
+      case String s when s.equalsIgnoreCase("YES") -> {
         System.out.println("You got it");
       }
-      case String s
-          when s.equalsIgnoreCase("NO") -> {
+      case String s when s.equalsIgnoreCase("NO") -> {
         System.out.println("Shame");
       }
       case String s -> {
@@ -116,7 +122,14 @@ public class JEP441 {
   }
 
   sealed interface CardClassification permits Suit, Tarot {}
-  public enum Suit implements CardClassification { CLUBS, DIAMONDS, HEARTS, SPADES }
+
+  public enum Suit implements CardClassification {
+    CLUBS,
+    DIAMONDS,
+    HEARTS,
+    SPADES
+  }
+
   final class Tarot implements CardClassification {}
 
   static void exhaustiveSwitchWithoutEnumSupport(CardClassification c) {
@@ -158,12 +171,17 @@ public class JEP441 {
       }
     }
   }
+
   sealed interface Currency permits Coin {}
-  enum Coin implements Currency { HEADS, TAILS }
+
+  enum Coin implements Currency {
+    HEADS,
+    TAILS
+  }
 
   static void goodEnumSwitch1(Currency c) {
     switch (c) {
-      case Coin.HEADS -> {    // Qualified name of enum constant as a label
+      case Coin.HEADS -> { // Qualified name of enum constant as a label
         System.out.println("Heads");
       }
       case Coin.TAILS -> {
@@ -177,39 +195,43 @@ public class JEP441 {
       case HEADS -> {
         System.out.println("Heads");
       }
-      case Coin.TAILS -> {    // Unnecessary qualification but allowed
+      case Coin.TAILS -> { // Unnecessary qualification but allowed
         System.out.println("Tails");
       }
     }
   }
 
   record Point(int i, int j) {}
-  enum Color { RED, GREEN, BLUE; }
+
+  enum Color {
+    RED,
+    GREEN,
+    BLUE;
+  }
 
   static void typeTester(Object obj) {
     switch (obj) {
-      case null     -> System.out.println("null");
+      case null -> System.out.println("null");
       case String s -> System.out.println("String");
-      case Color c  -> System.out.println("Color: " + c.toString());
-      case Point p  -> System.out.println("Record class: " + p.toString());
+      case Color c -> System.out.println("Color: " + c.toString());
+      case Point p -> System.out.println("Record class: " + p.toString());
       case int[] ia -> System.out.println("Array of ints of length" + ia.length);
-      default       -> System.out.println("Something else");
+      default -> System.out.println("Something else");
     }
   }
 
   static void first(Object obj) {
     switch (obj) {
-      case String s ->
-          System.out.println("A string: " + s);
-      case CharSequence cs ->
-          System.out.println("A sequence of length " + cs.length());
+      case String s -> System.out.println("A string: " + s);
+      case CharSequence cs -> System.out.println("A sequence of length " + cs.length());
       default -> {
         break;
       }
     }
   }
 
-  record MyPair<S,T>(S fst, T snd){};
+  record MyPair<S, T>(S fst, T snd) {}
+  ;
 
   static void recordInference(MyPair<String, Integer> pair) {
     switch (pair) {
@@ -219,12 +241,13 @@ public class JEP441 {
       }
     }
   }
-  void fragment( Integer i ){
+
+  void fragment(Integer i) {
     // TODO: This would be a good test case for the Value Checker.
-//    switch (i) {
-//      case -1, 1 -> ...                   // Special cases
-//      case Integer j when j > 0 -> ...    // Positive integer cases
-//      case Integer j -> ...               // All the remaining integers
-//    }
+    //    switch (i) {
+    //      case -1, 1 -> ...                   // Special cases
+    //      case Integer j when j > 0 -> ...    // Positive integer cases
+    //      case Integer j -> ...               // All the remaining integers
+    //    }
   }
 }

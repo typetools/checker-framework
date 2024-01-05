@@ -1,6 +1,7 @@
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats support the new Java 21 languages features, so skip inference until they do.
+// None of the WPI formats support the new Java 21 languages features, so skip inference until they
+// do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
@@ -10,11 +11,12 @@ public class FlowSwitch {
   void test0(Number n) {
     String s = null;
     switch (n) {
-      case null, default: {
-        // TODO: this should issue a dereference of nullable error.
-        n.toString();
-        s = "";
-      }
+      case null, default:
+        {
+          // TODO: this should issue a dereference of nullable error.
+          n.toString();
+          s = "";
+        }
     }
     s.toString();
   }
@@ -64,11 +66,12 @@ public class FlowSwitch {
   record Pair<T>(T x, T y) {}
 
   void testE(Pair<A> p1) {
-    B e = switch (p1) {
-      case Pair<A>(A a, B b) -> b;
-      case Pair<A>(B b, A a) -> b;
-      default -> null;
-    };
+    B e =
+        switch (p1) {
+          case Pair<A>(A a, B b) -> b;
+          case Pair<A>(B b, A a) -> b;
+          default -> null;
+        };
     B e2 = null;
     switch (p1) {
       case Pair<A>(A a, B b) -> e2 = b;
@@ -82,8 +85,14 @@ public class FlowSwitch {
     String s = null;
     I e = null;
     switch (p2) {
-      case Pair<I>(I i, C c) -> {e = c; s="";}
-      case Pair<I>(I i, D d) -> {e = d; s="";}
+      case Pair<I>(I i, C c) -> {
+        e = c;
+        s = "";
+      }
+      case Pair<I>(I i, D d) -> {
+        e = d;
+        s = "";
+      }
     }
     s.toString();
     e.toString();
