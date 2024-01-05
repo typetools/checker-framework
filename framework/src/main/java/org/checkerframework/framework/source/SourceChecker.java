@@ -523,6 +523,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   private @MonotonicNonNull Pattern onlyDefsPattern;
 
+  /**
+   * Regular expression pattern to specify directories that should not be checked.
+   *
+   * <p>It contains the pattern specified by the user, through the option {@code checkers.skipDirs};
+   * otherwise it contains a pattern that can match no directory.
+   */
+  private @MonotonicNonNull Pattern skipDirsPattern;
+
   /** The supported lint options. */
   private @MonotonicNonNull Set<String> supportedLints;
 
@@ -858,6 +866,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   private Pattern getOnlyDefsPattern(Map<String, String> options) {
     return getOnlyPattern("onlyDefs", options);
+  }
+
+  private Pattern getSkipDirsPattern(Map<String, String> options) {
+    return getOnlyPattern("skipDirs", options);
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -2540,6 +2552,43 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
     return shouldSkipDefs(cls);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  /// Skipping dirs
+  ///
+
+  /**
+   * Tests whether the enclosing file path of the passed tree matches the pattern specified in the
+   * {@code checker.skipDirs} property.
+   *
+   * @param tree a tree
+   * @return true iff the enclosing directory of the tree should be skipped
+   */
+  public final boolean shouldSkipDirs(ClassTree tree) {
+    if (tree == null) {
+      return false;
+    }
+    TypeElement typeElement = TreeUtils.elementFromDeclaration(tree);
+    if (typeElement == null) {
+      throw new BugInCF("elementFromDeclaration(%s [%s]) => null%n", tree, tree.getClass());
+    }
+    String sourceFilePathForElement = ElementUtils.getSourceFilePath(typeElement);
+    return shouldSkipDirs(sourceFilePathForElement);
+  }
+
+  /**
+   * Tests whether the file at the file path should be not be checked because it matches the {@code
+   * checker.skipDirs} property.
+   *
+   * @param path the path to the file to potentially skip
+   * @return true iff the checker should not check the file at {@code path}
+   */
+  private boolean shouldSkipDirs(String path) {
+    if (skipDirsPattern == null) {
+      skipDirsPattern = getSkipDirsPattern(getOptions());
+    }
+    return skipDirsPattern.matcher(path).find();
   }
 
   ///////////////////////////////////////////////////////////////////////////
