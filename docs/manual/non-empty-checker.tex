@@ -1,0 +1,71 @@
+\htmlhr
+\chapterAndLabel{Non-Empty Checker for collections, iterators, iterables, and maps}{non-empty-checker}
+
+The Non-Empty Checker warns about operations that depend on whether a
+collection, iterator, iterable, or map is non-empty.
+
+To run the Non-Empty Checker, run either of these commands:
+
+\begin{alltt}
+  javac -processor nonempty \emph{MyJavaFile}.java
+  javac -processor org.checkerframework.checker.nonempty.NonEmptyChecker \emph{MyJavaFile}.java
+\end{alltt}
+
+\sectionAndLabel{Non-Empty annotations}{non-empty-annotations}
+
+These qualifiers make up the Non-Empty type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/nonempty/qual}{UnknownNonEmpty}]
+  The annotated collection, iterator, iterable, or map may or may not be empty.
+  This is the top type; programmers need not explicitly write it.
+
+\item[\refqualclass{checker/nonempty/qual}{NonEmpty}]
+  The annotated collection, iterator, iterable, or map is \emph{definitely}
+  non-empty.
+
+\item[\refqualclass{checker/nonempty/qual}{PolyNonEmpty}]
+  indicates qualifier polymorphism.
+  For a description of qualifier polymorphism, see
+  Section~\ref{method-qualifier-polymorphism}.
+
+\end{description}
+
+\sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
+
+The default annotation for collections, iterators, iterables, and maps is
+\<@UnknownNonEmpty>.
+Refinement to the \<@NonEmpty> type occurs in certain cases, such as after
+conditional checks for empty/non-emptiness (see~\ref{type-refinement} for
+more details):
+
+\begin{Verbatim}
+    public List<String> getSessionIds() { ... }
+    ...
+    List<String> sessionIds = getSessionIds(); // sessionIds has type @UnknownNonEmpty
+    ...
+    if (!sessionIds.isEmpty()) {
+      List<String> firstId = sessionIds.get(0); // OK, sessionIds has type @NonEmpty
+      ...
+    }
+\end{Verbatim}
+
+Or on the result of a method that returns a non-empty collection:
+
+\begin{Verbatim}
+    List<String> countryCodes1; // Has default type @UnknownNonEmpty
+    List<String> countryCodes1 = List.of("CA", "US"); // Has type @NonEmpty
+\end{Verbatim}
+
+A programmer can manually annotate code in cases where a collection,
+iterator, iterable, or map is always known to be non-empty, but that fact is
+unable to be inferred by the type system:
+
+\begin{Verbatim}
+    // This call always returns a non-empty map; there is always at least one user in the store
+    public @NonEmpty Map<UserId, User> getUserMapping() { ... }
+    ...
+    Map<UserId, User> users = getUserMapping(); // users has type @NonEmpty
+\end{Verbatim}
+
