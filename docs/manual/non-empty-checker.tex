@@ -32,6 +32,12 @@ These qualifiers make up the Non-Empty type system:
 
 \end{description}
 
+\begin{figure}
+\includeimage{nonempty-subtyping}{3.75cm}
+\caption{The subtyping relationship of the Non-Empty Checker's qualifiers.}
+\label{fig-nonempty-hierarchy}
+\end{figure}
+
 \sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
 
 The default annotation for collections, iterators, iterables, and maps is
@@ -83,8 +89,48 @@ not throw an exception.
 
 The Non-Empty Checker does \emph{not} provide guarantees about the fixed
 length or size of collections, iterators, iterables, or maps, beyond whether
-it has a length of at least 1 (i.e., it is non-empty).
+it has a length or size of at least 1 (i.e., it is non-empty).
 The Index Checker~(See Chapter~\ref{index-checker}) is a checker that analyzes
 array bounds and indices and warns about potential
 \<IndexOutOfBoundsException>s.
+
+\sectionAndLabel{Suppressing non-empty warnings}{suppressing-non-empty-warnings}
+
+Like any sound static analysis tool, the Non-Empty Checker may issue a warning
+for code that is correct.
+It is often best to change your code or annotations in this case.
+Alternatively, you may choose to suppress the warning.
+This does not change the code, but prevents the warning from being presented to
+you.
+The Checker Framework supplies several mechanisms to suppress warnings.
+See Chapter~\ref{suppressing-warnings} for additional usages.
+The \<@SuppressWarnings("nonempty")> annotation is specific to warnings raised
+by the Non-Empty Checker:
+
+\begin{Verbatim}
+    // This method might return an empty list, depending on the argument
+    List<String> getRegionIds(String region) { ... }
+
+    void parseRegions() {
+      @SuppressWarnings("nonempty") // A non-empty list is returned when getRegionIds is invoked with argument x
+      @NonEmpty List<String> regionIds = getRegionIds(x);
+    }
+\end{Verbatim}
+
+\subsectionAndLabel{Suppressing warnings with assertions}{suppressing-warnings-with-assertions}
+
+Occasionally, it is inconvenient or verbose to use the \<@SuppressWarnings>
+annotation.
+For example, Java does not permit annotations such as \<@SuppressWarnings> to
+appear on expressions, static initializers, etc.
+Here are two ways to suppress a warning in such cases:
+
+\begin{itemize}
+\item
+  Create a local variable to hold a subexpression, and
+  suppress a warning on the local variable declaration.
+\item
+  Use the \<@AssumeAssertion> string in
+  an \<assert> message (see Section~\ref{assumeassertion}).
+\end{itemize}
 
