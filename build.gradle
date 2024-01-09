@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.2',
     plumeUtil : '1.9.0',
-    errorprone : '2.23.0',
+    errorprone : '2.24.1',
   ]
 }
 
@@ -460,6 +460,8 @@ allprojects { currentProj ->
           '-Xep:CanIgnoreReturnValueSuggester:OFF',
           // Should be turned off when using the Checker Framework.
           '-Xep:ExtendsObject:OFF',
+          // The Checker Framework is the only nullness tool we care about.
+          '-Xep:NullableWildcard:OFF',
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
