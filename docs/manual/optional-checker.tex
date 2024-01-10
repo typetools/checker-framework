@@ -110,19 +110,18 @@ apply to the method itself rather than to some particular type.
   indicates a method precondition:  The annotated method expects the
   specified expressions to be a present Optional when this
   method is invoked. \<@RequiresPresent> is a useful annotation for a method
-  that may require a \<@MaybePresent> field to be \<@Present>.
+  that requires a \<@MaybePresent> field to be \<@Present>.
 \item[\refqualclass{checker/optional/qual}{EnsuresPresent}]
   indicates a method postcondition.
-  With \<EnsuresPresent>, the successful return (i.e., a non-exceptional
-  return) of the annotated method results in the given Optional expression being
-  present. See the Javadoc for examples of its use.
+  The successful return (i.e., a non-exceptional return) of the annotated
+  method results in the given Optional expression being present. See the Javadoc
+  for examples of its use.
 \item[\refqualclass{checker/optional/qual}{EnsuresPresentIf}]
   indicates a method postcondition.  With \<@EnsuresPresent>, the given
-  Optional expression is present after the method returns; this is useful for
-  a method that assigns a present Optional to a field, for example.
-  With \<@EnsuresPresentIf>, if the annotated method returns the given boolean
-  value (true or false), then the given Optional expression is present.
-  See the Javadoc for examples of their use.
+  Optional expression is present after the method returns.  With
+  \<@EnsuresPresentIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  Optional expression is present. See the Javadoc for examples of their use.
 
 \end{description}
 
