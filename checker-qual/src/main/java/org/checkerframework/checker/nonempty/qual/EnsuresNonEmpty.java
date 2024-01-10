@@ -8,8 +8,9 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the expression evaluates to a non-empty collection, iterator, iterable, or map, if
- * the method terminates successfully.
+ * Indicates that the expression evaluates to a non-empty {@link java.util.Collection collection},
+ * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map
+ * map}, if the method terminates successfully.
  *
  * <p>This postcondition annotation is useful for methods that construct a non-empty collection,
  * iterator, iterable, or map:

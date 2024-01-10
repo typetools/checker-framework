@@ -38,6 +38,29 @@ These qualifiers make up the Non-Empty type system:
 \label{fig-nonempty-hierarchy}
 \end{figure}
 
+\subsectionAndLabel{Non-Empty method annotations}{non-empty-method-annotations}
+
+The Non-Empty Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations;  they
+apply to the annotated method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/nonempty/qual}{RequiresNonEmpty}]
+  indicates a method precondition:  The annotated method expects the
+  specified expresssion to be non-empty when the
+  method is invoked. \<@RequiresNonEmpty> may be appropriate for
+  a field that may not always be non-empty, but the annotated method requires
+  the field to be non-empty.
+
+\item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmpty}]
+  Todo
+
+\item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmptyIf}]
+  Todo
+
+\end{description}
+
 \sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
 
 The default annotation for collections, iterators, iterables, and maps is
