@@ -98,6 +98,36 @@ Figure~\ref{fig-optional-hierarchy}.
 \label{fig-optional-hierarchy}
 \end{figure}
 
+\subsectionAndLabel{Optional method annotations}{optional-method-annotations}
+
+The Optional Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/optional/qual}{RequiresPresent}]
+  indicates a method precondition:  The annotated method expects the
+  specified variables to be a present Optional when this
+  method is invoked.  Don't use this for formal parameters (just annotate
+  their type as \<@Present>).  \<@RequiresPresent> is appropriate for
+  a field that is \<@MaybePresent> in general, but some method requires the
+  field to be \<@Present>.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresent}]
+  indicates a method postcondition.
+  With \<EnsuresPresent>, the successful return (i.e., a non-exceptional
+  return) of the annotated method results in the given Optional values being
+  present. See the Javadoc for examples of its use.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresentIf}]
+  indicates a method postcondition.  With \<@EnsuresPresentIf>, the given
+  Optional values are present after the method returns; this is useful for a
+  method that assigns a present Optional to a field, for example.  With
+  \<@EnsuresPresentIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  Optional values are present. See the Javadoc for examples of their use.
+
+\end{description}
+
 
 \sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
 
