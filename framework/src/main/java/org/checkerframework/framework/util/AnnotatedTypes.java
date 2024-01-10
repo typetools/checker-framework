@@ -255,7 +255,7 @@ public class AnnotatedTypes {
         enclosingType = enclosingType.getEnclosingType();
       }
       if (enclosingType == null) {
-        throw new BugInCF("Enclosing type not found %s %s", dt, superType);
+        throw new BugInCF("Enclosing type not found: type: %s supertype: %s", dt, superType);
       }
       return asSuper(atypeFactory, dt, superType);
     }
