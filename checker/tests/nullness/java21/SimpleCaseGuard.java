@@ -1,6 +1,7 @@
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats support the new Java 21 languages features, so skip inference until they do.
+// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
@@ -27,5 +28,4 @@ public class SimpleCaseGuard {
       }
     }
   }
-
 }
