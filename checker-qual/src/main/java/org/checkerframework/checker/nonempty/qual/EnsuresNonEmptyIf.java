@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * <pre><code>&nbsp;@EnsuresNonEmptyIf(result = true, expression = "this.orders")
  * &nbsp;public &lt;T&gt; boolean areOrdersActive() {
- *    return this.orders != null &amp;&amp; this.orders.size() > 0;
+ *    return this.orders != null &amp;&amp; this.orders.size() &gt; 0;
  * }</code></pre>
  *
  * An {@code @EnsuresNonEmptyIf} annotation that refers to a private field is useful for verifying
@@ -41,7 +41,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *
  * <pre><code>&nbsp;@EnsuresNonEmptyIf(result = true, expression = "this.getOrders()")
  * &nbsp;public &lt;T&gt; boolean areOrdersActive() {
- *    return this.orders != null &amp;&amp; this.orders.size() > 0;
+ *    return this.orders != null &amp;&amp; this.orders.size() &gt; 0;
  * }</code></pre>
  *
  * @see NonEmpty

@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nonempty.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,7 +23,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * class MyClass {
  *
- *   List&lt;String&gt; list1 = new LinkedList<>();
+ *   List&lt;String&gt; list1 = new LinkedList&lt;&gt;();
  *   List&lt;String&gt; list2;
  *
  *   &nbsp; @RequiresNonEmpty("list1")
@@ -71,6 +72,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *
  * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @PreconditionAnnotation(qualifier = NonEmpty.class)
@@ -82,7 +84,7 @@ public @interface RequiresNonEmpty {
    * map} that must be non-empty.
    *
    * @return the Java {@link java.util.Collection collection},
-   * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map map
+   * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map map}
    */
   String[] value();
 
