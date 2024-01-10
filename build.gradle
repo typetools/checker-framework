@@ -55,6 +55,7 @@ ext {
 
   versions = [
     autoValue       : '1.10.4',
+    googleJavaFormat : '1.19.2',
     lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.2',
@@ -101,7 +102,7 @@ spotlessPredeclare {
   //     > Could not create task ':spotlessJava'.
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
-    googleJavaFormat()
+    googleJavaFormat(versions.googleJavaFormat)
   }
   groovyGradle {
     greclipse()
@@ -217,12 +218,6 @@ allprojects { currentProj ->
         ]
       }
 
-      // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
-      // See https://github.com/google/google-java-format/releases.
-      if (true) {
-        doNotFormat += ['tests/**/java21/']
-      }
-
       if (!isJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
@@ -259,7 +254,7 @@ allprojects { currentProj ->
       }
       targetExclude doNotFormat
 
-      googleJavaFormat() // the formatter to apply to Java files
+      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
       formatAnnotations()
     }
 
