@@ -55,11 +55,12 @@ ext {
 
   versions = [
     autoValue       : '1.10.4',
+    googleJavaFormat : '1.19.2',
     lombok          : '1.18.30',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.2',
     plumeUtil : '1.9.0',
-    errorprone : '2.23.0',
+    errorprone : '2.24.1',
   ]
 }
 
@@ -101,7 +102,7 @@ spotlessPredeclare {
   //     > Could not create task ':spotlessJava'.
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
-    googleJavaFormat()
+    googleJavaFormat(versions.googleJavaFormat)
   }
   groovyGradle {
     greclipse()
@@ -217,12 +218,6 @@ allprojects { currentProj ->
         ]
       }
 
-      // As of 2023-09-24, google-java-format cannot parse Java 21 language features.
-      // See https://github.com/google/google-java-format/releases.
-      if (true) {
-        doNotFormat += ['tests/**/java21/']
-      }
-
       if (!isJava21orHigher) {
         doNotFormat += ['tests/**/java21/']
       }
@@ -259,7 +254,7 @@ allprojects { currentProj ->
       }
       targetExclude doNotFormat
 
-      googleJavaFormat() // the formatter to apply to Java files
+      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
       formatAnnotations()
     }
 
@@ -460,6 +455,8 @@ allprojects { currentProj ->
           '-Xep:CanIgnoreReturnValueSuggester:OFF',
           // Should be turned off when using the Checker Framework.
           '-Xep:ExtendsObject:OFF',
+          // The Checker Framework is the only nullness tool we care about.
+          '-Xep:NullableWildcard:OFF',
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
