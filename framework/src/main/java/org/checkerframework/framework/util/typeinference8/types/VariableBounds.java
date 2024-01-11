@@ -360,6 +360,22 @@ public class VariableBounds {
   }
 
   /**
+   * Returns whether this variable only has bounds against proper types.
+   *
+   * @return whether this variable only has bounds against proper types.
+   */
+  public boolean onlyProperBounds() {
+    for (BoundKind k : BoundKind.values()) {
+      for (AbstractType bound : bounds.get(k)) {
+        if (!bound.isProper()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
    * Return all lower bounds that are proper types.
    *
    * @return all lower bounds that are proper types

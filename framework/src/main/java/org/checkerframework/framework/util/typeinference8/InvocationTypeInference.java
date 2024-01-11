@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -599,6 +600,17 @@ public class InvocationTypeInference {
       ConstraintSet subset = c.getClosedSubset(b3.getDependencies(newVariables));
       Set<Variable> alphas = subset.getAllInputVariables();
       if (!alphas.isEmpty()) {
+        // First resolve only the variables with proper bounds.
+        for (Variable alpha : new ArrayList<>(alphas)) {
+          if (alpha.getBounds().onlyProperBounds()) {
+            Resolution.resolve(alpha, b3, context);
+            alphas.remove(alpha);
+          }
+        }
+        c.applyInstantiations();
+      }
+      if (!alphas.isEmpty()) {
+        // Resolve any remaining variables that have bounds that are variable or inference types.
         Resolution.resolve(alphas, b3, context);
         c.applyInstantiations();
       }
