@@ -47,17 +47,23 @@ apply to the annotated method itself rather than to some particular type.
 \begin{description}
 
 \item[\refqualclass{checker/nonempty/qual}{RequiresNonEmpty}]
-  indicates a method precondition:  The annotated method expects the
+  indicates a method precondition.  The annotated method expects the
   specified expresssion to be non-empty when the
   method is invoked. \<@RequiresNonEmpty> may be appropriate for
   a field that may not always be non-empty, but the annotated method requires
   the field to be non-empty.
 
 \item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmpty}]
-  Todo
+  indicates a method postcondition. The successful return (i.e., a
+  non-exceptional return) of the annotated method results in the given
+  expression being non-empty. See the Javadoc for examples of its use.
 
 \item[\refqualclass{checker/nonempty/qual}{EnsuresNonEmptyIf}]
-  Todo
+  indicates a method postcondition.  With \<@EnsuresNonEmpty>, the given
+  expression is non-empty after the method returns normally.  With
+  \<@EnsuresNonEmptyIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  expression is non-empty. See the Javadoc for examples of their use.
 
 \end{description}
 
