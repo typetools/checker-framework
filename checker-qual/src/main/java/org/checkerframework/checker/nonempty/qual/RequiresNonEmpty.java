@@ -79,12 +79,11 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresNonEmpty {
 
   /**
-   * The Java {@link java.util.Collection collection},
-   * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map
-   * map} that must be non-empty.
+   * The Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link
+   * java.lang.Iterable iterable}, or {@link java.util.Map map} that must be non-empty.
    *
-   * @return the Java {@link java.util.Collection collection},
-   * {@link java.util.Iterator iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map map}
+   * @return the Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator},
+   *     {@link java.lang.Iterable iterable}, or {@link java.util.Map map}
    */
   String[] value();
 
