@@ -12,7 +12,7 @@ class Issue6393 {
     }
   }
 
-  // :: warning: (cast.unsafe)
+  @SuppressWarnings("unchecked")
   static <T extends AClass> T f(Class<? super T> x, GClass y) {
     AClass z;
     try {
@@ -20,6 +20,7 @@ class Issue6393 {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+    // :: warning: (cast.unsafe)
     return (T) z;
   }
 }
