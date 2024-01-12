@@ -119,8 +119,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
         // This should never happen, if javac infers type arguments so should the Checker
         // Framework. However, given how buggy javac inference is, this probably will, so deal with
-        // it
-        // gracefully.
+        // it gracefully.
         return new InferenceResult(
             Collections.emptyList(),
             false,

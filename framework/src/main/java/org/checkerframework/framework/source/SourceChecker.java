@@ -414,6 +414,11 @@ import org.plumelib.util.UtilPlume;
   // Also checks that annotations can be inserted. For each Java file, clears all annotations and
   // reinserts them, then checks if the original and modified ASTs are equivalent.
   "ajavaChecks",
+
+  // Convert type argument inference crashes into warnings. This is a boolean option that is
+  // set to true by default. So, use "-AconvertTypeArgInferenceCrashToWarning=false" to true
+  // this option off.
+  "convertTypeArgInferenceCrashToWarning"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
