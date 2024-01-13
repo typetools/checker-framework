@@ -22,6 +22,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -145,10 +146,19 @@ public class TreeBuilder {
     // Find the close() method
     Symbol.MethodSymbol closeMethod = null;
 
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("close")) {
-        closeMethod = (Symbol.MethodSymbol) method;
-        break;
+    // In rare cases calling elements.getAllMembers(exprElement) crashes with a
+    // Symbol$CompletionFailure exception.  The code below seems not to.
+    Name closeName = names.fromString("close");
+    for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
+      for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
+        if (!(m instanceof Symbol.MethodSymbol)) {
+          continue;
+        }
+        Symbol.MethodSymbol msym = (Symbol.MethodSymbol) m;
+        if (!msym.isStatic() && msym.getParameters().isEmpty()) {
+          closeMethod = msym;
+          break;
+        }
       }
     }
 

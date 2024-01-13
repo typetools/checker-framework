@@ -69,6 +69,7 @@ dependencies {
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
   testImplementation 'commons-io:commons-io:2.15.1'
+  testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
