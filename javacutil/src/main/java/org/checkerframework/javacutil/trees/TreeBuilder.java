@@ -157,7 +157,7 @@ public class TreeBuilder {
           continue;
         }
         Symbol.MethodSymbol msym = (Symbol.MethodSymbol) m;
-        if (!msym.isStatic() && !msym.isAbstract() && msym.getParameters().isEmpty()) {
+        if (!msym.isStatic() && msym.getParameters().isEmpty()) {
           closeMethod = msym;
           break;
         }
