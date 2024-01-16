@@ -13,6 +13,7 @@ public abstract class MemRefInfere<K, V> implements Map<K, V>, Serializable {
     throw new RuntimeException();
   }
 
+  @SuppressWarnings("lock:methodref.return")
   public static <T, K2, V2> Collector<T, ?, MemRefInfere<K2, V2>> toImmutableMap(
       Function<? super T, ? extends K2> keyFunction,
       Function<? super T, ? extends V2> valueFunction,

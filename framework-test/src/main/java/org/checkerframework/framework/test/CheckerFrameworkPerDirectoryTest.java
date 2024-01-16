@@ -97,7 +97,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
    * @param checkerOptions options to pass to the compiler when running tests
    */
   @SuppressWarnings(
-      "signature:argument" // for non-array non-primitive class, getName(): @BinaryName
+      "signature:cast.unsafe" // for non-array non-primitive class, getName(): @BinaryName
   )
   protected CheckerFrameworkPerDirectoryTest(
       List<File> testFiles,
@@ -107,7 +107,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
       String... checkerOptions) {
     this(
         testFiles,
-        Collections.singletonList(checker.getName()),
+        Collections.singletonList((@BinaryName String) checker.getName()),
         testDir,
         classpathExtra,
         checkerOptions);

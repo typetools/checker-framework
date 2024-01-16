@@ -13,6 +13,7 @@ public class Bug16 {
 
     void test(Interface<V, K> param) {
       Interface<V, K> inverse1 = new Implementation<>(param, this);
+      Interface<V, K> inverse1b = new Implementation<V, K>(param, this);
       Interface<V, K> inverse2 = new Implementation<>(param);
       Interface<V, K> inverse3 = new Implementation<>(this, 1);
     }
