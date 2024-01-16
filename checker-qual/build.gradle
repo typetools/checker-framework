@@ -3,24 +3,16 @@ plugins {
   id("biz.aQute.bnd.builder") version "6.4.0"
 }
 
-sourceSets {
-  main {
-    java {
-      exclude 'module-info.java'
-    }
-  }
-}
-
-task compileModuleInfo(type: JavaCompile) {
-  source file('src/main/java/')
-  include 'module-info.java'
+task compileJava9(type: JavaCompile) {
+  source = sourceSets.main.java
   destinationDirectory = sourceSets.main.output.classesDirs[0]
   classpath = configurations.allProjects
   options.release = 9
 }
 
 compileJava {
-  dependsOn compileModuleInfo
+  dependsOn compileJava9
+  exclude '**/module-info.java'
 }
 
 javadoc {
@@ -28,7 +20,6 @@ javadoc {
 }
 
 jar {
-  dependsOn compileModuleInfo
   manifest {
     attributes('Export-Package': '*')
   }
