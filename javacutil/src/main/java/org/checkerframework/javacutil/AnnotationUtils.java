@@ -79,6 +79,24 @@ public class AnnotationUtils {
   }
 
   /**
+   * Returns the fully-qualified name of an annotation as a String.
+   *
+   * @param annotation the annotation whose name to return
+   * @return the fully-qualified name of an annotation as a String
+   */
+  public static final @CanonicalName @Interned String annotationNameInterned(
+      AnnotationMirror annotation) {
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
+      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    }
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
+    @SuppressWarnings("signature:assignment") // JDK needs annotations
+    @CanonicalName String name = elm.getQualifiedName().toString();
+    return name.intern();
+  }
+
+  /**
    * Returns the binary name of an annotation as a String.
    *
    * @param annotation the annotation whose binary name to return

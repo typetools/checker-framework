@@ -16,6 +16,16 @@ public class Marks4 {
     return Optional.ofNullable(s).orElseGet(this::getDefault);
   }
 
+  String process_bad2(String s) {
+    // :: warning: (introduce.eliminate)
+    return Optional.<String>empty().orElseGet(this::getDefault);
+  }
+
+  String process_bad3(String s) {
+    // :: warning: (introduce.eliminate)
+    return Optional.of(s).orElseGet(this::getDefault);
+  }
+
   String process_good(String s) {
     return (s != null) ? s : getDefault();
   }

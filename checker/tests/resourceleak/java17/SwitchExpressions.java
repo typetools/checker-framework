@@ -136,10 +136,11 @@ class SwitchExpressions {
     // nesting casts and switch expressions; no error
     Foo deepNesting =
         (switch (i) {
-          case 3 -> (switch (-i) {
-            case -3 -> makeFoo();
-            default -> (Foo) makeFoo();
-          });
+          case 3 ->
+              (switch (-i) {
+                case -3 -> makeFoo();
+                default -> (Foo) makeFoo();
+              });
           default -> ((Foo) new Foo());
         });
     deepNesting.a();

@@ -13,7 +13,7 @@ public class ReportTest extends CheckerFrameworkPerDirectoryTest {
   public ReportTest(List<File> testFiles) {
     super(
         testFiles,
-        org.checkerframework.common.util.report.ReportChecker.class,
+        org.checkerframework.common.util.count.report.ReportChecker.class,
         "report",
         "-Astubs=tests/report/reporttest.astub");
   }

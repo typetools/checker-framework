@@ -1,11 +1,29 @@
-Version 3.41.1 (January 2, 2023)
----------------------------------
+Version 3.43.0 (January 2, 2024)
+--------------------------------
 
 **User-visible changes:**
+
+Method, constructor, lambda, and method reference type inference has been
+greatly improved.  The `-AconservativeUninferredTypeArguments` option is
+no longer necessary and has been removed.
 
 **Implementation details:**
 
 **Closed issues:**
+
+
+Version 3.42.0 (December 15, 2023)
+----------------------------------
+
+**User-visible changes:**
+
+Method annotation `@AssertMethod` indicates that a method checks a value and
+possibly throws an assertion.  Using it can make flow-sensitive type refinement
+more effective.
+
+In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
 
 
 Version 3.41.0 (December 4, 2023)
