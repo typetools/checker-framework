@@ -11,7 +11,7 @@ public class SerializationSecurityTest extends CheckerFrameworkPerDirectoryTest 
   /** Very nice documentation */
   public SerializationSecurityTest(List<File> testFiles) {
     super(
-        testFiles, org.checkerframework.checker.serialization.SerializationSecurityChecker.class, "ser03");
+        testFiles, org.checkerframework.checker.serialization.SerializationSecurityChecker.class, "serialization");
   }
 
   /** Very nice documentation */
