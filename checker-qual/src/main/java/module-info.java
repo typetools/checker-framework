@@ -3,6 +3,14 @@
  * for type-checking by the Checker Framework.
  */
 module org.checkerframework.checker.qual {
+  // javadoc-only dependencies
+  requires static java.desktop;
+  requires static java.compiler;
+  requires static jdk.compiler;
+
+  // the .jar file (for the Automatic-Module-Name) is not ready during javadoc
+  // requires static org.checkerframework.checker;
+
   exports org.checkerframework.checker.builder.qual;
   exports org.checkerframework.checker.calledmethods.qual;
   exports org.checkerframework.checker.compilermsgs.qual;
@@ -33,10 +41,4 @@ module org.checkerframework.checker.qual {
   exports org.checkerframework.common.value.qual;
   exports org.checkerframework.dataflow.qual;
   exports org.checkerframework.framework.qual;
-
-  // requires static org.checkerframework.checker;
-
-  requires static java.desktop;
-  requires static java.compiler;
-  requires static jdk.compiler;
 }
