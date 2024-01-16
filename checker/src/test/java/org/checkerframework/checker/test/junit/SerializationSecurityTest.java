@@ -8,13 +8,12 @@ import org.junit.runners.Parameterized;
 /** Test for Serialization Security Checker */
 public class SerializationSecurityTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** Very nice documentation */
+  /** Create test for the checker */
   public SerializationSecurityTest(List<File> testFiles) {
     super(
         testFiles, org.checkerframework.checker.serialization.SerializationSecurityChecker.class, "serialization");
   }
 
-  /** Very nice documentation */
   @Parameterized.Parameters
   public static String[] getTestDirs() {
     return new String[] {"serialization"};
