@@ -559,6 +559,9 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   }
 
   classpath = configurations.allProjects
+  // disable interpreting module-info.java files until all sub-modules support them
+  modularity.inferModulePath = false
+
   doLast {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -613,6 +616,8 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     }
 
     classpath = configurations.allProjects
+    // disable interpreting module-info.java files until all sub-modules support them
+    modularity.inferModulePath = false
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
