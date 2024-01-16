@@ -1,4 +1,4 @@
-package org.checkerframework.checker.ser03;
+package org.checkerframework.checker.serialization;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 

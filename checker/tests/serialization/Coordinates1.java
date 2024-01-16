@@ -2,7 +2,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import org.checkerframework.checker.ser03.qual.Sensitive;
+import org.checkerframework.checker.serialization.qual.Sensitive;
 
 /** Test case for rule SER03-J: "Warning for non-transient fields annotated Sensitive" */
 public class Coordinates {

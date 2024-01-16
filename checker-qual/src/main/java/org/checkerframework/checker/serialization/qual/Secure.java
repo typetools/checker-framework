@@ -1,4 +1,4 @@
-package org.checkerframework.checker.ser03.qual;
+package org.checkerframework.checker.serialization.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -1,4 +1,4 @@
-package org.checkerframework.checker.ser03;
+package org.checkerframework.checker.serialization;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -11,7 +11,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.ser03.qual.Sensitive;
+import org.checkerframework.checker.serialization.qual.Sensitive;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;

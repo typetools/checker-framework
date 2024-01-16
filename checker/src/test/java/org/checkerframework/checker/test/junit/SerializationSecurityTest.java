@@ -11,12 +11,12 @@ public class SerializationSecurityTest extends CheckerFrameworkPerDirectoryTest 
   /** Very nice documentation */
   public SerializationSecurityTest(List<File> testFiles) {
     super(
-        testFiles, org.checkerframework.checker.ser03.SerializationSecurityChecker.class, "ser03");
+        testFiles, org.checkerframework.checker.serialization.SerializationSecurityChecker.class, "ser03");
   }
 
   /** Very nice documentation */
   @Parameterized.Parameters
   public static String[] getTestDirs() {
-    return new String[] {"ser03"};
+    return new String[] {"serialization"};
   }
 }
