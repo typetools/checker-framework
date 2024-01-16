@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -24,6 +25,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.BlockWithObligations;
@@ -40,10 +43,12 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -58,16 +63,22 @@ import org.plumelib.util.CollectionsPlume;
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
  * annotations such as {@code @}{@link Owning} on owning fields and parameters, {@code @}{@link
- * EnsuresCalledMethods} on methods, and {@code @}{@link InheritableMustCall} on class declarations.
+ * NotOwning} on return types, {@code @}{@link EnsuresCalledMethods} on methods, {@code @}{@link
+ * MustCallAlias} on parameters and return types, and {@code @}{@link InheritableMustCall} on class
+ * declarations.
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
- * representing a method.
+ * representing a method. The entry method of this class is {@link
+ * #runMustCallInference(ResourceLeakAnnotatedTypeFactory, ControlFlowGraph,
+ * MustCallConsistencyAnalyzer)}, invoked from the {@link
+ * ResourceLeakAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
  *
  * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
- * leading to the regular exit point of the method. If the obligation is satisfied, it adds
- * an @Owning annotation on the field and an @EnsuresCalledMethods annotation on the method being
- * analyzed. Additionally, if the method being analyzed satisfies the must-call obligation of all
- * the enclosed owning fields, it adds a @InheritableMustCall annotation on the enclosing class.
+ * leading to the regular exit point of the method. If the obligation is satisfied, the algorithm
+ * adds an @Owning annotation on the field and an @EnsuresCalledMethods annotation on the method
+ * being analyzed. Additionally, if the method being analyzed satisfies the must-call obligation of
+ * all the enclosed owning fields, the algorithm adds a @InheritableMustCall annotation on the
+ * enclosing class.
  *
  * <p>Note: This class makes the assumption that the must-call set has only one element. Must-call
  * sets with more than one element may be supported in the future.
@@ -82,20 +93,27 @@ import org.plumelib.util.CollectionsPlume;
 public class MustCallInference {
 
   /**
-   * The fields that have been inferred to be disposed within the CFG (i.e., method) currently under
-   * analysis. All of the fields in this set when inference finishes will be given an @Owning
-   * annotation. Note that this set is not monotonically-increasing: fields may be added to this set
-   * and then removed during inference. For example, if a field's must-call method is called, it is
-   * added to this set. If, in a later statement in the same method, the same field is re-assigned,
-   * it will be removed from this set (since the previously-inferred closing of the obligation is
-   * invalid).
+   * This map keeps the fields that have been inferred to be disposed within the current method.
+   * Keys represent inferred owning fields, and values contain the must-call method names (Note:
+   * currently this code assumes that the must-call set only contains one element). When inference
+   * finishes, all of the fields in this map will be given an @Owning annotation. Note that this map
+   * is not monotonically-increasing: fields may be added to this map and then removed during
+   * inference. For example, if a field's must-call method is called, it is added to this map. If,
+   * in a later statement in the same method, the same field is re-assigned, it will be removed from
+   * this map (since the field assignment invalidated the previously-inferred disposing of the
+   * obligation).
    */
-  private final Set<VariableElement> disposedFields = new HashSet<>();
+  private final Map<VariableElement, String> disposedFields = new LinkedHashMap<>();
 
   /**
-   * The fields with written {@code @Owning} annotations at the entry point of the CFG currently
-   * under analysis in addition to the inferred owning fields in this analysis. This set is a
-   * superset of the {@code disposedFields} set.
+   * The owned fields. This includes:
+   *
+   * <ul>
+   *   <li>fields with written {@code @Owning} annotations, and
+   *   <li>the inferred owning fields in this analysis.
+   * </ul>
+   *
+   * This set is a superset of the key set in the {@code disposedFields} map.
    */
   private final Set<VariableElement> owningFields = new HashSet<>();
 
@@ -110,6 +128,12 @@ public class MustCallInference {
   /** The {@link Owning} annotation. */
   protected final AnnotationMirror OWNING;
 
+  /** The {@link NotOwning} annotation. */
+  protected final AnnotationMirror NOTOWNING;
+
+  /** The {@link MustCallAlias} annotation. */
+  protected final AnnotationMirror MUSTCALLALIAS;
+
   /**
    * The control flow graph of the current method. There is a separate MustCallInference for each
    * method.
@@ -122,11 +146,23 @@ public class MustCallInference {
   /** The element for the current method. */
   private final ExecutableElement methodElt;
 
-  /** The ClassTree referring to the enclosing class of the current method. */
+  /** The tree for the enclosing class of the current method. */
   private final ClassTree classTree;
 
-  /** The element referring to the enclosing class of the current method. */
+  /**
+   * The element for the enclosing class of the current method. It can be null for certain kinds of
+   * anonymous classes, such as PolyCollectorTypeVar.java in the all-systems test suite.
+   */
   private final @Nullable TypeElement classElt;
+
+  /**
+   * This map is used to track must-alias relationships between the obligations that are
+   * resource-aliased to the return nodes and method parameters. The keys are the obligation of
+   * return nodes, and the values are the index of current method formal parameter (1-based) that is
+   * aliased with the return node. This map will be used to infer the {@link MustCallAlias}
+   * annotation for method parameters.
+   */
+  private final Map<Obligation, Integer> returnObligationToParameter = new HashMap<>();
 
   /**
    * Creates a MustCallInference instance.
@@ -142,15 +178,15 @@ public class MustCallInference {
     this.resourceLeakAtf = resourceLeakAtf;
     this.mcca = mcca;
     this.cfg = cfg;
-    OWNING = AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), Owning.class);
-    methodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
-    methodElt = TreeUtils.elementFromDeclaration(methodTree);
-    classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
-    // elementFromDeclaration() returns null when no element exists for the class tree, which can
-    // happen for certain kinds of anonymous classes, such as PolyCollectorTypeVar.java in the
-    // all-systems test suite.
-    classElt = TreeUtils.elementFromDeclaration(classTree);
-
+    this.OWNING = AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), Owning.class);
+    this.NOTOWNING =
+        AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), NotOwning.class);
+    this.MUSTCALLALIAS =
+        AnnotationBuilder.fromClass(this.resourceLeakAtf.getElementUtils(), MustCallAlias.class);
+    this.methodTree = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+    this.methodElt = TreeUtils.elementFromDeclaration(methodTree);
+    this.classTree = TreePathUtil.enclosingClass(resourceLeakAtf.getPath(methodTree));
+    this.classElt = TreeUtils.elementFromDeclaration(classTree);
     if (classElt != null) {
       for (Element memberElt : classElt.getEnclosedElements()) {
         if (memberElt.getKind().isField() && resourceLeakAtf.hasOwning(memberElt)) {
@@ -178,12 +214,14 @@ public class MustCallInference {
   }
 
   /**
-   * Runs the inference algorithm on the current method (the {@link #cfg} field). It updates the
-   * {@link #disposedFields} set or adds @Owning to the formal parameter if it discovers their
-   * must-call obligations were satisfied along one of the checked paths.
+   * Runs the inference algorithm on the current method (the {@link #cfg} field). It discovers
+   * annotations such as {@code @}{@link Owning} on owning fields and parameters, {@code @}{@link
+   * NotOwning} on return types, {@code @}{@link EnsuresCalledMethods} on methods, {@code @}{@link
+   * MustCallAlias} on parameters and return types, and {@code @}{@link InheritableMustCall} on
+   * class declarations.
    *
-   * <p>Operationally, it checks method invocations for fields and parameters with
-   * non-empty @MustCall obligations along all paths to the regular exit point.
+   * <p>Operationally, it checks method invocations for fields and parameters (with
+   * non-empty @MustCall obligations) along all paths to the regular exit point.
    */
   private void runInference() {
 
@@ -198,8 +236,7 @@ public class MustCallInference {
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
 
-      // It uses a LinkedHashSet to maintain a deterministic order and prevent any inconsistencies
-      // between the results of inference in different iterations.
+      // Use a LinkedHashSet for determinism.
       Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
 
       for (Node node : current.block.getNodes()) {
@@ -211,12 +248,14 @@ public class MustCallInference {
         // checking phase. However, calling updateObligationsWithInvocationResult() will not have
         // any side effects on the outcome of the Resource Leak Checker. This is because the
         // inference occurs within the postAnalyze method of the ResourceLeakAnnotatedTypeFactory,
-        // once the consistency analyzer has completed its process
+        // once the consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           mcca.updateObligationsWithInvocationResult(obligations, node);
-          computeOwningFromInvocation(obligations, node);
+          inferOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
-          analyzeOwnershipTransferAtAssignment(obligations, (AssignmentNode) node);
+          analyzeAssignmentNode(obligations, (AssignmentNode) node);
+        } else if (node instanceof ReturnNode) {
+          analyzeReturnNode(obligations, (ReturnNode) node);
         }
       }
 
@@ -227,21 +266,68 @@ public class MustCallInference {
   }
 
   /**
+   * Analyzes a return statement and performs two computations. Does nothing if the return
+   * expression's type has an empty must-call obligation.
+   *
+   * <ul>
+   *   <li>If the returned expression is a field with non-empty must-call obligations, adds a {@link
+   *       NotOwning} annotation to the return type of the current method. Note the implication: if
+   *       a method returns a field of this class at <i>any</i> return site, the return type is
+   *       inferred to be non-owning.
+   *   <li>Compute the index of the parameter that is an alias of the return node and add it the
+   *       {@link #returnObligationToParameter} map.
+   * </ul>
+   *
+   * @param obligations the current set of tracked Obligations
+   * @param node the return node
+   */
+  private void analyzeReturnNode(Set<Obligation> obligations, ReturnNode node) {
+    Node returnNode = node.getResult();
+    returnNode = mcca.removeCastsAndGetTmpVarIfPresent(returnNode);
+    if (resourceLeakAtf.hasEmptyMustCallValue(returnNode.getTree())) {
+      return;
+    }
+
+    if (returnNode instanceof FieldAccessNode) {
+      addNotOwningToMethodDecl();
+    } else if (returnNode instanceof LocalVariableNode) {
+      Obligation returnNodeObligation =
+          MustCallConsistencyAnalyzer.getObligationForVar(
+              obligations, (LocalVariableNode) returnNode);
+      if (returnNodeObligation != null) {
+        returnObligationToParameter.put(
+            returnNodeObligation, getIndexOfParam(returnNodeObligation));
+      }
+    }
+  }
+
+  /**
    * Adds inferred {@literal @Owning} annotations to fields, {@literal @EnsuresCalledMethods}
-   * annotations to the current method, and {@literal @InheritableMustCall} annotation to the
-   * enclosing class.
+   * annotations to the current method, {@literal @MustCallAlias} annotations to the parameter, and
+   * {@literal @InheritableMustCall} annotations to the enclosing class.
    */
   private void addMemberAndClassAnnotations() {
     WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
     assert wpi != null : "MustCallInference is running without WPI.";
-    for (VariableElement fieldElt : updateOwningFields()) {
+    for (VariableElement fieldElt : getOwningFields()) {
       wpi.addFieldDeclarationAnnotation(fieldElt, OWNING);
     }
     if (!disposedFields.isEmpty()) {
-      addEnsuresCalledMethods();
+      addEnsuresCalledMethodsForDisposedFields();
     }
 
-    addOrUpdateClassMustCall();
+    // If all return statements alias the same parameter index, then add the @MustCallAlias
+    // annotation to that parameter and the return type.
+    if (!returnObligationToParameter.isEmpty()) {
+      if (returnObligationToParameter.values().stream().distinct().count() == 1) {
+        int indexOfParam = returnObligationToParameter.values().iterator().next();
+        if (indexOfParam > 0) {
+          addMustCallAliasToFormalParameter(indexOfParam);
+        }
+      }
+    }
+
+    addInheritableMustCallToClass();
   }
 
   /**
@@ -250,7 +336,7 @@ public class MustCallInference {
    * method body.
    *
    * @param cfg the control flow graph of the method to check
-   * @return a set of obligations representing the parameters with non-empty MustCall
+   * @return a set of obligations representing the parameters with non-empty MustCall obligations
    */
   private Set<Obligation> getNonEmptyMCParams(ControlFlowGraph cfg) {
     // TODO what about lambdas?
@@ -275,13 +361,11 @@ public class MustCallInference {
   }
 
   /**
-   * Updates the owning fields set for this class to include all fields inferred as owning in this
-   * iteration.
+   * Retrieves the owning fields, including fields inferred as owning from the current iteration.
    *
-   * @return the owning fields, including fields inferred as owning from the current iteration
+   * @return the owning fields
    */
-  private Set<VariableElement> updateOwningFields() {
-    owningFields.addAll(disposedFields);
+  private Set<VariableElement> getOwningFields() {
     return owningFields;
   }
 
@@ -296,9 +380,9 @@ public class MustCallInference {
   }
 
   /**
-   * Adds the node to the disposedFields and owningFields sets if it is a field and its must-call
-   * obligation is satisfied by the given method call. If so, it will be given an @Owning annotation
-   * later.
+   * Adds the node to the disposedFields map and the owningFields set if it is a field and its
+   * must-call obligation is satisfied by the given method call. If so, it will be given an @Owning
+   * annotation later.
    *
    * @param node possibly an owning field
    * @param invocation method invoked on the possible owning field
@@ -314,37 +398,41 @@ public class MustCallInference {
       AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, nodeJe);
       List<String> mustCallValues = resourceLeakAtf.getMustCallValues(nodeElt);
       if (mcca.calledMethodsSatisfyMustCall(mustCallValues, cmAnno)) {
-        // This assumes that any MustCall annotation has at most one element.
+        assert !mustCallValues.isEmpty()
+            : "Must-call obligation of owning field " + nodeElt + " is empty.";
         // TODO: generalize this to MustCall annotations with more than one element.
-        assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
-        disposedFields.add((VariableElement) nodeElt);
+        // Currently, this code assumes that the must-call set has only one element.
+        assert mustCallValues.size() == 1
+            : "The must-call set of " + nodeElt + "should be a singleton: " + mustCallValues;
+        disposedFields.put((VariableElement) nodeElt, mustCallValues.get(0));
+        owningFields.add((VariableElement) nodeElt);
       }
     }
   }
 
   /**
-   * Analyzes an assignment statement and performs three computations:
+   * Analyzes an assignment statement and performs the following computations. Does nothing if the
+   * rhs is not a local variable or parameter, or if the rhs has no must-call obligation.
    *
    * <ul>
-   *   <li>If the left-hand side of the assignment is an owning field, and the rhs is an alias of a
-   *       formal parameter, it adds an {@code @Owning} annotation to the formal parameter.
-   *   <li>If the left-hand side of the assignment is a resource variable, and the right-hand side
-   *       is an alias of a formal parameter that has a must-call-close type, it adds the
-   *       {@code @Owning} annotation to the formal parameter.
-   *   <li>Otherwise, updates the set of tracked obligations to account for the (pseudo-)assignment
-   *       to some variable, as in a gen-kill dataflow analysis problem.
+   *   <li>1) If the current method under analysis is a constructor, the left-hand side of the
+   *       assignment is the only owning field of the enclosing class, and the rhs is an alias of a
+   *       formal parameter, it adds an {@code @MustCallAlias} annotation to the formal parameter
+   *       and the result type of the constructor.
+   *   <li>2) If the left-hand side of the assignment is an owning field, and the rhs is an alias of
+   *       a formal parameter, it adds an {@code @Owning} annotation to the formal parameter.
+   *   <li>3) Otherwise, updates the set of tracked obligations to account for the
+   *       (pseudo-)assignment, as in a gen-kill dataflow analysis problem.
    * </ul>
    *
    * @param obligations the set of obligations to update
    * @param assignmentNode the assignment statement
    */
-  private void analyzeOwnershipTransferAtAssignment(
-      Set<Obligation> obligations, AssignmentNode assignmentNode) {
+  private void analyzeAssignmentNode(Set<Obligation> obligations, AssignmentNode assignmentNode) {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = mcca.getTempVarOrNode(rhs);
+    Node rhs = mcca.removeCastsAndGetTmpVarIfPresent(assignmentNode.getExpression());
 
     if (!(rhs instanceof LocalVariableNode)) {
       return;
@@ -356,51 +444,81 @@ public class MustCallInference {
     }
 
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      if (!updateOwningFields().contains(lhsElement)) {
+      if (!getOwningFields().contains(lhsElement)) {
         return;
       }
 
-      // If the owning field is present in the disposedFields set and there is an assignment to the
-      // field, it must be removed from the set. This is essential since the disposedFields set is
+      // If the owning field is present in the disposedFields map and there is an assignment to the
+      // field, it must be removed from the set. This is essential since the disposedFields map is
       // used for adding @EnsuresCalledMethods annotations to the current method later. Note that
       // this removal doesn't affect the owning annotation we inferred for the field, as the
-      // owningField set is updated before this line through the 'updateOwningFields' method.
+      // owningField set is updated with the inferred owning field in the 'inferOwningField' method.
       if (!TreeUtils.isConstructor(methodTree)) {
         disposedFields.remove((VariableElement) lhsElement);
       }
-      addOwningToParamsIfDisposedAtAssignment(obligations, rhsObligation, rhs);
+
+      int paramIndex = getIndexOfParam(rhsObligation);
+      if (paramIndex == -1) {
+        // We are only tracking formal parameter aliases. If the rhsObligation is not an alias of
+        // any of the formal parameters, it won't be present in the obligations set. Thus, skipping
+        // the rest of this method is fine.
+        return;
+      }
+
+      if (TreeUtils.isConstructor(methodTree) && getOwningFields().size() == 1) {
+        // case 1 is satisfied.
+        addMustCallAliasToFormalParameter(paramIndex);
+        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+      } else {
+        // case 2 is satisfied.
+        addOwningToParam(paramIndex);
+        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+      }
+
     } else if (lhs instanceof LocalVariableNode) {
+      // Updates the set of tracked obligations. (case 4)
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
 
   /**
-   * If a must-call obligation of some alias of method parameter p is satisfied during the
-   * assignment, add an @Owning annotation to p, and remove the rhs node from the obligations set,
-   * since it no longer needs to be tracked.
+   * Return the (1-based) index of the method parameter that exist in the set of aliases of the
+   * given {@code obligation}, if one exists; otherwise, return -1.
    *
-   * @param obligations the set of obligations to update
-   * @param rhsObligation the obligation associated with the right-hand side of the assignment
-   * @param rhs the right-hand side of the assignment
+   * @param obligation the obligation
+   * @return the index of the current method parameter that exist in the set of aliases of the given
+   *     obligation, if one exists; otherwise, return -1.
    */
-  private void addOwningToParamsIfDisposedAtAssignment(
-      Set<Obligation> obligations, Obligation rhsObligation, Node rhs) {
-    Set<ResourceAlias> rhsAliases = rhsObligation.resourceAliases;
-    if (rhsAliases.isEmpty()) {
-      return;
-    }
+  private int getIndexOfParam(Obligation obligation) {
+    Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
     List<VariableElement> paramElts =
         CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
-    for (ResourceAlias rhsAlias : rhsAliases) {
-      Element rhsElt = rhsAlias.element;
-      int i = paramElts.indexOf(rhsElt);
-      if (i != -1) {
-        addOwningToParam(i + 1);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
-        break;
+    for (ResourceAlias resourceAlias : resourceAliases) {
+      int paramIndex = paramElts.indexOf(resourceAlias.element);
+      if (paramIndex != -1) {
+        return paramIndex + 1;
       }
     }
+
+    return -1;
+  }
+
+  /** Adds a {@link NotOwning} annotation to the current method. */
+  private void addNotOwningToMethodDecl() {
+    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+    wpi.addMethodDeclarationAnnotation(methodElt, NOTOWNING);
+  }
+
+  /**
+   * Adds a {@link MustCallAlias} annotation to the formal parameter at the given index.
+   *
+   * @param index the index of a formal parameter of the current method (1-based)
+   */
+  private void addMustCallAliasToFormalParameter(int index) {
+    WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+    wpi.addMethodDeclarationAnnotation(methodElt, MUSTCALLALIAS);
+    wpi.addDeclarationAnnotationToFormalParameter(methodElt, index, MUSTCALLALIAS);
   }
 
   /**
@@ -408,22 +526,15 @@ public class MustCallInference {
    * whose must-call obligation is satisfied within the current method, i.e., the fields in {@link
    * #disposedFields}.
    */
-  private void addEnsuresCalledMethods() {
+  private void addEnsuresCalledMethodsForDisposedFields() {
     // The keys are the must-call method names, and the values are the set of fields on which those
-    // methods should be called. This map is used to create a single @EnsuresCalledMethods
-    // annotation for fields that share the same must-call obligation.
+    // methods are called. This map is used to create a @EnsuresCalledMethods annotation for each
+    // set of fields that share the same must-call obligation.
     Map<String, Set<String>> methodToFields = new LinkedHashMap<>();
-    for (VariableElement disposedField : disposedFields) {
-      List<String> mustCallValues = resourceLeakAtf.getMustCallValues(disposedField);
-      assert !mustCallValues.isEmpty()
-          : "Must-call obligation of owning field " + disposedField + " is empty.";
-      // Currently, this code assumes that the must-call set has only one element.
-      assert mustCallValues.size() == 1
-          : "The must-call set of " + disposedField + "should be a singleton: " + mustCallValues;
-      String mustCallValue = mustCallValues.get(0);
+    for (VariableElement disposedField : disposedFields.keySet()) {
+      String mustCallValue = disposedFields.get(disposedField);
       String fieldName = "this." + disposedField.getSimpleName().toString();
-
-      methodToFields.computeIfAbsent(mustCallValue, k -> new HashSet<>()).add(fieldName);
+      methodToFields.computeIfAbsent(mustCallValue, k -> new LinkedHashSet<>()).add(fieldName);
     }
 
     for (String mustCallValue : methodToFields.keySet()) {
@@ -439,17 +550,19 @@ public class MustCallInference {
   /**
    * Possibly adds an InheritableMustCall annotation on the enclosing class.
    *
-   * <p>If the class already has a non-empty MustCall type (that is inherited from one of its
-   * superclasses), this method does nothing, in order to avoid infinite iteration. Otherwise, if
-   * the current method is not private and satisfies the must-call obligations of all the owning
-   * fields, it adds (or updates) an InheritableMustCall annotation to the enclosing class.
+   * <p>Let the enclosing class be C. If C already has a non-empty MustCall type (that is written or
+   * inherited from one of its superclasses), this method preserves the exising must-call type to
+   * avoid infinite iteration. Otherwise, if the current method is not private and satisfies the
+   * must-call obligations of all the owning fields in C, it adds an InheritableMustCall annotation
+   * to C.
    */
-  private void addOrUpdateClassMustCall() {
+  private void addInheritableMustCallToClass() {
     if (classElt == null) {
       return;
     }
 
     WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
+
     List<String> currentMustCallValues = resourceLeakAtf.getMustCallValues(classElt);
     if (!currentMustCallValues.isEmpty()) {
       // The class already has a MustCall annotation.
@@ -479,10 +592,9 @@ public class MustCallInference {
     // fields, then add (to the class) an InheritableMustCall annotation with the name of this
     // method.
     if (!methodTree.getModifiers().getFlags().contains(Modifier.PRIVATE)) {
-      // Since the result of updateOwningFields() is a superset of disposedFields, it is sufficient
-      // to
-      // check the equality of their sizes to determine if both sets are equal.
-      if (!disposedFields.isEmpty() && disposedFields.size() == updateOwningFields().size()) {
+      // Since the result of getOwningFields() is a superset of the key set in disposedFields map,
+      // it is sufficient to check the equality of their sizes to determine if both sets are equal.
+      if (!disposedFields.isEmpty() && disposedFields.size() == getOwningFields().size()) {
         AnnotationMirror am =
             createInheritableMustCall(new String[] {methodTree.getName().toString()});
         wpi.addClassDeclarationAnnotation(classElt, am);
@@ -491,10 +603,11 @@ public class MustCallInference {
   }
 
   /**
-   * Computes ownership transfer at the method call to infer @Owning annotation for the arguments
-   * passed into the call.
+   * Infers ownership transfer at the method call to infer @owning annotations for formal parameters
+   * of the current method, if the parameter is passed into the call and the corresponding formal
+   * parameter of the callee is @owning.
    *
-   * @param obligations the obligations associated with the current block
+   * @param obligations the current set of tracked Obligations
    * @param invocation the method or constructor invocation
    */
   private void inferOwningParamsViaOwnershipTransfer(Set<Obligation> obligations, Node invocation) {
@@ -532,7 +645,7 @@ public class MustCallInference {
    * Checks whether the given element is a resource alias of the given node in the provided set of
    * obligations.
    *
-   * @param obligations the obligations associated with the current block
+   * @param obligations the current set of tracked Obligations
    * @param node the node
    * @param element the element
    * @return true if {@code element} is a resource alias of {@code node}
@@ -550,45 +663,47 @@ public class MustCallInference {
   }
 
   /**
-   * Computes @Owning annotations for the parameters passed in the receiver or arguments position of
-   * a call.
+   * Infers @Owning annotations for fields or the parameters of the current method that are passed
+   * in the receiver or arguments position of a call if their must-call obligation is satisfied via
+   * the {@code invocation}.
    *
-   * @param obligations set of obligations associated with the current block
+   * @param obligations the current set of tracked Obligations
    * @param invocation a method invocation node to check
    */
-  private void computeOwningForArgsOrReceiverOfCall(
+  private void inferOwningForRecieverOrFormalParamPassedToCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     Node receiver = invocation.getTarget().getReceiver();
     receiver = NodeUtils.removeCasts(receiver);
     if (receiver.getTree() != null) {
-      computeOwningForArgument(obligations, invocation, receiver);
+      inferOwningForParamOrField(obligations, invocation, receiver);
     }
 
     for (Node argument : mcca.getArgumentsOfInvocation(invocation)) {
-      Node arg = NodeUtils.removeCasts(argument);
+      Node arg = mcca.removeCastsAndGetTmpVarIfPresent(argument);
       // In the CFG, explicit passing of multiple arguments in the varargs position is represented
       // via an ArrayCreationNode. In this case, it checks the called methods set of each argument
       // passed in this position.
       if (arg instanceof ArrayCreationNode) {
         ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
         for (Node varArgNode : varArgsNode.getInitializers()) {
-          computeOwningForArgument(obligations, invocation, varArgNode);
+          inferOwningForParamOrField(obligations, invocation, varArgNode);
         }
       } else {
-        computeOwningForArgument(obligations, invocation, arg);
+        inferOwningForParamOrField(obligations, invocation, arg);
       }
     }
   }
 
   /**
-   * Computes an @Owning annotation for the {@code arg} that can be a receiver or an argument passed
-   * into a method call.
+   * Infers an @Owning annotation for the {@code arg} that can be a receiver or an argument passed
+   * into a method call if the must-call obligation of the {@code arg} is satisfied via the {@code
+   * invocation}.
    *
-   * @param obligations set of obligations associated with the current block
+   * @param obligations the current set of tracked Obligations
    * @param invocation the method invocation node to check
    * @param arg a receiver or an argument passed to the method call
    */
-  private void computeOwningForArgument(
+  private void inferOwningForParamOrField(
       Set<Obligation> obligations, MethodInvocationNode invocation, Node arg) {
     Element argElt = TreeUtils.elementFromTree(arg.getTree());
     // The must-call obligation of a field can be satisfied either through a call where it serves as
@@ -612,7 +727,6 @@ public class MustCallInference {
       }
 
       List<String> mustCallValues = resourceLeakAtf.getMustCallValues(paramElt);
-      // TODO: generalize this method to MustCall annotations with more than one element.
       assert mustCallValues.size() <= 1 : "TODO: Handle larger must-call values sets";
       Set<ResourceAlias> nodeAliases = getResourceAliasOfNode(obligations, arg);
       for (ResourceAlias resourceAlias : nodeAliases) {
@@ -649,28 +763,67 @@ public class MustCallInference {
   }
 
   /**
-   * Infers @Owning annotations for formal parameters of the enclosing method or fields of the
-   * enclosing class, as follows:
+   * Infers @Owning or @MustCallAlias annotations for formal parameters of the enclosing method
+   * and @Owning annotations for fields of the enclosing class, as follows:
    *
    * <ul>
    *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to that
    *       formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>It calls {@link #computeOwningForArgsOrReceiverOfCall} to compute @Owning annotations for
-   *       the receiver or arguments of a call by analyzing the called-methods set after the call.
+   *   <li>It calls {@link #inferOwningForRecieverOrFormalParamPassedToCall} to infer @Owning
+   *       annotations for the receiver or arguments of a call by analyzing the called-methods set
+   *       after the call.
+   *   <li>It calls {@link #inferMustCallAliasFromThisOrSuperCall} to infer @MustCallAlias
+   *       annotation for formal parameters and the result of the constructor.
    * </ul>
    *
    * @param obligations the set of obligations to search in
    * @param invocation the method or constructor invocation
    */
-  private void computeOwningFromInvocation(Set<Obligation> obligations, Node invocation) {
+  private void inferOwningFromInvocation(Set<Obligation> obligations, Node invocation) {
     if (invocation instanceof ObjectCreationNode) {
       // If the invocation corresponds to an object creation node, only ownership transfer checking
       // is required, as constructor parameters may have an @Owning annotation.  We do not handle
       // @EnsuresCalledMethods annotations on constructors as we have not observed them in practice.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
     } else if (invocation instanceof MethodInvocationNode) {
+      inferMustCallAliasFromThisOrSuperCall(obligations, (MethodInvocationNode) invocation);
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      computeOwningForArgsOrReceiverOfCall(obligations, (MethodInvocationNode) invocation);
+      inferOwningForRecieverOrFormalParamPassedToCall(
+          obligations, (MethodInvocationNode) invocation);
+    }
+  }
+
+  /**
+   * Adds the @MustCallAlias annotation to a method parameter when it is passed in a @MustCallAlias
+   * position during a constructor call using {@literal this} or {@literal super}.
+   *
+   * @param obligations the current set of tracked Obligations
+   * @param node a method invocation node
+   */
+  private void inferMustCallAliasFromThisOrSuperCall(
+      Set<Obligation> obligations, MethodInvocationNode node) {
+    if (!TreeUtils.isSuperConstructorCall(node.getTree())
+        && !TreeUtils.isThisConstructorCall(node.getTree())) {
+      return;
+    }
+    List<? extends VariableElement> calleeParams = mcca.getParametersOfInvocation(node);
+    List<Node> arguments = mcca.getArgumentsOfInvocation(node);
+    for (int i = 0; i < arguments.size(); i++) {
+      if (!resourceLeakAtf.hasMustCallAlias(calleeParams.get(i))) {
+        continue;
+      }
+
+      Node arg = mcca.removeCastsAndGetTmpVarIfPresent(arguments.get(i));
+      Obligation argObligation =
+          MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) arg);
+      if (argObligation == null) {
+        return;
+      }
+      int index = getIndexOfParam(argObligation);
+      if (index != -1) {
+        addMustCallAliasToFormalParameter(index);
+        break;
+      }
     }
   }
 
@@ -713,7 +866,7 @@ public class MustCallInference {
   /**
    * Adds all non-exceptional successors to {@code worklist}.
    *
-   * @param obligations the obligations for the current block
+   * @param obligations the current set of tracked Obligations
    * @param curBlock the block whose successors to add to the worklist
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist the worklist, which is side-effected by this method

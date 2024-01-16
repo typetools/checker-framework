@@ -58,6 +58,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -161,8 +163,10 @@ import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.qual.AssertMethod;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
@@ -197,14 +201,14 @@ import org.plumelib.util.IdentityArraySet;
  * <p>The return type of this scanner is {@link Node}. For expressions, the corresponding node is
  * returned to allow linking between different nodes.
  *
- * <p>However, for statements there is usually no single {@link Node} that is created, and thus no
- * node is returned (rather, null is returned).
+ * <p>However, for statements there is usually no single {@link Node} that is created, and thus null
+ * is returned.
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
- * UnderlyingAST)}.
+ * <p>The entry point to process a single body (e.g., method, lambda, top-level block) is {@link
+ * #process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
@@ -380,6 +384,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
   /**
+   * Creates {@link CFGTranslationPhaseOne}.
+   *
    * @param treeBuilder builder for new AST nodes
    * @param annotationProvider extracts annotations from AST nodes
    * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
@@ -731,7 +737,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * exceptions in {@code causes}.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
@@ -792,7 +798,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the list of extended nodes, or append to the list if {@code pred} is not present.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @param pred the desired predecessor of node
    * @return the node holder
    */
@@ -1279,6 +1285,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * list of {@link Node}s representing the arguments converted for a call of the method. This
    * method applies to both method invocations and constructor calls.
    *
+   * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
    * @param methodType an ExecutableType representing the type of the method call; the type must be
    *     viewpoint-adapted to the call
@@ -1287,6 +1294,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     this method
    */
   protected List<Node> convertCallArguments(
+      ExpressionTree tree,
       ExecutableElement method,
       ExecutableType methodType,
       List<? extends ExpressionTree> actualExprs) {
@@ -1298,6 +1306,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
+    AssertMethodTuple assertMethodTuple = getAssertMethodTuple(method);
 
     int numActuals = actualExprs.size();
     if (method.isVarArgs()) {
@@ -1311,6 +1320,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // invocation conversion to all arguments.
         for (int i = 0; i < numActuals; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
+          if (i == assertMethodTuple.booleanParam) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+          }
           if (actualVal == null) {
             throw new BugInCF(
                 "CFGBuilder: scan returned null for %s [%s]",
@@ -1324,6 +1336,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // remaining ones to initialize an array.
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
+          if (i == assertMethodTuple.booleanParam) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+          }
           convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
 
@@ -1353,11 +1368,78 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       for (int i = 0; i < numActuals; i++) {
         Node actualVal = scan(actualExprs.get(i), null);
+        if (i == assertMethodTuple.booleanParam) {
+          treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+        }
         convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
       }
     }
 
     return convertedNodes;
+  }
+
+  /**
+   * Returns the AssertMethodTuple for {@code method}. If {@code method} is not an assert method,
+   * then {@link AssertMethodTuple#NONE} is returned.
+   *
+   * @param method a method element that might be an assert method
+   * @return the AssertMethodTuple for {@code method}
+   */
+  protected AssertMethodTuple getAssertMethodTuple(ExecutableElement method) {
+    AnnotationMirror assertMethodAnno =
+        annotationProvider.getDeclAnnotation(method, AssertMethod.class);
+    if (assertMethodAnno == null) {
+      return AssertMethodTuple.NONE;
+    }
+
+    // Dataflow does not require checker-qual.jar to be on the users classpath, so
+    // AnnotationUtils.getElementValue(...) cannot be used.
+
+    int booleanParam =
+        AnnotationUtils.getElementValueNotOnClasspath(
+                assertMethodAnno, "parameter", Integer.class, 1)
+            - 1;
+
+    TypeMirror exceptionType =
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "value", Type.ClassType.class, (Type.ClassType) assertionErrorType);
+    boolean isAssertFalse =
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "isAssertFalse", Boolean.class, false);
+    return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
+  }
+
+  /** Holds the elements of an {@link AssertMethod} annotation. */
+  protected static class AssertMethodTuple {
+
+    /** A tuple representing the lack of an {@link AssertMethodTuple}. */
+    protected static final AssertMethodTuple NONE = new AssertMethodTuple(-1, null, false);
+
+    /**
+     * 0-based index of the parameter of the expression that is tested by the assert method. (Or -1
+     * if this isn't an assert method.)
+     */
+    public final int booleanParam;
+
+    /** The type of the exception thrown by the assert method. */
+    public final TypeMirror exceptionType;
+
+    /** Is this an assert false method? */
+    public final boolean isAssertFalse;
+
+    /**
+     * Creates an AssertMethodTuple.
+     *
+     * @param booleanParam 0-based index of the parameter of the expression that is tested by the
+     *     assert method
+     * @param exceptionType the type of the exception thrown by the assert method
+     * @param isAssertFalse is this an assert false method
+     */
+    public AssertMethodTuple(int booleanParam, TypeMirror exceptionType, boolean isAssertFalse) {
+      this.booleanParam = booleanParam;
+      this.exceptionType = exceptionType;
+      this.isAssertFalse = isAssertFalse;
+    }
   }
 
   /**
@@ -1496,7 +1578,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // See also BaseTypeVisitor.visitMethodInvocation and QualifierPolymorphism.annotate.
       arguments = Collections.emptyList();
     } else {
-      arguments = convertCallArguments(method, TreeUtils.typeFromUse(tree), actualExprs);
+      arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
 
     // TODO: lock the receiver for synchronized methods
@@ -1511,7 +1593,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (terminatesExecution) {
       extendedNode.setTerminatesExecution(true);
     }
-
     return node;
   }
 
@@ -1645,6 +1726,35 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // then branch (nothing happens)
     addLabelForNextNode(assertEnd);
+  }
+
+  /**
+   * Translates a method marked as {@link AssertMethod} into CFG nodes corresponding to an {@code
+   * assert} statement.
+   *
+   * @param tree the method invocation tree for a method marked as {@link AssertMethod}
+   * @param assertMethodTuple the assert method tuple for the method
+   * @param condition the boolean expression node for the argument that the method tests
+   */
+  protected void treatMethodAsAssert(
+      MethodInvocationTree tree, AssertMethodTuple assertMethodTuple, Node condition) {
+
+    // all necessary labels
+    Label thenLabel = new Label();
+    Label elseLabel = new Label();
+    ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
+    extendWithExtendedNode(cjump);
+
+    addLabelForNextNode(assertMethodTuple.isAssertFalse ? thenLabel : elseLabel);
+    AssertionErrorNode assertNode =
+        new AssertionErrorNode(tree, condition, null, assertMethodTuple.exceptionType);
+    extendWithNode(assertNode);
+    NodeWithExceptionsHolder exNode =
+        extendWithNodeWithException(
+            new ThrowNode(null, assertNode, env.getTypeUtils()), assertMethodTuple.exceptionType);
+    exNode.setTerminatesExecution(true);
+
+    addLabelForNextNode(assertMethodTuple.isAssertFalse ? elseLabel : thenLabel);
   }
 
   @Override
@@ -3389,7 +3499,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
     List<Node> arguments =
-        convertCallArguments(constructor, TreeUtils.typeFromUse(tree), actualExprs);
+        convertCallArguments(tree, constructor, TreeUtils.typeFromUse(tree), actualExprs);
 
     // TODO: for anonymous classes, don't use the identifier alone.
     // See https://github.com/typetools/checker-framework/issues/890 .

@@ -1488,7 +1488,16 @@ In the same directory as \<\emph{MyChecker}Checker.java>, create a class
 named \<\emph{MyChecker}Transfer> that extends
 \refclass{framework/flow}{CFTransfer}.
 
-Leave the class body empty for now.  Your class will add functionality by
+Leave the class body empty for now, except for a constructor:
+
+\begin{Verbatim}
+  public MyCheckerTransfer(CFAnalysis analysis) {
+    super(analysis);
+  }
+\end{Verbatim}
+
+\noindent
+Your class will add functionality by
 overriding methods of \<CFTransfer>, which performs the default Checker
 Framework type refinement.
 
@@ -2037,10 +2046,6 @@ doesn't print any output if it cannot parse it.)
 pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
 Section~\ref{creating-extending-visitor}.
-
-\item \code{-AshowInferenceSteps}: print debugging information
-about intermediate steps in method type argument inference
-(as performed by \refclass{framework/util/typeinference}{DefaultTypeArgumentInference}).
 
 \item \code{-AshowWpiFailedInferences}: print debugging information
 about failed inference steps during whole-program inference. Must

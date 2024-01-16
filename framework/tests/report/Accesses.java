@@ -1,4 +1,4 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Accesses {
   class Demo {
@@ -58,5 +58,11 @@ public class Accesses {
     d.foo(null);
     // :: error: (methodcall)
     d.equals(d.foo(null));
+  }
+
+  Object[] array = new Object[] {1, 2, 3};
+
+  void accessArray() {
+    array[0] = 1;
   }
 }

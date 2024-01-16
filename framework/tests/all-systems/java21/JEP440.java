@@ -1,6 +1,7 @@
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats support the new Java 21 languages features, so skip inference until they do.
+// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
@@ -20,7 +21,11 @@ public class JEP440 {
     }
   }
 
-  enum Color {RED, GREEN, BLUE}
+  enum Color {
+    RED,
+    GREEN,
+    BLUE
+  }
 
   record ColoredPoint(Point p, Color c) {}
 
@@ -33,19 +38,13 @@ public class JEP440 {
   }
 
   static void printColorOfUpperLeftPoint(Rectangle r) {
-    if (r instanceof Rectangle(
-        ColoredPoint(Point p, Color c),
-        ColoredPoint lr
-    )) {
+    if (r instanceof Rectangle(ColoredPoint(Point p, Color c), ColoredPoint lr)) {
       System.out.println(c);
     }
   }
 
   static void printXCoordOfUpperLeftPointWithPatterns(Rectangle r) {
-    if (r instanceof Rectangle(
-        ColoredPoint(Point(var x, var y), var c),
-        var lr
-    )) {
+    if (r instanceof Rectangle(ColoredPoint(Point(var x, var y), var c), var lr)) {
       System.out.println("Upper-left corner: " + x);
     }
   }

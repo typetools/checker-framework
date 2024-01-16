@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.net.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
-class InputOutputStreams {
+abstract class InputOutputStreams {
+  abstract Socket newSocket();
+
   void test_close_sock(@Owning Socket sock) throws IOException {
     try {
       InputStream is = sock.getInputStream();
@@ -39,8 +41,19 @@ class InputOutputStreams {
     }
   }
 
-  // :: error: (required.method.not.called)
-  void test_close_os(@Owning Socket sock) throws IOException {
+  // NOTE (2023/12/8): Previously the RLC reported required.method.not.called
+  // on this method.  However, the code is actually safe because we are not
+  // obligated to close @Owning parameters when a method throws an exception
+  // (see https://github.com/typetools/checker-framework/pull/6241).
+  void test_close_os_old(@Owning Socket sock) throws IOException {
+    InputStream is = sock.getInputStream();
+    OutputStream os = sock.getOutputStream();
+    os.close();
+  }
+
+  void test_close_os() throws IOException {
+    // :: error: (required.method.not.called)
+    Socket sock = newSocket();
     InputStream is = sock.getInputStream();
     OutputStream os = sock.getOutputStream();
     os.close();
@@ -62,8 +75,11 @@ class InputOutputStreams {
     }
   }
 
-  // :: error: (required.method.not.called)
-  void test_close_os3(@Owning Socket sock) throws IOException {
+  // NOTE (2023/12/8): Previously the RLC reported required.method.not.called
+  // on this method.  However, the code is actually safe because we are not
+  // obligated to close @Owning parameters when a method throws an exception
+  // (see https://github.com/typetools/checker-framework/pull/6241).
+  void test_close_os3_old(@Owning Socket sock) throws IOException {
     OutputStream os = null;
     try {
       InputStream is = sock.getInputStream();
@@ -76,14 +92,51 @@ class InputOutputStreams {
     }
   }
 
+  void test_close_os3() throws IOException {
+    // :: error: (required.method.not.called)
+    Socket sock = newSocket();
+    OutputStream os = null;
+    try {
+      InputStream is = sock.getInputStream();
+    } catch (IOException e) {
+    }
+    try {
+      os = sock.getOutputStream();
+    } finally {
+      os.close();
+    }
+  }
+
+  // NOTE (2023/12/8): Previously the RLC reported required.method.not.called
+  // on this method.  However, the code is actually safe because we are not
+  // obligated to close @Owning parameters when a method throws an exception
+  // (see https://github.com/typetools/checker-framework/pull/6241).
+  void test_close_os4_old(@Owning Socket sock) throws IOException {
+    OutputStream os = null;
+    try {
+      InputStream is = sock.getInputStream();
+    } catch (IOException e) {
+    }
+    try {
+      os = sock.getOutputStream();
+    } finally {
+      if (os != null) {
+        os.close();
+      } else {
+        sock.close();
+      }
+    }
+  }
+
   // TODO this case requires more general tracking of additional boolean conditions
   // If getOutputStream() throws an IOException, then the os variable remains definitely null.
   // When our worklist analysis gets to the finally block along the corresponding CFG edge,
   // it does not know that os is definitely null, and it is only tracking sock as a name for
   // the resource. So, it analyzes a path through the "then" branch of the conditional,
   // where sock.close() is not invoked, and reports an error.
-  // :: error: (required.method.not.called)
-  void test_close_os4(@Owning Socket sock) throws IOException {
+  void test_close_os4() throws IOException {
+    // :: error: (required.method.not.called)
+    Socket sock = newSocket();
     OutputStream os = null;
     try {
       InputStream is = sock.getInputStream();

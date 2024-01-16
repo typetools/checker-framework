@@ -913,10 +913,11 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public Void visitMemberReference(MemberReferenceTree javacTree, Node javaParserNode) {
     MethodReferenceExpr node = castNode(MethodReferenceExpr.class, javaParserNode, javacTree);
     processMemberReference(javacTree, node);
+    Tree preColonTree = javacTree.getQualifierExpression();
     if (node.getScope().isTypeExpr()) {
-      javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
+      preColonTree.accept(this, node.getScope().asTypeExpr().getType());
     } else {
-      javacTree.getQualifierExpression().accept(this, node.getScope());
+      preColonTree.accept(this, node.getScope());
     }
 
     assert (javacTree.getTypeArguments() != null) == node.getTypeArguments().isPresent();

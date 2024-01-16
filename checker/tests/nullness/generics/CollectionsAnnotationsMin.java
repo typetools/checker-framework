@@ -49,7 +49,7 @@ public class CollectionsAnnotationsMin {
     addNull2(new PriorityQueue1<@NonNull Object>());
     addNull2b(new PriorityQueue1<@NonNull Object>(), new Object());
 
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     addNull3(new PriorityQueue1<@NonNull Object>());
 
     // :: error: (argument)
