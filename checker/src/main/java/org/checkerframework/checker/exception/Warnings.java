@@ -1,4 +1,4 @@
-package org.checkerframework.checker.err01;
+package org.checkerframework.checker.exception;
 
 import java.io.FileNotFoundException;
 import java.net.BindException;

@@ -9,11 +9,11 @@ import org.junit.runners.Parameterized;
 public class ExceptionSecurityTest extends CheckerFrameworkPerDirectoryTest {
 
   public ExceptionSecurityTest(List<File> testFiles) {
-    super(testFiles, org.checkerframework.checker.err01.ExceptionSecurityChecker.class, "err01");
+    super(testFiles, org.checkerframework.checker.exception.ExceptionSecurityChecker.class, "err01");
   }
 
   @Parameterized.Parameters
   public static String[] getTestDirs() {
-    return new String[] {"err01"};
+    return new String[] {"exception"};
   }
 }

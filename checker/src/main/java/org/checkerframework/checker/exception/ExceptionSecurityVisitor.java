@@ -1,4 +1,4 @@
-package org.checkerframework.checker.err01;
+package org.checkerframework.checker.exception;
 
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.err01.qual.Insecure;
+import org.checkerframework.checker.exception.qual.Insecure;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;

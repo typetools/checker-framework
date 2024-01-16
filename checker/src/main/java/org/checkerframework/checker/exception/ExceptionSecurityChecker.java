@@ -1,4 +1,4 @@
-package org.checkerframework.checker.err01;
+package org.checkerframework.checker.exception;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
