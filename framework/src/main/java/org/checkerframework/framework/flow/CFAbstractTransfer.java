@@ -84,10 +84,10 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The default analysis transfer function for the Checker Framework propagates information through
- * assignments and uses the {@link AnnotatedTypeFactory} to provide checker-specific logic how to
- * combine types (e.g., what is the type of a string concatenation, given the types of the two
- * operands) and as an abstraction function (e.g., determine the annotations on literals).
+ * The default analysis transfer function for the Checker Framework. It propagates information
+ * through assignments. It uses the {@link AnnotatedTypeFactory} to provide checker-specific logic
+ * to combine types (e.g., what is the type of a string concatenation, given the types of the two
+ * operands) and acts as an abstraction function (e.g., determine the annotations on literals).
  *
  * <p>Design note: CFAbstractTransfer and its subclasses are supposed to act as transfer functions.
  * But, since the AnnotatedTypeFactory already existed and performed checker-independent type
@@ -668,8 +668,13 @@ public abstract class CFAbstractTransfer<
     V elseValue = p.getValueOfSubNode(n.getElseOperand());
     V resultValue = null;
     if (thenValue != null && elseValue != null) {
+      // If a conditional expression is a poly expression, then its Java type is the type of its
+      // context. (For example, the type of the conditional expression in `Object o = b ? "" : "";`
+      // is `Object`, not `String`.)
+      // So, use the Java type of the conditional expression and the annotations for each branch.
+      TypeMirror conditionalType = TreeUtils.typeOf(n.getTree());
       // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenValue.leastUpperBound(elseValue);
+      resultValue = thenValue.leastUpperBound(elseValue, conditionalType);
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);

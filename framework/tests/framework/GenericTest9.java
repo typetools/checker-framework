@@ -12,7 +12,7 @@ public class GenericTest9 {
   interface MyEntry<S> {}
 
   <V> void testclass() {
-    // :: error: (type.argument)
+    // :: error: (type.argument) :: error: (type.arguments.not.inferred)
     C<@Odd Object, MyEntry<V>> c1 = new C<>();
     C<@Odd Object, @Odd MyEntry<V>> c2 = new C<>();
   }
@@ -33,7 +33,7 @@ public class GenericTest9 {
   }
 
   <V> void test(Ordering2<@Odd MyEntry<?>> ord, MyEntry<V> e, @Odd MyEntry<V> o) {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     MyEntry<V> e1 = ord.sort(e);
     // :: error: (type.argument)
     MyEntry<V> e2 = ord.<MyEntry<V>>sort(e);

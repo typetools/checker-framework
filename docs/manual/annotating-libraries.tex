@@ -66,7 +66,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Then, when check a client of the library,
+  Then, when checking a client of the library,
   supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
@@ -847,9 +847,9 @@ unsound, or unsound except in certain circumstances), users must supply the
 If a stub file contains annotations that are used by the framework rather
 than by any specific checker (such as purity annotations), and you wish to
 distribute it with the Checker Framework, put the stub file in directory
-\<checker/resources/>.  You can also do this if the stub file has
+\<checker/src/main/resources/>.  You can also do this if the stub file has
 annotations for multiple checkers.  To use a stub file in directory
-\<checker/resources/>, users must supply the
+\<checker/src/main/resources/>, users must supply the
 \<-Astubs=checker.jar/stub-file-name.astub> command-line option.
 
 

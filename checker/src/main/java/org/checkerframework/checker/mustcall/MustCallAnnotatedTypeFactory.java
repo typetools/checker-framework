@@ -211,7 +211,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   /** Treat non-owning method parameters as @MustCallUnknown (top) when the method is called. */
   @Override
-  public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
+  public void methodFromUsePreSubstitution(
+      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     ExecutableElement declaration;
     if (tree instanceof MethodInvocationTree) {
       declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
@@ -221,15 +222,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
       throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
     }
     changeNonOwningParameterTypesToTop(declaration, type);
-    super.methodFromUsePreSubstitution(tree, type);
+    super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 
   @Override
   protected void constructorFromUsePreSubstitution(
-      NewClassTree tree, AnnotatedExecutableType type) {
+      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
     ExecutableElement declaration = TreeUtils.elementFromUse(tree);
     changeNonOwningParameterTypesToTop(declaration, type);
-    super.constructorFromUsePreSubstitution(tree, type);
+    super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
 
   @Override
@@ -530,9 +531,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           // modified, to support verification of @MustCallAlias annotations.
           type.replaceAnnotation(BOTTOM);
         }
-      }
-      if (ElementUtils.isResourceVariable(elt)) {
-        type.replaceAnnotation(withoutClose(type.getPrimaryAnnotationInHierarchy(TOP)));
       }
       return super.visitIdentifier(tree, type);
     }

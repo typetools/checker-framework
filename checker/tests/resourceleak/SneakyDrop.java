@@ -13,7 +13,7 @@ public class SneakyDrop {
 
   public static void main(String[] args) throws Exception {
     Resource x = new Resource();
-    // :: error: type.argument
+    // :: error: (type.arguments.not.inferred)
     sneakyDrop(x);
   }
 
@@ -37,7 +37,7 @@ public class SneakyDrop {
 
   public static void main4(String[] args) throws Exception {
     Resource x = new Resource();
-    // :: error: type.argument
+    // :: error: (type.arguments.not.inferred)
     sneakyDrop4(x);
   }
 

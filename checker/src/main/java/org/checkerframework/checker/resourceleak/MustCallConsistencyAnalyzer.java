@@ -53,6 +53,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -74,10 +75,10 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
@@ -711,8 +712,7 @@ class MustCallConsistencyAnalyzer {
    *   <li>2) the expression already has a tracked Obligation (i.e. there is already a resource
    *       alias in some Obligation's resource alias set that refers to the expression), or
    *   <li>3) the method in which the invocation occurs also has an @CreatesMustCallFor annotation,
-   *       with the same expression, or
-   *   <li>4) the expression is a resource variable.
+   *       with the same expression.
    * </ul>
    *
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
@@ -738,10 +738,6 @@ class MustCallConsistencyAnalyzer {
         // the @Owning annotation can only be written on methods, parameters, and fields;
         // formal parameters are also represented by LocalVariable in the bodies of methods.
         // This satisfies case 1.
-        return true;
-      } else if (ElementUtils.isResourceVariable(elt)) {
-        // The expression is a resource variable, and therefore will be closed, so we can
-        // treat it as owning (case 4).
         return true;
       } else {
         Obligation toRemove = null;
@@ -1224,16 +1220,6 @@ class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      if (rhs instanceof FieldAccessNode) {
-        // Handling of @Owning fields is a completely separate check.
-      } else if (rhs instanceof LocalVariableNode) {
-        removeObligationsContainingVar(
-            obligations,
-            (LocalVariableNode) rhs,
-            MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
-            MethodExitKind.ALL);
-      }
     } else if (lhs instanceof LocalVariableNode) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
@@ -1262,22 +1248,6 @@ class MustCallConsistencyAnalyzer {
     }
     // We haven't seen two owning fields, so there must be 1 or 0.
     return true;
-  }
-
-  /**
-   * Returns true if must-call type of node only contains close. This is a helper method for
-   * handling try-with-resources statements.
-   *
-   * @param node the node
-   * @return true if must-call type of node only contains close
-   */
-  /*package-private*/ boolean isMustCallClose(Node node) {
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
-    return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
   }
 
   /**
@@ -1470,7 +1440,7 @@ class MustCallConsistencyAnalyzer {
         replacements.put(obligation, null);
       } else {
         replacements.put(
-            obligation, new Obligation(newResourceAliasesForObligation, MethodExitKind.ALL));
+            obligation, new Obligation(newResourceAliasesForObligation, obligation.whenToEnforce));
       }
     }
 
@@ -1815,7 +1785,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return either a tempvar for node's content sans typecasts, or node
    */
-  private Node removeCastsAndGetTmpVarIfPresent(Node node) {
+  /*package-private*/ Node removeCastsAndGetTmpVarIfPresent(Node node) {
     // TODO: Create temp vars for TypeCastNodes as well, so there is no need to explicitly
     // remove casts here.
     node = NodeUtils.removeCasts(node);
@@ -2126,26 +2096,32 @@ class MustCallConsistencyAnalyzer {
           // an exceptional path.
           continue;
         }
-        // Which stores from the called-methods and must-call checkers are used in
-        // the consistency check varies depending on the context. The rules are:
-        // 1. if the current block has no nodes (and therefore the store must come from
-        // a block
-        //    rather than a node):
+
+        // Which stores from the called-methods and must-call checkers are used in the consistency
+        // check varies depending on the context.  Generally speaking, we would like to use the
+        // store propagated along the CFG edge from currentBlock to successor.  But, there are
+        // special cases to consider.  The rules are:
+        // 1. if the current block has no nodes, it is either a ConditionalBlock or a SpecialBlock.
+        //    For the called-methods store, we obtain the exact CFG edge store that we need (see
+        //    getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API limitations,
+        //    we use the following heuristics:
         //    1a. if there is information about any alias in the resource alias set
-        //        in the successor store, use the successor's CM and MC stores, which
-        //        contain whatever information is true after this block finishes.
+        //        in the successor store, use the successor's MC store, which
+        //        contains whatever information is true after this block finishes.
         //    1b. if there is not any information about any alias in the resource alias
-        //        set in the successor store, use the current blocks' CM and MC stores,
+        //        set in the successor store, use the current block's MC store,
         //        which contain whatever information is true before this (empty) block.
         // 2. if the current block has one or more nodes, always use the CM store after
         //    the last node.
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
-          cmStore =
-              obligationGoesOutOfScopeBeforeSuccessor
-                  ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
-                  : regularStoreOfSuccessor; // 1b. (CM)
+          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
+          // For the Must Call Checker, we currently apply a less precise handling and do not get
+          // the store for the specific CFG edge from currentBlock to successor.  We do not believe
+          // this will impact precision except in convoluted and uncommon cases.  If we find that
+          // we need more precision, we can revisit this, but it will require additional API support
+          // in the AnalysisResult type to get the information that we need.
           mcStore =
               mcAtf.getStoreForBlock(
                   obligationGoesOutOfScopeBeforeSuccessor,
@@ -2190,6 +2166,33 @@ class MustCallConsistencyAnalyzer {
     }
 
     propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
+  }
+
+  /**
+   * Gets the store propagated by the {@link ResourceLeakAnalysis} (containing called methods
+   * information) along a particular CFG edge during local type inference. The source {@link Block}
+   * of the edge must contain no {@link Node}s.
+   *
+   * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
+   * @param successor target block of the CFG edge.
+   * @return store propagated by the {@link ResourceLeakAnalysis} along the CFG edge.
+   */
+  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+    switch (currentBlock.getType()) {
+      case CONDITIONAL_BLOCK:
+        ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
+        if (condBlock.getThenSuccessor().equals(successor)) {
+          return analysis.getInput(currentBlock).getThenStore();
+        } else if (condBlock.getElseSuccessor().equals(successor)) {
+          return analysis.getInput(currentBlock).getElseStore();
+        } else {
+          throw new BugInCF("successor not found");
+        }
+      case SPECIAL_BLOCK:
+        return analysis.getInput(successor).getRegularStore();
+      default:
+        throw new BugInCF("unexpected block type " + currentBlock.getType());
+    }
   }
 
   /**
@@ -2262,7 +2265,7 @@ class MustCallConsistencyAnalyzer {
    * Gets the Obligation whose resource aliase set contains the given local variable, if one exists
    * in {@code obligations}.
    *
-   * @param obligations set of Obligations
+   * @param obligations a set of Obligations
    * @param node variable of interest
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation
@@ -2339,7 +2342,9 @@ class MustCallConsistencyAnalyzer {
         } else {
           for (AnnotationMirror anno : cmValue.getAnnotations()) {
             if (AnnotationUtils.areSameByName(
-                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")
+                || AnnotationUtils.areSameByName(
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
               cmAnno = anno;
             }
           }

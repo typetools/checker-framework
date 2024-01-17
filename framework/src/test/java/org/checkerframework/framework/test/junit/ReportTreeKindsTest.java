@@ -13,7 +13,7 @@ public class ReportTreeKindsTest extends CheckerFrameworkPerDirectoryTest {
   public ReportTreeKindsTest(List<File> testFiles) {
     super(
         testFiles,
-        org.checkerframework.common.util.report.ReportChecker.class,
+        org.checkerframework.common.util.count.report.ReportChecker.class,
         "report",
         "-AreportTreeKinds=WHILE_LOOP,CONDITIONAL_AND");
   }

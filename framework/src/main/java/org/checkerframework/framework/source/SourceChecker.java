@@ -121,10 +121,15 @@ import org.plumelib.util.UtilPlume;
   "skipDefs",
   "onlyDefs",
 
+  // Set inclusion/exclusion of files based on directory
+  "skipDirs",
+
   // Unsoundly assume all methods have no side effects, are deterministic, or both.
   "assumeSideEffectFree",
   "assumeDeterministic",
   "assumePure",
+  // Unsoundly assume getter methods have no side effects and are deterministic.
+  "assumePureGetters",
 
   // Whether to assume that assertions are enabled or disabled
   // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
@@ -172,10 +177,6 @@ import org.plumelib.util.UtilPlume;
   // simplified sequential semantics
   // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
   "concurrentSemantics",
-
-  // Whether to use a conservative value for type arguments that could not be inferred.
-  // See Issue 979.
-  "conservativeUninferredTypeArguments",
 
   // Issues a "redundant.anno" warning if the annotation explicitly written on the type is
   // the same as the default annotation for this type and location.
@@ -345,10 +346,6 @@ import org.plumelib.util.UtilPlume;
   // Output all subtyping checks
   // org.checkerframework.common.basetype.BaseTypeVisitor
   "showchecks",
-
-  // Output information about intermediate steps in method type argument inference
-  // org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference
-  "showInferenceSteps",
 
   // Output a stack trace when reporting errors or warnings
   // org.checkerframework.common.basetype.SourceChecker.printStackTrace()
@@ -525,6 +522,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * otherwise it contains a pattern that matches every class.
    */
   private @MonotonicNonNull Pattern onlyDefsPattern;
+
+  /**
+   * Regular expression pattern to specify directories that should not be checked.
+   *
+   * <p>It contains the pattern specified by the user, through the option {@code checkers.skipDirs};
+   * otherwise it contains a pattern that can match no directory.
+   */
+  private @MonotonicNonNull Pattern skipDirsPattern;
 
   /** The supported lint options. */
   private @MonotonicNonNull Set<String> supportedLints;
@@ -747,7 +752,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public AnnotationProvider getAnnotationProvider() {
     throw new UnsupportedOperationException(
-        "getAnnotationProvider is not implemented for this class.");
+        "getAnnotationProvider is not implemented for " + this.getClass().getSimpleName() + ".");
   }
 
   /**
@@ -814,10 +819,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     if (options.containsKey(patternName)) {
       pattern = options.get(patternName);
       if (pattern == null) {
-        message(
-            Diagnostic.Kind.WARNING,
+        throw new UserError(
             "The " + patternName + " property is empty; please fix your command line");
-        pattern = "";
       }
     } else {
       pattern = System.getProperty("checkers." + patternName);
@@ -829,20 +832,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       }
     }
 
-    if (pattern.indexOf("/") != -1) {
-      message(
-          Diagnostic.Kind.WARNING,
-          "The "
-              + patternName
-              + " property contains \"/\", which will never match a class name: "
-              + pattern);
-    }
-
     if (pattern.equals("")) {
       pattern = defaultPattern;
     }
 
-    return Pattern.compile(pattern);
+    try {
+      return Pattern.compile(pattern);
+    } catch (PatternSyntaxException e) {
+      throw new UserError(
+          "The " + patternName + " property is not a regular expression: " + pattern);
+    }
   }
 
   private Pattern getSkipUsesPattern(Map<String, String> options) {
@@ -859,6 +858,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   private Pattern getOnlyDefsPattern(Map<String, String> options) {
     return getOnlyPattern("onlyDefs", options);
+  }
+
+  /**
+   * Extract the value of the {@code skipDirs} option given the value of the options passed to the
+   * checker.
+   *
+   * @param options the map of options and their values passed to the checker
+   * @return the value of the {@code skipDirs} option
+   */
+  private Pattern getSkipDirsPattern(Map<String, String> options) {
+    return getSkipPattern("skipDirs", options);
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -2541,6 +2551,43 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
     return shouldSkipDefs(cls);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////
+  /// Skipping dirs
+  ///
+
+  /**
+   * Tests whether the enclosing file path of the passed tree matches the pattern specified in the
+   * {@code checker.skipDirs} property.
+   *
+   * @param tree a tree
+   * @return true iff the enclosing directory of the tree should be skipped
+   */
+  public final boolean shouldSkipDirs(ClassTree tree) {
+    if (tree == null) {
+      return false;
+    }
+    TypeElement typeElement = TreeUtils.elementFromDeclaration(tree);
+    if (typeElement == null) {
+      throw new BugInCF("elementFromDeclaration(%s [%s]) => null%n", tree, tree.getClass());
+    }
+    String sourceFilePathForElement = ElementUtils.getSourceFilePath(typeElement);
+    return shouldSkipDirs(sourceFilePathForElement);
+  }
+
+  /**
+   * Tests whether the file at the file path should be not be checked because it matches the {@code
+   * checker.skipDirs} property.
+   *
+   * @param path the path to the file to potentially skip
+   * @return true iff the checker should not check the file at {@code path}
+   */
+  private boolean shouldSkipDirs(String path) {
+    if (skipDirsPattern == null) {
+      skipDirsPattern = getSkipDirsPattern(getOptions());
+    }
+    return skipDirsPattern.matcher(path).find();
   }
 
   ///////////////////////////////////////////////////////////////////////////

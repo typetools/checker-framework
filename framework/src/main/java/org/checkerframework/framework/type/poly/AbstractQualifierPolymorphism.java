@@ -156,13 +156,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     polyInstantiationForQualifierParameter.clear();
   }
 
-  /**
-   * Returns true if {@code type} has any polymorphic qualifiers
-   *
-   * @param type a type that might have polymorphic qualifiers
-   * @return true if {@code type} has any polymorphic qualifiers
-   */
-  protected boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
+  @Override
+  public boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
     return polyScanner.visit(type);
   }
 
@@ -218,6 +213,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
       return;
     }
+
     List<AnnotatedTypeMirror> parameters =
         AnnotatedTypes.adaptParameters(atypeFactory, type, tree.getArguments());
     List<AnnotatedTypeMirror> arguments =
@@ -494,7 +490,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
         if (wildcardType.getExtendsBound().getKind() == TypeKind.WILDCARD) {
           wildcardType = (AnnotatedWildcardType) wildcardType.getExtendsBound();
         }
-        if (wildcardType.isUninferredTypeArgument()) {
+        if (wildcardType.isTypeArgOfRawType()) {
           return mapQualifierToPoly(wildcardType.getExtendsBound(), polyType);
         }
 

@@ -913,14 +913,15 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   public Void visitMemberReference(MemberReferenceTree javacTree, Node javaParserNode) {
     MethodReferenceExpr node = castNode(MethodReferenceExpr.class, javaParserNode, javacTree);
     processMemberReference(javacTree, node);
+    Tree preColonTree = javacTree.getQualifierExpression();
     if (node.getScope().isTypeExpr()) {
-      javacTree.getQualifierExpression().accept(this, node.getScope().asTypeExpr().getType());
+      preColonTree.accept(this, node.getScope().asTypeExpr().getType());
     } else {
-      javacTree.getQualifierExpression().accept(this, node.getScope());
+      preColonTree.accept(this, node.getScope());
     }
 
     assert (javacTree.getTypeArguments() != null) == node.getTypeArguments().isPresent();
-    if (javacTree.getTypeArguments() != null) {
+    if (node.getTypeArguments().isPresent()) {
       visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
     }
 
@@ -2284,12 +2285,13 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Visit an optional syntax construct. Whether the javac tree is non-null must match whether the
-   * JavaParser optional is present.
+   * Visit an optional syntax construct. Iff the javac tree is non-null, the JavaParser optional is
+   * present.
    *
    * @param javacTree a javac tree or null
    * @param javaParserNode an optional JavaParser node, which might not be present
    */
+  @SuppressWarnings("optional:optional.parameter") // interface with JavaParser
   private void visitOptional(@Nullable Tree javacTree, Optional<? extends Node> javaParserNode) {
     assert javacTree != null == javaParserNode.isPresent()
         : String.format("visitOptional(%s, %s)", javacTree, javaParserNode);

@@ -48,7 +48,7 @@ class Methods {
   }
 
   static void bad2() {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     addNull2(new PriorityQueue1<@NonNull Object>());
   }
 
@@ -57,7 +57,7 @@ class Methods {
   }
 
   static void bad3() {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     addNull2(new PriorityQueue2<@NonNull Object>());
   }
 

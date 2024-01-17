@@ -1,7 +1,5 @@
 // Based on a false positive in Zookeeper.
 
-// @above-java17-jdk-skip-test TODO: reinstate, false positives may be due to issue #979
-
 import java.util.Map;
 
 class CommandResponse {

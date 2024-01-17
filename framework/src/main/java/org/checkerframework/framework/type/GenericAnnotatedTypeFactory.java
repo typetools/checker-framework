@@ -112,7 +112,6 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1703,8 +1702,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * this default is too conservative. So this method is used instead of {@link
    * GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
    *
-   * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, VariableTree)} explains
-   * why a different type is used.
+   * <p>{@link
+   * org.checkerframework.framework.util.typeinference8.types.InferenceFactory#assignedToVariable(AnnotatedTypeFactory,
+   * Tree)} explains why a different type is used.
    *
    * @param lhsTree left-hand side of an assignment
    * @return AnnotatedTypeMirror of {@code lhsTree}
@@ -1813,8 +1813,9 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-    ParameterizedExecutableType mType = super.constructorFromUse(tree);
+  protected ParameterizedExecutableType constructorFromUse(
+      NewClassTree tree, boolean inferTypeArgs) {
+    ParameterizedExecutableType mType = super.constructorFromUse(tree, inferTypeArgs);
     AnnotatedExecutableType method = mType.executableType;
     dependentTypesHelper.atConstructorInvocation(method, tree);
     return mType;
@@ -1822,8 +1823,10 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   protected void constructorFromUsePreSubstitution(
-      NewClassTree tree, AnnotatedExecutableType type) {
-    poly.resolve(tree, type);
+      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    if (resolvePolyQuals) {
+      poly.resolve(tree, type);
+    }
   }
 
   @Override
@@ -2183,17 +2186,19 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree);
+  protected ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArg) {
+    ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArg);
     AnnotatedExecutableType method = mType.executableType;
     dependentTypesHelper.atMethodInvocation(method, tree);
     return mType;
   }
 
   @Override
-  public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
-    super.methodFromUsePreSubstitution(tree, type);
-    if (tree instanceof MethodInvocationTree) {
+  public void methodFromUsePreSubstitution(
+      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
+    if (tree instanceof MethodInvocationTree && resolvePolyQuals) {
       poly.resolve((MethodInvocationTree) tree, type);
     }
   }

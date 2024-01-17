@@ -17,6 +17,8 @@ The article
 regular nullable references rather than \<Optional>.  However, if you do use
 \<Optional>, then the Optional Checker will help you avoid
 \<Optional>'s pitfalls.
+Most notably, the Optional Checker guarantees your code will not suffer a
+\<NoSuchElementException> due to use of an empty \<Optional>.
 
 Stuart Marks gave
 \href{https://stuartmarks.wordpress.com/2016/09/27/vjug24-session-on-optional/}{7
@@ -95,6 +97,33 @@ Figure~\ref{fig-optional-hierarchy}.
 \caption{The subtyping relationship of the Optional Checker's qualifiers.}
 \label{fig-optional-hierarchy}
 \end{figure}
+
+\subsectionAndLabel{Optional method annotations}{optional-method-annotations}
+
+The Optional Checker supports several annotations that specify method
+behavior.  These are declaration annotations, not type annotations:  they
+apply to the method itself rather than to some particular type.
+
+\begin{description}
+
+\item[\refqualclass{checker/optional/qual}{RequiresPresent}]
+  indicates a method precondition:  The annotated method expects the
+  specified expressions to be a present Optional when this
+  method is invoked. \<@RequiresPresent> is a useful annotation for a method
+  that requires a \<@MaybePresent> field to be \<@Present>.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresent}]
+  indicates a method postcondition.
+  The successful return (i.e., a non-exceptional return) of the annotated
+  method results in the given Optional expression being present. See the Javadoc
+  for examples of its use.
+\item[\refqualclass{checker/optional/qual}{EnsuresPresentIf}]
+  indicates a method postcondition.  With \<@EnsuresPresent>, the given
+  Optional expression is present after the method returns.  With
+  \<@EnsuresPresentIf>, if the annotated
+  method returns the given boolean value (true or false), then the given
+  Optional expression is present. See the Javadoc for examples of their use.
+
+\end{description}
 
 
 \sectionAndLabel{What the Optional Checker guarantees}{optional-guarantees}
