@@ -9,10 +9,15 @@ sourceSets {
       exclude 'module-info.java'
     }
   }
+  module_info {
+    java {
+      srcDirs ('src/main')
+    }
+  }
 }
 
 task compileJava9(type: JavaCompile) {
-  source = sourceSets.main.java
+  source = sourceSets.module_info.java
   destinationDirectory = sourceSets.main.output.classesDirs[0]
   classpath = configurations.allProjects
   options.release = 9
