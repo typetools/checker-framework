@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
+// @skip-test until JDK is annotated with Non-Empty type qualifiers
+
 class ListOperations {
 
   void testGetOnEmptyList(List<String> strs) {
