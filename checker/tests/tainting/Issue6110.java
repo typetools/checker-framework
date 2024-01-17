@@ -15,7 +15,7 @@ class Issue6110 {
     o.compareTo(TestEnum.TWO);
 
     EnumSet<@Tainted TestEnum> s1 = EnumSet.of(TestEnum.ONE);
-    // :: error: (assignment)
+    // :: error: (type.arguments.not.inferred)
     EnumSet<@Untainted TestEnum> s2 = EnumSet.of(TestEnum.ONE);
     EnumSet<@Untainted TestEnum> s3 = EnumSet.of(TestEnum.TWO);
   }

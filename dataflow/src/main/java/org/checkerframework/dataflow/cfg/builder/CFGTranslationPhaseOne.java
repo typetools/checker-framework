@@ -737,7 +737,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * exceptions in {@code causes}.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
@@ -798,7 +798,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the list of extended nodes, or append to the list if {@code pred} is not present.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @param pred the desired predecessor of node
    * @return the node holder
    */

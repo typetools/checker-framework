@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "all"}) // just check for crashes.
 public class Issue5436 {
   static class BoundedWindow {}
 

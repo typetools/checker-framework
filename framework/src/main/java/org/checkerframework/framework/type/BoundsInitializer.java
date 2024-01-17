@@ -51,7 +51,8 @@ public class BoundsInitializer {
   /**
    * Initializes the type arguments of {@code declaredType}. The upper bound of unbound wildcards is
    * set to the upper bound of the type parameter for which it is an argument. If {@code
-   * declaredType} is raw, then the type arguments are uninferred wildcards.
+   * declaredType} is raw, then the type arguments are wildcards marked as from raw type ({@link
+   * AnnotatedWildcardType#isTypeArgOfRawType()}).
    *
    * @param declaredType type whose arguments are initialized
    */
@@ -86,7 +87,7 @@ public class BoundsInitializer {
         AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) typeArg;
         wildcardType.setTypeVariable(typeElement.getTypeParameters().get(i));
         if (declaredType.isUnderlyingTypeRaw()) {
-          wildcardType.setUninferredTypeArgument();
+          wildcardType.setTypeArgOfRawType();
         }
       }
       typeArgs.add(typeArg);
@@ -152,7 +153,7 @@ public class BoundsInitializer {
    * @param typeVar the type variable whose lower bound is being initialized
    */
   public static void initializeBounds(AnnotatedTypeVariable typeVar) {
-    initializeBounds(typeVar, null);
+    initializeBounds(typeVar, Collections.singletonMap(typeVar.getUnderlyingType(), typeVar));
   }
 
   /**
@@ -592,7 +593,7 @@ public class BoundsInitializer {
         javaExtendsBound = TypesUtils.getObjectTypeMirror(typeFactory.processingEnv);
       }
 
-      if (wildcard.isUninferredTypeArgument()) {
+      if (wildcard.isTypeArgOfRawType()) {
         rawTypeWildcards.put(wildcard.getTypeVariable(), wildcard.getUnderlyingType());
       }
 
@@ -629,7 +630,7 @@ public class BoundsInitializer {
               AnnotatedTypeMirror.createType(javaTypeArg, declaredType.atypeFactory, false);
           typeArgs.add(atmArg);
           if (atmArg.getKind() == TypeKind.WILDCARD && declaredType.isUnderlyingTypeRaw()) {
-            ((AnnotatedWildcardType) atmArg).setUninferredTypeArgument();
+            ((AnnotatedWildcardType) atmArg).setTypeArgOfRawType();
           }
         }
       } else {
@@ -707,16 +708,13 @@ public class BoundsInitializer {
       for (AnnotatedTypeVariable atv : annotatedTypeVars) {
         TypeVariableStructure list = typeVarToStructure.get(atv.getUnderlyingType());
         list.replaceTypeVariablesInType(atv);
+        list.annotatedTypeVar = atv;
       }
 
       if (type.getKind() == TypeKind.WILDCARD) {
         // Do the "top level" replacements.
         AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
         topLevelStructure.findAllReplacements(typeVarToStructure);
-        for (AnnotatedTypeVariable typeVar : topLevelStructure.getAnnotatedTypeVars()) {
-          TypeVariableStructure list = typeVarToStructure.get(typeVar.getUnderlyingType());
-          list.replaceTypeVariablesInType(typeVar);
-        }
         topLevelStructure.replaceTypeVariablesInType(wildcard);
       }
     }
@@ -872,7 +870,7 @@ public class BoundsInitializer {
      * typeVar. It is expanded during visitation and it is later used as a template for other uses
      * of typeVar
      */
-    public final AnnotatedTypeVariable annotatedTypeVar;
+    public AnnotatedTypeVariable annotatedTypeVar;
 
     /**
      * Creates an {@link TypeVariableStructure}
