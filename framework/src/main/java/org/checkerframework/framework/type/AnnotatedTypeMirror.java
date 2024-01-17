@@ -948,12 +948,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
     /** Parametrized Type Arguments. */
-    protected List<AnnotatedTypeMirror> typeArgs;
+    protected @MonotonicNonNull List<AnnotatedTypeMirror> typeArgs;
 
     /**
      * Whether the type was initially raw, i.e. the user did not provide the type arguments.
      * typeArgs will contain inferred type arguments, which might be too conservative at the moment.
-     * TODO: improve inference.
      *
      * <p>Ideally, the field would be final. However, when we determine the supertype of a raw type,
      * we need to set isUnderlyingTypeRaw for the supertype.
@@ -1215,14 +1214,15 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** Represents a type of an executable. An executable is a method, constructor, or initializer. */
   public static class AnnotatedExecutableType extends AnnotatedTypeMirror {
 
-    private @MonotonicNonNull ExecutableElement element;
+    /** The element of the method. */
+    /*package-private*/ @MonotonicNonNull ExecutableElement element;
 
     private AnnotatedExecutableType(ExecutableType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
 
     /** The parameter types; an unmodifiable list. */
-    private @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
+    /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> paramTypes = null;
 
     /** Whether {@link paramTypes} has been computed. */
     private boolean paramTypesComputed = false;
@@ -1231,25 +1231,25 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * The receiver type of this executable type; null for static methods and constructors of
      * top-level classes.
      */
-    private @Nullable AnnotatedDeclaredType receiverType;
+    /*package-private*/ @Nullable AnnotatedDeclaredType receiverType;
 
     /** Whether {@link receiverType} has been computed. */
     private boolean receiverTypeComputed = false;
 
     /** The return type. */
-    private AnnotatedTypeMirror returnType;
+    /*package-private*/ @MonotonicNonNull AnnotatedTypeMirror returnType;
 
     /** Whether {@link returnType} has been computed. */
     private boolean returnTypeComputed = false;
 
     /** The thrown types; an unmodifiable list. */
-    private List<AnnotatedTypeMirror> thrownTypes;
+    /*package-private*/ @MonotonicNonNull List<AnnotatedTypeMirror> thrownTypes;
 
     /** Whether {@link thrownTypes} has been computed. */
     private boolean thrownTypesComputed = false;
 
     /** The type variables; an unmodifiable list. */
-    private List<AnnotatedTypeVariable> typeVarTypes;
+    /*package-private*/ @MonotonicNonNull List<AnnotatedTypeVariable> typeVarTypes;
 
     /** Whether {@link typeVarTypes} has been computed. */
     private boolean typeVarTypesComputed = false;
@@ -1565,7 +1565,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /** The component type of this array type. */
-    private AnnotatedTypeMirror componentType;
+    /*package-private*/ @MonotonicNonNull AnnotatedTypeMirror componentType;
 
     @Override
     public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
