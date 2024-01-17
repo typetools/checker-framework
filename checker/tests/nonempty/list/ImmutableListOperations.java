@@ -3,7 +3,7 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 // @skip-test until JDK is annotated with Non-Empty type qualifiers
 
-class ImmutableNonEmptyListTest {
+class ImmutableListOperations {
 
   void testCreateEmptyImmutableList() {
     List<Integer> emptyInts = List.of();
@@ -14,7 +14,7 @@ class ImmutableNonEmptyListTest {
 
   void testCreateNonEmptyImmutableList() {
     List<Integer> nonEmptyInts = List.of(1, 2, 3);
-    // Creating a copy of an empty list should also yield a non-empty list
+    // Creating a copy of a non-empty list should also yield a non-empty list
     @NonEmpty List<Integer> copyOfNonEmptyInts = List.copyOf(nonEmptyInts); // OK
   }
 }

@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
-
-// @skip-test until JDK is annotated with Non-Empty type qualifiers
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 class ListOperations {
 
@@ -25,5 +24,26 @@ class ListOperations {
     nums.get(0); // OK
   }
 
+  void testAddAllWithEmptyList() {
+    List<Integer> nums = new ArrayList<>();
+    nums.addAll(List.of());
+    // :: error: (assignment)
+    @NonEmpty List<Integer> nums2 = nums;
+  }
+
+  void testAddAllWithNonEmptyList() {
+    List<Integer> nums = new ArrayList<>();
+    if (nums.addAll(List.of(1, 2, 3))) {
+      @NonEmpty List<Integer> nums2 = nums; // OK
+    }
+  }
+
+  void testContains(List<Integer> nums) {
+    if (nums.contains(11)) {
+      @NonEmpty List<Integer> nums2 = nums; // OK
+    }
+    // :: error: (assignment)
+    @NonEmpty List<Integer> nums2 = nums;
+  }
   // TODO: consider other sequences (e.g., calling get(int) after clear())
 }
