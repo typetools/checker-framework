@@ -1076,3 +1076,13 @@ publishing {
 signing {
   sign publishing.publications.checker
 }
+
+
+test {
+  beforeTest { descriptor ->
+    println "Starting test: ${descriptor.className}.${descriptor.name}"
+  }
+  afterTest { descriptor, result ->
+    println "Completed test: ${descriptor.className}.${descriptor.name} with result: ${result.resultType}"
+  }
+}
