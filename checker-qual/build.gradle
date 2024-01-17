@@ -17,6 +17,7 @@ compileJava {
 
 javadoc {
   modularity.inferModulePath = false
+  exclude '**/module-info.java'
 }
 
 jar {
