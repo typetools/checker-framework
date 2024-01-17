@@ -3,6 +3,14 @@ plugins {
   id("biz.aQute.bnd.builder") version "6.4.0"
 }
 
+sourceSets {
+  main {
+    java {
+      exclude 'module-info.java'
+    }
+  }
+}
+
 task compileJava9(type: JavaCompile) {
   source = sourceSets.main.java
   destinationDirectory = sourceSets.main.output.classesDirs[0]
@@ -12,12 +20,10 @@ task compileJava9(type: JavaCompile) {
 
 compileJava {
   dependsOn compileJava9
-  exclude '**/module-info.java'
 }
 
 javadoc {
   modularity.inferModulePath = false
-  exclude '**/module-info.java'
 }
 
 jar {
