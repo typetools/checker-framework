@@ -20,6 +20,7 @@ jobs:
 - job: canary_jobs
   dependsOn:
    - junit_jdk21
+   - junit_jdk17
    - nonjunit_jdk21
    - inference_part1_jdk21
    - inference_part2_jdk21
@@ -46,9 +47,6 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk17
-  dependsOn:
-   - canary_jobs
-   - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
