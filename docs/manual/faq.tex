@@ -67,9 +67,9 @@ the answers, or other questions to include here.
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
-\\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
+\\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1227,49 +1227,6 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 
-\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
-\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
-
-When a declaration annotation is an alias for a type annotation, the
-Checker Framework may move the annotation before replacing it by the
-canonical version. (If the declaration annotation is in an \<org.checkerframework>
-package, it is not moved.)
-
-For example,
-
-\begin{Verbatim}
-  import android.support.annotation.NonNull;
-  ...
-  @NonNull Object [] returnsArray();
-\end{Verbatim}
-
-\noindent
-is treated as if the programmer had written
-
-\begin{Verbatim}
-  import org.checkerframework.checker.nullness.qual.NonNull;
-  ...
-  Object @NonNull [] returnsArray();
-\end{Verbatim}
-
-\noindent
-because Android's \<@NonNull> annotation is a declaration annotation, which
-is understood to apply to the top-level return type of the annotated method.
-
-When possible, you should use type annotations rather than declaration
-annotations.
-
-Users who are using old Java 5--7 declaration annotations (for instance,
-from the FindBugs tool, which has not been maintained since 2015, and from
-its successor SpotBugs, which has not yet adopted type annotations, even
-though type annotations were added to Java in 2014) can use annotations in
-package \<org.checkerframework.checker.nullness.compatqual> to avoid name
-conflicts.  These are available in package
-\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
-on Maven Central.  Once the users are ready to upgrade to Java 8+ type
-annotations, those compatibility annotations are no longer necessary.
-
-
 \subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
 
 Java has two distinct varieties of annotation:  type annotations and
@@ -1414,6 +1371,68 @@ Until this bug in google-java-format is fixed, you have these options:
 %   which is a variant of google-java-format that fixes the bug (among other
 %   differences from google-java-format).
 \end{itemize}
+
+
+\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
+\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
+
+When a declaration annotation is an alias for a type annotation, the
+Checker Framework may move the annotation before replacing it by the
+canonical version. (If the declaration annotation is in an \<org.checkerframework>
+package, it is not moved.)
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+The Checker Framework cannot always move an annotation written in a
+declaration location to the proper type.  For example, if a user writes
+
+\begin{Verbatim}
+@Nullable
+public Map.Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
+
+\noindent
+then the Checker Framework would try to move \<@Nullable> to before \<Map.Entry>,
+but that does not make sense --- the \<Entry>, not the \<Map>, is nullable.
+(See Section~\ref{common-problems-non-typechecking} for more details.)
+So, the user needs to write
+
+\begin{Verbatim}
+public Map.@Nullable Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
+
+When possible, you should use type annotations rather than declaration
+annotations, and write them in the correct location
+(Section~\ref{faq-type-annotation-formatting}).
+
+Users who are using old Java 5--7 declaration annotations (for instance,
+from the FindBugs tool, which has not been maintained since 2015, and from
+its successor SpotBugs, which has not yet adopted type annotations, even
+though type annotations were added to Java in 2014) can use annotations in
+package \<org.checkerframework.checker.nullness.compatqual> to avoid name
+conflicts.  These are available in package
+\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+on Maven Central.  Once the users are ready to upgrade to Java 8+ type
+annotations, those compatibility annotations are no longer necessary.
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
