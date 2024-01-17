@@ -55,6 +55,13 @@ public class TreeBuilder {
   protected final Symtab symtab;
   protected final ProcessingEnvironment env;
 
+  /**
+   * {@link Name} object for "close", used when building a tree for a call to {@code close()}.
+   *
+   * @see #buildCloseMethodAccess(ExpressionTree)
+   */
+  private final Name closeName;
+
   public TreeBuilder(ProcessingEnvironment env) {
     this.env = env;
     Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -64,6 +71,7 @@ public class TreeBuilder {
     maker = TreeMaker.instance(context);
     names = Names.instance(context);
     symtab = Symtab.instance(context);
+    closeName = names.fromString("close");
   }
 
   /**
@@ -150,7 +158,6 @@ public class TreeBuilder {
     // calling that method crashes with a Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  The code below directly searches
     // all supertypes for the method and avoids the crash.
-    Name closeName = names.fromString("close");
     for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
       for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
         if (!(m instanceof Symbol.MethodSymbol)) {
