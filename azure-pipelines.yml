@@ -19,13 +19,13 @@ jobs:
 # misc_jdk20 because JDK 20 adds more strict checking (e.g., Javadoc)
 - job: canary_jobs
   dependsOn:
-   - junit_jdk17
-  #  - nonjunit_jdk21
-  #  - inference_part1_jdk21
-  #  - inference_part2_jdk21
-  #  - typecheck_part1_jdk21
-  #  - typecheck_part2_jdk21
-  #  - misc_jdk21
+   - junit_jdk21
+   - nonjunit_jdk21
+   - inference_part1_jdk21
+   - inference_part2_jdk21
+   - typecheck_part1_jdk21
+   - typecheck_part2_jdk21
+   - misc_jdk21
    # - misc_jdk20
   pool:
     vmImage: 'ubuntu-latest'
@@ -36,7 +36,7 @@ jobs:
 - job: junit_jdk11
   dependsOn:
    - canary_jobs
-   - junit_jdk17
+   - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -46,6 +46,9 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk17
+  dependsOn:
+   - canary_jobs
+   - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
@@ -55,9 +58,6 @@ jobs:
   - bash: ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk21
-  dependsOn:
-   - canary_jobs
-   - junit_jdk17
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk21:latest
