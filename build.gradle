@@ -561,7 +561,6 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   classpath = configurations.allProjects
   // disable interpreting module-info.java files until all sub-modules support them
   modularity.inferModulePath = false
-  exclude '**/module-info.java'
 
   doLast {
     copy {
@@ -619,7 +618,6 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     classpath = configurations.allProjects
     // disable interpreting module-info.java files until all sub-modules support them
     modularity.inferModulePath = false
-    exclude '**/module-info.java'
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel

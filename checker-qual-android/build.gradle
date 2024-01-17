@@ -10,7 +10,6 @@ task copySources(type: Copy) {
   from files(project(':checker-qual').sourceSets.main.java)
   include '**/*.java'
   exclude '**/SignednessUtilExtra.java'
-  exclude '**/module-info.java'
 
   // Types annotated with runtime annotations are always kept in the main dex by the default Android Gradle plugin.
   // Using the standard Checker Framework annotations can lead to main dex overflows;
