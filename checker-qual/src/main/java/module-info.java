@@ -4,8 +4,8 @@
  */
 module org.checkerframework.checker.qual {
   // javadoc-only dependencies
-  requires static java.desktop;
   requires static java.compiler;
+  requires static java.desktop;
   requires static jdk.compiler;
 
   // the .jar file (for the Automatic-Module-Name) is not ready during javadoc
