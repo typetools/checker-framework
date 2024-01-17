@@ -1,6 +1,7 @@
 package org.checkerframework.checker.mustcall;
 
 import com.google.common.collect.ImmutableSet;
+import com.sun.tools.javac.code.Type;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -13,11 +14,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 public class MustCallAnalysis extends CFAnalysis {
 
   /**
-   * The set of exceptions to ignore, cached from {@link MustCallChecker#getIgnoredExceptions()}.
-   */
-  private final SetOfTypes ignoredExceptions;
-
-  /**
    * Constructs an MustCallAnalysis.
    *
    * @param checker the checker
@@ -25,7 +21,6 @@ public class MustCallAnalysis extends CFAnalysis {
    */
   public MustCallAnalysis(MustCallChecker checker, MustCallAnnotatedTypeFactory factory) {
     super(checker, factory);
-    this.ignoredExceptions = checker.getIgnoredExceptions();
   }
 
   /**
@@ -45,6 +40,7 @@ public class MustCallAnalysis extends CFAnalysis {
 
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
-    return ignoredExceptions.contains(getTypes(), exceptionType);
+    return ignoredExceptionTypes.contains(
+        ((Type) exceptionType).tsym.getQualifiedName().toString());
   }
 }
