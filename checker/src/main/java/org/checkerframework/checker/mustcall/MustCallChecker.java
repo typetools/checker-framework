@@ -35,6 +35,9 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
+  /** Creates a MustCallChecker. */
+  public MustCallChecker() {}
+
   /**
    * Disables @CreatesMustCallFor support. Not of interest to most users. Not documented in the
    * manual.
