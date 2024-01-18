@@ -4,6 +4,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
 import org.checkerframework.checker.mustcall.SetOfTypes;
 
 /**
@@ -27,7 +28,13 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
   protected ResourceLeakAnalysis(
       ResourceLeakChecker checker, CalledMethodsAnnotatedTypeFactory factory) {
     super(checker, factory);
-    this.ignoredExceptions = checker.getSubchecker(MustCallChecker.class).getIgnoredExceptions();
+    MustCallChecker mustCallChecker = checker.getSubchecker(MustCallChecker.class);
+    if (mustCallChecker == null) {
+      mustCallChecker =
+          (MustCallChecker)
+              checker.getSubchecker(MustCallNoCreatesMustCallForChecker.class).getParentChecker();
+    }
+    this.ignoredExceptions = mustCallChecker.getIgnoredExceptions();
   }
 
   @Override
