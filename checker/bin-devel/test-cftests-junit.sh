@@ -13,4 +13,4 @@ source "$SCRIPTDIR"/clone-related.sh
 
 
 
-./gradlew test --console=plain --warning-mode=all --no-parallel
+./gradlew test --console=plain --warning-mode=all --debug
