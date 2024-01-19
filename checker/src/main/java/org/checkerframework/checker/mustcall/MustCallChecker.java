@@ -171,7 +171,7 @@ public class MustCallChecker extends BaseTypeChecker {
   @SuppressWarnings({
     // user input might not be a legal @CanonicalName, but it should be safe to pass to
     // `SetOfTypes.anyOfTheseNames`
-    "signature:argument",
+    "signature:type.arguments.not.inferred",
   })
   protected @Nullable SetOfTypes parseExceptionSpecifier(
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
