@@ -54,7 +54,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  *       signature or in a body
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
- *   <li>{@code -Aannotationsummaryonly}: with both of the obove, only outputs a summary
+ *   <li>{@code -Aannotationsummaryonly}: with both of the above, only outputs a summary
  *   <li>{@code -Aannotationserror}: histogram is issued as a warning, not just printed
  * </ul>
  *

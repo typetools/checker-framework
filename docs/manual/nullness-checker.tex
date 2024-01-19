@@ -295,6 +295,10 @@ apply to the method itself rather than to some particular type.
   field to be non-null.
 
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
+  indicates a method postcondition.
+  With \<EnsuresNonNull>, the successful return (i.e., a non-exceptional
+  return) of the annotated method results in the given expressions being
+  non-null. See the Javadoc for examples of its use.
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
   indicates a method postcondition.  With \<@EnsuresNonNull>, the given
   expressions are non-null after the method returns; this is useful for a
