@@ -53,6 +53,8 @@ public class TreeBuilder {
   protected final TreeMaker maker;
   protected final Names names;
   protected final Symtab symtab;
+
+  /** The javac {@link ProcessingEnvironment} */
   protected final ProcessingEnvironment env;
 
   /**
@@ -62,6 +64,11 @@ public class TreeBuilder {
    */
   private final Name closeName;
 
+  /**
+   * Creates a new TreeBuilder.
+   *
+   * @param env the javac {@link ProcessingEnvironment}
+   */
   public TreeBuilder(ProcessingEnvironment env) {
     this.env = env;
     Context context = ((JavacProcessingEnvironment) env).getContext();
