@@ -1077,7 +1077,3 @@ signing {
   sign publishing.publications.checker
 }
 
-test {
-  // Enable verbose garbage collection logging
-  jvmArgs '-verbose:gc'
-}
