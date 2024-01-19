@@ -70,6 +70,7 @@ fully-qualified type name?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
+\\ \ref{faq-declaration-annotations-convert}: How do I convert from other tools declaration annotations to type annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -1402,24 +1403,6 @@ is treated as if the programmer had written
 because Android's \<@NonNull> annotation is a declaration annotation, which
 is understood to apply to the top-level return type of the annotated method.
 
-The Checker Framework cannot always move an annotation written in a
-declaration location to the proper type.  For example, if a user writes
-
-\begin{Verbatim}
-@Nullable
-public Map.Entry<Object, Object> intersects() { ... }
-\end{Verbatim}
-
-\noindent
-then the Checker Framework would try to move \<@Nullable> to before \<Map.Entry>,
-but that does not make sense --- the \<Entry>, not the \<Map>, is nullable.
-(See Section~\ref{common-problems-non-typechecking} for more details.)
-So, the user needs to write
-
-\begin{Verbatim}
-public Map.@Nullable Entry<Object, Object> intersects() { ... }
-\end{Verbatim}
-
 When possible, you should use type annotations rather than declaration
 annotations, and write them in the correct location
 (Section~\ref{faq-type-annotation-formatting}).
@@ -1433,6 +1416,31 @@ conflicts.  These are available in package
 \href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
 on Maven Central.  Once the users are ready to upgrade to Java 8+ type
 annotations, those compatibility annotations are no longer necessary.
+
+\subsectionAndLabel{: How do I convert from other tools declaration annotations to type annotations?}{faq-declaration-annotations-convert}
+
+In order to convert from another tool's declaration annotations to the Checker Framework's type annotations,
+you need to change imports, rename annotations, move annotations written on arrays (see Section~\ref{faq-declaration-annotations-moved}), and move annotations to simple type names.
+
+ For example, if a user writes
+
+\begin{Verbatim}
+import android.support.annotation.Nullable;
+...
+@Nullable
+public Map.Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
+
+\noindent
+then just changes the import to \code<org.checkerframework.checker.nullness.qual.Nullable>, the code will not compile.
+(See Section~\ref{common-problems-non-typechecking} for more details.)
+So, the user needs to write
+
+\begin{Verbatim}
+import org.checkerframework.checker.nullness.qual.Nullable;
+...
+public Map.@Nullable Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
