@@ -30,9 +30,7 @@ public class ResourceLeakAnalysis extends CalledMethodsAnalysis {
     super(checker, factory);
     MustCallChecker mustCallChecker = checker.getSubchecker(MustCallChecker.class);
     if (mustCallChecker == null) {
-      mustCallChecker =
-          (MustCallChecker)
-              checker.getSubchecker(MustCallNoCreatesMustCallForChecker.class).getParentChecker();
+      mustCallChecker = checker.getSubchecker(MustCallNoCreatesMustCallForChecker.class);
     }
     this.ignoredExceptions = mustCallChecker.getIgnoredExceptions();
   }
