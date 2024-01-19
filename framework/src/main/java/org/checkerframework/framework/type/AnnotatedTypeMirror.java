@@ -1217,6 +1217,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /** The element of the method. */
     /*package-private*/ @MonotonicNonNull ExecutableElement element;
 
+    /**
+     * Creates an {@link AnnotatedExecutableType}.
+     *
+     * @param type the Java type
+     * @param factory the factory
+     */
     private AnnotatedExecutableType(ExecutableType type, AnnotatedTypeFactory factory) {
       super(type, factory);
     }
