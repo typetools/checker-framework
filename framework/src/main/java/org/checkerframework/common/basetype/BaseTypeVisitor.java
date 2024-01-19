@@ -1280,6 +1280,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           contract.viewpointAdaptDependentTypeAnnotation(
               atypeFactory, stringToJavaExpr, methodTree);
 
+      checkValidRefinementContract(annotation, contract.kind, methodTree);
+
       JavaExpression exprJe;
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
@@ -1337,6 +1339,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkParametersAreEffectivelyFinal(methodTree, exprJe);
+    }
+  }
+
+  /**
+   * Check whether a qualifier passed to a pre or postcondition is the top type in a qualifier
+   * hierarchy.
+   *
+   * <p>Passing a top type to a pre or postcondition qualifier has no effect, as refinement only
+   * occurs when going from a more general type (i.e., higher up in the lattice) to a more specific
+   * type (lower in the lattice). Additionally, types lower in the lattice implicitly have the
+   * top-level type, via subtyping.
+   *
+   * <p>As such, a warning should be issued in a case where a pre/postcondition requires a value
+   * have a top-level type.
+   *
+   * @param contractQualifier the type passed to the qualifier parameter of a contract
+   * @param contractKind the type of the contract (either a pre or postcondition)
+   * @param methodTree the method on which the contract is written
+   */
+  private void checkValidRefinementContract(
+      AnnotationMirror contractQualifier, Contract.Kind contractKind, MethodTree methodTree) {
+    AnnotationMirror topInContractQualifier = qualHierarchy.getTopAnnotation(contractQualifier);
+    DeclaredType topDeclaredType = topInContractQualifier.getAnnotationType();
+    DeclaredType contractDeclaredType = contractQualifier.getAnnotationType();
+    String warningKey =
+        contractKind == Contract.Kind.POSTCONDITION
+                || contractKind == Contract.Kind.CONDITIONALPOSTCONDITION
+            ? "contracts.postcondition.refinement"
+            : "contracts.precondition.refinement";
+    if (types.isSameType(topDeclaredType, contractDeclaredType)) {
+      Name topTypeName = contractQualifier.getAnnotationType().asElement().getSimpleName();
+      checker.reportWarning(methodTree, warningKey, methodTree.getName(), topTypeName);
     }
   }
 
