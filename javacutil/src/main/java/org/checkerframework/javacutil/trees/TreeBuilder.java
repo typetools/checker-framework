@@ -47,11 +47,23 @@ import org.plumelib.util.CollectionsPlume;
  * TreeMaker.
  */
 public class TreeBuilder {
+
+  /** The javac {@link Elements} object. */
   protected final Elements elements;
+
+  /** The javac {@link javax.lang.model.util.Types} object. */
   protected final Types modelTypes;
+
+  /** The internal javac {@link com.sun.tools.javac.code.Types} object. */
   protected final com.sun.tools.javac.code.Types javacTypes;
+
+  /** For constructing trees */
   protected final TreeMaker maker;
+
+  /** The javac {@link Names} object. */
   protected final Names names;
+
+  /** The javac {@link Symtab} object. */
   protected final Symtab symtab;
 
   /** The javac {@link ProcessingEnvironment} */
