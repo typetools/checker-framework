@@ -22,6 +22,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -46,14 +47,40 @@ import org.plumelib.util.CollectionsPlume;
  * TreeMaker.
  */
 public class TreeBuilder {
+
+  /** The javac {@link Elements} object. */
   protected final Elements elements;
+
+  /** The javac {@link javax.lang.model.util.Types} object. */
   protected final Types modelTypes;
+
+  /** The internal javac {@link com.sun.tools.javac.code.Types} object. */
   protected final com.sun.tools.javac.code.Types javacTypes;
+
+  /** For constructing trees */
   protected final TreeMaker maker;
+
+  /** The javac {@link Names} object. */
   protected final Names names;
+
+  /** The javac {@link Symtab} object. */
   protected final Symtab symtab;
+
+  /** The javac {@link ProcessingEnvironment} */
   protected final ProcessingEnvironment env;
 
+  /**
+   * {@link Name} object for "close", used when building a tree for a call to {@code close()}.
+   *
+   * @see #buildCloseMethodAccess(ExpressionTree)
+   */
+  private final Name closeName;
+
+  /**
+   * Creates a new TreeBuilder.
+   *
+   * @param env the javac {@link ProcessingEnvironment}
+   */
   public TreeBuilder(ProcessingEnvironment env) {
     this.env = env;
     Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -63,6 +90,7 @@ public class TreeBuilder {
     maker = TreeMaker.instance(context);
     names = Names.instance(context);
     symtab = Symtab.instance(context);
+    closeName = names.fromString("close");
   }
 
   /**
@@ -145,10 +173,20 @@ public class TreeBuilder {
     // Find the close() method
     Symbol.MethodSymbol closeMethod = null;
 
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("close")) {
-        closeMethod = (Symbol.MethodSymbol) method;
-        break;
+    // We could use elements.getAllMembers(exprElement) to find the close method, but in rare cases
+    // calling that method crashes with a Symbol$CompletionFailure exception.  See
+    // https://github.com/typetools/checker-framework/issues/6396.  The code below directly searches
+    // all supertypes for the method and avoids the crash.
+    for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
+      for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
+        if (!(m instanceof Symbol.MethodSymbol)) {
+          continue;
+        }
+        Symbol.MethodSymbol msym = (Symbol.MethodSymbol) m;
+        if (!msym.isStatic() && msym.getParameters().isEmpty()) {
+          closeMethod = msym;
+          break;
+        }
       }
     }
 
