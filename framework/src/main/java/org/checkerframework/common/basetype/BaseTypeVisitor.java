@@ -105,6 +105,7 @@ import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -2320,6 +2321,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   private boolean isPreOrPostConditionAnnotation(Name annotationName) {
     return annotationName.contentEquals(PreconditionAnnotation.class.getName())
         || annotationName.contentEquals(PostconditionAnnotation.class.getName())
+        || annotationName.contentEquals(RequiresQualifier.class.getName())
         || annotationName.contentEquals(EnsuresQualifier.class.getName())
         || annotationName.contentEquals(EnsuresQualifierIf.class.getName());
   }

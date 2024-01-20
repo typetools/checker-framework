@@ -13,6 +13,7 @@ public class ContractsOverridingSubtyping {
     void requiresOdd() {}
 
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
+    // :: warning: (contracts.precondition.refinement)
     void requiresUnqual() {}
 
     @EnsuresQualifier(expression = "f", qualifier = Odd.class)
@@ -41,6 +42,7 @@ public class ContractsOverridingSubtyping {
 
     @Override
     @RequiresQualifier(expression = "f", qualifier = Unqualified.class)
+    // :: warning: (contracts.precondition.refinement)
     void requiresOdd() {}
 
     @Override
