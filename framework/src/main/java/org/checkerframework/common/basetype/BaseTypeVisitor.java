@@ -101,6 +101,10 @@ import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
+import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -1280,8 +1284,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           contract.viewpointAdaptDependentTypeAnnotation(
               atypeFactory, stringToJavaExpr, methodTree);
 
-      checkValidRefinementContract(annotation, contract.kind, methodTree);
-
       JavaExpression exprJe;
       try {
         exprJe = StringToJavaExpression.atMethodBody(expressionString, methodTree, checker);
@@ -1339,38 +1341,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       checkParametersAreEffectivelyFinal(methodTree, exprJe);
-    }
-  }
-
-  /**
-   * Check whether a qualifier passed to a pre or postcondition is the top type in a qualifier
-   * hierarchy.
-   *
-   * <p>Passing a top type to a pre or postcondition qualifier has no effect, as refinement only
-   * occurs when going from a more general type (i.e., higher up in the lattice) to a more specific
-   * type (lower in the lattice). Additionally, types lower in the lattice implicitly have the
-   * top-level type, via subtyping.
-   *
-   * <p>As such, a warning should be issued in a case where a pre/postcondition requires a value
-   * have a top-level type.
-   *
-   * @param contractQualifier the type passed to the qualifier parameter of a contract
-   * @param contractKind the type of the contract (either a pre or postcondition)
-   * @param methodTree the method on which the contract is written
-   */
-  private void checkValidRefinementContract(
-      AnnotationMirror contractQualifier, Contract.Kind contractKind, MethodTree methodTree) {
-    AnnotationMirror topInContractQualifier = qualHierarchy.getTopAnnotation(contractQualifier);
-    DeclaredType topDeclaredType = topInContractQualifier.getAnnotationType();
-    DeclaredType contractDeclaredType = contractQualifier.getAnnotationType();
-    String warningKey =
-        contractKind == Contract.Kind.POSTCONDITION
-                || contractKind == Contract.Kind.CONDITIONALPOSTCONDITION
-            ? "contracts.postcondition.refinement"
-            : "contracts.precondition.refinement";
-    if (types.isSameType(topDeclaredType, contractDeclaredType)) {
-      Name topTypeName = contractQualifier.getAnnotationType().asElement().getSimpleName();
-      checker.reportWarning(methodTree, warningKey, methodTree.getName(), topTypeName);
     }
   }
 
@@ -2277,6 +2247,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
+    if (this.isPreOrPostConditionAnnotation(annoName) && methodTree != null) {
+      ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
+      Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
+      for (Contract contract : contracts) {
+        checkValidRefinementContract(contract, methodTree);
+      }
+    }
+
     List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
     // Mapping from argument simple name to its annotated type.
     Map<String, AnnotatedTypeMirror> annoTypes = ArrayMap.newArrayMapOrHashMap(methods.size());
@@ -2331,6 +2309,50 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     return null;
+  }
+
+  /**
+   * Checks whether a given annotation name matches that of a pre or postcondition annotation.
+   *
+   * @param annotationName the annotation name to check
+   * @return true iff the annotation name matches that of a pre or postcondition annotation
+   */
+  private boolean isPreOrPostConditionAnnotation(Name annotationName) {
+    return annotationName.contentEquals(PreconditionAnnotation.class.getName())
+        || annotationName.contentEquals(PostconditionAnnotation.class.getName())
+        || annotationName.contentEquals(EnsuresQualifier.class.getName())
+        || annotationName.contentEquals(EnsuresQualifierIf.class.getName());
+  }
+
+  /**
+   * Check whether a qualifier passed to a pre or postcondition contract is the top type in a
+   * qualifier hierarchy.
+   *
+   * <p>Passing a top type to a pre or postcondition qualifier has no effect, as refinement only
+   * occurs when going from a more general type (i.e., higher up in the lattice) to a more specific
+   * type (lower in the lattice). Additionally, types lower in the lattice implicitly have the
+   * top-level type, via subtyping.
+   *
+   * <p>As such, a warning should be issued in a case where a pre/postcondition requires a value
+   * have a top-level type.
+   *
+   * @param contract the contract for which a check for a valid refinement is performed
+   * @param methodTree the method on which the contract is written
+   */
+  private void checkValidRefinementContract(Contract contract, MethodTree methodTree) {
+    AnnotationMirror contractQualifier = contract.annotation;
+    AnnotationMirror topInContractQualifier = qualHierarchy.getTopAnnotation(contractQualifier);
+    DeclaredType topDeclaredType = topInContractQualifier.getAnnotationType();
+    DeclaredType contractDeclaredType = contractQualifier.getAnnotationType();
+    String warningKey =
+        contract.kind == Contract.Kind.POSTCONDITION
+                || contract.kind == Contract.Kind.CONDITIONALPOSTCONDITION
+            ? "contracts.postcondition.refinement"
+            : "contracts.precondition.refinement";
+    if (types.isSameType(topDeclaredType, contractDeclaredType)) {
+      Name topTypeName = contractQualifier.getAnnotationType().asElement().getSimpleName();
+      checker.reportWarning(methodTree, warningKey, methodTree.getName(), topTypeName);
+    }
   }
 
   /**

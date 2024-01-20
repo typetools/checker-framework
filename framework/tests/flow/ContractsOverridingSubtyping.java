@@ -21,6 +21,7 @@ public class ContractsOverridingSubtyping {
     }
 
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
+    // :: warning: (contracts.postcondition.refinement)
     void ensuresUnqual() {}
 
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Odd.class)
@@ -30,6 +31,7 @@ public class ContractsOverridingSubtyping {
     }
 
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
+    // :: warning: (contracts.postcondition.refinement)
     boolean ensuresIfUnqual() {
       return true;
     }
@@ -48,6 +50,7 @@ public class ContractsOverridingSubtyping {
 
     @Override
     @EnsuresQualifier(expression = "f", qualifier = Unqualified.class)
+    // :: warning: (contracts.postcondition.refinement)
     // :: error: (contracts.postcondition.override)
     void ensuresOdd() {
       f = g;
@@ -61,6 +64,7 @@ public class ContractsOverridingSubtyping {
 
     @Override
     @EnsuresQualifierIf(expression = "f", result = true, qualifier = Unqualified.class)
+    // :: warning: (contracts.postcondition.refinement)
     // :: error: (contracts.conditional.postcondition.true.override)
     boolean ensuresIfOdd() {
       f = g;
