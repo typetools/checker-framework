@@ -289,6 +289,17 @@ allprojects { currentProj ->
   test {
     minHeapSize = "256m" // initial heap size
     maxHeapSize = "4g" // maximum heap size
+    // To debug a job hung in, say, :checker:test .
+    // TODO: Enable this only under CI.
+    testLogging {
+      // This is all the events except standardOut and standardErr.
+      events = [
+        "started",
+        "passed",
+        "failed",
+        "skipped"
+      ]
+    }
   }
 
   // After all the tasks have been created, modify some of them.
