@@ -210,7 +210,7 @@ public class ContractsFromMethod {
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
