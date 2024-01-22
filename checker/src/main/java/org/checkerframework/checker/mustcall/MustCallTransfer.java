@@ -6,8 +6,6 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,6 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -145,7 +144,8 @@ public class MustCallTransfer extends CFTransfer {
       }
 
       if (n.getBlock() instanceof ExceptionBlock) {
-        Map<TypeMirror, CFStore> exceptionalStores = makeExceptionalStores(n, result);
+        Map<TypeMirror, CFStore> exceptionalStores =
+            CalledMethodsTransfer.makeExceptionalStores(n, in);
         // Update stores for the exceptional paths to handle cases like:
         // https://github.com/typetools/checker-framework/issues/6050
         if (result.containsTwoStores()) {
@@ -163,33 +163,6 @@ public class MustCallTransfer extends CFTransfer {
       }
     }
 
-    return result;
-  }
-
-  /**
-   * Create a set of stores for the exceptional paths out of the block containing {@code node}. This
-   * allows propagation, along those paths, of the fact that the method being invoked in {@code
-   * node} was definitely called.
-   *
-   * @param node a method invocation
-   * @param input the transfer input associated with the method invocation
-   * @return a map from types to stores. The keys are the same keys used by {@link
-   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
-   *     {@code input}.
-   */
-  private Map<TypeMirror, CFStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferResult<CFValue, CFStore> input) {
-    if (!(node.getBlock() instanceof ExceptionBlock)) {
-      // This can happen in some weird (buggy?) cases:
-      // see https://github.com/typetools/checker-framework/issues/3585
-      return Collections.emptyMap();
-    }
-
-    ExceptionBlock block = (ExceptionBlock) node.getBlock();
-    Map<TypeMirror, CFStore> result = new LinkedHashMap<>();
-    block
-        .getExceptionalSuccessors()
-        .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
     return result;
   }
 

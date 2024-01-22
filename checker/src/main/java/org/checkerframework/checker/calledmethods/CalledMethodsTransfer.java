@@ -27,6 +27,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
@@ -191,15 +192,17 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
-  private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+  public static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
+      Map<TypeMirror, S> makeExceptionalStores(
+          MethodInvocationNode node, TransferInput<V, S> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
+
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
-    Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
+    Map<TypeMirror, S> result = new LinkedHashMap<>();
     block
         .getExceptionalSuccessors()
         .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
