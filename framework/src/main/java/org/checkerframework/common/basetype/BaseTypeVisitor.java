@@ -212,14 +212,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The @{@link Deterministic} annotation. */
   protected final AnnotationMirror DETERMINISTIC =
       AnnotationBuilder.fromClass(elements, Deterministic.class);
+
   /** The @{@link SideEffectFree} annotation. */
   protected final AnnotationMirror SIDE_EFFECT_FREE =
       AnnotationBuilder.fromClass(elements, SideEffectFree.class);
+
   /** The @{@link Pure} annotation. */
   protected final AnnotationMirror PURE = AnnotationBuilder.fromClass(elements, Pure.class);
 
   /** The {@code value} element/field of the @java.lang.annotation.Target annotation. */
   protected final ExecutableElement targetValueElement;
+
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
@@ -228,25 +231,34 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /** True if "-Ashowchecks" was passed on the command line. */
   protected final boolean showchecks;
+
   /** True if "-Ainfer" was passed on the command line. */
   private final boolean infer;
+
   /** True if "-AsuggestPureMethods" or "-Ainfer" was passed on the command line. */
   private final boolean suggestPureMethods;
+
   /**
    * True if "-AcheckPurityAnnotations" or "-AsuggestPureMethods" or "-Ainfer" was passed on the
    * command line.
    */
-  private final boolean checkPurity;
+  private final boolean checkPurityAnnotations;
+
   /** True if "-AcheckPurityAnnotations" was passed on the command line. */
   private final boolean checkPurityAnnotations;
+
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
+
   /** True if "-AassumeSideEffectFree" or "-aassumePure" was passed on the command line. */
   private final boolean assumeSideEffectFree;
+
   /** True if "-AassumeDeterministic" or "-aassumePure" was passed on the command line. */
   private final boolean assumeDeterministic;
+
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;
+
   /** True if "-AconservativeUninferredTypeArguments" was passed on the command line. */
   private final boolean conservativeUninferredTypeArguments;
 
@@ -287,7 +299,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
-    checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    checkPurityAnnotations = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
     checkPurityAnnotations = checker.hasOption("checkPurityAnnotations");
     ajavaChecks = checker.hasOption("ajavaChecks");
     assumeSideEffectFree =
@@ -942,7 +954,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkConstructorResult(methodType, methodElement);
       }
 
-      checkPurity(tree);
+      checkPurityAnnotations(tree);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1021,8 +1033,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree the method tree to check
    */
-  protected void checkPurity(MethodTree tree) {
-    if (!checkPurity) {
+  protected void checkPurityAnnotations(MethodTree tree) {
+    if (!checkPurityAnnotations) {
       return;
     }
 
@@ -1044,7 +1056,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (isDeterministic) {
         if (TreeUtils.isConstructor(tree)) {
           checker.reportWarning(tree, "purity.deterministic.constructor");
-        } else if (TreeUtils.typeOf(tree.getReturnType()).getKind() == TypeKind.VOID) {
+        } else if (TreeUtils.isVoidReturn(tree)) {
           checker.reportWarning(tree, "purity.deterministic.void.method");
         }
       }
@@ -1057,7 +1069,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else {
         r =
             PurityChecker.checkPurity(
-                body, atypeFactory, assumeSideEffectFree, assumeDeterministic);
+                body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
       }
       if (!r.isPure(kinds)) {
         reportPurityErrors(r, tree, kinds);
@@ -1071,33 +1083,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           // present (because they were inferred in a previous WPI round).
           additionalKinds.removeAll(kinds);
         }
-        if (TreeUtils.isConstructor(tree)) {
+        if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
           additionalKinds.remove(Pure.Kind.DETERMINISTIC);
         }
-        if (!additionalKinds.isEmpty()) {
-          if (infer) {
-            WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-            ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-            if (additionalKinds.size() == 2) {
-              wpi.addMethodDeclarationAnnotation(methodElt, PURE);
-            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-              wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
-            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-              wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
-            } else {
-              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-            }
+        if (infer) {
+          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+          if (additionalKinds.size() == 2) {
+            wpi.addMethodDeclarationAnnotation(methodElt, PURE);
+          } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            wpi.addMethodDeclarationAnnotation(methodElt, SIDE_EFFECT_FREE);
+          } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+            wpi.addMethodDeclarationAnnotation(methodElt, DETERMINISTIC);
           } else {
-            if (additionalKinds.size() == 2) {
-              checker.reportWarning(tree, "purity.more.pure", tree.getName());
-            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-              checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-              checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
-            } else {
-              throw new BugInCF("Unexpected purity kind in " + additionalKinds);
-            }
+            throw new BugInCF("Unexpected purity kind in " + additionalKinds);
           }
+        } else if (additionalKinds.isEmpty()) {
+          // No need to suggest @Impure, since it is equivalent to no annotation.
+        } else if (additionalKinds.size() == 2) {
+          checker.reportWarning(tree, "purity.more.pure", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+        } else {
+          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
         }
       }
     }
@@ -1166,8 +1176,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * class, then a conflicting.annos error will also be issued by {@link
    * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
    *
-   * @param constructorType AnnotatedExecutableType for the constructor
-   * @param constructorElement element that declares the constructor
+   * @param constructorType the AnnotatedExecutableType for the constructor
+   * @param constructorElement the element that declares the constructor
    */
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
@@ -1347,6 +1357,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           return super.visitLocalVariable(localVarExpr, parameters);
         }
       };
+
   /**
    * Check that the parameters used in {@code javaExpression} are effectively final for method
    * {@code method}.
@@ -2745,6 +2756,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** Cache to avoid calling {@link #getExceptionParameterLowerBoundAnnotations} more than once. */
   private @MonotonicNonNull Set<? extends AnnotationMirror>
       getExceptionParameterLowerBoundAnnotationsCache;
+
   /**
    * Returns a set of AnnotationMirrors that is a lower bound for exception parameters. The same as
    * {@link #getExceptionParameterLowerBoundAnnotations}, but uses a cache.
@@ -3853,19 +3865,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** The declaration of an overriding method. */
     protected final Tree overriderTree;
+
     /** True if {@link #overriderTree} is a MEMBER_REFERENCE. */
     protected final boolean isMethodReference;
 
     /** The type of the overriding method. */
     protected final AnnotatedExecutableType overrider;
+
     /** The subtype that declares the overriding method. */
     protected final AnnotatedTypeMirror overriderType;
+
     /** The type of the overridden method. */
     protected final AnnotatedExecutableType overridden;
+
     /** The supertype that declares the overridden method. */
     protected final AnnotatedDeclaredType overriddenType;
+
     /** The teturn type of the overridden method. */
     protected final AnnotatedTypeMirror overriddenReturnType;
+
     /** The return type of the overriding method. */
     protected final AnnotatedTypeMirror overriderReturnType;
 
