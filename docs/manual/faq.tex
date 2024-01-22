@@ -39,6 +39,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
+\\ \ref{faq-warning-after-check}: Why does a checker issue a warning even though the code checks a property?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
 \\ \ref{faq-warnings-square-brackets}: What do square brackets mean in a Checker Framework warning message?
 \\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker guarantee that my code is correct?
@@ -312,12 +313,13 @@ accepted.
 Anyone is welcome to send mail to the
 \code{checker-framework-dev@googlegroups.com} mailing list --- for
 implementation details it is generally a better place for discussions than
-the general \code{checker-framework-discuss@googlegroups.com} mailing list,
-which is for user-focused discussions.
+the general \code{checker-framework-discuss@googlegroups.com} mailing list.
 
 Anyone is welcome to
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{join
   \code{checker-framework-discuss@googlegroups.com}} and send mail to it.
+This list is for user-focused discussions.  It is not for submitting bug reports,
+which should use the issue tracker (Section~\ref{reporting-bugs}).
 
 
 \sectionAndLabel{Usability of pluggable type-checking}{faq-usability-section}
@@ -416,7 +418,7 @@ The compile options to javac can be long to type; for example,
 \code{javac -processor org.checkerframework.checker.nullness.NullnessChecker ...}.
 You can use shorthand for built-in checkers, such as \code{javac -processor
   nullness ...} (see Section~\ref{shorthand-for-checkers}), or you can use
-auto-discovery te eliminate the need for the \code{-processor} command-line
+auto-discovery to eliminate the need for the \code{-processor} command-line
 option (see Section~\ref{checker-auto-discovery}).
 \end{sloppypar}
 
@@ -477,6 +479,19 @@ behavior:  behavior that will avoid exceptions.
 For a discussion of this issue, see Section~\ref{handling-warnings}.
 
 
+\subsectionAndLabel{Why does a checker issue a warning even though the code checks a property?}{faq-warning-after-check}
+
+Suppose a checker issues a warning about a line of code.  One way to
+eliminate a warning is to perform a run-time test
+(Section~\ref{type-refinement-runtime-tests}), such as adding \<if (x !=
+null)> before a dereference of \<x> to avoid a warning about a potential
+null pointer dereference.  However, sometimes the checker issues a warning
+even though the code contains a run-time test.  Two common reasons are
+non-determinism in the expression being tested and or side effects to the
+expression after the run-time test.  For details and examples, see
+Section~\ref{type-refinement-side-effects}.
+
+
 \subsectionAndLabel{What does a certain Checker Framework warning message mean?}{faq-interpreting-warnings}
 
 Read the error message first; sometimes that is enough to clarify it.
@@ -485,9 +500,8 @@ Search through this manual for the text of the warning message or for words
 that appear in it.
 
 If nothing else explains it, then
-open an issue (Section~\ref{reporting-bugs}) or ask on the
-\href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
-  list}.  Be sure to say what you think it means or what specific part does
+open an issue (Section~\ref{reporting-bugs}).
+Be sure to say what you think it means or what specific part does
 not make sense to you, and what you have already done to try to understand it.
 
 
@@ -1829,26 +1843,30 @@ As explained in Section~\ref{version-number}, a change in the middle number
 of the Checker Framework version string indicates a possible
 incompatibility.
 
-Another policy is "semantic versioning" as defined at
-\url{https://semver.org/}.  It is also a fine version number policy, with
-its own advantages and disadvantages.  It is a proposal, not a standard nor
-an official definition.  Some projects follow it, and many projects do not
-follow it; even those that follow it often do so loosely.  It does not
-define key terms, such as "backwards compatible bug fixes".  It includes an
+Another policy is ``semantic versioning'' as defined at
+\url{https://semver.org/}.  This version number policy, unfortunately,
+does not define key terms, such as ``backwards compatible bug fixes''.  It
+includes an
 escape hatch, ``Semantic Versioning is all about conveying meaning by how
-the version number changes.''
+the version number changes.''  It has not been updated in over a decade
+(since January 2013), has only ever been updated once (from
+1.0.0 to 2.0.0), and has
+% 87 as of 2023-04-07.
+about 100 open issues.
+It is a proposal, not a standard nor an official definition.
+Projects that claim to follow it often do so loosely.
 
 % The API also includes the Annotation File Utilities.
-If the Checker Framework strictly used semver.org's difinition, every
+If the Checker Framework strictly used semver.org's definition, every
 release would be a new major version, and the current version string would
 be
-% 70 releases as of the beginning of 2021.
-around version 100.0.0.
+% 213 releases as of: Version 3.33.0 (April 3, 2023)
+past version 200.0.0.
 Always incrementing the major version number would not convey meaning to
 its users --- for example, it would not indicate major new functionality or
 important behavior differences.
 
-% The Checker Framework has over 10,000 methods in its API, xand most users
+% The Checker Framework has over 10,000 methods in its API, and most users
 % depend on its external behavior which is also complex.  The Checker
 % Framework is released frequently.
 
@@ -2110,15 +2128,17 @@ third-party tools.  The Checker Framework is one such tool.
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
-%  LocalWords:  RegexUtil compareTo myA requiresB nullable myobject
-%  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev API's
-%  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
-%  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
-%%  LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
-%%  LocalWords:  featureful RetentionPolicy instanceof contravariance qual
-%%  LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
-%%  LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
-%%  LocalWords:  IllegalFormatException typequals typedef runtime nullaway
-%%  LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
+% LocalWords:  RegexUtil compareTo myA requiresB nullable myobject compat
+% LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
+% LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev API's
+% LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
+% LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
+% LocalWords:  OtherClass Goetz antipattern subclassed varargs regexes
+% LocalWords:  featureful RetentionPolicy instanceof contravariance qual
+% LocalWords:  NoSuchElementException binarySearch subclasses faq awarns
+% LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
+% LocalWords:  IllegalFormatException typequals typedef runtime nullaway
+% LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
 % LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups
+% LocalWords:  checkerframework basetype strictfp JavaInputAstVisitor
+% LocalWords:  typeAnnotations formatannotations semver org's

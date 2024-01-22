@@ -36,8 +36,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @SubtypeOf(GuardedByUnknown.class) // TODO: Should @GuardSatisfied be in its own hierarchy?
 public @interface GuardSatisfied {
   /**
-   * The index on the GuardSatisfied polymorphic qualifier. Defaults to -1 so that the user can
-   * write any index starting from 0.
+   * The index on the GuardSatisfied polymorphic qualifier, if any. Defaults to -1 so that, if the
+   * user writes 0, that is different than writing no index. Writing no index is the usual case.
+   *
+   * @return the index on the GuardSatisfied polymorphic qualifier, or -1 if none
    */
   int value() default -1;
 }

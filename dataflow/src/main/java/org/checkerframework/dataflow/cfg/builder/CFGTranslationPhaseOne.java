@@ -58,6 +58,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -76,6 +78,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
@@ -97,15 +100,18 @@ import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
 import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.CharacterLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ClassDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.DoubleLiteralNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExplicitThisNode;
+import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.FloatLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
@@ -143,7 +149,6 @@ import org.checkerframework.dataflow.cfg.node.ParameterizedTypeNode;
 import org.checkerframework.dataflow.cfg.node.PrimitiveTypeNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
@@ -158,19 +163,29 @@ import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.qual.AssertMethod;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.BindingPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.DeconstructionPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.InstanceOfUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.YieldUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 import org.plumelib.util.IdentityArraySet;
 
 /**
@@ -186,14 +201,14 @@ import org.plumelib.util.IdentityArraySet;
  * <p>The return type of this scanner is {@link Node}. For expressions, the corresponding node is
  * returned to allow linking between different nodes.
  *
- * <p>However, for statements there is usually no single {@link Node} that is created, and thus no
- * node is returned (rather, null is returned).
+ * <p>However, for statements there is usually no single {@link Node} that is created, and thus null
+ * is returned.
  *
  * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of nodes
  * (which might only be a jump).
  *
- * <p>The entry point to process a single body (e.g., method) is {@link #process(TreePath,
- * UnderlyingAST)}.
+ * <p>The entry point to process a single body (e.g., method, lambda, top-level block) is {@link
+ * #process(TreePath, UnderlyingAST)}.
  */
 @SuppressWarnings("nullness") // TODO
 public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
@@ -206,14 +221,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /** The javac element utilities. */
   protected final Elements elements;
+
   /** The javac type utilities. */
   protected final Types types;
+
   /** The javac tree utilities. */
   protected final Trees trees;
+
   /** The tree builder. */
   protected final TreeBuilder treeBuilder;
+
   /** The annotation provider, e.g., a type factory. */
   protected final AnnotationProvider annotationProvider;
+
   /** Can assertions be assumed to be disabled? */
   protected final boolean assumeAssertionsDisabled;
 
@@ -364,6 +384,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final Set<TypeMirror> newArrayExceptionTypes;
 
   /**
+   * Creates {@link CFGTranslationPhaseOne}.
+   *
    * @param treeBuilder builder for new AST nodes
    * @param annotationProvider extracts annotations from AST nodes
    * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
@@ -476,7 +498,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           regularExitLabel,
           exceptionalExitLabel,
           declaredClasses,
-          declaredLambdas);
+          declaredLambdas,
+          types);
     } finally {
       this.path = null;
     }
@@ -507,15 +530,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public void handleArtificialTree(Tree tree) {}
 
   /**
-   * Allow subclasses to access the processing environment and its associated utilities.
-   *
-   * @return the ProcessingEnvironment associated with this object
-   */
-  protected ProcessingEnvironment getProcessingEnvironment() {
-    return env;
-  }
-
-  /**
    * Returns the current path for the tree currently being scanned.
    *
    * @return the current path
@@ -537,18 +551,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       path = new TreePath(path, tree);
     }
     try {
-      // Must use String comparison to support compiling on JDK 11 and earlier.
-      //     Features added between JDK 12 and JDK 17 inclusive.
-      switch (tree.getKind().name()) {
-        case "BINDING_PATTERN":
-          return visitBindingPattern17(path.getLeaf(), p);
-        case "SWITCH_EXPRESSION":
-          return visitSwitchExpression17(tree, p);
-        case "YIELD":
-          return visitYield17(tree, p);
-        default:
-          return tree.accept(this, p);
+      // TODO: use JCP to add version-specific behavior
+      if (SystemUtil.jreVersion >= 14) {
+        // Must use String comparison to support compiling on JDK 11 and earlier.
+        // Features added between JDK 12 and JDK 17 inclusive.
+        switch (tree.getKind().name()) {
+          case "BINDING_PATTERN":
+            return visitBindingPattern17(path.getLeaf(), p);
+          case "SWITCH_EXPRESSION":
+            return visitSwitchExpression17(tree, p);
+          case "YIELD":
+            return visitYield17(tree, p);
+          case "DECONSTRUCTION_PATTERN":
+            return visitDeconstructionPattern21(tree, p);
+          default:
+            // fall through to generic behavior
+        }
       }
+
+      return tree.accept(this, p);
     } finally {
       path = prev;
     }
@@ -562,7 +583,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the switch expression tree
    */
   public Node visitYield17(Tree yieldTree, Void p) {
-    ExpressionTree resultExpression = TreeUtils.yieldTreeGetValue(yieldTree);
+    ExpressionTree resultExpression = YieldUtils.getValue(yieldTree);
     switchBuilder.buildSwitchExpressionResult(resultExpression);
     return null;
   }
@@ -575,8 +596,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return the result of visiting the switch expression tree
    */
   public Node visitSwitchExpression17(Tree switchExpressionTree, Void p) {
-    SwitchBuilder switchBuilder = new SwitchBuilder(switchExpressionTree);
-    return switchBuilder.build();
+    SwitchBuilder oldSwitchBuilder = switchBuilder;
+    switchBuilder = new SwitchBuilder(switchExpressionTree);
+    Node result = switchBuilder.build();
+    switchBuilder = oldSwitchBuilder;
+    return result;
   }
 
   /**
@@ -590,10 +614,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
     TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
     Node receiver = new ImplicitThisNode(classElem.asType());
-    VariableTree varTree = TreeUtils.bindingPatternTreeGetVariable(bindingPatternTree);
+    VariableTree varTree = BindingPatternUtils.getVariable(bindingPatternTree);
+    VariableDeclarationNode variableDeclarationNode = new VariableDeclarationNode(varTree);
+    extendWithNode(variableDeclarationNode);
     LocalVariableNode varNode = new LocalVariableNode(varTree, receiver);
     extendWithNode(varNode);
     return varNode;
+  }
+
+  /**
+   * Visit a DeconstructionPatternTree.
+   *
+   * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
+   *     Framework compiles under JDK 20 and earlier
+   * @param p an unused parameter
+   * @return the result of visiting the tree
+   */
+  public Node visitDeconstructionPattern21(Tree deconstructionPatternTree, Void p) {
+    List<? extends Tree> nestedPatternTrees =
+        DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree);
+    List<Node> nestedPatterns = new ArrayList<>(nestedPatternTrees.size());
+    for (Tree pattern : nestedPatternTrees) {
+      nestedPatterns.add(scan(pattern, p));
+    }
+    DeconstructorPatternNode dcpN =
+        new DeconstructorPatternNode(
+            TreeUtils.typeOf(deconstructionPatternTree), deconstructionPatternTree, nestedPatterns);
+    extendWithNode(dcpN);
+    return dcpN;
   }
 
   /* --------------------------------------------------------- */
@@ -689,7 +737,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * exceptions in {@code causes}.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @return the node holder
    */
   protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
@@ -750,7 +798,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * the list of extended nodes, or append to the list if {@code pred} is not present.
    *
    * @param node the node to add
-   * @param causes set of exceptions that the node might throw
+   * @param causes the set of exceptions that the node might throw
    * @param pred the desired predecessor of node
    * @return the node holder
    */
@@ -926,12 +974,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   private TreeInfo getTreeInfo(Tree tree) {
-    final TypeMirror type = TreeUtils.typeOf(tree);
-    final boolean boxed = TypesUtils.isBoxedPrimitive(type);
-    final TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
+    TypeMirror type = TreeUtils.typeOf(tree);
+    boolean boxed = TypesUtils.isBoxedPrimitive(type);
+    TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
 
-    final boolean bool = TypesUtils.isBooleanType(type);
-    final boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean bool = TypesUtils.isBooleanType(type);
+    boolean numeric = TypesUtils.isNumeric(unboxedType);
 
     return new TreeInfo() {
       @Override
@@ -1198,7 +1246,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         node = narrow(node, varType);
       }
     }
-    // node might have been re-assigned; if nodeType is needed, set it again
+    // `node` might have been re-assigned; if `nodeType` is needed, set it again.
     // nodeType = node.getType();
 
     // TODO: if checkers need to know about null references of
@@ -1233,44 +1281,54 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Given a method element and a list of argument expressions, return a list of {@link Node}s
-   * representing the arguments converted for a call of the method. This method applies to both
-   * method invocations and constructor calls.
+   * Given a method element, its type at the call site, and a list of argument expressions, return a
+   * list of {@link Node}s representing the arguments converted for a call of the method. This
+   * method applies to both method invocations and constructor calls.
    *
+   * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
+   * @param methodType an ExecutableType representing the type of the method call; the type must be
+   *     viewpoint-adapted to the call
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
    *     this method
    */
   protected List<Node> convertCallArguments(
-      ExecutableElement method, List<? extends ExpressionTree> actualExprs) {
+      ExpressionTree tree,
+      ExecutableElement method,
+      ExecutableType methodType,
+      List<? extends ExpressionTree> actualExprs) {
     // NOTE: It is important to convert one method argument before generating CFG nodes for the
     // next argument, since label binding expects nodes to be generated in execution order.
     // Therefore, this method first determines which conversions need to be applied and then
     // iterates over the actual arguments.
-    List<? extends VariableElement> formals = method.getParameters();
+    List<? extends TypeMirror> formals = methodType.getParameterTypes();
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
+    AssertMethodTuple assertMethodTuple = getAssertMethodTuple(method);
 
     int numActuals = actualExprs.size();
     if (method.isVarArgs()) {
       // Create a new array argument if the actuals outnumber the formals, or if the last
       // actual is not assignable to the last formal.
       int lastArgIndex = numFormals - 1;
-      TypeMirror lastParamType = formals.get(lastArgIndex).asType();
+      TypeMirror lastParamType = formals.get(lastArgIndex);
       if (numActuals == numFormals
           && types.isAssignable(TreeUtils.typeOf(actualExprs.get(numActuals - 1)), lastParamType)) {
         // Normal call with no array creation, apply method
         // invocation conversion to all arguments.
         for (int i = 0; i < numActuals; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
+          if (i == assertMethodTuple.booleanParam) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+          }
           if (actualVal == null) {
             throw new BugInCF(
                 "CFGBuilder: scan returned null for %s [%s]",
                 actualExprs.get(i), actualExprs.get(i).getClass());
           }
-          convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
+          convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
       } else {
         assert lastParamType instanceof ArrayType : "variable argument formal must be an array";
@@ -1278,7 +1336,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // remaining ones to initialize an array.
         for (int i = 0; i < lastArgIndex; i++) {
           Node actualVal = scan(actualExprs.get(i), null);
-          convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
+          if (i == assertMethodTuple.booleanParam) {
+            treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+          }
+          convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
         }
 
         TypeMirror elemType = ((ArrayType) lastParamType).getComponentType();
@@ -1298,7 +1359,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new ArrayCreationNode(
                 wrappedVarargs,
                 lastParamType,
-                /*dimensions=*/ Collections.emptyList(),
+                /* dimensions= */ Collections.emptyList(),
                 initializers);
         extendWithNode(lastArgument);
 
@@ -1307,11 +1368,78 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     } else {
       for (int i = 0; i < numActuals; i++) {
         Node actualVal = scan(actualExprs.get(i), null);
-        convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i).asType()));
+        if (i == assertMethodTuple.booleanParam) {
+          treatMethodAsAssert((MethodInvocationTree) tree, assertMethodTuple, actualVal);
+        }
+        convertedNodes.add(methodInvocationConvert(actualVal, formals.get(i)));
       }
     }
 
     return convertedNodes;
+  }
+
+  /**
+   * Returns the AssertMethodTuple for {@code method}. If {@code method} is not an assert method,
+   * then {@link AssertMethodTuple#NONE} is returned.
+   *
+   * @param method a method element that might be an assert method
+   * @return the AssertMethodTuple for {@code method}
+   */
+  protected AssertMethodTuple getAssertMethodTuple(ExecutableElement method) {
+    AnnotationMirror assertMethodAnno =
+        annotationProvider.getDeclAnnotation(method, AssertMethod.class);
+    if (assertMethodAnno == null) {
+      return AssertMethodTuple.NONE;
+    }
+
+    // Dataflow does not require checker-qual.jar to be on the users classpath, so
+    // AnnotationUtils.getElementValue(...) cannot be used.
+
+    int booleanParam =
+        AnnotationUtils.getElementValueNotOnClasspath(
+                assertMethodAnno, "parameter", Integer.class, 1)
+            - 1;
+
+    TypeMirror exceptionType =
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "value", Type.ClassType.class, (Type.ClassType) assertionErrorType);
+    boolean isAssertFalse =
+        AnnotationUtils.getElementValueNotOnClasspath(
+            assertMethodAnno, "isAssertFalse", Boolean.class, false);
+    return new AssertMethodTuple(booleanParam, exceptionType, isAssertFalse);
+  }
+
+  /** Holds the elements of an {@link AssertMethod} annotation. */
+  protected static class AssertMethodTuple {
+
+    /** A tuple representing the lack of an {@link AssertMethodTuple}. */
+    protected static final AssertMethodTuple NONE = new AssertMethodTuple(-1, null, false);
+
+    /**
+     * 0-based index of the parameter of the expression that is tested by the assert method. (Or -1
+     * if this isn't an assert method.)
+     */
+    public final int booleanParam;
+
+    /** The type of the exception thrown by the assert method. */
+    public final TypeMirror exceptionType;
+
+    /** Is this an assert false method? */
+    public final boolean isAssertFalse;
+
+    /**
+     * Creates an AssertMethodTuple.
+     *
+     * @param booleanParam 0-based index of the parameter of the expression that is tested by the
+     *     assert method
+     * @param exceptionType the type of the exception thrown by the assert method
+     * @param isAssertFalse is this an assert false method
+     */
+    public AssertMethodTuple(int booleanParam, TypeMirror exceptionType, boolean isAssertFalse) {
+      this.booleanParam = booleanParam;
+      this.exceptionType = exceptionType;
+      this.isAssertFalse = isAssertFalse;
+    }
   }
 
   /**
@@ -1412,7 +1540,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // First, compute the receiver, if any (15.12.4.1).
     // Second, evaluate the actual arguments, left to right and possibly some arguments are
-    // stored into an array for variable arguments calls (15.12.4.2).
+    // stored into an array for varargs calls (15.12.4.2).
     // Third, test the receiver, if any, for nullness (15.12.4.4).
     // Fourth, convert the arguments to the type of the formal parameters (15.12.4.5).
     // Fifth, if the method is synchronized, lock the receiving object or class (15.12.4.5).
@@ -1431,7 +1559,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Look up method to invoke and possibly throw NullPointerException
     Node receiver = getReceiver(methodSelect);
 
-    MethodAccessNode target = new MethodAccessNode(methodSelect, receiver);
+    MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
     if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
       // No NullPointerException can be thrown, use normal node
@@ -1450,13 +1578,34 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // See also BaseTypeVisitor.visitMethodInvocation and QualifierPolymorphism.annotate.
       arguments = Collections.emptyList();
     } else {
-      arguments = convertCallArguments(method, actualExprs);
+      arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
     }
 
     // TODO: lock the receiver for synchronized methods
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
+    ExtendedNode extendedNode = extendWithMethodInvocationNode(method, node);
+
+    /* Check for the TerminatesExecution annotation. */
+    boolean terminatesExecution =
+        annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
+    if (terminatesExecution) {
+      extendedNode.setTerminatesExecution(true);
+    }
+    return node;
+  }
+
+  /**
+   * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
+   * invocation.
+   *
+   * @param method the invoked method
+   * @param node the invocation
+   * @return an ExtendedNode representing the invocation and its possible thrown exceptions
+   */
+  private ExtendedNode extendWithMethodInvocationNode(
+      ExecutableElement method, MethodInvocationNode node) {
     List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -1465,16 +1614,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
-    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
-
-    /* Check for the TerminatesExecution annotation. */
-    boolean terminatesExecution =
-        annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
-    if (terminatesExecution) {
-      extendedNode.setTerminatesExecution(true);
-    }
-
-    return node;
+    return extendWithNodeWithExceptions(node, thrownSet);
   }
 
   @Override
@@ -1482,8 +1622,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // see JLS 14.10
 
-    // If assertions are enabled, then we can just translate the
-    // assertion.
+    // If assertions are enabled, then we can just translate the assertion.
     if (assumeAssertionsEnabled || assumeAssertionsEnabledFor(tree)) {
       translateAssertWithAssertionsEnabled(tree);
       return null;
@@ -1536,6 +1675,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       ea =
           treeBuilder.buildVariableDecl(
               types.getPrimitiveType(TypeKind.BOOLEAN), name, owner, initializer);
+      handleArtificialTree(ea);
     }
     return ea;
   }
@@ -1546,41 +1686,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return nearest owner element of current tree
    */
   private Element findOwner() {
-    Tree enclosingMethodOrLambda = TreePathUtil.enclosingMethodOrLambda(getCurrentPath());
-    if (enclosingMethodOrLambda != null) {
-      if (enclosingMethodOrLambda.getKind() == Kind.METHOD) {
-        return TreeUtils.elementFromDeclaration((MethodTree) enclosingMethodOrLambda);
-      } else {
-        // The current path is in a lambda tree.  In this case the owner is either a method
-        // or an initializer block.
-        LambdaExpressionTree lambdaTree = (LambdaExpressionTree) enclosingMethodOrLambda;
-        if (!lambdaTree.getParameters().isEmpty()) {
-          // If there is a lambda parameter, use the same owner.
-          return TreeUtils.elementFromDeclaration(lambdaTree.getParameters().get(0))
-              .getEnclosingElement();
-        }
-        // If there are no lambda parameters then if the lambda is enclosed in a method,
-        // that's the owner.
-        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        if (enclosingMethod != null) {
-          return TreeUtils.elementFromDeclaration(enclosingMethod);
-        }
-
-        // If the lambda is not enclosed in a method, then the owner should be a
-        // constructor. javac seems to use the last constructor in the list. (If the
-        // lambda is in an initializer of a static field then the owner should be a
-        // static initializer block, but there doesn't seem to be a way to get a
-        // reference to the static initializer element.)
-        ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-        TypeElement typeElement = TreeUtils.elementFromDeclaration(enclosingClass);
-        ExecutableElement constructor = null;
-        for (Element enclosing : typeElement.getEnclosedElements()) {
-          if (enclosing.getKind() == ElementKind.CONSTRUCTOR) {
-            constructor = (ExecutableElement) enclosing;
-          }
-        }
-        return constructor;
-      }
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+    if (enclosingMethod != null) {
+      return TreeUtils.elementFromDeclaration(enclosingMethod);
     } else {
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
       return TreeUtils.elementFromDeclaration(enclosingClass);
@@ -1618,6 +1726,35 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // then branch (nothing happens)
     addLabelForNextNode(assertEnd);
+  }
+
+  /**
+   * Translates a method marked as {@link AssertMethod} into CFG nodes corresponding to an {@code
+   * assert} statement.
+   *
+   * @param tree the method invocation tree for a method marked as {@link AssertMethod}
+   * @param assertMethodTuple the assert method tuple for the method
+   * @param condition the boolean expression node for the argument that the method tests
+   */
+  protected void treatMethodAsAssert(
+      MethodInvocationTree tree, AssertMethodTuple assertMethodTuple, Node condition) {
+
+    // all necessary labels
+    Label thenLabel = new Label();
+    Label elseLabel = new Label();
+    ConditionalJump cjump = new ConditionalJump(thenLabel, elseLabel);
+    extendWithExtendedNode(cjump);
+
+    addLabelForNextNode(assertMethodTuple.isAssertFalse ? thenLabel : elseLabel);
+    AssertionErrorNode assertNode =
+        new AssertionErrorNode(tree, condition, null, assertMethodTuple.exceptionType);
+    extendWithNode(assertNode);
+    NodeWithExceptionsHolder exNode =
+        extendWithNodeWithException(
+            new ThrowNode(null, assertNode, env.getTypeUtils()), assertMethodTuple.exceptionType);
+    exNode.setTerminatesExecution(true);
+
+    addLabelForNextNode(assertMethodTuple.isAssertFalse ? elseLabel : thenLabel);
   }
 
   @Override
@@ -1800,9 +1937,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           }
           extendWithNode(operNode);
 
-          TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+          TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+          TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
           handleArtificialTree(castTree);
-          TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+          TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
           castNode.setInSource(false);
           extendWithNode(castNode);
 
@@ -1826,9 +1964,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
             Node targetRHS = stringConversion(targetLHS);
             value = stringConversion(value);
-            Node r = new StringConcatenateAssignmentNode(tree, targetRHS, value);
-            extendWithNode(r);
-            return r;
+            BinaryTree operTree =
+                treeBuilder.buildBinary(
+                    leftType, withoutAssignment(kind), tree.getVariable(), tree.getExpression());
+            handleArtificialTree(operTree);
+            Node operNode = new StringConcatenateNode(operTree, targetRHS, value);
+            extendWithNode(operNode);
+            AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, operNode);
+            extendWithNode(assignNode);
+            return assignNode;
           } else {
             TypeMirror promotedType = binaryPromotedType(leftType, rightType);
             Node targetRHS = binaryNumericPromotion(targetLHS, promotedType);
@@ -1850,9 +1994,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             }
             extendWithNode(operNode);
 
-            TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+            TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+            TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
             handleArtificialTree(castTree);
-            TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+            TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
             castNode.setInSource(false);
             extendWithNode(castNode);
 
@@ -1892,9 +2037,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           }
           extendWithNode(operNode);
 
-          TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+          TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+          TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
           handleArtificialTree(castTree);
-          TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+          TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
           castNode.setInSource(false);
           extendWithNode(castNode);
 
@@ -1940,9 +2086,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
         extendWithNode(operNode);
 
-        TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+        TypeMirror castType = TypeAnnotationUtils.unannotatedType(leftType);
+        TypeCastTree castTree = treeBuilder.buildTypeCast(castType, operTree);
         handleArtificialTree(castTree);
-        TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType, types);
+        TypeCastNode castNode = new TypeCastNode(castTree, operNode, castType, types);
         castNode.setInSource(false);
         extendWithNode(castNode);
 
@@ -2295,8 +2442,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = switchStatementTree.getCases();
         this.selectorExprTree = switchStatementTree.getExpression();
       } else {
-        this.caseTrees = TreeUtils.switchExpressionTreeGetCases(switchTree);
-        this.selectorExprTree = TreeUtils.switchExpressionTreeGetExpression(switchTree);
+        this.caseTrees = SwitchExpressionUtils.getCases(switchTree);
+        this.selectorExprTree = SwitchExpressionUtils.getExpression(switchTree);
       }
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
@@ -2310,8 +2457,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *     null
      */
     public @Nullable SwitchExpressionNode build() {
-      SwitchBuilder oldSwitchBuilder = switchBuilder;
-      switchBuilder = this;
       LabelCell oldBreakTargetLC = breakTargetLC;
       breakTargetLC = new LabelCell(new Label());
       int numCases = caseTrees.size();
@@ -2343,15 +2488,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // before the default case, no matter where `default:` is written.  Therefore,
           // build the default case last.
           defaultIndex = i;
+        } else if (i == numCases - 1 && defaultIndex == -1) {
+          // This is the last case, and it's not a default case.
+          buildCase(caseTree, i, exhaustiveIgnoreDefault());
         } else {
-          boolean isLastExceptDefault =
-              i == numCases - 1
-                  || (i == numCases - 2 && TreeUtils.isDefaultCaseTree(caseTrees.get(i + 1)));
-          // This can be extended to handle case statements as well as case rules.
-          boolean noFallthroughToHere = TreeUtils.isCaseRule(caseTree);
-          boolean isLastOfExhaustive =
-              isLastExceptDefault && casesAreExhaustive() && noFallthroughToHere;
-          buildCase(caseTree, i, isLastOfExhaustive);
+          buildCase(caseTree, i, false);
         }
       }
 
@@ -2373,7 +2514,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 env.getTypeUtils()));
       }
 
-      switchBuilder = oldSwitchBuilder;
       if (!TreeUtils.isSwitchStatement(switchTree)) {
         // It's a switch expression, not a switch statement.
         IdentifierTree switchExprVarUseTree = treeBuilder.buildVariableUse(switchExprVarTree);
@@ -2449,43 +2589,48 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /**
      * Build the CFG for the given case tree.
      *
-     * @param tree a case tree whose CFG to build
+     * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
-     * @param isLastOfExhaustive true if this is the last case of an exhaustive switch statement,
-     *     with no fallthrough to it. In other words, no test of the labels is necessary.
+     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch
+     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary.
      */
-    private void buildCase(CaseTree tree, int index, boolean isLastOfExhaustive) {
-      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(tree);
+    private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
+      boolean isDefaultCase = TreeUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastOfExhaustive==TRUE, no flow-sensitive refinement occurs
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
       // within the body of the CaseNode.  In the future, that can be performed, but it
       // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
-      boolean isTerminalCase = isDefaultCase || isLastOfExhaustive;
+      boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
-      final Label thisBodyLabel = caseBodyLabels[index];
-      final Label nextBodyLabel = caseBodyLabels[index + 1];
+      Label thisBodyLabel = caseBodyLabels[index];
+      Label nextBodyLabel = caseBodyLabels[index + 1];
       // `nextCaseLabel` is not used if isTerminalCase==FALSE.
-      final Label nextCaseLabel = new Label();
+      Label nextCaseLabel = new Label();
 
       // Handle the case expressions
       if (!isTerminalCase) {
         // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
-        for (ExpressionTree exprTree : TreeUtils.caseTreeGetExpressions(tree)) {
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
-        CaseNode test = new CaseNode(tree, selectorExprAssignment, exprs, env.getTypeUtils());
+
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+
+        CaseNode test =
+            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
       }
 
       // Handle the case body
       addLabelForNextNode(thisBodyLabel);
-      if (tree.getStatements() != null) {
+      if (caseTree.getStatements() != null) {
         // This is a switch labeled statement group.
         // A "switch labeled statement group" is a "case L:" label along with its code.
         // The code either ends with a "yield" statement, or it falls through.
-        for (StatementTree stmt : tree.getStatements()) {
+        for (StatementTree stmt : caseTree.getStatements()) {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
@@ -2496,7 +2641,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // This is either the default case or a switch labeled rule (which appears in a
         // switch expression).
         // A "switch labeled rule" is a "case L ->" label along with its code.
-        Tree bodyTree = TreeUtils.caseTreeGetBody(tree);
+        Tree bodyTree = CaseUtils.getBody(caseTree);
         if (!TreeUtils.isSwitchStatement(switchTree) && bodyTree instanceof ExpressionTree) {
           buildSwitchExpressionResult((ExpressionTree) bodyTree);
         } else {
@@ -2550,39 +2695,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Returns true if the cases are exhaustive -- exactly one is executed. There might or might not
-     * be a `default` case label; if there is, it is never used.
+     * Returns true if the switch is exhaustive; ignoring any default case
      *
-     * @return true if the cases are exhaustive
+     * @return true if the switch is exhaustive; ignoring any default case
      */
-    private boolean casesAreExhaustive() {
-      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
-
-      switch (selectorTypeMirror.getKind()) {
-        case BOOLEAN:
-          // TODO
-          break;
-        case DECLARED:
-          DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
-          TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
-          if (declaredTypeElement.getKind() == ElementKind.ENUM) {
-            // It's an enumerated type.
-            List<VariableElement> enumConstants =
-                ElementUtils.getEnumConstants(declaredTypeElement);
-            List<Name> caseLabels = new ArrayList<>(enumConstants.size());
-            for (CaseTree caseTree : caseTrees) {
-              for (ExpressionTree caseEnumConstant : TreeUtils.caseTreeGetExpressions(caseTree)) {
-                caseLabels.add(((IdentifierTree) caseEnumConstant).getName());
-              }
-            }
-            // Could also check that the values match.
-            boolean result = enumConstants.size() == caseLabels.size();
-            return result;
-          }
-          break;
-        default:
-          break;
+    private boolean exhaustiveIgnoreDefault() {
+      // Switch expressions are always exhaustive, but they might have a default case, which is why
+      // the above loop is not fused with the below loop.
+      if (!TreeUtils.isSwitchStatement(switchTree)) {
+        return true;
       }
+
+      int enumCaseLabels = 0;
+      for (CaseTree caseTree : caseTrees) {
+        for (Tree caseLabel : CaseUtils.getLabels(caseTree)) {
+          // Java guarantees that if one of the cases is the null literal, the switch is exhaustive.
+          // Also if certain other constructs exist.
+          if (caseLabel.getKind() == Kind.NULL_LITERAL
+              || TreeUtils.isBindingPatternTree(caseLabel)
+              || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
+            return true;
+          }
+          if (caseLabel.getKind() == Kind.IDENTIFIER) {
+            enumCaseLabels++;
+          }
+        }
+      }
+
+      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
+      if (selectorTypeMirror.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
+        TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
+        if (declaredTypeElement.getKind() == ElementKind.ENUM) {
+          // The switch expression's type is an enumerated type.
+          List<VariableElement> enumConstants = ElementUtils.getEnumConstants(declaredTypeElement);
+          return enumConstants.size() == enumCaseLabels;
+        }
+      }
+
       return false;
     }
   }
@@ -2622,6 +2772,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // create a synthetic variable for the value of the conditional expression
     VariableTree condExprVarTree =
         treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+    handleArtificialTree(condExprVarTree);
     VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
     condExprVarNode.setInSource(false);
     extendWithNode(condExprVarNode);
@@ -2634,23 +2785,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     ExpressionTree trueExprTree = tree.getTrueExpression();
     Node trueExprNode = scan(trueExprTree, p);
     trueExprNode = conditionalExprPromotion(trueExprNode, exprType);
-
     extendWithAssignmentForConditionalExpr(condExprVarTree, trueExprTree, trueExprNode);
-
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_THEN));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(falseStart);
     ExpressionTree falseExprTree = tree.getFalseExpression();
     Node falseExprNode = scan(falseExprTree, p);
     falseExprNode = conditionalExprPromotion(falseExprNode, exprType);
-
     extendWithAssignmentForConditionalExpr(condExprVarTree, falseExprTree, falseExprNode);
-
-    extendWithExtendedNode(new UnconditionalJump(merge, FlowRule.BOTH_TO_ELSE));
+    extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
-        extendWithVarUseNode(condExprVarTree);
+    IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
     Node node =
         new TernaryExpressionNode(
             tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
@@ -2670,32 +2816,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void extendWithAssignmentForConditionalExpr(
       VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
-    Pair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode =
-        extendWithVarUseNode(condExprVarTree);
+    IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
 
     AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
     handleArtificialTree(assign);
 
+    // Build a "synthetic" assignment node, allowing special handling in transfer functions
     AssignmentNode assignmentNode =
-        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode);
+        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode, true);
     assignmentNode.setInSource(false);
     extendWithNode(assignmentNode);
   }
 
   /**
-   * Extend the CFG with a {@link LocalVariableNode} representing a use of some variable
+   * Build a pair of {@link IdentifierTree} and {@link LocalVariableNode} to represent a use of some
+   * variable. Does not add the node to the CFG.
    *
    * @param varTree tree for the variable
    * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
    *     whose second element is the {@link LocalVariableNode} representing the use
    */
-  private Pair<IdentifierTree, LocalVariableNode> extendWithVarUseNode(VariableTree varTree) {
+  private IPair<IdentifierTree, LocalVariableNode> buildVarUseNode(VariableTree varTree) {
     IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
     handleArtificialTree(condExprVarUseTree);
     LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
     condExprVarUseNode.setInSource(false);
-    extendWithNode(condExprVarUseNode);
-    return Pair.of(condExprVarUseTree, condExprVarUseNode);
+    // Do not actually add the node to the CFG.
+    return IPair.of(condExprVarUseTree, condExprVarUseNode);
   }
 
   @Override
@@ -2759,12 +2906,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitErroneous(ErroneousTree tree, Void p) {
-    throw new BugInCF("ErroneousTree is unexpected in AST to CFG translation");
+    throw new BugInCF("ErroneousTree is unexpected in AST to CFG translation: " + tree);
   }
 
   @Override
   public Node visitExpressionStatement(ExpressionStatementTree tree, Void p) {
-    return scan(tree.getExpression(), p);
+    ExpressionTree exprTree = tree.getExpression();
+    scan(exprTree, p);
+    extendWithNode(new ExpressionStatementNode(exprTree));
+    return null;
   }
 
   @Override
@@ -3210,7 +3360,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitImport(ImportTree tree, Void p) {
-    throw new BugInCF("ImportTree is unexpected in AST to CFG translation");
+    throw new BugInCF("ImportTree is unexpected in AST to CFG translation: " + tree);
   }
 
   @Override
@@ -3325,9 +3475,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   public Node visitNewClass(NewClassTree tree, Void p) {
     // see JLS 15.9
 
+    DeclaredType classType = (DeclaredType) TreeUtils.typeOf(tree);
+    TypeMirror enclosingType = classType.getEnclosingType();
     Tree enclosingExpr = tree.getEnclosingExpression();
+    Node enclosingExprNode;
     if (enclosingExpr != null) {
-      scan(enclosingExpr, p);
+      enclosingExprNode = scan(enclosingExpr, p);
+    } else if (enclosingType.getKind() == TypeKind.DECLARED) {
+      // This is an inner class (instance nested class).
+      // As there is no explicit enclosing expression, create a node for the implicit this
+      // argument.
+      enclosingExprNode = new ImplicitThisNode(enclosingType);
+      extendWithNode(enclosingExprNode);
+    } else {
+      // For static nested classes, the kind would be Typekind.None.
+
+      enclosingExprNode = null;
     }
 
     // Convert constructor arguments
@@ -3335,7 +3498,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    List<Node> arguments = convertCallArguments(constructor, actualExprs);
+    List<Node> arguments =
+        convertCallArguments(tree, constructor, TreeUtils.typeFromUse(tree), actualExprs);
 
     // TODO: for anonymous classes, don't use the identifier alone.
     // See https://github.com/typetools/checker-framework/issues/890 .
@@ -3345,8 +3509,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Note that getClassBody() and therefore classbody can be null.
     ClassDeclarationNode classbody = (ClassDeclarationNode) scan(tree.getClassBody(), p);
 
-    Node node = new ObjectCreationNode(tree, constructorNode, arguments, classbody);
-
+    Node node =
+        new ObjectCreationNode(tree, enclosingExprNode, constructorNode, arguments, classbody);
     List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
     Set<TypeMirror> thrownSet =
         ArraySet.newArraySetOrLinkedHashSet(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3463,6 +3627,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     throw new BugInCF("CompilationUnitTree is unexpected in AST to CFG translation");
   }
 
+  /**
+   * Return the first argument if it is non-null, otherwise return the second argument. Throws an
+   * exception if both arguments are null.
+   *
+   * @param <A> the type of the arguments
+   * @param first a reference
+   * @param second a reference
+   * @return the first argument that is non-null
+   */
+  private static <A> A firstNonNull(A first, A second) {
+    if (first != null) {
+      return first;
+    } else if (second != null) {
+      return second;
+    } else {
+      throw new NullPointerException();
+    }
+  }
+
   @Override
   public Node visitTry(TryTree tree, Void p) {
     List<? extends CatchTree> catches = tree.getCatches();
@@ -3472,11 +3655,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MarkerNode(
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
-    List<Pair<TypeMirror, Label>> catchLabels =
+    List<IPair<TypeMirror, Label>> catchLabels =
         CollectionsPlume.mapList(
-            (CatchTree c) -> {
-              return Pair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label());
-            },
+            (CatchTree c) -> IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label()),
             catches);
 
     // Store return/break/continue labels, just in case we need them for a finally block.
@@ -3508,220 +3689,382 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     tryStack.pushFrame(new TryCatchFrame(types, catchLabels));
 
-    // Must scan the resources *after* we push frame to tryStack. Otherwise we can lose catch
-    // blocks.
-    // TODO: Should we handle try-with-resources blocks by also generating code for
-    // automatically closing the resources?
-    List<? extends Tree> resources = tree.getResources();
-    for (Tree resource : resources) {
-      scan(resource, p);
-    }
-
     extendWithNode(
         new MarkerNode(
             tree, "start of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-    scan(tree.getBlock(), p);
+
+    handleTryResourcesAndBlock(tree, p, tree.getResources());
+
     extendWithNode(
         new MarkerNode(
             tree, "end of try block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
-    extendWithExtendedNode(new UnconditionalJump(CFGBuilder.firstNonNull(finallyLabel, doneLabel)));
+    extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
 
+    // This pops the try-catch frame
     tryStack.popFrame();
 
     int catchIndex = 0;
     for (CatchTree c : catches) {
       addLabelForNextNode(catchLabels.get(catchIndex).second);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "start of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      TypeMirror catchType = TreeUtils.typeOf(c.getParameter().getType());
+      extendWithNode(new CatchMarkerNode(tree, "start", catchType, env.getTypeUtils()));
       scan(c, p);
-      extendWithNode(
-          new MarkerNode(
-              tree,
-              "end of catch block for "
-                  + c.getParameter().getType()
-                  + " #"
-                  + TreeUtils.treeUids.get(tree),
-              env.getTypeUtils()));
+      extendWithNode(new CatchMarkerNode(tree, "end", catchType, env.getTypeUtils()));
 
       catchIndex++;
-      extendWithExtendedNode(
-          new UnconditionalJump(CFGBuilder.firstNonNull(finallyLabel, doneLabel)));
+      extendWithExtendedNode(new UnconditionalJump(firstNonNull(finallyLabel, doneLabel)));
     }
 
     if (finallyLabel != null) {
-      // Reset values before analyzing the finally block!
-
-      tryStack.popFrame();
-
-      { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
-        addLabelForNextNode(finallyLabel);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        scan(finallyBlock, p);
-        extendWithNode(
-            new MarkerNode(
-                tree, "end of finally block #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(doneLabel));
-      }
-
-      if (hasExceptionalPath(exceptionalFinallyLabel)) {
-        // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
-        // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
-        // is no successful path, it will be removed in later phase.
-        // TODO: Don't we need a separate finally block for each kind of exception?
-        addLabelForNextNode(exceptionalFinallyLabel);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-
-        scan(finallyBlock, p);
-
-        NodeWithExceptionsHolder throwing =
-            extendWithNodeWithException(
-                new MarkerNode(
-                    tree,
-                    "end of finally block for Throwable #" + TreeUtils.treeUids.get(tree),
-                    env.getTypeUtils()),
-                throwableType);
-
-        throwing.setTerminatesExecution(true);
-      }
-
-      if (returnTargetLC.wasAccessed()) {
-        addLabelForNextNode(returnTargetLC.peekLabel());
-        returnTargetLC = oldReturnTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for return #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        scan(finallyBlock, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for return #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
-      } else {
-        returnTargetLC = oldReturnTargetLC;
-      }
-
-      if (breakTargetLC.wasAccessed()) {
-        addLabelForNextNode(breakTargetLC.peekLabel());
-        breakTargetLC = oldBreakTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for break #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        scan(finallyBlock, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for break #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
-      } else {
-        breakTargetLC = oldBreakTargetLC;
-      }
-
-      Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
-      if (!accessedBreakLabels.isEmpty()) {
-        breakLabels = oldBreakLabels;
-
-        for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
-          addLabelForNextNode(access.getValue());
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "start of finally block for break label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          scan(finallyBlock, p);
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "end of finally block for break label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
-        }
-      } else {
-        breakLabels = oldBreakLabels;
-      }
-
-      if (continueTargetLC.wasAccessed()) {
-        addLabelForNextNode(continueTargetLC.peekLabel());
-        continueTargetLC = oldContinueTargetLC;
-
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "start of finally block for continue #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        scan(finallyBlock, p);
-        extendWithNode(
-            new MarkerNode(
-                tree,
-                "end of finally block for continue #" + TreeUtils.treeUids.get(tree),
-                env.getTypeUtils()));
-        extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
-      } else {
-        continueTargetLC = oldContinueTargetLC;
-      }
-
-      Map<Name, Label> accessedContinueLabels =
-          ((TryFinallyScopeMap) continueLabels).getAccessedNames();
-      if (!accessedContinueLabels.isEmpty()) {
-        continueLabels = oldContinueLabels;
-
-        for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
-          addLabelForNextNode(access.getValue());
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "start of finally block for continue label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          scan(finallyBlock, p);
-          extendWithNode(
-              new MarkerNode(
-                  tree,
-                  "end of finally block for continue label "
-                      + access.getKey()
-                      + " #"
-                      + TreeUtils.treeUids.get(tree),
-                  env.getTypeUtils()));
-          extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
-        }
-      } else {
-        continueLabels = oldContinueLabels;
-      }
+      handleFinally(
+          tree,
+          doneLabel,
+          finallyLabel,
+          exceptionalFinallyLabel,
+          () -> scan(finallyBlock, p),
+          oldReturnTargetLC,
+          oldBreakTargetLC,
+          oldBreakLabels,
+          oldContinueTargetLC,
+          oldContinueLabels);
     }
 
     addLabelForNextNode(doneLabel);
 
     return null;
+  }
+
+  /**
+   * A recursive helper method to handle the resource declarations (if any) in a {@link TryTree} and
+   * its main block. If the {@code resources} list is empty, the method scans the main block of the
+   * try statement and returns. Otherwise, the first resource declaration in {@code resources} is
+   * desugared, following the logic in JLS 14.20.3.1. A resource declaration <i>r</i> is desugared
+   * by adding the nodes for <i>r</i> itself to the CFG, followed by a synthetic nested {@code try}
+   * block and {@code finally} block. The synthetic {@code try} block contains any remaining
+   * resource declarations and the original try block (handled via recursion). The synthetic {@code
+   * finally} block contains a call to {@code close} for <i>r</i>, guaranteeing that on every path
+   * through the CFG, <i>r</i> is closed.
+   *
+   * @param tryTree the original try tree (with 0 or more resources) from the AST
+   * @param p the value to pass to calls to {@code scan}
+   * @param resources the remaining resource declarations to handle
+   */
+  private void handleTryResourcesAndBlock(TryTree tryTree, Void p, List<? extends Tree> resources) {
+    if (resources.isEmpty()) {
+      // Either `tryTree` was not a try-with-resources, or this method was called recursively and
+      // all the resources have been handled.  Just scan the main try block.
+      scan(tryTree.getBlock(), p);
+      return;
+    }
+
+    // Handle the first resource declaration in the list.  The rest will be handled by a recursive
+    // call.
+    Tree resourceDeclarationTree = resources.get(0);
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    // Store return/break/continue labels.  Generating a synthetic finally block for closing the
+    // resource requires creating fresh return/break/continue labels and then restoring the old
+    // labels afterward.
+    LabelCell oldReturnTargetLC = returnTargetLC;
+    LabelCell oldBreakTargetLC = breakTargetLC;
+    Map<Name, Label> oldBreakLabels = breakLabels;
+    LabelCell oldContinueTargetLC = continueTargetLC;
+    Map<Name, Label> oldContinueLabels = continueLabels;
+
+    // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these nodes
+    // *before* pushing a TryFinallyFrame for the finally block that will close the resource.  If
+    // any exception occurs due to code within the resource declaration, the corresponding variable
+    // or field is *not* automatically closed (as it was never assigned a value).
+    Node resourceCloseNode = scan(resourceDeclarationTree, p);
+
+    // Now, set things up for our synthetic finally block that closes the resource.
+    Label doneLabel = new Label();
+    Label finallyLabel = new Label();
+
+    Label exceptionalFinallyLabel = new Label();
+    tryStack.pushFrame(new TryFinallyFrame(exceptionalFinallyLabel));
+
+    returnTargetLC = new LabelCell();
+
+    breakTargetLC = new LabelCell();
+    breakLabels = new TryFinallyScopeMap();
+
+    continueTargetLC = new LabelCell();
+    continueLabels = new TryFinallyScopeMap();
+
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "start of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+    // Recursively handle any remaining resource declarations and the main block of the try
+    handleTryResourcesAndBlock(tryTree, p, resources.subList(1, resources.size()));
+    extendWithNode(
+        new MarkerNode(
+            resourceDeclarationTree,
+            "end of try block for resource #" + TreeUtils.treeUids.get(resourceDeclarationTree),
+            env.getTypeUtils()));
+
+    extendWithExtendedNode(new UnconditionalJump(finallyLabel));
+
+    // Generate the finally block that closes the resource
+    handleFinally(
+        resourceDeclarationTree,
+        doneLabel,
+        finallyLabel,
+        exceptionalFinallyLabel,
+        () -> addCloseCallForResource(resourceDeclarationTree, resourceCloseNode),
+        oldReturnTargetLC,
+        oldBreakTargetLC,
+        oldBreakLabels,
+        oldContinueTargetLC,
+        oldContinueLabels);
+
+    addLabelForNextNode(doneLabel);
+  }
+
+  /**
+   * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
+   * in a try-with-resources.
+   *
+   * @param resourceDeclarationTree the resource declaration
+   * @param resourceToCloseNode node represented the variable or field on which {@code close} should
+   *     be invoked
+   */
+  private void addCloseCallForResource(Tree resourceDeclarationTree, Node resourceToCloseNode) {
+    Tree receiverTree = resourceDeclarationTree;
+    if (receiverTree instanceof VariableTree) {
+      receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
+      handleArtificialTree(receiverTree);
+    }
+
+    MemberSelectTree closeSelect =
+        treeBuilder.buildCloseMethodAccess((ExpressionTree) receiverTree);
+    handleArtificialTree(closeSelect);
+
+    MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
+    handleArtificialTree(closeCall);
+
+    Node receiverNode = resourceToCloseNode;
+    if (receiverNode instanceof AssignmentNode) {
+      // variable declaration; use the LHS
+      receiverNode = ((AssignmentNode) resourceToCloseNode).getTarget();
+    }
+    // TODO do we need to insert some kind of node representing a use of receiverNode
+    // (which can be either a LocalVariableNode or a FieldAccessNode)?
+    MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
+    closeAccessNode.setInSource(false);
+    extendWithNode(closeAccessNode);
+    MethodInvocationNode closeCallNode =
+        new MethodInvocationNode(
+            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
+    closeCallNode.setInSource(false);
+    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+  }
+
+  /**
+   * Shared logic for CFG generation for a finally block. The block may correspond to a {@link
+   * TryTree} originally in the source code, or it may be a synthetic finally block used to model
+   * closing of a resource due to try-with-resources.
+   *
+   * @param markerTree tree to reference when creating {@link MarkerNode}s for the finally block
+   * @param doneLabel label for the normal successor of the try block (no exceptions, returns,
+   *     breaks, or continues)
+   * @param finallyLabel label for the entry of the finally block for the normal case
+   * @param exceptionalFinallyLabel label for entry of the finally block for when the try block
+   *     throws an exception
+   * @param finallyBlockCFGGenerator generates CFG nodes and edges for the finally block
+   * @param oldReturnTargetLC old return target label cell, which gets restored to {@link
+   *     #returnTargetLC} while handling the finally block
+   * @param oldBreakTargetLC old break target label cell, which gets restored to {@link
+   *     #breakTargetLC} while handling the finally block
+   * @param oldBreakLabels old break labels, which get restored to {@link #breakLabels} while
+   *     handling the finally block
+   * @param oldContinueTargetLC old continue target label cell, which gets restored to {@link
+   *     #continueTargetLC} while handling the finally block
+   * @param oldContinueLabels old continue labels, which get restored to {@link #continueLabels}
+   *     while handling the finally block
+   */
+  private void handleFinally(
+      Tree markerTree,
+      Label doneLabel,
+      Label finallyLabel,
+      Label exceptionalFinallyLabel,
+      Runnable finallyBlockCFGGenerator,
+      LabelCell oldReturnTargetLC,
+      LabelCell oldBreakTargetLC,
+      Map<Name, Label> oldBreakLabels,
+      LabelCell oldContinueTargetLC,
+      Map<Name, Label> oldContinueLabels) {
+    // Reset values before analyzing the finally block!
+
+    tryStack.popFrame();
+
+    { // Scan 'finallyBlock' for only 'finallyLabel' (a successful path)
+      addLabelForNextNode(finallyLabel);
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(doneLabel));
+    }
+
+    if (hasExceptionalPath(exceptionalFinallyLabel)) {
+      // If an exceptional path exists, scan 'finallyBlock' for 'exceptionalFinallyLabel',
+      // and scan copied 'finallyBlock' for 'finallyLabel' (a successful path). If there
+      // is no successful path, it will be removed in later phase.
+      // TODO: Don't we need a separate finally block for each kind of exception?
+      addLabelForNextNode(exceptionalFinallyLabel);
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+
+      finallyBlockCFGGenerator.run();
+
+      NodeWithExceptionsHolder throwing =
+          extendWithNodeWithException(
+              new MarkerNode(
+                  markerTree,
+                  "end of finally block for Throwable #" + TreeUtils.treeUids.get(markerTree),
+                  env.getTypeUtils()),
+              throwableType);
+
+      throwing.setTerminatesExecution(true);
+    }
+
+    if (returnTargetLC.wasAccessed()) {
+      addLabelForNextNode(returnTargetLC.peekLabel());
+      returnTargetLC = oldReturnTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for return #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block for return #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(returnTargetLC.accessLabel()));
+    } else {
+      returnTargetLC = oldReturnTargetLC;
+    }
+
+    if (breakTargetLC.wasAccessed()) {
+      addLabelForNextNode(breakTargetLC.peekLabel());
+      breakTargetLC = oldBreakTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for break #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block for break #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
+    } else {
+      breakTargetLC = oldBreakTargetLC;
+    }
+
+    Map<Name, Label> accessedBreakLabels = ((TryFinallyScopeMap) breakLabels).getAccessedNames();
+    if (!accessedBreakLabels.isEmpty()) {
+      breakLabels = oldBreakLabels;
+
+      for (Map.Entry<Name, Label> access : accessedBreakLabels.entrySet()) {
+        addLabelForNextNode(access.getValue());
+        extendWithNode(
+            new MarkerNode(
+                markerTree,
+                "start of finally block for break label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(markerTree),
+                env.getTypeUtils()));
+        finallyBlockCFGGenerator.run();
+        extendWithNode(
+            new MarkerNode(
+                markerTree,
+                "end of finally block for break label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(markerTree),
+                env.getTypeUtils()));
+        extendWithExtendedNode(new UnconditionalJump(breakLabels.get(access.getKey())));
+      }
+    } else {
+      breakLabels = oldBreakLabels;
+    }
+
+    if (continueTargetLC.wasAccessed()) {
+      addLabelForNextNode(continueTargetLC.peekLabel());
+      continueTargetLC = oldContinueTargetLC;
+
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "start of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      finallyBlockCFGGenerator.run();
+      extendWithNode(
+          new MarkerNode(
+              markerTree,
+              "end of finally block for continue #" + TreeUtils.treeUids.get(markerTree),
+              env.getTypeUtils()));
+      extendWithExtendedNode(new UnconditionalJump(continueTargetLC.accessLabel()));
+    } else {
+      continueTargetLC = oldContinueTargetLC;
+    }
+
+    Map<Name, Label> accessedContinueLabels =
+        ((TryFinallyScopeMap) continueLabels).getAccessedNames();
+    if (!accessedContinueLabels.isEmpty()) {
+      continueLabels = oldContinueLabels;
+
+      for (Map.Entry<Name, Label> access : accessedContinueLabels.entrySet()) {
+        addLabelForNextNode(access.getValue());
+        extendWithNode(
+            new MarkerNode(
+                markerTree,
+                "start of finally block for continue label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(markerTree),
+                env.getTypeUtils()));
+        finallyBlockCFGGenerator.run();
+        extendWithNode(
+            new MarkerNode(
+                markerTree,
+                "end of finally block for continue label "
+                    + access.getKey()
+                    + " #"
+                    + TreeUtils.treeUids.get(markerTree),
+                env.getTypeUtils()));
+        extendWithExtendedNode(new UnconditionalJump(continueLabels.get(access.getKey())));
+      }
+    } else {
+      continueLabels = oldContinueLabels;
+    }
   }
 
   /**
@@ -3753,21 +4096,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitUnionType(UnionTypeTree tree, Void p) {
-    throw new BugInCF("UnionTypeTree is unexpected in AST to CFG translation");
+    throw new BugInCF("UnionTypeTree is unexpected in AST to CFG translation: " + tree);
   }
 
   @Override
   public Node visitArrayType(ArrayTypeTree tree, Void p) {
     Node result = new ArrayTypeNode(tree, types);
-    extendWithNode(new ArrayTypeNode(tree, types));
+    extendWithNode(result);
     return result;
   }
 
   @Override
   public Node visitTypeCast(TypeCastTree tree, Void p) {
-    final Node operand = scan(tree.getExpression(), p);
-    final TypeMirror type = TreeUtils.typeOf(tree.getType());
-    final Node node = new TypeCastNode(tree, operand, type, types);
+    Node operand = scan(tree.getExpression(), p);
+    TypeMirror type = TreeUtils.typeOf(tree.getType());
+    Node node = new TypeCastNode(tree, operand, type, types);
 
     extendWithNodeWithException(node, classCastExceptionType);
     return node;
@@ -3787,15 +4130,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   @Override
   public Node visitInstanceOf(InstanceOfTree tree, Void p) {
+    InstanceOfNode instanceOfNode;
     Node operand = scan(tree.getExpression(), p);
-    TypeMirror refType = TreeUtils.typeOf(tree.getType());
-    Tree binding = TreeUtils.instanceOfTreeGetPattern(tree);
-    LocalVariableNode bindingNode =
-        (LocalVariableNode) ((binding == null) ? null : scan(binding, p));
-
-    InstanceOfNode node = new InstanceOfNode(tree, operand, bindingNode, refType, types);
-    extendWithNode(node);
-    return node;
+    Tree patternTree = InstanceOfUtils.getPattern(tree);
+    if (patternTree != null) {
+      Node pattern = scan(patternTree, p);
+      instanceOfNode = new InstanceOfNode(tree, operand, pattern, pattern.getType(), types);
+    } else {
+      TypeMirror refType = TreeUtils.typeOf(tree.getType());
+      instanceOfNode = new InstanceOfNode(tree, operand, refType, types);
+    }
+    extendWithNode(instanceOfNode);
+    return instanceOfNode;
   }
 
   @Override
@@ -3851,8 +4197,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT;
           boolean isPostfix =
               kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.POSTFIX_DECREMENT;
-          AssignmentNode unaryAssign =
-              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
 
           if (isPostfix) {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
@@ -3879,7 +4223,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             result = new LocalVariableNode(resultExpr);
             result.setInSource(false);
             extendWithNode(result);
-          } else {
+          }
+          AssignmentNode unaryAssign =
+              createIncrementOrDecrementAssign(tree, expr, isIncrement, isPostfix);
+          if (!isPostfix) {
             result = unaryAssign;
           }
           break;

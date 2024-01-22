@@ -9,6 +9,7 @@ import java.util.jar.JarFile;
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
   /** The underlying JarFile. */
   private final JarFile file;
+
   /** The entry in the jar file. */
   private final JarEntry entry;
 

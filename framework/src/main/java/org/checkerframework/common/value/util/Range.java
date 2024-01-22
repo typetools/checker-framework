@@ -49,8 +49,10 @@ public class Range {
 
   /** Long.MIN_VALUE, as a BigInteger. */
   private static final BigInteger BIG_LONG_MIN_VALUE = BigInteger.valueOf(Long.MIN_VALUE);
+
   /** Long.MAX_VALUE, as a BigInteger. */
   private static final BigInteger BIG_LONG_MAX_VALUE = BigInteger.valueOf(Long.MAX_VALUE);
+
   /** The number of Long values, as a BigInteger. */
   private static final BigInteger BIG_LONG_WIDTH =
       BIG_LONG_MAX_VALUE.subtract(BIG_LONG_MIN_VALUE).add(BigInteger.ONE);
@@ -590,10 +592,10 @@ public class Range {
           Arrays.asList(from * right.from, from * right.to, to * right.from, to * right.to);
       return create(possibleValues);
     } else {
-      final BigInteger bigLeftFrom = BigInteger.valueOf(from);
-      final BigInteger bigRightFrom = BigInteger.valueOf(right.from);
-      final BigInteger bigRightTo = BigInteger.valueOf(right.to);
-      final BigInteger bigLeftTo = BigInteger.valueOf(to);
+      BigInteger bigLeftFrom = BigInteger.valueOf(from);
+      BigInteger bigRightFrom = BigInteger.valueOf(right.from);
+      BigInteger bigRightTo = BigInteger.valueOf(right.to);
+      BigInteger bigLeftTo = BigInteger.valueOf(to);
       List<BigInteger> bigPossibleValues =
           Arrays.asList(
               bigLeftFrom.multiply(bigRightFrom),
@@ -1189,7 +1191,7 @@ public class Range {
   }
 
   /**
-   * Determines if the range is wider than a given value, i.e., if the number of possible values
+   * Returns true if the range is wider than a given value, i.e., if the number of possible values
    * enclosed by this range is more than the given value.
    *
    * @param value the value to compare with
@@ -1210,13 +1212,17 @@ public class Range {
     }
   }
 
-  /** Determines if this range represents a constant value. */
+  /**
+   * Returns true if this range represents a constant value.
+   *
+   * @return true if this range represents a constant value
+   */
   public boolean isConstant() {
     return from == to;
   }
 
   /**
-   * Determines if this range is completely contained in the range specified by the given lower
+   * Returns true if this range is completely contained in the range specified by the given lower
    * bound inclusive and upper bound inclusive.
    *
    * @param lb lower bound for the range that might contain this one
@@ -1229,7 +1235,7 @@ public class Range {
   }
 
   /**
-   * Determines if this range is contained inclusively between Long.MIN_VALUE/2 and
+   * Returns true if this range is contained inclusively between Long.MIN_VALUE/2 and
    * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
    */
   private boolean isWithinHalfLong() {
@@ -1237,7 +1243,7 @@ public class Range {
   }
 
   /**
-   * Determines if this range is completely contained in the scope of the Integer type.
+   * Returns true if this range is completely contained in the scope of the Integer type.
    *
    * @return true if the range is contained within the Integer range inclusive
    */

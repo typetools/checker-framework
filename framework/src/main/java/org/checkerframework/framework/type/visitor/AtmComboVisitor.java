@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.visitor;
 
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -10,6 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, it
@@ -21,6 +23,48 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *     global state.
  */
 public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
+
+  /**
+   * Formats type1, type2 and param into an error message used by all methods of
+   * AbstractAtmComboVisitor that are not overridden. Normally, this method should indicate that the
+   * given method (and therefore the given pair of type mirror classes) is not supported by this
+   * class.
+   *
+   * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
+   * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
+   * @param param subtype specific parameter passed to every visit method
+   * @return an error message
+   */
+  default String defaultErrorMessage(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
+    // Message is on one line, without line breaks, because in a stack trace only the first line of
+    // the message may be shown.
+    return String.format(
+        "%s: unexpected combination:  type: [%s %s] %s  supertype: [%s %s] %s",
+        this.getClass().getSimpleName(),
+        type1.getKind(),
+        type1.getClass(),
+        type1,
+        type2.getKind(),
+        type2.getClass(),
+        type2);
+  }
+
+  /**
+   * Called by the default implementation of every AbstractAtmComboVisitor visit method. This
+   * methodnS issues a runtime exception by default. In general, it should handle the case where a
+   * visit method has been called with a pair of type mirrors that should never be passed to this
+   * particular visitor.
+   *
+   * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
+   * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
+   * @param param subtype specific parameter passed to every visit method
+   * @return a value of type RETURN_TYPE, if no exception is thrown
+   */
+  default RETURN_TYPE defaultAction(
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
+    throw new BugInCF(defaultErrorMessage(type1, type2, param));
+  }
 
   public RETURN_TYPE visitArray_Array(
       AnnotatedArrayType subtype, AnnotatedArrayType supertype, PARAM param);

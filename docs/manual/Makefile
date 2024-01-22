@@ -74,12 +74,12 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 	sed -i -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
 
 ../../checker/bin-devel/.plume-scripts:
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && ./gradlew --stacktrace getPlumeScripts
 
 .PHONY: contributors.tex
 contributors.tex:
 # Update plume-scripts even if it is already cloned
-	cd ../.. && ./gradlew getPlumeScripts
+	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
 	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
@@ -98,13 +98,13 @@ check-labels:
 
 export BIBINPUTS = $BIBINPUTS:.:plume-bib
 plume-bib:
-	(git clone --depth 1 -q https://github.com/mernst/plume-bib.git || git clone --depth 1 -q https://github.com/mernst/plume-bib.git)
+	(git clone --filter=blob:none -q https://github.com/mernst/plume-bib.git || git clone --filter=blob:none -q https://github.com/mernst/plume-bib.git)
 .PHONY: plume-bib-update
 plume-bib-update: plume-bib
 # Even if this command fails, it does not terminate the make job.
 # However, to skip it, invoke make as:  make NOGIT=1 ...
 ifndef NOGIT
-	-(cd plume-bib && git pull && make)
+	-(cd plume-bib && (timeout 10s git pull || true) && make)
 endif
 
 # Leaves manual.html, and .svg files that it references.
@@ -121,7 +121,7 @@ checklink:
 
 .PHONY: checklink-via-file
 checklink-via-file:
-	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` manual.html
+	${CHECKLINK}/checklink -q -e $(grep -v '^#' ${CHECKLINK}/checklink-args.txt) manual.html
 
 # Example invocation:
 #   CHECKLINK=$HOME/bin/src/checklink make checklink-via-http

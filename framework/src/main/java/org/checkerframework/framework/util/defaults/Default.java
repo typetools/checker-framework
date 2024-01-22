@@ -17,6 +17,7 @@ public class Default implements Comparable<Default> {
   // please remember to add any fields to the hashcode calculation
   /** The default annotation mirror. */
   public final AnnotationMirror anno;
+
   /** The type use location. */
   public final TypeUseLocation location;
 
@@ -26,7 +27,7 @@ public class Default implements Comparable<Default> {
    * @param anno the default annotation mirror
    * @param location the type use location
    */
-  public Default(final AnnotationMirror anno, final TypeUseLocation location) {
+  public Default(AnnotationMirror anno, TypeUseLocation location) {
     this.anno = anno;
     this.location = location;
   }

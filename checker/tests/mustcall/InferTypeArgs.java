@@ -5,7 +5,7 @@ class CFAbstractValue<V extends CFAbstractValue<V>> {}
 
 class CFAbstractAnalysis<V extends CFAbstractValue<V>> {}
 
-class GenericAnnotatedTypeFactory<
+class GenericAnnotatedTypeFactoryMustCallTest<
     Value extends CFAbstractValue<Value>, FlowAnalysis extends CFAbstractAnalysis<Value>> {
 
   protected FlowAnalysis createFlowAnalysis() {

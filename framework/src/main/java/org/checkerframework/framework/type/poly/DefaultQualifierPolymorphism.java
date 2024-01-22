@@ -37,8 +37,8 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
       AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
     for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : replacements.entrySet()) {
       AnnotationMirror poly = pqentry.getKey();
-      if (type.hasAnnotation(poly)) {
-        type.removeAnnotation(poly);
+      if (type.hasPrimaryAnnotation(poly)) {
+        type.removePrimaryAnnotation(poly);
         AnnotationMirror qual;
         if (polyInstantiationForQualifierParameter.containsKey(poly)) {
           qual = polyInstantiationForQualifierParameter.get(poly);
@@ -50,7 +50,11 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     }
   }
 
-  /** Combines the two annotations using the least upper bound. */
+  /**
+   * This implementation combines the two annotations using the least upper bound.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   protected AnnotationMirror combine(
       AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
@@ -59,6 +63,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     } else if (a2 == null) {
       return a1;
     }
-    return qualHierarchy.leastUpperBound(a1, a2);
+    return qualHierarchy.leastUpperBoundQualifiersOnly(a1, a2);
   }
 }

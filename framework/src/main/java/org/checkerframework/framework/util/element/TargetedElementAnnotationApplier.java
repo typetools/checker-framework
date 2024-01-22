@@ -88,7 +88,7 @@ abstract class TargetedElementAnnotationApplier {
    * @param type the type to annotate
    * @param element an element identifying type
    */
-  TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
+  TargetedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {
     this.type = type;
     this.element = element;
   }
@@ -152,17 +152,17 @@ abstract class TargetedElementAnnotationApplier {
    * @return a {@literal Map<TargetClass => Annotations>.}
    */
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
-      final Iterable<Attribute.TypeCompound> typeCompounds) {
+      Iterable<Attribute.TypeCompound> typeCompounds) {
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
         new EnumMap<>(TargetClass.class);
     for (TargetClass targetClass : TargetClass.values()) {
       targetClassToCompound.put(targetClass, new ArrayList<>());
     }
 
-    for (final Attribute.TypeCompound typeCompound : typeCompounds) {
-      final TargetType typeCompoundTarget = typeCompound.position.type;
-      final List<Attribute.TypeCompound> destList;
+    for (Attribute.TypeCompound typeCompound : typeCompounds) {
+      TargetType typeCompoundTarget = typeCompound.position.type;
+      List<Attribute.TypeCompound> destList;
 
       if (ElementAnnotationUtil.contains(typeCompoundTarget, annotatedTargets())) {
         destList = targetClassToCompound.get(TargetClass.TARGETED);
@@ -199,8 +199,7 @@ abstract class TargetedElementAnnotationApplier {
               + element);
     }
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno =
-        sift(getRawTypeAttributes());
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno = sift(getRawTypeAttributes());
 
     handleInvalid(targetClassToAnno.get(TargetClass.INVALID));
     handleValid(targetClassToAnno.get(TargetClass.VALID));

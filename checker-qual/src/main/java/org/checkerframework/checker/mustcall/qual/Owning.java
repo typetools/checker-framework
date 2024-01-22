@@ -23,9 +23,8 @@ import java.lang.annotation.Target;
  * object at the call site and the parameter in the method's body are aliases, and so checking only
  * one of the two is required.
  *
- * <p>Methods are treated as if they have this annotation by default unless their method is
- * annotated as {@link NotOwning}. Parameters and fields are treated as {@link NotOwning} by
- * default.
+ * <p>Constructor results are always {@code @Owning}. Method return types are {@code @Owning} by
+ * default. Formal parameters and fields are {@link NotOwning} by default.
  *
  * <p>When the {@code -AnoLightweightOwnership} command-line argument is passed to the checker, this
  * annotation and {@link NotOwning} are ignored.

@@ -12,27 +12,36 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
-  openjdk-11-jdk
+&& apt-get -y install aptitude \
+&& aptitude -y install \
+  apt-utils
 
 RUN export DEBIAN_FRONTEND=noninteractive \
 && apt-get -qqy update \
-&& apt-get -qqy install \
+&& aptitude -y install \
+  openjdk-11-jdk \
+  openjdk-17-jdk \
+&& update-java-alternatives -s java-1.11.0-openjdk-amd64
+
+# Known good combinations of JTReg and the JDK appear at https://builds.shipilev.net/jtreg/ .
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get -qqy update \
+&& aptitude -y install \
   ant \
   cpp \
   git \
-  gradle \
   jq \
   jtreg6 \
   libcurl3-gnutls \
   make \
   maven \
-  mercurial \
-  python3-pip \
+  python3-distutils \
   python3-requests \
   unzip \
   wget
 
 RUN export DEBIAN_FRONTEND=noninteractive \
+&& apt-get autoremove \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

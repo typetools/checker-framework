@@ -36,6 +36,7 @@ public class ThisSuper {
 
     class InnerClass {
       private final Object lock = new Object();
+
       // :: error: (assignment)
       @FlowExp("this.lock") Object field2 = field;
     }

@@ -40,7 +40,7 @@ SCRIPTDIR=$ROOTDIR/checker/bin-devel/
 "${SCRIPTDIR}/plume-scripts/ci-info" typetools
 eval $("${SCRIPTDIR}/plume-scripts/ci-info" typetools)
 
-source "$SCRIPTDIR/build.sh"
+source "$SCRIPTDIR/clone-related"
 
 ###
 ### Run the test
@@ -58,6 +58,7 @@ case  $GROUP  in
         "$SCRIPTDIR/test-cftests-nonjunit.sh"
         "$SCRIPTDIR/test-cftests-inference.sh"
         "$SCRIPTDIR/test-misc.sh"
+        "$SCRIPTDIR/test-typecheck.sh"
         "$SCRIPTDIR/test-plume-lib.sh"
         "$SCRIPTDIR/test-daikon.sh"
         "$SCRIPTDIR/test-guava.sh"

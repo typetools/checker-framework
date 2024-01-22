@@ -28,8 +28,6 @@ from release_vars import PLUME_BIB_REPO
 from release_vars import PLUME_SCRIPTS
 from release_vars import PLUME_SCRIPTS_REPO
 from release_vars import RELEASE_BUILD_COMPLETED_FLAG_FILE
-from release_vars import STUBPARSER
-from release_vars import STUBPARSER_REPO
 from release_vars import TOOLS
 
 from release_vars import execute
@@ -86,7 +84,6 @@ The following repositories will be cloned or updated from their origins:
     message += PLUME_SCRIPTS + "\n"
     message += CHECKLINK + "\n"
     message += PLUME_BIB + "\n"
-    message += STUBPARSER + "\n\n"
 
     message += "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
 
@@ -115,7 +112,6 @@ The following repositories will be cloned or updated from their origins:
     )
     clone_from_scratch_or_update(CHECKLINK_REPO, CHECKLINK, clone_from_scratch, False)
     clone_from_scratch_or_update(PLUME_BIB_REPO, PLUME_BIB, clone_from_scratch, False)
-    clone_from_scratch_or_update(STUBPARSER_REPO, STUBPARSER, clone_from_scratch, False)
     # clone_from_scratch_or_update(LIVE_ANNO_REPO, ANNO_TOOLS, clone_from_scratch, False)
 
 
@@ -246,9 +242,6 @@ def build_checker_framework_release(
 
     afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
-    # build stubparser
-    execute("mvn package -Dmaven.test.skip=true", True, False, STUBPARSER)
-
     # build annotation-tools
     execute("./gradlew assemble -Prelease=true", True, False, ANNO_FILE_UTILITIES)
 
@@ -285,8 +278,6 @@ def build_checker_framework_release(
     # Build the Checker Framework binaries and documents.  Tests are run by release_push.py.
     gradle_cmd = "./gradlew releaseBuild"
     execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
-    gradle_cmd = "./gradlew assembleForJavac"
-    execute(gradle_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "manual")
@@ -309,7 +300,9 @@ def build_checker_framework_release(
         cfZipName,
         version,
     )
-    # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
+    # IMPORTANT: The release.xml in the directory where the Checker Framework
+    # is being built is used. Not the release.xml in the directory you ran
+    # release_build.py from.
     ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 

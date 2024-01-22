@@ -16,6 +16,7 @@ public class Issue1315 {
       // :: warning: (cast.unsafe)
       return (T) p;
     }
+
     // The Nullness Checker should not issue a cast.unsafe warning,
     // but the KeyFor Checker does, so suppress that warning.
     @SuppressWarnings({"unchecked", "keyfor:cast.unsafe"})

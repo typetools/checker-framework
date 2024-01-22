@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -27,14 +28,26 @@ import org.plumelib.util.StringsPlume;
  * from each hierarchy.
  */
 @AnnotatedFor("nullness")
-public interface QualifierHierarchy {
+public abstract class QualifierHierarchy {
+
+  /** The associated type factory. This is used only for checking whether types are relevant. */
+  protected GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
 
   /**
-   * Determine whether this is valid.
+   * Creates a new QualifierHierarchy.
    *
-   * @return whether this is valid
+   * @param atypeFactory the associated type factory
    */
-  default boolean isValid() {
+  public QualifierHierarchy(GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    this.atypeFactory = atypeFactory;
+  }
+
+  /**
+   * Determine whether this QualifierHierarchy is valid.
+   *
+   * @return true if this QualifierHierarchy is valid
+   */
+  public boolean isValid() {
     return true;
   }
 
@@ -47,7 +60,7 @@ public interface QualifierHierarchy {
    *
    * @return the width of this QualifierHierarchy
    */
-  default int getWidth() {
+  public int getWidth() {
     return getTopAnnotations().size();
   }
 
@@ -57,7 +70,7 @@ public interface QualifierHierarchy {
    *
    * @return the top (ultimate super) type qualifiers in the type system
    */
-  Set<? extends AnnotationMirror> getTopAnnotations();
+  public abstract AnnotationMirrorSet getTopAnnotations();
 
   /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
@@ -66,7 +79,7 @@ public interface QualifierHierarchy {
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the top qualifier of {@code qualifier}'s hierarchy
    */
-  AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
+  public abstract AnnotationMirror getTopAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns the bottom type qualifiers in the hierarchy. The size of this set is equal to {@link
@@ -74,7 +87,7 @@ public interface QualifierHierarchy {
    *
    * @return the bottom type qualifiers in the hierarchy
    */
-  Set<? extends AnnotationMirror> getBottomAnnotations();
+  public abstract AnnotationMirrorSet getBottomAnnotations();
 
   /**
    * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
@@ -83,7 +96,7 @@ public interface QualifierHierarchy {
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the bottom qualifier of {@code qualifier}'s hierarchy
    */
-  AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
+  public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
@@ -93,7 +106,7 @@ public interface QualifierHierarchy {
    * @return the polymorphic qualifier for the hierarchy containing {@code qualifier}, or {@code
    *     null} if there is no polymorphic qualifier in that hierarchy
    */
-  @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
+  public abstract @Nullable AnnotationMirror getPolymorphicAnnotation(AnnotationMirror qualifier);
 
   /**
    * Returns {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
@@ -103,7 +116,7 @@ public interface QualifierHierarchy {
    * @return {@code true} if the qualifier is a polymorphic qualifier; otherwise, returns {@code
    *     false}.
    */
-  boolean isPolymorphicQualifier(AnnotationMirror qualifier);
+  public abstract boolean isPolymorphicQualifier(AnnotationMirror qualifier);
 
   // **********************************************************************
   // Qualifier Hierarchy Queries
@@ -111,24 +124,149 @@ public interface QualifierHierarchy {
 
   /**
    * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
-   * according to the type qualifier hierarchy.
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
-   * @param subQualifier possible subqualifier of {@code superQualifier}
-   * @param superQualifier possible superqualifier of {@code subQualifier}
+   * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
+   * override this method (if needed).
+   *
+   * <p>This method behaves the same as {@link #isSubtypeQualifiersOnly(AnnotationMirror,
+   * AnnotationMirror)}, which calls this method. This method is for clients inside the framework,
+   * and it has {@code protected} access to prevent use by clients outside the framework. This makes
+   * it easy to find places where code outside the framework is ignoring Java basetypes -- at calls
+   * to {@link #isSubtypeQualifiersOnly}.
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
    * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
    */
-  boolean isSubtype(AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+  protected abstract boolean isSubtypeQualifiers(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier);
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy, ignoring Java basetypes.
+   *
+   * <p>This method is for clients outside the framework, and should not be used by framework code.
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  public final boolean isSubtypeQualifiersOnly(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier) {
+    return isSubtypeQualifiers(subQualifier, superQualifier);
+  }
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
+   * not necessarily in a Java subtyping relationship with one another and are only used by this
+   * method for special cases when qualifier subtyping depends on the Java basetype.
+   *
+   * <p>Clients should usually call {@code isSubtypeShallow()} (this method). Rarely, to ignore the
+   * Java basetype, a client can call {@link #isSubtypeQualifiersOnly}.
+   *
+   * <p>Subtypes should override {@link #isSubtypeQualifiers} (not this method), unless qualifier
+   * subtyping depends on Java basetypes.
+   *
+   * @param subQualifier possible subqualifier
+   * @param subType the Java basetype associated with {@code subQualifier}
+   * @param superQualifier possible superqualifier
+   * @param superType the Java basetype associated with {@code superQualifier}
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  @SuppressWarnings({"nullness", "keyfor"}) // AnnotatedTypeFactory hasn't been annotated.
+  public boolean isSubtypeShallow(
+      AnnotationMirror subQualifier,
+      TypeMirror subType,
+      AnnotationMirror superQualifier,
+      TypeMirror superType) {
+    if (!atypeFactory.isRelevant(subType) || !atypeFactory.isRelevant(superType)) {
+      // At least one of the types is not relevant.
+      return true;
+    }
+    return isSubtypeQualifiers(subQualifier, superQualifier);
+  }
+
+  /**
+   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * according to the type qualifier hierarchy. The type {@code typeMirror} is only used by this
+   * method for special cases when qualifier subtyping depends on the Java basetype.
+   *
+   * <p>Clients should usually call {@link #isSubtypeShallow(AnnotationMirror, AnnotationMirror,
+   * TypeMirror)} (this method) or {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
+   * AnnotationMirror, TypeMirror)}. Rarely, to ignore the Java basetype, a client can call {@link
+   * #isSubtypeQualifiersOnly}.
+   *
+   * <p>Subtypes should override {@link #isSubtypeQualifiers} (not this method), unless qualifier
+   * subtyping depends on Java basetypes.
+   *
+   * @param subQualifier possible subqualifier
+   * @param superQualifier possible superqualifier
+   * @param typeMirror the Java basetype associated with both {@code subQualifier} and {@code
+   *     superQualifier}
+   * @return true iff {@code subQualifier} is a subqualifier of, or equal to, {@code superQualifier}
+   */
+  public final boolean isSubtypeShallow(
+      AnnotationMirror subQualifier, AnnotationMirror superQualifier, TypeMirror typeMirror) {
+    return isSubtypeShallow(subQualifier, typeMirror, superQualifier, typeMirror);
+  }
 
   /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
-   * qualifier in the same hierarchy in {@code superQualifiers}.
+   * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
+   * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
+   * only used by this method for special cases when qualifier subtyping depends on the Java
+   * basetype.
    *
-   * @param subQualifiers set of qualifiers; exactly one per hierarchy
-   * @param superQualifiers set of qualifiers; exactly one per hierarchy
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
+   *
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param subType the type associated with {@code subQualifiers}
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param superType the type associated with {@code superQualifiers}
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
-  default boolean isSubtype(
+  public final boolean isSubtypeShallow(
+      Collection<? extends AnnotationMirror> subQualifiers,
+      TypeMirror subType,
+      Collection<? extends AnnotationMirror> superQualifiers,
+      TypeMirror superType) {
+    assertSameSize(subQualifiers, superQualifiers);
+    for (AnnotationMirror subQual : subQualifiers) {
+      AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
+      if (superQual == null) {
+        throw new BugInCF(
+            "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
+            subQual, StringsPlume.join(",", superQualifiers));
+      }
+      if (!isSubtypeShallow(subQual, subType, superQual, superType)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
+   * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
+   * only used by this method for special cases when qualifier subtyping depends on the Java
+   * basetype.
+   *
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
+   *
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   *     qualifier in the same hierarchy in {@code superQualifiers}
+   */
+  public boolean isSubtypeQualifiersOnly(
       Collection<? extends AnnotationMirror> subQualifiers,
       Collection<? extends AnnotationMirror> superQualifiers) {
     assertSameSize(subQualifiers, superQualifiers);
@@ -139,7 +277,7 @@ public interface QualifierHierarchy {
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
             subQual, StringsPlume.join(",", superQualifiers));
       }
-      if (!isSubtype(subQual, superQual)) {
+      if (!isSubtypeQualifiersOnly(subQual, superQual)) {
         return false;
       }
     }
@@ -147,8 +285,31 @@ public interface QualifierHierarchy {
   }
 
   /**
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
+   * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
+   * used by this method for special cases when qualifier subtyping depends on the Java basetype.
+   *
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
+   *
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param typeMirror the type associated with both sets of qualifiers
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   *     qualifier in the same hierarchy in {@code superQualifiers}
+   */
+  public final boolean isSubtypeShallow(
+      Collection<? extends AnnotationMirror> subQualifiers,
+      Collection<? extends AnnotationMirror> superQualifiers,
+      TypeMirror typeMirror) {
+    return isSubtypeShallow(subQualifiers, typeMirror, superQualifiers, typeMirror);
+  }
+
+  /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
    *
    * <p>Examples:
    *
@@ -163,18 +324,65 @@ public interface QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  @Nullable AnnotationMirror leastUpperBound(
+  protected abstract @Nullable AnnotationMirror leastUpperBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+  /**
+   * Returns the least upper bound of all the collections of qualifiers. The result is the lub of
+   * the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
+   * @return the least upper bound of the collections of qualifiers
+   */
+  public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = new AnnotationMirrorSet(annos);
+      } else {
+        result = leastUpperBoundsQualifiersOnly(result, annos);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+   * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   * Ignores Java basetypes.
+   *
+   * <p>Examples:
+   *
+   * <ul>
+   *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+   * </ul>
+   *
+   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
+   *     different hierarchies
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  public final @Nullable AnnotationMirror leastUpperBoundQualifiersOnly(
+      AnnotationMirror qualifier1, AnnotationMirror qualifier2) {
+    return leastUpperBoundQualifiers(qualifier1, qualifier2);
+  }
 
   /**
    * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers1 set of qualifiers; exactly one per hierarchy
-   * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
    * @return the least upper bound of the two sets of qualifiers
    */
-  default Set<? extends AnnotationMirror> leastUpperBounds(
+  public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
       Collection<? extends AnnotationMirror> qualifiers1,
       Collection<? extends AnnotationMirror> qualifiers2) {
     assertSameSize(qualifiers1, qualifiers2);
@@ -186,7 +394,75 @@ public interface QualifierHierarchy {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
-        AnnotationMirror lub = leastUpperBound(a1, a2);
+        AnnotationMirror lub = leastUpperBoundQualifiersOnly(a1, a2);
+        if (lub != null) {
+          result.add(lub);
+        }
+      }
+    }
+
+    assertSameSize(result, qualifiers1);
+    return result;
+  }
+
+  /**
+   * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
+   * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
+   *
+   * <p>Examples:
+   *
+   * <ul>
+   *   <li>leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
+   * </ul>
+   *
+   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+   * @param tm1 the type on which qualifier1 appears
+   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @param tm2 the type on which qualifier2 appears
+   * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
+   *     different hierarchies
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  @SuppressWarnings({"nullness", "keyfor"}) // AnnotatedTypeFactory hasn't been annotated.
+  public @Nullable AnnotationMirror leastUpperBoundShallow(
+      AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+    boolean tm1IsRelevant = atypeFactory.isRelevant(tm1);
+    boolean tm2IsRelevant = atypeFactory.isRelevant(tm2);
+    if (tm1IsRelevant == tm2IsRelevant) {
+      return leastUpperBoundQualifiers(qualifier1, qualifier2);
+    } else if (tm1IsRelevant) {
+      return qualifier1;
+    } else { // if (tm2IsRelevant) {
+      return qualifier2;
+    }
+  }
+
+  /**
+   * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
+   * qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param tm1 the type on which qualifiers1 appear
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
+   * @param tm2 the type on which qualifiers2 appear
+   * @return the least upper bound of the two sets of qualifiers
+   */
+  public final Set<? extends AnnotationMirror> leastUpperBoundsShallow(
+      Collection<? extends AnnotationMirror> qualifiers1,
+      TypeMirror tm1,
+      Collection<? extends AnnotationMirror> qualifiers2,
+      TypeMirror tm2) {
+    assertSameSize(qualifiers1, qualifiers2);
+    if (qualifiers1.isEmpty()) {
+      throw new BugInCF(
+          "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror a1 : qualifiers1) {
+      for (AnnotationMirror a2 : qualifiers2) {
+        AnnotationMirror lub = leastUpperBoundShallow(a1, tm1, a2, tm2);
         if (lub != null) {
           result.add(lub);
         }
@@ -206,7 +482,7 @@ public interface QualifierHierarchy {
    *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never
    *     be called.
    */
-  default int numberOfIterationsBeforeWidening() {
+  public int numberOfIterationsBeforeWidening() {
     return -1;
   }
 
@@ -230,15 +506,14 @@ public interface QualifierHierarchy {
    * @return an upper bound that is higher than the least upper bound of newQualifier and
    *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
    */
-  default AnnotationMirror widenedUpperBound(
+  public AnnotationMirror widenedUpperBound(
       AnnotationMirror newQualifier, AnnotationMirror previousQualifier) {
-    AnnotationMirror widenUpperBound = leastUpperBound(newQualifier, previousQualifier);
-    if (widenUpperBound == null) {
+    AnnotationMirror widenedUpperBound = leastUpperBoundQualifiers(newQualifier, previousQualifier);
+    if (widenedUpperBound == null) {
       throw new BugInCF(
-          "Passed two unrelated qualifiers to QualifierHierarchy#widenedUpperBound. %s %s.",
-          newQualifier, previousQualifier);
+          "widenedUpperBound(%s, %s): unrelated qualifiers", newQualifier, previousQualifier);
     }
-    return widenUpperBound;
+    return widenedUpperBound;
   }
 
   /**
@@ -247,23 +522,64 @@ public interface QualifierHierarchy {
    *
    * @param qualifier1 first qualifier
    * @param qualifier2 second qualifier
-   * @return greatest lower bound of the two annotations or null if the two annotations are not from
-   *     the same hierarchy
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  @Nullable AnnotationMirror greatestLowerBound(
+  protected abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
+
+  /**
+   * Returns the greatest lower bound for the qualifiers qualifier1 and qualifier2. Returns null if
+   * the qualifiers are not from the same qualifier hierarchy.
+   *
+   * @param qualifier1 first qualifier
+   * @param qualifier2 second qualifier
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
+   */
+  // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
+  // collection version of LUB below.
+  public final @Nullable AnnotationMirror greatestLowerBoundQualifiersOnly(
+      AnnotationMirror qualifier1, AnnotationMirror qualifier2) {
+    return greatestLowerBoundQualifiers(qualifier1, qualifier2);
+  }
+
+  /**
+   * Returns the greatest lower bound for the qualifiers qualifier1 and qualifier2. Returns null if
+   * the qualifiers are not from the same qualifier hierarchy.
+   *
+   * @param qualifier1 first qualifier
+   * @param tm1 the type that is annotated by qualifier1
+   * @param qualifier2 second qualifier
+   * @param tm2 the type that is annotated by qualifier2
+   * @return greatest lower bound of the two annotations, or null if the two annotations are not
+   *     from the same hierarchy
+   */
+  @SuppressWarnings({"nullness", "keyfor"}) // AnnotatedTypeFactory hasn't been annotated.
+  public @Nullable AnnotationMirror greatestLowerBoundShallow(
+      AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+    boolean tm1IsRelevant = atypeFactory.isRelevant(tm1);
+    boolean tm2IsRelevant = atypeFactory.isRelevant(tm2);
+    if (tm1IsRelevant == tm2IsRelevant) {
+      return greatestLowerBoundQualifiers(qualifier1, qualifier2);
+    } else if (tm1IsRelevant) {
+      return qualifier1;
+    } else { // if (tm2IsRelevant) {
+      return qualifier2;
+    }
+  }
 
   /**
    * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers1 set of qualifiers; exactly one per hierarchy
-   * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
    * @return the greatest lower bound of the two sets of qualifiers
    */
-  default Set<? extends AnnotationMirror> greatestLowerBounds(
+  public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
       Collection<? extends AnnotationMirror> qualifiers1,
       Collection<? extends AnnotationMirror> qualifiers2) {
     assertSameSize(qualifiers1, qualifiers2);
@@ -275,7 +591,7 @@ public interface QualifierHierarchy {
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror a1 : qualifiers1) {
       for (AnnotationMirror a2 : qualifiers2) {
-        AnnotationMirror glb = greatestLowerBound(a1, a2);
+        AnnotationMirror glb = greatestLowerBoundQualifiersOnly(a1, a2);
         if (glb != null) {
           result.add(glb);
         }
@@ -287,14 +603,73 @@ public interface QualifierHierarchy {
   }
 
   /**
-   * Returns true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   * fewer qualifiers than the width of the QualifierHierarchy.
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param tm1 the type that is annotated by qualifier1
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
+   * @param tm2 the type that is annotated by qualifier2
+   * @return the greatest lower bound of the two sets of qualifiers
+   */
+  public final Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
+      Collection<? extends AnnotationMirror> qualifiers1,
+      TypeMirror tm1,
+      Collection<? extends AnnotationMirror> qualifiers2,
+      TypeMirror tm2) {
+    assertSameSize(qualifiers1, qualifiers2);
+    if (qualifiers1.isEmpty()) {
+      throw new BugInCF(
+          "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror a1 : qualifiers1) {
+      for (AnnotationMirror a2 : qualifiers2) {
+        AnnotationMirror glb = greatestLowerBoundShallow(a1, tm1, a2, tm2);
+        if (glb != null) {
+          result.add(glb);
+        }
+      }
+    }
+
+    assertSameSize(qualifiers1, qualifiers2, result);
+    return result;
+  }
+
+  /**
+   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
+   * of the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
+   * @return the greatest lower bound of the collections of qualifiers
+   */
+  public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = new AnnotationMirrorSet(annos);
+      } else {
+        result = greatestLowerBoundsQualifiersOnly(result, annos);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   * set with fewer qualifiers than the width of the QualifierHierarchy.
    *
    * @param type the type to test
-   * @return true if and only if {@link AnnotatedTypeMirror#getAnnotations()} can return a set with
-   *     fewer qualifiers than the width of the QualifierHierarchy
+   * @return true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
+   *     set with fewer qualifiers than the width of the QualifierHierarchy
    */
-  static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
+  public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
     return type.getKind() == TypeKind.TYPEVAR
         || type.getKind() == TypeKind.WILDCARD
         ||
@@ -312,11 +687,11 @@ public interface QualifierHierarchy {
    * top qualifier, then call {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}
    * directly is faster.
    *
-   * @param qualifiers set of annotations to search
+   * @param qualifiers the set of annotations to search
    * @param qualifier annotation that is in the same hierarchy as the returned annotation
    * @return annotation in the same hierarchy as qualifier, or null if one is not found
    */
-  default @Nullable AnnotationMirror findAnnotationInSameHierarchy(
+  public @Nullable AnnotationMirror findAnnotationInSameHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror qualifier) {
     AnnotationMirror top = this.getTopAnnotation(qualifier);
     return findAnnotationInHierarchy(qualifiers, top);
@@ -326,14 +701,14 @@ public interface QualifierHierarchy {
    * Returns the annotation in {@code qualifiers} that is in the hierarchy for which {@code top} is
    * top.
    *
-   * @param qualifiers set of annotations to search
+   * @param qualifiers the set of annotations to search
    * @param top the top annotation in the hierarchy to which the returned annotation belongs
    * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
    */
-  default @Nullable AnnotationMirror findAnnotationInHierarchy(
+  public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
     for (AnnotationMirror anno : qualifiers) {
-      if (isSubtype(anno, top)) {
+      if (isSubtypeQualifiers(anno, top)) {
         return anno;
       }
     }
@@ -353,7 +728,7 @@ public interface QualifierHierarchy {
    * @param <T> type of the map's keys
    * @return true if the update was done; false if there was a qualifier hierarchy collision
    */
-  default <T> boolean updateMappingToMutableSet(
+  public <T> boolean updateMappingToMutableSet(
       Map<T, AnnotationMirrorSet> map, T key, AnnotationMirror qualifier) {
     // https://github.com/typetools/checker-framework/issues/2000
     @SuppressWarnings("nullness:argument")
@@ -381,7 +756,7 @@ public interface QualifierHierarchy {
    * @param c1 the first collection
    * @param c2 the second collection
    */
-  static void assertSameSize(Collection<?> c1, Collection<?> c2) {
+  public static void assertSameSize(Collection<?> c1, Collection<?> c2) {
     if (c1.size() != c2.size()) {
       throw new BugInCF(
           "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
@@ -396,7 +771,7 @@ public interface QualifierHierarchy {
    * @param c2 the second collection
    * @param result the result collection
    */
-  static void assertSameSize(
+  public static void assertSameSize(
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c1,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> c2,
       @MustCallUnknown Collection<? extends @MustCallUnknown Object> result) {

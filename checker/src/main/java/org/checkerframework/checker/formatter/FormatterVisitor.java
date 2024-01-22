@@ -81,7 +81,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             int formatl = formatCats.length;
             if (argl < formatl) {
               // For assignments, format.missing.arguments is issued from
-              // commonAssignmentCheck.
+              // commonAssignmentCheck().
               // II.1
               ftu.failure(invc, "format.missing.arguments", formatl, argl);
             } else {
@@ -113,7 +113,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     if (!fc.isValidArgument(formatCat, argType)) {
                       // II.3
                       ExecutableElement method = TreeUtils.elementFromUse(tree);
-                      CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+                      CharSequence methodName = ElementUtils.getSimpleDescription(method);
                       ftu.failure(
                           arg, "argument", "in varargs position", methodName, argType, formatCat);
                     }
@@ -257,16 +257,17 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    boolean result =
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
 
-    AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
-    AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+    AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
     // From the manual: "It is legal to use a format string with fewer format specifiers
     // than required, but a warning is issued."
@@ -282,7 +283,9 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
       if (rhsArgTypes.length < lhsArgTypes.length) {
         checker.reportWarning(
             valueTree, "format.missing.arguments", varType.toString(), valueType.toString());
+        result = false;
       }
     }
+    return result;
   }
 }

@@ -27,6 +27,7 @@ public abstract class JavaExpressionVisitor<R, P> {
    * @return the result of visiting the {@code arrayAccessExpr}
    */
   protected abstract R visitArrayAccess(ArrayAccess arrayAccessExpr, P p);
+
   /**
    * Visit an {@link ArrayCreation}.
    *

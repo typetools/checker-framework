@@ -8,18 +8,17 @@ echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
-source "$SCRIPTDIR"/build.sh
+export ORG_GRADLE_PROJECT_useJdk17Compiler=true
+source "$SCRIPTDIR"/clone-related.sh
 
 PLUME_SCRIPTS="$SCRIPTDIR/.plume-scripts"
 
 status=0
 
 ## Code style and formatting
-JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
-if [ "$JAVA_VER" = "8" ] ; then
-  ./gradlew checkBasicStyle --console=plain --warning-mode=all
-else
-  ./gradlew checkBasicStyle spotlessCheck --console=plain --warning-mode=all
+JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
+if [ "${JAVA_VER}" != "8" ] && [ "${JAVA_VER}" != "20" ] ; then
+  ./gradlew spotlessCheck --console=plain --warning-mode=all
 fi
 if grep -n -r --exclude-dir=build --exclude-dir=examples --exclude-dir=jtreg --exclude-dir=tests --exclude="*.astub" --exclude="*.tex" '^\(import static \|import .*\*;$\)'; then
   echo "Don't use static import or wildcard import"

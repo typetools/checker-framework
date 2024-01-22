@@ -18,6 +18,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class NullChkNode extends Node {
   /** The entire tree of the null check */
   protected final Tree tree;
+
   /** The operand of the null check */
   protected final Node operand;
 

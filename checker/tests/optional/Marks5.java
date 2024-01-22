@@ -33,8 +33,10 @@ public class Marks5 {
     return result;
   }
 
+  // The use of `map(Optional::of)` creates Optional<Optional>, so a warning should be issued there.
   Optional<BigDecimal> moreClever(Optional<BigDecimal> first, Optional<BigDecimal> second) {
     Optional<BigDecimal> result =
+        // :: error: (argument)
         first.map(b -> second.map(b::add).orElse(b)).map(Optional::of).orElse(second);
     return result;
   }

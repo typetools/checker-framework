@@ -59,21 +59,27 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@literal @}{@link SignatureUnknown} annotation. */
   protected final AnnotationMirror SIGNATURE_UNKNOWN =
       AnnotationBuilder.fromClass(elements, SignatureUnknown.class);
+
   /** The {@literal @}{@link BinaryName} annotation. */
   protected final AnnotationMirror BINARY_NAME =
       AnnotationBuilder.fromClass(elements, BinaryName.class);
+
   /** The {@literal @}{@link InternalForm} annotation. */
   protected final AnnotationMirror INTERNAL_FORM =
       AnnotationBuilder.fromClass(elements, InternalForm.class);
+
   /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
   protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
       AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
+
   /** The {@literal @}{@link CanonicalName} annotation. */
   protected final AnnotationMirror CANONICAL_NAME =
       AnnotationBuilder.fromClass(elements, CanonicalName.class);
+
   /** The {@literal @}{@link CanonicalNameAndBinaryName} annotation. */
   protected final AnnotationMirror CANONICAL_NAME_AND_BINARY_NAME =
       AnnotationBuilder.fromClass(elements, CanonicalNameAndBinaryName.class);
+
   /** The {@literal @}{@link PrimitiveType} annotation. */
   protected final AnnotationMirror PRIMITIVE_TYPE =
       AnnotationBuilder.fromClass(elements, PrimitiveType.class);
@@ -202,9 +208,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isStringConcatenation(tree)) {
-        type.removeAnnotationInHierarchy(SIGNATURE_UNKNOWN);
         // This could be made more precise.
-        type.addAnnotation(SignatureUnknown.class);
+        type.replaceAnnotation(SIGNATURE_UNKNOWN);
       }
       return null; // super.visitBinary(tree, type);
     }
@@ -212,9 +217,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       if (TreeUtils.isStringCompoundConcatenation(tree)) {
-        type.removeAnnotationInHierarchy(SIGNATURE_UNKNOWN);
         // This could be made more precise.
-        type.addAnnotation(SignatureUnknown.class);
+        type.replaceAnnotation(SIGNATURE_UNKNOWN);
       }
       return null; // super.visitCompoundAssignment(tree, type);
     }
@@ -264,12 +268,12 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           }
         }
         ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-        final AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
+        AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
         if ((oldChar == '.' && newChar == '/')
-            && receiverType.getAnnotation(BinaryName.class) != null) {
+            && receiverType.getPrimaryAnnotation(BinaryName.class) != null) {
           type.replaceAnnotation(INTERNAL_FORM);
         } else if ((oldChar == '/' && newChar == '.')
-            && receiverType.getAnnotation(InternalForm.class) != null) {
+            && receiverType.getPrimaryAnnotation(InternalForm.class) != null) {
           type.replaceAnnotation(BINARY_NAME);
         }
       } else {

@@ -30,10 +30,10 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceSc
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.IPair;
 
 /**
  * scene-lib (from the Annotation File Utilities) doesn't provide enough information to usefully
@@ -91,7 +91,7 @@ public class ASceneWrapper {
   private void removeAnnosFromATypeElement(
       ATypeElement typeElt, TypeUseLocation loc, AnnotationsInContexts annosToRemove) {
     String annosToRemoveKey = WholeProgramInferenceScenesStorage.aTypeElementToString(typeElt);
-    Set<String> annosToRemoveForLocation = annosToRemove.get(Pair.of(annosToRemoveKey, loc));
+    Set<String> annosToRemoveForLocation = annosToRemove.get(IPair.of(annosToRemoveKey, loc));
     if (annosToRemoveForLocation != null) {
       Set<Annotation> annosToRemoveHere =
           ArraySet.newArraySetOrHashSet(annosToRemoveForLocation.size());

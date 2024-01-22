@@ -1,7 +1,7 @@
 package org.checkerframework.checker.index.upperbound;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.lowerbound.LowerBoundChecker;
@@ -42,17 +42,22 @@ import org.checkerframework.javacutil.TreeUtils;
 public class UpperBoundChecker extends BaseTypeChecker {
   /** The SubstringIndexFor.value argument/element. */
   public @MonotonicNonNull ExecutableElement substringIndexForValueElement;
+
   /** The SubstringIndexFor.offset argument/element. */
   public @MonotonicNonNull ExecutableElement substringIndexForOffsetElement;
 
   /** The LTLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltLengthOfValueElement;
+
   /** The LTLengthOf.offset argument/element. */
   public @MonotonicNonNull ExecutableElement ltLengthOfOffsetElement;
+
   /** The LTEqLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltEqLengthOfValueElement;
+
   /** The LTOMLengthOf.value argument/element. */
   public @MonotonicNonNull ExecutableElement ltOMLengthOfValueElement;
+
   /** The UpperBoundLiteral.value element/field. */
   public @MonotonicNonNull ExecutableElement upperBoundLiteralValueElement;
 
@@ -98,9 +103,8 @@ public class UpperBoundChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(SubstringIndexChecker.class);
     checkers.add(SearchIndexChecker.class);
     checkers.add(SameLenChecker.class);

@@ -5,6 +5,7 @@ import org.checkerframework.checker.interning.qual.Interned;
 
 public @Interned class InternedClass2 {
   private final int i;
+
   // @UnknownInterned is the default annotation on constructor results even for @Interned classes.
   private InternedClass2(int i) {
     // Type of "this" inside a constructor of an @Interned class is @UnknownInterned.

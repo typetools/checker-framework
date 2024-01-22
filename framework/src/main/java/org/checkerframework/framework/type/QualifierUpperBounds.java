@@ -22,6 +22,7 @@ public class QualifierUpperBounds {
 
   /** Map from {@link TypeKind} to annotations. */
   private final Map<TypeKind, AnnotationMirrorSet> typeKinds;
+
   /** Map from canonical class name strings to annotations. */
   private final Map<@CanonicalName String, AnnotationMirrorSet> types;
 
@@ -137,7 +138,7 @@ public class QualifierUpperBounds {
    * @return the explicit annotations on the element
    */
   protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
-    return atypeFactory.fromElement(element).getAnnotations();
+    return atypeFactory.fromElement(element).getPrimaryAnnotations();
   }
 
   /**

@@ -116,7 +116,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
    * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
    */
-  private CFValue changeLockAnnoToTop(JavaExpression je, CFValue currentValue) {
+  private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
       AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(atypeFactory.GUARDEDBYUNKNOWN);
@@ -124,10 +124,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       return analysis.createAbstractValue(set, je.getType());
     }
 
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
-        hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
+        qualHierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
     if (gb != null) {
@@ -178,7 +178,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       // After the call to super.updateForMethodCall, only final fields are left in
       // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
       // hierarchy, even a final field might be locked or unlocked by a side-effecting method.
-      //  So, final fields must be set to @LockPossiblyHeld, but the annotation in the
+      // So, final fields must be set to @LockPossiblyHeld, but the annotation in the
       // GuardedBy hierarchy should not be changed.
       for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
         CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));

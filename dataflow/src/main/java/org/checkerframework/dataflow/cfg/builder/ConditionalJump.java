@@ -12,15 +12,17 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
  * is required to be of boolean type.
  */
 @SuppressWarnings("nullness") // TODO
-public class ConditionalJump extends ExtendedNode {
+/*package-private*/ public class ConditionalJump extends ExtendedNode {
 
   /** The true successor label. */
   protected final Label trueSucc;
+
   /** The false successor label. */
   protected final Label falseSucc;
 
   /** The true branch flow rule. */
   protected FlowRule trueFlowRule;
+
   /** The false branch flow rule. */
   protected FlowRule falseFlowRule;
 

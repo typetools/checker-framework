@@ -54,7 +54,7 @@ public class DisbarUseVisitor extends BaseTypeVisitor<DisbarUseTypeFactory> {
             : new ExpressionTree[] {enclosingMemberSel, tree};
 
     for (ExpressionTree memberSel : expressionTrees) {
-      final Element elem = TreeUtils.elementFromUse(memberSel);
+      Element elem = TreeUtils.elementFromUse(memberSel);
 
       // We only issue errors for variables that are fields or parameters:
       if (elem != null && (elem.getKind().isField() || elem.getKind() == ElementKind.PARAMETER)) {

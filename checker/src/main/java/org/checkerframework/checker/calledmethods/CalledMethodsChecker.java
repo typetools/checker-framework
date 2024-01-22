@@ -1,6 +1,6 @@
 package org.checkerframework.checker.calledmethods;
 
-import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.accumulation.AccumulationChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -80,9 +80,8 @@ public class CalledMethodsChecker extends AccumulationChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
     if (!isReturnsReceiverDisabled()) {
       checkers.add(ReturnsReceiverChecker.class);
     }

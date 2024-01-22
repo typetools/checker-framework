@@ -15,7 +15,6 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -34,8 +33,9 @@ import org.junit.runners.model.TestClass;
  * test against OR a {@code String []} where each String in the array is a directory in the tests
  * directory.
  */
-public class PerDirectorySuite extends Suite {
+public class PerDirectorySuite extends RootedSuite {
 
+  /** Name */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}
@@ -55,9 +55,9 @@ public class PerDirectorySuite extends Suite {
   @SuppressWarnings("nullness") // JUnit needs to be annotated
   public PerDirectorySuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
-    final TestClass testClass = getTestClass();
-    final Class<?> javaTestClass = testClass.getJavaClass();
-    final List<List<File>> parametersList = getParametersList(testClass);
+    TestClass testClass = getTestClass();
+    Class<?> javaTestClass = testClass.getJavaClass();
+    List<List<File>> parametersList = getParametersList(testClass);
 
     for (List<File> parameters : parametersList) {
       runners.add(new PerParameterSetTestRunner(javaTestClass, parameters));
@@ -79,12 +79,12 @@ public class PerDirectorySuite extends Suite {
           "@Parameters annotation on method that does not return an array: " + method);
     }
     String[] dirs = (String[]) method.invokeExplosively(null);
-    return TestUtilities.findJavaFilesPerDirectory(new File("tests"), dirs);
+    return TestUtilities.findJavaFilesPerDirectory(resolveTestDirectory(), dirs);
   }
 
   /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
   private FrameworkMethod getParametersMethod(TestClass testClass) {
-    final List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
+    List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
     if (parameterMethods.size() != 1) {
       // Construct error message
 
@@ -163,7 +163,7 @@ public class PerDirectorySuite extends Suite {
       if (file == null) {
         throw new Error("root was passed? " + javaFiles.get(0));
       }
-      return file.getPath().replace("tests" + File.separator, "");
+      return file.getPath();
     }
 
     @Override
@@ -172,7 +172,7 @@ public class PerDirectorySuite extends Suite {
     }
 
     @Override
-    protected String testName(final FrameworkMethod method) {
+    protected String testName(FrameworkMethod method) {
       return String.format("%s[%s]", method.getName(), testCaseName());
     }
 

@@ -64,7 +64,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
    * translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE}.
    */
   private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
-    AnnotationMirror anno = atm.getAnnotationInHierarchy(typeFactory.UNKNOWNVAL);
+    AnnotationMirror anno = atm.getPrimaryAnnotationInHierarchy(typeFactory.UNKNOWNVAL);
     if (anno == null || anno.getElementValues().isEmpty()) {
       return;
     }

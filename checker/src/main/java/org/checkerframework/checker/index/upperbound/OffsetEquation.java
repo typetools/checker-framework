@@ -28,17 +28,22 @@ import org.checkerframework.javacutil.TreeUtils;
 public class OffsetEquation {
   /** The equation for 0 (zero). */
   public static final OffsetEquation ZERO = createOffsetForInt(0);
+
   /** The equation for -1. */
   public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
+
   /** The equation for 1. */
   public static final OffsetEquation ONE = createOffsetForInt(1);
 
   /** Mutable list of terms that have been added to this. */
   private final List<String> addedTerms;
+
   /** Mutable list of terms that have been subtracted from this. */
   private final List<String> subtractedTerms;
+
   /** The integer offset. */
   private int intValue;
+
   /** Non-null if an error has occurred. */
   private @Nullable String error;
 
@@ -66,7 +71,7 @@ public class OffsetEquation {
     return error != null;
   }
 
-  public String getError() {
+  public @Nullable String getError() {
     return error;
   }
 
@@ -141,7 +146,7 @@ public class OffsetEquation {
    * @return a copy of this equation with array.length and string.length() removed or null if no
    *     array.lengths or string.length() could be removed
    */
-  public OffsetEquation removeSequenceLengths(List<String> sequences) {
+  public @Nullable OffsetEquation removeSequenceLengths(List<String> sequences) {
     OffsetEquation copy = new OffsetEquation(this);
     boolean simplified = false;
     for (String sequence : sequences) {
@@ -158,6 +163,7 @@ public class OffsetEquation {
     }
     return simplified ? copy : null;
   }
+
   /**
    * Adds or subtracts the other equation to a copy of this one.
    *
@@ -302,7 +308,7 @@ public class OffsetEquation {
    * @param equationSet a set of offset equations
    * @return the offset equation that is an int value or null if there isn't one
    */
-  public static OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
+  public static @Nullable OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
     for (OffsetEquation eq : equationSet) {
       if (eq.isInt()) {
         return eq;
@@ -310,6 +316,7 @@ public class OffsetEquation {
     }
     return null;
   }
+
   /**
    * Creates an offset equation that is only the int value specified.
    *
@@ -416,7 +423,7 @@ public class OffsetEquation {
    * @param op '+' or '-'
    * @return an offset equation from value of known or null if the value isn't known
    */
-  public static OffsetEquation createOffsetFromNodesValue(
+  public static @Nullable OffsetEquation createOffsetFromNodesValue(
       Node node, ValueAnnotatedTypeFactory factory, char op) {
     assert op == '+' || op == '-';
     if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {

@@ -362,6 +362,7 @@ public class JavaParserUtil {
    * access.
    */
   private static LanguageLevel currentSourceVersion = null;
+
   /**
    * Returns the {@link com.github.javaparser.ParserConfiguration.LanguageLevel} corresponding to
    * the current source version.

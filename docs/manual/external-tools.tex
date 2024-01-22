@@ -10,6 +10,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Android (Section~\ref{android})
 \item Android Gradle Plugin (Section~\ref{android-gradle})
 \item Ant (Section~\ref{ant-task})
+\item Bazel (Section~\ref{bazel})
 \item Buck (Section~\ref{buck})
 \item Command line, via Checker Framework javac wrapper (Section~\ref{javac-wrapper})
 \item Command line, via JDK javac (Section~\ref{javac})
@@ -118,7 +119,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.32.0'
+    ext.checkerFrameworkVersion = '3.42.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -191,7 +192,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '3.32.0'
+    ext.checkerFrameworkVersion = '3.42.0'
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -316,9 +317,17 @@ run.  You can supply additional arguments to the checker as well.
 \end{enumerate}
 
 
+\sectionAndLabel{Bazel}{bazel}
+
+Bazel is a build system maintained by Google.
+
+To run the Checker Framework, see Stack Overflow discussion 48555320
+({\codesize\url{https://stackoverflow.com/questions/48555320/}}).
+
+
 \sectionAndLabel{Buck}{buck}
 
-Buck is a build system maintained by Facebook.
+Buck is a build system maintained by Meta.
 
 Buck has support for annotation processors, but that support is
 undocumented because the Buck maintainers may change the syntax in the
@@ -341,13 +350,13 @@ file showing how to enable the Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-3.32.0.jar',
+    binary_jar = 'checker-3.42.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-3.32.0.jar',
+    binary_jar = 'checker-qual-3.42.0.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -411,21 +420,21 @@ one of them.  However, if you are using the Windows command shell, you must
 use the last one.
 % Is the last one required for Cygwin, as well as for the Windows command shell?
 Adjust the pathnames if you have installed the Checker Framework somewhere
-other than \<\${HOME}/checker-framework-3.32.0/>.
+other than \<\${HOME}/checker-framework-3.42.0/>.
 
 
 \begin{itemize}
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-3.32.0/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-3.42.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.32.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.42.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -446,7 +455,7 @@ other than \<\${HOME}/checker-framework-3.32.0/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.32.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.42.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -468,11 +477,11 @@ other than \<\${HOME}/checker-framework-3.32.0/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.32.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-3.42.0
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.32.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-3.42.0\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -551,9 +560,9 @@ Alternately, you can get all of the jars mentioned in this section from Maven Ce
 
 \begin{itemize}
 \item \<javac.jar>: \url{https://search.maven.org/artifact/com.google.errorprone/javac/9%2B181-r4173-1/jar}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.32.0/checker-qual-3.32.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.32.0/checker-util-3.32.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.32.0/checker-3.32.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/3.42.0/checker-util-3.42.0.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/3.42.0/checker-3.42.0-all.jar}
 \end{itemize}
 
 Different arguments to \<javac> are required for JDK 8
@@ -620,9 +629,9 @@ source code is Java 8 and that Java 8 bytecode is created.
 This section shows what arguments to pass to the OpenJDK or OracleJDK
 \<javac> (\emph{not} the \<javac> wrapper script of
 Section~\ref{javac-wrapper}) to run the Checker
-Framework, if you are using JDK 9 or later.  These
+Framework.  These
 instructions should work on JDK 9 or later, but we only test with supported
-versions of Java: JDK 11, JDK 17, and JDK 19.
+versions of Java: JDK 11, JDK 17, and JDK 21.
 
 
 \subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
@@ -939,7 +948,8 @@ independently.
 
 If you use the \href{https://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
-instructions below.
+instructions below.  These instructions have been tested with
+Maven 3.9.3, and they should work with any 3.x version of Maven.
 
 See the directory \code{docs/examples/MavenExample/} for examples of the use of
 Maven build files.
@@ -959,7 +969,8 @@ checker as an annotation processor directly.
 
 Debugging your Maven configuration can be tricky because of a
 \ahreforurl{https://issues.apache.org/jira/browse/MCOMPILER-434}{bug in
-  maven-compiler-plugin versions before 3.10.1}: Maven does not report
+  maven-compiler-plugin versions before 3.10.1, and still affecting some
+  users with 3.11.0}: Maven does not report
 annotation processor exceptions, even when
 the \<-X> command-line argument is passed.
 
@@ -991,63 +1002,18 @@ latest bug fixes and new features:
   mvn versions:use-latest-versions -Dincludes="org.checkerframework:*"
 \end{Verbatim}
 
-\item If using JDK 8, use a Maven property to hold the location of the
-  Error Prone \<javac.jar>.
-To set the value of these properties automatically, you will use the Maven Dependency plugin.
-
-Add a dependency:
-
-\begin{alltt}
-  <dependencies>
-    ... existing <dependency> items ...
-
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>javac</artifactId>
-      <version>9+181-r4173-1</version>
-    </dependency>
-  </dependencies>
-\end{alltt}
-
-Java 11 and later do not need the \<com.google.errorprone:javac>
-dependency.
-The need for the \<com.google.errorprone:javac> artifact when running under
-JDK 8 is explained in Section~\ref{javac-jdk8}.
-
-Create the property in the \code{properties} section of the POM:
-
-\begin{alltt}
-<properties>
-  <!-- These properties will be set by the Maven Dependency plugin -->
-  <errorProneJavac>$\{com.google.errorprone:javac:jar\}</errorProneJavac>
-</properties>
-\end{alltt}
-
-Change the reference to the \code{maven-dependency-plugin} within the \code{<plugins>}
-section, or add it if it is not present.
-
-\begin{alltt}
-  <plugin>
-    <!-- This plugin will set properties values using dependency information -->
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-dependency-plugin</artifactId>
-    <executions>
-      <execution>
-        <goals>
-          <goal>properties</goal>
-        </goals>
-      </execution>
-    </executions>
-  </plugin>
-\end{alltt}
-
 \item Direct the Maven compiler plugin to use the desired checkers by
   creating three new profiles as shown below (the example uses the Nullness
-  Checker).  If your POM file does not already use the
+  Checker).  If you do not use Java 8, then you only need two of the
+  profiles, or you can combine them into one profile.
+
+  If your POM file does not already use the
   \code{maven-compiler-plugin} plugin, you can use the text below as is.
   If your POM file
   already uses the plugin, copy and edit the first profile to incorporate the
   existing configuration.
+  If the existing configuration uses \<proc:none>, you need to remove that
+  or comment it out.
 
 %% TODO: Is this comment still accurate?
 %              <!-- Without showWarnings and verbose, maven-compiler-plugin may not show output. -->
@@ -1059,6 +1025,7 @@ section, or add it if it is not present.
   <profiles>
     <profile>
       <id>checkerframework</id>
+      <!-- If you omit the activation block, run mvn with "-P checkerframework" to run checkers. -->
       <activation>
         <jdk>[1.8,)</jdk>
       </activation>
@@ -1066,13 +1033,9 @@ section, or add it if it is not present.
         <plugins>
           <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
+            <version>3.11.0</version>
             <configuration>
               <fork>true</fork> <!-- Must fork or else JVM arguments are ignored. -->
-              <compilerArguments>
-                <Xmaxerrs>10000</Xmaxerrs>
-                <Xmaxwarns>10000</Xmaxwarns>
-              </compilerArguments>
               <annotationProcessorPaths>
                 <path>
                   <groupId>org.checkerframework</groupId>
@@ -1085,19 +1048,16 @@ section, or add it if it is not present.
                 <annotationProcessor>org.checkerframework.checker.nullness.NullnessChecker</annotationProcessor>
               </annotationProcessors>
               <compilerArgs>
+                <arg>-Xmaxerrs</arg>
+                <arg>10000</arg>
+                <arg>-Xmaxwarns</arg>
+                <arg>10000</arg>
                 <!-- <arg>-Awarns</arg> --> <!-- -Awarns turns type-checking errors into warnings. -->
               </compilerArgs>
             </configuration>
           </plugin>
         </plugins>
       </build>
-      <dependencies>
-        <dependency>
-          <groupId>org.checkerframework</groupId>
-          <artifactId>checker</artifactId>
-          <version>\ReleaseVersion{}</version>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>
@@ -1109,22 +1069,33 @@ section, or add it if it is not present.
       <properties>
         <javac.version>9+181-r4173-1</javac.version>
       </properties>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.errorprone</groupId>
-          <artifactId>javac</artifactId>
-          <version>9+181-r4173-1</version>
-        </dependency>
-      </dependencies>
       <build>
         <plugins>
+          <plugin>
+            <!-- This plugin execution will copy the com.google.errorprone:javac jar file to
+                 your project's output directory without adding that jar as an explicit
+                 dependency. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+                <phase>process-sources</phase>
+                <configuration>
+                  <artifact>com.google.errorprone:javac:\$\{javac.version\}:jar</artifact>
+                  <outputDirectory>\$\{project.build.directory\}/javac</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <fork>true</fork>
               <compilerArgs combine.children="append">
-                <arg>-J-Xbootclasspath/p:$\{settings.localRepository\}/com/google/errorprone/javac/$\{javac.version\}/javac-$\{javac.version\}.jar</arg>
+                <arg>-J-Xbootclasspath/p:\$\{project.build.directory\}/javac/javac-\$\{javac.version\}.jar</arg>
               </compilerArgs>
             </configuration>
           </plugin>
@@ -1143,7 +1114,6 @@ section, or add it if it is not present.
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <configuration>
-              <fork>true</fork>
               <compilerArgs combine.children="append">
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
@@ -1159,14 +1129,13 @@ section, or add it if it is not present.
           </plugin>
         </plugins>
       </build>
-      <properties>
-        <!-- Needed for animal-sniffer-maven-plugin version 1.19 which is broken (version 1.20 is fixed). -->
-        <animal.sniffer.skip>true</animal.sniffer.skip>
-      </properties>
     </profile>
   </profiles>
 \end{alltt}
 \end{mysmall}
+
+The need for the \<com.google.errorprone:javac> artifact when running under
+JDK 8 is explained in Section~\ref{javac-jdk8}.
 
 Now, building with Maven will run the checkers during every compilation
 that uses JDK 8 or higher.
@@ -1184,7 +1153,7 @@ tests, wrap the \code{<configuration>...</configuration>} within
 \end{Verbatim}
 
 To compile without using the Checker Framework, pass
-\<-P !checkerframework>
+\<-P '!checkerframework'>
 on the Maven command line.
 %% Per GitHub user danibs in
 %% https://github.com/typetools/checker-framework/issues/5086,
@@ -1208,6 +1177,20 @@ may suppress warnings from the stub parser.
 
 \end{enumerate}
 
+If you use \<animal-sniffer-maven-plugin>, you must upgrade to version 1.20
+or later.  Version 1.19 and earlier are broken.  If necessary, you can
+disable animal sniffer by modifying your POM file's properties:
+
+\begin{mysmall}
+\begin{alltt}
+  <properties>
+    ... existing <property> items ...
+
+    <!-- Needed for animal-sniffer-maven-plugin version 1.19 which is broken (version 1.20 is fixed). -->
+    <animal.sniffer.skip>true</animal.sniffer.skip>
+  </properties>
+\end{alltt}
+\end{mysmall}
 
 \subsectionAndLabel{Maven, with a locally-built version of the Checker Framework}{maven-locally-built}
 

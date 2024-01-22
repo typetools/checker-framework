@@ -23,19 +23,8 @@ public class NonNullMapValue {
   // However, the get method's declaration is misleading (in the context of the nullness type
   // system), since it can always return null no matter whether the map values are non-null:
   //   V get(Object key) { ... return null; }
-  //
-  // Here are potential solutions:
-  //  * Forbid declaring values as non-null.  This is the wrong approach.  (It would also be hard
-  //    to express syntactically.)
-  //  * The checker could recognize a special new annotation on the return value of get,
-  //    indicating that its return type isn't merely inferred from the generic type, but is
-  //    always nullable.  (This special new annotations could even be "@Nullable".  A different
-  //    annotation may be better, becase in general we would like to issue an error message when
-  //    someone applies an annotation to a generic type parameter.)
-  // Additionally, to reduce the number of false positive warnings caused by the fact that get's
-  // return value is nullable:
-  //  * Build a more specialized sophisticated flow analysis that checks that the passed key to
-  //    Map.containsKey() is either checked against Map.containsKey() or Map.keySet().
+  // The Nullness Checker does not use the signature as written.  It has hard-coded rules for the
+  // get() method.  It checks that the passed key to has type @KeyFor("theMap").
 
   Map<String, @NonNull String> myMap;
 

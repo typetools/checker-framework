@@ -63,6 +63,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava11.SwitchExpressionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The visitor for the nullness type-system. */
@@ -82,6 +83,7 @@ public class NullnessVisitor
 
   /** Annotation mirrors for nullness annotations. */
   private final AnnotationMirror NONNULL, NULLABLE, MONOTONIC_NONNULL;
+
   /** TypeMirror for java.lang.String. */
   private final TypeMirror stringType;
 
@@ -156,7 +158,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -172,9 +174,9 @@ public class NullnessVisitor
         && !checker.getLintOption(
             NullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
             NullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
-      return;
+      return true;
     }
-    super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varTree, valueExp, errorKey, extraArgs);
   }
 
   /**
@@ -184,7 +186,7 @@ public class NullnessVisitor
    * @return the initialized element, or null
    */
   @SuppressWarnings("UnusedMethod")
-  private Element initializedElement(Tree varTree) {
+  private @Nullable Element initializedElement(Tree varTree) {
     switch (varTree.getKind()) {
       case VARIABLE:
         // It's a variable declaration.
@@ -217,7 +219,7 @@ public class NullnessVisitor
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueExp,
       @CompilerMessageKey String errorKey,
@@ -226,12 +228,12 @@ public class NullnessVisitor
     // might not have a value for the var tree.  This is sound because if data flow has
     // determined @PolyNull is @Nullable at the RHS, then it is also @Nullable for the LHS.
     atypeFactory.replacePolyQualifier(varType, valueExp);
-    super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueExp, errorKey, extraArgs);
   }
 
   @Override
   @FormatMethod
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
       Tree valueTree,
@@ -242,15 +244,18 @@ public class NullnessVisitor
       boolean succeed = checkForNullability(valueType, valueTree, UNBOXING_OF_NULLABLE);
       if (!succeed) {
         // Only issue the unboxing of nullable error.
-        return;
+        return false;
       }
     }
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    return super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
   }
 
   /** Case 1: Check for null dereferencing. */
   @Override
   public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+    if (atypeFactory.isUnreachable(tree)) {
+      return super.visitMemberSelect(tree, p);
+    }
     Element e = TreeUtils.elementFromUse(tree);
     if (e.getKind() == ElementKind.CLASS) {
       if (atypeFactory.containsNullnessAnnotation(null, tree.getExpression())) {
@@ -291,7 +296,8 @@ public class NullnessVisitor
         && (checker.getLintOption("soundArrayCreationNullness", false)
             // temporary, for backward compatibility
             || checker.getLintOption("forbidnonnullarraycomponents", false))) {
-      checker.reportError(tree, "new.array", componentType.getAnnotations(), type.toString());
+      checker.reportError(
+          tree, "new.array", componentType.getPrimaryAnnotations(), type.toString());
     }
 
     return super.visitNewArray(tree, p);
@@ -417,14 +423,16 @@ public class NullnessVisitor
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
     // The "reference type" is the type after "instanceof".
     Tree refTypeTree = tree.getType();
-    if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-      List<? extends AnnotationMirror> annotations =
-          TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
-      if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
-        checker.reportError(tree, "instanceof.nullable");
-      }
-      if (AnnotationUtils.containsSame(annotations, NONNULL)) {
-        checker.reportWarning(tree, "instanceof.nonnull.redundant");
+    if (refTypeTree != null) {
+      if (refTypeTree.getKind() == Tree.Kind.ANNOTATED_TYPE) {
+        List<? extends AnnotationMirror> annotations =
+            TreeUtils.annotationsFromTree((AnnotatedTypeTree) refTypeTree);
+        if (AnnotationUtils.containsSame(annotations, NULLABLE)) {
+          checker.reportError(tree, "instanceof.nullable");
+        }
+        if (AnnotationUtils.containsSame(annotations, NONNULL)) {
+          checker.reportWarning(tree, "instanceof.nonnull.redundant");
+        }
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
@@ -433,13 +441,14 @@ public class NullnessVisitor
 
   /**
    * Reports an error if a comparison of a @NonNull expression with the null literal is performed.
+   * Does nothing unless {@code -Alint=redundantNullComparison} is passed on the command line.
    *
    * @param tree a tree that might be a comparison of a @NonNull expression with the null literal
    */
   protected void checkForRedundantTests(BinaryTree tree) {
 
-    final ExpressionTree leftOp = tree.getLeftOperand();
-    final ExpressionTree rightOp = tree.getRightOperand();
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
 
     // respect command-line option
     if (!checker.getLintOption(
@@ -464,8 +473,8 @@ public class NullnessVisitor
   /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations. */
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
-    final ExpressionTree leftOp = tree.getLeftOperand();
-    final ExpressionTree rightOp = tree.getRightOperand();
+    ExpressionTree leftOp = tree.getLeftOperand();
+    ExpressionTree rightOp = tree.getRightOperand();
 
     if (isUnboxingOperation(tree)) {
       checkForNullability(leftOp, UNBOXING_OF_NULLABLE);
@@ -651,14 +660,16 @@ public class NullnessVisitor
         method.getReceiverType() != null) {
       // TODO: should all or some constructors be excluded?
       // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-      AnnotationMirrorSet receiverAnnos = atypeFactory.getReceiverType(tree).getAnnotations();
+      AnnotationMirrorSet receiverAnnos =
+          atypeFactory.getReceiverType(tree).getPrimaryAnnotations();
       AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
       AnnotatedTypeMirror treeReceiver = methodReceiver.shallowCopy(false);
       AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(tree);
       treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
       // If receiver is Nullable, then we don't want to issue a warning about method
       // invocability (we'd rather have only the "dereference.of.nullable" message).
-      if (treeReceiver.hasAnnotation(NULLABLE) || receiverAnnos.contains(MONOTONIC_NONNULL)) {
+      if (treeReceiver.hasPrimaryAnnotation(NULLABLE)
+          || receiverAnnos.contains(MONOTONIC_NONNULL)) {
         return;
       }
     }
@@ -671,7 +682,7 @@ public class NullnessVisitor
    * @param tree a binary operation
    * @return true if the binary operation could cause an unboxing operation
    */
-  private final boolean isUnboxingOperation(BinaryTree tree) {
+  private boolean isUnboxingOperation(BinaryTree tree) {
     if (tree.getKind() == Tree.Kind.EQUAL_TO || tree.getKind() == Tree.Kind.NOT_EQUAL_TO) {
       // it is valid to check equality between two reference types, even
       // if one (or both) of them is null
@@ -690,7 +701,7 @@ public class NullnessVisitor
    * @param tree a tree
    * @return true if the type of the tree is a super of String
    */
-  private final boolean isString(ExpressionTree tree) {
+  private boolean isString(ExpressionTree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
     return types.isAssignable(stringType, type);
   }
@@ -701,14 +712,24 @@ public class NullnessVisitor
    * @param tree a tree
    * @return true if the type of the tree is a primitive
    */
-  private static final boolean isPrimitive(ExpressionTree tree) {
+  private static boolean isPrimitive(ExpressionTree tree) {
     return TreeUtils.typeOf(tree).getKind().isPrimitive();
   }
 
   @Override
   public Void visitSwitch(SwitchTree tree, Void p) {
-    checkForNullability(tree.getExpression(), SWITCHING_NULLABLE);
+    if (!TreeUtils.hasNullCaseLabel(tree)) {
+      checkForNullability(tree.getExpression(), SWITCHING_NULLABLE);
+    }
     return super.visitSwitch(tree, p);
+  }
+
+  @Override
+  public void visitSwitchExpression17(Tree switchExprTree) {
+    if (!TreeUtils.hasNullCaseLabel(switchExprTree)) {
+      checkForNullability(SwitchExpressionUtils.getExpression(switchExprTree), SWITCHING_NULLABLE);
+    }
+    super.visitSwitchExpression17(switchExprTree);
   }
 
   @Override
@@ -730,19 +751,19 @@ public class NullnessVisitor
     ExpressionTree identifier = tree.getIdentifier();
     if (identifier instanceof AnnotatedTypeTree) {
       AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
-      for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
+      for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getPrimaryAnnotations()) {
         // is this an annotation of the nullness checker?
         boolean nullnessCheckerAnno = containsSameByName(atypeFactory.getNullnessAnnotations(), a);
         if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
           // The type is not non-null => warning
-          checker.reportWarning(tree, "new.class", type.getAnnotations());
+          checker.reportWarning(tree, "new.class", type.getPrimaryAnnotations());
           // Note that other consistency checks are made by isValid.
         }
       }
       if (t.toString().contains("@PolyNull")) {
         // TODO: this is a hack, but PolyNull gets substituted
         // afterwards
-        checker.reportWarning(tree, "new.class", type.getAnnotations());
+        checker.reportWarning(tree, "new.class", type.getPrimaryAnnotations());
       }
     }
     // TODO: It might be nicer to introduce a framework-level

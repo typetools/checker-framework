@@ -219,6 +219,7 @@ public class RawTypesInit {
 
   class RawAfterConstructorBad {
     Object o;
+
     // :: error: (initialization.fields.uninitialized)
     RawAfterConstructorBad() {}
   }
@@ -231,6 +232,7 @@ public class RawTypesInit {
 
   class RawAfterConstructorOK2 {
     Integer a;
+
     // :: error: (initialization.fields.uninitialized)
     RawAfterConstructorOK2() {}
   }

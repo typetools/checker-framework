@@ -94,7 +94,7 @@ public class SimpleOptionMap {
    * @param option the option to add to this object
    * @param value the argument to the option (or null)
    */
-  public void addOptionIfValueNonEmpty(String option, String value) {
+  public void addOptionIfValueNonEmpty(String option, @Nullable String value) {
     if (value != null && !value.isEmpty()) {
       addOption(option, value);
     }

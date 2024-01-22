@@ -1,5 +1,7 @@
 package org.checkerframework.common.value.util;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 public class IntegerMath extends NumberMath<Integer> {
   int number;
 
@@ -77,7 +79,7 @@ public class IntegerMath extends NumberMath<Integer> {
   }
 
   @Override
-  public Number divide(Number right) {
+  public @Nullable Number divide(Number right) {
     if (isIntegralZero(right)) {
       return null;
     }
@@ -103,7 +105,7 @@ public class IntegerMath extends NumberMath<Integer> {
   }
 
   @Override
-  public Number remainder(Number right) {
+  public @Nullable Number remainder(Number right) {
     if (isIntegralZero(right)) {
       return null;
     }

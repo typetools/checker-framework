@@ -23,10 +23,6 @@ sourcesJar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-def versions = [
-  autoValue       : '1.10.1',
-  lombok          : '1.18.26',
-]
 
 configurations {
   implementation.extendsFrom(annotatedGuava)
@@ -35,7 +31,7 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api files("${stubparserJar}")
+  api 'org.checkerframework:stubparser:3.25.6'
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
   // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
   api('org.checkerframework:annotation-file-utilities:*') {
@@ -46,9 +42,10 @@ dependencies {
   // External dependencies:
   // If you add an external dependency, you must shadow its packages.
   // See the comment in ../build.gradle in the shadowJar block.
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
-  implementation "org.plumelib:reflection-util:${reflectionUtilVersion}"
-  implementation 'io.github.classgraph:classgraph:4.8.157'
+  implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
+  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
+  implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
+  implementation 'io.github.classgraph:classgraph:4.8.165'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -80,8 +77,7 @@ task cloneTypetoolsJdk() {
         args = [
           'clone',
           '-q',
-          '--depth',
-          '1',
+          '--filter=blob:none',
           'https://github.com/typetools/jdk.git',
           'jdk'
         ]
@@ -93,6 +89,10 @@ task cloneTypetoolsJdk() {
 
 task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
   dependsOn ':framework:compileJava'
+  // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
+  // which refers to the jars for these other projects
+  dependsOn ':javacutil:jar'
+  dependsOn ':dataflow:jar'
   def inputDir = "${annotatedJdkHome}/src"
   def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
 
@@ -126,6 +126,8 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
     }
     javaexec {
       classpath = sourceSets.main.runtimeClasspath
+      standardOutput = System.out
+      errorOutput = System.err
 
       mainClass = 'org.checkerframework.framework.stub.JavaStubifier'
       args outputDir
@@ -135,16 +137,6 @@ task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Buil
 sourcesJar.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
 
 processResources.dependsOn(copyAndMinimizeAnnotatedJdkFiles)
-
-task checkDependencies(dependsOn: ':maybeCloneAndBuildDependencies') {
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      throw new GradleException("${stubparserJar} does not exist. Try running './gradlew cloneAndBuildDependencies'")
-    }
-  }
-}
-
-compileJava.dependsOn(checkDependencies)
 
 task allSourcesJar(type: Jar, group: 'Build') {
   description 'Creates a sources jar that includes sources for all Checker Framework classes in framework.jar'

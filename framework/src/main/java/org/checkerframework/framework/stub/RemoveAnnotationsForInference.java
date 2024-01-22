@@ -347,17 +347,17 @@ public class RemoveAnnotationsForInference {
     // There are three JavaParser AST nodes that represent annotations
 
     @Override
-    public List<AnnotationExpr> visit(final MarkerAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(MarkerAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
 
     @Override
-    public List<AnnotationExpr> visit(final NormalAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(NormalAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
 
     @Override
-    public List<AnnotationExpr> visit(final SingleMemberAnnotationExpr n, final Void arg) {
+    public List<AnnotationExpr> visit(SingleMemberAnnotationExpr n, Void arg) {
       return processAnnotation(n, super.visit(n, arg));
     }
   }
@@ -521,7 +521,7 @@ public class RemoveAnnotationsForInference {
    * @param n an annotation
    * @return the (effective) arguments to {@code @SuppressWarnings}, or null
    */
-  private static List<String> suppressWarningsStrings(AnnotationExpr n) {
+  private static @Nullable List<String> suppressWarningsStrings(AnnotationExpr n) {
     String name = n.getNameAsString();
 
     if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {

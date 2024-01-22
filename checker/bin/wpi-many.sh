@@ -73,11 +73,18 @@ else
   has_java17="yes"
 fi
 
-# shellcheck disable=SC2153 # testing for JAVA19_HOME, not a typo of JAVA_HOME
-if [ "${JAVA19_HOME}" = "" ]; then
-  has_java19="no"
+# shellcheck disable=SC2153 # testing for JAVA20_HOME, not a typo of JAVA_HOME
+if [ "${JAVA20_HOME}" = "" ]; then
+  has_java20="no"
 else
-  has_java19="yes"
+  has_java20="yes"
+fi
+
+# shellcheck disable=SC2153 # testing for JAVA21_HOME, not a typo of JAVA_HOME
+if [ "${JAVA21_HOME}" = "" ]; then
+  has_java21="no"
+else
+  has_java21="yes"
 fi
 
 if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
@@ -86,7 +93,7 @@ if [ "${has_java_home}" = "yes" ] && [ ! -d "${JAVA_HOME}" ]; then
 fi
 
 if [ "${has_java_home}" = "yes" ]; then
-    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+    java_version=$("${JAVA_HOME}"/bin/java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
     if [ "${has_java8}" = "no" ] && [ "${java_version}" = 8 ]; then
       export JAVA8_HOME="${JAVA_HOME}"
       has_java8="yes"
@@ -99,9 +106,13 @@ if [ "${has_java_home}" = "yes" ]; then
       export JAVA17_HOME="${JAVA_HOME}"
       has_java17="yes"
     fi
-    if [ "${has_java19}" = "no" ] && [ "${java_version}" = 19 ]; then
-      export JAVA19_HOME="${JAVA_HOME}"
-      has_java19="yes"
+    if [ "${has_java20}" = "no" ] && [ "${java_version}" = 20 ]; then
+      export JAVA20_HOME="${JAVA_HOME}"
+      has_java20="yes"
+    fi
+    if [ "${has_java21}" = "no" ] && [ "${java_version}" = 21 ]; then
+      export JAVA21_HOME="${JAVA_HOME}"
+      has_java21="yes"
     fi
 fi
 
@@ -120,13 +131,30 @@ if [ "${has_java17}" = "yes" ] && [ ! -d "${JAVA17_HOME}" ]; then
     exit 1
 fi
 
-if [ "${has_java19}" = "yes" ] && [ ! -d "${JAVA19_HOME}" ]; then
-    echo "JAVA19_HOME is set to a non-existent directory ${JAVA19_HOME}"
+if [ "${has_java20}" = "yes" ] && [ ! -d "${JAVA20_HOME}" ]; then
+    echo "JAVA20_HOME is set to a non-existent directory ${JAVA20_HOME}"
     exit 1
 fi
 
-if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java19}" = "no" ]; then
-    echo "No Java 8, 11, 17, or 19 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA19_HOME must be set."
+if [ "${has_java21}" = "yes" ] && [ ! -d "${JAVA21_HOME}" ]; then
+    echo "JAVA21_HOME is set to a non-existent directory ${JAVA21_HOME}"
+    exit 1
+fi
+
+if [ "${has_java8}" = "no" ] && [ "${has_java11}" = "no" ] && [ "${has_java17}" = "no" ] && [ "${has_java20}" = "no" ] && [ "${has_java21}" = "no" ]; then
+    if [ "${has_java_home}" = "yes" ]; then
+      echo "Cannot determine Java version from JAVA_HOME"
+    else
+      echo "No Java 8, 11, 17, 20, or 21 JDKs found. At least one of JAVA_HOME, JAVA8_HOME, JAVA11_HOME, JAVA17_HOME, or JAVA21_HOME must be set."
+    fi
+    echo "JAVA_HOME = ${JAVA_HOME}"
+    echo "JAVA8_HOME = ${JAVA8_HOME}"
+    echo "JAVA11_HOME = ${JAVA11_HOME}"
+    echo "JAVA17_HOME = ${JAVA17_HOME}"
+    echo "JAVA20_HOME = ${JAVA20_HOME}"
+    echo "JAVA21_HOME = ${JAVA21_HOME}"
+    command -v java
+    java -version
     exit 1
 fi
 
@@ -151,6 +179,8 @@ if [ "${INLIST}" = "" ]; then
 fi
 
 if [ "${GRADLECACHEDIR}" = "" ]; then
+  # Assume that each project should use its own gradle cache. This is more expensive,
+  # but prevents crashes on distributed file systems, such as the UW CSE machines.
   GRADLECACHEDIR=".gradle"
 fi
 
@@ -174,6 +204,9 @@ do
     # Skip lines that start with "#".
     [[ $line = \#* ]] && continue
 
+    # Remove trailing return character if reading from a DOS file.
+    line="$(echo "$line" | tr -d '\r')"
+
     REPOHASH=${line}
 
     REPO=$(echo "${REPOHASH}" | awk '{print $1}')
@@ -188,6 +221,7 @@ do
         echo "HASH=$HASH"
         echo "REPO_NAME=$REPO_NAME"
         echo "REPO_NAME_HASH=$REPO_NAME_HASH"
+        echo "pwd=$(pwd)"
     fi
 
     # Use repo name and hash, but not owner.  We want
@@ -222,9 +256,16 @@ do
         rm -rf -- "${REPO_NAME}/dljc-out"
     fi
 
+    if [ ! -d "${REPO_NAME}/.git" ]; then
+        echo "In $(pwd): no directory ${REPO_NAME}/.git"
+        echo "Listing of ${REPO_NAME}:"
+        ls -al -- "${REPO_NAME}"
+        exit 5
+    fi
+
     cd "./${REPO_NAME}" || (echo "command failed in $(pwd): cd ./${REPO_NAME}" && exit 5)
 
-    git checkout "${HASH}"
+    git checkout "${HASH}" || (echo "command failed in $(pwd): git checkout ${HASH}" && exit 5)
 
     REPO_FULLPATH=$(pwd)
 
@@ -235,19 +276,55 @@ do
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
       if [ "${SKIP_OR_DELETE_UNUSABLE}" = "skip" ]; then
-        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present, indicating that an earlier run of WPI failed. To try again, delete the .cannot-run-wpi file and re-run the script."
+        echo "Skipping ${REPO_NAME_HASH} because it has a .cannot-run-wpi file present,"
+	echo "indicating that an earlier run of WPI failed."
+	echo "To try again, delete the .cannot-run-wpi file and re-run the script."
       fi
       # the repo will be deleted later if SKIP_OR_DELETE_UNUSABLE is "delete"
     else
       # it's important that </dev/null is on this line, or wpi.sh might consume stdin, which would stop the larger wpi-many loop early
-      echo "wpi-many.sh about to call wpi.sh at $(date)"
+      echo "wpi-many.sh about to call wpi.sh in $(pwd) at $(date)"
       /bin/bash -x "${SCRIPTDIR}/wpi.sh" -d "${REPO_FULLPATH}" -t "${TIMEOUT}" -g "${GRADLECACHEDIR}" -- "$@" &> "${OUTDIR}-results/wpi-out" </dev/null
-      echo "wpi-many.sh finished call to wpi.sh at $(date)"
+      wpi_status=$?
+      if [[ $wpi_status -eq 0 ]]; then
+        wpi_status_string="success"
+      else
+        wpi_status_string="failure"
+      fi
+      echo "wpi-many.sh finished call to wpi.sh with status ${wpi_status} (${wpi_status_string}) in $(pwd) at $(date)"
+      # The test of $wpi_status below may halt wpi-many.sh.
+      if [ "$DEBUG" -eq "1" ]; then
+          echo "Listing of $(pwd):"
+          ls -al "$(pwd)"
+          echo "Listing of ${REPO_FULLPATH}:"
+          ls -al "${REPO_FULLPATH}"
+          echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+          ls -al "${REPO_FULLPATH}/dljc-out"
+      fi
     fi
 
     cd "${OUTDIR}" || exit 5
 
     if [ -f "${REPO_FULLPATH}/.cannot-run-wpi" ]; then
+        echo "Cannot run WPI: file ${REPO_FULLPATH}/.cannot-run-wpi exists."
+        cat "${REPO_FULLPATH}/.cannot-run-wpi"
+        echo "Listing of $(pwd):"
+        ls -al "$(pwd)"
+        echo "Listing of ${REPO_FULLPATH}:"
+        ls -al "${REPO_FULLPATH}"
+        if [ ! -d "${REPO_FULLPATH}/dljc-out" ] ; then
+            echo "Does not exist: ${REPO_FULLPATH}/dljc-out"
+        else
+            echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+            ls -al "${REPO_FULLPATH}"/dljc-out
+            for f in "${REPO_FULLPATH}"/dljc-out/* ; do
+                echo "==== start of tail of ${f} ===="
+                tail -n 2000 "${f}"
+                sleep 1
+                echo "==== end of tail of ${f} ===="
+            done
+        fi
+
         # If the result is unusable (i.e. wpi cannot run),
         # we don't need it for data analysis and we can
         # delete it right away.
@@ -257,12 +334,24 @@ do
         fi
     else
         cat "${REPO_FULLPATH}/dljc-out/wpi-stdout.log" >> "${RESULT_LOG}"
+        if [ ! -s "${RESULT_LOG}" ] ; then
+          echo "Files are empty: ${REPO_FULLPATH}/dljc-out/wpi-stdout.log ${RESULT_LOG}"
+          echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+          ls -al "${REPO_FULLPATH}/dljc-out"
+          wpi_status=9999
+        fi
         TYPECHECK_FILE=${REPO_FULLPATH}/dljc-out/typecheck.out
         if [ -f "$TYPECHECK_FILE" ]; then
             cp -p "$TYPECHECK_FILE" "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            if [ "$DEBUG" -eq "1" ]; then
+                echo "File exists: $TYPECHECK_FILE"
+                echo "File exists: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            fi
         else
-            echo "Could not find file $TYPECHECK_FILE"
-            ls -l "${REPO_FULLPATH}/dljc-out"
+            echo "File does not exist: $TYPECHECK_FILE"
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            echo "Listing of ${REPO_FULLPATH}/dljc-out:"
+            ls -al "${REPO_FULLPATH}/dljc-out"
             cat "${REPO_FULLPATH}"/dljc-out/*.log
             echo "Start of toplevel.log:"
             cat "${REPO_FULLPATH}"/dljc-out/toplevel.log
@@ -270,8 +359,35 @@ do
             echo "Start of wpi-stdout.log:"
             cat "${REPO_FULLPATH}"/dljc-out/wpi-stdout.log
             echo "End of wpi-stdout.log."
+            wpi_status=9999
+        fi
+        if [ "$DEBUG" -eq "1" ]; then
+            echo "RESULT_LOG=${RESULT_LOG}"
+            echo "TYPECHECK_FILE=${TYPECHECK_FILE}"
+            ls -l "${TYPECHECK_FILE}"
+            ls -l "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            echo "Listing of ${OUTDIR}-results:"
+            ls -al "${OUTDIR}-results"
+        fi
+        if [ ! -s "${RESULT_LOG}" ] ; then
+            echo "File does not exist: ${RESULT_LOG}"
+            wpi_status=9999
+        fi
+        if [ ! -e "${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out" ] ; then
+            echo "File does not exist: ${OUTDIR}-results/${REPO_NAME_HASH}-typecheck.out"
+            wpi_status=9999
+        fi
+        if [[ "$wpi_status" != 0 ]]; then
+            echo "Listing of ${OUTDIR}-results:"
+            ls -al "${OUTDIR}-results"
+            echo "==== start of ${OUTDIR}-results/wpi-out; printed because wpi_status=${wpi_status} ===="
+            cat "${OUTDIR}-results/wpi-out"
+            echo "==== end of ${OUTDIR}-results/wpi-out ===="
+            exit 5
         fi
     fi
+    # Avoid interleaved output from different iterations of the loop.
+    sleep 1
 
     cd "${OUTDIR}" || exit 5
 
@@ -291,6 +407,7 @@ results_available=$(grep -vl -e "no build file found for" \
     "${OUTDIR}-results/"*.log || true)
 
 echo "${results_available}" > "${OUTDIR}-results/results_available.txt"
+echo "results_available = ${results_available}"
 
 if [ -z "${results_available}" ]; then
   echo "No results are available."
@@ -309,13 +426,13 @@ else
 
     if [ ! -s "${listpath}" ] ; then
         echo "listpath ${listpath} has size zero"
-        ls -l "${listpath}"
+        ls -al "${listpath}"
         echo "results_available = ${results_available}"
         echo "---------------- start of ${OUTDIR}-results/results_available.txt ----------------"
         cat "${OUTDIR}-results/results_available.txt"
         echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
         echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
-        ls -l "${OUTDIR}-results/"*.log
+        ls -al "${OUTDIR}-results/"*.log
         echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
         ## This is too much output; Azure cuts it off.
         # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
@@ -327,7 +444,7 @@ else
     mkdir -p "${SCRIPTDIR}/.scc"
     cd "${SCRIPTDIR}/.scc" || exit 5
     wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip" \
-      || (sleep 60 && wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip")
+      || (sleep 60s && wget -nc "https://github.com/boyter/scc/releases/download/v2.13.0/scc-2.13.0-i386-unknown-linux.zip")
     unzip -o "scc-2.13.0-i386-unknown-linux.zip"
 
     # shellcheck disable=SC2046
@@ -342,7 +459,7 @@ else
       cat "${OUTDIR}-results/results_available.txt"
       echo "---------------- end of ${OUTDIR}-results/results_available.txt ----------------"
       echo "---------------- start of names of log files from which results_available.txt was constructed ----------------"
-      ls -l "${OUTDIR}-results/"*.log
+      ls -al "${OUTDIR}-results/"*.log
       echo "---------------- end of names of log files from which results_available.txt was constructed ----------------"
       ## This is too much output; Azure cuts it off.
       # echo "---------------- start of log files from which results_available.txt was constructed ----------------"
@@ -356,4 +473,4 @@ else
   fi
 fi
 
-echo "Exiting wpi-many.sh. Results were placed in ${OUTDIR}-results/."
+echo "Exiting wpi-many.sh successfully. Results were placed in ${OUTDIR}-results/."

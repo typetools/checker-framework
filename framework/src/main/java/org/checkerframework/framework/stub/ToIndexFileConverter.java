@@ -95,14 +95,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * declarations are encountered.
    */
   private final @DotSeparatedIdentifiers String pkgName;
+
   /** Imports that appear in the stub file. */
   private final List<String> imports;
+
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
 
   /**
-   * @param pkgDecl AST node for package declaration
-   * @param importDecls AST nodes for import declarations
+   * Creates a new ToIndexFileConverter.
+   *
+   * @param pkgDecl the AST node for package declaration
+   * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
@@ -174,7 +178,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param scene the initial scene
    * @param in stubfile contents
-   * @param out JAIF representing augmented scene
+   * @param out the output stream for the JAIF file that holds the augmented scene
    * @throws ParseException if the stub file cannot be parsed
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
@@ -228,7 +232,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Builds simplified annotation from its declaration. Only the name is included, because stubfiles
    * do not generally have access to the full definitions of annotations.
    */
-  private static Annotation extractAnnotation(AnnotationExpr expr) {
+  private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'
 
     // Eliminate jdk.Profile+Annotation, a synthetic annotation that
@@ -443,7 +447,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /** Copies information from an AST type node to an {@link ATypeElement}. */
-  private Void visitType(Type type, final ATypeElement elem) {
+  private Void visitType(Type type, ATypeElement elem) {
     List<AnnotationExpr> exprs = type.getAnnotations();
     if (exprs != null) {
       for (AnnotationExpr expr : exprs) {
@@ -460,10 +464,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Copies information from an AST type node's inner type nodes to an {@link ATypeElement}.
    *
-   * @param type AST Type node to inspect
+   * @param type the AST Type node to inspect
    * @param elem destination type element
    */
-  private static Void visitInnerTypes(Type type, final ATypeElement elem) {
+  private static Void visitInnerTypes(Type type, ATypeElement elem) {
     return type.accept(
         new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
           @Override
@@ -618,7 +622,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return fully qualified name of class that {@code className} identifies in the current context,
    *     or null if resolution fails
    */
-  private @BinaryName String resolve(@BinaryName String className) {
+  private @Nullable @BinaryName String resolve(@BinaryName String className) {
 
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
@@ -658,7 +662,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @BinaryName String mergeImport(String importName, @BinaryName String className) {
+  private static @Nullable @BinaryName String mergeImport(
+      String importName, @BinaryName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
@@ -688,7 +693,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param className a class name
    * @return the {@link Class} object corresponding to {@code className}, or null if none found
    */
-  private static Class<?> loadClass(@ClassGetName String className) {
+  private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
       return Class.forName(className, false, null);

@@ -125,7 +125,7 @@ public class Purity {
 
   @Pure
   String t13() {
-    // :: error: (purity.not.deterministic.object.creation)
+    // No "purity.not.deterministic.object.creation" error; an error was issued at the constructor.
     PureClass p = new PureClass();
     return "";
   }
@@ -144,7 +144,7 @@ public class Purity {
 
   @Deterministic
   String t13c() {
-    // :: error: (purity.not.deterministic.object.creation)
+    // No "purity.not.deterministic.object.creation" error; an error was issued at the constructor.
     PureClass p = new PureClass();
     return "";
   }
@@ -270,6 +270,15 @@ public class Purity {
   class MyClass extends Object {
     public int hashCode() {
       return 42;
+    }
+  }
+
+  class Wrapper {
+    Object key;
+
+    @SideEffectFree
+    public Wrapper(Object key) {
+      this.key = key;
     }
   }
 }

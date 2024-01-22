@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -111,7 +112,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   @Override
-  public QualifierKind getQualifierKind(@CanonicalName String name) {
+  public QualifierKind getQualifierKind(
+      @UnknownInitialization(DefaultQualifierKindHierarchy.class) DefaultQualifierKindHierarchy this,
+      @CanonicalName String name) {
     QualifierKind result = nameToQualifierKind.get(name);
     if (result == null) {
       throw new BugInCF("getQualifierKind(%s) => null", name);
@@ -283,7 +286,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         DefaultQualifierKind superQualifier = nameToQualifierKind.get(superName);
         if (superQualifier == null) {
           throw new TypeSystemError(
-              "%s @Subtype argument %s isn't in the hierarchy. Qualifiers: [%s]",
+              "In %s, @SubtypeOf(%s) argument isn't in the hierarchy."
+                  + " Have you mis-defined createSupportedTypeQualifiers()? Qualifiers: [%s]",
               qualifierKind, superName, StringsPlume.join(", ", qualifierKinds));
         }
         directSupers.add(superQualifier);

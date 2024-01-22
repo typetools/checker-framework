@@ -9,9 +9,11 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.plumelib.util.DeepCopyable;
 
 /**
  * The Set interface defines many methods with respect to the equals method. This implementation of
@@ -28,7 +30,8 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
-public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") AnnotationMirror> {
+public class AnnotationMirrorSet
+    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable<AnnotationMirrorSet> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
@@ -38,7 +41,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors
+  /// Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -49,7 +52,6 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    *
    * @param value the AnnotationMirror to put in the set
    */
-  @Deprecated // Is this called?
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
@@ -61,6 +63,14 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    */
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
+  }
+
+  @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
+  @Override
+  public AnnotationMirrorSet deepCopy() {
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    result.shadowSet.addAll(shadowSet);
+    return result;
   }
 
   /**
@@ -140,7 +150,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
 
   @SuppressWarnings("nullness:toarray.nullable.elements.not.newarray") // delegation
   @Override
-  public <T> @Nullable T[] toArray(@PolyNull T[] a) {
+  public <@KeyForBottom T> @Nullable T[] toArray(@PolyNull T[] a) {
     return shadowSet.toArray(a);
   }
 

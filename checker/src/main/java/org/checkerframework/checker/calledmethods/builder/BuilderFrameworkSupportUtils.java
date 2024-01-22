@@ -1,5 +1,6 @@
 package org.checkerframework.checker.calledmethods.builder;
 
+import java.util.Locale;
 import javax.lang.model.type.TypeMirror;
 
 /** A utility class of static methods used in supporting builder-generation frameworks. */
@@ -27,6 +28,6 @@ public class BuilderFrameworkSupportUtils {
    * @return the same String, but with the first character capitalized
    */
   public static String capitalize(String prop) {
-    return prop.substring(0, 1).toUpperCase() + prop.substring(1);
+    return prop.substring(0, 1).toUpperCase(Locale.getDefault()) + prop.substring(1);
   }
 }

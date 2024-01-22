@@ -11,6 +11,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.ElementFilter;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -19,11 +20,10 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 import org.checkerframework.framework.qual.QualifierArgument;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.util.Contract.Kind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * A utility class to retrieve pre- and postconditions from a method.
@@ -77,7 +77,7 @@ public class ContractsFromMethod {
    * @return the precondition contracts on {@code executableElement}
    */
   public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
-    return getContracts(executableElement, Kind.PRECONDITION, Contract.Precondition.class);
+    return getContracts(executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class);
   }
 
   /**
@@ -87,7 +87,8 @@ public class ContractsFromMethod {
    * @return the postcondition contracts on {@code executableElement}
    */
   public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-    return getContracts(executableElement, Kind.POSTCONDITION, Contract.Postcondition.class);
+    return getContracts(
+        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class);
   }
 
   /**
@@ -99,7 +100,9 @@ public class ContractsFromMethod {
   public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
       ExecutableElement methodElement) {
     return getContracts(
-        methodElement, Kind.CONDITIONALPOSTCONDITION, Contract.ConditionalPostcondition.class);
+        methodElement,
+        Contract.Kind.CONDITIONALPOSTCONDITION,
+        Contract.ConditionalPostcondition.class);
   }
 
   /// Helper methods
@@ -115,7 +118,7 @@ public class ContractsFromMethod {
    * @return the contracts on {@code executableElement}
    */
   private <T extends Contract> Set<T> getContracts(
-      ExecutableElement executableElement, Kind kind, Class<T> clazz) {
+      ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
     // Check for a single framework-defined contract annotation.
     AnnotationMirror frameworkContractAnno =
@@ -135,9 +138,9 @@ public class ContractsFromMethod {
     }
 
     // Check for type-system specific annotations.
-    List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+    List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
-    for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
+    for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
       AnnotationMirror anno = r.first;
       // contractAnno is the meta-annotation on anno.
       AnnotationMirror contractAnno = r.second;
@@ -172,7 +175,7 @@ public class ContractsFromMethod {
    *     null
    */
   private <T extends Contract> Set<T> getContract(
-      Contract.Kind kind, AnnotationMirror contractAnnotation, Class<T> clazz) {
+      Contract.Kind kind, @Nullable AnnotationMirror contractAnnotation, Class<T> clazz) {
     if (contractAnnotation == null) {
       return Collections.emptySet();
     }
@@ -207,7 +210,8 @@ public class ContractsFromMethod {
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(AnnotationMirror contractAnno) {
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+      AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
 
@@ -219,7 +223,7 @@ public class ContractsFromMethod {
    * @param argumentAnno supplies the elements/fields in the return value
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
@@ -244,10 +248,10 @@ public class ContractsFromMethod {
    * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
    *     null if it is not a supported qualifier of the type system
    */
-  private AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,
-      AnnotationMirror argumentAnno,
-      Map<String, String> argumentRenaming) {
+      @Nullable AnnotationMirror argumentAnno,
+      @Nullable Map<String, String> argumentRenaming) {
 
     @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);

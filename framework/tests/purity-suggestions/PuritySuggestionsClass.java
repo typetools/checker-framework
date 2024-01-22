@@ -8,13 +8,14 @@ public class PuritySuggestionsClass {
 
   String f1, f2, f3;
   String[] a;
+  static String staticString;
 
   // class with a (potentially) non-pure constructor
   private static class NonPureClass {
     String t;
 
     public NonPureClass() {
-      t = "";
+      staticString = "";
     }
   }
 
@@ -24,7 +25,17 @@ public class PuritySuggestionsClass {
     public PureClass() {}
   }
 
-  // :: warning: (purity.more.pure)
+  // class with a pure constructor
+  private static class PureClass2 {
+    String t;
+
+    // :: warning: (purity.more.sideeffectfree)
+    public PureClass2() {
+      t = "";
+    }
+  }
+
+  // :: warning: (purity.more.sideeffectfree)
   void nonpure() {}
 
   @Pure

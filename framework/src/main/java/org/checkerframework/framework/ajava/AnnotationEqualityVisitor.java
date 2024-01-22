@@ -18,8 +18,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class AnnotationEqualityVisitor extends DoubleJavaParserVisitor {
   /** Whether or not a node with mismatched annotations has been seen. */
   private boolean annotationsMatch;
+
   /** If a node with mismatched annotations has been seen, stores the node from the first AST. */
   private @MonotonicNonNull NodeWithAnnotations<?> mismatchedNode1;
+
   /** If a node with mismatched annotations has been seen, stores the node from the second AST. */
   private @MonotonicNonNull NodeWithAnnotations<?> mismatchedNode2;
 

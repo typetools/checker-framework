@@ -24,14 +24,15 @@ import java.util.TreeSet;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * An annotation processor for listing the potential locations of annotations. To invoke it, use
+ * An annotation processor for counting the annotations in a program and for listing the potential
+ * locations of annotations. To invoke it, use
  *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationStatistics <em>MyFile.java ...</em>
@@ -45,18 +46,20 @@ import org.checkerframework.javacutil.AnnotationProvider;
  *   <li>Count for only certain location types: use {@code grep}
  * </ul>
  *
- * <p>By default, this utility displays annotation locations only. The following two options may be
- * used to adjust the output:
+ * <p>By default, this utility displays annotation locations only. The following options may be used
+ * to adjust the output:
  *
  * <ul>
- *   <li>{@code -Aannotations}: prints information about the annotations
+ *   <li>{@code -Aannotations}: prints information about the annotations, such as whether it is in a
+ *       signature or in a body
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
- *   <li>{@code -Aannotationsummaryonly}: with both of the obove, only outputs a summary
+ *   <li>{@code -Aannotationsummaryonly}: with both of the above, only outputs a summary
  *   <li>{@code -Aannotationserror}: histogram is issued as a warning, not just printed
  * </ul>
  *
  * @see JavaCodeStatistics
+ * @see org.checkerframework.common.util.count.report.ReportChecker
  */
 /*
  * TODO: add an option to only list declaration or type annotations.
@@ -100,7 +103,7 @@ public class AnnotationStatistics extends SourceChecker {
     if (hasOption("annotationserror")) {
       // Issue annotation details a compiler warning rather than printed. This may be useful, for
       // example, when Maven swallows non-warning output from the annotation processor.
-      getProcessingEnvironment().getMessager().printMessage(Kind.WARNING, output);
+      getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING, output);
     } else {
       System.out.println(output);
     }

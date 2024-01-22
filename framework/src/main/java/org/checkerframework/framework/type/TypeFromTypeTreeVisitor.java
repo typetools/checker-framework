@@ -72,8 +72,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       underlyingWildcard.withTypeVar(wildcardAttachedToNode.bound);
       // End of work-around
 
-      final AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
-      final ExpressionTree underlyingTree = tree.getUnderlyingType();
+      AnnotatedWildcardType wctype = ((AnnotatedWildcardType) type);
+      ExpressionTree underlyingTree = tree.getUnderlyingType();
 
       if (underlyingTree.getKind() == Tree.Kind.UNBOUNDED_WILDCARD) {
         // primary annotations on unbounded wildcard types apply to both bounds
@@ -121,7 +121,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     AnnotatedTypeMirror result = f.type(tree); // use creator?
     AnnotatedTypeMirror atype = visit(tree.getType(), f);
-    result.addAnnotations(atype.getAnnotations());
+    result.addAnnotations(atype.getPrimaryAnnotations());
     // new ArrayList<>() type is AnnotatedExecutableType for some reason
 
     // Don't initialize the type arguments if they are empty. The type arguments might be a
@@ -261,6 +261,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     if (elt instanceof TypeElement) {
       TypeElement typeElt = (TypeElement) elt;
       int idx = typeElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(typeElt.getTypeParameters(), tpe);
+      }
       ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
       if (cls == null || cls.getTypeParameters().isEmpty()) {
         // The type parameters in the source tree were already erased. The element already
@@ -276,10 +279,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else if (elt instanceof ExecutableElement) {
       ExecutableElement exElt = (ExecutableElement) elt;
       int idx = exElt.getTypeParameters().indexOf(tpe);
+      if (idx == -1) {
+        idx = findIndex(exElt.getTypeParameters(), tpe);
+      }
       MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
       if (meth == null) {
-        // throw new BugInCF("TypeFromTree.forTypeVariable: did not find source for: "
-        //                   + elt);
+        // meth can be null when no source code was found for it.
         return type.asUse();
       }
       // This works the same as the case above.  Even though `meth` itself is not a
@@ -295,6 +300,29 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     } else {
       throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
     }
+  }
+
+  /**
+   * Finds the index of {@code type} in {@code typeParameters} using {@link
+   * TypesUtils#areSame(TypeVariable, TypeVariable)} instead of {@link Object#equals(Object)}.
+   *
+   * @param typeParameters a list of type parameters
+   * @param type a type parameter
+   * @return the index of {@code type} in {@code typeParameters} using {@link
+   *     TypesUtils#areSame(TypeVariable, TypeVariable)} or -1 if it does not exist
+   */
+  private int findIndex(
+      List<? extends TypeParameterElement> typeParameters, TypeParameterElement type) {
+
+    TypeVariable typeVariable = (TypeVariable) type.asType();
+
+    for (int i = 0; i < typeParameters.size(); i++) {
+      TypeVariable typeVariable1 = (TypeVariable) typeParameters.get(i).asType();
+      if (TypesUtils.areSame(typeVariable1, typeVariable)) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   @Override

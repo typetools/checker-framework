@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -45,8 +46,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    */
   /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Tree.Kind, AnnotationMirrorSet> treeKinds;
+
   /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Class<?>, AnnotationMirrorSet> treeClasses;
+
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
   private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 
@@ -126,7 +129,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       }
       return this;
     }
-    Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
     if (tops.size() == defaultForNull.size()) {
       return this;
@@ -246,13 +249,14 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         }
       }
       if (!matches.isEmpty()) {
+        TypeMirror tm = type.getUnderlyingType();
         Set<? extends AnnotationMirror> res = matches.get(0);
         for (Set<? extends AnnotationMirror> sam : matches) {
-          res = qualHierarchy.greatestLowerBounds(res, sam);
+          res = qualHierarchy.greatestLowerBoundsShallow(res, tm, sam, tm);
         }
         // Verify that res is not a subtype of any type in nonMatches
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
-          if (qualHierarchy.isSubtype(res, sam)) {
+          if (qualHierarchy.isSubtypeShallow(res, sam, tm)) {
             String matchesOnePerLine = "";
             for (Set<? extends AnnotationMirror> match : matches) {
               matchesOnePerLine += System.lineSeparator() + "     " + match;

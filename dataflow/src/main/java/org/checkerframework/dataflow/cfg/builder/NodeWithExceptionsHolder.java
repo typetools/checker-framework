@@ -16,6 +16,11 @@ import org.checkerframework.dataflow.cfg.node.Node;
   /**
    * Map from exception type to labels of successors that may be reached as a result of that
    * exception.
+   *
+   * <p>This map's keys are the exception types that a Java expression or statement is declared to
+   * throw -- say, in the {@code throws} clause of the declaration of a method being called. The
+   * expression might be within a {@code try} statement with {@code catch} blocks that are different
+   * (either finer-grained or coarser).
    */
   protected final Map<TypeMirror, Set<Label>> exceptions;
 

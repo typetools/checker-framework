@@ -9,7 +9,8 @@ dependencies {
   implementation project(':javacutil')
   implementation project(':checker-qual')
 
-  implementation "org.plumelib:plume-util:${plumeUtilVersion}"
+  implementation "org.plumelib:plume-util:${versions.plumeUtil}"
+  testImplementation project(':framework')
 }
 
 jar.archiveBaseName = 'framework-test'

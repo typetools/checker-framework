@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /**
  * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
@@ -28,7 +28,7 @@ public class SubtypeVisitHistory {
    * The keys are pairs of types; the value is the set of qualifier hierarchy roots for which the
    * key is in a subtype relationship.
    */
-  private final Map<Pair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet> visited;
+  private final Map<IPair<AnnotatedTypeMirror, AnnotatedTypeMirror>, AnnotationMirrorSet> visited;
 
   /** Creates a new SubtypeVisitHistory. */
   public SubtypeVisitHistory() {
@@ -47,15 +47,15 @@ public class SubtypeVisitHistory {
    *     does nothing
    */
   public void put(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
       AnnotationMirror currentTop,
       boolean isSubtype) {
     if (!isSubtype) {
       // Only store information about subtype relations that hold.
       return;
     }
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
 
     if (hit != null) {
@@ -69,10 +69,8 @@ public class SubtypeVisitHistory {
 
   /** Remove {@code type1} and {@code type2}. */
   public void remove(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      AnnotationMirror currentTop) {
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
     if (hit != null) {
       hit.remove(currentTop);
@@ -89,10 +87,8 @@ public class SubtypeVisitHistory {
    * @return true if an equivalent pair has already been added to the history
    */
   public boolean contains(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      AnnotationMirror currentTop) {
-    Pair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = Pair.of(type1, type2);
+      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotationMirror currentTop) {
+    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> key = IPair.of(type1, type2);
     AnnotationMirrorSet hit = visited.get(key);
     return hit != null && hit.contains(currentTop);
   }

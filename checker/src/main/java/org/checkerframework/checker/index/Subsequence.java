@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.index.qual.HasSubsequence;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.source.SourceChecker;
@@ -18,8 +19,10 @@ public class Subsequence {
 
   /** Name of the Subsequence. */
   public final String array;
+
   /** First index of the subsequence in the backing sequence. */
   public final String from;
+
   /** Last index of the subsequence in the backing sequence. */
   public final String to;
 
@@ -40,7 +43,7 @@ public class Subsequence {
    * @param factory an AnnotatedTypeFactory
    * @return null or a new Subsequence from the declaration of {@code varTree}
    */
-  public static Subsequence getSubsequenceFromTree(
+  public static @Nullable Subsequence getSubsequenceFromTree(
       Tree varTree, BaseAnnotatedTypeFactoryForIndexChecker factory) {
 
     if (!(varTree.getKind() == Tree.Kind.IDENTIFIER
@@ -61,7 +64,7 @@ public class Subsequence {
    * @param factory the type factory
    * @return a new Subsequence object representing {@code hasSub} or null
    */
-  private static Subsequence createSubsequence(
+  private static @Nullable Subsequence createSubsequence(
       AnnotationMirror hasSub, BaseAnnotatedTypeFactoryForIndexChecker factory) {
     if (hasSub == null) {
       return null;
@@ -81,7 +84,7 @@ public class Subsequence {
    * @param factory an AnnotatedTypeFactory
    * @return null or a new Subsequence from the declaration of {@code varTree}
    */
-  public static Subsequence getSubsequenceFromReceiver(
+  public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
     if (!(expr instanceof FieldAccess)) {
       return null;

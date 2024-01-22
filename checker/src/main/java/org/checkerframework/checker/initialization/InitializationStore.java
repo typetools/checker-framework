@@ -35,6 +35,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
   /** The set of fields that are initialized. */
   protected final Set<VariableElement> initializedFields;
+
   /** The set of fields that have the 'invariant' annotation, and their value. */
   protected final Map<FieldAccess, V> invariantFields;
 
@@ -64,7 +65,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
     InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
         (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
-    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
     AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
 
     // Remember fields that have the 'invariant' annotation in the store.
@@ -72,7 +73,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
       FieldAccess fieldAccess = (FieldAccess) je;
       if (!fieldValues.containsKey(je)) {
         AnnotationMirrorSet declaredAnnos =
-            atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+            atypeFactory.getAnnotatedType(fieldAccess.getField()).getPrimaryAnnotations();
         if (AnnotationUtils.containsSame(declaredAnnos, invariantAnno)) {
           if (!invariantFields.containsKey(fieldAccess)) {
             invariantFields.put(
@@ -85,7 +86,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     super.insertValue(je, value, permitNondeterministic);
 
     for (AnnotationMirror a : value.getAnnotations()) {
-      if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
+      if (qualHierarchy.isSubtypeShallow(a, invariantAnno, je.getType())) {
         if (je instanceof FieldAccess) {
           FieldAccess fa = (FieldAccess) je;
           if (fa.getReceiver() instanceof ThisReference || fa.getReceiver() instanceof ClassName) {

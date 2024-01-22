@@ -101,10 +101,6 @@ public class Java8Lambdas {
     runner.doUISafely(e -> e.dangerous());
     @AlwaysSafe PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
     safePolymorphicLambdaRunner.doEither(e -> e.repaint());
-    // This next two are ok for this patch since the behavior is the same (no report) for
-    // lambdas as for annon classes. However, shouldn't this be (argument)
-    // just because safePolymorphicLambdaRunner is not an @UI PolymorphicLambdaRunner ? Or,
-    // failing that (call.ui) since doEither is @PolyUIEffect ?
     safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
     safePolymorphicLambdaRunner.doEither(
         new @UI PolymorphicFunctionalInterface<UIElement>() {
@@ -147,7 +143,6 @@ public class Java8Lambdas {
     runner.doUI(e -> e.repaint());
     runner.doUI(e -> e.dangerous());
     PolymorphicLambdaRunner safePolymorphicLambdaRunner = new PolymorphicLambdaRunner(elem);
-    // No error, why? :: error: (argument)
     safePolymorphicLambdaRunner.doEither(e -> e.dangerous());
     @UI PolymorphicLambdaRunner uiPolymorphicLambdaRunner = new @UI PolymorphicLambdaRunner(elem);
     uiPolymorphicLambdaRunner.doEither(e -> e.dangerous());

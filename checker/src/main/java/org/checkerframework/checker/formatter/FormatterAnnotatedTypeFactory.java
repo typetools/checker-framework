@@ -2,6 +2,7 @@ package org.checkerframework.checker.formatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
 import java.util.IllegalFormatException;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -43,15 +44,18 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link UnknownFormat} annotation. */
   protected final AnnotationMirror UNKNOWNFORMAT =
       AnnotationBuilder.fromClass(elements, UnknownFormat.class);
+
   /** The @{@link FormatBottom} annotation. */
   protected final AnnotationMirror FORMATBOTTOM =
       AnnotationBuilder.fromClass(elements, FormatBottom.class);
+
   /** The @{@link FormatMethod} annotation. */
   protected final AnnotationMirror FORMATMETHOD =
       AnnotationBuilder.fromClass(elements, FormatMethod.class);
 
   /** The fully-qualified name of the {@link Format} qualifier. */
   protected static final @CanonicalName String FORMAT_NAME = Format.class.getCanonicalName();
+
   /** The fully-qualified name of the {@link InvalidFormat} qualifier. */
   protected static final @CanonicalName String INVALIDFORMAT_NAME =
       InvalidFormat.class.getCanonicalName();
@@ -86,7 +90,8 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * from its first argument.
    */
   @Override
-  public void prepareMethodForWriting(AMethod method) {
+  public void wpiPrepareMethodForWriting(AMethod method) {
+    super.wpiPrepareMethodForWriting(method);
     if (hasFormatMethodAnno(method)) {
       AField param = method.parameters.get(0);
       if (param != null) {
@@ -104,11 +109,14 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * from its first argument.
    */
   @Override
-  public void prepareMethodForWriting(
-      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
+  public void wpiPrepareMethodForWriting(
+      WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
+      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSupertypes,
+      Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos> inSubtypes) {
+    super.wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
     if (hasFormatMethodAnno(methodAnnos)) {
       AnnotatedTypeMirror atm = methodAnnos.getParameterType(0);
-      atm.removeAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
+      atm.removePrimaryAnnotationByClass(org.checkerframework.checker.formatter.qual.Format.class);
     }
   }
 
@@ -157,12 +165,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-      if (!type.isAnnotatedInHierarchy(UNKNOWNFORMAT)) {
+      if (!type.hasPrimaryAnnotationInHierarchy(UNKNOWNFORMAT)) {
         String format = null;
         if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
           format = (String) tree.getValue();
-        } else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-          format = Character.toString((Character) tree.getValue());
         }
         if (format != null) {
           AnnotationMirror anno;
@@ -191,7 +197,10 @@ public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Creates a {@link FormatterQualifierHierarchy}. */
     public FormatterQualifierHierarchy() {
-      super(FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          FormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          FormatterAnnotatedTypeFactory.this);
       FORMAT_KIND = getQualifierKind(FORMAT_NAME);
       INVALIDFORMAT_KIND = getQualifierKind(INVALIDFORMAT_NAME);
     }

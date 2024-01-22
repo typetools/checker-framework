@@ -85,7 +85,7 @@ public class TestDiagnostic {
       return false;
     }
 
-    final TestDiagnostic other = (TestDiagnostic) otherObj;
+    TestDiagnostic other = (TestDiagnostic) otherObj;
     return other.filename.equals(this.filename)
         && other.lineNumber == lineNumber
         && other.kind == this.kind

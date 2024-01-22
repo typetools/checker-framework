@@ -46,8 +46,8 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public abstract class CFGBuilder {
 
-  /** This class should never be instantiated. Protected to still allow subclasses. */
-  protected CFGBuilder() {}
+  /** Creates a CFGBuilder. */
+  public CFGBuilder() {}
 
   /**
    * Build the control flow graph of some code.
@@ -123,16 +123,6 @@ public abstract class CFGBuilder {
       result.add(n.toStringDebug());
     }
     return result.toString();
-  }
-
-  static <A> A firstNonNull(A first, A second) {
-    if (first != null) {
-      return first;
-    } else if (second != null) {
-      return second;
-    } else {
-      throw new NullPointerException();
-    }
   }
 
   /* --------------------------------------------------------- */

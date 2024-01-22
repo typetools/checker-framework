@@ -1,17 +1,23 @@
 package org.checkerframework.checker.calledmethods;
 
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationTransfer;
+import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -21,11 +27,12 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
+import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -42,7 +49,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * to read the CFStores; and then finally this field is then reset to null afterwards to prevent
    * it from being used somewhere it shouldn't be.
    */
-  private @Nullable Map<TypeMirror, CFStore> exceptionalStores;
+  private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
 
   /**
    * The element for the CalledMethods annotation's value element. Stored in a field in this class
@@ -50,23 +57,75 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    */
   private final ExecutableElement calledMethodsValueElement;
 
+  /** The type mirror for {@link Exception}. */
+  protected final TypeMirror javaLangExceptionType;
+
+  /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
+  private final boolean enableWpiForRlc;
+
   /**
    * Create a new CalledMethodsTransfer.
    *
    * @param analysis the analysis
    */
-  public CalledMethodsTransfer(final CalledMethodsAnalysis analysis) {
+  public CalledMethodsTransfer(CalledMethodsAnalysis analysis) {
     super(analysis);
     calledMethodsValueElement =
         ((CalledMethodsAnnotatedTypeFactory) atypeFactory).calledMethodsValueElement;
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    javaLangExceptionType =
+        env.getTypeUtils().getDeclaredType(ElementUtils.getTypeElement(env, Exception.class));
+  }
+
+  /**
+   * @param tree a tree
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) is not passed
+   *     as a command line argument, otherwise returns the result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param expressionTree a tree
+   * @param lhsTree its element
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitMethodInvocation(
-      final MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
+  public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     exceptionalStores = makeExceptionalStores(node, input);
-    TransferResult<CFValue, CFStore> superResult = super.visitMethodInvocation(node, input);
-    handleEnsuresCalledMethodsVarArgs(node, superResult);
+    TransferResult<AccumulationValue, AccumulationStore> superResult =
+        super.visitMethodInvocation(node, input);
+
+    ExecutableElement method = TreeUtils.elementFromUse(node.getTree());
+    handleEnsuresCalledMethodsVarArgs(node, method, superResult);
+    handleEnsuresCalledMethodsOnException(node, method, exceptionalStores);
+
     Node receiver = node.getTarget().getReceiver();
     if (receiver != null) {
       String methodName = node.getTarget().getMethod().getSimpleName().toString();
@@ -75,7 +134,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
               .adjustMethodNameUsingValueChecker(methodName, node.getTree());
       accumulate(receiver, superResult, methodName);
     }
-    TransferResult<CFValue, CFStore> finalResult =
+    TransferResult<AccumulationValue, AccumulationStore> finalResult =
         new ConditionalTransferResult<>(
             superResult.getResultValue(),
             superResult.getThenStore(),
@@ -86,7 +145,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   @Override
-  public void accumulate(Node node, TransferResult<CFValue, CFStore> result, String... values) {
+  public void accumulate(
+      Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
     if (exceptionalStores == null) {
       return;
@@ -95,7 +155,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<String> valuesAsList = Arrays.asList(values);
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
-      CFValue flowValue = result.getRegularStore().getValue(target);
+      AccumulationValue flowValue = result.getRegularStore().getValue(target);
       if (flowValue != null) {
         // Dataflow has already recorded information about the target.  Integrate it into
         // the list of values in the new annotation.
@@ -113,7 +173,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         }
       }
       AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-      exceptionalStores.forEach((tm, s) -> s.insertValue(target, newAnno));
+      exceptionalStores.forEach(
+          (tm, s) ->
+              s.replaceValue(
+                  target, analysis.createSingleAnnotationValue(newAnno, target.getType())));
     }
   }
 
@@ -128,15 +191,15 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
-  private Map<TypeMirror, CFStore> makeExceptionalStores(
-      MethodInvocationNode node, final TransferInput<CFValue, CFStore> input) {
+  private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
+      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
-    Map<TypeMirror, CFStore> result = new LinkedHashMap<>();
+    Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
     block
         .getExceptionalSuccessors()
         .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
@@ -149,11 +212,13 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * present.
    *
    * @param node the method invocation node
+   * @param elt the method being invoked
    * @param result the current result
    */
   private void handleEnsuresCalledMethodsVarArgs(
-      MethodInvocationNode node, TransferResult<CFValue, CFStore> result) {
-    ExecutableElement elt = TreeUtils.elementFromUse(node.getTree());
+      MethodInvocationNode node,
+      ExecutableElement elt,
+      TransferResult<AccumulationValue, AccumulationStore> result) {
     AnnotationMirror annot = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarArgs.class);
     if (annot == null) {
       return;
@@ -172,8 +237,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     if (varArgActual instanceof ArrayCreationNode) {
       ArrayCreationNode arrayCreationNode = (ArrayCreationNode) varArgActual;
       // add in the called method to all the vararg arguments
-      CFStore thenStore = result.getThenStore();
-      CFStore elseStore = result.getElseStore();
+      AccumulationStore thenStore = result.getThenStore();
+      AccumulationStore elseStore = result.getElseStore();
       for (Node arg : arrayCreationNode.getInitializers()) {
         AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arg.getTree());
         AnnotationMirror newType = getUpdatedCalledMethodsType(currentType, ensuredMethodNames);
@@ -184,6 +249,49 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
         JavaExpression receiverReceiver = JavaExpression.fromNode(arg);
         thenStore.insertValue(receiverReceiver, newType);
         elseStore.insertValue(receiverReceiver, newType);
+      }
+    }
+  }
+
+  /**
+   * Update the given <code>exceptionalStores</code> for the {@link
+   * org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsOnException} annotations
+   * written on the given <code>method</code>.
+   *
+   * @param node a method invocation
+   * @param method the method being invoked
+   * @param exceptionalStores the stores to update
+   */
+  private void handleEnsuresCalledMethodsOnException(
+      MethodInvocationNode node,
+      ExecutableElement method,
+      Map<TypeMirror, AccumulationStore> exceptionalStores) {
+    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
+    for (EnsuresCalledMethodOnExceptionContract postcond :
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(method)) {
+      JavaExpression e;
+      try {
+        e =
+            StringToJavaExpression.atMethodInvocation(
+                postcond.getExpression(), node.getTree(), atypeFactory.getChecker());
+      } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+        // This parse error will be reported later. For now, we'll skip this malformed
+        // postcondition and move on to the others.
+        continue;
+      }
+
+      // NOTE: this code is a little inefficient; it creates a single-method annotation and calls
+      // `insertOrRefine` in a loop.  Even worse, this code appears within a loop.  For now we
+      // aren't too worried about it, since the number of EnsuresCalledMethodsOnException
+      // annotations should be small.
+      AnnotationMirror calledMethod =
+          atypeFactory.createAccumulatorAnnotation(postcond.getMethod());
+      for (Map.Entry<TypeMirror, AccumulationStore> successor : exceptionalStores.entrySet()) {
+        TypeMirror caughtException = successor.getKey();
+        if (types.isSubtype(caughtException, javaLangExceptionType)) {
+          AccumulationStore resultStore = successor.getValue();
+          resultStore.insertOrRefine(e, calledMethod);
+        }
       }
     }
   }
@@ -201,10 +309,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   private @Nullable AnnotationMirror getUpdatedCalledMethodsType(
       AnnotatedTypeMirror currentType, List<String> methodNames) {
     AnnotationMirror type;
-    if (currentType == null || !currentType.isAnnotatedInHierarchy(atypeFactory.top)) {
+    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.top)) {
       type = atypeFactory.top;
     } else {
-      type = currentType.getAnnotationInHierarchy(atypeFactory.top);
+      type = currentType.getPrimaryAnnotationInHierarchy(atypeFactory.top);
     }
 
     // Don't attempt to strengthen @CalledMethodsPredicate annotations, because that would
@@ -223,5 +331,15 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
 
     return atypeFactory.createAccumulatorAnnotation(newList);
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 }

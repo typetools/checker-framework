@@ -25,48 +25,8 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
 
-  /**
-   * Replaces or adds all annotations from {@code from} to {@code to}. Annotations from {@code from}
-   * will be used everywhere they exist, but annotations in {@code to} will be kept anywhere that
-   * {@code from} is unannotated.
-   *
-   * @param from the annotated type mirror from which to take new annotations
-   * @param to the annotated type mirror to which the annotations will be added
-   * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
-   *     AnnotatedTypeMirror)} instead.
-   */
-  @Deprecated // 2021-03-25
-  @SuppressWarnings("interning:not.interned") // assertion
-  public static void replace(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
-    if (from == to) {
-      throw new BugInCF("From == to");
-    }
-    new AnnotatedTypeReplacer().visit(from, to);
-  }
-
-  /**
-   * Replaces or adds annotations in {@code top}'s hierarchy from {@code from} to {@code to}.
-   * Annotations from {@code from} will be used everywhere they exist, but annotations in {@code to}
-   * will be kept anywhere that {@code from} is unannotated.
-   *
-   * @param from the annotated type mirror from which to take new annotations
-   * @param to the annotated type mirror to which the annotations will be added
-   * @param top the top type of the hierarchy whose annotations will be added
-   * @deprecated use {@link AnnotatedTypeFactory#replaceAnnotations(AnnotatedTypeMirror,
-   *     AnnotatedTypeMirror, AnnotationMirror)} instead.
-   */
-  @Deprecated // 2021-03-25
-  @SuppressWarnings("interning:not.interned") // assertion
-  public static void replace(
-      final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
-    if (from == to) {
-      throw new BugInCF("from == to: %s", from);
-    }
-    new AnnotatedTypeReplacer(top).visit(from, to);
-  }
-
   /** If top != null we replace only the annotations in the hierarchy of top. */
-  private AnnotationMirror top;
+  private @Nullable AnnotationMirror top;
 
   /** Construct an AnnotatedTypeReplacer that will replace all annotations. */
   public AnnotatedTypeReplacer() {
@@ -77,9 +37,9 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * Construct an AnnotatedTypeReplacer that will only replace annotations in {@code top}'s
    * hierarchy.
    *
-   * @param top if top != null, then only annotation in the hierarchy of top are affected
+   * @param top if top != null, then only annotations in the hierarchy of top are affected
    */
-  public AnnotatedTypeReplacer(final AnnotationMirror top) {
+  public AnnotatedTypeReplacer(@Nullable AnnotationMirror top) {
     this.top = top;
   }
 
@@ -110,13 +70,13 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * @param from the source of the annotations
    * @param to the destination of the annotations, modified by this method
    */
-  protected void replaceAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (top == null) {
-      to.replaceAnnotations(from.getAnnotations());
+      to.replaceAnnotations(from.getPrimaryAnnotations());
     } else {
-      final AnnotationMirror replacement = from.getAnnotationInHierarchy(top);
+      AnnotationMirror replacement = from.getPrimaryAnnotationInHierarchy(top);
       if (replacement != null) {
-        to.replaceAnnotation(from.getAnnotationInHierarchy(top));
+        to.replaceAnnotation(from.getPrimaryAnnotationInHierarchy(top));
       }
     }
   }
@@ -144,13 +104,13 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
   public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
     if (from.getKind() == TypeKind.WILDCARD || from.getKind() == TypeKind.TYPEVAR) {
       if (top != null) {
-        if (from.getAnnotationInHierarchy(top) == null) {
-          to.removeAnnotationInHierarchy(top);
+        if (from.getPrimaryAnnotationInHierarchy(top) == null) {
+          to.removePrimaryAnnotationInHierarchy(top);
         }
       } else {
         List<AnnotationMirror> toRemove = new ArrayList<>(1);
-        for (final AnnotationMirror toPrimaryAnno : to.getAnnotations()) {
-          if (from.getAnnotationInHierarchy(toPrimaryAnno) == null) {
+        for (AnnotationMirror toPrimaryAnno : to.getPrimaryAnnotations()) {
+          if (from.getPrimaryAnnotationInHierarchy(toPrimaryAnno) == null) {
             // Doing the removal here directly can lead to a
             // ConcurrentModificationException,
             // because this loop is iterating over the annotations in `to`.
@@ -158,7 +118,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
           }
         }
         for (AnnotationMirror annoToRemove : toRemove) {
-          to.removeAnnotation(annoToRemove);
+          to.removePrimaryAnnotation(annoToRemove);
         }
       }
     } else {

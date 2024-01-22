@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":automergeAll",
+    ":automergeRequireAllStatusChecks",
+    "schedule:nonOfficeHours",
+    ":disableDependencyDashboard"
+  ],
+  "timezone": "America/Los_Angeles",
+  "packageRules": [
+    {
+      "matchPackageNames": ["com.amazonaws:aws-java-sdk-bom"],
+      "schedule": ["before 3am on the first day of the month"]
+    }
+  ]
+}

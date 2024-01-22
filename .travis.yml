@@ -62,7 +62,7 @@ before_script:
 # The fcntl line works around a bug where Travis truncates logs and fails.
 script:
 - python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
-- REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+- REMOTE_ORIGIN_URL=$(git config --get remote.origin.url)
 - echo "THIS_REPO=${THIS_REPO}"
 - echo "JDKVER=${JDKVER}"
 - echo "GROUP=${GROUP}"
@@ -79,16 +79,16 @@ script:
 - >-
   docker run -v $HOME/.gradle:/root/.gradle -v $HOME/.m2:/root/.m2 mdernst/cf-$OS-$JDKVER /bin/bash -c "true &&
      if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
-       git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO
+       git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet $REMOTE_ORIGIN_URL $THIS_REPO)
        cd $THIS_REPO
        git fetch origin +refs/pull/$TRAVIS_PULL_REQUEST/merge
        git checkout -qf $TRAVIS_PULL_REQUEST_SHA
        git config user.email noone@cares.com
        git config user.name Noone Cares
        git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git
-       git pull theupstream $TRAVIS_BRANCH || git pull theupstream $TRAVIS_BRANCH
+       git pull theupstream $TRAVIS_BRANCH || (sleep 1m && git pull theupstream $TRAVIS_BRANCH)
      else
-       git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO || git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO
+       git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO || (sleep 1m && git clone --quiet -b $TRAVIS_BRANCH $REMOTE_ORIGIN_URL $THIS_REPO)
        cd $THIS_REPO
        git checkout -qf $TRAVIS_COMMIT
      fi &&

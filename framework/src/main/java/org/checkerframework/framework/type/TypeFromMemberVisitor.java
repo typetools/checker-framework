@@ -13,6 +13,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -32,9 +33,25 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     Element elt = TreeUtils.elementFromDeclaration(variableTree);
 
     // Create the ATM and add non-primary annotations
-    // (variableTree.getType() does not include the annotation before the type, so those
-    // are added to the type below).
-    AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+    AnnotatedTypeMirror result;
+    // Propagate initializer annotated type to variable if declared using var.
+    // Skip propagation of annotations when initializer can be null.
+    // E.g.
+    // for (var i : list) {}
+    if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+        && variableTree.getInitializer() != null) {
+      result = f.getAnnotatedType(variableTree.getInitializer());
+      // Let normal defaulting happen for the primary annotation.
+      result.clearPrimaryAnnotations();
+    } else if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
+        || variableTree.getType() == null) {
+      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      result = f.type(variableTree);
+    } else {
+      // (variableTree.getType() does not include the annotation before the type, so those
+      // are added to the type below).
+      result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+    }
 
     // Handle any annotations in variableTree.getModifiers().
     List<AnnotationMirror> modifierAnnos;
@@ -61,8 +78,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
       // The underlying type of result does not have all annotations, but the TypeMirror of
       // variableTree.getType() does.
-      DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
-      AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
+      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      if (variableTree.getType() != null
+          && !TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+        DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
+        AnnotatedTypes.applyAnnotationsFromDeclaredType(annotatedDeclaredType, declaredType);
+      }
 
       // Handle declaration annotations
       for (AnnotationMirror anno : modifierAnnos) {
@@ -126,7 +147,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
    *
    * @return the type of the lambda parameter, or null if paramElement is not a lambda parameter
    */
-  private static AnnotatedTypeMirror inferLambdaParamAnnotations(
+  private static @Nullable AnnotatedTypeMirror inferLambdaParamAnnotations(
       AnnotatedTypeFactory f, AnnotatedTypeMirror lambdaParam, Element paramElement) {
     if (paramElement.getKind() != ElementKind.PARAMETER
         || f.declarationFromElement(paramElement) == null
@@ -137,33 +158,23 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     }
     Tree declaredInTree =
         f.getPath(f.declarationFromElement(paramElement)).getParentPath().getLeaf();
-    if (declaredInTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+    if (declaredInTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION
+        && TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
       LambdaExpressionTree lambdaDecl = (LambdaExpressionTree) declaredInTree;
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
-      if (TreeUtils.isImplicitlyTypedLambda(declaredInTree)) {
-        // The Java types should be exactly the same, but because invocation type
-        // inference (#979) isn't implement, check first. Use the erased types because the
-        // type arguments are not substituted when the annotated type arguments are.
-        if (TypesUtils.isErasedSubtype(
-            funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
-          return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
-        }
-        lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
-        return lambdaParam;
-
-      } else {
-        // The lambda expression is explicitly typed, so the parameters have declared types:
-        // (String s) -> ...
-        // The declared type may or may not have explicit annotations.
-        // If it does not have an annotation for a hierarchy, then copy the annotation from
-        // the function type rather than use usual defaulting rules.
-        // Note lambdaParam is a super type of funcTypeParam, so only primary annotations
-        // can be copied.
-        lambdaParam.addMissingAnnotations(funcTypeParam.getAnnotations());
-        return lambdaParam;
+      // During type argument inference, the type of the parameters is assumed to be the same as
+      // the function parameter.
+      // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2.1).
+      // So if the underlying types are not the same type, then assume the lambda parameter is the
+      // same as the function type. (Use the erased types because the
+      // type arguments are not substituted when the annotated type arguments are.)
+      if (TypesUtils.isErasedSubtype(
+          funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
+        return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);
       }
+      return funcTypeParam;
     }
     return null;
   }

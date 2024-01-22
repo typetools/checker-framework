@@ -140,7 +140,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
    * @param lombokClassElement the class with the @lombok.Builder annotation
    * @return a list of required property names
    */
-  private List<String> getLombokRequiredProperties(final Element lombokClassElement) {
+  private List<String> getLombokRequiredProperties(Element lombokClassElement) {
     List<String> requiredPropertyNames = new ArrayList<>();
     List<String> defaultedPropertyNames = new ArrayList<>();
     for (Element member : lombokClassElement.getEnclosedElements()) {
@@ -201,6 +201,6 @@ public class LombokSupport implements BuilderFrameworkSupport {
 
   @Override
   public void handleConstructor(NewClassTree tree, AnnotatedTypeMirror type) {
-    return;
+    // do nothing
   }
 }

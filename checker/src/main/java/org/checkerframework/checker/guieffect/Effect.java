@@ -47,9 +47,10 @@ public final class Effect {
   }
 
   public static final class EffectRange {
-    public final Effect min, max;
+    public final Effect min;
+    public final Effect max;
 
-    public EffectRange(Effect min, Effect max) {
+    public EffectRange(@Nullable Effect min, @Nullable Effect max) {
       assert (min != null || max != null);
       // If one is null, fill in with the other
       this.min = (min != null ? min : max);
@@ -107,6 +108,7 @@ public final class Effect {
   }
 
   @Override
+  @SuppressWarnings("SuperEqualsIsObjectEquals") // better style to use the equals() abstraction
   public boolean equals(@Nullable Object o) {
     if (o instanceof Effect) {
       return this.equals((Effect) o);

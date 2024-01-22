@@ -47,6 +47,7 @@ clean_compile_output() {
     sed -i '/^warning: \[path\] bad path element /d' "$out"
     sed -i '/^.*warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
     sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
+    sed -i '/^warning: \[options\] system modules path not set in conjunction with -source 11/d' "$out"
 
     # Remove warning count because it can differ between JDK 8 and later JDKs due to the bootstrap warning:
     sed -i '/^[0-9]* warning/d' "$out"
@@ -63,7 +64,7 @@ test_wpi_plume_lib() {
 
     rm -rf "$project"
     # Try twice in case of network lossage
-    git clone -q --depth 1 "https://github.com/plume-lib/$project.git" || (sleep 60 && git clone -q --depth 1 "https://github.com/plume-lib/$project.git")
+    git clone -q --filter=blob:none "https://github.com/plume-lib/$project.git" || (sleep 60 && git clone -q --filter=blob:none "https://github.com/plume-lib/$project.git")
 
     cd "$project" || (echo "can't run: cd $project" && exit 1)
 
@@ -73,7 +74,7 @@ test_wpi_plume_lib() {
     "$CHECKERFRAMEWORK"/checker/bin-devel/.plume-scripts/preplace -- "-Xlint:" "-Xlint:-cast," build.gradle
 
     echo "test-wpi-plumelib.sh for ${project} about to call wpi.sh at $(date)."
-    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers" --extraJavacArgs='-AsuppressWarnings=type.checking.not.run'
+    "$CHECKERFRAMEWORK/checker/bin/wpi.sh" -b "-PskipCheckerFramework" -- --checker "$checkers"
     echo "test-wpi-plumelib.sh for ${project} returned from wpi.sh at $(date)."
 
     EXPECTED_FILE="$SCRIPTDIR/$project.expected"

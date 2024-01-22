@@ -26,13 +26,13 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
       List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement)
       throws UnexpectedAnnotationLocationException {
     for (int i = 0; i < supertypes.size(); i++) {
-      final AnnotatedTypeMirror supertype = supertypes.get(i);
+      AnnotatedTypeMirror supertype = supertypes.get(i);
       // Offset i by -1 since typeIndex should start from -1.
       // -1 represents the (implicit) extends clause class.
       // 0 and greater represent the implements clause interfaces.
       // For details see the JSR 308 specification:
       // http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
-      final int typeIndex = i - 1;
+      int typeIndex = i - 1;
       new SuperTypeApplier(supertype, subtypeElement, typeIndex).extractAndApply();
     }
   }
@@ -60,8 +60,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
    * is intended to be used for annotate super types via the static annotateSuper method, hence the
    * private constructor.
    */
-  SuperTypeApplier(
-      final AnnotatedTypeMirror supertype, final TypeElement subclassElement, final int index) {
+  SuperTypeApplier(AnnotatedTypeMirror supertype, TypeElement subclassElement, int index) {
     super(supertype, subclassElement);
     this.subclassSymbol = (Symbol.ClassSymbol) subclassElement;
     this.index = index;

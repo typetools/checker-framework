@@ -24,14 +24,18 @@ public class ViewpointAdaptation2 {
     @GuardedBy("lockExample1.myLock") Object o1 = lockExample1.locked;
 
     @GuardedBy("lockExample1.myLock") Object o2 = lockExample1.locked2;
+
     // :: error: (assignment)
     @GuardedBy("myLock") Object o3 = lockExample1.locked;
+
     // :: error: (assignment)
     @GuardedBy("this.myLock") Object o4 = lockExample1.locked2;
 
     @GuardedBy("lockExample1.myLock") Object oM1 = lockExample1.getLocked();
+
     // :: error: (assignment)
     @GuardedBy("myLock") Object oM2 = lockExample1.getLocked();
+
     // :: error: (assignment)
     @GuardedBy("this.myLock") Object oM3 = lockExample1.getLocked();
 

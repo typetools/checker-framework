@@ -151,6 +151,7 @@ def continue_or_exit(msg):
 # =========================================================================================
 # Version Utils
 
+
 # From http://stackoverflow.com/a/1714190/173852, but doesn't strip trailing zeroes
 def version_number_to_array(version_num):
     """Given a version number, return an array of the elements, as integers."""
@@ -238,7 +239,7 @@ def push_changes_prompt_if_fail(repo_root):
                 + repo_root
                 + "; result="
                 + str(result)
-                + " for command: "
+                + " for command: `"
                 + cmd
                 + "` in "
                 + os.getcwd()
@@ -276,8 +277,8 @@ def commit_tag_and_push(version, path, tag_prefix):
 
 
 def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, bareflag):
-    """If the clone_from_scratch flag is True, clone the given git or
-    Mercurial repo from scratch into the filesystem path specified by dst_repo,
+    """If the clone_from_scratch flag is True, clone the given git
+    repo from scratch into the filesystem path specified by dst_repo,
     deleting it first if the repo is present on the filesystem.
     Otherwise, if a repo exists at the filesystem path given by dst_repo, pull
     the latest changes to it and update it. If the repo does not exist, clone it
@@ -293,7 +294,7 @@ def clone_from_scratch_or_update(src_repo, dst_repo, clone_from_scratch, barefla
 
 
 def delete_and_clone(src_repo, dst_repo, bareflag):
-    """Clone the given git or Mercurial repo from scratch into the filesystem
+    """Clone the given git repo from scratch into the filesystem
     path specified by dst_repo. If a repo exists at the filesystem path given
     by dst_repo, delete it first. The bareflag parameter indicates whether
     the cloned repo must be a bare git repo."""
@@ -302,7 +303,7 @@ def delete_and_clone(src_repo, dst_repo, bareflag):
 
 
 def clone(src_repo, dst_repo, bareflag):
-    """Clone the given git or Mercurial repo from scratch into the filesystem
+    """Clone the given git repo from scratch into the filesystem
     path specified by dst_repo. The bareflag parameter indicates whether the
     cloned repo must be a bare git repo."""
     flags = ""
@@ -556,7 +557,7 @@ http://CheckerFramework.org/
 
 Changes for Checker Framework version %s:
 
-<<Insert latest Checker Framework changelog entry, omitting the first line with the release version and date, and with hard line breaks removed>>
+<<Insert latest Checker Framework changelog entry from https://github.com/typetools/checker-framework/blob/master/docs/CHANGELOG.md, preserving its formatting.>>
 """ % (
         version,
         version,

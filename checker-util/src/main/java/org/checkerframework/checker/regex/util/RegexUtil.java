@@ -3,11 +3,19 @@
 
 package org.checkerframework.checker.regex.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.RandomAccess;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -63,6 +71,7 @@ public final class RegexUtil {
    */
   public static class CheckedPatternSyntaxException extends Exception {
 
+    /** Unique identifier for serialization. If you add or remove fields, change this number. */
     private static final long serialVersionUID = 6266881831979001480L;
 
     /** The PatternSyntaxException that this is a wrapper around. */
@@ -154,7 +163,7 @@ public final class RegexUtil {
    * @param groups number of groups expected
    * @return true iff s is a regular expression with {@code groups} groups
    */
-  @SuppressWarnings("regex") // RegexUtil; for purity, catches an exception
+  @SuppressWarnings("regex") // RegexUtil
   @Pure
   // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
   // in RegexTransfer.
@@ -180,8 +189,51 @@ public final class RegexUtil {
   }) // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
   @Pure
   @EnsuresQualifierIf(result = true, expression = "#1", qualifier = Regex.class)
-  public static boolean isRegex(final char c) {
+  public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
+  }
+
+  /**
+   * Returns the argument as a {@code @Regex String} if it is a regex, otherwise throws an error.
+   * The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
+   * needed.
+   *
+   * @param s string to check for being a regular expression
+   * @return its argument
+   * @throws Error if argument is not a regex
+   */
+  @SideEffectFree
+  // The return type annotation is irrelevant; this method is special-cased by
+  // RegexAnnotatedTypeFactory.
+  public static @Regex String asRegex(String s) {
+    return asRegex(s, 0);
+  }
+
+  /**
+   * Returns the argument as a {@code @Regex(groups) String} if it is a regex with at least the
+   * given number of groups, otherwise throws an error. The purpose of this method is to suppress
+   * Regex Checker warnings. It should be very rarely needed.
+   *
+   * @param s string to check for being a regular expression
+   * @param groups number of groups expected
+   * @return its argument
+   * @throws Error if argument is not a regex
+   */
+  @SuppressWarnings("regex") // RegexUtil
+  @SideEffectFree
+  // The return type annotation is irrelevant; this method is special-cased by
+  // RegexAnnotatedTypeFactory.
+  public static @Regex String asRegex(String s, int groups) {
+    try {
+      Pattern p = Pattern.compile(s);
+      int actualGroups = getGroupCount(p);
+      if (actualGroups < groups) {
+        throw new Error(regexErrorMessage(s, groups, actualGroups));
+      }
+      return s;
+    } catch (PatternSyntaxException e) {
+      throw new Error(e);
+    }
   }
 
   /**
@@ -256,51 +308,6 @@ public final class RegexUtil {
   }
 
   /**
-   * Returns the argument as a {@code @Regex String} if it is a regex, otherwise throws an error.
-   *
-   * <p>The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
-   * needed.
-   *
-   * @param s string to check for being a regular expression
-   * @return its argument
-   * @throws Error if argument is not a regex
-   */
-  @SideEffectFree
-  // The return type annotation is a conservative bound.
-  public static @Regex String asRegex(String s) {
-    return asRegex(s, 0);
-  }
-
-  /**
-   * Returns the argument as a {@code @Regex(groups) String} if it is a regex with at least the
-   * given number of groups, otherwise throws an error.
-   *
-   * <p>The purpose of this method is to suppress Regex Checker warnings. It should be very rarely
-   * needed.
-   *
-   * @param s string to check for being a regular expression
-   * @param groups number of groups expected
-   * @return its argument
-   * @throws Error if argument is not a regex
-   */
-  @SuppressWarnings("regex") // RegexUtil
-  @SideEffectFree
-  // The return type annotation is irrelevant; this method is special-cased by
-  // RegexAnnotatedTypeFactory.
-  public static @Regex String asRegex(String s, int groups) {
-    try {
-      Pattern p = Pattern.compile(s);
-      int actualGroups = getGroupCount(p);
-      if (actualGroups < groups) {
-        throw new Error(regexErrorMessage(s, groups, actualGroups));
-      }
-      return s;
-    } catch (PatternSyntaxException e) {
-      throw new Error(e);
-    }
-  }
-
-  /**
    * Generates an error message for s when expectedGroups are needed, but s only has actualGroups.
    *
    * @param s string to check for being a regular expression
@@ -321,7 +328,7 @@ public final class RegexUtil {
   }
 
   /**
-   * Return the count of groups in the argument.
+   * Returns the count of groups in the argument.
    *
    * @param p pattern whose groups to count
    * @return the count of groups in the argument
@@ -330,5 +337,145 @@ public final class RegexUtil {
   @Pure
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
+  }
+
+  /**
+   * Return the strings such that any one of the regexes matches it.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return the strings such that any one of the regexes matches it
+   */
+  public static List<String> matchesSomeRegex(
+      Collection<String> strings, Collection<@Regex String> regexes) {
+    List<Pattern> patterns = mapList(Pattern::compile, regexes);
+    List<String> result = new ArrayList<String>(strings.size());
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          result.add(s);
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Return true if every string is matched by at least one regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return true if every string is matched by at least one regex
+   */
+  public static boolean everyStringMatchesSomeRegex(
+      Collection<String> strings, Collection<@Regex String> regexes) {
+    List<Pattern> patterns = mapList(Pattern::compile, regexes);
+    outer:
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          continue outer;
+        }
+      }
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Return the strings that are matched by no regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return the strings such that none of the regexes matches it
+   */
+  public static List<String> matchesNoRegex(
+      Collection<String> strings, Collection<@Regex String> regexes) {
+    List<Pattern> patterns = mapList(Pattern::compile, regexes);
+    List<String> result = new ArrayList<String>(strings.size());
+    outer:
+    for (String s : strings) {
+      for (Pattern p : patterns) {
+        if (p.matcher(s).matches()) {
+          continue outer;
+        }
+      }
+      result.add(s);
+    }
+    return result;
+  }
+
+  /**
+   * Return true if no string is matched by any regex.
+   *
+   * @param strings a collection of strings
+   * @param regexes a collection of regular expressions
+   * @return true if no string is matched by any regex
+   */
+  public static boolean noStringMatchesAnyRegex(
+      Collection<String> strings, Collection<@Regex String> regexes) {
+    for (String regex : regexes) {
+      Pattern p = Pattern.compile(regex);
+      for (String s : strings) {
+        if (p.matcher(s).matches()) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  ///
+  /// Utilities
+  ///
+
+  // This is from CollectionsPlume, but is here to make the file self-contained.
+
+  /**
+   * Applies the function to each element of the given iterable, producing a list of the results.
+   *
+   * <p>The point of this method is to make mapping operations more concise. Import it with
+   *
+   * <pre>import static org.plumelib.util.CollectionsPlume.mapList;</pre>
+   *
+   * This method is just like {@code transform}, but with the arguments in the other order.
+   *
+   * <p>To perform replacement in place, see {@code List.replaceAll}.
+   *
+   * @param <FROM> the type of elements of the given iterable
+   * @param <TO> the type of elements of the result list
+   * @param f a function
+   * @param iterable an iterable
+   * @return a list of the results of applying {@code f} to the elements of {@code iterable}
+   */
+  public static <
+          @KeyForBottom FROM extends @Nullable @UnknownKeyFor Object,
+          @KeyForBottom TO extends @Nullable @UnknownKeyFor Object>
+      List<TO> mapList(
+          @MustCallUnknown Function<@MustCallUnknown ? super FROM, ? extends TO> f,
+          Iterable<FROM> iterable) {
+    List<TO> result;
+
+    if (iterable instanceof RandomAccess) {
+      // Per the Javadoc of RandomAccess, an indexed for loop is faster than a foreach loop.
+      List<FROM> list = (List<FROM>) iterable;
+      int size = list.size();
+      result = new ArrayList<>(size);
+      for (int i = 0; i < size; i++) {
+        result.add(f.apply(list.get(i)));
+      }
+      return result;
+    }
+
+    if (iterable instanceof Collection) {
+      result = new ArrayList<>(((Collection<?>) iterable).size());
+    } else {
+      result = new ArrayList<>(); // no information about size is available
+    }
+    for (FROM elt : iterable) {
+      result.add(f.apply(elt));
+    }
+    return result;
   }
 }

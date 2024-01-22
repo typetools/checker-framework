@@ -21,6 +21,7 @@ public class Bug {
     this.action = Action.LIST;
     expandTilde("");
   }
+
   /**
    * Replace "~" by the expansion of "$HOME".
    *

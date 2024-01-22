@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  * that with the ajava files in place, the errors that those annotations remove are no longer
  * issued.
  */
-@Category(AinferIndexAjavaTest.class)
+@Category(AinferIndexAjavaGenerationTest.class)
 public class AinferIndexAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
   /**
@@ -24,7 +24,7 @@ public class AinferIndexAjavaValidationTest extends AinferValidatePerDirectoryTe
         IndexChecker.class,
         "index",
         "ainfer-index/annotated",
-        AinferIndexAjavaTest.class,
+        AinferIndexAjavaGenerationTest.class,
         ajavaArgFromFiles(testFiles, "index"),
         "-Awarns");
   }

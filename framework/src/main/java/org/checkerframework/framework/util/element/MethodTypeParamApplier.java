@@ -28,7 +28,7 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
    * @param element the element that might be a type parameter for a method
    * @return true if element represents a type parameter for a method
    */
-  public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror type, Element element) {
     return element.getKind() == ElementKind.TYPE_PARAMETER
         && element.getEnclosingElement() instanceof Symbol.MethodSymbol;
   }

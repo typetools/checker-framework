@@ -17,7 +17,7 @@ public class MustCallTypeAnnotator extends TypeAnnotator {
 
   @Override
   public Void visitPrimitive(AnnotatedPrimitiveType type, Void aVoid) {
-    type.replaceAnnotation(((MustCallAnnotatedTypeFactory) typeFactory).BOTTOM);
+    type.replaceAnnotation(((MustCallAnnotatedTypeFactory) atypeFactory).BOTTOM);
     return super.visitPrimitive(type, aVoid);
   }
 }

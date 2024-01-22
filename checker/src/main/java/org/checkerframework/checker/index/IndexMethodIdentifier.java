@@ -24,14 +24,19 @@ public class IndexMethodIdentifier {
 
   /** The {@code java.lang.Math#random()} method. */
   private final ExecutableElement mathRandom;
+
   /** The {@code java.util.Random#nextDouble()} method. */
   private final ExecutableElement randomNextDouble;
+
   /** The {@code java.util.Random#nextInt()} method. */
   private final ExecutableElement randomNextInt;
+
   /** The {@code java.lang.String#length()} method. */
   private final ExecutableElement stringLength;
+
   /** The {@code java.lang.Math#min()} methods. */
   private final List<ExecutableElement> mathMinMethods;
+
   /** The {@code java.lang.Math#max()} methods. */
   private final List<ExecutableElement> mathMaxMethods;
 
@@ -80,7 +85,7 @@ public class IndexMethodIdentifier {
    *
    * @param methodTree the method invocation tree to be tested
    * @return true iff the argument is an invocation of one of String's indexOf or lastIndexOf
-   *     methods that takes another string as a parameter.
+   *     methods that takes another string as a parameter
    */
   public boolean isIndexOfString(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();

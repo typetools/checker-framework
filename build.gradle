@@ -2,20 +2,20 @@ import de.undercouch.gradle.tasks.download.Download
 
 plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
-  id 'com.github.johnrengelman.shadow' version '8.1.0'
+  id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.3.1'
+  id 'de.undercouch.download' version '5.5.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
-  id 'net.ltgt.errorprone' version '3.0.1'
+  id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '4.1.1' apply false
+  id 'org.ajoberstar.grgit' version '5.2.1' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.17.0'
+  id 'com.diffplug.spotless' version '6.24.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -23,6 +23,7 @@ import org.ajoberstar.grgit.Grgit
 
 // There is another `repositories { ... }` block below; if you change this one, change that one as well.
 repositories {
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
   mavenCentral()
 }
 
@@ -32,29 +33,35 @@ ext {
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
+  isJava21orHigher = JavaVersion.current() >= JavaVersion.VERSION_21
 
-  // As of 2022-11-30, delombok crashes under JDK 19.
-  // As of mid-January 2023, a lombok release for Java 19 is coming "in a week".
-  skipDelombok = JavaVersion.current() == JavaVersion.VERSION_19
-
-  errorproneJavacVersion = '9+181-r4173-1'
+  // As of 2023-09-23, delombok doesn't yet support JDK 22; see https://projectlombok.org/changelog .
+  skipDelombok = JavaVersion.current() > JavaVersion.VERSION_21
 
   parentDir = file("${rootDir}/../").absolutePath
 
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
-  stubparser = "${parentDir}/stubparser"
-  stubparserJar = "${stubparser}/javaparser-core/target/stubparser-3.25.1.jar"
-
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
+  doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
 
   javadocMemberLevel = JavadocMemberLevel.PROTECTED
 
   // The local git repository, typically in the .git directory, but not for worktrees.
   // This value is always overwritten, but Gradle needs the variable to be initialized.
   localRepo = '.git'
+
+  versions = [
+    autoValue       : '1.10.4',
+    googleJavaFormat : '1.19.2',
+    lombok          : '1.18.30',
+    hashmapUtil : '0.0.1',
+    reflectionUtil : '1.1.3',
+    plumeUtil : '1.9.0',
+    errorprone : '2.24.1',
+  ]
 }
 
 task setLocalRepo(type:Exec) {
@@ -95,14 +102,21 @@ spotlessPredeclare {
   //     > Could not create task ':spotlessJava'.
   //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
   java {
-    googleJavaFormat()
+    googleJavaFormat(versions.googleJavaFormat)
   }
   groovyGradle {
     greclipse()
   }
 }
 
-allprojects {
+allprojects { currentProj ->
+  // Increment the minor version (second number) rather than just the patch
+  // level (third number) if:
+  //   * any new checkers have been added, or
+  //   * backward-incompatible changes have been made to APIs or elsewhere.
+  // To make a snapshot release: ./gradlew publish
+  version '3.43.0-SNAPSHOT'
+
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
   }
@@ -114,14 +128,9 @@ allprojects {
 
   group 'org.checkerframework'
 
-  // Increment the minor version (second number) rather than just the patch
-  // level (third number) if:
-  //   * any new checkers have been added, or
-  //   * backward-incompatible changes have been made to APIs or elsewhere.
-  version '3.32.1-SNAPSHOT'
-
   // Keep in sync with "repositories { ... }" block above.
   repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
     mavenCentral()
   }
 
@@ -135,11 +144,10 @@ allprojects {
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
     annotationProcessor.exclude group:'org.checkerframework', module:'checker-qual'
   }
-
   dependencies {
-    javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    javacJar group: 'com.google.errorprone', name: 'javac', version: "9+181-r4173-1"
 
-    errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+    errorproneJavac("com.google.errorprone:javac:9+181-r4173-1")
 
     allProjects subprojects
   }
@@ -173,72 +181,114 @@ allprojects {
       '--add-opens',
       'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
     ]
-
-    reflectionUtilVersion = '1.0.6'
-    plumeUtilVersion = '1.6.5'
   }
 
   apply plugin: 'com.diffplug.spotless'
+  // patterns of files to skip for individual sub-projects
+  def perProjectDoNotFormat = [
+    'checker': [
+      'bin-devel/.plume-scripts/**',
+      'tests/ainfer-*/annotated/*',
+      'tests/nullness-javac-errors/*',
+      'tests/calledmethods-delomboked/*',
+      'tests/build/**',
+      'dist/**'
+    ],
+    'dataflow': ['manual/examples/'],
+    'framework': [
+      'tests/returnsrcvrdelomboked/*',
+      'tests/build/**'
+    ],
+  ]
   spotless {
     // If you add any formatters to this block that require dependencies, then you must also
-    // add them to spotlessPredeclare block.
-    def doNotFormat = [
-      'dataflow/manual/examples/',
-      '**/nullness-javac-errors/*',
-      '**/calledmethods-delomboked/*',
-      '**/returnsreceiverdelomboked/*',
-      '**/build/**',
-      '*/dist/**',
-    ]
-    if (!isJava17orHigher) {
-      doNotFormat += ['**/java17/', '**/*record*/']
+    // add them to the spotlessPredeclare block.
+
+    // Always skip formatting of files under build directory
+    def doNotFormat = ['build/**']
+    if (currentProj != project.rootProject) {
+      if (perProjectDoNotFormat.containsKey(currentProj.name)) {
+        doNotFormat += perProjectDoNotFormat[currentProj.name]
+      }
+
+      if (!isJava17orHigher) {
+        doNotFormat += [
+          'tests/**/java17/',
+          'tests/*record*/'
+        ]
+      }
+
+      if (!isJava21orHigher) {
+        doNotFormat += ['tests/**/java21/']
+      }
     }
 
     format 'misc', {
       // define the files to apply `misc` to
-      target '*.md', '.gitignore'
+      target '*.md', '*.tex', '.gitignore', 'Makefile'
+      targetExclude doNotFormat
       // define the steps to apply to those files
       indentWithSpaces(2)
       trimTrailingWhitespace()
       // endWithNewline() // Don't want to end empty files with a newline
-      targetExclude doNotFormat
     }
 
     java {
-      def targets = [
-        // add target folders here
-        'checker',
-        'checker-qual',
-        'checker-util',
-        'dataflow',
-        'docs/examples',
-        'docs/tutorial',
-        'framework',
-        'framework-test',
-        'javacutil',
-      ]
-      targets = targets.collectMany {
-        [
-          // must call toString() to convert GString to String
-          "${it}/**/*.java".toString(),
-          // Not .ajava files because formatting would remove import statements.
+      if (currentProj == currentProj.rootProject) {
+        // format .java files outside of Gradle sub-projects
+        def targets = [
+          'docs/examples',
+          'docs/tutorial',
         ]
+        targets = targets.collectMany {
+          [
+            // must call toString() to convert GString to String
+            "${it}/**/*.java".toString(),
+            // Not .ajava files because formatting would remove import statements.
+          ]
+        }
+        target targets
+      } else {
+        // not the root project; format all .java files in the sub-project
+        target '**/*.java'
       }
-      target targets
       targetExclude doNotFormat
 
-      googleJavaFormat() // the formatter to apply to Java files
+      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
       formatAnnotations()
     }
 
-    groovyGradle {
-      target '**/*.gradle'
-      targetExclude doNotFormat
-      greclipse()  // which formatter Spotless should use to format .gradle files.
-      indentWithSpaces(2)
-      trimTrailingWhitespace()
-      // endWithNewline() // Don't want to end empty files with a newline
+    // Only define a groovyGradle task on the root project, for simplicity in setting the target pattern
+    if (currentProj == currentProj.rootProject) {
+      groovyGradle {
+        target '**/*.gradle'
+        targetExclude doNotFormat
+        greclipse()  // which formatter Spotless should use to format .gradle files.
+        indentWithSpaces(2)
+        trimTrailingWhitespace()
+        // endWithNewline() // Don't want to end empty files with a newline
+      }
     }
+
+    // a useful task for debugging; prints exactly which files are getting formatted by spotless
+    tasks.register('printSpotlessTaskInputs') {
+      doLast {
+        project.tasks.forEach { task ->
+          if (task.name.contains('spotless')) {
+            println "Inputs for task '${task.name}':"
+
+            task.inputs.files.each { inputFile ->
+              println "  Input: $inputFile"
+            }
+          }
+        }
+      }
+    }
+  }
+
+  test {
+    minHeapSize = "256m" // initial heap size
+    maxHeapSize = "4g" // maximum heap size
   }
 
   // After all the tasks have been created, modify some of them.
@@ -293,53 +343,82 @@ allprojects {
     // Add standard javac options
     tasks.withType(JavaCompile) { compilationTask ->
       dependsOn(':installGitHooks')
+      boolean jdk17Compiler = project.getProperties().getOrDefault('useJdk17Compiler', false)
+      if (jdk17Compiler) {
+        // This uses the Java 17 compiler to compile all code.
+        //  https://docs.gradle.org/current/userguide/toolchains.html
+        javaCompiler = javaToolchains.compilerFor {
+          languageVersion = JavaLanguageVersion.of(17)
+        }
+      }
+
       // Sorting is commented out because it disables incremental compilation.
       // Uncomment when needed.
       // // Put source files in deterministic order, for debugging.
       // compilationTask.source = compilationTask.source.sort()
 
-      // Don't try to use `options.release.set(8)` here.
-      sourceCompatibility = 8
-      targetCompatibility = 8
-      // Because the target is 8, all of the public compiler classes are accessible, so
-      // --add-exports are not required (nor are they allowed with target 8). See
-      // https://openjdk.org/jeps/247 for details on compiling for older versions.
-
-      // When sourceCompatibility or release is changed to 11, then the following will be required.
-      // options.compilerArgs += [
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-      // '--add-exports', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-      // ]
-      // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
-      // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
-      // reflective access to private members.
-      //
-      // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
-      // "The effect of each instance [of --add-exports] is to add a qualified export of the
-      // named package from the source module to the target module. This is, essentially, a
-      // command-line form of an exports clause in a module declaration[...].
-      // [...]
-      // The --add-exports option enables access to the public types of a specified package.
-      // It is sometimes necessary to go further and enable access to all non-public elements
-      // via the setAccessible method of the core reflection API. The --add-opens option can
-      // be used, at run time, to do this."
+      // This test is for whether the Checker Framework supports (runs under) Java 8.
+      // Currently, the Checker Framework does support Java 8.
+      if (true) {
+        // Using `options.release.set(8)` here leads to compilation
+        // errors such as "package com.sun.source.tree does not exist".
+        sourceCompatibility = 8
+        targetCompatibility = 8
+        // Because the target is 8, all of the public compiler classes are accessible, so
+        // --add-exports are not required (nor are they allowed with target 8). See
+        // https://openjdk.org/jeps/247 for details on compiling for older versions.
+      } else {
+        // This makes the class files Java 11, and then the Checker Framework would not run under Java 8.
+        options.release.set(11)
+        options.compilerArgs += [
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+          '--add-exports',
+          'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+        ]
+        // This is equivalent to writing "exports jdk.compiler/... to ALL-UNNAMED" in the
+        // module-info.java of jdk.compiler, so corresponding --add-opens are only required for
+        // reflective access to private members.
+        //
+        // From https://openjdk.org/jeps/261, Section titled: "Breaking encapsulation"
+        // "The effect of each instance [of --add-exports] is to add a qualified export of the
+        // named package from the source module to the target module. This is, essentially, a
+        // command-line form of an exports clause in a module declaration[...].
+        // [...]
+        // The --add-exports option enables access to the public types of a specified package.
+        // It is sometimes necessary to go further and enable access to all non-public elements
+        // via the setAccessible method of the core reflection API. The --add-opens option can
+        // be used, at run time, to do this."
+      }
 
       options.failOnError = true
       options.deprecation = true
+      // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
+      // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
+      //   warnings are suppressible with a "// fall through" comment.
+      String lint =     '-Xlint:-options,-fallthrough'
+      if (isJava21orHigher && !jdk17Compiler) {
+        // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
+        lint +=',-this-escape'
+      }
       options.compilerArgs += [
         '-g',
         '-Werror',
-        // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
-        // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
-        //   warnings are suppressible with a "// fall through" comment.
-        '-Xlint:-options,-fallthrough',
+        lint,
         '-Xlint',
       ]
 
@@ -376,6 +455,8 @@ allprojects {
           '-Xep:CanIgnoreReturnValueSuggester:OFF',
           // Should be turned off when using the Checker Framework.
           '-Xep:ExtendsObject:OFF',
+          // The Checker Framework is the only nullness tool we care about.
+          '-Xep:NullableWildcard:OFF',
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
@@ -388,51 +469,6 @@ allprojects {
     }
   } // end afterEvaluate
 } // end allProjects
-
-task cloneAndBuildDependencies(type: Exec, group: 'Build') {
-  description 'Clones (or updates) and builds all dependencies'
-  executable 'checker/bin-devel/build.sh'
-}
-
-task maybeCloneAndBuildDependencies() {
-  // No group so it does not show up in the output of `gradlew tasks`
-  description 'Clones (or updates) and builds all dependencies if they are not present.'
-  onlyIf {
-    !file(stubparserJar).exists()
-    // The jdk repository is cloned via the copyAndMinimizeAnnotatedJdkFiles task that is run if
-    // the repository does not exist when building checker.jar.
-  }
-
-  doFirst {
-    if (file(stubparser).exists()) {
-      exec {
-        workingDir stubparser
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true
-      }
-      exec {
-        workingDir stubparser
-        executable "${stubparser}/.build-without-test.sh"
-      }
-    } else {
-      exec {
-        executable 'checker/bin-devel/build.sh'
-      }
-    }
-  }
-  doLast {
-    if (!file(stubparserJar).exists()) {
-      println "The contents of ${stubparser}/javaparser-core/target (which does not contain stubparser.jar!) are:"
-      exec {
-        workingDir "${stubparser}/javaparser-core/target"
-        executable 'ls'
-        ignoreExitValue = true
-      }
-      throw new RuntimeException('Can\'t find stubparser jar: ' + stubparserJar)
-    }
-  }
-}
 
 task version(group: 'Documentation') {
   description 'Print Checker Framework version'
@@ -472,6 +508,7 @@ def createCheckTypeTask(projectName, taskName, checker, args = []) {
       '10000',
       '-ArequirePrefixInWarningSuppressions',
       '-AwarnUnneededSuppressions',
+      '-AwarnRedundantAnnotations',
     ]
     options.compilerArgs += args
     options.forkOptions.jvmArgs += ['-Xmx2g']
@@ -611,13 +648,13 @@ void clone(url, directory, ignoreError, extraArgs = []){
     args = [
       'clone',
       '-q',
-      '--depth',
-      '1',
+      '--filter=blob:none',
       url,
       file(directory).toPath().last()
     ]
     args += extraArgs
     ignoreExitValue = ignoreError
+    timeout = 60000 // 60 seconds
   }
 }
 
@@ -634,26 +671,38 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
   tasks.create(name: taskName) {
     description "Obtain or update ${url}"
 
-    if (file(directory).exists()) {
-      exec {
-        workingDir directory
-        executable 'git'
-        args = ['pull', '-q']
-        ignoreExitValue = true
-      }
-    } else {
-      clone(url, directory, true, extraArgs)
-      if (!file(directory).exists()) {
-        sleep(60000) // 1 minute
-        clone(url, directory, false, extraArgs)
+    // Always run.
+    outputs.upToDateWhen { false }
+    doLast {
+      if (file(directory).exists()) {
+        exec {
+          workingDir directory
+          executable 'git'
+          args = ['pull', '-q']
+          ignoreExitValue = true
+          timeout = 60000 // 60 seconds
+        }
+      } else {
+        try {
+          clone(url, directory, true, extraArgs)
+        } catch (Throwable t) {
+          println "Exception while cloning ${url}"
+          t.printStackTrace()
+        }
+        if (!file(directory).exists()) {
+          println "Cloning failed, will try again in 1 minute: clone(${url}, ${directory}, true, ${extraArgs})"
+          sleep(60000) // wait 1 minute, then try again
+          clone(url, directory, false, extraArgs)
+        }
       }
     }
   }
 }
 
 
-createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git',plumeScriptsHome)
-createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git',htmlToolsHome)
+createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
+createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
+createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
 
 // No group so it does not show up in the output of `gradlew tasks`
 task pythonIsInstalled(type: Exec) {
@@ -687,11 +736,10 @@ subprojects {
     //  * Temporarily comment out "-Werror" elsewhere in this file
     //  * Repeatedly run `./gradlew clean compileJava` and fix all errors
     //  * Uncomment "-Werror"
-    ext.errorproneVersion = '2.18.0'
-    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: errorproneVersion
+    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: versions.errorprone
 
     // TODO: it's a bug that annotatedlib:guava requires the error_prone_annotations dependency.
-    annotatedGuava "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
+    annotatedGuava "com.google.errorprone:error_prone_annotations:${versions.errorprone}"
     annotatedGuava ('org.checkerframework.annotatedlib:guava:30.1.1-jre') {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: 'org.checkerframework'
@@ -700,12 +748,10 @@ subprojects {
 
   shadowJar {
     // If you add an external dependency, then do the following:
-    // 1. Before adding the dependency, run ./gradlew assembleForJavac.
-    // 2. Copy checker/dist/checker.jar elsewhere.
-    // 3. Add the dependency, then run ./gradlew clean assembleForJavac.
-    // 4. Unzip both jars and compare the contents.
-    // 5. Add relocate lines below for the packages.
-    // 6. Do steps 3-5 until all new classes are in org/checkerframework/.
+    //  * On the master branch and on the modified branch, run:
+    //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
+    //  * Compare the files, and add relocate lines below.
+    //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
     relocate 'org.apache', 'org.checkerframework.org.apache'
@@ -732,7 +778,7 @@ subprojects {
   if (!project.name.startsWith('checker-qual-android')) {
     task tags(type: Exec) {
       description 'Create Emacs TAGS table'
-      commandLine 'bash', '-c', "find . \\( -name build \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
+      commandLine 'bash', '-c', "find . \\( -name build -o -name jtreg -o -name tests \\) -prune -o -name '*.java' -print | sort-directory-order | xargs ctags -e -f TAGS"
     }
   }
 
@@ -780,11 +826,12 @@ subprojects {
         [
           '-Astubs=javax-lang-model-element-name.astub'
         ])
-    createCheckTypeTask(project.name, 'NullnessOnlyAnnotatedFor',
-        'org.checkerframework.checker.nullness.NullnessChecker',
+    createCheckTypeTask(project.name, 'Optional',
+        'org.checkerframework.checker.optional.OptionalChecker',
         [
-          '-AskipUses=com\\.sun\\.*',
-          '-AuseConservativeDefaultsForUncheckedCode=source'
+          // to avoid having to annotate JavaParser
+          '-AassumePureGetters',
+          '-AassumeAssertionsAreEnabled',
         ])
     createCheckTypeTask(project.name, 'Purity',
         'org.checkerframework.framework.util.PurityChecker')
@@ -792,11 +839,23 @@ subprojects {
         'org.checkerframework.checker.resourceleak.ResourceLeakChecker')
     createCheckTypeTask(project.name, 'Signature',
         'org.checkerframework.checker.signature.SignatureChecker')
-    // These pass on some subprojects, which the `typecheck` task runs.
-    // TODO: Incrementally add @AnnotatedFor on more classes.
-    createCheckTypeTask(project.name, 'Nullness',
-        'org.checkerframework.checker.nullness.NullnessChecker',
-        ['-AskipUses=com.sun.*'])
+
+    // The checkNullness task runs on all code, but it only *checks* the following code:
+    //  * All files outside the 'framework' and 'checker' subprojects.
+    //  * In the 'framework' and 'checker' subprojects, files with `@AnnotatedFor("nullness")`.
+    if (project.name.is('framework') || project.name.is('checker')) {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          [
+            '-AskipUses=com\\.sun\\.*',
+            // If a file does not contain @AnnotatedFor("nullness"), all its routines are assumed to return @Nullable.
+            '-AuseConservativeDefaultsForUncheckedCode=source'
+          ])
+    } else {
+      createCheckTypeTask(project.name, 'Nullness',
+          'org.checkerframework.checker.nullness.NullnessChecker',
+          ['-AskipUses=com\\.sun\\.*'])
+    }
 
 
     // Add jtregTests to framework and checker modules
@@ -818,7 +877,7 @@ subprojects {
                 "-dir:${projectDir}/jtreg",
                 "-workDir:${jtregOutput}/${name}/work",
                 "-reportDir:${jtregOutput}/${name}/report",
-                '-verbose:error,fail',
+                '-verbose:error,fail,nopass',
                 // Don't add debugging information
                 //  '-javacoptions:-g',
                 '-keywords:!ignore',
@@ -876,6 +935,8 @@ subprojects {
       tasks.create(name: "${junitClassName}", type: Test) {
         description "Run ${junitClassName} tests."
         include "**/${name}.class"
+        testClassesDirs = testing.suites.test.sources.output.classesDirs
+        classpath = testing.suites.test.sources.runtimeClasspath
       }
     }
 
@@ -905,20 +966,6 @@ subprojects {
         // Don't show the uninteresting stack traces from the exceptions.
         showStackTraces = false
       }
-
-      // After each test, print a summary.
-      afterSuite { desc, result ->
-        if (desc.getClassName() != null) {
-          long mils = result.getEndTime() - result.getStartTime()
-          double seconds = mils / 1000.0
-
-          println "Testsuite: ${desc.getClassName()}\n" +
-              "Tests run: ${result.testCount}, " +
-              "Failures: ${result.failedTestCount}, " +
-              "Skipped: ${result.skippedTestCount}, " +
-              "Time elapsed: ${seconds} sec\n"
-        }
-      }
     }
 
     // Create a nonJunitTests task per project
@@ -936,9 +983,7 @@ subprojects {
       }
 
       if (project.name.is('dataflow')) {
-        dependsOn('liveVariableTest')
-        dependsOn('issue3447Test')
-        dependsOn('constantPropagationTest')
+        dependsOn('allDataflowTests')
       }
     }
 
@@ -946,7 +991,19 @@ subprojects {
     tasks.create(name: 'inferenceTests', group: 'Verification') {
       description 'Run inference tests.'
       if (project.name.is('checker')) {
-        dependsOn('ainferTest', 'wpiManyTest', 'wpiPlumeLibTest')
+        dependsOn('inferenceTests-part1', 'inferenceTests-part1')
+      }
+    }
+    tasks.create(name: 'inferenceTests-part1', group: 'Verification') {
+      description 'Run inference tests (part 1).'
+      if (project.name.is('checker')) {
+        dependsOn('ainferTest', 'wpiManyTest')
+      }
+    }
+    tasks.create(name: 'inferenceTests-part2', group: 'Verification') {
+      description 'Run inference tests (part 2).'
+      if (project.name.is('checker')) {
+        dependsOn('wpiPlumeLibTest')
       }
     }
 
@@ -955,9 +1012,17 @@ subprojects {
     // Tasks such as 'checkInterning' are constructed by createCheckTypeTask.
     tasks.create(name: 'typecheck', group: 'Verification') {
       description 'Run the Checker Framework on itself'
-      dependsOn('checkFormatter', 'checkInterning', 'checkPurity', 'checkResourceLeak', 'checkSignature')
+      dependsOn('typecheck-part1', 'typecheck-part2')
+    }
+    tasks.create(name: 'typecheck-part1', group: 'Verification') {
+      description 'Run the Checker Framework on itself (part 1)'
+      dependsOn('checkFormatter', 'checkInterning', 'checkOptional', 'checkPurity')
+    }
+    tasks.create(name: 'typecheck-part2', group: 'Verification') {
+      description 'Run the Checker Framework on itself (part 2)'
+      dependsOn('checkResourceLeak', 'checkSignature')
       if (project.name.is('framework') || project.name.is('checker')) {
-        dependsOn('checkNullnessOnlyAnnotatedFor', 'checkCompilerMessages')
+        dependsOn('checkCompilerMessages')
       } else {
         dependsOn('checkNullness')
       }
@@ -982,131 +1047,12 @@ subprojects {
   }
 }
 
+// The `assembleForJavac` task is faster than the `assemble` task, if you only
+// care about running `javac`.
 // The assemble task also produces Javadoc jars, because its purpose is to build
 // all artifacts produced by the Gradle project:
 // https://docs.gradle.org/current/userguide/base_plugin.html#sec:base_tasks
-
 assemble.dependsOn(':checker:assembleForJavac')
-
-task checkBasicStyle(group: 'Format') {
-  description 'Check basic style guidelines, mostly whitespace.  Not related to Checkstyle tool.'
-  String[] ignoreDirectories = [
-    '.git',
-    '.gradle',
-    '.html-tools',
-    '.idea',
-    '.plume-scripts',
-    'annotated',
-    'api',
-    'plume-bib',
-    'bootstrap',
-    'build',
-    'jdk'
-  ]
-
-  String[] ignoreFilePatterns = [
-    '*.aux',
-    '*.bib',
-    '*.class',
-    '*.dvi',
-    '*.expected',
-    '*.gif',
-    '*.jar',
-    '*.jtr',
-    '*.log',
-    '*.out',
-    '*.patch',
-    '*.pdf',
-    '*.png',
-    '*.sty',
-    '*.toc',
-    '*.xcf',
-    '*~',
-    '#*#',
-    'CFLogo.ai',
-    'logfile.log.rec.index',
-    'manual.html',
-    'manual.html-e',
-    'junit.*.properties',
-    'securerandom.*',
-    'checker/dist/META-INF/maven/org.apache.bcel/bcel/pom.xml',
-    'checker/dist/META-INF/maven/org.apache.commons/commons-text/pom.xml',
-    'checker/nullness/junit-assertions.astub',
-    'framework/src/main/resources/git.properties'
-  ]
-
-  doLast {
-    FileTree tree = fileTree(dir: projectDir)
-    for (String dir : ignoreDirectories) {
-      tree.exclude "**/${dir}/**"
-    }
-    for (String file : ignoreFilePatterns) {
-      tree.exclude "**/${file}"
-    }
-    boolean failed = false
-    tree.visit {
-      if (!it.file.isDirectory()) {
-        boolean blankLineAtEnd = false
-        String fileName = it.file.getName()
-        boolean checkTabs = !fileName.equals('Makefile')
-        it.file.eachLine { line ->
-          if (line.endsWith(' ')) {
-            println("Trailing whitespace: ${it.file.absolutePath}")
-            failed = true
-          }
-          if (checkTabs && line.contains('\t')) {
-            println("Contains tab (use spaces): ${it.file.absolutePath}")
-            failed = true
-            checkTabs = false
-          }
-          if (!line.startsWith('\\') &&
-              (line.matches('^.* (else|finally|try)\\{}.*$')
-              || line.matches('^.*}(catch|else|finally) .*$')
-              || line.matches('^.* (catch|for|if|while)\\('))) {
-            // This runs on non-java files, too.
-            println("Missing space: ${it.file.absolutePath}")
-            failed = true
-          }
-          if (line.matches('^.*/\\* package-private \\*/.*$')) {
-            println("Use /*package-private*/ to mark package-private elements: ${it.file.absolutePath}")
-            failed = true
-          }
-          if (line.isEmpty()) {
-            blankLineAtEnd = true;
-          } else {
-            blankLineAtEnd = false;
-          }
-        }
-
-        if (blankLineAtEnd) {
-          println("Blank line at end of file: ${it.file.absolutePath}")
-          failed = true
-        }
-
-        RandomAccessFile file
-        try {
-          file = new RandomAccessFile(it.file, 'r')
-          int end = file.length() - 1;
-          if (end > 0) {
-            file.seek(end)
-            byte last = file.readByte()
-            if (last != '\n') {
-              println("Missing newline at end of file: ${it.file.absolutePath}")
-              failed = true
-            }
-          }
-        } finally {
-          if (file != null) {
-            file.close()
-          }
-        }
-      }
-    }
-    if (failed) {
-      throw new GradleException('Files do not meet basic style guidelines.')
-    }
-  }
-}
 
 assemble.mustRunAfter(clean)
 
@@ -1146,7 +1092,7 @@ jar.onlyIf {false}
 
 /**
  * Adds the shared pom information to the given publication.
- * @param publication MavenPublication
+ * @param publication the MavenPublication
  */
 final sharedPublicationConfiguration(publication) {
   publication.pom {

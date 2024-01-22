@@ -18,6 +18,7 @@ public class ArrayCreation extends JavaExpression {
    * expression for the given array level.
    */
   protected final List<@Nullable JavaExpression> dimensions;
+
   /** List of initializers. */
   protected final List<JavaExpression> initializers;
 
@@ -25,8 +26,8 @@ public class ArrayCreation extends JavaExpression {
    * Creates an ArrayCreation object.
    *
    * @param type array type
-   * @param dimensions list of dimension expressions; a {code null} element means that there is no
-   *     dimension expression for the given array level.
+   * @param dimensions list of dimension expressions; a {@code null} element means that there is no
+   *     dimension expression for the given array level
    * @param initializers list of initializer expressions
    */
   public ArrayCreation(

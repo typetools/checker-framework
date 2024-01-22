@@ -123,23 +123,58 @@ public class CFGTranslationPhaseThree {
     }
     */
 
-    // merge consecutive basic blocks if possible
-    worklist = cfg.getAllBlocks();
+    mergeConsecutiveBlocks(cfg);
+    return cfg;
+  }
+
+  /**
+   * Simplify the CFG by merging consecutive single-successor blocks.
+   *
+   * @param cfg the control flow graph
+   */
+  @SuppressWarnings("nullness") // TODO: successors
+  protected static void mergeConsecutiveBlocks(ControlFlowGraph cfg) {
+    Set<Block> worklist = cfg.getAllBlocks();
+
+    // This transformation removes blocks from the CFG.  If those blocks appear in `worklist`
+    // then we might visit a block AFTER it has been removed and its nodes have been moved
+    // somewhere else.  When this happens the correct behavior is to just skip the removed
+    // block; to do so, we need to remember which blocks have been removed.
+    Set<Block> removedBlocks = new HashSet<>();
+
     for (Block cur : worklist) {
-      if (cur.getType() == BlockType.REGULAR_BLOCK) {
-        RegularBlockImpl b = (RegularBlockImpl) cur;
-        Block succ = b.getRegularSuccessor();
-        if (succ.getType() == BlockType.REGULAR_BLOCK) {
-          RegularBlockImpl rs = (RegularBlockImpl) succ;
-          if (rs.getPredecessors().size() == 1) {
-            b.setSuccessor(rs.getRegularSuccessor());
-            b.addNodes(rs.getNodes());
-            rs.getRegularSuccessor().removePredecessor(rs);
+
+      // Skip this block if it was already merged into another.
+      if (removedBlocks.contains(cur)) {
+        continue;
+      }
+
+      // There may be many blocks to merge in series.
+      //
+      // ... \                   /> ...
+      // ... --> cur -> b2 -> b3 -> ...
+      // ... /                   \> ...
+      //
+      // This loop merges the successor into `cur` until it can't do so anymore.
+      boolean didMerge;
+      do {
+        didMerge = false;
+        if (cur.getType() == BlockType.REGULAR_BLOCK) {
+          RegularBlockImpl b = (RegularBlockImpl) cur;
+          Block succ = b.getRegularSuccessor();
+          if (succ.getType() == BlockType.REGULAR_BLOCK) {
+            RegularBlockImpl rs = (RegularBlockImpl) succ;
+            if (rs.getPredecessors().size() == 1) {
+              b.setSuccessor(rs.getRegularSuccessor());
+              b.addNodes(rs.getNodes());
+              rs.getRegularSuccessor().removePredecessor(rs);
+              removedBlocks.add(rs);
+              didMerge = true;
+            }
           }
         }
-      }
+      } while (didMerge);
     }
-    return cfg;
   }
 
   /**
@@ -201,7 +236,7 @@ public class CFGTranslationPhaseThree {
 
     RegularBlockImpl cur = start;
     emptyBlocks.add(cur);
-    for (final Block p : cur.getPredecessors()) {
+    for (Block p : cur.getPredecessors()) {
       BlockImpl pred = (BlockImpl) p;
       switch (pred.getType()) {
         case SPECIAL_BLOCK:
@@ -242,15 +277,14 @@ public class CFGTranslationPhaseThree {
    * @return a predecessor holder to set the successor of {@code pred}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparisons
-  protected static PredecessorHolder getPredecessorHolder(
-      final BlockImpl pred, final BlockImpl cur) {
+  protected static PredecessorHolder getPredecessorHolder(BlockImpl pred, BlockImpl cur) {
     switch (pred.getType()) {
       case SPECIAL_BLOCK:
         SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
         return singleSuccessorHolder(s, cur);
       case CONDITIONAL_BLOCK:
         // add pred correctly to predecessor list
-        final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+        ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
         if (c.getThenSuccessor() == cur) {
           return new PredecessorHolder() {
             @Override
@@ -281,13 +315,13 @@ public class CFGTranslationPhaseThree {
         }
       case EXCEPTION_BLOCK:
         // add pred correctly to predecessor list
-        final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+        ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
         if (e.getSuccessor() == cur) {
           return singleSuccessorHolder(e, cur);
         } else {
           @SuppressWarnings("keyfor:assignment") // ignore keyfor type
           Set<Map.Entry<TypeMirror, Set<Block>>> entrySet = e.getExceptionalSuccessors().entrySet();
-          for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
+          for (Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
             if (entry.getValue().contains(cur)) {
               return new PredecessorHolder() {
                 @Override
@@ -321,7 +355,7 @@ public class CFGTranslationPhaseThree {
    *     s}
    */
   protected static PredecessorHolder singleSuccessorHolder(
-      final SingleSuccessorBlockImpl s, final BlockImpl old) {
+      SingleSuccessorBlockImpl s, BlockImpl old) {
     return new PredecessorHolder() {
       @Override
       public void setSuccessor(BlockImpl b) {

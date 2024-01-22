@@ -19,17 +19,18 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * <p>This postcondition annotation is useful for methods that initialize a field:
  *
  * <pre><code>
- * {@literal @}EnsuresNonNull("theMap")
+ *  {@literal @}EnsuresNonNull("theMap")
  *  void initialize() {
  *    theMap = new HashMap&lt;&gt;();
  *  }
  * </code></pre>
  *
- * It can also be used for a method that fails if a given expression is null:
+ * It can also be used for a method that fails if a given expression is null, indicating that the
+ * argument is null if the method returns normally:
  *
  * <pre><code>
  *  /** Throws an exception if the argument is null. *&#47;
- * {@literal @}EnsuresNonNull("#1")
+ *  {@literal @}EnsuresNonNull("#1")
  *  void assertNonNull(Object arg) { ... }
  * </code></pre>
  *

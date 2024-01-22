@@ -27,8 +27,7 @@ public class TypeVariableSubstitutor {
    * @return a copy of type with its type variables substituted
    */
   public AnnotatedTypeMirror substitute(
-      final Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument,
-      final AnnotatedTypeMirror type) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArgument, AnnotatedTypeMirror type) {
     return new Visitor(typeVarToTypeArgument, true).visit(type);
   }
 
@@ -61,12 +60,12 @@ public class TypeVariableSubstitutor {
    * @return a deep copy of argument with the appropriate annotations applied
    */
   protected AnnotatedTypeMirror substituteTypeVariable(
-      final AnnotatedTypeMirror argument, final AnnotatedTypeVariable use) {
-    final AnnotatedTypeMirror substitute = argument.deepCopy(true);
-    substitute.addAnnotations(argument.getAnnotationsField());
+      AnnotatedTypeMirror argument, AnnotatedTypeVariable use) {
+    AnnotatedTypeMirror substitute = argument.deepCopy(true);
+    substitute.addAnnotations(argument.getPrimaryAnnotationsField());
 
-    if (!use.getAnnotationsField().isEmpty()) {
-      substitute.replaceAnnotations(use.getAnnotations());
+    if (!use.getPrimaryAnnotationsField().isEmpty()) {
+      substitute.replaceAnnotations(use.getPrimaryAnnotations());
     }
 
     return substitute;
@@ -106,8 +105,7 @@ public class TypeVariableSubstitutor {
      *     it
      * @param copyArgument whether or not a copy of type argument should be substituted
      */
-    public Visitor(
-        final Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
+    public Visitor(Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
       int size = typeParamToArg.size();
       elementToArgMap = new HashMap<>(size);
       typeVars = new ArrayList<>(size);
@@ -159,9 +157,9 @@ public class TypeVariableSubstitutor {
         return super.visitTypeVariable(original, originalToCopy);
 
       } else {
-        final Element typeVarElem = original.getUnderlyingType().asElement();
+        Element typeVarElem = original.getUnderlyingType().asElement();
         if (elementToArgMap.containsKey(typeVarElem)) {
-          final AnnotatedTypeMirror argument = elementToArgMap.get(typeVarElem);
+          AnnotatedTypeMirror argument = elementToArgMap.get(typeVarElem);
           if (copyArgument) {
             return substituteTypeVariable(argument, original);
           } else {

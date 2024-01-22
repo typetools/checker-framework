@@ -3,6 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Raw2 {
   private @NonNull Object field;
+
   // :: error: (initialization.fields.uninitialized)
   public Raw2(int i) {
     this.method(this);

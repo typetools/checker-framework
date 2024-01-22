@@ -31,14 +31,18 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
-  /** The method java.util.regex.MatchResult.end. */
-  private final ExecutableElement matchResultEnd;
-  /** The method java.util.regex.MatchResult.group. */
-  private final ExecutableElement matchResultGroup;
-  /** The method java.util.regex.MatchResult.start. */
-  private final ExecutableElement matchResultStart;
+  /** The method java.util.regex.MatchResult.end(int). */
+  private final ExecutableElement matchResultEndInt;
+
+  /** The method java.util.regex.MatchResult.group(int). */
+  private final ExecutableElement matchResultGroupInt;
+
+  /** The method java.util.regex.MatchResult.start(int). */
+  private final ExecutableElement matchResultStartInt;
+
   /** The method java.util.regex.Pattern.compile. */
   private final ExecutableElement patternCompile;
+
   /** The field java.util.regex.Pattern.LITERAL. */
   private final VariableElement patternLiteral;
 
@@ -50,9 +54,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
   public RegexVisitor(BaseTypeChecker checker) {
     super(checker);
     ProcessingEnvironment env = checker.getProcessingEnvironment();
-    this.matchResultEnd = TreeUtils.getMethod("java.util.regex.MatchResult", "end", 1, env);
-    this.matchResultGroup = TreeUtils.getMethod("java.util.regex.MatchResult", "group", 1, env);
-    this.matchResultStart = TreeUtils.getMethod("java.util.regex.MatchResult", "start", 1, env);
+    this.matchResultEndInt = TreeUtils.getMethod("java.util.regex.MatchResult", "end", env, "int");
+    this.matchResultGroupInt =
+        TreeUtils.getMethod("java.util.regex.MatchResult", "group", env, "int");
+    this.matchResultStartInt =
+        TreeUtils.getMethod("java.util.regex.MatchResult", "start", env, "int");
     this.patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 2, env);
     this.patternLiteral = TreeUtils.getField("java.util.regex.Pattern", "LITERAL", env);
   }
@@ -79,13 +85,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
           return r;
         }
       }
-    } else if (TreeUtils.isMethodInvocation(tree, matchResultEnd, env)
-        || TreeUtils.isMethodInvocation(tree, matchResultGroup, env)
-        || TreeUtils.isMethodInvocation(tree, matchResultStart, env)) {
-      /**
-       * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
-       * MatchResult.group} to ensure that a valid group number is passed.
-       */
+    } else if (TreeUtils.isMethodInvocation(tree, matchResultEndInt, env)
+        || TreeUtils.isMethodInvocation(tree, matchResultGroupInt, env)
+        || TreeUtils.isMethodInvocation(tree, matchResultStartInt, env)) {
+      // Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
+      // MatchResult.group} to ensure that a valid group number is passed.
       ExpressionTree group = tree.getArguments().get(0);
       if (group.getKind() == Tree.Kind.INT_LITERAL) {
         LiteralTree literal = (LiteralTree) group;
@@ -102,8 +106,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
         int annoGroups = 0;
         AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(receiver);
 
-        if (receiverType != null && receiverType.hasAnnotation(Regex.class)) {
-          annoGroups = atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
+        if (receiverType != null && receiverType.hasPrimaryAnnotation(Regex.class)) {
+          annoGroups = atypeFactory.getGroupCount(receiverType.getPrimaryAnnotation(Regex.class));
         }
         if (paramGroups > annoGroups) {
           checker.reportError(group, "group.count", paramGroups, annoGroups, receiver);
@@ -115,7 +119,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     return super.visitMethodInvocation(tree, p);
   }
 
-  /** Case 2: Check String compound concatenation for valid Regex use. */
+  // Case 2: Check String compound concatenation for valid Regex use.
   // TODO: Remove this. This should be handled by flow.
   /*
   @Override

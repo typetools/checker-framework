@@ -175,7 +175,7 @@ RegexExample.java:13: error: [argument] incompatible types in argument.
         <p>The right way to fix the problems is for the code to issue a
         user-friendly message at run time.  It should <b>verify the user
         input</b> using the
-        <a href="https://checkerframework.org/api/org/checkerframework/checker/regex/util/RegexUtil.html#isRegex-java.lang.String-"><code>RegexUtil.isRegex(String, int)</code></a> method.
+        <a href="https://checkerframework.org/api/org/checkerframework/checker/regex/util/RegexUtil.html#isRegex(java.lang.String)"><code>RegexUtil.isRegex(String, int)</code></a> method.
         If the string is not a valid regular
         expression, it should <b>print an error message and halt</b>.
         If it <em>is</em> a valid regular expression, perform as before.
@@ -241,7 +241,7 @@ Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character 
 -->
   <!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
-  <!--  LocalWords:  NullnessChecker plugin's hg
+  <!--  LocalWords:  NullnessChecker plugin's
  -->
 </body>
 </html>

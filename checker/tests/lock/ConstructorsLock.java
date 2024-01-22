@@ -17,6 +17,7 @@ public @GuardedBy({}) class ConstructorsLock {
   static final MyClass unlockedStatic = new MyClass();
 
   @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
+
   // :: error: (expression.unparsable)
   static @GuardedBy("unlocked") MyClass staticGuardedByNonStatic = new MyClass();
   static @GuardedBy("unlockedStatic") MyClass staticGuardedByStatic = new MyClass();

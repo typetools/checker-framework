@@ -11,8 +11,10 @@ public class MethodNameTest {
 
   // :: error: (illegal.methodname)
   @MethodVal(className = "", methodName = "[]MethodName", params = 0) Object o4;
+
   // :: error: (illegal.methodname)
   @MethodVal(className = "", methodName = "Meht.name", params = 0) Object o5;
+
   // :: error: (illegal.methodname)
   @MethodVal(className = "", methodName = ".emethos", params = 0) Object o6;
 

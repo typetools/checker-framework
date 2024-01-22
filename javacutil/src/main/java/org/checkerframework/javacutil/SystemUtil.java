@@ -1,25 +1,21 @@
 package org.checkerframework.javacutil;
 
+import com.google.common.base.Splitter;
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.CollectionsPlume;
+import org.checkerframework.common.value.qual.IntVal;
 
 /** This file contains basic utility functions. */
 public class SystemUtil {
@@ -27,6 +23,132 @@ public class SystemUtil {
   /** Do not instantiate. */
   private SystemUtil() {
     throw new Error("Do not instantiate.");
+  }
+
+  /** A splitter that splits on periods. The result contains no empty strings. */
+  public static final Splitter dotSplitter = Splitter.on('.').omitEmptyStrings();
+
+  /** A splitter that splits on commas. The result contains no empty strings. */
+  public static final Splitter commaSplitter = Splitter.on(',').omitEmptyStrings();
+
+  /** A splitter that splits on colons. The result contains no empty strings. */
+  public static final Splitter colonSplitter = Splitter.on(':').omitEmptyStrings();
+
+  /** A splitter that splits on {@code File.pathSeparator}. The result contains no empty strings. */
+  public static final Splitter pathSeparatorSplitter =
+      Splitter.on(File.pathSeparator).omitEmptyStrings();
+
+  /**
+   * Like {@code System.getProperty}, but splits on the path separator and never returns null.
+   *
+   * @param propName a system property name
+   * @return the paths in the system property; may be an empty array
+   */
+  public static final List<String> getPathsProperty(String propName) {
+    String propValue = System.getProperty(propName);
+    if (propValue == null) {
+      return Collections.emptyList();
+    } else {
+      return pathSeparatorSplitter.splitToList(propValue);
+    }
+  }
+
+  /**
+   * Calls {@code InputStream.available()}, but returns null instead of throwing an IOException.
+   *
+   * @param is an input stream
+   * @return {@code is.available()}, or null if that throws an exception
+   */
+  public static @Nullable Integer available(InputStream is) {
+    try {
+      return is.available();
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if the first {@code readLimit} bytes of the input stream consist only of
+   * whitespace.
+   *
+   * @param is an input stream
+   * @param readLimit how many bytes to look ahead in the input stream
+   * @return null if {@code !is.markSupported()}; otherwise, true if the first {@code readLimit}
+   *     characters of the input stream consist only of whitespace
+   */
+  public static @Nullable Boolean isWhitespaceOnly(InputStream is, int readLimit) {
+    if (!is.markSupported()) {
+      return null;
+    }
+    try {
+      is.mark(readLimit * 4); // each character is at most 4 bytes, usually much less
+      for (int bytesRead = 0; bytesRead < readLimit; bytesRead++) {
+        int nextCodePoint = readCodePoint(is);
+        if (nextCodePoint == -1) {
+          return true;
+        } else if (Character.isWhitespace(nextCodePoint)) {
+          // do nothing, continue loop
+        } else {
+          return false;
+        }
+      }
+      return true;
+    } finally {
+      try {
+        is.reset();
+      } catch (IOException e) {
+        // Do nothing.
+      }
+    }
+  }
+
+  // From https://stackoverflow.com/a/54513347 .
+  /**
+   * Reads a Unicode code point from an input stream.
+   *
+   * @param is an input stream
+   * @return the Unicode code point for the next character in the input stream
+   */
+  public static int readCodePoint(InputStream is) {
+    try {
+      int nextByte = is.read();
+      if (nextByte == -1) {
+        return -1;
+      }
+      byte firstByte = (byte) nextByte;
+      int byteCount = getByteCount(firstByte);
+      if (byteCount == 1) {
+        return nextByte;
+      }
+      byte[] utf8Bytes = new byte[byteCount];
+      utf8Bytes[0] = (byte) nextByte;
+      for (int i = 1; i < byteCount; i++) { // Get any subsequent bytes for this UTF-8 character.
+        nextByte = is.read();
+        utf8Bytes[i] = (byte) nextByte;
+      }
+      int codePoint = new String(utf8Bytes, StandardCharsets.UTF_8).codePointAt(0);
+      return codePoint;
+    } catch (IOException e) {
+      throw new Error("input stream = " + is, e);
+    }
+  }
+
+  // From https://stackoverflow.com/a/54513347 .
+  /**
+   * Returns the number of bytes in a UTF-8 character based on the bit pattern of the supplied byte.
+   * The only valid values are 1, 2 3 or 4. If the byte has an invalid bit pattern an
+   * IllegalArgumentException is thrown.
+   *
+   * @param b the first byte of a UTF-8 character
+   * @return the number of bytes for this UTF-* character
+   * @throws IllegalArgumentException if the bit pattern is invalid
+   */
+  private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) throws IllegalArgumentException {
+    if ((b >= 0)) return 1; // Pattern is 0xxxxxxx.
+    if ((b >= (byte) 0b11000000) && (b <= (byte) 0b11011111)) return 2; // Pattern is 110xxxxx.
+    if ((b >= (byte) 0b11100000) && (b <= (byte) 0b11101111)) return 3; // Pattern is 1110xxxx.
+    if ((b >= (byte) 0b11110000) && (b <= (byte) 0b11110111)) return 4; // Pattern is 11110xxx.
+    throw new IllegalArgumentException(); // Invalid first byte for UTF-8 character.
   }
 
   /** The major version number of the Java runtime (JRE), such as 8, 11, or 17. */
@@ -37,12 +159,12 @@ public class SystemUtil {
   /**
    * Returns the major version number from the "java.version" system property, such as 8, 11, or 17.
    *
-   * <p>This is different from the version passed to the compiler via --release; use {@link
+   * <p>This is different from the version passed to the compiler via {@code --release}; use {@link
    * #getReleaseValue(ProcessingEnvironment)} to get that version.
    *
-   * <p>Extract the major version number from the "java.version" system property. Two possible
-   * formats are considered. Up to Java 8, from a version string like `1.8.whatever`, this method
-   * extracts 8. Since Java 9, from a version string like `11.0.1`, this method extracts 11.
+   * <p>Two possible formats of the "java.version" system property are considered. Up to Java 8,
+   * from a version string like `1.8.whatever`, this method extracts 8. Since Java 9, from a version
+   * string like `11.0.1`, this method extracts 11.
    *
    * <p>Starting in Java 9, there is the int {@code Runtime.version().feature()}, but that does not
    * exist on JDK 8.
@@ -62,8 +184,8 @@ public class SystemUtil {
 
     // Since Java 9, from a version string like "11.0.1" or "11-ea" or "11u25", extract "11".
     // The format is described at http://openjdk.org/jeps/223 .
-    final Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
-    final Matcher newVersionMatcher = newVersionPattern.matcher(version);
+    Pattern newVersionPattern = Pattern.compile("^(\\d+).*$");
+    Matcher newVersionMatcher = newVersionPattern.matcher(version);
     if (newVersionMatcher.matches()) {
       String v = newVersionMatcher.group(1);
       assert v != null : "@AssumeAssertion(nullness): inspection";
@@ -115,257 +237,5 @@ public class SystemUtil {
               toolsJarFile, javaHome, System.getProperty("java.home")));
     }
     return toolsJarFile.toString();
-  }
-
-  ///
-  /// Array and collection methods
-  ///
-
-  /**
-   * Returns a list that contains all the distinct elements of the two lists: that is, the union of
-   * the two arguments.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param list1 a list
-   * @param list2 a list
-   * @return a list that contains all the distinct elements of the two lists
-   * @deprecated use CollectionsPlume.listUnion
-   */
-  @Deprecated // 2023-01-08
-  public static <T> List<T> union(List<T> list1, List<T> list2) {
-    List<T> result = new ArrayList<>(list1.size() + list2.size());
-    addWithoutDuplicates(result, list1);
-    addWithoutDuplicates(result, list2);
-    return result;
-  }
-
-  /**
-   * Adds, to dest, all the elements of source that are not already in dest.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param dest a list to add to
-   * @param source a list of elements to add
-   * @deprecated use CollectionsPlume.adjoinAll
-   */
-  @SuppressWarnings("nullness:argument" // true positive:  `dest` might be incompatible
-  // with null and `source` might contain null.
-  )
-  @Deprecated // 2023-01-08
-  public static <T> void addWithoutDuplicates(List<T> dest, List<? extends T> source) {
-    for (T elt : source) {
-      if (!dest.contains(elt)) {
-        dest.add(elt);
-      }
-    }
-  }
-
-  /**
-   * Returns a list that contains all the elements that are in both lists: that is, the set
-   * difference of the two arguments.
-   *
-   * <p>For very short lists, this is likely more efficient than creating a set and converting back
-   * to a list.
-   *
-   * @param <T> the type of the list elements
-   * @param list1 a list
-   * @param list2 a list
-   * @return a list that contains all the elements of {@code list1} that are not in {@code list2}
-   * @deprecated use CollectionsPlume.listIntersection
-   */
-  @Deprecated // 2023-01-08
-  public static <T> List<T> intersection(List<? extends T> list1, List<? extends T> list2) {
-    List<T> result = new ArrayList<>(list1);
-    result.retainAll(list2);
-    return result;
-  }
-
-  /**
-   * Returns a list with the same contents as its argument, but sorted and without duplicates. May
-   * return its argument if its argument is sorted and has no duplicates, but is not guaranteed to
-   * do so. The argument is not modified.
-   *
-   * <p>This is like {@code withoutDuplicates}, but requires the list elements to implement {@link
-   * Comparable}, and thus can be more efficient.
-   *
-   * @param <T> the type of elements in {@code values}
-   * @param values a list of values
-   * @return the values, with duplicates removed
-   */
-  // TODO: Deprecate or delete once plume-util 1.6.6 (from which this is taken) is released.
-  public static <T extends Comparable<T>> List<T> withoutDuplicatesSorted(List<T> values) {
-    // This adds O(n) time cost, and has the benefit of sometimes avoiding allocating a TreeSet.
-    if (CollectionsPlume.isSortedNoDuplicates(values)) {
-      return values;
-    }
-
-    Set<T> set = new TreeSet<>(values);
-    return new ArrayList<>(set);
-  }
-
-  ///
-  /// Deprecated methods
-  ///
-
-  /**
-   * Return a list of Strings, one per line of the file.
-   *
-   * @param argFile argument file
-   * @return a list of Strings, one per line of the file
-   * @throws IOException when reading the argFile
-   * @deprecated use Files.readAllLines
-   */
-  @Deprecated // 2021-03-10
-  public static List<String> readFile(final File argFile) throws IOException {
-    try (final BufferedReader br = new BufferedReader(new FileReader(argFile))) {
-      String line;
-      List<String> lines = new ArrayList<>();
-      while ((line = br.readLine()) != null) {
-        lines.add(line);
-      }
-      return lines;
-    }
-  }
-
-  /**
-   * Like Thread.sleep, but does not throw any exceptions, so it is easier for clients to use.
-   * Causes the currently executing thread to sleep (temporarily cease execution) for the specified
-   * number of milliseconds.
-   *
-   * @param millis the length of time to sleep in milliseconds
-   * @deprecated use SystemPlume.sleep
-   */
-  @Deprecated // 2021-03-10
-  public static void sleep(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  /**
-   * Concatenates an element, an array, and an element.
-   *
-   * @param <T> the type of the array elements
-   * @param firstElt the first element
-   * @param array the array
-   * @param lastElt the last elemeent
-   * @return a new array containing first element, the array, and the last element, in that order
-   * @deprecated use PlumeUtil.concat
-   */
-  @Deprecated // 2021-03-10
-  @SuppressWarnings("unchecked")
-  public static <T> T[] concatenate(T firstElt, T[] array, T lastElt) {
-    @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-    T[] result = Arrays.copyOf(array, array.length + 2);
-    result[0] = firstElt;
-    System.arraycopy(array, 0, result, 1, array.length);
-    result[result.length - 1] = lastElt;
-    return result;
-  }
-
-  /**
-   * Return true if the system property is set to "true". Return false if the system property is not
-   * set or is set to "false". Otherwise, errs.
-   *
-   * @param key system property to check
-   * @return true if the system property is set to "true". Return false if the system property is
-   *     not set or is set to "false". Otherwise, errs.
-   * @deprecated use UtilPlume.getBooleanSystemProperty
-   */
-  @Deprecated // 2021-03-28
-  public static boolean getBooleanSystemProperty(String key) {
-    return Boolean.parseBoolean(System.getProperty(key, "false"));
-  }
-
-  /**
-   * Return its boolean value if the system property is set. Return defaultValue if the system
-   * property is not set. Errs if the system property is set to a non-boolean value.
-   *
-   * @param key system property to check
-   * @param defaultValue value to use if the property is not set
-   * @return the boolean value of {@code key} or {@code defaultValue} if {@code key} is not set
-   * @deprecated use UtilPlume.getBooleanSystemProperty
-   */
-  @Deprecated // 2021-03-28
-  public static boolean getBooleanSystemProperty(String key, boolean defaultValue) {
-    String value = System.getProperty(key);
-    if (value == null) {
-      return defaultValue;
-    }
-    if (value.equals("true")) {
-      return true;
-    }
-    if (value.equals("false")) {
-      return false;
-    }
-    throw new UserError(
-        String.format(
-            "Value for system property %s should be boolean, but is \"%s\".", key, value));
-  }
-
-  /**
-   * Concatenates two arrays. Can be invoked varargs-style.
-   *
-   * @param <T> the type of the array elements
-   * @param array1 the first array
-   * @param array2 the second array
-   * @return a new array containing the contents of the given arrays, in order
-   * @deprecated use StringsPlume.concatenate
-   */
-  @Deprecated // 2021-03-28
-  @SuppressWarnings("unchecked")
-  public static <T> T[] concatenate(T[] array1, T... array2) {
-    @SuppressWarnings("nullness") // elements are not non-null yet, but will be by return stmt
-    T[] result = Arrays.copyOf(array1, array1.length + array2.length);
-    System.arraycopy(array2, 0, result, array1.length, array2.length);
-    return result;
-  }
-
-  /**
-   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
-   * or HashSet constructor, so that the set or map will not resize.
-   *
-   * @param numElements the maximum expected number of elements in the map or set
-   * @return the initial capacity to pass to a HashMap or HashSet constructor
-   * @deprecated use CollectionsPlume.mapCapacity
-   */
-  @Deprecated // 2021-05-05
-  public static int mapCapacity(int numElements) {
-    // Equivalent to: (int) (numElements / 0.75) + 1
-    // where 0.75 is the default load factor.
-    return (numElements * 4 / 3) + 1;
-  }
-
-  /**
-   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
-   * or HashSet constructor, so that the set or map will not resize.
-   *
-   * @param c a collection whose size is the maximum expected number of elements in the map or set
-   * @return the initial capacity to pass to a HashMap or HashSet constructor
-   * @deprecated use CollectionsPlume.mapCapacity
-   */
-  @Deprecated // 2021-05-05
-  public static int mapCapacity(Collection<?> c) {
-    return mapCapacity(c.size());
-  }
-
-  /**
-   * Given an expected number of elements, returns the capacity that should be passed to a HashMap
-   * or HashSet constructor, so that the set or map will not resize.
-   *
-   * @param m a map whose size is the maximum expected number of elements in the map or set
-   * @return the initial capacity to pass to a HashMap or HashSet constructor
-   * @deprecated use CollectionsPlume.mapCapacity
-   */
-  @Deprecated // 2021-05-05
-  public static int mapCapacity(Map<?, ?> m) {
-    return mapCapacity(m.size());
   }
 }

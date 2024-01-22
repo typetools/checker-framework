@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
 
   public static void apply(
-      final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory)
+      final AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
       throws UnexpectedAnnotationLocationException {
     new TypeDeclarationApplier(type, element, typeFactory).extractAndApply();
   }
@@ -34,7 +34,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
    * @param element an element
    * @return true if type is an annotated declared type and element is a ClassSymbol
    */
-  public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror type, Element element) {
     return type instanceof AnnotatedDeclaredType && element instanceof Symbol.ClassSymbol;
   }
 
@@ -43,9 +43,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
   private final AnnotatedDeclaredType declaredType;
 
   TypeDeclarationApplier(
-      final AnnotatedTypeMirror type,
-      final Element element,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
     super(type, element);
     this.typeFactory = typeFactory;
     this.typeSymbol = (Symbol.ClassSymbol) element;
@@ -102,7 +100,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     if (TypesUtils.isAnonymous(typeSymbol.type)) {
       // If this is an anonymous class, then the annotations after "new" but before the class
       // name are stored as super class annotations. Treat them as annotations on the class.
-      for (final Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
+      for (Attribute.TypeCompound anno : extendsAndImplementsAnnos) {
         if (anno.position.type_index >= SUPERCLASS_INDEX && anno.position.location.isEmpty()) {
           type.addAnnotation(anno);
         }

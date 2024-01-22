@@ -35,8 +35,10 @@ public class CollectionToArrayHeuristics {
 
   /** The processing environment. */
   private final ProcessingEnvironment processingEnv;
+
   /** The checker, used for issuing diagnostic messages. */
   private final BaseTypeChecker checker;
+
   /** The type factory. */
   private final NullnessAnnotatedTypeFactory atypeFactory;
 
@@ -45,10 +47,13 @@ public class CollectionToArrayHeuristics {
 
   /** The Collection type. */
   private final AnnotatedDeclaredType collectionType;
+
   /** The Collection.toArray(T[]) method. */
   private final ExecutableElement collectionToArrayE;
+
   /** The Collection.size() method. */
   private final ExecutableElement size;
+
   /** The ArrayLen.value field/element. */
   private final ExecutableElement arrayLenValueElement;
 

@@ -26,9 +26,9 @@ import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.IPair;
 
 /**
  * For methods annotated with {@link SideEffectsOnly}, computes expressions that are side-effected
@@ -78,16 +78,16 @@ public class SideEffectsOnlyChecker {
      * List of expressions a method side-effects that are not specified in the list of arguments to
      * {@link SideEffectsOnly}.
      */
-    protected final List<Pair<Tree, JavaExpression>> exprs = new ArrayList<>(1);
+    protected final List<IPair<Tree, JavaExpression>> exprs = new ArrayList<>(1);
 
     /**
-     * Adds {@code t} and {@code javaExpr} as a Pair to this.
+     * Adds {@code t} and {@code javaExpr} as a pair to this.
      *
      * @param t the expression that is mutated
      * @param javaExpr the corresponding Java expression
      */
     public void addExpr(Tree t, JavaExpression javaExpr) {
-      exprs.add(Pair.of(t, javaExpr));
+      exprs.add(IPair.of(t, javaExpr));
     }
 
     /**
@@ -96,7 +96,7 @@ public class SideEffectsOnlyChecker {
      *
      * @return side-effected expressions, beyond what is in {@code @SideEffectsOnly}.
      */
-    public List<Pair<Tree, JavaExpression>> getExprs() {
+    public List<IPair<Tree, JavaExpression>> getExprs() {
       return exprs;
     }
   }
@@ -108,6 +108,7 @@ public class SideEffectsOnlyChecker {
   protected static class SideEffectsOnlyCheckerHelper extends TreePathScanner<Void, Void> {
     /** Result computed by SideEffectsOnlyCheckerHelper. */
     ExtraSideEffects extraSideEffects = new ExtraSideEffects();
+
     /**
      * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
      */
@@ -115,8 +116,10 @@ public class SideEffectsOnlyChecker {
 
     /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
+
     /** The processing environment. */
     ProcessingEnvironment processingEnv;
+
     /** The checker to use. */
     BaseTypeChecker checker;
 

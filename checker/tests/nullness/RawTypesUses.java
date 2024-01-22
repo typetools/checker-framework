@@ -14,8 +14,7 @@ public abstract class RawTypesUses {
     @NonNull Object o1 = notRawNullable.foo();
 
     Generic rawNullable = new Generic<@Nullable String>();
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o2 = rawNullable.foo();
 
     Generic<@NonNull String> notRawNonNull = new Generic<>();
@@ -23,11 +22,9 @@ public abstract class RawTypesUses {
 
     Generic rawNonNull = new Generic<@NonNull String>();
     Generic rawNonNullAlais = rawNonNull;
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o4 = rawNonNull.foo();
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o5 = rawNonNullAlais.foo();
   }
 
@@ -40,18 +37,15 @@ public abstract class RawTypesUses {
     @NonNull Object o1 = notRawNullable.foo();
 
     Generic rawNullable = rawReturn();
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o2 = rawNullable.foo();
 
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o3 = rawReturn().foo();
 
     Generic local = rawReturn();
     Generic localAlias = local;
-    // TODO: false negative. See #635.
-    //// :: error: (assignment)
+    // :: error: (assignment)
     @NonNull Object o4 = local.foo();
   }
 }

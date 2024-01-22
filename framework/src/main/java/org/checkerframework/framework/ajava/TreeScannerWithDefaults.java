@@ -61,6 +61,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreeScanner;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A visitor that performs some default action on a tree and then all of its children. To use this
@@ -77,16 +78,17 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
 
   @Override
   public Void scan(Tree tree, Void unused) {
-    if (tree != null) {
-      if (tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-        visitSwitchExpression17(tree, unused);
-        return null;
-      } else if (tree.getKind().name().equals("YIELD")) {
-        visitYield17(tree, unused);
-        return null;
-      } else if (tree.getKind().name().equals("BINDING_PATTERN")) {
-        visitBindingPattern17(tree, unused);
-        return null;
+    if (tree != null && SystemUtil.jreVersion >= 14) {
+      switch (tree.getKind().name()) {
+        case "SWITCH_EXPRESSION":
+          visitSwitchExpression17(tree, unused);
+          return null;
+        case "YIELD":
+          visitYield17(tree, unused);
+          return null;
+        case "BINDING_PATTERN":
+          visitBindingPattern17(tree, unused);
+          return null;
       }
     }
     return super.scan(tree, unused);

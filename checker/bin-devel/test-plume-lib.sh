@@ -33,9 +33,12 @@ echo "PACKAGES=" "${PACKAGES[@]}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
-source "$SCRIPTDIR"/build.sh
+export ORG_GRADLE_PROJECT_useJdk17Compiler=true
+source "$SCRIPTDIR"/clone-related.sh
+./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 
+failing_packages=""
 echo "PACKAGES=" "${PACKAGES[@]}"
 for PACKAGE in "${PACKAGES[@]}"; do
   echo "PACKAGE=${PACKAGE}"
@@ -46,5 +49,10 @@ for PACKAGE in "${PACKAGES[@]}"; do
   # https://docs.oracle.com/en/java/javase/17/docs/api/" due to network problems.
   echo "About to call ./gradlew --console=plain -PcfLocal compileJava"
   # Try twice in case of network lossage.
-  (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava)))
+  (cd "${PACKAGEDIR}" && (./gradlew --console=plain -PcfLocal compileJava || (sleep 60 && ./gradlew --console=plain -PcfLocal compileJava))) || failing_packages="${failing_packages} ${PACKAGE}"
 done
+
+if [ -n "${failing_packages}" ] ; then
+  echo "Failing packages: ${failing_packages}"
+  exit 1
+fi

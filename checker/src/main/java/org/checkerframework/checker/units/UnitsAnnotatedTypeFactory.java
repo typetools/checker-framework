@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -60,9 +61,9 @@ import org.plumelib.reflection.Signatures;
  * <p>Handles multiple names for the same unit, with different prefixes, e.g. @kg is the same
  * as @g(Prefix.kilo).
  *
- * <p>Supports relations between units, e.g. if "m" is a variable of type "@m" and "s" is a variable
- * of type "@s", the division "m/s" is automatically annotated as "mPERs", the correct unit for the
- * result.
+ * <p>Supports relations between units. If {@code m} is a variable of type "@m" and {@code s} is a
+ * variable of type "@s", the division {@code m / s} is automatically annotated as "@mPERs", the
+ * correct unit for the result.
  */
 public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private static final Class<org.checkerframework.checker.units.qual.UnitsRelations>
@@ -77,9 +78,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The UnitsMultiple.prefix argument/element. */
   private final ExecutableElement unitsMultiplePrefixElement =
       TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
+
   /** The UnitsMultiple.quantity argument/element. */
   private final ExecutableElement unitsMultipleQuantityElement =
       TreeUtils.getMethod(UnitsMultiple.class, "quantity", 0, processingEnv);
+
   /** The UnitsRelations.value argument/element. */
   private final ExecutableElement unitsRelationsValueElement =
       TreeUtils.getMethod(
@@ -194,36 +197,32 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    // get all the loaded annotations
+    // Get all the loaded annotations.
     Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
-    // load all the external units
+    // Load all the units specified on the command line.
     loadAllExternalUnits();
-
-    // copy all loaded external Units to qual set
     qualSet.addAll(externalQualsMap.values());
 
     return qualSet;
   }
 
+  /** Loads all the externnal units specified on the command line. */
   private void loadAllExternalUnits() {
     // load external individually named units
-    String qualNames = checker.getOption("units");
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier name \"%s\" in -Aunits=%s", qualName, qualNames);
-        }
-        loadExternalUnit(qualName);
+    for (String qualName : checker.getStringsOption("units", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier name \"%s\" in -Aunits", qualName);
       }
+      loadExternalUnit(qualName);
     }
 
     // load external directories of units
-    String qualDirectories = checker.getOption("unitsDirs");
-    if (qualDirectories != null) {
-      for (String directoryName : qualDirectories.split(":")) {
-        loadExternalDirectory(directoryName);
+    for (String directoryName : checker.getStringsOption("unitsDirs", ':')) {
+      if (!new File(directoryName).exists()) {
+        throw new UserError("Nonexistent directory in -AunitsDirs: " + directoryName);
       }
+      loadExternalDirectory(directoryName);
     }
   }
 
@@ -251,7 +250,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** Adds the annotation class to the external qualifier map if it is not an alias annotation. */
-  private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
+  private void addUnitToExternalQualMap(Class<? extends Annotation> annoClass) {
     AnnotationMirror mirror =
         UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(
             processingEnv, annoClass.getCanonicalName());
@@ -450,7 +449,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (bestres != null && res != null && !bestres.equals(res)) {
           checker.message(
-              Kind.WARNING,
+              Diagnostic.Kind.WARNING,
               "UnitsRelation mismatch, taking neither! Previous: "
                   + bestres
                   + " and current: "
@@ -472,21 +471,21 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         switch (kind) {
           case MINUS:
           case PLUS:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // The sum or difference has the same units as both operands.
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // otherwise it results in mixed
               type.replaceAnnotation(mixedUnits);
             }
             break;
           case DIVIDE:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // If the units of the division match, return TOP
               type.replaceAnnotation(TOP);
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any unit divided by a scalar keeps that unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(lht)) {
               // scalar divided by any unit returns mixed
               type.replaceAnnotation(mixedUnits);
@@ -500,10 +499,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           case MULTIPLY:
             if (UnitsRelationsTools.hasNoUnits(lht)) {
               // any unit multiplied by a scalar keeps the unit
-              type.replaceAnnotations(rht.getAnnotations());
+              type.replaceAnnotations(rht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any scalar multiplied by a unit becomes the unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // else it is a multiplication of two units that have no defined
               // relations from a relations class
@@ -514,7 +513,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           case REMAINDER:
             // in modulo operation, it always returns the left unit regardless of what
             // it is (unknown, or some unit)
-            type.replaceAnnotations(lht.getAnnotations());
+            type.replaceAnnotations(lht.getPrimaryAnnotations());
             break;
           default:
             // Placeholders for unhandled binary operations
@@ -530,27 +529,24 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       ExpressionTree var = tree.getVariable();
       AnnotatedTypeMirror varType = getAnnotatedType(var);
 
-      type.replaceAnnotations(varType.getAnnotations());
+      type.replaceAnnotations(varType.getPrimaryAnnotations());
       return null;
     }
 
-    private AnnotationMirror useUnitsRelation(
+    private @Nullable AnnotationMirror useUnitsRelation(
         Tree.Kind kind, UnitsRelations ur, AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
 
-      AnnotationMirror res = null;
       if (ur != null) {
         switch (kind) {
           case DIVIDE:
-            res = ur.division(lht, rht);
-            break;
+            return ur.division(lht, rht);
           case MULTIPLY:
-            res = ur.multiplication(lht, rht);
-            break;
+            return ur.multiplication(lht, rht);
           default:
             // Do nothing
         }
       }
-      return res;
+      return null;
     }
   }
 
@@ -565,7 +561,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class UnitsQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
     /** Constructor. */
     public UnitsQualifierHierarchy() {
-      super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          UnitsAnnotatedTypeFactory.this);
     }
 
     @Override
@@ -612,11 +611,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
+    @SuppressWarnings("nullness:return")
     @Override
-    @SuppressWarnings(
-        "nullness:return" // This class UnitsQualifierHierarchy is annotated for nullness,
-    // but the outer class UnitsAnnotatedTypeFactory is not, so the type of fields is @Nullable.
-    )
     protected AnnotationMirror greatestLowerBoundWithElements(
         AnnotationMirror a1,
         QualifierKind qualifierKind1,

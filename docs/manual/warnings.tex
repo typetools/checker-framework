@@ -51,6 +51,8 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
+  the \code{-AskipDirs} command-line option (Section~\ref{askipdirs}),
+\item
   the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
@@ -653,6 +655,27 @@ type-checking only part of a legacy codebase.  After you have verified the
 most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
 
+\sectionAndLabel{\code{-AskipDirs} command-line option}{askipdirs}
+
+You can suppresss all errors and warnings originating from classes that are
+located in a given directory/folder.
+Errors and warnings may also be suppressed on a more granular level.
+For example, the \code{-AonlyDefs} or the \code{-AskipDefs} command-line
+options enable you to include or exclude classes from checking.
+
+Set the \code{-AskipDirs} command-line option to a
+regular expression that matches the path to directories/folders containing
+classes for which errors and warnings should be suppressed.
+
+For example, if you use
+``{\codesize\verb|-AskipDirs=/build/generated|}'' on the command line
+(with appropriate quoting) when invoking
+\code{javac}, then the definitions of classes located in the
+\codesize\verb|/build/generated| directory will not be checked.
+
+A common scenario for using this argument is when you want to exclude certain
+directories/folders (such as those containing generated or legacy code) from
+type-checking.
 
 \sectionAndLabel{\code{-Alint} command-line option\label{lint-options}}{alint}
 

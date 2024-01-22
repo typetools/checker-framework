@@ -3,6 +3,8 @@ package org.checkerframework.framework.flow;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
+// TODO: CFAbstractValue is also a set of annotations and a TypeMirror.
+// This documentation does not clarify how this class is different.
 /**
  * The default abstract value used in the Checker Framework: a set of annotations and a TypeMirror.
  */

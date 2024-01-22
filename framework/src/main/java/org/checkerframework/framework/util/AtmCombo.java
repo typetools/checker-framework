@@ -45,11 +45,11 @@ enum AtmKind {
    *
    * @return the AtmKind corresponding to the class of atm
    */
-  public static AtmKind valueOf(final AnnotatedTypeMirror atm) {
-    final Class<?> argClass = atm.getClass();
+  public static AtmKind valueOf(AnnotatedTypeMirror atm) {
+    Class<?> argClass = atm.getClass();
 
     for (AtmKind atmKind : AtmKind.values()) {
-      final Class<?> kindClass = atmKind.atmClass;
+      Class<?> kindClass = atmKind.atmClass;
       if (argClass == kindClass) {
         return atmKind;
       }
@@ -192,6 +192,7 @@ public enum AtmCombo {
 
   /** First AtmKind. */
   public final AtmKind type1Kind;
+
   /** Second AtmKind. */
   public final AtmKind type2Kind;
 
@@ -201,7 +202,7 @@ public enum AtmCombo {
    * @param type1Kind first kind
    * @param type2Kind second kind
    */
-  AtmCombo(final AtmKind type1Kind, AtmKind type2Kind) {
+  AtmCombo(AtmKind type1Kind, AtmKind type2Kind) {
     this.type1Kind = type1Kind;
     this.type2Kind = type2Kind;
   }
@@ -214,7 +215,7 @@ public enum AtmCombo {
       new AtmCombo[AtmKind.values().length][AtmKind.values().length];
 
   static {
-    for (final AtmCombo atmCombo : AtmCombo.values()) {
+    for (AtmCombo atmCombo : AtmCombo.values()) {
       comboMap[atmCombo.type1Kind.ordinal()][atmCombo.type2Kind.ordinal()] = atmCombo;
     }
   }
@@ -226,7 +227,7 @@ public enum AtmCombo {
    * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g. {@literal
    *     (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
    */
-  public static AtmCombo valueOf(final AtmKind type1, final AtmKind type2) {
+  public static AtmCombo valueOf(AtmKind type1, AtmKind type2) {
     return comboMap[type1.ordinal()][type2.ordinal()];
   }
 
@@ -238,7 +239,7 @@ public enum AtmCombo {
    * @return the AtmCombo corresponding to the pair of the classes for the given
    *     AnnotatedTypeMirrors
    */
-  public static AtmCombo valueOf(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+  public static AtmCombo valueOf(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     return valueOf(AtmKind.valueOf(type1), AtmKind.valueOf(type2));
   }
 
@@ -257,11 +258,11 @@ public enum AtmCombo {
    * @return the return value of the visit method called
    */
   public static <RETURN_TYPE, PARAM> RETURN_TYPE accept(
-      final AnnotatedTypeMirror type1,
-      final AnnotatedTypeMirror type2,
-      final PARAM initialParam,
-      final AtmComboVisitor<RETURN_TYPE, PARAM> visitor) {
-    final AtmCombo combo = valueOf(type1, type2);
+      AnnotatedTypeMirror type1,
+      AnnotatedTypeMirror type2,
+      PARAM initialParam,
+      AtmComboVisitor<RETURN_TYPE, PARAM> visitor) {
+    AtmCombo combo = valueOf(type1, type2);
     switch (combo) {
       case ARRAY_ARRAY:
         return visitor.visitArray_Array(

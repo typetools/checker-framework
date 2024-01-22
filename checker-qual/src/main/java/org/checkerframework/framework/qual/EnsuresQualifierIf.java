@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  *
  * <pre><code>
  *   {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
- *    boolean isOdd(final int p1, int p2) {
+ *    boolean isOdd(int p1, int p2) {
  *        return p1 % 2 == 1;
  *    }
  * </code></pre>
@@ -40,6 +40,13 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresQualifierIf.List.class)
 public @interface EnsuresQualifierIf {
   /**
+   * Returns the return value of the method that needs to hold for the postcondition to hold.
+   *
+   * @return the return value of the method that needs to hold for the postcondition to hold
+   */
+  boolean result();
+
+  /**
    * Returns the Java expressions for which the qualifier holds if the method terminates with return
    * value {@link #result()}.
    *
@@ -57,13 +64,6 @@ public @interface EnsuresQualifierIf {
    *     {@link #result()}
    */
   Class<? extends Annotation> qualifier();
-
-  /**
-   * Returns the return value of the method that needs to hold for the postcondition to hold.
-   *
-   * @return the return value of the method that needs to hold for the postcondition to hold
-   */
-  boolean result();
 
   /**
    * A wrapper annotation that makes the {@link EnsuresQualifierIf} annotation repeatable.

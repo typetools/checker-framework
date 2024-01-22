@@ -41,13 +41,16 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FormatterTreeUtil {
   /** The checker. */
   public final BaseTypeChecker checker;
+
   /** The processing environment. */
   public final ProcessingEnvironment processingEnv;
 
   /** The value() element/field of an @Format annotation. */
   protected final ExecutableElement formatValueElement;
+
   /** The value() element/field of an @InvalidFormat annotation. */
   protected final ExecutableElement invalidFormatValueElement;
+
   // private final ExecutableElement formatArgTypesElement;
 
   public FormatterTreeUtil(BaseTypeChecker checker) {
@@ -133,7 +136,8 @@ public class FormatterTreeUtil {
     return anno != null;
   }
 
-  private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
+  private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
+      MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
     if (!(vararg instanceof ArrayCreationNode)) {
       return null;
@@ -211,12 +215,16 @@ public class FormatterTreeUtil {
   public class FormatCall {
     /** The call itself. */
     /*package-private*/ final MethodInvocationTree invocationTree;
+
     /** The format string argument. */
     private final ExpressionTree formatStringTree;
+
     /** The type of the format string argument. */
     private final AnnotatedTypeMirror formatStringType;
+
     /** The arguments that follow the format string argument. */
     private final List<? extends ExpressionTree> args;
+
     /** The type factory. */
     private final AnnotatedTypeFactory atypeFactory;
 
@@ -249,10 +257,10 @@ public class FormatterTreeUtil {
      * @return an error description if the format string is not annotated as {@code @Format}, or
      *     null if it is
      */
-    public final Result<String> errMissingFormatAnnotation() {
-      if (!formatStringType.hasAnnotation(Format.class)) {
+    public final @Nullable Result<String> errMissingFormatAnnotation() {
+      if (!formatStringType.hasPrimaryAnnotation(Format.class)) {
         String msg = "(is a @Format annotation missing?)";
-        AnnotationMirror inv = formatStringType.getAnnotation(InvalidFormat.class);
+        AnnotationMirror inv = formatStringType.getPrimaryAnnotation(InvalidFormat.class);
         if (inv != null) {
           msg = invalidFormatAnnotationToErrorMessage(inv);
         }
@@ -270,7 +278,7 @@ public class FormatterTreeUtil {
       InvocationType type = InvocationType.VARARG;
 
       if (args.size() == 1) {
-        final ExpressionTree first = args.get(0);
+        ExpressionTree first = args.get(0);
         TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
         // figure out if argType is an array
         type =
@@ -331,7 +339,7 @@ public class FormatterTreeUtil {
      * @see ConversionCategory
      */
     public final ConversionCategory[] getFormatCategories() {
-      AnnotationMirror anno = formatStringType.getAnnotation(Format.class);
+      AnnotationMirror anno = formatStringType.getPrimaryAnnotation(Format.class);
       return formatAnnotationToCategories(anno);
     }
 

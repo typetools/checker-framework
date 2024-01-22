@@ -129,10 +129,6 @@ public class TypecheckResult {
         summaryBuilder.add("  " + missing.toString());
       }
     }
-
-    summaryBuilder.add(
-        "While type-checking "
-            + TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
     return summaryBuilder.toString();
   }
 
@@ -143,14 +139,14 @@ public class TypecheckResult {
 
     // We are passing `true` as the `noMsgText` argument because "-Anomsgtext"
     // is always added to the non-JVM options in `TypecheckExecutor.compile`.
-    final Set<TestDiagnostic> actualDiagnostics =
+    Set<TestDiagnostic> actualDiagnostics =
         TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics(), true);
 
-    final Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
+    Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
     unexpectedDiagnostics.addAll(actualDiagnostics);
     unexpectedDiagnostics.removeAll(expectedDiagnostics);
 
-    final List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
+    List<TestDiagnostic> missingDiagnostics = new ArrayList<>(expectedDiagnostics);
     missingDiagnostics.removeAll(actualDiagnostics);
 
     return new TypecheckResult(

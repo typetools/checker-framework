@@ -661,9 +661,10 @@ public abstract class JavaExpression {
    * <p>The Tree should be an expression or a statement that does not have a receiver or an implicit
    * receiver. For example, a local variable declaration.
    *
-   * @param path TreePath to tree
+   * @param path a tree path
    * @param enclosingType type of the enclosing type
-   * @return a new ClassName or ThisReference that is a JavaExpression object for the enclosingType
+   * @return a new {@link ClassName} or {@link ThisReference} that is a JavaExpression object for
+   *     the enclosingType
    */
   public static JavaExpression getPseudoReceiver(TreePath path, TypeMirror enclosingType) {
     if (TreePathUtil.isTreeInStaticScope(path)) {

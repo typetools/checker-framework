@@ -15,6 +15,7 @@ public class Unknown extends JavaExpression {
 
   /** String representation of the expression that has no corresponding {@code JavaExpression}. */
   private final String originalExpression;
+
   /**
    * Create a new Unknown JavaExpression.
    *

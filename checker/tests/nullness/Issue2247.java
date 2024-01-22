@@ -8,7 +8,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue2247 {
 
-  static @NonNull class DeclaredClass {}
+  static
+  @NonNull class DeclaredClass {}
 
   class ValidUseType {
 

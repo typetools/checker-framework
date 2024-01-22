@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -12,47 +12,56 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Represents field invariants, which the user states by writing {@code @FieldInvariant}. Think of
- * this as a set of (field, qualifier) pairs.
+ * this as a set of (field name, qualifier) pairs.
  *
- * <p>A FieldInvariants object may be malformed (inconsistent number of fields and qualifiers). In
- * this case, the BaseTypeVisitor will issue an error.
+ * <p>If a FieldInvariants object is malformed (inconsistent number of fields and qualifiers),
+ * BaseTypeVisitor will issue an error.
  */
 public class FieldInvariants {
 
   /**
    * A list of simple field names. A field may appear more than once in this list. This list has the
-   * same length as {@code qualifiers}.
+   * same length as {@link #qualifiers}.
    */
   private final List<String> fields;
 
   /**
-   * A list of qualifiers that apply to the field at the same index in {@code fields}. In a
-   * well-formed FieldInvariants, has the same length as {@code fields}.
+   * A list of qualifiers that apply to the field at the same index in {@link #fields}. In a
+   * well-formed FieldInvariants, has the same length as {@link #fields}.
    */
   private final List<AnnotationMirror> qualifiers;
 
+  /** The type factory associated with this. */
+  private final AnnotatedTypeFactory factory;
+
   /**
-   * Creates a new FieldInvariants object. The result is well-formed if length of qualifiers is
+   * Creates a new FieldInvariants object. The result is well-formed if the length of qualifiers is
    * either 1 or equal to length of {@code fields}.
    *
    * @param fields list of fields
-   * @param qualifiers list of qualifiers
+   * @param qualifiers list of qualifiers, or a single qualifier that applies to all fields
+   * @param factory the type factory
    */
-  public FieldInvariants(List<String> fields, List<AnnotationMirror> qualifiers) {
-    this(null, fields, qualifiers);
+  public FieldInvariants(
+      List<String> fields, List<AnnotationMirror> qualifiers, AnnotatedTypeFactory factory) {
+    this(null, fields, qualifiers, factory);
   }
 
   /**
    * Creates a new object with all the invariants in {@code other}, plus those specified by {@code
-   * fields} and {@code qualifiers}. The result is well-formed if length of qualifiers is either 1
-   * or equal to length of {@code fields}.
+   * fields} and {@code qualifiers}. The result is well-formed if the length of qualifiers is either
+   * 1 or equal to length of {@code fields}.
    *
    * @param other other invariant object, may be null
    * @param fields list of fields
    * @param qualifiers list of qualifiers
+   * @param factory the type factory
    */
   public FieldInvariants(
-      FieldInvariants other, List<String> fields, List<AnnotationMirror> qualifiers) {
+      @Nullable FieldInvariants other,
+      List<String> fields,
+      List<AnnotationMirror> qualifiers,
+      AnnotatedTypeFactory factory) {
     if (qualifiers.size() == 1) {
       while (fields.size() > qualifiers.size()) {
         qualifiers.add(qualifiers.get(0));
@@ -65,6 +74,7 @@ public class FieldInvariants {
 
     this.fields = Collections.unmodifiableList(fields);
     this.qualifiers = qualifiers;
+    this.factory = factory;
   }
 
   /** The simple names of the fields that have a qualifier. May contain duplicates. */
@@ -107,30 +117,29 @@ public class FieldInvariants {
   }
 
   /**
-   * Returns null if {@code superInvar} is a super invariant, otherwise returns the error message.
+   * Returns null if this is stronger than the given FieldInvariants, otherwise returns the error
+   * message. This is stronger if each of its qualifiers is a subtype of (or equal to) the
+   * respective qualfier in the given FieldInvariants.
    *
-   * @param superInvar the value to check for being a super invariant
-   * @param factory the type factory
-   * @return null if {@code superInvar} is a super invariant, otherwise returns the error message
+   * @param superInvar the value to check for being a weaker invariant
+   * @return null if this is stronger, otherwise returns an error message
    */
-  public DiagMessage isSuperInvariant(FieldInvariants superInvar, AnnotatedTypeFactory factory) {
-    QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+  public @Nullable DiagMessage isStrongerThan(FieldInvariants superInvar) {
+    QualifierHierarchy qualHierarchy = factory.getQualifierHierarchy();
     if (!this.fields.containsAll(superInvar.fields)) {
       List<String> missingFields = new ArrayList<>(superInvar.fields);
       missingFields.removeAll(fields);
-      return new DiagMessage(
-          Kind.ERROR, "field.invariant.not.found.superclass", String.join(", ", missingFields));
+      return DiagMessage.error(
+          "field.invariant.not.found.superclass", String.join(", ", missingFields));
     }
 
     for (String field : superInvar.fields) {
       List<AnnotationMirror> superQualifiers = superInvar.getQualifiersFor(field);
       List<AnnotationMirror> subQualifiers = this.getQualifiersFor(field);
       for (AnnotationMirror superA : superQualifiers) {
-        AnnotationMirror sub =
-            qualifierHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
-        if (sub == null || !qualifierHierarchy.isSubtype(sub, superA)) {
-          return new DiagMessage(
-              Kind.ERROR, "field.invariant.not.subtype.superclass", field, sub, superA);
+        AnnotationMirror sub = qualHierarchy.findAnnotationInSameHierarchy(subQualifiers, superA);
+        if (sub == null || !qualHierarchy.isSubtypeQualifiersOnly(sub, superA)) {
+          return DiagMessage.error("field.invariant.not.subtype.superclass", field, sub, superA);
         }
       }
     }

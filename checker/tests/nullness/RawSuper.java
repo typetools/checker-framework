@@ -48,6 +48,7 @@ public class RawSuper {
       super.nonRaw();
     }
   }
+
   // This test may be extraneous
   class C extends B {
     @NonNull Object cfield;

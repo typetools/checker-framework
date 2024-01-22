@@ -296,6 +296,10 @@ apply to the method itself rather than to some particular type.
   field to be non-null.
 
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
+  indicates a method postcondition.
+  With \<EnsuresNonNull>, the successful return (i.e., a non-exceptional
+  return) of the annotated method results in the given expressions being
+  non-null. See the Javadoc for examples of its use.
 \item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
   indicates a method postcondition.  With \<@EnsuresNonNull>, the given
   expressions are non-null after the method returns; this is useful for a
@@ -664,6 +668,7 @@ Chapter~\ref{suppressing-warnings}).  An example use is
     void myMethod() {
       @SuppressWarnings("nullness") // with argument x, getObject always returns a non-null value
       @NonNull Object o2 = getObject(x);
+    }
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
@@ -1021,7 +1026,7 @@ Section~\ref{declaration-annotations-moved}.
  ~io.reactivex.annotations.NonNull~ \\ \hline
  ~io.reactivex.rxjava3.annotations.NonNull~ \\ \hline
  ~javax.annotation.Nonnull~ \\ \hline
- ~// The field might contain a null value until it is persisted. \\ % comment refers to javax.validation.constraints.NotNull
+ % javax.validation.constraints.NotNull: The field might contain a null value until it is persisted.
  ~javax.validation.constraints.NotNull~ \\ \hline
  ~libcore.util.NonNull~ \\ \hline
  ~lombok.NonNull~ \\ \hline
@@ -2156,7 +2161,7 @@ class, or pass the command-line argument
 \<-AsuppressWarnings=initialization> when
 running the Nullness Checker.
 (For more about suppressing warnings, see
-\chapterpageref{suppressing-warnings}).  You will no longer get a guarantee
+\chapterpageref{suppressing-warnings}.)  You will no longer get a guarantee
 of no null pointer exceptions, but you can still use the Nullness Checker
 to find most of the null pointer problems in your code.
 

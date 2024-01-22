@@ -22,8 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class Heuristics {
 
   /**
-   * Determines whether a tree has a particular set of direct parents, ignoring blocks and
-   * parentheses.
+   * Returns true if a tree has a particular set of direct parents, ignoring blocks and parentheses.
    *
    * <p>For example, to test whether an expression (specified by {@code path}) is immediately
    * contained by an if statement which is immediately contained in a method, one would invoke:
@@ -169,6 +168,7 @@ public class Heuristics {
   public static class WithinTrueBranch extends Matcher {
     /** conditionMatcher for the condition */
     private final Matcher matcher;
+
     /**
      * @param conditionMatcher for the condition
      */

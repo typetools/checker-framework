@@ -7,12 +7,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Stores annotations from whole-program inference. For a given location such as a field or method,
@@ -52,7 +54,7 @@ public interface WholeProgramInferenceStorage<T> {
    * Get the annotations for a formal parameter type.
    *
    * @param methodElt the method or constructor Element
-   * @param i the parameter index (0-based)
+   * @param index_1based the parameter index (1-based)
    * @param paramATM the parameter type
    * @param ve the parameter variable
    * @param atypeFactory the type factory
@@ -60,7 +62,7 @@ public interface WholeProgramInferenceStorage<T> {
    */
   public T getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      @Positive int index_1based,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory);
@@ -152,13 +154,13 @@ public interface WholeProgramInferenceStorage<T> {
    * Adds a declaration annotation to a formal parameter.
    *
    * @param methodElt the method whose formal parameter will be annotated
-   * @param index the index of the parameter (0-indexed)
+   * @param index_1based the index of the parameter (1-indexed)
    * @param anno the annotation to add
    * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
    *     otherwise
    */
   public boolean addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index, AnnotationMirror anno);
+      ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno);
 
   /**
    * Adds an annotation to a class declaration.
@@ -169,6 +171,27 @@ public interface WholeProgramInferenceStorage<T> {
    *     otherwise
    */
   public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+
+  /**
+   * Return the list of declaration annotations inferred on the given method so far in this round of
+   * WPI.
+   *
+   * @param elt a method
+   * @return the declaration annotations inferred on elt so far (may be empty)
+   */
+  AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
+
+  /**
+   * Removes the given annotation from the given method element's inferred declaration annotation.
+   * If the given annotation was not in the list of inferred declaration annotations on the given
+   * method, calling this method is a no-op.
+   *
+   * @param methodElt a method element
+   * @param anno a declaration annotation to remove
+   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't
+   *     present)
+   */
+  boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
    * Obtain the type from a storage location.

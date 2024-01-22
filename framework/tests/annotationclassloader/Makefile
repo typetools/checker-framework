@@ -13,8 +13,6 @@ JAVAC = $(PROJECTDIR)/../../../checker/bin/javac
 
 FRAMEWORKJAR := $(PROJECTDIR)/../../dist/framework.jar
 
-STUBPARSERJAR := $(PROJECTDIR)/../../../../stubparser/javaparser-core/target/stubparser.jar
-
 CHECKERQUALJAR := $(PROJECTDIR)/../../../checker/dist/checker-qual.jar
 
 # build directories
@@ -32,7 +30,7 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD):${STUBPARSERJAR} \
+	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD) \
 	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
@@ -54,24 +52,24 @@ demo2:
 # gradle test usage:
 # loads from build directories
 load-from-dir-test:
-	$(JAVAC) \
-	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD):${STUBPARSERJAR} \
+	-$(JAVAC) \
+	  -processorpath $(DATAFLOWBUILD):$(JAVACUTILBUILD):$(FRAMEWORKBUILD) \
 	  -classpath $(PROJECTDIR):${CHECKERQUALBUILD} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
-	  LoaderTest.java > Out.txt 2>&1 || true
+	  LoaderTest.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # loads from framework.jar
 load-from-jar-test:
-	$(JAVAC) \
+	-$(JAVAC) \
 	  -processorpath $(FRAMEWORKJAR) \
 	  -classpath $(PROJECTDIR):${CHECKERQUALJAR} \
 	  -processor org.checkerframework.common.aliasing.AliasingChecker \
 	  -Anomsgtext \
 	  -ApermitMissingJdk \
-	  LoaderTest.java > Out.txt 2>&1 || true
+	  LoaderTest.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt

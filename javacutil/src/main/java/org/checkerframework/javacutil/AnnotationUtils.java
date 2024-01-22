@@ -3,7 +3,6 @@ package org.checkerframework.javacutil;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 import java.lang.annotation.Annotation;
@@ -44,7 +43,11 @@ import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotati
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.CollectionsPlume;
 
-/** A utility class for working with annotations. */
+/**
+ * A utility class for working with annotations.
+ *
+ * <p>Note: {@code AnnotationMirror}s are immutable.
+ */
 public class AnnotationUtils {
 
   // Class cannot be instantiated.
@@ -68,11 +71,29 @@ public class AnnotationUtils {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
       return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
     }
-    final DeclaredType annoType = annotation.getAnnotationType();
-    final TypeElement elm = (TypeElement) annoType.asElement();
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
     @SuppressWarnings("signature:assignment") // JDK needs annotations
     @CanonicalName String name = elm.getQualifiedName().toString();
     return name;
+  }
+
+  /**
+   * Returns the fully-qualified name of an annotation as a String.
+   *
+   * @param annotation the annotation whose name to return
+   * @return the fully-qualified name of an annotation as a String
+   */
+  public static final @CanonicalName @Interned String annotationNameInterned(
+      AnnotationMirror annotation) {
+    if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror) {
+      return ((AnnotationBuilder.CheckerFrameworkAnnotationMirror) annotation).annotationName;
+    }
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
+    @SuppressWarnings("signature:assignment") // JDK needs annotations
+    @CanonicalName String name = elm.getQualifiedName().toString();
+    return name.intern();
   }
 
   /**
@@ -82,8 +103,8 @@ public class AnnotationUtils {
    * @return the binary name of an annotation as a String
    */
   public static final @BinaryName String annotationBinaryName(AnnotationMirror annotation) {
-    final DeclaredType annoType = annotation.getAnnotationType();
-    final TypeElement elm = (TypeElement) annoType.asElement();
+    DeclaredType annoType = annotation.getAnnotationType();
+    TypeElement elm = (TypeElement) annoType.asElement();
     return ElementUtils.getBinaryName(elm);
   }
 
@@ -551,6 +572,45 @@ public class AnnotationUtils {
   // **********************************************************************
 
   /**
+   * Get the element with the name {@code elementName} of the annotation {@code anno}. The result
+   * has type {@code expectedType}. If there is no value for {@code elementName}, {@code
+   * defaultValue} is returned
+   *
+   * <p>This method is intended only for use when the class of the annotation is not on the user's
+   * classpath. This is for users of the Dataflow Framework that do not use the rest of the Checker
+   * Framework. Type-checkers can assume that checker-qual.jar is on the classpath and should use
+   * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
+   * #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
+   *
+   * @param anno the annotation whose element to access
+   * @param elementName the name of the element to access
+   * @param expectedType the type of the element and the return value
+   * @param defaultValue the value to return if the element is not present
+   * @param <T> the class of the type
+   * @return the value of the element with the given name
+   */
+  public static <T> T getElementValueNotOnClasspath(
+      AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, T defaultValue) {
+    Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
+
+    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+        valmap.entrySet()) {
+      ExecutableElement elem = entry.getKey();
+      if (elem.getSimpleName().contentEquals(elementName)) {
+        AnnotationValue val = entry.getValue();
+        try {
+          return expectedType.cast(val.getValue());
+        } catch (ClassCastException e) {
+          throw new BugInCF(
+              "getElementValueNotOnClasspath(%s, %s, %s): val=%s, val.getValue()=%s [%s]",
+              anno, elementName, expectedType, val, val.getValue(), val.getValue().getClass());
+        }
+      }
+    }
+    return defaultValue;
+  }
+
+  /**
    * Returns the values of an annotation's elements, including defaults. The method with the same
    * name in JavacElements cannot be used directly, because it includes a cast to
    * Attribute.Compound, which doesn't hold for annotations generated by the Checker Framework.
@@ -562,10 +622,8 @@ public class AnnotationUtils {
    * @see JavacElements#getElementValuesWithDefaults(AnnotationMirror)
    * @param ad annotation to examine
    * @return the values of the annotation's elements, including defaults
-   * @deprecated use a method that takes an {@link ExecutableElement}
    */
-  @Deprecated // 2021-03-29; do not remove, just make private
-  public static Map<? extends ExecutableElement, ? extends AnnotationValue>
+  private static Map<? extends ExecutableElement, ? extends AnnotationValue>
       getElementValuesWithDefaults(AnnotationMirror ad) {
     // Most annotations have no elements.
     Map<ExecutableElement, AnnotationValue> valMap = new ArrayMap<>(0);
@@ -580,29 +638,6 @@ public class AnnotationUtils {
       }
     }
     return valMap;
-  }
-
-  /**
-   * Verify whether the element with the name {@code elementName} exists in the annotation {@code
-   * anno}.
-   *
-   * <p>This method is intended for use only by the framework. Clients should use a method that
-   * takes an {@link ExecutableElement}.
-   *
-   * @param anno the annotation to examine
-   * @param elementName the name of the element
-   * @return whether the element exists in anno
-   * @deprecated use a method that takes an {@link ExecutableElement}
-   */
-  @Deprecated // 2021-03-30
-  public static boolean hasElementValue(AnnotationMirror anno, CharSequence elementName) {
-    Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = anno.getElementValues();
-    for (ExecutableElement elem : valmap.keySet()) {
-      if (elem.getSimpleName().contentEquals(elementName)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -626,15 +661,11 @@ public class AnnotationUtils {
    * @deprecated use {@link #getElementValue(AnnotationMirror, ExecutableElement, Class)} or {@link
    *     #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}
    */
-  @Deprecated // for use only by the framework
+  @Deprecated // for use only by the framework, not by clients
   public static <T> T getElementValue(
       AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
     Map<? extends ExecutableElement, ? extends AnnotationValue> valmap;
     if (useDefaults) {
-      @SuppressWarnings(
-          "deprecation" // remove when getElementValuesWithDefaults is made private and
-      // non-deprecated
-      )
       Map<? extends ExecutableElement, ? extends AnnotationValue> valmapTmp =
           getElementValuesWithDefaults(anno);
       valmap = valmapTmp;
@@ -732,31 +763,6 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code name} of the annotation {@code anno}. The result is an
-   * enum of type {@code T}.
-   *
-   * <p>This method is intended only for use by the framework. A checker implementation should use
-   * {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or {@link
-   * #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Enum)}.
-   *
-   * @param anno the annotation to disassemble
-   * @param elementName the name of the element to access
-   * @param expectedType the type of the element and the return value, an enum
-   * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
-   * @return the value of the element with the given name
-   * @deprecated use {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class)} or
-   *     {@link #getElementValueEnum(AnnotationMirror, ExecutableElement, Class, Enum)}
-   */
-  @Deprecated // 2021-03-29
-  public static <T extends Enum<T>> T getElementValueEnum(
-      AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
-    VarSymbol vs = getElementValue(anno, elementName, VarSymbol.class, useDefaults);
-    T value = Enum.valueOf(expectedType, vs.getSimpleName().toString());
-    return value;
-  }
-
-  /**
    * Get the element with the name {@code elementName} of the annotation {@code anno}, where the
    * element has an array type. One element of the result has type {@code expectedType}.
    *
@@ -807,32 +813,6 @@ public class AnnotationUtils {
   }
 
   /**
-   * Get the element with the name {@code elementName} of the annotation {@code anno}, or the
-   * default value if no element is present explicitly, where the element has an array type and the
-   * elements are {@code Enum}s. One element of the result has type {@code expectedType}.
-   *
-   * <p>This method is intended only for use by the framework. A checker implementation should use
-   * {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)} or {@link
-   * #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class, Enum[])}.
-   *
-   * @param anno the annotation to disassemble
-   * @param elementName the name of the element to access
-   * @param expectedType the component type of the element and of the return type, an enum
-   * @param <T> the class of the type
-   * @param useDefaults whether to apply default values to the element
-   * @return the value of the element with the given name
-   * @deprecated use {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class)}
-   *     or {@link #getElementValueEnumArray(AnnotationMirror, ExecutableElement, Class, Enum[])}
-   */
-  @Deprecated // 2021-03-29
-  public static <T extends Enum<T>> T[] getElementValueEnumArray(
-      AnnotationMirror anno, CharSequence elementName, Class<T> expectedType, boolean useDefaults) {
-    @SuppressWarnings("unchecked")
-    List<AnnotationValue> la = getElementValue(anno, elementName, List.class, useDefaults);
-    return annotationValueListToEnumArray(la, expectedType);
-  }
-
-  /**
    * Get the Name of the class that is referenced by element {@code elementName}.
    *
    * <p>This is a convenience method for the most common use-case. It is like {@code
@@ -858,28 +838,6 @@ public class AnnotationUtils {
     return result;
   }
 
-  /**
-   * Get the list of Names of the classes that are referenced by element {@code elementName}. It
-   * fails if the class wasn't found.
-   *
-   * <p>This method is intended only for use by the framework. A checker implementation should use
-   * {@link #getElementValueClassNames(AnnotationMirror, ExecutableElement)}.
-   *
-   * @param anno the annotation whose field to access; it must be present in the annotation
-   * @param annoElement the element/field of {@code anno} whose content is a list of classes
-   * @param useDefaults whether to apply default values to the element
-   * @return the names of classes in {@code anno.annoElement}
-   * @deprecated use {@link #getElementValueClassNames(AnnotationMirror,ExecutableElement)}
-   */
-  @Deprecated // 2021-03-29
-  public static List<@CanonicalName Name> getElementValueClassNames(
-      AnnotationMirror anno, CharSequence annoElement, boolean useDefaults) {
-    List<Type.ClassType> la =
-        getElementValueArray(anno, annoElement, Type.ClassType.class, useDefaults);
-    return CollectionsPlume.<Type.ClassType, @CanonicalName Name>mapList(
-        (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
-  }
-
   // **********************************************************************
   // Annotation values: efficient extractors that take an ExecutableElement
   // **********************************************************************
@@ -900,7 +858,7 @@ public class AnnotationUtils {
    * @param <T> the class of the type
    * @return the value of the element with the given name
    */
-  public static <T> @Nullable T getElementValue(
+  public static <T> T getElementValue(
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {
@@ -926,7 +884,7 @@ public class AnnotationUtils {
    * @param defaultValue the value to return if the element is not present
    * @return the value of the element with the given name
    */
-  public static <T> @Nullable T getElementValue(
+  public static <T> T getElementValue(
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType, T defaultValue) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {
@@ -1352,7 +1310,7 @@ public class AnnotationUtils {
    * <p>To test containment, use {@link #annotationValueContains(AnnotationValue, String)} or {@link
    * #annotationValueContainsToString(AnnotationValue, String)}.
    *
-   * @param avList an AnnotationValue that is null or a list of Strings
+   * @param avList an AnnotationValue that is a list of Strings
    * @param expectedType the component type of the argument and of the return type, an enum
    * @param <T> the class of the type
    * @return the annotation value, converted to a list

@@ -372,7 +372,6 @@ def main(argv):
 
     print_step("Push Step 3: Run development sanity tests")  # SEMIAUTO
     if prompt_yes_no("Perform this step?", True):
-
         print_step("3a: Run javac sanity test on development release.")
         if prompt_yes_no("Run javac sanity test on development release?", True):
             javac_sanity_check(dev_checker_website, new_cf_version)

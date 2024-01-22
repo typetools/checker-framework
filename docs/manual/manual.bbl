@@ -443,12 +443,12 @@ Jianchu Li.
 Florian Lanzinger, Alexander Weigl, Mattias Ulbrich, and Werner Dietl.
 \newblock Scalability and precision by combining expressive type systems and
   deductive verification.
-\newblock {\em ACM Proceedings on Programming Languages}, 5(OOPSLA), October
-  2021.
+\newblock {\em Proceedings of the ACM on Programming Languages}, 5(OOPSLA),
+  October 2021.
 
 \bibitem[Mac16]{Mackie2016}
 Christopher~A. Mackie.
-\newblock Preventing signedness errors in numerical computations in java.
+\newblock Preventing signedness errors in numerical computations in {Java}.
 \newblock In {\em FSE 2016: Proceedings of the {ACM} {SIGSOFT} 24th Symposium
   on the Foundations of Software Engineering}, pages 1148--1150, Seattle, WA,
   USA, November 2016.
@@ -657,7 +657,7 @@ Mohsen Vakilian, Amarin Phaosawasdi, Michael~D. Ernst, and Ralph~E. Johnson.
 Di~Wang.
 \newblock Interval type inference: Improvements and evaluations.
 \newblock Master's thesis, University of Waterloo Department of Electrical and
-  Computer Engineering, Waterloo, Ontario, Canada, 2021.
+  Computer Engineering, Waterloo, Ontario, Canada, December 2021.
 
 \bibitem[WKSE14]{WeitzKSE2014}
 Konstantin Weitz, Gene Kim, Siwakorn Srisakaokul, and Michael~D. Ernst.

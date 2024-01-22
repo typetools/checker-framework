@@ -1,0 +1,144 @@
+#!/bin/bash
+
+# This command counts the approximate frequency of each distinct reason for
+# warning suppressions, in all files under the current directory.
+# To invoke it, pass a type system name; for example:
+#   count-suppression-reasons nullness
+# The argument to this script is actually a regular expression.
+# Command-line arguments (which must appear before the type system name):
+#   -d       debug
+#   -i REGEX include matches for the grep basic regex
+#   -x REGEX exclude matches for the grep basic regex
+#   -y REGEX exclude matches for the grep basic regex
+# The -i argument (if any) is processed before the -x argument (if any).
+
+# The "reason" for a warning suppression is the Java line comment after it:
+#   @SuppressWarnings("nullness") // here is the reason
+# If warning suppression text contains a colon, this script prints only
+# the text before the colon, under the assumption that the initial text
+# is a category name.  For example:
+#   @SuppressWarnings("nullness") // short reason: here is a longer explanation
+# The script also works when there are multiple warning suppression
+# strings on different lines, or when there is an error key:
+#   @SuppressWarnings({
+#     "nullness:dereference", // reason for nullness suppression
+#     "interning:type.incompatible" // reason for interning suppression
+#   })
+
+# Inclusions (-i) are processed before exclusions (-x, -y).
+
+# Some reasons are ignored, notably "true positive" and
+# "count-suppression-reasons-ignore"; see below for the full list.
+
+# This script is useful to determine the most frequent reasons for warning
+# suppressions, to help checker developers decide what featuers to add to
+# their type systems.  However, use common.util.count.AnnotationStatistics
+# to count the total number of warning suppressions (for example, to report
+# in a paper), because this script gives only an approximate count.
+
+# The -y command-line argument is exactly like -x, but avoids the need
+# for the user to write a complex regex.
+
+# To debug, pass the -d command-line argument.
+debug=0
+
+while getopts di:x:y: flag
+do
+    case "${flag}" in
+        d) debug=1;;
+        i) include=${OPTARG};;
+        x) exclude=${OPTARG};;
+        y) excludey=${OPTARG};;
+        \?) echo "Invalid option -$OPTARG"; exit 1;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED="gsed"
+    GREP="ggrep"
+else
+    SED="sed"
+    GREP="grep"
+fi
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 TYPESYSTEM" >&2
+  exit 1
+fi
+
+regex="$1"
+
+# If argument is a compound checker, make the regex match them all.
+if [ "$regex" = "nullness" ]; then
+    regex="\(nullness\|initialization\|keyfor\)"
+fi
+if [ "$regex" = "index" ]; then
+    regex="\(index\|lessthan\|lowerbound\|samelen\|searchindex\|substringindex\|upperbound\)"
+fi
+if [ "$regex" = "resourceleak" ]; then
+  regex="\(mustcall\|objectconstruction\|resourceleak\)"
+fi
+
+# Diagnostics
+if [ "$debug" -ne "0" ]; then
+  echo "checker regex=${regex}"
+fi
+
+greplines=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
+countedreasons=$(mktemp /tmp/count-suppression-reasons."$(date +%Y%m%d-%H%M%S)"-XXX)
+
+# These are the two types of matching lines:
+#  * "checkername" or "chekername:..."
+#    This matches occurrences within @SuppressWarnings.  The regex does not
+#    include "@SuppressWarnings" because it might appear on the previous line.
+#  * @AssumeAssertion(checkername)
+# This grep command captures a few stray lines; users should ignore them.
+# This grep command assumes that tests are not annotated, and it hard-codes ignoring "annotated-jdk", "jdk", "true positive", "TP" (as an alias for "true positive"), and "count-suppression-reasons-ignore".
+${GREP} -n --recursive --include='*.java' "\"${regex}[:\"]\(.*[^;]\)\?\(\$\|//\)\|@AssumeAssertion(${regex})" \
+    | grep -v "@AnnotatedFor" | grep -v "/tests/" \
+    | grep -v "/annotated-jdk/" | grep -v "/jdk/" | grep -v "^jdk/" | grep -v "true positive" | grep -v "// TP" | grep -v "count-suppression-reasons-ignore" > "${greplines}"
+
+if [ -n "$include" ] ; then
+    mv "${greplines}" "${greplines}-i"
+    grep -- "$include" "${greplines}-i" > "${greplines}"
+fi
+if [ -n "$exclude" ] ; then
+    mv "${greplines}" "${greplines}-x"
+    grep -v -- "$exclude" "${greplines}-x" > "${greplines}"
+fi
+if [ -n "$excludey" ] ; then
+    mv "${greplines}" "${greplines}-y"
+    grep -v -- "$excludey" "${greplines}-y" > "${greplines}"
+fi
+
+
+total=$(wc -l < "${greplines}")
+## Don't output a total, to avoid people using this approximate count.
+# echo "Total: $total"
+# shellcheck disable=SC2002
+cat "${greplines}" \
+    | ${SED} 's/.*\/\/ //g' \
+    | ${SED} "s/.*@AssumeAssertion([^)])[ :]*\([^\"]\+\)\";/\1/g" \
+    | ${SED} 's/\([^0-9]\): [^:].*/\1/' \
+    | ${SED} 's/ \+$//' \
+    | sort | uniq -c | sort -rg > "${countedreasons}"
+
+# Add leading percentages to `uniq -c` output.  Note that it rounds *down* to the nearest integer.
+# (Digits after the decimal don't make a practical difference.)
+while read -r line; do
+    count=$(echo "$line" | cut -f1 -d " ");
+    content=$(echo "$line" | cut -f2- -d " ");
+    percent=$(echo "scale=0; (100*$count/$total);" | bc);
+    if [ "$debug" -eq "0" ]; then
+        printf "%d%%\t%s\n" "$percent" "$content";
+    else
+        printf "%d%%\t%s\t%s\n" "$percent" "$count" "$content";
+    fi;
+done < "${countedreasons}";
+
+if [ "$debug" -eq "0" ]; then
+  rm -f "${greplines}" "${countedreasons}"
+else
+  echo "Total is $total, Intermediate output is in: ${greplines} ${countedreasons}"
+fi
