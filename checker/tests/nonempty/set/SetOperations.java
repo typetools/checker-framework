@@ -44,4 +44,14 @@ class SetOperations {
       @NonEmpty Set<Integer> nums3 = nums;
     }
   }
+
+  void testRemove() {
+    Set<Integer> nums = new HashSet<>();
+    nums.add(1);
+    @NonEmpty Set<Integer> nums2 = nums;
+    nums.remove(1);
+
+    // :: error: (assignment)
+    @NonEmpty Set<Integer> nums3 = nums;
+  }
 }

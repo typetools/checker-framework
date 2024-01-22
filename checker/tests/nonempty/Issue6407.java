@@ -1,16 +1,20 @@
+import java.util.LinkedList;
+import java.util.List;
 import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nonempty.qual.UnknownNonEmpty;
 
 class Issue6407 {
-  // void usesJdk() {
-  //   // items initially has the type @UnknownNonEmpty
-  //   List<String> items = new LinkedList<>();
-  //   items.add("hello");
-  //   @NonEmpty List<String> bar = items; // OK
-  //   items.remove("hello");
-  //   @NonEmpty List<String> baz = items; // I expect an error here
-  // }
+
+  void usesJdk() {
+    // items initially has the type @UnknownNonEmpty
+    List<String> items = new LinkedList<>();
+    items.add("hello");
+    @NonEmpty List<String> bar = items; // OK
+    items.remove("hello");
+    // :: error: (assignment)
+    @NonEmpty List<String> baz = items; // I expect an error here
+  }
 
   static class MyList<E> {
     @SuppressWarnings("contracts.postcondition") // nonfunctional class
@@ -48,10 +52,10 @@ class Issue6407 {
     @NonEmpty MyList<String> baz = items;
   }
 
-  //   void initialRemoval() {
-  //     // items initially has the type @UnknownNonEmpty
-  //     @UnknownNonEmpty MyList<String> items = new MyList<>();
-  //     // :: error: (method.invocation)
-  //     items.remove("hello");
-  //   }
+  void initialRemoval() {
+    // items initially has the type @UnknownNonEmpty
+    MyList<String> items = new MyList<>();
+    // :: error: (method.invocation)
+    items.remove("hello");
+  }
 }
