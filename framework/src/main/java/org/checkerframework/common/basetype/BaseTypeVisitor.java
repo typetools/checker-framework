@@ -2251,6 +2251,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (isPreOrPostConditionAnnotation(annoName)) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
+      System.out.printf("anno = %s for annoName = %s for tree = %s%n", anno, annoName, tree);
+      // TODO: `getQualifierEnforcedByContractAnnotation` does not work for @PreconditionAnnotation
+      // or @PostconditionAnnotation.  Should I extend the method to handle that, or should I put
+      // the logic here and avoid calling the method?
       AnnotationMirror qualifier =
           atypeFactory.getContractsFromMethod().getQualifierEnforcedByContractAnnotation(anno);
       if (qualifier != null) {
