@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
-// @skip-test until JDK is annotated with Non-Empty type qualifiers
-
 class EnsuresNonEmptyTest {
 
   @EnsuresNonEmpty("#1")

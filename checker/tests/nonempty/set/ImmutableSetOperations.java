@@ -1,8 +1,6 @@
 import java.util.Set;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
-// @skip-test until JDK is annotated with Non-Empty type qualifiers
-
 class ImmutableSetOperations {
 
   void testCreateEmptyImmutableSet() {
