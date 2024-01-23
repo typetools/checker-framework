@@ -685,8 +685,9 @@ Type-checking modes:  enable/disable functionality
 \item \<-Ainfer=\emph{outputformat}>
   Output suggested annotations for method signatures and fields.
   These annotations may reduce the number of type-checking
-  errors when running type-checking in the future; see
-  Section~\ref{whole-program-inference}.
+  errors on subsequent type-checking runs.  This option is
+  typically used by whole-program inference (WPI; see
+  Section~\ref{whole-program-inference}) rather than by programmers.
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
