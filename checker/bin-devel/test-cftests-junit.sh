@@ -26,17 +26,16 @@ sleep 180
 
 # Find the Java process started by Gradle. Modify the grep pattern if needed.
 # This command may vary depending on how your Java process is named.
-java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | sort | tail -n 1)
 
 # Check if we have found the PID
-if [ -z "$java_pid" ]; then
-    exit 1
-fi
 
 # Loop to run jstack every minute until the Gradle process ends
 while kill -0 "$gradle_pid" >/dev/null 2>&1; do
-    echo "Dumping stack for PID $java_pid"
-    jstack "$java_pid"
+    java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | sort | tail -n 1)
+    if [ -n "$java_pid" ]; then
+        echo "Dumping stack for PID $java_pid"
+        jstack "$java_pid" || true
+    fi
     sleep 60
 done
 
