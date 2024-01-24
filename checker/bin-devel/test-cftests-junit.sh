@@ -11,7 +11,12 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
-pkill java
+pids=$(jps | grep Gradle | awk '{print $1}')
+
+for pid in $pids; do
+    echo "Killing process with PID $pid"
+    kill -9 $pid
+done
 
 # Start the Gradle command in the background
 ./gradlew test --console=plain --warning-mode=all --no-daemon --no-parallel &
