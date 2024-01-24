@@ -69,6 +69,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
   @Override
   public Void scan(Tree tree, Void p) {
     if ((tree != null) && (treeKinds != null) && treeKinds.contains(tree.getKind())) {
+      // TODO: Also output the tree itself: TreeUtils.toStringTruncated(tree, 60)
       checker.reportError(tree, "Tree.Kind." + tree.getKind());
     }
     return super.scan(tree, p);
