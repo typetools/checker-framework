@@ -14,7 +14,7 @@ source "$SCRIPTDIR"/clone-related.sh
 pids=$(jps | grep Gradle | awk '{print $1}')
 
 for pid in $pids; do
-    kill -9 $pid
+    kill -9 "$pid"
 done
 
 # Start the Gradle command in the background
@@ -26,7 +26,7 @@ sleep 180
 
 # Find the Java process started by Gradle. Modify the grep pattern if needed.
 # This command may vary depending on how your Java process is named.
-java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | tail -n 1)
+java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | sort | tail -n 1)
 
 # Check if we have found the PID
 if [ -z "$java_pid" ]; then
