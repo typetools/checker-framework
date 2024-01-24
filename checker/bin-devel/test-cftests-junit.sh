@@ -18,7 +18,7 @@ for pid in $pids; do
 done
 
 # Start the Gradle command in the background
-./gradlew test --console=plain --warning-mode=all --no-daemon --no-parallel &
+./gradlew test --console=plain --warning-mode=all &
 gradle_pid=$!
 
 # Wait a bit for JVM to start
