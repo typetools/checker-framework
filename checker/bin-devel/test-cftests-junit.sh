@@ -11,6 +11,8 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
+killall java || true
+
 # Start the Gradle command in the background
 ./gradlew test --console=plain --warning-mode=all --no-daemon --no-parallel &
 gradle_pid=$!
