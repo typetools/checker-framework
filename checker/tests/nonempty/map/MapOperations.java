@@ -1,5 +1,4 @@
 import java.util.Map;
-
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 class MapOperations {
