@@ -31,7 +31,9 @@ sleep 180
 
 # Loop to run jstack every minute until the Gradle process ends
 while kill -0 "$gradle_pid" >/dev/null 2>&1; do
-    java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | sort | tail -n 1)
+    # print all Java processes first to help with debugging
+    jps
+    java_pid=$(jps | grep GradleWorkerMain | awk '{print $1}' | sort -n | tail -n 1)
     if [ -n "$java_pid" ]; then
         echo "Dumping stack for PID $java_pid"
         jstack "$java_pid" || true
