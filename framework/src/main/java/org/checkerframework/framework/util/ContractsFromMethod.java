@@ -245,8 +245,8 @@ public class ContractsFromMethod {
    * @param argumentAnno annotation containing the element {@code values}, or {@code null}
    * @param argumentRenaming renaming of argument names, which maps from names in {@code
    *     argumentAnno} to names used in the returned annotation, or {@code null}
-   * @return a qualifier whose type is that of {@code contract.qualifier}, or an alias for it, or
-   *     null if it is not a supported qualifier of the type system
+   * @return a qualifier whose type is that of {@code contractAnno.qualifier}, or an alias for it,
+   *     or null if it is not a supported qualifier of the type system
    */
   private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno,

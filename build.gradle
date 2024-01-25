@@ -28,8 +28,6 @@ repositories {
 }
 
 ext {
-  release = false
-
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
@@ -765,6 +763,7 @@ subprojects {
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
+    relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
     relocate 'org.apache', 'org.checkerframework.org.apache'
     relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
     relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
@@ -777,13 +776,6 @@ subprojects {
     relocate 'plume', 'org.checkerframework.plume'
 
     exclude '**/module-info.class'
-
-    doFirst {
-      if (release) {
-        // Only relocate JavaParser during a release:
-        relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-      }
-    }
   }
 
   if (!project.name.startsWith('checker-qual-android')) {
@@ -1076,17 +1068,13 @@ task buildAll(group: 'Build') {
     dependsOn("${subproject.name}:sourcesJar")
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
+  dependsOn('checker:assembleForJavac')
 }
 
 task releaseBuild(group: 'Build') {
-  description 'Build everything required for a release'
+  description 'Cleans, then builds everything required for a release'
   dependsOn(clean)
-  doFirst {
-    release = true
-  }
-  // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
-  finalizedBy(buildAll)
-  finalizedBy('checker:assembleForJavac')
+  dependsOn(buildAll)
 }
 
 // No group so it does not show up in the output of `gradlew tasks`

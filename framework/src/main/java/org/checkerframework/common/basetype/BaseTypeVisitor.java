@@ -272,7 +272,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
   private final boolean warnRedundantAnnotations;
 
-  /** The tree of the enclosing method that is currently being visited. */
+  /** The tree of the enclosing method that is currently being visited, if any. */
   protected @Nullable MethodTree methodTree = null;
 
   /**
@@ -2251,16 +2251,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
-    TypeElement anno = (TypeElement) TreeInfo.symbol((JCTree) tree.getAnnotationType());
+    TypeElement annoType = (TypeElement) TreeInfo.symbol((JCTree) tree.getAnnotationType());
 
-    Name annoName = anno.getQualifiedName();
+    Name annoName = annoType.getQualifiedName();
     if (annoName.contentEquals(DefaultQualifier.class.getName())
         || annoName.contentEquals(SuppressWarnings.class.getName())) {
       // Skip these two annotations, as we don't care about the arguments to them.
       return null;
     }
 
-    List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
+    List<ExecutableElement> methods = ElementFilter.methodsIn(annoType.getEnclosedElements());
     // Mapping from argument simple name to its annotated type.
     Map<String, AnnotatedTypeMirror> annoTypes = ArrayMap.newArrayMapOrHashMap(methods.size());
     for (ExecutableElement meth : methods) {
