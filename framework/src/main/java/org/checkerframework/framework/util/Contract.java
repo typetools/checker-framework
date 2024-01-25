@@ -38,7 +38,10 @@ public abstract class Contract {
   /** The annotation on the type of expression, according to this contract. */
   public final AnnotationMirror annotation;
 
-  /** The annotation that expressed this contract; used for diagnostic messages. */
+  /**
+   * The annotation that expressed this contract; used for diagnostic messages, but not for the
+   * location of the diagnostic message.
+   */
   public final AnnotationMirror contractAnnotation;
 
   // This is redundant with the contract's class and is not used in this file, but the field
