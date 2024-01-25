@@ -947,7 +947,7 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      //aamaxParallelForks = Integer.MAX_VALUE
+      //aaamaxParallelForks = Integer.MAX_VALUE
 
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
