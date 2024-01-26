@@ -12,6 +12,11 @@
     {
       "matchPackageNames": ["com.amazonaws:aws-java-sdk-bom"],
       "schedule": ["before 3am on the first day of the month"]
+    },
+    {
+      "description": "We want specifically version 3.3.2, which caused a crash before",
+      "matchPackageNames": ["org.apache.spark:spark-sql_2.12"],
+      "enabled": false
     }
   ]
 }
