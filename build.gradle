@@ -937,12 +937,9 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // Run tests in parallel, but not on CI.  Azure Pipelines CI jobs have the TF_BUILD env var set.
-      String tfBuild = System.getenv('TF_BUILD')
-      if (!tfBuild?.equals('True')) {
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
         maxParallelForks = Integer.MAX_VALUE
-      } else {
-        println("Disabling parallel tests on CI")
       }
 
       if (project.name.is('checker')) {
