@@ -282,10 +282,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     Effect targetEffect = getDeclaredEffect(methodElt);
     if (targetEffect.isPoly()) {
       AnnotatedTypeMirror srcType = null;
-      if (tree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-        ExpressionTree src = ((MemberSelectTree) tree.getMethodSelect()).getExpression();
+      ExpressionTree methodSelect = tree.getMethodSelect();
+      if (methodSelect.getKind() == Tree.Kind.MEMBER_SELECT) {
+        ExpressionTree src = ((MemberSelectTree) methodSelect).getExpression();
         srcType = getAnnotatedType(src);
-      } else if (tree.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
+      } else if (methodSelect.getKind() == Tree.Kind.IDENTIFIER) {
         // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
         if (callerReceiver == null) {
           // Not enought information provided to instantiate this type-polymorphic effects

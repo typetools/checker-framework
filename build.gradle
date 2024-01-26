@@ -15,7 +15,7 @@ plugins {
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.24.0'
+  id 'com.diffplug.spotless' version '6.25.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -28,8 +28,6 @@ repositories {
 }
 
 ext {
-  release = false
-
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
@@ -188,16 +186,17 @@ allprojects { currentProj ->
   def perProjectDoNotFormat = [
     'checker': [
       'bin-devel/.plume-scripts/**',
+      'dist/**',
       'tests/ainfer-*/annotated/*',
-      'tests/nullness-javac-errors/*',
-      'tests/calledmethods-delomboked/*',
       'tests/build/**',
-      'dist/**'
+      'tests/calledmethods-delomboked/*',
+      'tests/nullness-javac-errors/*',
+      'tests/returnsreceiverdelomboked/*',
     ],
     'dataflow': ['manual/examples/'],
     'framework': [
+      'tests/build/**',
       'tests/returnsrcvrdelomboked/*',
-      'tests/build/**'
     ],
   ]
   spotless {
@@ -754,6 +753,7 @@ subprojects {
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
+    relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
     relocate 'org.apache', 'org.checkerframework.org.apache'
     relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
     relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
@@ -766,13 +766,6 @@ subprojects {
     relocate 'plume', 'org.checkerframework.plume'
 
     exclude '**/module-info.class'
-
-    doFirst {
-      if (release) {
-        // Only relocate JavaParser during a release:
-        relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-      }
-    }
   }
 
   if (!project.name.startsWith('checker-qual-android')) {
@@ -944,7 +937,11 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      maxParallelForks = Integer.MAX_VALUE
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
+        maxParallelForks = Integer.MAX_VALUE
+      }
 
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
@@ -1065,17 +1062,13 @@ task buildAll(group: 'Build') {
     dependsOn("${subproject.name}:sourcesJar")
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
+  dependsOn('checker:assembleForJavac')
 }
 
 task releaseBuild(group: 'Build') {
-  description 'Build everything required for a release'
+  description 'Cleans, then builds everything required for a release'
   dependsOn(clean)
-  doFirst {
-    release = true
-  }
-  // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
-  finalizedBy(buildAll)
-  finalizedBy('checker:assembleForJavac')
+  dependsOn(buildAll)
 }
 
 // No group so it does not show up in the output of `gradlew tasks`
