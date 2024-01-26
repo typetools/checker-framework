@@ -937,7 +937,11 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      maxParallelForks = Integer.MAX_VALUE
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
+        maxParallelForks = Integer.MAX_VALUE
+      }
 
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
