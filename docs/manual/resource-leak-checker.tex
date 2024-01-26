@@ -634,8 +634,7 @@ then verify the code using a method other than the Resource Leak Checker.
 
 \sectionAndLabel{Resource Leak Checker Annotation Inference Algorithm}{resource-leak-checker-inference-algo}
 
-We have developed a specialized algorithm to infer annotations for
-the Resource Leak Checker. The RLC uses this algorithm by default
+The Resource Leak Chceker uses a specialized algorithm to infer annotations
 when the \<-Ainfer> flag is passed, instead of the standard
 whole-program-inference (WPI) algorithm described in Section
 \ref{whole-program-inference}. To use WPI in addition to the specialized algorithm for the Resource
