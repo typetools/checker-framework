@@ -128,6 +128,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     AnnotatedExecutableType result =
         (AnnotatedExecutableType) f.toAnnotatedType(elt.asType(), false);
     result.setElement(elt);
+    f.initializeAtm(result);
+
     // Make sure the return type field gets initialized... otherwise
     // some code throws NPE. This should be cleaned up.
     result.getReturnType();

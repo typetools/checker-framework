@@ -230,6 +230,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     AnnotatedTypeMirror result = f.type(tree);
     assert result instanceof AnnotatedWildcardType;
+    f.initializeAtm(result);
 
     // for wildcards unlike type variables there are bounds that differ in type from
     // result.  These occur for RAW types.  In this case, use the newly created bound

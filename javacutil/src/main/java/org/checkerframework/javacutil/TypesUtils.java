@@ -810,6 +810,19 @@ public final class TypesUtils {
     return (DeclaredType) syms.objectType;
   }
 
+  public static TypeMirror getTypeVariableLowerBound(
+      TypeVariable typeVariable, ProcessingEnvironment env) {
+    TypeMirror lb = typeVariable.getLowerBound();
+    if (lb != null) {
+      return lb;
+    }
+
+    // Use bottom type to ensure there is a lower bound.
+    Context context = ((JavacProcessingEnvironment) env).getContext();
+    Symtab syms = Symtab.instance(context);
+    return syms.botType;
+  }
+
   /**
    * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
    * (called upperBound there) and jdk8u.

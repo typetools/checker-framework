@@ -42,6 +42,7 @@ import org.plumelib.util.StringsPlume;
  * initializer method is called for a particular bound, the entirety of that bound, including
  * circular references, will be created.
  */
+@Deprecated
 public class BoundsInitializer {
   // ============================================================================================
   // Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or
@@ -153,7 +154,7 @@ public class BoundsInitializer {
    * @param typeVar the type variable whose lower bound is being initialized
    */
   public static void initializeBounds(AnnotatedTypeVariable typeVar) {
-    initializeBounds(typeVar, Collections.singletonMap(typeVar.getUnderlyingType(), typeVar));
+    initializeBounds(typeVar, Collections.emptyMap());
   }
 
   /**

@@ -1088,14 +1088,14 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         return typeArgs;
       } else if (isUnderlyingTypeRaw()) {
         // Initialize the type arguments with wildcards marks as type arguments from raw types.
-        BoundsInitializer.initializeTypeArgs(this);
+        BoundsInitializer2.initializeTypeArgs(this, atypeFactory);
         return typeArgs;
       } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
         typeArgs = Collections.emptyList();
         return typeArgs;
       } else {
         // Initialize type argument for a non-raw declared type that has type arguments/
-        BoundsInitializer.initializeTypeArgs(this);
+        BoundsInitializer2.initializeTypeArgs(this, atypeFactory);
         return typeArgs;
       }
     }
@@ -1763,7 +1763,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getLowerBound() {
       if (lowerBound == null) { // lazy init
-        BoundsInitializer.initializeBounds(this);
+        BoundsInitializer2.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return lowerBound;
@@ -1831,7 +1831,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getUpperBound() {
       if (upperBound == null) { // lazy init
-        BoundsInitializer.initializeBounds(this);
+        BoundsInitializer2.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return upperBound;
@@ -2097,7 +2097,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
-        BoundsInitializer.initializeSuperBound(this);
+        BoundsInitializer2.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.superBound;
@@ -2127,7 +2127,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getExtendsBound() {
       if (extendsBound == null) {
-        BoundsInitializer.initializeExtendsBound(this);
+        BoundsInitializer2.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.extendsBound;
