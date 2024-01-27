@@ -195,7 +195,7 @@ allprojects { currentProj ->
     'dataflow': ['manual/examples/'],
     'framework': [
       'tests/build/**',
-      'tests/returnsreceiverdelomboked/',
+      'tests/returnsreceiverdelomboked/*',
     ],
   ]
   spotless {
