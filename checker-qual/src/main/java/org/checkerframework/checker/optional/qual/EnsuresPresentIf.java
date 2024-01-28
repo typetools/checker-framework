@@ -61,11 +61,11 @@ public @interface EnsuresPresentIf {
   boolean result();
 
   /**
-   * Returns the Java expressions of type Optional&lt;T&gt; that are present after the method
+   * Returns the Java expressions of type {@code Optional<T>} that are present after the method
    * returns the given result.
    *
-   * @return the Java expressions of type Optional&lt;T&gt; that are present after the method
-   *     returns the given result.
+   * @return the Java expressions of type {@code Optional<T>} that are present after the method
+   *     returns the given result
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();

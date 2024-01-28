@@ -30,7 +30,7 @@ public class ClassQPTypeVarTest {
   }
 
   void use(@Untainted Buffer ub, @Tainted Buffer tb) {
-    // :: error: (type.argument)
+    // :: error: (type.arguments.not.inferred)
     identity(ub);
     identity(tb); // ok
   }

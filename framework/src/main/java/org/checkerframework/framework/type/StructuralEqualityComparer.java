@@ -10,6 +10,7 @@ import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -44,14 +45,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   @Override
   public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
-      // If one of the types is the NULL type, compare main qualifiers only.
-      return arePrimaryAnnosEqual(type1, type2);
-    }
-
-    if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
-      return type1.atypeFactory.ignoreUninferredTypeArguments;
-    }
 
     return super.defaultAction(type1, type2, p);
   }
@@ -247,9 +240,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         } else {
           AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
           AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
-          if (type1.atypeFactory.ignoreUninferredTypeArguments
-              && (wildcardType1.isUninferredTypeArgument()
-                  || wildcardType2.isUninferredTypeArgument())) {
+          if (type1.atypeFactory.ignoreRawTypeArguments
+              && (wildcardType1.isTypeArgOfRawType() || wildcardType2.isTypeArgOfRawType())) {
             result = true;
           } else {
             AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
@@ -301,6 +293,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return arePrimaryAnnosEqual(type1, type2);
   }
 
+  @Override
+  public Boolean visitNull_Null(AnnotatedNullType type1, AnnotatedNullType type2, Void unused) {
+    return arePrimaryAnnosEqual(type1, type2);
+  }
+
   /**
    * Two type variables are equal if:
    *
@@ -342,35 +339,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return pastResult;
     }
 
-    if (type1.atypeFactory.ignoreUninferredTypeArguments
-        && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
+    if (type1.atypeFactory.ignoreRawTypeArguments
+        && (type1.isTypeArgOfRawType() || type2.isTypeArgOfRawType())) {
       return true;
     }
 
     Boolean result =
         areEqual(type1.getExtendsBound(), type2.getExtendsBound())
             && areEqual(type1.getSuperBound(), type2.getSuperBound());
-    visitHistory.put(type1, type2, currentTop, result);
-    return result;
-  }
-
-  @Override
-  public Boolean visitWildcard_Typevar(
-      AnnotatedWildcardType type1, AnnotatedTypeVariable type2, Void p) {
-    // Once #979 is completed, this should be removed.
-    Boolean pastResult = visitHistory.get(type1, type2, currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-
-    if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
-      return true;
-    }
-
-    Boolean result =
-        areEqual(type1.getExtendsBound(), type2.getUpperBound())
-            && areEqual(type1.getSuperBound(), type2.getLowerBound());
-
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }

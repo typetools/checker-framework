@@ -31,25 +31,25 @@ else
 fi
 echo "JAVA_HOME=${JAVA_HOME}"
 
-# Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getPlumeScripts -q)` leads to infinite regress.
-PLUME_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.plume-scripts"
-if [ -d "$PLUME_SCRIPTS" ] ; then
-  (cd "$PLUME_SCRIPTS" && (git pull -q || true))
+# Using `(cd "$CHECKERFRAMEWORK" && ./gradlew getGitScripts -q)` leads to infinite regress.
+GIT_SCRIPTS="$CHECKERFRAMEWORK/checker/bin-devel/.git-scripts"
+if [ -d "$GIT_SCRIPTS" ] ; then
+  (cd "$GIT_SCRIPTS" && (git pull -q || true))
 else
   (cd "$CHECKERFRAMEWORK/checker/bin-devel" && \
-      (git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts || \
-       (sleep 1m && git clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git .plume-scripts)))
+      (git clone --filter=blob:none -q https://github.com/plume-lib/git-scripts.git .git-scripts || \
+       (sleep 60 && git clone --filter=blob:none -q https://github.com/plume-lib/git-scripts.git .git-scripts)))
 fi
 
 # Clone the annotated JDK into ../jdk .
-"$PLUME_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
+"$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools jdk
 
 AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
 ## Build annotation-tools (Annotation File Utilities)
-"$PLUME_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools annotation-tools "${AT}"
+"$GIT_SCRIPTS/git-clone-related" ${DEBUG_FLAG} typetools annotation-tools "${AT}"
 if [ ! -d ../annotation-tools ] ; then
   ln -s "${AT}" ../annotation-tools
 fi
@@ -62,7 +62,7 @@ echo "... done: (cd ${AT} && ./.build-without-test.sh)"
 ### Commented temporarily because JSpecify build is failing under JDK 17.
 ### (I guess they don't use continuous integration.)
 # ## Build JSpecify, only for the purpose of using its tests.
-# "$PLUME_SCRIPTS/git-clone-related" jspecify jspecify
+# "$GIT_SCRIPTS/git-clone-related" jspecify jspecify
 # if type -p java; then
 #   _java=java
 # elif [[ -n "$JAVA_HOME" ]] && [[ -x "$JAVA_HOME/bin/java" ]];  then

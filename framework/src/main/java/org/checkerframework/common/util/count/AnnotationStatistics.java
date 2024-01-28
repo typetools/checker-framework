@@ -38,27 +38,34 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationStatistics <em>MyFile.java ...</em>
  * </pre>
  *
- * <p>You probably want to pipe the output through another program:
+ * <p>By default, this utility displays annotation locations only, but not the annotations
+ * themselves. Further, the ouput includes all annotations (including {@code @Override}, etc.),
+ * which is not very useful.
+ *
+ * <p>The following options may be used to adjust the output:
  *
  * <ul>
- *   <li>Total annotation count: {@code ... | wc}.
- *   <li>Breakdown by location type: {@code ... | sort | uniq -c}
- *   <li>Count for only certain location types: use {@code grep}
- * </ul>
- *
- * <p>By default, this utility displays annotation locations only. The following options may be used
- * to adjust the output:
- *
- * <ul>
- *   <li>{@code -Aannotations}: prints information about the annotations, such as whether it is in a
- *       signature or in a body
+ *   <li>{@code -Aannotations}: prints the annotation name, the file that contains it, and whether
+ *       it is in a signature or in a body
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
- *   <li>{@code -Aannotationsummaryonly}: with both of the obove, only outputs a summary
+ *   <li>{@code -Aannotationsummaryonly}: with both of the above, only outputs a summary
  *   <li>{@code -Aannotationserror}: histogram is issued as a warning, not just printed
  * </ul>
  *
+ * <p>These use cases are not very useful, because they include all annotations including
+ * {@code @Override}, etc.
+ *
+ * <ul>
+ *   <li>Output the locations of annotations, but not the annotations themselves: normal invocation,
+ *       as above
+ *   <li>Histogram of the locations of annotations, by location type: {@code ... | sort | uniq -c}
+ *   <li>Total annotation count: {@code ... | wc}.
+ *   <li>Count for only certain location types: use {@code grep}
+ * </ul>
+ *
  * @see JavaCodeStatistics
+ * @see org.checkerframework.common.util.count.report.ReportChecker
  */
 /*
  * TODO: add an option to only list declaration or type annotations.

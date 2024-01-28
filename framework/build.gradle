@@ -45,7 +45,7 @@ dependencies {
   implementation "org.plumelib:hashmap-util:${versions.hashmapUtil}"
   implementation "org.plumelib:plume-util:${versions.plumeUtil}"
   implementation "org.plumelib:reflection-util:${versions.reflectionUtil}"
-  implementation 'io.github.classgraph:classgraph:4.8.162'
+  implementation 'io.github.classgraph:classgraph:4.8.165'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -77,8 +77,7 @@ task cloneTypetoolsJdk() {
         args = [
           'clone',
           '-q',
-          '--depth',
-          '1',
+          '--filter=blob:none',
           'https://github.com/typetools/jdk.git',
           'jdk'
         ]
@@ -90,6 +89,10 @@ task cloneTypetoolsJdk() {
 
 task copyAndMinimizeAnnotatedJdkFiles(dependsOn: cloneTypetoolsJdk, group: 'Build') {
   dependsOn ':framework:compileJava'
+  // we need the next two dependencies because we run JavaStubifier using this project's runtimeClasspath,
+  // which refers to the jars for these other projects
+  dependsOn ':javacutil:jar'
+  dependsOn ':dataflow:jar'
   def inputDir = "${annotatedJdkHome}/src"
   def outputDir = "${buildDir}/generated/resources/annotated-jdk/"
 

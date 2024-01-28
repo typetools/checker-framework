@@ -73,6 +73,8 @@ public final class Opt {
     }
   }
 
+  // TODO: Add ifPresentOrElse.
+
   /**
    * If primary is non-null, and its value matches the given predicate, return the value. If primary
    * is null or its non-null value does not match the predicate, return null.

@@ -31,6 +31,7 @@ import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
@@ -113,7 +114,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -130,6 +130,7 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -152,7 +153,8 @@ import org.plumelib.util.IPair;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
- * invocation checking, and assignability checking.
+ * invocation checking, and assignability checking. The visitor visits every construct in a program,
+ * not just types.
  *
  * <p>This implementation uses the {@link AnnotatedTypeFactory} implementation provided by an
  * associated {@link BaseTypeChecker}; its visitor methods will invoke this factory on parts of the
@@ -250,7 +252,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * True if "-AcheckPurityAnnotations" or "-AsuggestPureMethods" or "-Ainfer" was passed on the
    * command line.
    */
-  private final boolean checkPurity;
+  private final boolean checkPurityAnnotations;
 
   /** True if "-AajavaChecks" was passed on the command line. */
   private final boolean ajavaChecks;
@@ -267,13 +269,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** True if "-AcheckCastElementType" was passed on the command line. */
   private final boolean checkCastElementType;
 
-  /** True if "-AconservativeUninferredTypeArguments" was passed on the command line. */
-  private final boolean conservativeUninferredTypeArguments;
-
   /** True if "-AwarnRedundantAnnotations" was passed on the command line */
   private final boolean warnRedundantAnnotations;
 
-  /** The tree of the enclosing method that is currently being visited. */
+  /** The tree of the enclosing method that is currently being visited, if any. */
   protected @Nullable MethodTree methodTree = null;
 
   /**
@@ -307,7 +306,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
-    checkPurity = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
+    checkPurityAnnotations = checker.hasOption("checkPurityAnnotations") || suggestPureMethods;
     ajavaChecks = checker.hasOption("ajavaChecks");
     assumeSideEffectFree =
         checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
@@ -315,7 +314,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.hasOption("assumeDeterministic") || checker.hasOption("assumePure");
     assumePureGetters = checker.hasOption("assumePureGetters");
     checkCastElementType = checker.hasOption("checkCastElementType");
-    conservativeUninferredTypeArguments = checker.hasOption("conservativeUninferredTypeArguments");
     warnRedundantAnnotations = checker.hasOption("warnRedundantAnnotations");
   }
 
@@ -544,7 +542,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public final Void visitClass(ClassTree classTree, Void p) {
-    if (checker.shouldSkipDefs(classTree)) {
+    if (checker.shouldSkipDefs(classTree) || checker.shouldSkipDirs(classTree)) {
       // Not "return super.visitClass(classTree, p);" because that would recursively call
       // visitors on subtrees; we want to skip the class entirely.
       return null;
@@ -983,7 +981,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkConstructorResult(methodType, methodElement);
       }
 
-      checkPurity(tree);
+      checkPurityAnnotations(tree);
 
       // Passing the whole method/constructor validates the return type
       validateTypeOf(tree);
@@ -1070,8 +1068,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param tree the method tree to check
    */
-  protected void checkPurity(MethodTree tree) {
-    if (!checkPurity) {
+  protected void checkPurityAnnotations(MethodTree tree) {
+    if (!checkPurityAnnotations) {
       return;
     }
 
@@ -1080,69 +1078,86 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
 
-    // check "no" purity
-    EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
-    // @Deterministic makes no sense for a void method or constructor
-    boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
-    if (isDeterministic) {
-      if (TreeUtils.isConstructor(tree)) {
-        checker.reportWarning(tree, "purity.deterministic.constructor");
-      } else if (TreeUtils.isVoidReturn(tree)) {
-        checker.reportWarning(tree, "purity.deterministic.void.method");
-      }
-    }
+    // `body` is lazily assigned.
+    TreePath body = null;
+    boolean bodyAssigned = false;
 
-    TreePath body = atypeFactory.getPath(tree.getBody());
-    PurityResult r;
-    if (body == null) {
-      r = new PurityResult();
-    } else {
-      r =
-          PurityChecker.checkPurity(
-              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
-    }
-    if (!r.isPure(kinds)) {
-      reportPurityErrors(r, tree, kinds);
-    }
+    if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
 
-    if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
-      // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
-      if (!infer) {
-        // During WPI, propagate all purity kinds, even those that are already
-        // present (because they were inferred in a previous WPI round).
-        additionalKinds.removeAll(kinds);
-      }
-      if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
-        additionalKinds.remove(Pure.Kind.DETERMINISTIC);
-      }
-      if (infer) {
-        WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
-        ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-        inferPurityAnno(additionalKinds, wpi, methodElt);
-        // The purity of overridden methods is impacted by the purity of this method. If a
-        // superclass method is pure, but an implementation in a subclass is not, WPI ought to treat
-        // **neither** as pure. The purity kind of the superclass method is the LUB of its own
-        // purity and the purity of all the methods that override it. Logically, this rule is the
-        // same as the WPI rule for overrides, but purity isn't a type system and therefore must be
-        // special-cased.
-        Set<? extends ExecutableElement> overriddenMethods =
-            ElementUtils.getOverriddenMethods(methodElt, types);
-        for (ExecutableElement overriddenElt : overriddenMethods) {
-          inferPurityAnno(additionalKinds, wpi, overriddenElt);
+      // check "no" purity
+      EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
+      // @Deterministic makes no sense for a void method or constructor
+      boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+      if (isDeterministic) {
+        if (TreeUtils.isConstructor(tree)) {
+          checker.reportWarning(tree, "purity.deterministic.constructor");
+        } else if (TreeUtils.isVoidReturn(tree)) {
+          checker.reportWarning(tree, "purity.deterministic.void.method");
         }
-      } else if (additionalKinds.isEmpty()) {
-        // No need to suggest @Impure, since it is equivalent to no annotation.
-      } else if (additionalKinds.size() == 2) {
-        checker.reportWarning(tree, "purity.more.pure", tree.getName());
-      } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-        checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
-      } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
-        checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+      }
+
+      body = atypeFactory.getPath(tree.getBody());
+      bodyAssigned = true;
+      PurityResult r;
+      if (body == null) {
+        r = new PurityResult();
       } else {
-        throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+        r =
+            PurityChecker.checkPurity(
+                body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+      }
+      if (!r.isPure(kinds)) {
+        reportPurityErrors(r, tree, kinds);
+      }
+
+      if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
+        // Issue a warning if the method is pure, but not annotated as such.
+        EnumSet<Pure.Kind> additionalKinds = r.getKinds().clone();
+        if (!infer) {
+          // During WPI, propagate all purity kinds, even those that are already
+          // present (because they were inferred in a previous WPI round).
+          additionalKinds.removeAll(kinds);
+        }
+        if (TreeUtils.isConstructor(tree) || TreeUtils.isVoidReturn(tree)) {
+          additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+        }
+        if (infer) {
+          WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+          ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+          inferPurityAnno(additionalKinds, wpi, methodElt);
+          // The purity of overridden methods is impacted by the purity of this method. If a
+          // superclass method is pure, but an implementation in a subclass is not, WPI ought to
+          // treat  **neither** as pure. The purity kind of the superclass method is the LUB of
+          // its own purity and the purity of all the methods that override it. Logically, this
+          // rule is the same as the WPI rule for overrides, but purity isn't a type system and
+          // therefore must be special-cased.
+          Set<? extends ExecutableElement> overriddenMethods =
+              ElementUtils.getOverriddenMethods(methodElt, types);
+          for (ExecutableElement overriddenElt : overriddenMethods) {
+            inferPurityAnno(additionalKinds, wpi, overriddenElt);
+          }
+        } else if (additionalKinds.isEmpty()) {
+          // No need to suggest @Impure, since it is equivalent to no annotation.
+        } else if (additionalKinds.size() == 2) {
+          checker.reportWarning(tree, "purity.more.pure", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+          checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
+        } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
+          checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
+        } else {
+          throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+        }
       }
     }
+
+    // There will be code here that *may* use `body` (and may set `body` before using it).
+    // The below is just a placeholder so `bodyAssigned` is not a dead variable.
+    // ...
+    if (!bodyAssigned) {
+      body = atypeFactory.getPath(tree.getBody());
+      bodyAssigned = true;
+    }
+    // ...
   }
 
   /**
@@ -1550,20 +1565,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       visitAnnotatedType(tree.getModifiers().getAnnotations(), tree.getType());
     }
 
-    AnnotatedTypeMirror variableType;
-    if (getCurrentPath().getParentPath() != null
-        && getCurrentPath().getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-      // Calling getAnnotatedTypeLhs on a lambda parameter tree is possibly expensive
-      // because caching is turned off.  This should be fixed by #979.
-      // See https://github.com/typetools/checker-framework/issues/2853 for an example.
-      variableType = atypeFactory.getAnnotatedType(tree);
-    } else {
-      variableType = atypeFactory.getAnnotatedTypeLhs(tree);
-    }
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedTypeLhs(tree);
 
     atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(variableType, tree);
-    Element varEle = TreeUtils.elementFromDeclaration(tree);
-    if (varEle.getKind() == ElementKind.ENUM_CONSTANT) {
+    Element varElt = TreeUtils.elementFromDeclaration(tree);
+    if (varElt.getKind() == ElementKind.ENUM_CONSTANT) {
       commonAssignmentCheck(tree, tree.getInitializer(), "enum.declaration");
     } else if (tree.getInitializer() != null) {
       // If there's no assignment in this variable declaration, skip it.
@@ -1775,21 +1781,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (shouldSkipUses(tree)) {
       return super.visitMethodInvocation(tree, p);
     }
-
+    ParameterizedExecutableType preInference =
+        atypeFactory.methodFromUseWithoutTypeArgInference(tree);
+    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
+        && preInference.typeArgs.isEmpty()) {
+      if (!checkTypeArgumentInference(tree, preInference.executableType)) {
+        return null;
+      }
+    }
     ParameterizedExecutableType mType = atypeFactory.methodFromUse(tree);
     AnnotatedExecutableType invokedMethod = mType.executableType;
     List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
-
-    if (!atypeFactory.ignoreUninferredTypeArguments) {
-      for (AnnotatedTypeMirror typearg : typeargs) {
-        if (typearg.getKind() == TypeKind.WILDCARD
-            && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
-          checker.reportError(
-              tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
-          break; // only issue error once per method
-        }
-      }
-    }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsPlume.mapList(
@@ -1797,55 +1799,65 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     ExecutableElement method = invokedMethod.getElement();
     CharSequence methodName = ElementUtils.getSimpleDescription(method);
-    try {
-      checkTypeArguments(
-          tree,
-          paramBounds,
-          typeargs,
-          tree.getTypeArguments(),
-          methodName,
-          invokedMethod.getTypeVariables());
-      List<AnnotatedTypeMirror> params =
-          AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments());
-      checkArguments(params, tree.getArguments(), methodName, method.getParameters());
-      checkVarargs(invokedMethod, tree);
+    checkTypeArguments(
+        tree,
+        paramBounds,
+        typeargs,
+        tree.getTypeArguments(),
+        methodName,
+        invokedMethod.getTypeVariables());
+    List<AnnotatedTypeMirror> params =
+        AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments());
+    checkArguments(params, tree.getArguments(), methodName, method.getParameters());
+    checkVarargs(invokedMethod, tree);
 
-      if (ElementUtils.isMethod(
-          invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
-        typeCheckVectorCopyIntoArgument(tree, params);
-      }
+    if (ElementUtils.isMethod(
+        invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
+      typeCheckVectorCopyIntoArgument(tree, params);
+    }
 
-      ExecutableElement invokedMethodElement = invokedMethod.getElement();
-      if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperConstructorCall(tree)) {
-        checkMethodInvocability(invokedMethod, tree);
-      }
+    ExecutableElement invokedMethodElement = invokedMethod.getElement();
+    if (!ElementUtils.isStatic(invokedMethodElement) && !TreeUtils.isSuperConstructorCall(tree)) {
+      checkMethodInvocability(invokedMethod, tree);
+    }
 
-      // check precondition annotations
-      checkPreconditions(
-          tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
+    // check precondition annotations
+    checkPreconditions(
+        tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
-      if (TreeUtils.isSuperConstructorCall(tree)) {
-        checkSuperConstructorCall(tree);
-      } else if (TreeUtils.isThisConstructorCall(tree)) {
-        checkThisConstructorCall(tree);
-      }
-    } catch (RuntimeException t) {
-      // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once
-      // #979 is fixed this should be removed and crashes should be reported normally.
-      if (tree.getTypeArguments().size() == typeargs.size()) {
-        // They type arguments were explicitly written.
-        throw t;
-      }
-      if (!atypeFactory.ignoreUninferredTypeArguments) {
-        checker.reportError(
-            tree, "type.arguments.not.inferred", invokedMethod.getElement().getSimpleName());
-      } // else ignore the crash.
+    if (TreeUtils.isSuperConstructorCall(tree)) {
+      checkSuperConstructorCall(tree);
+    } else if (TreeUtils.isThisConstructorCall(tree)) {
+      checkThisConstructorCall(tree);
     }
 
     // Do not call super, as that would observe the arguments without
     // a set assignment context.
     scan(tree.getMethodSelect(), p);
     return null; // super.visitMethodInvocation(tree, p);
+  }
+
+  /**
+   * Reports a "type.arguments.not.inferred" error if type argument inference fails and returns
+   * false if inference fails.
+   *
+   * @param tree a tree that requires type argument inference
+   * @param methodType the type of the method before type argument substitution
+   * @return whether type argument inference succeeds
+   */
+  private boolean checkTypeArgumentInference(
+      ExpressionTree tree, AnnotatedExecutableType methodType) {
+    InferenceResult args =
+        atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, tree, methodType);
+    if (args != null && !args.inferenceFailed()) {
+      return true;
+    }
+    checker.reportError(
+        tree,
+        "type.arguments.not.inferred",
+        ElementUtils.getSimpleDescription(methodType.getElement()),
+        args == null ? "" : args.getErrorMsg());
+    return false;
   }
 
   /**
@@ -2102,6 +2114,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return super.visitNewClass(tree, p);
     }
 
+    ParameterizedExecutableType preInference =
+        atypeFactory.constructorFromUseWithoutTypeArgInference(tree);
+    if (!preInference.executableType.getElement().getTypeParameters().isEmpty()
+        || TreeUtils.isDiamondTree(tree)) {
+      if (!checkTypeArgumentInference(tree, preInference.executableType)) {
+        return null;
+      }
+    }
+
     ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
     AnnotatedExecutableType constructorType = fromUse.executableType;
     List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
@@ -2230,16 +2251,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return null;
     }
 
-    TypeElement anno = (TypeElement) TreeInfo.symbol((JCTree) tree.getAnnotationType());
+    TypeElement annoType = (TypeElement) TreeInfo.symbol((JCTree) tree.getAnnotationType());
 
-    Name annoName = anno.getQualifiedName();
+    Name annoName = annoType.getQualifiedName();
     if (annoName.contentEquals(DefaultQualifier.class.getName())
         || annoName.contentEquals(SuppressWarnings.class.getName())) {
       // Skip these two annotations, as we don't care about the arguments to them.
       return null;
     }
 
-    List<ExecutableElement> methods = ElementFilter.methodsIn(anno.getEnclosedElements());
+    List<ExecutableElement> methods = ElementFilter.methodsIn(annoType.getEnclosedElements());
     // Mapping from argument simple name to its annotated type.
     Map<String, AnnotatedTypeMirror> annoTypes = ArrayMap.newArrayMapOrHashMap(methods.size());
     for (ExecutableElement meth : methods) {
@@ -2303,6 +2324,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
+    if (TreeUtils.isPolyExpression(tree)) {
+      // From the JLS:
+      // A poly reference conditional expression is compatible with a target type T if its second
+      // and third operand expressions are compatible with T.  In the Checker Framework this check
+      // happens in #commonAssignmentCheck.
+      return super.visitConditionalExpression(tree, p);
+    }
+
     AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(tree);
     this.commonAssignmentCheck(cond, tree.getTrueExpression(), "conditional");
     this.commonAssignmentCheck(cond, tree.getFalseExpression(), "conditional");
@@ -2933,6 +2962,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExpressionTree valueExpTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+    if (valueExpTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+      ConditionalExpressionTree condExprTree = (ConditionalExpressionTree) valueExpTree;
+      boolean trueResult =
+          commonAssignmentCheck(varTree, condExprTree.getTrueExpression(), "assignment");
+      boolean falseResult =
+          commonAssignmentCheck(varTree, condExprTree.getFalseExpression(), "assignment");
+      return trueResult && falseResult;
+    }
+
     AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
     assert varType != null : "no variable found for tree: " + varTree;
 
@@ -3376,7 +3414,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
       AnnotatedTypeMirror typeArg = typeargs.get(i);
 
-      if (isIgnoredUninferredWildcard(bounds.getUpperBound())) {
+      if (atypeFactory.ignoreRawTypeArguments
+          && AnnotatedTypes.isTypeArgOfRawType(bounds.getUpperBound())) {
         continue;
       }
 
@@ -3430,12 +3469,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.reportError(reportError, "type.argument.hasqualparam", top);
       }
     }
-  }
-
-  private boolean isIgnoredUninferredWildcard(AnnotatedTypeMirror type) {
-    return atypeFactory.ignoreUninferredTypeArguments
-        && type.getKind() == TypeKind.WILDCARD
-        && ((AnnotatedWildcardType) type).isUninferredTypeArgument();
   }
 
   /**
@@ -3567,7 +3600,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * like var args.
    *
    * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
-   * @param requiredArgs the required types. This may differ from the formal parameter types,
+   * @param requiredTypes the required types. This may differ from the formal parameter types,
    *     because it replaces a varargs parameter by multiple parameters with the vararg's element
    *     type.
    * @param passedArgs the expressions passed to the corresponding types
@@ -3575,14 +3608,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param paramNames the names of the callee's formal parameters
    */
   protected void checkArguments(
-      List<? extends AnnotatedTypeMirror> requiredArgs,
+      List<? extends AnnotatedTypeMirror> requiredTypes,
       List<? extends ExpressionTree> passedArgs,
       CharSequence executableName,
       List<?> paramNames) {
-    int size = requiredArgs.size();
+    int size = requiredTypes.size();
     assert size == passedArgs.size()
-        : "mismatch between required args ("
-            + requiredArgs
+        : "size mismatch between required args ("
+            + requiredTypes
             + ") and passed args ("
             + passedArgs
             + ")";
@@ -3594,21 +3627,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             size,
             passedArgs.size(),
             paramNames.size(),
-            listToString(requiredArgs),
+            listToString(requiredTypes),
             listToString(passedArgs),
             executableName,
             listToString(paramNames));
 
     for (int i = 0; i < size; ++i) {
+      AnnotatedTypeMirror requiredType = requiredTypes.get(i);
+      ExpressionTree passedArg = passedArgs.get(i);
+      Object paramName = paramNames.get(Math.min(i, maxParamNamesIndex));
       commonAssignmentCheck(
-          requiredArgs.get(i),
-          passedArgs.get(i),
+          requiredType,
+          passedArg,
           "argument",
           // TODO: for expanded varargs parameters, maybe adjust the name
-          paramNames.get(Math.min(i, maxParamNamesIndex)),
+          paramName,
           executableName);
-      // Also descend into the argument within the correct assignment context.
-      scan(passedArgs.get(i), null);
+      scan(passedArg, null);
     }
   }
 
@@ -3714,7 +3749,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Type checks that a method may override another method. Uses an OverrideChecker subclass as
-   * created by {@link #createOverrideChecker}. This version of the method exposes
+   * created by {@link #createOverrideChecker}. This version of the method exposes the
    * AnnotatedExecutableType of the overriding method. Override this version of the method if you
    * need to access that type.
    *
@@ -3755,7 +3790,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that a method reference is allowed. Using the OverrideChecker class.
+   * Check that a method reference is allowed. Uses the OverrideChecker class.
    *
    * @param memberReferenceTree the tree for the method reference
    * @return true if the method reference is allowed
@@ -3776,45 +3811,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // enclosing method.
     // That is handled separately in method receiver check.
 
-    // The type of the expression or type use, <expression>::method or <type use>::method.
-    ExpressionTree qualifierExpression = memberReferenceTree.getQualifierExpression();
+    // The tree before :: is an expression or type use.
+    ExpressionTree preColonTree = memberReferenceTree.getQualifierExpression();
     MemberReferenceKind memRefKind =
         MemberReferenceKind.getMemberReferenceKind(memberReferenceTree);
     AnnotatedTypeMirror enclosingType;
-    if (memberReferenceTree.getMode() == ReferenceMode.NEW
+    if (TreeUtils.isLikeDiamondMemberReference(memberReferenceTree)) {
+      TypeElement typeElt = TypesUtils.getTypeElement(TreeUtils.typeOf(preColonTree));
+      enclosingType = atypeFactory.getAnnotatedType(typeElt);
+    } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
         || memRefKind == MemberReferenceKind.UNBOUND
         || memRefKind == MemberReferenceKind.STATIC) {
-      // The "qualifier expression" is a type tree.
-      enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(qualifierExpression);
+      // The tree before :: is a type tree.
+      enclosingType = atypeFactory.getAnnotatedTypeFromTypeTree(preColonTree);
     } else {
-      // The "qualifier expression" is an expression.
-      enclosingType = atypeFactory.getAnnotatedType(qualifierExpression);
+      // The tree before :: is an expression.
+      enclosingType = atypeFactory.getAnnotatedType(preColonTree);
     }
 
     // ========= Overriding Executable =========
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
-    ExecutableElement compileTimeDeclaration =
-        (ExecutableElement) TreeUtils.elementFromUse(memberReferenceTree);
+    ExecutableElement compileTimeDeclaration = TreeUtils.elementFromUse(memberReferenceTree);
 
-    if (enclosingType.getKind() == TypeKind.DECLARED
-        && ((AnnotatedDeclaredType) enclosingType).isUnderlyingTypeRaw()) {
-      if (memRefKind == MemberReferenceKind.UNBOUND) {
-        // The method reference is of the form: Type # instMethod and Type is a raw type.
-        // If the first parameter of the function type, p1, is a subtype of type, then type
-        // should be p1.  This has the effect of "inferring" the class type parameter.
-        AnnotatedTypeMirror p1 = functionType.getParameterTypes().get(0);
-        TypeMirror asSuper =
-            TypesUtils.asSuper(
-                p1.getUnderlyingType(),
-                enclosingType.getUnderlyingType(),
-                atypeFactory.getProcessingEnv());
-        if (asSuper != null) {
-          enclosingType = AnnotatedTypes.asSuper(atypeFactory, p1, enclosingType);
-        }
+    ParameterizedExecutableType preInference =
+        atypeFactory.methodFromUseWithoutTypeArgInference(
+            memberReferenceTree, compileTimeDeclaration, enclosingType);
+    if (TreeUtils.needsTypeArgInference(memberReferenceTree)) {
+      if (!checkTypeArgumentInference(memberReferenceTree, preInference.executableType)) {
+        return true;
       }
-      // else method reference is something like ArrayList::new
-      // TODO: Use diamond, <>, inference to infer the class type arguments.
-      // For now this case is skipped below in checkMethodReferenceInference.
     }
 
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
@@ -3822,12 +3847,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     AnnotatedExecutableType invocationType =
         atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
             .executableType;
-
-    if (checkMethodReferenceInference(memberReferenceTree, invocationType, enclosingType)) {
-      // Type argument inference is required, skip check.
-      // #checkMethodReferenceInference issued a warning.
-      return true;
-    }
 
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()
@@ -3873,46 +3892,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               functionTypeReturnType);
       return overrideChecker.checkOverride();
     } else {
-      // If the functionalInterface is not a declared type, it must be an uninferred wildcard.
-      // In that case, only return false if uninferred type arguments should not be ignored.
-      return !atypeFactory.ignoreUninferredTypeArguments;
+      // If the functionalInterface is not a declared type, it must be from a wildcard from a raw
+      // type. In that case, only return false if raw types should not be ignored.
+      return !atypeFactory.ignoreRawTypeArguments;
     }
-  }
-
-  /** Check if method reference type argument inference is required. Issue an error if it is. */
-  private boolean checkMethodReferenceInference(
-      MemberReferenceTree memberReferenceTree,
-      AnnotatedExecutableType invocationType,
-      AnnotatedTypeMirror type) {
-    // TODO: Issue #802
-    // TODO: https://github.com/typetools/checker-framework/issues/802
-    // TODO: Method type argument inference
-    // TODO: Enable checks for method reference with inferred type arguments.
-    // For now, error on mismatch of class or method type arguments.
-    boolean requiresInference = false;
-    // If the function to which the member reference refers is generic, but the member
-    // reference does not provide method type arguments, then Java 8 inference is required.
-    // Issue 979.
-    if (!invocationType.getTypeVariables().isEmpty()
-        && (memberReferenceTree.getTypeArguments() == null
-            || memberReferenceTree.getTypeArguments().isEmpty())) {
-      // Method type args
-      requiresInference = true;
-    } else if (memberReferenceTree.getMode() == ReferenceMode.NEW
-        || MemberReferenceKind.getMemberReferenceKind(memberReferenceTree).isUnbound()) {
-      if (type.getKind() == TypeKind.DECLARED
-          && ((AnnotatedDeclaredType) type).isUnderlyingTypeRaw()) {
-        // Class type args
-        requiresInference = true;
-      }
-    }
-    if (requiresInference) {
-      if (conservativeUninferredTypeArguments) {
-        checker.reportWarning(memberReferenceTree, "methodref.inference.unimplemented");
-      }
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -3933,7 +3916,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   public class OverrideChecker {
 
-    /** The declaration of an overriding method. */
+    /**
+     * The declaration of an overriding method. Or, it could be a method reference that is being
+     * passed to a method.
+     */
     protected final Tree overriderTree;
 
     /** True if {@link #overriderTree} is a MEMBER_REFERENCE. */
@@ -3984,10 +3970,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriderTree = overriderTree;
       this.overrider = overrider;
       this.overriderType = overriderType;
+      this.overriderReturnType = overriderReturnType;
       this.overridden = overridden;
       this.overriddenType = overriddenType;
       this.overriddenReturnType = overriddenReturnType;
-      this.overriderReturnType = overriderReturnType;
 
       this.isMethodReference = overriderTree.getKind() == Tree.Kind.MEMBER_REFERENCE;
     }
@@ -4113,7 +4099,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private boolean checkMemberReferenceReceivers() {
       if (overriderType.getKind() == TypeKind.ARRAY) {
-        // Assume the receiver for all method on arrays are @Top
+        // Assume the receiver for all method on arrays are @Top.
         // This simplifies some logic because an AnnotatedExecutableType for an array method
         // (ie String[]::clone) has a receiver of "Array." The UNBOUND check would then
         // have to compare "Array" to "String[]".

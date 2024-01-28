@@ -22,6 +22,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -46,14 +47,40 @@ import org.plumelib.util.CollectionsPlume;
  * TreeMaker.
  */
 public class TreeBuilder {
+
+  /** The javac {@link Elements} object. */
   protected final Elements elements;
+
+  /** The javac {@link javax.lang.model.util.Types} object. */
   protected final Types modelTypes;
+
+  /** The internal javac {@link com.sun.tools.javac.code.Types} object. */
   protected final com.sun.tools.javac.code.Types javacTypes;
+
+  /** For constructing trees */
   protected final TreeMaker maker;
+
+  /** The javac {@link Names} object. */
   protected final Names names;
+
+  /** The javac {@link Symtab} object. */
   protected final Symtab symtab;
+
+  /** The javac {@link ProcessingEnvironment} */
   protected final ProcessingEnvironment env;
 
+  /**
+   * {@link Name} object for "close", used when building a tree for a call to {@code close()}.
+   *
+   * @see #buildCloseMethodAccess(ExpressionTree)
+   */
+  private final Name closeName;
+
+  /**
+   * Creates a new TreeBuilder.
+   *
+   * @param env the javac {@link ProcessingEnvironment}
+   */
   public TreeBuilder(ProcessingEnvironment env) {
     this.env = env;
     Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -63,6 +90,7 @@ public class TreeBuilder {
     maker = TreeMaker.instance(context);
     names = Names.instance(context);
     symtab = Symtab.instance(context);
+    closeName = names.fromString("close");
   }
 
   /**
@@ -124,6 +152,50 @@ public class TreeBuilder {
     iteratorAccess.setType(updatedMethodType);
 
     return iteratorAccess;
+  }
+
+  /**
+   * Build a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
+   * implements {@link AutoCloseable}. This method is used when desugaring try-with-resources
+   * statements during CFG construction.
+   *
+   * @param autoCloseableExpr the expression
+   * @return the member select tree
+   */
+  public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
+    DeclaredType exprType =
+        (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(autoCloseableExpr));
+    assert exprType != null
+        : "expression must be of declared type AutoCloseable: " + autoCloseableExpr;
+
+    TypeElement exprElement = (TypeElement) exprType.asElement();
+
+    // Find the close() method
+    Symbol.MethodSymbol closeMethod = null;
+
+    // We could use elements.getAllMembers(exprElement) to find the close method, but in rare cases
+    // calling that method crashes with a Symbol$CompletionFailure exception.  See
+    // https://github.com/typetools/checker-framework/issues/6396.  The code below directly searches
+    // all supertypes for the method and avoids the crash.
+    for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
+      for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
+        if (!(m instanceof Symbol.MethodSymbol)) {
+          continue;
+        }
+        Symbol.MethodSymbol msym = (Symbol.MethodSymbol) m;
+        if (!msym.isStatic() && msym.getParameters().isEmpty()) {
+          closeMethod = msym;
+          break;
+        }
+      }
+    }
+
+    assert closeMethod != null
+        : "@AssumeAssertion(nullness): no close method declared for expression type";
+
+    JCTree.JCFieldAccess closeAccess = TreeUtils.Select(maker, autoCloseableExpr, closeMethod);
+
+    return closeAccess;
   }
 
   /**
@@ -641,6 +713,7 @@ public class TreeBuilder {
    * @return a NewArrayTree to create a new array with initializers
    */
   public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<JCExpression> exprs = CollectionsPlume.mapList(JCExpression.class::cast, elems);
 
     JCTree.JCNewArray newArray =

@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/658
 // @skip-test
 
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Interface {
   interface A {

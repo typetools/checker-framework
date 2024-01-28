@@ -12,7 +12,7 @@ export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
 
-"$SCRIPTDIR/.plume-scripts/git-clone-related" typetools guava
+"$SCRIPTDIR/.git-scripts/git-clone-related" typetools guava
 cd ../guava
 
 ./typecheck.sh interning
