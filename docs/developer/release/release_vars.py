@@ -96,6 +96,7 @@ INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
+GIT_SCRIPTS_REPO = "https://github.com/plume-lib/git-scripts"
 PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
 CHECKLINK_REPO = "https://github.com/plume-lib/checklink"
 PLUME_BIB_REPO = "https://github.com/mernst/plume-bib"
@@ -119,6 +120,7 @@ CF_VERSION = (
 ANNO_TOOLS = os.path.join(BUILD_DIR, "annotation-tools")
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, "annotation-file-utilities")
 
+GIT_SCRIPTS = os.path.join(BUILD_DIR, "git-scripts")
 PLUME_SCRIPTS = os.path.join(BUILD_DIR, "plume-scripts")
 CHECKLINK = os.path.join(BUILD_DIR, "checklink")
 PLUME_BIB = os.path.join(BUILD_DIR, "plume-bib")

@@ -15,7 +15,7 @@ source "$SCRIPTDIR"/clone-related.sh
 # TODO: Maybe I should move this into the CI job, and do it for all CI jobs.
 cp "$SCRIPTDIR"/mvn-settings.xml ~/settings.xml
 
-"$SCRIPTDIR/.plume-scripts/git-clone-related" typetools guava
+"$SCRIPTDIR/.git-scripts/git-clone-related" typetools guava
 cd ../guava
 
 if [ "$TRAVIS" = "true" ] ; then
