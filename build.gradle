@@ -41,6 +41,7 @@ ext {
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
+  gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
@@ -185,6 +186,7 @@ allprojects { currentProj ->
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
     'checker': [
+      'bin-devel/.git-scripts/**',
       'bin-devel/.plume-scripts/**',
       'dist/**',
       'tests/ainfer-*/annotated/*',
@@ -698,6 +700,7 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
 }
 
 
+createCloneTask('getGitScripts', 'https://github.com/plume-lib/git-scripts.git', gitScriptsHome)
 createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
 createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
 createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
