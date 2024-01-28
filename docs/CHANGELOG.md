@@ -7,9 +7,8 @@ Method, constructor, lambda, and method reference type inference has been
 greatly improved.  The `-AconservativeUninferredTypeArguments` option is
 no longer necessary and has been removed.
 
-A specialized inference algorithm for the Resource Leak Checker is now
-available.  This algorithm runs automatically as part of whole-program
-inference.
+A specialized inference algorithm for the Resource Leak Checker runs
+automatically as part of whole-program inference.
 
 **Implementation details:**
 
