@@ -55,7 +55,7 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
       GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
     // TODO: implement me
-    TransferResult<CFValue, CFStore> result = super.visitGreaterThan(n, in);
+    TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(n, in);
     return result; // stub
   }
 
