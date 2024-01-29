@@ -20,7 +20,7 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @{@link NonEmpty} annotation * */
   @SuppressWarnings("UnusedVariable")
-  private final AnnotationMirror NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
+  public final AnnotationMirror NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
 
   /**
    * Creates a new {@link NonEmptyAnnotatedTypeFactory} that operates on a particular AST.
