@@ -3493,7 +3493,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of {@code tree}, without any annotations
    */
   protected final AnnotatedTypeMirror type(Tree tree) {
-    boolean isDeclaration = TreeUtils.isTypeDeclaration(tree);
+    boolean isDeclaration = TreeUtils.isClassTree(tree);
 
     // Attempt to obtain the type via JCTree.
     if (TreeUtils.typeOf(tree) != null) {
