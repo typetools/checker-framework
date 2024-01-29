@@ -54,10 +54,31 @@ public class BoundsInitializer2 {
     DeclaredType t = annotatedDeclaredType.getUnderlyingType();
     List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(t.getTypeArguments().size());
 
-    if (annotatedDeclaredType.isDeclaration()) {
+    boolean rawJavaType = annotatedDeclaredType.isUnderlyingTypeRaw();
+    if (rawJavaType) {
+      TypeElement typeElement = (TypeElement) atypeFactory.types.asElement(t);
+      Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
+      for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
+        TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
+        TypeMirror wildcard = getUpperBoundAsWildcard(typeVar, atypeFactory);
+        AnnotatedWildcardType atmWild =
+            (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
+        atmWild.setTypeArgOfRawType();
+        initializeBounds(atmWild);
+        typeArgs.add(atmWild);
+        map.put(typeVar, atmWild);
+      }
+      TypeVariableSubstitutor suber = atypeFactory.getTypeVarSubstitutor();
+      for (AnnotatedTypeMirror atm : typeArgs) {
+        AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
+        wildcardType.setExtendsBound(
+            suber.substituteWithoutCopyingTypeArguments(map, wildcardType.getExtendsBound()));
+      }
+    } else if (annotatedDeclaredType.isDeclaration()) {
       for (TypeMirror javaTypeArg : t.getTypeArguments()) {
         AnnotatedTypeVariable tv =
             (AnnotatedTypeVariable) AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
+        atypeFactory.initializeAtm(tv);
         typeArgs.add(tv);
       }
     } else {
