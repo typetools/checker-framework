@@ -193,12 +193,11 @@ allprojects { currentProj ->
       'tests/build/**',
       'tests/calledmethods-delomboked/*',
       'tests/nullness-javac-errors/*',
-      'tests/returnsreceiverdelomboked/*',
     ],
     'dataflow': ['manual/examples/'],
     'framework': [
       'tests/build/**',
-      'tests/returnsrcvrdelomboked/*',
+      'tests/returnsreceiverdelomboked/*',
     ],
   ]
   spotless {
