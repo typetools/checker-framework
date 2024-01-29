@@ -51,18 +51,23 @@ public class BoundsInitializer2 {
 
   public static void initializeTypeArgs(
       AnnotatedDeclaredType annotatedDeclaredType, AnnotatedTypeFactory atypeFactory) {
+    DeclaredType t = annotatedDeclaredType.getUnderlyingType();
+    List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(t.getTypeArguments().size());
+
     if (annotatedDeclaredType.isDeclaration()) {
-      DeclaredType t = annotatedDeclaredType.getUnderlyingType();
-      List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(t.getTypeArguments().size());
       for (TypeMirror javaTypeArg : t.getTypeArguments()) {
         AnnotatedTypeVariable tv =
             (AnnotatedTypeVariable) AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
         typeArgs.add(tv);
       }
-      annotatedDeclaredType.setTypeArguments(typeArgs);
     } else {
-      new InitializerVisitor(atypeFactory).initializeTypeArguments(annotatedDeclaredType);
+      for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+        AnnotatedTypeMirror typeArg =
+            AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, false);
+        typeArgs.add(typeArg);
+      }
     }
+    annotatedDeclaredType.setTypeArguments(typeArgs);
   }
 
   /**
