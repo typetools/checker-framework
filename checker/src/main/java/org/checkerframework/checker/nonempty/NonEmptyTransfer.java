@@ -45,26 +45,10 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   @Override
-  public TransferResult<CFValue, CFStore> visitLessThan(
-      LessThanNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitLessThan(n, in);
-    refineGT(n.getRightOperand(), n.getLeftOperand(), result);
-    return result;
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
-      LessThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(n, in);
-    refineGTE(n.getRightOperand(), n.getLeftOperand(), result);
-    return result;
-  }
-
-  @Override
   public TransferResult<CFValue, CFStore> visitGreaterThan(
       GreaterThanNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitGreaterThan(n, in);
-    refineGT(n.getLeftOperand(), n.getRightOperand(), result);
+    refineGT(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     return result;
   }
 
@@ -72,7 +56,25 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
       GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(n, in);
-    refineGTE(n.getLeftOperand(), n.getRightOperand(), result);
+    refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThan(
+      LessThanNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThan(n, in);
+    refineGT(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
+    refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
+      LessThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(n, in);
+    refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
+    refineGT(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
     return result;
   }
 
@@ -93,40 +95,29 @@ public class NonEmptyTransfer extends CFTransfer {
     return in;
   }
 
-  private TransferResult<CFValue, CFStore> refineGT(
-      Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
-    if (!isSizeAccess(lhs)) {
-      return in;
+  private void refineGT(Node lhs, Node rhs, CFStore store) {
+    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
+      return;
     }
-    if (!(rhs instanceof IntegerLiteralNode)) {
-      return in;
-    }
-
     IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
     if (integerLiteralNode.getValue() >= 0) {
       // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
       JavaExpression receiver = getReceiver(lhs);
-      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
-    return in;
   }
 
-  private TransferResult<CFValue, CFStore> refineGTE(
-      Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
-    if (!isSizeAccess(lhs)) {
-      return in;
-    }
-    if (!(rhs instanceof IntegerLiteralNode)) {
-      return in;
+  private void refineGTE(Node lhs, Node rhs, CFStore store) {
+    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
+      return;
     }
 
     IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
     if (integerLiteralNode.getValue() > 0) {
       // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
       JavaExpression receiver = getReceiver(lhs);
-      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
-    return in;
   }
 
   /**

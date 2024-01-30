@@ -18,7 +18,7 @@ class Comparisons {
 
   /**** Tests for GT ****/
   void t1(List<String> strs) {
-    if (strs.size() > 0) {
+    if (strs.size() > 10) {
       strs.iterator().next();
     } else if (0 > strs.size()) {
       // :: error: (method.invocation)
@@ -28,6 +28,14 @@ class Comparisons {
       strs.iterator().next();
     }
     if (strs.size() > 0) {
+      strs.iterator().next();
+    } else {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    }
+
+    if (0 > strs.size()) {
+      // :: error: (method.invocation)
       strs.iterator().next();
     } else {
       // :: error: (method.invocation)
@@ -64,21 +72,28 @@ class Comparisons {
     if (strs.size() < 10) {
       // :: error: (method.invocation)
       strs.iterator().next();
-    } else if (strs.size() < 1) {
+    }
+    if (strs.size() < 1) {
       // :: error: (method.invocation)
       strs.iterator().next();
+    } else {
+      strs.iterator().next(); // OK
     }
   }
 
   void t6(List<String> strs) {
     if (0 < strs.size()) {
-      strs.iterator().next();
-    }
-    if (10 < strs.size()) {
-      strs.iterator().next();
-    }
-    if (-1 < strs.size()) {
+      strs.iterator().next(); // Equiv. to strs.size() > 0
+    } else {
       // :: error: (method.invocation)
+      strs.iterator().next(); // Equiv. to strs.size() <= 0
+    }
+
+    if (strs.size() < 10) {
+      // Doesn't tell us a useful fact
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    } else {
       strs.iterator().next();
     }
   }
@@ -98,19 +113,19 @@ class Comparisons {
   }
 
   void t8(List<String> strs) {
-    if (0 <= strs.size()) {
+    if (1 <= strs.size()) {
+      strs.iterator().next();
+    } else {
       // :: error: (method.invocation)
       strs.iterator().next();
-    } else if (1 <= strs.size()) {
-      strs.iterator().next();
-    } else if (10 <= strs.size()) {
-      strs.iterator().next();
     }
+
     if (0 <= strs.size()) {
       // :: error: (method.invocation)
       strs.iterator().next();
     } else {
-      strs.iterator().next(); // OK, since strs must be non-empty
+      // :: error: (method.invocation)
+      strs.iterator().next();
     }
   }
 }
