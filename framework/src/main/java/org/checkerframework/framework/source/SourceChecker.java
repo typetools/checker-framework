@@ -1116,7 +1116,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
    * internal messager; however, it might also store it for later output.
    *
-   * @param source the source position information; may be an Element, a Tree, or null
+   * @param source the source position information; may be an Element or a Tree
    * @param kind the type of message
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
@@ -1126,10 +1126,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   // @FormatMethod
   @SuppressWarnings("formatter:format.string") // arg is a format string or a property key
   private void report(
-      @Nullable Object source,
-      Diagnostic.Kind kind,
-      @CompilerMessageKey String messageKey,
-      Object... args) {
+      Object source, Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
     assert messagesProperties != null : "null messagesProperties";
 
     if (shouldSuppressWarnings(source, messageKey)) {
@@ -1182,8 +1179,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       messager.printMessage(kind, messageText, (Element) source);
     } else if (source instanceof Tree) {
       printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
-    } else if (source == null) {
-      messager.printMessage(kind, messageText);
     } else {
       throw new BugInCF("invalid position source, class=" + source.getClass());
     }
