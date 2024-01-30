@@ -73,6 +73,16 @@ public abstract class QualifierHierarchy {
   public abstract AnnotationMirrorSet getTopAnnotations();
 
   /**
+   * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
+   *
+   * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
+   * @returns true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   */
+  public boolean isTop(AnnotationMirror qualifier) {
+    return AnnotationUtils.containsSame(getTopAnnotations(), anno);
+  }
+
+  /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
    * {@code qualifier} but no further supertypes exist.
    *
