@@ -63,6 +63,8 @@ public @interface PreconditionAnnotation {
    * post-condition annotation.
    *
    * <p>This element is analogous to {@link RequiresQualifier#qualifier()}.
+   *
+   * @return the qualifier that must be established as a precondition
    */
   Class<? extends Annotation> qualifier();
 }
