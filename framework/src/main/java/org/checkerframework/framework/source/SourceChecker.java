@@ -1180,7 +1180,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     } else if (source instanceof Tree) {
       printOrStoreMessage(kind, messageText, (Tree) source, currentRoot);
     } else {
-      throw new BugInCF("invalid position source, class=" + source.getClass());
+      throw new BugInCF("invalid position source of class " + source.getClass() + ": " + source);
     }
   }
 
