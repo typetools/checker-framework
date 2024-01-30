@@ -786,7 +786,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    */
   public boolean removePrimaryTopAnnotations() {
     int oldSize = primaryAnnotations.size();
-    primaryAnnotations.removeIf(am -> factory.isTop(am));
+    primaryAnnotations.removeIf(am -> atypeFactory.isTop(am));
     return oldSize != primaryAnnotations.size();
   }
 

@@ -5546,19 +5546,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // This implementation does nothing.
   }
 
-  // TODO: Should this work for all variables, including formal parameters?
-  /**
-   * Side-effects the field annotations to make any desired changes before writing to an annotation
-   * file.
-   *
-   * @param fieldAnnos the method or constructor annotations to modify
-   * @see #wpiPrepareFieldForWriting(
-   *     WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos)
-   */
-  public void wpiPrepareFieldForWriting(AField fieldAnnos) {
-    // This implementation does nothing.
-  }
-
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
    * to an ajava file.
@@ -5593,19 +5580,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // This side effect won't affect any future call to wpiPrepareMethodForWriting, because
     // methodAnnos is a deep copy of the real inference storage data structure.
     methodAnnos.removePrimaryTopAnnotations();
-  }
-
-  // TODO: Should this work for all variables, including formal parameters?
-  /**
-   * Side-effects the field annotations to make any desired changes before writing to an ajava file.
-   *
-   * <p>Overriding implementations should call {@code super.wpiPrepareFieldForWriting()}.
-   *
-   * @param fieldAnnos the field annotations to modify
-   */
-  // TODO: probably pass in the class, or put this in the class's method.
-  public void wpiPrepareFieldForWriting(Object fieldAnnos) {
-    // TODO: implement.
   }
 
   /**

@@ -944,7 +944,9 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     // fields
-    classAnnos.fields.entrySet().removeIf(entry -> factory.isTop(entry.getValue()));
+    for (Map.Entry<String, FieldAnnos> fieldEntry : classAnnos.fields.entrySet()) {
+      fieldEntry.getValue().removePrimaryTopAnnotations();
+    }
 
     // methods
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
@@ -1789,7 +1791,7 @@ public class WholeProgramInferenceJavaParserStorage
     }
 
     /** Removes the primary annotations in the signature that are the top in their hierarchy. */
-    public removePrimaryTopAnnotations() {
+    public void removePrimaryTopAnnotations() {
       if (returnType != null) {
         returnType.removePrimaryTopAnnotations();
       }
@@ -1961,6 +1963,13 @@ public class WholeProgramInferenceJavaParserStorage
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
+    }
+
+    /** Removes the top annotations from this. */
+    public void removePrimaryTopAnnotations() {
+      if (type != null) {
+        type.removePrimaryTopAnnotations();
+      }
     }
 
     @Override
