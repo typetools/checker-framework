@@ -2,6 +2,20 @@ import java.util.List;
 
 class Comparisons {
 
+  /**** Tests for NE ****/
+  void t0(List<String> strs) {
+    if (strs.size() != 0) {
+      strs.iterator().next();
+    }
+    if (0 != strs.size()) {
+      strs.iterator().next();
+    }
+    if (1 != strs.size()) {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    }
+  }
+
   /**** Tests for GT ****/
   void t1(List<String> strs) {
     if (strs.size() > 0) {
@@ -10,6 +24,12 @@ class Comparisons {
       // :: error: (method.invocation)
       strs.iterator().next();
     } else if (100 > strs.size()) {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    }
+    if (strs.size() > 0) {
+      strs.iterator().next();
+    } else {
       // :: error: (method.invocation)
       strs.iterator().next();
     }
@@ -72,6 +92,8 @@ class Comparisons {
     if (strs.size() <= 0) {
       // :: error: (method.invocation)
       strs.iterator().next();
+    } else {
+      strs.iterator().next(); // OK, since strs must be non-empty
     }
   }
 
@@ -83,6 +105,12 @@ class Comparisons {
       strs.iterator().next();
     } else if (10 <= strs.size()) {
       strs.iterator().next();
+    }
+    if (0 <= strs.size()) {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    } else {
+      strs.iterator().next(); // OK, since strs must be non-empty
     }
   }
 }
