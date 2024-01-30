@@ -1,5 +1,6 @@
 package org.checkerframework.common.initializedfields;
 
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -125,8 +126,9 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     @Override
-    public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-      Set<Contract.Postcondition> result = super.getPostconditions(executableElement);
+    public Set<Contract.Postcondition> getPostconditions(
+        ExecutableElement executableElement, MethodTree methodDecl) {
+      Set<Contract.Postcondition> result = super.getPostconditions(executableElement, methodDecl);
 
       // Only process methods defined in source code being type-checked.
       if (declarationFromElement(executableElement) != null) {

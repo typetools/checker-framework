@@ -268,7 +268,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       Map<TypeMirror, AccumulationStore> exceptionalStores) {
     Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     for (EnsuresCalledMethodOnExceptionContract postcond :
-        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(method)) {
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
+            .getExceptionalPostconditions(method, null)) {
       JavaExpression e;
       try {
         e =

@@ -2,6 +2,7 @@ package org.checkerframework.checker.calledmethods;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
@@ -483,7 +484,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *     and can be freely modified by callers
    */
   public Set<EnsuresCalledMethodOnExceptionContract> getExceptionalPostconditions(
-      ExecutableElement methodOrConstructor) {
+      ExecutableElement methodOrConstructor, MethodTree methodDecl) {
     Set<EnsuresCalledMethodOnExceptionContract> result = new LinkedHashSet<>();
 
     parseEnsuresCalledMethodOnExceptionListAnnotation(
@@ -496,8 +497,9 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException.List} annotation and stores the results in <code>out</code>.
+   * Helper for {@link #getExceptionalPostconditions(ExecutableElement, MethodTree)} that parses a
+   * {@link EnsuresCalledMethodsOnException.List} annotation and stores the results in <code>out
+   * </code>.
    *
    * @param annotation the annotation
    * @param out the output collection
@@ -521,8 +523,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Helper for {@link #getExceptionalPostconditions(ExecutableElement)} that parses a {@link
-   * EnsuresCalledMethodsOnException} annotation and stores the results in <code>out</code>.
+   * Helper for {@link #getExceptionalPostconditions(ExecutableElement, MethodTree)} that parses a
+   * {@link EnsuresCalledMethodsOnException} annotation and stores the results in <code>out</code>.
    *
    * @param annotation the annotation
    * @param out the output collection

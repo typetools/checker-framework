@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.MethodTree;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -23,6 +24,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.util.IPair;
 
 /**
@@ -60,13 +62,14 @@ public class ContractsFromMethod {
    * Returns all the contracts on method or constructor {@code executableElement}.
    *
    * @param executableElement the method or constructor whose contracts to retrieve
+   * @param methodDecl the method declaration
    * @return the contracts on {@code executableElement}
    */
-  public Set<Contract> getContracts(ExecutableElement executableElement) {
+  public Set<Contract> getContracts(ExecutableElement executableElement, MethodTree methodDecl) {
     Set<Contract> contracts = new LinkedHashSet<>();
-    contracts.addAll(getPreconditions(executableElement));
-    contracts.addAll(getPostconditions(executableElement));
-    contracts.addAll(getConditionalPostconditions(executableElement));
+    contracts.addAll(getPreconditions(executableElement, methodDecl));
+    contracts.addAll(getPostconditions(executableElement, methodDecl));
+    contracts.addAll(getConditionalPostconditions(executableElement, methodDecl));
     return contracts;
   }
 
@@ -76,8 +79,10 @@ public class ContractsFromMethod {
    * @param executableElement the method whose contracts to return
    * @return the precondition contracts on {@code executableElement}
    */
-  public Set<Contract.Precondition> getPreconditions(ExecutableElement executableElement) {
-    return getContracts(executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class);
+  public Set<Contract.Precondition> getPreconditions(
+      ExecutableElement executableElement, @Nullable MethodTree methodDecl) {
+    return getContractsOfKind(
+        executableElement, Contract.Kind.PRECONDITION, Contract.Precondition.class, methodDecl);
   }
 
   /**
@@ -86,9 +91,10 @@ public class ContractsFromMethod {
    * @param executableElement the method whose contracts to return
    * @return the postcondition contracts on {@code executableElement}
    */
-  public Set<Contract.Postcondition> getPostconditions(ExecutableElement executableElement) {
-    return getContracts(
-        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class);
+  public Set<Contract.Postcondition> getPostconditions(
+      ExecutableElement executableElement, @Nullable MethodTree methodDecl) {
+    return getContractsOfKind(
+        executableElement, Contract.Kind.POSTCONDITION, Contract.Postcondition.class, methodDecl);
   }
 
   /**
@@ -98,11 +104,12 @@ public class ContractsFromMethod {
    * @return the conditional postcondition contracts on {@code methodElement}
    */
   public Set<Contract.ConditionalPostcondition> getConditionalPostconditions(
-      ExecutableElement methodElement) {
-    return getContracts(
+      ExecutableElement methodElement, @Nullable MethodTree methodDecl) {
+    return getContractsOfKind(
         methodElement,
         Contract.Kind.CONDITIONALPOSTCONDITION,
-        Contract.ConditionalPostcondition.class);
+        Contract.ConditionalPostcondition.class,
+        methodDecl);
   }
 
   /// Helper methods
@@ -115,18 +122,25 @@ public class ContractsFromMethod {
    * @param executableElement the method whose contracts to return
    * @param kind the kind of contracts to retrieve
    * @param clazz the class to determine the return type
+   * @param methodDecl the declaration of executableElement, or null
    * @return the contracts on {@code executableElement}
    */
-  private <T extends Contract> Set<T> getContracts(
-      ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
+  private <T extends Contract> Set<T> getContractsOfKind(
+      ExecutableElement executableElement,
+      Contract.Kind kind,
+      Class<T> clazz,
+      @Nullable MethodTree methodDecl) {
     Set<T> result = new LinkedHashSet<>();
+
     // Check for a single framework-defined contract annotation.
+    // The result is RequiresQualifier, EnsuresQualifier, or EnsuresQualifierIf.
     AnnotationMirror frameworkContractAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
     result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
     // Check for a framework-defined wrapper around contract annotations.
     // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+    // Add its elements to `result`.
     AnnotationMirror frameworkContractListAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractListClass);
     if (frameworkContractListAnno != null) {
@@ -137,18 +151,47 @@ public class ContractsFromMethod {
       }
     }
 
-    // Check for type-system specific annotations.
+    // At this point, `result` contains only framework-defined contract annotations.
+    Set<AnnotationMirror> tops = factory.getQualifierHierarchy().getTopAnnotations();
+    for (T contract : result) {
+      AnnotationMirror anno = contract.annotation;
+      if (AnnotationUtils.containsSame(tops, anno)) {
+        // TODO: Unfortunately, TypeSystemError does not permit giving a tree at which to issue the
+        // error.  Obtain the file and line number from the tree, and print them here.
+        // TODO: Issue a warning on the annotation itself rather than on the method declaration.
+        // This requires iterating over the annotation trees on the method declaration to determine
+        // which one led tho the given AnnotationMirror.
+        throw new TypeSystemError(
+            "Contract annotation %s on method %s uses the top qualifier %s, which has no effect.",
+            contract.contractAnnotation, methodDecl.getName(), anno);
+      }
+    }
+
+    // Check for type-system specific annotations.  These are the annotations that are
+    // meta-annotated by `kind.metaAnnotation`, which is PreconditionAnnotation,
+    // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
     List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
     for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
       AnnotationMirror anno = r.first;
-      // contractAnno is the meta-annotation on anno.
+      // contractAnno is the meta-annotation on anno, such as PreconditionAnnotation,
+      // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
       AnnotationMirror contractAnno = r.second;
       AnnotationMirror enforcedQualifier =
           getQualifierEnforcedByContractAnnotation(contractAnno, anno);
       if (enforcedQualifier == null) {
         continue;
       }
+      if (AnnotationUtils.containsSame(tops, enforcedQualifier)) {
+        // TODO: issue a warning on the annotation itself rather than on the method declaration.
+        // This requires iterating over the annotation trees on the method declaration to determine
+        // which one led tho the given AnnotationMirror.
+
+        factory
+            .getChecker()
+            .reportError(methodDecl, "contract.top.qualifier", enforcedQualifier, contractAnno);
+      }
+
       List<String> expressions = factory.getContractExpressions(kind, anno);
       Collections.sort(expressions);
       Boolean ensuresQualifierIfResult = factory.getEnsuresQualifierIfResult(kind, anno);
@@ -169,7 +212,7 @@ public class ContractsFromMethod {
    * @param <T> the type of {@link Contract} to return
    * @param kind the kind of {@code contractAnnotation}
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
-   *     EnsuresQualifierIf}, or null
+   *     EnsuresQualifierIf}, or null; TODO: document when a client would pass null
    * @param clazz the class to determine the return type
    * @return the contracts expressed by the given annotation, or the empty set if the argument is
    *     null

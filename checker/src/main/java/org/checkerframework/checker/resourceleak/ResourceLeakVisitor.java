@@ -280,9 +280,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       String message =
           isMustCallAliasAnnotationOnParameter
               ? String.format(
-                  "there is no @MustCallAlias annotation on %s, even though the parameter %s is annotated with @MustCallAlias",
+                  "there is no @MustCallAlias annotation on %s, even though the parameter %s is"
+                      + " annotated with @MustCallAlias",
                   locationOfCheck, paramWithMustCallAliasAnno)
-              : "no parameter has a @MustCallAlias annotation, even though the return type is annotated with @MustCallAlias";
+              : "no parameter has a @MustCallAlias annotation, even though the return type is"
+                  + " annotated with @MustCallAlias";
       checker.reportWarning(tree, "mustcallalias.method.return.and.param", message);
     }
   }
@@ -539,7 +541,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             }
 
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
-                rlTypeFactory.getExceptionalPostconditions(siblingMethod);
+                rlTypeFactory.getExceptionalPostconditions(siblingMethod, null);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
               if (expressionEqualsField(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(

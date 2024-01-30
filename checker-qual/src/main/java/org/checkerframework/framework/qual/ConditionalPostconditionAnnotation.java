@@ -66,7 +66,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.ANNOTATION_TYPE})
 public @interface ConditionalPostconditionAnnotation {
   /**
-   * The qualifier that will be established as a postcondition.
+   * The qualifier that will be established as a postcondition. There is no point using the top
+   * qualifier, which would have no effect because every expression has the top type (and possibly
+   * some more refined type). Establishing more refined types is the point of a pre- or
+   * post-condition annotation.
    *
    * <p>This element is analogous to {@link EnsuresQualifierIf#qualifier()}.
    */
