@@ -124,10 +124,12 @@ public class ContractsFromMethod {
     Set<T> result = new LinkedHashSet<>();
 
     // Check for a single framework-defined contract annotation.
-    // The result is RequiresQualifier, EnsuresQualifier, or EnsuresQualifierIf.
+    // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
-    result.addAll(getContract(kind, frameworkContractAnno, clazz));
+    if (frameworkContractAnno != null) {
+      result.addAll(getContract(kind, frameworkContractAnno, clazz));
+    }
 
     // Check for a framework-defined wrapper around contract annotations.
     // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
@@ -208,8 +210,8 @@ public class ContractsFromMethod {
    *
    * @param <T> the type of {@link Contract} to return
    * @param kind the kind of {@code contractAnnotation}
-   * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, {@link
-   *     EnsuresQualifierIf}, or null; TODO: document when a client would pass null
+   * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
+   *     EnsuresQualifierIf}
    * @param clazz the class to determine the return type
    * @return the contracts expressed by the given annotation, or the empty set if the argument is
    *     null
