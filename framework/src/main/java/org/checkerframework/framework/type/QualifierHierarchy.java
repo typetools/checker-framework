@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -76,10 +77,10 @@ public abstract class QualifierHierarchy {
    * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
-   * @returns true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   * @return true if the given qualifer is one of the top annotations for this qualifer hierarchy
    */
   public boolean isTop(AnnotationMirror qualifier) {
-    return AnnotationUtils.containsSame(getTopAnnotations(), anno);
+    return AnnotationUtils.containsSame(getTopAnnotations(), qualifier);
   }
 
   /**
