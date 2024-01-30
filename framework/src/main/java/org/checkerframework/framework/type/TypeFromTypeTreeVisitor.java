@@ -49,7 +49,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
-  private final Map<Tree, AnnotatedTypeMirror> visitedBounds = new HashMap<>();
+  public final Map<Tree, AnnotatedTypeVariable> visitedTypeParameter = new HashMap<>();
 
   @Override
   public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree tree, AnnotatedTypeFactory f) {
@@ -190,21 +190,21 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeVariable visitTypeParameter(
       TypeParameterTree tree, @FindDistinct AnnotatedTypeFactory f) {
-
-    List<AnnotatedTypeMirror> bounds = new ArrayList<>(tree.getBounds().size());
-    for (Tree t : tree.getBounds()) {
-      AnnotatedTypeMirror bound;
-      if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).atypeFactory) {
-        bound = visitedBounds.get(t);
-      } else {
-        visitedBounds.put(t, f.type(t));
-        bound = visit(t, f);
-        visitedBounds.remove(t);
-      }
-      bounds.add(bound);
+    if (visitedTypeParameter.containsKey(tree)) {
+      return visitedTypeParameter.get(tree);
     }
 
     AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(tree);
+    // If this type parameter is recursive and it is found again while visiting the bounds, then
+    // return use the same AnnotateTypeVariable object.
+    visitedTypeParameter.put(tree, result);
+
+    List<AnnotatedTypeMirror> bounds = new ArrayList<>(tree.getBounds().size());
+    for (Tree t : tree.getBounds()) {
+      bounds.add(visit(t, f));
+    }
+    visitedTypeParameter.remove(tree);
+
     List<? extends AnnotationMirror> annotations = TreeUtils.annotationsFromTree(tree);
     result.getLowerBound().addAnnotations(annotations);
 
