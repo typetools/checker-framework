@@ -73,13 +73,22 @@ public abstract class Contract {
     /** Used for constructing error messages. */
     public final String errorKey;
 
-    /** The meta-annotation identifying annotations of this kind. */
+    /**
+     * The meta-annotation identifying annotations of this kind: PreconditionAnnotation,
+     * PostconditionAnnotation, or ConditionalPostconditionAnnotation.
+     */
     public final Class<? extends Annotation> metaAnnotation;
 
-    /** The built-in framework qualifier for this contract. */
+    /**
+     * The built-in framework qualifier for this contract: RequiresQualifier, EnsuresQualifier, or
+     * EnsuresQualifierIf.
+     */
     public final Class<? extends Annotation> frameworkContractClass;
 
-    /** The built-in framework qualifier for repeated occurrences of this contract. */
+    /**
+     * The built-in framework qualifier for repeated occurrences of this contract:
+     * RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+     */
     public final Class<? extends Annotation> frameworkContractListClass;
 
     /**
@@ -125,7 +134,7 @@ public abstract class Contract {
   }
 
   /**
-   * Creates a new Contract.
+   * Creates a new {@code Contract}.
    *
    * @param kind precondition, postcondition, or conditional postcondition
    * @param expressionString the Java expression that should have a type qualifier

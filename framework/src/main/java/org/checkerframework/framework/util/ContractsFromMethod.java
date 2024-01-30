@@ -121,12 +121,14 @@ public class ContractsFromMethod {
       ExecutableElement executableElement, Contract.Kind kind, Class<T> clazz) {
     Set<T> result = new LinkedHashSet<>();
     // Check for a single framework-defined contract annotation.
+    // The result is RequiresQualifier, EnsuresQualifier, EnsuresQualifierIf, or null.
     AnnotationMirror frameworkContractAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractClass);
     result.addAll(getContract(kind, frameworkContractAnno, clazz));
 
     // Check for a framework-defined wrapper around contract annotations.
     // The result is RequiresQualifier.List, EnsuresQualifier.List, or EnsuresQualifierIf.List.
+    // Add its elements to `result`.
     AnnotationMirror frameworkContractListAnno =
         factory.getDeclAnnotation(executableElement, kind.frameworkContractListClass);
     if (frameworkContractListAnno != null) {
@@ -137,12 +139,15 @@ public class ContractsFromMethod {
       }
     }
 
-    // Check for type-system specific annotations.
+    // Check for type-system specific annotations.  These are the annotations that are
+    // meta-annotated by `kind.metaAnnotation`, which is PreconditionAnnotation,
+    // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
     List<IPair<AnnotationMirror, AnnotationMirror>> declAnnotations =
         factory.getDeclAnnotationWithMetaAnnotation(executableElement, kind.metaAnnotation);
     for (IPair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
       AnnotationMirror anno = r.first;
-      // contractAnno is the meta-annotation on anno.
+      // contractAnno is the meta-annotation on anno, such as PreconditionAnnotation,
+      // PostconditionAnnotation, or ConditionalPostconditionAnnotation.
       AnnotationMirror contractAnno = r.second;
       AnnotationMirror enforcedQualifier =
           getQualifierEnforcedByContractAnnotation(contractAnno, anno);
