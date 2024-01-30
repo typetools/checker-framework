@@ -943,6 +943,10 @@ public class WholeProgramInferenceJavaParserStorage
       return;
     }
 
+    // fields
+    classAnnos.fields.entrySet().removeIf(entry -> factory.isTop(entry.getValue()));
+
+    // methods
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
@@ -1069,9 +1073,9 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
-      // This implementation uses JavaParser's lexical preserving printing, which writes the file
-      // such that its formatting is close to the original source file it was parsed from as
-      // possible. It is commented out because, this feature is very buggy and crashes when adding
+      // This one-line implementation uses JavaParser's lexical preserving printing, which writes
+      // the file such that its formatting is close to the original source file it was parsed from
+      // as possible. It is commented out because this feature is very buggy and crashes when adding
       // annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
@@ -1780,6 +1784,21 @@ public class WholeProgramInferenceJavaParserStorage
               inferredComponentType, javaParserType);
         } else {
           WholeProgramInferenceJavaParserStorage.transferAnnotations(inferredType, javaParserType);
+        }
+      }
+    }
+
+    /** Removes the primary annotations in the signature that are the top in their hierarchy. */
+    public removePrimaryTopAnnotations() {
+      if (returnType != null) {
+        returnType.removePrimaryTopAnnotations();
+      }
+      if (receiverType != null) {
+        receiverType.removePrimaryTopAnnotations();
+      }
+      if (parameterTypes != null) {
+        for (AnnotatedTypeMirror atm : parameterTypes) {
+          atm.removePrimaryTopAnnotations();
         }
       }
     }

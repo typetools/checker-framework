@@ -5527,8 +5527,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * to an annotation file.
    *
    * @param methodAnnos the method or constructor annotations to modify
+   * @see #wpiPrepareMethodForWriting(
+   *     WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos,
+   *     Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos>,
+   *     Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos>)
    */
   public void wpiPrepareMethodForWriting(AMethod methodAnnos) {
+    // This implementation does nothing.
+  }
+
+  // TODO: Should this work for all variables, including formal parameters?
+  /**
+   * Side-effects the field annotations to make any desired changes before writing to an annotation
+   * file.
+   *
+   * @param fieldAnnos the method or constructor annotations to modify
+   * @see #wpiPrepareFieldForWriting(
+   *     WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos)
+   */
+  public void wpiPrepareFieldForWriting(AField fieldAnnos) {
     // This implementation does nothing.
   }
 
@@ -5561,6 +5578,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       makeConditionConsistentWithOtherMethod(precondMap, inSubtype, true, false);
       makeConditionConsistentWithOtherMethod(postcondMap, inSubtype, false, false);
     }
+
+    // Remove top annotations on the method signature after the above runs.
+    // This side effect won't affect any future call to wpiPrepareMethodForWriting, because
+    // methodAnnos is a deep copy of the real inference storage data structure.
+    methodAnnos.removePrimaryTopAnnotations();
+  }
+
+  // TODO: Should this work for all variables, including formal parameters?
+  /**
+   * Side-effects the field annotations to make any desired changes before writing to an ajava file.
+   *
+   * <p>Overriding implementations should call {@code super.wpiPrepareFieldForWriting()}.
+   *
+   * @param fieldAnnos the field annotations to modify
+   */
+  // TODO: probably pass in the class, or put this in the class's method.
+  public void wpiPrepareFieldForWriting(Object fieldAnnos) {
+    // TODO: implement.
   }
 
   /**
