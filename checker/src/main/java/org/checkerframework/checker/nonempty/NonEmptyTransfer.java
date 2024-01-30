@@ -8,6 +8,7 @@ import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -44,19 +45,35 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   @Override
+  public TransferResult<CFValue, CFStore> visitLessThan(
+      LessThanNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThan(n, in);
+    refineGT(n.getRightOperand(), n.getLeftOperand(), result);
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
+      LessThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(n, in);
+    refineGTE(n.getRightOperand(), n.getLeftOperand(), result);
+    return result;
+  }
+
+  @Override
   public TransferResult<CFValue, CFStore> visitGreaterThan(
       GreaterThanNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitGreaterThan(n, in);
-    handleContainerSizeComparison(n.getLeftOperand(), n.getRightOperand(), result);
-    return result; // stub
+    refineGT(n.getLeftOperand(), n.getRightOperand(), result);
+    return result;
   }
 
   @Override
   public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
       GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
-    // TODO: implement me
     TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(n, in);
-    return result; // stub
+    refineGTE(n.getLeftOperand(), n.getRightOperand(), result);
+    return result;
   }
 
   private TransferResult<CFValue, CFStore> refineNotEqual(
@@ -76,25 +93,37 @@ public class NonEmptyTransfer extends CFTransfer {
     return in;
   }
 
-  @Override
-  public TransferResult<CFValue, CFStore> visitLessThan(
-      LessThanNode n, TransferInput<CFValue, CFStore> cfValueCFStoreTransferInput) {
-    return super.visitLessThan(n, cfValueCFStoreTransferInput);
-  }
-
-  private TransferResult<CFValue, CFStore> handleContainerSizeComparison(
-      Node possibleCollectionSize, Node possibleConstant, TransferResult<CFValue, CFStore> in) {
-    if (!isSizeAccess(possibleCollectionSize)) {
+  private TransferResult<CFValue, CFStore> refineGT(
+      Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
+    if (!isSizeAccess(lhs)) {
       return in;
     }
-    if (!(possibleConstant instanceof IntegerLiteralNode)) {
+    if (!(rhs instanceof IntegerLiteralNode)) {
       return in;
     }
 
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleConstant;
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
     if (integerLiteralNode.getValue() >= 0) {
       // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
-      JavaExpression receiver = getReceiver(possibleCollectionSize);
+      JavaExpression receiver = getReceiver(lhs);
+      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+    }
+    return in;
+  }
+
+  private TransferResult<CFValue, CFStore> refineGTE(
+      Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
+    if (!isSizeAccess(lhs)) {
+      return in;
+    }
+    if (!(rhs instanceof IntegerLiteralNode)) {
+      return in;
+    }
+
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+    if (integerLiteralNode.getValue() > 0) {
+      // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
+      JavaExpression receiver = getReceiver(lhs);
       in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
     return in;
