@@ -1064,7 +1064,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param qualifier a type qualifier
    * @return true if the given qualifer is one of the top annotations for the qualifer hierarchy
    */
-  public final isTop(AnnotationMirror qualifier) {
+  public final boolean isTop(AnnotationMirror qualifier) {
     return qualHierarchy.isTop(qualifier);
   }
 
