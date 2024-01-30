@@ -66,8 +66,7 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
       }
     }
     for (EnsuresCalledMethodOnExceptionContract postcond :
-        ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-            .getExceptionalPostconditions(elt, tree)) {
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
       checkExceptionalPostcondition(postcond, tree);
     }
     return super.visitMethod(tree, p);

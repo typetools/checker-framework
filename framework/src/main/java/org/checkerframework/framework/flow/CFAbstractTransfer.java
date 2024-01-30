@@ -495,8 +495,7 @@ public abstract class CFAbstractTransfer<
       MethodTree methodDeclTree,
       ExecutableElement methodElement) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-    Set<Precondition> preconditions =
-        contractsUtils.getPreconditions(methodElement, methodDeclTree);
+    Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
     StringToJavaExpression stringToJavaExpr =
         stringExpr ->
             StringToJavaExpression.atMethodBody(stringExpr, methodDeclTree, analysis.checker);
@@ -1071,7 +1070,7 @@ public abstract class CFAbstractTransfer<
       ExecutableElement executableElement,
       ExpressionTree invocationTree) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
-    Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement, null);
+    Set<Postcondition> postconditions = contractsUtils.getPostconditions(executableElement);
     processPostconditionsAndConditionalPostconditions(
         invocationNode, invocationTree, store, null, postconditions);
   }
@@ -1094,7 +1093,7 @@ public abstract class CFAbstractTransfer<
       S elseStore) {
     ContractsFromMethod contractsUtils = analysis.atypeFactory.getContractsFromMethod();
     Set<ConditionalPostcondition> conditionalPostconditions =
-        contractsUtils.getConditionalPostconditions(methodElement, null);
+        contractsUtils.getConditionalPostconditions(methodElement);
     processPostconditionsAndConditionalPostconditions(
         invocationNode, invocationTree, thenStore, elseStore, conditionalPostconditions);
   }

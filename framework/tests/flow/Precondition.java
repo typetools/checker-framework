@@ -161,7 +161,7 @@ public class Precondition {
     error2();
   }
 
-  // :: warning: (contracts.toptype)
   @RequiresQualifier(expression = "f1", qualifier = Unqualified.class)
+  // :: warning: (contracts.toptype)
   void noOpForTesting() {}
 }

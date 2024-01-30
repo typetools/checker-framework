@@ -2,7 +2,6 @@ package org.checkerframework.checker.resourceleak;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -446,9 +445,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   @Override
   public Set<EnsuresCalledMethodOnExceptionContract> getExceptionalPostconditions(
-      ExecutableElement methodOrConstructor, MethodTree methodDecl) {
+      ExecutableElement methodOrConstructor) {
     Set<EnsuresCalledMethodOnExceptionContract> result =
-        super.getExceptionalPostconditions(methodOrConstructor, methodDecl);
+        super.getExceptionalPostconditions(methodOrConstructor);
 
     // This override is a sneaky way to satisfy a few subtle design constraints:
     //   1. The RLC requires destructors to close the class's @Owning fields even on exception
@@ -476,7 +475,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
     if (isMustCallMethod(methodOrConstructor)) {
       Set<Contract.Postcondition> normalPostconditions =
-          getContractsFromMethod().getPostconditions(methodOrConstructor, methodDecl);
+          getContractsFromMethod().getPostconditions(methodOrConstructor);
       for (Contract.Postcondition normalPostcondition : normalPostconditions) {
         for (String method : getCalledMethods(normalPostcondition.annotation)) {
           result.add(

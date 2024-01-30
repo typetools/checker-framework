@@ -541,7 +541,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             }
 
             Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
-                rlTypeFactory.getExceptionalPostconditions(siblingMethod, null);
+                rlTypeFactory.getExceptionalPostconditions(siblingMethod);
             for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
               if (expressionEqualsField(postcond.getExpression(), field)) {
                 unsatisfiedMustCallObligationsOfOwningField.remove(

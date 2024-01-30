@@ -1284,8 +1284,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExecutableElement methodElement,
       List<String> formalParamNames,
       boolean abstractMethod) {
-    Set<Contract> contracts =
-        atypeFactory.getContractsFromMethod().getContracts(methodElement, methodTree);
+    Set<Contract> contracts = atypeFactory.getContractsFromMethod().getContracts(methodElement);
 
     if (contracts.isEmpty()) {
       return;
@@ -1824,7 +1823,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // check precondition annotations
     checkPreconditions(
-        tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement, null));
+        tree, atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
 
     if (TreeUtils.isSuperConstructorCall(tree)) {
       checkSuperConstructorCall(tree);
@@ -4041,8 +4040,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ContractsFromMethod contractsUtils = atypeFactory.getContractsFromMethod();
 
       // Check preconditions
-      Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement(), null);
-      Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement(), null);
+      Set<Precondition> superPre = contractsUtils.getPreconditions(overridden.getElement());
+      Set<Precondition> subPre = contractsUtils.getPreconditions(overrider.getElement());
       Set<IPair<JavaExpression, AnnotationMirror>> superPre2 =
           parseAndLocalizeContracts(superPre, overridden);
       Set<IPair<JavaExpression, AnnotationMirror>> subPre2 =
@@ -4052,9 +4051,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkContractsSubset(overriderType, overriddenType, subPre2, superPre2, premsg);
 
       // Check postconditions
-      Set<Postcondition> superPost =
-          contractsUtils.getPostconditions(overridden.getElement(), null);
-      Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement(), null);
+      Set<Postcondition> superPost = contractsUtils.getPostconditions(overridden.getElement());
+      Set<Postcondition> subPost = contractsUtils.getPostconditions(overrider.getElement());
       Set<IPair<JavaExpression, AnnotationMirror>> superPost2 =
           parseAndLocalizeContracts(superPost, overridden);
       Set<IPair<JavaExpression, AnnotationMirror>> subPost2 =
@@ -4065,9 +4063,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       // Check conditional postconditions
       Set<ConditionalPostcondition> superCPost =
-          contractsUtils.getConditionalPostconditions(overridden.getElement(), null);
+          contractsUtils.getConditionalPostconditions(overridden.getElement());
       Set<ConditionalPostcondition> subCPost =
-          contractsUtils.getConditionalPostconditions(overrider.getElement(), null);
+          contractsUtils.getConditionalPostconditions(overrider.getElement());
       // consider only 'true' postconditions
       Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
       Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
