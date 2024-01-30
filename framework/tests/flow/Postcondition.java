@@ -1,3 +1,4 @@
+import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -311,5 +312,16 @@ public class Postcondition {
       // :: error: (assignment)
       @Odd String l6 = f1;
     }
+  }
+
+  /** *** errors for invalid postconditions ***** */
+  @EnsuresQualifier(expression = "f1", qualifier = Unqualified.class)
+  // :: warning: (contracts.toptype)
+  void noOpForTesting() {}
+
+  @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Unqualified.class)
+  // :: warning: (contracts.toptype)
+  boolean isF1NotSet() {
+    return f1 == null;
   }
 }

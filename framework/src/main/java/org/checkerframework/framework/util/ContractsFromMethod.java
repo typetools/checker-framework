@@ -156,14 +156,19 @@ public class ContractsFromMethod {
     for (T contract : result) {
       AnnotationMirror anno = contract.annotation;
       if (AnnotationUtils.containsSame(tops, anno)) {
-        // TODO: Unfortunately, TypeSystemError does not permit giving a tree at which to issue the
-        // error.  Obtain the file and line number from the tree, and print them here.
-        // TODO: Issue a warning on the annotation itself rather than on the method declaration.
+        // TODO: issue a warning on the annotation itself rather than on the method declaration.
         // This requires iterating over the annotation trees on the method declaration to determine
         // which one led tho the given AnnotationMirror.
-        throw new TypeSystemError(
-            "Contract annotation %s on method %s uses the top qualifier %s, which has no effect.",
-            contract.contractAnnotation, methodDecl.getName(), anno);
+        if (methodDecl != null) {
+          String methodString = " on method " + methodDecl.getName();
+          factory
+              .getChecker()
+              .reportError(
+                  methodDecl,
+                  "contracts.toptype",
+                  anno,
+                  contract.contractAnnotation + methodString);
+        }
       }
     }
 
@@ -183,13 +188,14 @@ public class ContractsFromMethod {
         continue;
       }
       if (AnnotationUtils.containsSame(tops, enforcedQualifier)) {
-        // TODO: issue a warning on the annotation itself rather than on the method declaration.
+        // TODO: Unfortunately, TypeSystemError does not permit giving a tree at which to issue the
+        // error.  Obtain the file and line number from the tree, and print them here.
+        // TODO: Issue a warning on the annotation itself rather than on the method declaration.
         // This requires iterating over the annotation trees on the method declaration to determine
         // which one led tho the given AnnotationMirror.
-
-        factory
-            .getChecker()
-            .reportError(methodDecl, "contract.top.qualifier", enforcedQualifier, contractAnno);
+        throw new TypeSystemError(
+            "Contract annotation %s on method %s uses the top qualifier %s, which has no effect.",
+            contractAnno, methodDecl.getName(), enforcedQualifier);
       }
 
       List<String> expressions = factory.getContractExpressions(kind, anno);
