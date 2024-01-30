@@ -21,18 +21,27 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.TreeUtils;
 
+/**
+ * This class provides methods used by the Non-Empty Checker as transfer functions for type rules
+ * that cannot be expressed via simple pre- or post-conditional annotations.
+ */
 public class NonEmptyTransfer extends CFTransfer {
 
-  private final ExecutableElement collectionSize;
+  /** A {@link ProcessingEnvironment} instance. */
   private final ProcessingEnvironment env;
+
+  /** The {@code size()} method of the {@link java.util.Collection} interface. */
+  private final ExecutableElement collectionSize;
+
+  /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
   private final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
   public NonEmptyTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
 
     this.env = analysis.getTypeFactory().getProcessingEnv();
-    this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
     this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, this.env);
+    this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
   @Override
@@ -41,6 +50,30 @@ public class NonEmptyTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitNotEqual(n, in);
     refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result);
     refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result);
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThan(
+      LessThanNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThan(n, in);
+
+    // A < B is equivalent to B > A
+    refineGT(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
+    // This handles the case where n < container.size()
+    refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
+      LessThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(n, in);
+
+    // A <= B is equivalent to B > A
+    refineGT(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
+    // This handles the case where n <= container.size()
+    refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
     return result;
   }
 
@@ -60,31 +93,21 @@ public class NonEmptyTransfer extends CFTransfer {
     return result;
   }
 
-  @Override
-  public TransferResult<CFValue, CFStore> visitLessThan(
-      LessThanNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitLessThan(n, in);
-    refineGT(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
-    refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
-    return result;
-  }
-
-  @Override
-  public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
-      LessThanOrEqualNode n, TransferInput<CFValue, CFStore> in) {
-    TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(n, in);
-    refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
-    refineGT(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
-    return result;
-  }
-
-  private TransferResult<CFValue, CFStore> refineNotEqual(
-      Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
-    if (!isSizeAccess(lhs)) {
-      return in;
-    }
-    if (!(rhs instanceof IntegerLiteralNode)) {
-      return in;
+  /**
+   * Updates the transfer result's store with information from the Non-Empty type system for
+   * expressions of the form {@code container.size() != n} and {@code container.size() != n}.
+   *
+   * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
+   * with the test {@code container.size() != n} where {@code n} is 0 should refine to
+   * {@code @NonEmpty}.
+   *
+   * @param lhs the right-hand side of a not equal operator
+   * @param rhs the left-hand side of a not equals operator
+   * @param in the initial transfer result before refinement
+   */
+  private void refineNotEqual(Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
+    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
+      return;
     }
     IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
     if (integerLiteralNode.getValue() == 0) {
@@ -92,9 +115,20 @@ public class NonEmptyTransfer extends CFTransfer {
       JavaExpression receiver = getReceiver(lhs);
       in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
-    return in;
   }
 
+  /**
+   * Updates the transfer result's store with information from the Non-Empty type system for
+   * expressions of the form {@code container.size() > n}.
+   *
+   * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
+   * with the test {@code container.size() > n} where {@code n >= 0} should be refined to
+   * {@code @NonEmpty}.
+   *
+   * @param lhs the left-hand side of a greater-than operation
+   * @param rhs the right-hand side of a greater-than operation
+   * @param store the abstract store to update
+   */
   private void refineGT(Node lhs, Node rhs, CFStore store) {
     if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
       return;
@@ -107,6 +141,18 @@ public class NonEmptyTransfer extends CFTransfer {
     }
   }
 
+  /**
+   * Updates the transfer result's store with information from the Non-Empty type system for
+   * expressions of the form {@code container.size() >= n}.
+   *
+   * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
+   * with the test {@code container.size() >= n} where {@code n > 0} should be refined to
+   * {@code @NonEmpty}.
+   *
+   * @param lhs the left-hand side of a greater-than-or-equal operation
+   * @param rhs the right-hand side of a greater-than-or-equal operation
+   * @param store the abstract store to update
+   */
   private void refineGTE(Node lhs, Node rhs, CFStore store) {
     if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
       return;
@@ -124,15 +170,22 @@ public class NonEmptyTransfer extends CFTransfer {
    * Given a node that is a possible call to Collection.size(), return true if and only if this is
    * the case.
    *
-   * @param possibleSizeAccess a node that may be a method call to Collection.size()
+   * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
    * @return true iff the node is a method call to Collection.size()
    */
   private boolean isSizeAccess(Node possibleSizeAccess) {
     return NodeUtils.isMethodInvocation(possibleSizeAccess, collectionSize, env);
   }
 
-  private JavaExpression getReceiver(Node sizeAccessNode) {
-    MethodAccessNode methodAccessNode = ((MethodInvocationNode) sizeAccessNode).getTarget();
+  /**
+   * Given a node that is an instance of a method access, return the receiver as a {@link
+   * JavaExpression}.
+   *
+   * @param node an instance of a method access
+   * @return the receiver as a {@link JavaExpression}
+   */
+  private JavaExpression getReceiver(Node node) {
+    MethodAccessNode methodAccessNode = ((MethodInvocationNode) node).getTarget();
     return JavaExpression.fromNode(methodAccessNode.getReceiver());
   }
 }

@@ -2,7 +2,6 @@ package org.checkerframework.checker.nonempty;
 
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nonempty.qual.UnknownNonEmpty;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -13,13 +12,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The @{@link UnknownNonEmpty} annotation * */
-  @SuppressWarnings("UnusedVariable")
-  private final AnnotationMirror UNKNOWN_NON_EMPTY =
-      AnnotationBuilder.fromClass(elements, UnknownNonEmpty.class);
-
   /** The @{@link NonEmpty} annotation * */
-  @SuppressWarnings("UnusedVariable")
   public final AnnotationMirror NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
 
   /**
