@@ -106,14 +106,12 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param in the initial transfer result before refinement
    */
   private void refineNotEqual(Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
-    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
-      return;
-    }
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
-    if (integerLiteralNode.getValue() == 0) {
-      // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
-      JavaExpression receiver = getReceiver(lhs);
-      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+      if (integerLiteralNode.getValue() == 0) {
+        JavaExpression receiver = getReceiver(lhs);
+        in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+      }
     }
   }
 
@@ -130,14 +128,12 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGT(Node lhs, Node rhs, CFStore store) {
-    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
-      return;
-    }
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
-    if (integerLiteralNode.getValue() >= 0) {
-      // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
-      JavaExpression receiver = getReceiver(lhs);
-      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+      if (integerLiteralNode.getValue() >= 0) {
+        JavaExpression receiver = getReceiver(lhs);
+        store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+      }
     }
   }
 
@@ -154,32 +150,28 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGTE(Node lhs, Node rhs, CFStore store) {
-    if (!isSizeAccess(lhs) || !(rhs instanceof IntegerLiteralNode)) {
-      return;
-    }
-
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
-    if (integerLiteralNode.getValue() > 0) {
-      // Update the `then` store to have @NonEmpty for the receiver of java.util.Collection.size;
-      JavaExpression receiver = getReceiver(lhs);
-      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+      if (integerLiteralNode.getValue() > 0) {
+        JavaExpression receiver = getReceiver(lhs);
+        store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+      }
     }
   }
 
   /**
-   * Given a node that is a possible call to Collection.size(), return true if and only if this is
-   * the case.
+   * Return true if the given node is an instance of a method invocation node for {@code
+   * Collection.size()}.
    *
    * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
-   * @return true iff the node is a method call to Collection.size()
+   * @return true if the node is a method call to Collection.size()
    */
   private boolean isSizeAccess(Node possibleSizeAccess) {
     return NodeUtils.isMethodInvocation(possibleSizeAccess, collectionSize, env);
   }
 
   /**
-   * Given a node that is an instance of a method access, return the receiver as a {@link
-   * JavaExpression}.
+   * Return the receiver as a {@link JavaExpression} given a method invocation node.
    *
    * @param node an instance of a method access
    * @return the receiver as a {@link JavaExpression}

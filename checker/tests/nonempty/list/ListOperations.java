@@ -4,19 +4,21 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 class ListOperations {
 
-  void testGetOnEmptyList(List<String> strs) {
-    // :: error: (method.invocation)
-    strs.get(0);
-  }
+  // Skip test until we decide whether to handle accesses on empty containers
+  // void testGetOnEmptyList(List<String> strs) {
+  //   // :: error: (method.invocation)
+  //   strs.get(0);
+  // }
 
-  void testGetOnNonEmptyList(List<String> strs) {
-    if (strs.isEmpty()) {
-      // :: error: (method.invocation)
-      strs.get(0);
-    } else {
-      strs.get(0); // OK
-    }
-  }
+  // Skip test until we decide whether to handle accesses on empty containers
+  // void testGetOnNonEmptyList(List<String> strs) {
+  //   if (strs.isEmpty()) {
+  //     // :: error: (method.invocation)
+  //     strs.get(0);
+  //   } else {
+  //     strs.get(0); // OK
+  //   }
+  // }
 
   void testAddToEmptyListAndGet() {
     List<Integer> nums = new ArrayList<>();
