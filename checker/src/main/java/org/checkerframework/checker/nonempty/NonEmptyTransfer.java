@@ -6,6 +6,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
@@ -99,6 +101,27 @@ public class NonEmptyTransfer extends CFTransfer {
     return result;
   }
 
+  @Override
+  public TransferResult<CFValue, CFStore> visitCase(
+      CaseNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitCase(n, in);
+    List<Node> caseOperands = n.getCaseOperands();
+    AssignmentNode assign = n.getSwitchOperand();
+    Node switchNode = assign.getExpression();
+    if (!isSizeAccess(switchNode)) {
+      return result;
+    }
+    for (Node caseOperand : caseOperands) {
+      if (!(caseOperand instanceof IntegerLiteralNode)) {
+        continue;
+      }
+      if (((IntegerLiteralNode) caseOperand).getValue() > 0) {
+        result.getThenStore().insertValue(getReceiver(switchNode), aTypeFactory.NON_EMPTY);
+      }
+    }
+    return result;
+  }
+
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for
    * expressions of the form {@code container.size() != n} and {@code container.size() != n}.
@@ -114,12 +137,14 @@ public class NonEmptyTransfer extends CFTransfer {
    */
   private void refineNotEqual(
       Node possibleSizeAccess, Node possibleIntegerLiteral, TransferResult<CFValue, CFStore> in) {
-    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
-      if (integerLiteralNode.getValue() == 0) {
-        JavaExpression receiver = getReceiver(possibleSizeAccess);
-        in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
-      }
+    if (!isSizeAccess(possibleSizeAccess)
+        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+      return;
+    }
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
+    if (integerLiteralNode.getValue() == 0) {
+      JavaExpression receiver = getReceiver(possibleSizeAccess);
+      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 
@@ -137,12 +162,14 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGT(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
-    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
-      if (integerLiteralNode.getValue() >= 0) {
-        JavaExpression receiver = getReceiver(possibleSizeAccess);
-        store.insertValue(receiver, aTypeFactory.NON_EMPTY);
-      }
+    if (!isSizeAccess(possibleSizeAccess)
+        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+      return;
+    }
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
+    if (integerLiteralNode.getValue() >= 0) {
+      JavaExpression receiver = getReceiver(possibleSizeAccess);
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 
@@ -159,12 +186,14 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param store the abstract store to update
    */
   private void refineGTE(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
-    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
-      if (integerLiteralNode.getValue() > 0) {
-        JavaExpression receiver = getReceiver(possibleSizeAccess);
-        store.insertValue(receiver, aTypeFactory.NON_EMPTY);
-      }
+    if (!isSizeAccess(possibleSizeAccess)
+        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+      return;
+    }
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
+    if (integerLiteralNode.getValue() > 0) {
+      JavaExpression receiver = getReceiver(possibleSizeAccess);
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 

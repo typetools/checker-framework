@@ -16,4 +16,16 @@ class IteratorOperations {
       @NonEmpty Iterator<Integer> unknownEmptyIterator = nums.iterator();
     }
   }
+
+  void testSwitchRefinement(List<Integer> nums) {
+    switch (nums.size()) {
+      case 0:
+        // :: error: (method.invocation)
+        nums.iterator().next();
+      case 1:
+        @NonEmpty List<Integer> nums2 = nums; // OK
+      default:
+        // Nothing
+    }
+  }
 }
