@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The @{@link NonEmpty} annotation * */
+  /** The @{@link NonEmpty} annotation. */
   public final AnnotationMirror NON_EMPTY = AnnotationBuilder.fromClass(elements, NonEmpty.class);
 
   /**

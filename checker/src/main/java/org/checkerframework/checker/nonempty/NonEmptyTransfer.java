@@ -1,5 +1,7 @@
 package org.checkerframework.checker.nonempty;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -33,6 +35,9 @@ public class NonEmptyTransfer extends CFTransfer {
   /** The {@code size()} method of the {@link java.util.Collection} interface. */
   private final ExecutableElement collectionSize;
 
+  /** The {@code size()} method of the {@link java.util.Map} class. */
+  private final ExecutableElement mapSize;
+
   /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
   private final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
@@ -41,6 +46,7 @@ public class NonEmptyTransfer extends CFTransfer {
 
     this.env = analysis.getTypeFactory().getProcessingEnv();
     this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, this.env);
+    this.mapSize = TreeUtils.getMethod("java.util.Map", "size", 0, this.env);
     this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
@@ -101,15 +107,17 @@ public class NonEmptyTransfer extends CFTransfer {
    * with the test {@code container.size() != n} where {@code n} is 0 should refine to
    * {@code @NonEmpty}.
    *
-   * @param lhs the right-hand side of a not equal operator
-   * @param rhs the left-hand side of a not equals operator
+   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
+   *     or {@code Map.size()}
+   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
    * @param in the initial transfer result before refinement
    */
-  private void refineNotEqual(Node lhs, Node rhs, TransferResult<CFValue, CFStore> in) {
-    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+  private void refineNotEqual(
+      Node possibleSizeAccess, Node possibleIntegerLiteral, TransferResult<CFValue, CFStore> in) {
+    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
       if (integerLiteralNode.getValue() == 0) {
-        JavaExpression receiver = getReceiver(lhs);
+        JavaExpression receiver = getReceiver(possibleSizeAccess);
         in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
       }
     }
@@ -123,15 +131,16 @@ public class NonEmptyTransfer extends CFTransfer {
    * with the test {@code container.size() > n} where {@code n >= 0} should be refined to
    * {@code @NonEmpty}.
    *
-   * @param lhs the left-hand side of a greater-than operation
-   * @param rhs the right-hand side of a greater-than operation
+   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
+   *     or {@code Map.size()}
+   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
    * @param store the abstract store to update
    */
-  private void refineGT(Node lhs, Node rhs, CFStore store) {
-    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+  private void refineGT(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
+    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
       if (integerLiteralNode.getValue() >= 0) {
-        JavaExpression receiver = getReceiver(lhs);
+        JavaExpression receiver = getReceiver(possibleSizeAccess);
         store.insertValue(receiver, aTypeFactory.NON_EMPTY);
       }
     }
@@ -145,15 +154,15 @@ public class NonEmptyTransfer extends CFTransfer {
    * with the test {@code container.size() >= n} where {@code n > 0} should be refined to
    * {@code @NonEmpty}.
    *
-   * @param lhs the left-hand side of a greater-than-or-equal operation
-   * @param rhs the right-hand side of a greater-than-or-equal operation
+   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
+   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
    * @param store the abstract store to update
    */
-  private void refineGTE(Node lhs, Node rhs, CFStore store) {
-    if (isSizeAccess(lhs) && rhs instanceof IntegerLiteralNode) {
-      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) rhs;
+  private void refineGTE(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
+    if (isSizeAccess(possibleSizeAccess) && possibleIntegerLiteral instanceof IntegerLiteralNode) {
+      IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
       if (integerLiteralNode.getValue() > 0) {
-        JavaExpression receiver = getReceiver(lhs);
+        JavaExpression receiver = getReceiver(possibleSizeAccess);
         store.insertValue(receiver, aTypeFactory.NON_EMPTY);
       }
     }
@@ -161,13 +170,19 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * Return true if the given node is an instance of a method invocation node for {@code
-   * Collection.size()}.
+   * Collection.size()} or {@code Map.size()}.
    *
    * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
-   * @return true if the node is a method call to Collection.size()
+   *     {@link java.util.List} or {@link java.util.Map} types
+   * @return true if the node is a method call to size()
    */
   private boolean isSizeAccess(Node possibleSizeAccess) {
-    return NodeUtils.isMethodInvocation(possibleSizeAccess, collectionSize, env);
+    // In Java 9+, use `List.of()`
+    List<ExecutableElement> sizeAccessMethods = Arrays.asList(collectionSize, mapSize);
+    return sizeAccessMethods.stream()
+        .anyMatch(
+            sizeAccessMethod ->
+                NodeUtils.isMethodInvocation(possibleSizeAccess, sizeAccessMethod, env));
   }
 
   /**
