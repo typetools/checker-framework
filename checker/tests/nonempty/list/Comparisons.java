@@ -2,6 +2,34 @@ import java.util.List;
 
 class Comparisons {
 
+  /**** Tests for EQ ****/
+  void testEqZeroWithReturn(List<String> strs) {
+    if (strs.size() == 0) {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+      return;
+    }
+    strs.iterator().next(); // OK
+  }
+
+  void testEqZeroFallthrough(List<String> strs) {
+    if (strs.size() == 0) {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    }
+    // :: error: (method.invocation)
+    strs.iterator().next();
+  }
+
+  void testEqNonZero(List<String> strs) {
+    if (1 == strs.size()) {
+      strs.iterator().next();
+    } else {
+      // :: error: (method.invocation)
+      strs.iterator().next();
+    }
+  }
+
   /**** Tests for NE ****/
   void t0(List<String> strs) {
     if (strs.size() != 0) {

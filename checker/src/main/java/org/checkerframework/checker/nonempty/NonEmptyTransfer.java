@@ -6,17 +6,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.CaseNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -53,11 +43,24 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   @Override
+  public TransferResult<CFValue, CFStore> visitEqualTo(
+      EqualToNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitEqualTo(n, in);
+    // Account for the case where size is checked against a non-zero integer
+    refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
+    refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
+    // A == 0 is the inversion of A != 0
+    refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
+    refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result.getElseStore());
+    return result;
+  }
+
+  @Override
   public TransferResult<CFValue, CFStore> visitNotEqual(
       NotEqualNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitNotEqual(n, in);
-    refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result);
-    refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result);
+    refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
+    refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
     return result;
   }
 
@@ -114,19 +117,21 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for
-   * expressions of the form {@code container.size() != n} and {@code container.size() != n}.
+   * expressions of the form {@code container.size() != n} and {@code n != container.size()}.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
    * with the test {@code container.size() != n} where {@code n} is 0 should refine to
    * {@code @NonEmpty}.
    *
+   * <p>This method is also used to refine the "else" store of an equality comparison where {@code
+   * container.size()} is compared against 0.
+   *
    * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
    *     or {@code Map.size()}
    * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
-   * @param in the initial transfer result before refinement
+   * @param store the abstract store to update
    */
-  private void refineNotEqual(
-      Node possibleSizeAccess, Node possibleIntegerLiteral, TransferResult<CFValue, CFStore> in) {
+  private void refineNotEqual(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
     if (!isSizeAccess(possibleSizeAccess)
         || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
       return;
@@ -134,7 +139,7 @@ public class NonEmptyTransfer extends CFTransfer {
     IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
     if (integerLiteralNode.getValue() == 0) {
       JavaExpression receiver = getReceiver(possibleSizeAccess);
-      in.getThenStore().insertValue(receiver, aTypeFactory.NON_EMPTY);
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 
@@ -170,6 +175,9 @@ public class NonEmptyTransfer extends CFTransfer {
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
    * with the test {@code container.size() >= n} where {@code n > 0} should be refined to
    * {@code @NonEmpty}.
+   *
+   * <p>This method is also used to refine the "then" branch of an equality comparison where {@code
+   * container.size()} is compared against a non-zero value.
    *
    * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
    *     or {@code Map.size()}
