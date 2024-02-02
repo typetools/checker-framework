@@ -108,17 +108,7 @@ public class NonEmptyTransfer extends CFTransfer {
     List<Node> caseOperands = n.getCaseOperands();
     AssignmentNode assign = n.getSwitchOperand();
     Node switchNode = assign.getExpression();
-    if (!isSizeAccess(switchNode)) {
-      return result;
-    }
-    for (Node caseOperand : caseOperands) {
-      if (!(caseOperand instanceof IntegerLiteralNode)) {
-        continue;
-      }
-      if (((IntegerLiteralNode) caseOperand).getValue() > 0) {
-        result.getThenStore().insertValue(getReceiver(switchNode), aTypeFactory.NON_EMPTY);
-      }
-    }
+    refineSwitchStatement(switchNode, caseOperands, result.getThenStore(), result.getElseStore());
     return result;
   }
 
@@ -182,6 +172,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * {@code @NonEmpty}.
    *
    * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
+   *     or {@code Map.size()}
    * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
    * @param store the abstract store to update
    */
@@ -194,6 +185,38 @@ public class NonEmptyTransfer extends CFTransfer {
     if (integerLiteralNode.getValue() > 0) {
       JavaExpression receiver = getReceiver(possibleSizeAccess);
       store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+    }
+  }
+
+  /**
+   * Updates the transfer result's store with information from the Non-Empty type system for switch
+   * statements, where the test expression is of the form {@code container.size()}.
+   *
+   * <p>For example, the "then" store of any case node with an integer value greater than 0 should
+   * refine the type of {@code container} to {@code @NonEmpty}.
+   *
+   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
+   *     or {@code Map.size()}
+   * @param caseOperands the operands within each case label
+   * @param thenStore the "then" store
+   * @param elseStore the "else" store, corresponding to the "default" case label
+   */
+  private void refineSwitchStatement(
+      Node possibleSizeAccess, List<Node> caseOperands, CFStore thenStore, CFStore elseStore) {
+    if (!isSizeAccess(possibleSizeAccess)) {
+      return;
+    }
+    for (Node caseOperand : caseOperands) {
+      if (!(caseOperand instanceof IntegerLiteralNode)) {
+        continue;
+      }
+      IntegerLiteralNode caseIntegerLiteral = (IntegerLiteralNode) caseOperand;
+      JavaExpression receiver = getReceiver(possibleSizeAccess);
+      // If a value is encountered that is <= 0, the type of the container in the "else" store
+      // (i.e., the
+      // default case) is refined to @NonEmpty
+      CFStore storeToUpdate = caseIntegerLiteral.getValue() > 0 ? thenStore : elseStore;
+      storeToUpdate.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 

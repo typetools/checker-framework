@@ -17,15 +17,42 @@ class IteratorOperations {
     }
   }
 
-  void testSwitchRefinement(List<Integer> nums) {
+  void testSwitchRefinementNoFallthrough(List<Integer> nums) {
+    switch (nums.size()) {
+      case 0:
+        // :: error: (method.invocation)
+        nums.iterator().next();
+        break;
+      case 1:
+        @NonEmpty List<Integer> nums2 = nums; // OK
+        break;
+      default:
+        @NonEmpty List<Integer> nums3 = nums; // OK
+    }
+  }
+
+  void testSwitchRefinementWithFallthrough(List<Integer> nums) {
     switch (nums.size()) {
       case 0:
         // :: error: (method.invocation)
         nums.iterator().next();
       case 1:
-        @NonEmpty List<Integer> nums2 = nums; // OK
+        // :: error: (assignment)
+        @NonEmpty List<Integer> nums2 = nums;
       default:
-        // Nothing
+        // :: error: (assignment)
+        @NonEmpty List<Integer> nums3 = nums;
+    }
+  }
+
+  void testSwitchRefinementNoZero(List<Integer> nums) {
+    switch (nums.size()) {
+      case 1:
+        nums.iterator().next();
+        break;
+      default:
+        // :: error: (assignment)
+        @NonEmpty List<Integer> nums3 = nums;
     }
   }
 }
