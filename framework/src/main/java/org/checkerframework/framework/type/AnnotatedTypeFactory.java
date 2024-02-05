@@ -1059,6 +1059,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if the given qualifer is one of the top annotations for the qualifer hierarchy.
+   *
+   * @param qualifier a type qualifier
+   * @return true if the given qualifer is one of the top annotations for the qualifer hierarchy
+   */
+  public final boolean isTop(AnnotationMirror qualifier) {
+    return qualHierarchy.isTop(qualifier);
+  }
+
+  /**
    * Creates the type hierarchy to be used by this factory.
    *
    * <p>Subclasses may override this method to specify new type-checking rules beyond the typical
