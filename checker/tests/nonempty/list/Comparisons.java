@@ -1,4 +1,5 @@
 import java.util.List;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 class Comparisons {
 
@@ -28,6 +29,17 @@ class Comparisons {
       // :: error: (method.invocation)
       strs.iterator().next();
     }
+  }
+
+  void testImplicitNonZero(List<String> strs1, List<String> strs2) {
+    if (strs1.isEmpty()) {
+      return;
+    }
+    if (strs1.size() == strs2.size()) {
+      @NonEmpty List<String> strs3 = strs2; // OK
+    }
+    // :: error: (assignment)
+    @NonEmpty List<String> strs4 = strs2;
   }
 
   /**** Tests for NE ****/

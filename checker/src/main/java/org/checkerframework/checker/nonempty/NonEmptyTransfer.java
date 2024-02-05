@@ -3,7 +3,10 @@ package org.checkerframework.checker.nonempty;
 import java.util.Arrays;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
@@ -46,6 +49,8 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitEqualTo(
       EqualToNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitEqualTo(n, in);
+    // Account for the case where the sizes of two containers are compared
+    strengthenAnnotationSizeEquals(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     // Account for the case where size is checked against a non-zero integer
     refineGTE(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     refineGTE(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
@@ -113,6 +118,33 @@ public class NonEmptyTransfer extends CFTransfer {
     Node switchNode = assign.getExpression();
     refineSwitchStatement(switchNode, caseOperands, result.getThenStore(), result.getElseStore());
     return result;
+  }
+
+  /**
+   * Refine the transfer result's "then" store, given the left- and right-hand side of an equals
+   * expression comparing container sizes.
+   *
+   * @param lhs a node that may be a method invocation for {@code Collection.size()} or {@code
+   *     Map.size()}
+   * @param rhs a node that may be a method invocation for {@code Collection.size()} or {@code
+   *     Map.size()}
+   * @param store the "then" store of the comparison operation
+   */
+  private void strengthenAnnotationSizeEquals(Node lhs, Node rhs, CFStore store) {
+    if (!isSizeAccess(lhs) || !isSizeAccess(rhs)) {
+      return;
+    }
+    @Nullable AnnotationMirror lhsNonEmptyAnno =
+        aTypeFactory.getAnnotationFromJavaExpression(
+            getReceiver(lhs), lhs.getTree(), NonEmpty.class);
+    @Nullable AnnotationMirror rhsNonEmptyAnno =
+        aTypeFactory.getAnnotationFromJavaExpression(
+            getReceiver(rhs), rhs.getTree(), NonEmpty.class);
+    if (lhsNonEmptyAnno != null) {
+      store.insertValue(getReceiver(rhs), aTypeFactory.NON_EMPTY);
+    } else if (rhsNonEmptyAnno != null) {
+      store.insertValue(getReceiver(lhs), aTypeFactory.NON_EMPTY);
+    }
   }
 
   /**
