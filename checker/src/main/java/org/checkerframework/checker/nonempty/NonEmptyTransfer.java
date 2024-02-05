@@ -64,6 +64,7 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitNotEqual(
       NotEqualNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitNotEqual(n, in);
+    strengthenAnnotationSizeEquals(n.getLeftOperand(), n.getRightOperand(), result.getElseStore());
     refineNotEqual(n.getLeftOperand(), n.getRightOperand(), result.getThenStore());
     refineNotEqual(n.getRightOperand(), n.getLeftOperand(), result.getThenStore());
     return result;
@@ -121,8 +122,8 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Refine the transfer result's "then" store, given the left- and right-hand side of an equals
-   * expression comparing container sizes.
+   * Refine the transfer result's store, given the left- and right-hand side of an equality check
+   * comparing container sizes.
    *
    * @param lhs a node that may be a method invocation for {@code Collection.size()} or {@code
    *     Map.size()}

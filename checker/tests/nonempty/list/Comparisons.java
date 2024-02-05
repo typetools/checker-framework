@@ -56,6 +56,19 @@ class Comparisons {
     }
   }
 
+  void testNotEqualsRefineElse(List<String> strs1, List<String> strs2) {
+    if (strs1.size() <= 0) {
+      return;
+    }
+    if (strs1.size() != strs2.size()) {
+      // :: error: (assignment)
+      @NonEmpty List<String> strs3 = strs2;
+    } else {
+      @NonEmpty List<String> strs4 = strs1;
+      @NonEmpty List<String> strs5 = strs2;
+    }
+  }
+
   /**** Tests for GT ****/
   void t1(List<String> strs) {
     if (strs.size() > 10) {
