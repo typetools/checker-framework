@@ -132,7 +132,10 @@ public class CFGTranslationPhaseThree {
    *
    * @param cfg the control flow graph
    */
-  @SuppressWarnings("nullness") // TODO: successors
+  @SuppressWarnings({
+    "interning:not.interned", // CFG node comparisons
+    "nullness" // TODO: successors
+  })
   protected static void mergeConsecutiveBlocks(ControlFlowGraph cfg) {
     Set<Block> worklist = cfg.getAllBlocks();
 
@@ -164,6 +167,11 @@ public class CFGTranslationPhaseThree {
           Block succ = b.getRegularSuccessor();
           if (succ.getType() == BlockType.REGULAR_BLOCK) {
             RegularBlockImpl rs = (RegularBlockImpl) succ;
+            if (rs.getRegularSuccessor() == rs) {
+              // Do not attempt to merge a block with a self edge, as it leads to non-termination in
+              // the merging algorithm.
+              break;
+            }
             if (rs.getPredecessors().size() == 1) {
               b.setSuccessor(rs.getRegularSuccessor());
               b.addNodes(rs.getNodes());
@@ -189,7 +197,7 @@ public class CFGTranslationPhaseThree {
    * @return the single successor of the set of the empty basic blocks
    */
   @SuppressWarnings({
-    "interning:not.interned", // AST node comparisons
+    "interning:not.interned", // CFG node comparisons
     "nullness" // successors
   })
   protected static BlockImpl computeNeighborhoodOfEmptyBlock(

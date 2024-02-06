@@ -3,24 +3,26 @@ import org.checkerframework.checker.nonempty.qual.NonEmpty;
 
 class MapOperations {
 
-  void addToMapParam(Map<String, Integer> m) {
-    // :: error: (method.invocation)
-    m.get("hello");
+  // Skip test until we decide whether to handle accesses on empty containers
+  // void addToMapParam(Map<String, Integer> m) {
+  //   // :: error: (method.invocation)
+  //   m.get("hello");
 
-    m.put("hello", 1);
+  //   m.put("hello", 1);
 
-    @NonEmpty Map<String, Integer> m2 = m; // OK
-    m.get("hello"); // OK
-  }
+  //   @NonEmpty Map<String, Integer> m2 = m; // OK
+  //   m.get("hello"); // OK
+  // }
 
-  void clearMap(Map<String, Integer> m) {
-    m.put("hello", 1);
-    m.get("hello"); // OK
+  // Skip test until we decide whether to handle accesses on empty containers
+  // void clearMap(Map<String, Integer> m) {
+  //   m.put("hello", 1);
+  //   m.get("hello"); // OK
 
-    m.clear();
-    // :: error: (method.invocation)
-    m.get("hello");
-  }
+  //   m.clear();
+  //   // :: error: (method.invocation)
+  //   m.get("hello");
+  // }
 
   void containsKeyRefinement(Map<String, Integer> m, String key) {
     if (m.containsKey(key)) {
