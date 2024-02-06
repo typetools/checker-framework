@@ -48,9 +48,9 @@ PREV_ITERATION_DIR=build/prev-whole-program-inference
 
 debug=
 interactive=
-# For debugging
+# For debugging.
 # debug=1
-# Require user confirmation before running each command
+# Require user confirmation before running each command.
 # interactive=1
 
 CHECKERBIN=$(dirname "$0")
@@ -82,9 +82,9 @@ read_input() {
         esac
     done
 
-    # First two arguments are processor and cp.
+    # First two arguments are processor and classpath.
     processor=$1
-    cp=$2
+    classpath=$2
     shift
     shift
 
@@ -131,13 +131,13 @@ infer_and_annotate() {
         mkdir -p $WHOLE_PROGRAM_INFERENCE_DIR
 
         # Runs CF's javac
-        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
+        command="$CHECKERBIN/javac -d $TEMP_DIR/ -cp $classpath -processor $processor -Ainfer=jaifs -Awarns -Xmaxwarns 10000 ${extra_args[*]} ${java_files[*]}"
         echo "About to run: ${command}"
         if [ "$interactive" ]; then
             echo "Press any key to run command... "
             IFS="" read -r _
         fi
-        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$cp" -processor "$processor" -Ainfer -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
+        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$classpath" -processor "$processor" -Ainfer -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
