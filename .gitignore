@@ -13,15 +13,18 @@ tags
 *.swp
 *.orig
 .DS_Store
+dot_files
+
 # Eclipse files
 .metadata
 .classpath
 .project
 .externalToolBuilders
 .settings
-dot_files
-# Intellij files
+
+# IDE files
 .idea
+.vscode
 
 Makefile.user
 local.properties
