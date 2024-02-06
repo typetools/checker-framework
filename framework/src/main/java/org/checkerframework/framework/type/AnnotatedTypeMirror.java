@@ -1097,11 +1097,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
           TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
           TypeMirror wildcard =
-              BoundsInitializer2.getUpperBoundAsWildcard(typeVar, atypeFactory.types);
+              BoundsInitializer.getUpperBoundAsWildcard(typeVar, atypeFactory.types);
           AnnotatedWildcardType atmWild =
               (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
           atmWild.setTypeArgOfRawType();
-          BoundsInitializer2.initializeBounds(atmWild);
+          BoundsInitializer.initializeBounds(atmWild);
           typeArgs.add(atmWild);
           map.put(typeVar, atmWild);
         }
@@ -1791,7 +1791,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getLowerBound() {
       if (lowerBound == null) { // lazy init
-        BoundsInitializer2.initializeBounds(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return lowerBound;
@@ -1859,7 +1859,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getUpperBound() {
       if (upperBound == null) { // lazy init
-        BoundsInitializer2.initializeBounds(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return upperBound;
@@ -2125,7 +2125,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
-        BoundsInitializer2.initializeBounds(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.superBound;
@@ -2155,7 +2155,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getExtendsBound() {
       if (extendsBound == null) {
-        BoundsInitializer2.initializeBounds(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.extendsBound;
