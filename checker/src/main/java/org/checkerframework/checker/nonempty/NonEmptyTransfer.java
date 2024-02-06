@@ -141,6 +141,7 @@ public class NonEmptyTransfer extends CFTransfer {
     @Nullable AnnotationMirror rhsNonEmptyAnno =
         aTypeFactory.getAnnotationFromJavaExpression(
             getReceiver(rhs), rhs.getTree(), NonEmpty.class);
+    // TODO: use aTypeFactory.getQualifierHierarchy().greatestLowerBoundQualifiersOnly() ?
     if (lhsNonEmptyAnno != null) {
       store.insertValue(getReceiver(rhs), aTypeFactory.NON_EMPTY);
     } else if (rhsNonEmptyAnno != null) {
