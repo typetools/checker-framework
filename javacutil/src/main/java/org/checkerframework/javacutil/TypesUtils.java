@@ -810,6 +810,14 @@ public final class TypesUtils {
     return (DeclaredType) syms.objectType;
   }
 
+  /**
+   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, the null
+   * type is returned.
+   *
+   * @param typeVariable a type variable
+   * @param env the proceProcessingEnvironmentssi
+   * @return the lower bound of {@code typeVariable} or the null type
+   */
   public static TypeMirror getTypeVariableLowerBound(
       TypeVariable typeVariable, ProcessingEnvironment env) {
     TypeMirror lb = typeVariable.getLowerBound();

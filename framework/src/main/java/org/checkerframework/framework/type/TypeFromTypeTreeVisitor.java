@@ -49,7 +49,15 @@ import org.plumelib.util.CollectionsPlume;
  */
 class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
-  public final Map<Tree, AnnotatedTypeVariable> visitedTypeParameter = new HashMap<>();
+  /** Creates a {@link TypeFromTypeTreeVisitor}; */
+  public TypeFromTypeTreeVisitor() {}
+
+  /**
+   * A mapping from TypeParameterTree to its type. This is used to correctly initialize recursive
+   * type variables.
+   */
+  private final Map<TypeParameterTree, AnnotatedTypeVariable> visitedTypeParameter =
+      new HashMap<>();
 
   @Override
   public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree tree, AnnotatedTypeFactory f) {

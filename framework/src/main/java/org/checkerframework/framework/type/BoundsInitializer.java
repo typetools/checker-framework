@@ -43,6 +43,11 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class BoundsInitializer {
 
+  /** Class cannot be instantiated. */
+  private BoundsInitializer() {
+    throw new AssertionError("Class BoundsInitializer cannot be instantiated.");
+  }
+
   /**
    * Initialize the upper and lower bounds of {@code typeVar}
    *
@@ -87,6 +92,12 @@ public class BoundsInitializer {
     }
   }
 
+  /**
+   * A class that visit all parts of a TypeMirror and creates an {@link AnnotatedTypeMirror} to
+   * match the TypeMirror. This visitor is only used to initialize recursive type variables or
+   * wildcards, because at some point instead of creating a new type, a previously created type is
+   * returned. This makes the {@code AnnotatedTypeMirror} recursive.
+   */
   static class BoundInitializerVisitor implements TypeVisitor<AnnotatedTypeMirror, Void> {
 
     /** AnnotatedTypeFactory used to create AnnotatedTypeMirrors. */
