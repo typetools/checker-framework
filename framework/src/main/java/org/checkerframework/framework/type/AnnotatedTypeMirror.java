@@ -1086,18 +1086,45 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
         return typeArgs;
-      } else if (isUnderlyingTypeRaw()) {
-        // Initialize the type arguments with wildcards marks as type arguments from raw types.
-        BoundsInitializer2.initializeTypeArgs(this, atypeFactory);
-        return typeArgs;
-      } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
-        typeArgs = Collections.emptyList();
-        return typeArgs;
-      } else {
-        // Initialize type argument for a non-raw declared type that has type arguments/
-        BoundsInitializer2.initializeTypeArgs(this, atypeFactory);
-        return typeArgs;
       }
+
+      DeclaredType t = getUnderlyingType();
+      typeArgs = new ArrayList<>(t.getTypeArguments().size());
+
+      if (isUnderlyingTypeRaw()) {
+        TypeElement typeElement = (TypeElement) atypeFactory.types.asElement(t);
+        Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
+        for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
+          TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
+          TypeMirror wildcard = BoundsInitializer2.getUpperBoundAsWildcard(typeVar, atypeFactory);
+          AnnotatedWildcardType atmWild =
+              (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
+          atmWild.setTypeArgOfRawType();
+          BoundsInitializer2.initializeBounds(atmWild);
+          typeArgs.add(atmWild);
+          map.put(typeVar, atmWild);
+        }
+        TypeVariableSubstitutor suber = atypeFactory.getTypeVarSubstitutor();
+        for (AnnotatedTypeMirror atm : typeArgs) {
+          AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
+          wildcardType.setExtendsBound(
+              suber.substituteWithoutCopyingTypeArguments(map, wildcardType.getExtendsBound()));
+        }
+      } else if (isDeclaration()) {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeVariable tv =
+              (AnnotatedTypeVariable)
+                  AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
+          typeArgs.add(tv);
+        }
+      } else {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeMirror typeArg =
+              AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, false);
+          typeArgs.add(typeArg);
+        }
+      }
+      return typeArgs;
     }
 
     /**

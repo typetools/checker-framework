@@ -26,7 +26,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -40,9 +39,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class BoundsInitializer2 {
   public static void initializeBounds(AnnotatedTypeVariable typeVar) {
-    AnnotationMirrorSet save = new AnnotationMirrorSet(typeVar.primaryAnnotations);
     new InitializerVisitor(typeVar.atypeFactory).initializeTypeVariable(typeVar);
-    typeVar.addAnnotations(save);
   }
 
   public static void initializeBounds(AnnotatedWildcardType wildcard) {
@@ -95,7 +92,7 @@ public class BoundsInitializer2 {
    * Returns a wildcard whose upper bound is the same as {@code typeVariable}. If the upper bound is
    * an intersection, then this method returns an unbound wildcard.
    */
-  private static WildcardType getUpperBoundAsWildcard(
+  public static WildcardType getUpperBoundAsWildcard(
       TypeVariable typeVariable, AnnotatedTypeFactory factory) {
     TypeMirror upperBound = typeVariable.getUpperBound();
     switch (upperBound.getKind()) {
