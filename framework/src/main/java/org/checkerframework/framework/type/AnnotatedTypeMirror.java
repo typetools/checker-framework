@@ -1096,7 +1096,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
         for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
           TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
-          TypeMirror wildcard = BoundsInitializer2.getUpperBoundAsWildcard(typeVar, atypeFactory);
+          TypeMirror wildcard =
+              BoundsInitializer2.getUpperBoundAsWildcard(typeVar, atypeFactory.types);
           AnnotatedWildcardType atmWild =
               (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
           atmWild.setTypeArgOfRawType();
