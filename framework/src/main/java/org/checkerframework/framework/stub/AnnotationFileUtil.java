@@ -130,7 +130,7 @@ public class AnnotationFileUtil {
     if (indexOfDot == -1) {
       // classes not within a package needs to be the first in the index file
       CompilationUnit cu = indexFile.getCompilationUnits().get(0);
-      assert cu.getPackageDeclaration().isEmpty();
+      assert !cu.getPackageDeclaration().isPresent();
       return findDeclaration(className, cu);
     }
 
