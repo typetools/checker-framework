@@ -137,7 +137,7 @@ infer_and_annotate() {
             echo "Press any key to run command... "
             IFS="" read -r _
         fi
-        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$classpath" -processor "$processor" -Ainfer -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
+        "$CHECKERBIN"/javac -d "$TEMP_DIR/" -cp "$classpath" -processor "$processor" -Ainfer=jaifs -Awarns -Xmaxwarns 10000 "${extra_args[@]}" "${java_files[@]}" || true
         # Deletes .unannotated backup files. This is necessary otherwise the
         # insert-annotations-to-source tool will use this file instead of the
         # updated .java one.
@@ -146,11 +146,15 @@ infer_and_annotate() {
         do
             rm -f "${file}.unannotated"
         done
-        if [ ! "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ]
-        then
-            # Only insert annotations if there is at least one .jaif file.
-            # shellcheck disable=SC2046
-            insert-annotations-to-source "${insert_to_source_args[@]}" -i $(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif") "${java_files[@]}"
+        if [ "$(find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty)" ] ; then
+            echo "No .jaif files found."
+        else
+            # There is at least one .jaif file, so insert annotations.
+            new_jaif_files="$(find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif")"
+            command="insert-annotations-to-source -cp $classpath ${insert_to_source_args[*]} -i $new_jaif_files ${java_files[*]}"
+            echo "About to run: ${command}"
+            # shellcheck disable=SC2086
+            insert-annotations-to-source -cp $classpath "${insert_to_source_args[@]}" -i $new_jaif_files "${java_files[@]}"
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
