@@ -1,4 +1,4 @@
-public class X {
+public class Issue6373 {
 
   abstract static class C1<
           C extends C1<C, Q, B, D, CR>,
