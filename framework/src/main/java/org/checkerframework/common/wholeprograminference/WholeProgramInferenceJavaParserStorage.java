@@ -943,6 +943,12 @@ public class WholeProgramInferenceJavaParserStorage
       return;
     }
 
+    // fields
+    for (Map.Entry<String, FieldAnnos> fieldEntry : classAnnos.fields.entrySet()) {
+      fieldEntry.getValue().removePrimaryTopAnnotations();
+    }
+
+    // methods
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
@@ -1069,9 +1075,9 @@ public class WholeProgramInferenceJavaParserStorage
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
     try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
 
-      // This implementation uses JavaParser's lexical preserving printing, which writes the file
-      // such that its formatting is close to the original source file it was parsed from as
-      // possible. It is commented out because, this feature is very buggy and crashes when adding
+      // This one-line implementation uses JavaParser's lexical preserving printing, which writes
+      // the file such that its formatting is close to the original source file it was parsed from
+      // as possible. It is commented out because this feature is very buggy and crashes when adding
       // annotations in certain locations.
       // LexicalPreservingPrinter.print(root.declaration, writer);
 
@@ -1784,6 +1790,21 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
+    /** Removes the primary annotations in the signature that are the top in their hierarchy. */
+    public void removePrimaryTopAnnotations() {
+      if (returnType != null) {
+        returnType.removePrimaryTopAnnotations();
+      }
+      if (receiverType != null) {
+        receiverType.removePrimaryTopAnnotations();
+      }
+      if (parameterTypes != null) {
+        for (AnnotatedTypeMirror atm : parameterTypes) {
+          atm.removePrimaryTopAnnotations();
+        }
+      }
+    }
+
     @Override
     public String toString() {
       return "CallableDeclarationAnnos [declaration="
@@ -1942,6 +1963,13 @@ public class WholeProgramInferenceJavaParserStorage
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
+    }
+
+    /** Removes the top annotations from this. */
+    public void removePrimaryTopAnnotations() {
+      if (type != null) {
+        type.removePrimaryTopAnnotations();
+      }
     }
 
     @Override
