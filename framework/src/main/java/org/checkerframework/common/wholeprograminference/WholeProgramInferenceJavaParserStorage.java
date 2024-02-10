@@ -745,7 +745,7 @@ public class WholeProgramInferenceJavaParserStorage
               // be sufficient for WPI's purposes here: if the wrong name is computed, the worst
               // outcome is a false positive because WPI inferred an untrue annotation.
               Optional<String> ofqn = javaParserClass.getFullyQualifiedName();
-              if (ofqn.isEmpty()) {
+              if (!ofqn.isPresent()) {
                 throw new BugInCF("Missing getFullyQualifiedName() for " + javaParserClass);
               }
               if ("".contentEquals(tree.getSimpleName())) {

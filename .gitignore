@@ -13,15 +13,18 @@ tags
 *.swp
 *.orig
 .DS_Store
+dot_files
+
 # Eclipse files
 .metadata
 .classpath
 .project
 .externalToolBuilders
 .settings
-dot_files
-# Intellij files
+
+# IDE files
 .idea
+.vscode
 
 Makefile.user
 local.properties
@@ -43,6 +46,7 @@ checker/jdk/**/*.class
 checker/build-temp
 checker/bin/.do-like-javac
 checker/bin/.scc/
+checker/bin-devel/.git-scripts
 checker/bin-devel/.html-tools
 checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
