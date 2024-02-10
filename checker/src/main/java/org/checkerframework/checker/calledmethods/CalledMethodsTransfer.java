@@ -186,6 +186,8 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * allows propagation, along those paths, of the fact that the method being invoked in {@code
    * node} was definitely called.
    *
+   * @param <S> the type of store
+   * @param <V> the type of abstract values
    * @param node a method invocation
    * @param input the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
