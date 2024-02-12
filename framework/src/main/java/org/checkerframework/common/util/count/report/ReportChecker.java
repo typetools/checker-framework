@@ -6,7 +6,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 /**
  * The Report Checker performs semantic searches over a program, for example, to find all methods
  * that override a specific method, all classes that inherit from a specific class, or all uses of
- * do-while-loops (and not also while loops!).
+ * {@code do-while} loops (and not also {@code while} loops!).
  *
  * <p>The search is specified in two different ways.
  *

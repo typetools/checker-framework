@@ -735,8 +735,8 @@ does not write any qualifiers on local variables within a method body
 However, the programmer must write type annotations for method
 signatures (arguments and return values) and fields, unless the default
 annotations are correct.
-Local type refinement does not change the source code; it re-runs every time
-you run a checker.
+Local type refinement does not change the source code to insert the
+inferred annotations on local variables.
 
 
 \subsectionAndLabel{Type refinement examples}{type-refinement-examples}
@@ -1252,15 +1252,15 @@ expression as an argument include:
 
 The set of permitted expressions is a subset of all Java expressions,
 with a few extensions.
-The extensions are formal parameters like \<\#1> and (for some type
-systems) \code{<self>}.
+The extensions are formal parameters like ``\<\#1>'' and (for some type
+systems) ``\code{<self>}''.
 
 \begin{itemize}
 \item
   \<this>, the receiver object.  You can write \<this> to annotate any
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
-  static fields or methods.  For a field, \<this> is the field's
+  static fields or static methods.  For a field, \<this> is the field's
   receiver (sometimes called its container).  For a local variable, it is the
   method's receiver.
 
@@ -1279,7 +1279,7 @@ systems) \code{<self>}.
 \item
   a formal parameter, e.g., \<\#2>.  It is represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
-  refer to the receiver object; use \<this> instead.
+  refer to the receiver object; use ``\<this>'' instead.
 
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
@@ -1341,7 +1341,7 @@ systems) \code{<self>}.
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
 
-\item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
+\item a binary expression, e.g., \<x + y> or \<\#1 - 1>.  These are used by
   the Index Checker, for example.
 
 \item a class name expression within another expression, e.g., ``String''
