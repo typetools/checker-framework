@@ -12,7 +12,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -36,7 +36,7 @@ public class NonEmptyTransfer extends CFTransfer {
   /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
   private final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
-  public NonEmptyTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+  public NonEmptyTransfer(CFAnalysis analysis) {
     super(analysis);
 
     this.env = analysis.getTypeFactory().getProcessingEnv();
