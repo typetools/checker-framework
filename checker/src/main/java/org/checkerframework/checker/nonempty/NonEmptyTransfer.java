@@ -6,7 +6,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
@@ -33,6 +32,9 @@ public class NonEmptyTransfer extends CFTransfer {
   /** The {@code size()} method of the {@link java.util.Map} class. */
   private final ExecutableElement mapSize;
 
+  /** The {@code indexOf(Object)} method of the {@link java.util.List} class. */
+  private final ExecutableElement indexOf;
+
   /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
   private final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
@@ -42,6 +44,7 @@ public class NonEmptyTransfer extends CFTransfer {
     this.env = analysis.getTypeFactory().getProcessingEnv();
     this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, this.env);
     this.mapSize = TreeUtils.getMethod("java.util.Map", "size", 0, this.env);
+    this.indexOf = TreeUtils.getMethod("java.util.List", "indexOf", 1, this.env);
     this.aTypeFactory = (NonEmptyAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
@@ -125,20 +128,20 @@ public class NonEmptyTransfer extends CFTransfer {
    * Refine the transfer result's store, given the left- and right-hand side of an equality check
    * comparing container sizes.
    *
-   * @param lhs a node that may be a method invocation for {@code Collection.size()} or {@code
-   *     Map.size()}
-   * @param rhs a node that may be a method invocation for {@code Collection.size()} or {@code
-   *     Map.size()}
+   * @param lhs a node that may be a method invocation for {@link java.util.Collection size()} or
+   *     {@link java.util.Map size()}
+   * @param rhs a node that may be a method invocation for {@link java.util.Collection size()} or
+   *     {@link java.util.Map size()}
    * @param store the "then" store of the comparison operation
    */
   private void strengthenAnnotationSizeEquals(Node lhs, Node rhs, CFStore store) {
     if (!isSizeAccess(lhs) || !isSizeAccess(rhs)) {
       return;
     }
-    @Nullable AnnotationMirror lhsNonEmptyAnno =
+    AnnotationMirror lhsNonEmptyAnno =
         aTypeFactory.getAnnotationFromJavaExpression(
             getReceiver(lhs), lhs.getTree(), NonEmpty.class);
-    @Nullable AnnotationMirror rhsNonEmptyAnno =
+    AnnotationMirror rhsNonEmptyAnno =
         aTypeFactory.getAnnotationFromJavaExpression(
             getReceiver(rhs), rhs.getTree(), NonEmpty.class);
     // TODO: use aTypeFactory.getQualifierHierarchy().greatestLowerBoundQualifiersOnly() ?
@@ -151,7 +154,8 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for
-   * expressions of the form {@code container.size() != n} and {@code n != container.size()}.
+   * expressions of the form {@code container.size() != n}, {@code n != container.size()}, or {@code
+   * container.indexOf(Object) != n}.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
    * with the test {@code container.size() != n} where {@code n} is 0 should refine to
@@ -160,51 +164,58 @@ public class NonEmptyTransfer extends CFTransfer {
    * <p>This method is also used to refine the "else" store of an equality comparison where {@code
    * container.size()} is compared against 0.
    *
-   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
-   *     or {@code Map.size()}
-   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
+   * @param left the left operand of a binary operation
+   * @param right the right operand of a binary operation
    * @param store the abstract store to update
    */
-  private void refineNotEqual(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
-    if (!isSizeAccess(possibleSizeAccess)
-        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+  private void refineNotEqual(Node left, Node right, CFStore store) {
+    boolean isSizeComparison = isSizeComparison(left, right);
+    boolean isIndexOfComparison = isIndexOfComparison(left, right);
+    if (!isSizeComparison && !isIndexOfComparison) {
       return;
     }
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
-    if (integerLiteralNode.getValue() == 0) {
-      JavaExpression receiver = getReceiver(possibleSizeAccess);
+    // In case of a size() comparison, refine the store if the value is 0
+    // In case of a indexOf(Object) check, refine the store if the value is -1
+    int threshold = isSizeComparison ? 0 : -1;
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
+    if (integerLiteralNode.getValue() == threshold) {
+      JavaExpression receiver = getReceiver(left);
       store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for
-   * expressions of the form {@code container.size() > n}.
+   * expressions of the form {@code container.size() > n} or {@code container.indexOf(Object) > n}.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
    * with the test {@code container.size() > n} where {@code n >= 0} should be refined to
    * {@code @NonEmpty}.
    *
-   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
-   *     or {@code Map.size()}
-   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
+   * @param left the left operand of a binary operation
+   * @param right the right operand of a binary operation
    * @param store the abstract store to update
    */
-  private void refineGT(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
-    if (!isSizeAccess(possibleSizeAccess)
-        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+  private void refineGT(Node left, Node right, CFStore store) {
+    boolean isSizeComparison = isSizeComparison(left, right);
+    boolean isIndexOfComparison = isIndexOfComparison(left, right);
+    if (!isSizeComparison && !isIndexOfComparison) {
       return;
     }
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
-    if (integerLiteralNode.getValue() >= 0) {
-      JavaExpression receiver = getReceiver(possibleSizeAccess);
+    // In case of a size() comparison, refine the store if the value is 0
+    // In case of a indexOf(Object) check, refine the store if the value is -1
+    int threshold = isSizeComparison ? 0 : -1;
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
+    if (integerLiteralNode.getValue() >= threshold) {
+      JavaExpression receiver = getReceiver(left);
       store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
 
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for
-   * expressions of the form {@code container.size() >= n}.
+   * expressions of the form {@code container.size() >= n} or {@code container.indexOf(Object) >=
+   * n}.
    *
    * <p>For example, the type of {@code container} in the "then" branch of a conditional statement
    * with the test {@code container.size() >= n} where {@code n > 0} should be refined to
@@ -213,19 +224,25 @@ public class NonEmptyTransfer extends CFTransfer {
    * <p>This method is also used to refine the "then" branch of an equality comparison where {@code
    * container.size()} is compared against a non-zero value.
    *
-   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
-   *     or {@code Map.size()}
-   * @param possibleIntegerLiteral a node that may be an {@link IntegerLiteralNode}
+   * @param left the left operand of a binary operation
+   * @param right the right operand of a binary operation
    * @param store the abstract store to update
    */
-  private void refineGTE(Node possibleSizeAccess, Node possibleIntegerLiteral, CFStore store) {
-    if (!isSizeAccess(possibleSizeAccess)
-        || !(possibleIntegerLiteral instanceof IntegerLiteralNode)) {
+  private void refineGTE(Node left, Node right, CFStore store) {
+    boolean isSizeComparison = isSizeComparison(left, right);
+    boolean isIndexOfComparison = isIndexOfComparison(left, right);
+    if (!isSizeComparison && !isIndexOfComparison) {
       return;
     }
-    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) possibleIntegerLiteral;
+    IntegerLiteralNode integerLiteralNode = (IntegerLiteralNode) right;
+    JavaExpression receiver = getReceiver(left);
+    // In an indexOf(Object) comparison, if the index is GTE 0, then the object is within the
+    // container
+    if (isIndexOfComparison && integerLiteralNode.getValue() >= 0) {
+      store.insertValue(receiver, aTypeFactory.NON_EMPTY);
+      return;
+    }
     if (integerLiteralNode.getValue() > 0) {
-      JavaExpression receiver = getReceiver(possibleSizeAccess);
       store.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }
@@ -263,11 +280,25 @@ public class NonEmptyTransfer extends CFTransfer {
   }
 
   /**
-   * Return true if the given node is an instance of a method invocation node for {@code
-   * Collection.size()} or {@code Map.size()}.
+   * Check whether a given binary operation corresponds to a {@link java.util.List size()} or {@link
+   * java.util.Map size()}comparison.
+   *
+   * @param left the left operand of a binary operation
+   * @param right the right operand of a binary operation
+   * @return true if the operands correspond to a {@link java.util.List size()} or {@link
+   *     java.util.Map size()} comparison
+   */
+  private boolean isSizeComparison(Node left, Node right) {
+    // Use `List.of()` in Java 9+
+    return isSizeAccess(left) && right instanceof IntegerLiteralNode;
+  }
+
+  /**
+   * Return true if the given node is an instance of a method invocation node for {@link
+   * java.util.Collection size()} or {@link java.util.Map size()}.
    *
    * @param possibleSizeAccess a node that may be a method call to the {@code size()} method in the
-   *     {@link java.util.List} or {@link java.util.Map} types
+   *     {@link java.util.Collection} or {@link java.util.Map} types
    * @return true if the node is a method call to size()
    */
   private boolean isSizeAccess(Node possibleSizeAccess) {
@@ -277,6 +308,18 @@ public class NonEmptyTransfer extends CFTransfer {
         .anyMatch(
             sizeAccessMethod ->
                 NodeUtils.isMethodInvocation(possibleSizeAccess, sizeAccessMethod, env));
+  }
+
+  /**
+   * Check whether a given binary operation corresponds to a {@link java.util.List indexOf(Object)}
+   * comparison.
+   *
+   * @param left the left operand of a binary operation
+   * @param right the right operand of a binary operation
+   * @return true if the operands correspond to a {@link java.util.List indexOf(Object)} comparison.
+   */
+  private boolean isIndexOfComparison(Node left, Node right) {
+    return NodeUtils.isMethodInvocation(left, indexOf, env) && right instanceof IntegerLiteralNode;
   }
 
   /**

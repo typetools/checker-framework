@@ -42,6 +42,15 @@ class Comparisons {
     @NonEmpty List<String> strs4 = strs2;
   }
 
+  void testEqualIndexOfRefinement(List<Object> objs, Object obj) {
+    if (objs.indexOf(obj) == -1) {
+      // :: error: (assignment)
+      @NonEmpty List<Object> objs2 = objs;
+    } else {
+      objs.iterator().next();
+    }
+  }
+
   /**** Tests for NE ****/
   void t0(List<String> strs) {
     if (strs.size() != 0) {
@@ -66,6 +75,21 @@ class Comparisons {
     } else {
       @NonEmpty List<String> strs4 = strs1;
       @NonEmpty List<String> strs5 = strs2;
+    }
+  }
+
+  void testNotEqualsRefineIndexOf(List<Object> objs, Object obj) {
+    if (objs.indexOf(obj) != -1) {
+      @NonEmpty List<Object> objs2 = objs;
+    } else {
+      // :: error: (method.invocation)
+      objs.iterator().next();
+    }
+    if (-1 != objs.indexOf(obj)) {
+      @NonEmpty List<Object> objs2 = objs;
+    } else {
+      // :: error: (method.invocation)
+      objs.iterator().next();
     }
   }
 
@@ -103,6 +127,15 @@ class Comparisons {
     }
   }
 
+  void testRefineIndexOfGT(List<Object> objs, Object obj) {
+    if (objs.indexOf(obj) > -1) {
+      @NonEmpty List<Object> objs2 = objs;
+    } else {
+      // :: error: (method.invocation)
+      objs.iterator().next();
+    }
+  }
+
   /**** Tests for GTE ****/
   void t3(List<String> strs) {
     if (strs.size() >= 0) {
@@ -117,6 +150,15 @@ class Comparisons {
     if (0 >= strs.size()) {
       // :: error: (method.invocation)
       strs.iterator().next();
+    }
+  }
+
+  void testRefineGTEIndexOf(List<String> strs, String s) {
+    if (strs.indexOf(s) >= 0) {
+      strs.iterator().next();
+    } else {
+      // :: error: (assignment)
+      @NonEmpty List<String> strs2 = strs;
     }
   }
 
