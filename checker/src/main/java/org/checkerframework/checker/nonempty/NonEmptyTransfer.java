@@ -249,20 +249,22 @@ public class NonEmptyTransfer extends CFTransfer {
 
   /**
    * Updates the transfer result's store with information from the Non-Empty type system for switch
-   * statements, where the test expression is of the form {@code container.size()}.
+   * statements, where the test expression is of the form {@code container.size()} or {@code
+   * container.indexOf(Object)}.
    *
-   * <p>For example, the "then" store of any case node with an integer value greater than 0 should
+   * <p>For example, the "then" store of any case node with an integer value greater than 0 (or -1,
+   * in the case of the test expression being a call to {@code container.indexOf(Object)}) should
    * refine the type of {@code container} to {@code @NonEmpty}.
    *
-   * @param possibleSizeAccess a node that may be a method invocation for {@code Collection.size()}
-   *     or {@code Map.size()}
+   * @param testNode a node that is the test expression for a {@code switch} statement
    * @param caseOperands the operands within each case label
    * @param thenStore the "then" store
    * @param elseStore the "else" store, corresponding to the "default" case label
    */
   private void refineSwitchStatement(
-      Node possibleSizeAccess, List<Node> caseOperands, CFStore thenStore, CFStore elseStore) {
-    if (!isSizeAccess(possibleSizeAccess)) {
+      Node testNode, List<Node> caseOperands, CFStore thenStore, CFStore elseStore) {
+    boolean isIndexOfAccess = NodeUtils.isMethodInvocation(testNode, indexOf, env);
+    if (!isSizeAccess(testNode) && !isIndexOfAccess) {
       return;
     }
     for (Node caseOperand : caseOperands) {
@@ -270,11 +272,13 @@ public class NonEmptyTransfer extends CFTransfer {
         continue;
       }
       IntegerLiteralNode caseIntegerLiteral = (IntegerLiteralNode) caseOperand;
-      JavaExpression receiver = getReceiver(possibleSizeAccess);
-      // If a value is encountered that is <= 0, the type of the container in the "else" store
-      // (i.e., the
-      // default case) is refined to @NonEmpty
-      CFStore storeToUpdate = caseIntegerLiteral.getValue() > 0 ? thenStore : elseStore;
+      JavaExpression receiver = getReceiver(testNode);
+      CFStore storeToUpdate;
+      if (isIndexOfAccess) {
+        storeToUpdate = caseIntegerLiteral.getValue() >= 0 ? thenStore : elseStore;
+      } else {
+        storeToUpdate = caseIntegerLiteral.getValue() > 0 ? thenStore : elseStore;
+      }
       storeToUpdate.insertValue(receiver, aTypeFactory.NON_EMPTY);
     }
   }

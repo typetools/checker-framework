@@ -55,4 +55,21 @@ class IteratorOperations {
         @NonEmpty List<Integer> nums3 = nums;
     }
   }
+
+  void testSwitchRefinementIndexOf(List<String> strs, String s) {
+    switch (strs.indexOf(s)) {
+      case -1:
+        // :: error: (method.invocation)
+        strs.iterator().next();
+        break;
+      case 0:
+        @NonEmpty List<String> strs2 = strs;
+      case 2:
+      case 3:
+        strs.iterator().next();
+        break;
+      default:
+        @NonEmpty List<String> strs3 = strs;
+    }
+  }
 }
