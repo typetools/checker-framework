@@ -1,15 +1,11 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
@@ -21,7 +17,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -29,7 +24,6 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.checker.mustcall.qual.OwningArray;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -68,43 +62,30 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *   datastructure (where? TODO)
    * - calls a method on each element of an array. In this case, we need to be more careful and
    *   check whether the bounds actually guarantee that the loop reaches over all elements. Mark
-   *   the loop as calling a method on a certain @OwningArray in the CFG (how to access the CFG? Some class probably
+   *   the loop as calling a certain method in the CFG (how to access the CFG? Some class probably
    *   offers a getCFG method or similar TODO)
    */
   @Override
-  public Void visitForLoop(ForLoopTree tree, Void p) {
-    BlockTree blockT = (BlockTree) tree.getStatement();
-    if (blockT.getStatements().size() == 1) {
-      if (blockT.getStatements().get(0) instanceof ExpressionStatementTree) {
-        ExpressionTree exprT = ((ExpressionStatementTree) blockT.getStatements().get(0)).getExpression();
-        if (exprT instanceof AssignmentTree) {
-          // pattern match opening an obligation
-          AssignmentTree assgn = (AssignmentTree) exprT;
-          ExpressionTree lhs = assgn.getVariable();
-          ExpressionTree rhs = assgn.getExpression();
-          Element lhsElt = TreeUtils.elementFromTree(lhs);
-          Element rhsElt = TreeUtils.elementFromTree(rhs);
-          if (lhs instanceof ArrayAccessTree) {
-            boolean lhsIsOwningArray =
-              atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
-            if (lhsIsOwningArray) {
-              // check whether RHS has any mustcall first TODO
-              MustCallAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
-            }
-          }
-        } else if (exprT instanceof MemberSelectTree) {
-          // pattern match a closing of a method
-          ExpressionTree lhs = ((MemberSelectTree) exprT).getExpression();
-          Element lhsElt = TreeUtils.elementFromTree(lhs);
-          boolean lhsIsOwningArray =
-            atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
-          if (lhsIsOwningArray) {
-            MustCallAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess((MemberSelectTree) exprT);
-          }
-        }
+  public void visitForLoop(ForLoopTree tree, Void p) {
+    // TODO what if the condition is null?
+    assert(tree.getStatement instanceof BlockTree) : "Programmer error: Assumption that StatementTree of a ForLoopTree is always a BlockTree is violated";
+    BlockTree body = tree.getStatement();
+    if(body instanceof ExpressionStatementTree) {
+      ExpressionTree exprT = ((ExpressionStatementTree) body).getExpression();
+      if(exprT instanceof AssignmentTree) {
+        AssignmentTree assgn = (AssignmentTree) exprT;
+        ExpressionTree lhs = assgn.getVariable();
+        ExpressionTree rhs = assgn.getExpression();
+        /**
+         * check whether the annotation of the variable that is LHS contains OwningArray
+         * check whether the RHS has obligations.
+         * If both checks are positive: Mark in some datastructure, that is accessible from the transfer
+         * function, that the loop creates an obligation (and a list of which) for the LHS array.
+         * The consistency checker
+         */
       }
     }
-    return super.visitForLoop(tree, p);
+    super.visitForLoop(tree, p);
   }
 
   @Override
@@ -153,6 +134,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       boolean lhsIsOwningField =
           lhs.getKind() == Tree.Kind.MEMBER_SELECT
               && atypeFactory.getDeclAnnotation(lhsElt, Owning.class) != null;
+      // boolean lhsIsOwningArray = TODO ;
       boolean rhsIsMCA =
           AnnotationUtils.containsSameByClass(rhsElt.getAnnotationMirrors(), MustCallAlias.class);
       boolean rhsIsConstructorParam =
@@ -163,7 +145,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         return null;
       }
     }
-
 
     return super.visitAssignment(tree, p);
   }
