@@ -259,8 +259,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                   getMustCallValueElement(),
                   String.class,
                   Collections.emptyList());
-          // Replacement is only customized when the parameter type has a non-empty must-call
-          // obligation.
+          // Replacement is only customized when the parameter type has a non-empty
+          // must-call obligation.
           if (!extentReplacementVals.isEmpty()) {
             AnnotationMirror inheritableMustCall =
                 getDeclAnnotation(typeElement, InheritableMustCall.class);
@@ -274,7 +274,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
               if (!inheritableMustCallVals.equals(extentReplacementVals)) {
                 // Use the must call values from the @InheritableMustCall annotation
                 // instead. This allows for wrapper types to have a must-call method
-                // with a different name than the must-call method for the wrapped type.
+                // with a different name than the must-call method for the wrapped
+                // type.
                 AnnotationMirror mustCall = createMustCall(inheritableMustCallVals);
                 realReplacements = new AnnotationMirrorMap<>();
                 realReplacements.put(POLY, mustCall);
@@ -513,7 +514,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           // Parameters that are not annotated with @Owning should be treated as bottom
           // (to suppress warnings about them). An exception is polymorphic parameters,
           // which might be @MustCallAlias (and so wouldn't be annotated with @Owning):
-          // these are not modified, to support verification of @MustCallAlias annotations.
+          // these are not modified, to support verification of @MustCallAlias
+          // annotations.
           type.replaceAnnotation(BOTTOM);
         }
       }

@@ -1125,12 +1125,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
           ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
           inferPurityAnno(additionalKinds, wpi, methodElt);
-          // The purity of overridden methods is impacted by the purity of this method. If a
-          // superclass method is pure, but an implementation in a subclass is not, WPI
-          // ought to treat **neither** as pure. The purity kind of the superclass method is
-          // the LUB of its own purity and the purity of all the methods that override
-          // it. Logically, this rule is the same as the WPI rule for overrides, but purity
-          // isn't a type system and therefore must be special-cased.
+          // The purity of overridden methods is impacted by the purity of this method. If
+          // a superclass method is pure, but an implementation in a subclass is not, WPI
+          // ought to treat **neither** as pure. The purity kind of the superclass method
+          // is the LUB of its own purity and the purity of all the methods that override
+          // it. Logically, this rule is the same as the WPI rule for overrides, but
+          // purity isn't a type system and therefore must be special-cased.
           Set<? extends ExecutableElement> overriddenMethods =
               ElementUtils.getOverriddenMethods(methodElt, types);
           for (ExecutableElement overriddenElt : overriddenMethods) {
