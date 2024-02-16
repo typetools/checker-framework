@@ -1,3 +1,5 @@
+// @skip-test : contains() has a call to a locally-defined indexOf() method, which is hard to verify
+
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
