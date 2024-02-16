@@ -73,6 +73,21 @@ apply to the annotated method itself rather than to some particular type.
 
 \end{description}
 
+\subsectionAndLabel{Delegation qualifiers}{delegation-qualifiers-overview}
+
+The Non-Empty Checker invokes an Delegation Checker,
+TODO: whose annotations indicate whether an object is ...
+
+\begin{description}
+\item[\refqualclass{checker/delegate/qual}{UnknownDelegate}]
+\item[\refqualclass{checker/delegate/qual}{Delegate}]
+\item[\refqualclass{checker/delegate/qual}{DelegateBottom}]
+\end{description}
+
+\noindent
+Use of these annotations can help you to type-check more code.
+TODO: add link to section on Delegation Checker
+
 \sectionAndLabel{Annotating your code with \<@NonEmpty>}{annotating-with-non-empty}
 
 The default annotation for collections, iterators, iterables, and maps is
