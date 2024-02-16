@@ -104,27 +104,27 @@ public class BoundsInitializer {
     private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * A map from java type variable to its {@link AnnotatedTypeVariable}. Used to set up recursive
-     * type variables.
+     * A map from a Java type variable to its {@link AnnotatedTypeVariable}. Used to set up
+     * recursive type variables.
      */
     private final Map<TypeVariable, AnnotatedTypeVariable> typeVariableMap;
 
     /**
-     * A map from java wildcard to its {@link AnnotatedWildcardType}. Used to set up recursive
+     * A map from a Java wildcard to its {@link AnnotatedWildcardType}. Used to set up recursive
      * wildcards.
      */
     private final Map<WildcardType, AnnotatedWildcardType> wildcardMap;
 
     /**
-     * A map from java type variable in a raw type to an {@link AnnotatedWildcardType} . Used to set
-     * up recursive type variables.
+     * A map from a Java type variable in a raw type to an {@link AnnotatedWildcardType}. Used to
+     * set up recursive type variables.
      */
     private final Map<TypeVariable, AnnotatedWildcardType> rawTypeMap = new HashMap<>();
 
     /**
-     * Creates {@link BoundInitializerVisitor}
+     * Creates a {@link BoundInitializerVisitor}.
      *
-     * @param atypeFactory type factory
+     * @param atypeFactory the type factory
      */
     public BoundInitializerVisitor(AnnotatedTypeFactory atypeFactory) {
       this.atypeFactory = atypeFactory;
@@ -135,7 +135,7 @@ public class BoundsInitializer {
     /**
      * Creates a {@link AnnotatedTypeMirror} for {@code javaType}.
      *
-     * @param javaType a java type
+     * @param javaType a Java type
      * @return a new {@link AnnotatedTypeMirror} for {@code javaType}
      */
     private AnnotatedTypeMirror createAnnotatedType(TypeMirror javaType) {
