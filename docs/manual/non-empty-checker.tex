@@ -87,7 +87,7 @@ more details):
     List<String> sessionIds = getSessionIds(); // sessionIds has type @UnknownNonEmpty
     ...
     if (!sessionIds.isEmpty()) {
-      List<String> firstId = sessionIds.get(0); // OK, sessionIds has type @NonEmpty
+      sessionIds.iterator().next(); // OK, sessionIds has type @NonEmpty
       ...
     }
 \end{Verbatim}
