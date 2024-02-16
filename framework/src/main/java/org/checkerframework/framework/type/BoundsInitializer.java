@@ -38,7 +38,7 @@ import org.plumelib.util.CollectionsPlume;
  * correct location.
  *
  * <p>Its static helper methods are called from AnnotatedTypeMirror. When an initializer method is
- * called for a particular bound, the entirety of that bound, including circular references, will be
+ * called for a particular bound, the entirety of that bound, including circular references, is
  * created.
  */
 public class BoundsInitializer {
@@ -49,7 +49,7 @@ public class BoundsInitializer {
   }
 
   /**
-   * Initialize the upper and lower bounds of {@code typeVar}
+   * Initialize the upper and lower bounds of {@code typeVar}.
    *
    * @param typeVar an {@link AnnotatedTypeVariable}
    */
@@ -58,7 +58,7 @@ public class BoundsInitializer {
   }
 
   /**
-   * Initialize the upper and lower bounds of {@code wildcard}
+   * Initialize the upper and lower bounds of {@code wildcard}.
    *
    * @param wildcard an {@link AnnotatedWildcardType}
    */
@@ -93,7 +93,7 @@ public class BoundsInitializer {
   }
 
   /**
-   * A class that visit all parts of a TypeMirror and creates an {@link AnnotatedTypeMirror} to
+   * A class that visits all parts of a TypeMirror and creates an {@link AnnotatedTypeMirror} to
    * match the TypeMirror. This visitor is only used to initialize recursive type variables or
    * wildcards, because at some point instead of creating a new type, a previously created type is
    * returned. This makes the {@code AnnotatedTypeMirror} recursive.

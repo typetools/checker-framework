@@ -1079,9 +1079,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns the type argument for this type.
+     * Returns the type arguments for this type.
      *
-     * @return the type argument for this type
+     * @return the type arguments for this type
      */
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
@@ -1095,15 +1095,15 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         TypeElement typeElement = (TypeElement) atypeFactory.types.asElement(t);
         Map<TypeVariable, AnnotatedTypeMirror> map = new HashMap<>();
         for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
-          TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
+          TypeVariable typeParameterVar = (TypeVariable) typeParameterEle.asType();
           TypeMirror wildcard =
-              BoundsInitializer.getUpperBoundAsWildcard(typeVar, atypeFactory.types);
+              BoundsInitializer.getUpperBoundAsWildcard(typeParameterVar, atypeFactory.types);
           AnnotatedWildcardType atmWild =
               (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
           atmWild.setTypeArgOfRawType();
           BoundsInitializer.initializeBounds(atmWild);
           typeArgs.add(atmWild);
-          map.put(typeVar, atmWild);
+          map.put(typeParameterVar, atmWild);
         }
         TypeVariableSubstitutor suber = atypeFactory.getTypeVarSubstitutor();
         for (AnnotatedTypeMirror atm : typeArgs) {
