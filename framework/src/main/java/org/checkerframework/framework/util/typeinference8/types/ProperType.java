@@ -100,7 +100,8 @@ public class ProperType extends AbstractType {
     assert typeMirror != null && typeMirror.getKind() != TypeKind.VOID && atm != null;
 
     if (typeMirror.getKind() != atm.getKind()) {
-      //      throw new BugInCF("type: %s annotated type: %s", typeMirror, atm.getUnderlyingType());
+      //      throw new BugInCF("type: %s annotated type: %s", typeMirror,
+      // atm.getUnderlyingType());
     }
   }
 

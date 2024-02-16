@@ -793,8 +793,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     TypeMirror classType = TreeUtils.typeOf(classTree);
     AnnotationMirrorSet classBounds = atypeFactory.getTypeDeclarationBounds(classType);
-    // No explicitly-written extends clause, as in "class X {}", is equivalent to writing "class X
-    // extends @Top Object {}", so there is no need to do any subtype checking.
+    // No explicitly-written extends clause, as in "class X {}", is equivalent to writing "class
+    // X extends @Top Object {}", so there is no need to do any subtype checking.
     if (classTree.getExtendsClause() != null) {
       Tree superClause = classTree.getExtendsClause();
       checkExtendsOrImplements(superClause, classBounds, classType, true);
@@ -1126,11 +1126,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
           inferPurityAnno(additionalKinds, wpi, methodElt);
           // The purity of overridden methods is impacted by the purity of this method. If a
-          // superclass method is pure, but an implementation in a subclass is not, WPI ought to
-          // treat  **neither** as pure. The purity kind of the superclass method is the LUB of
-          // its own purity and the purity of all the methods that override it. Logically, this
-          // rule is the same as the WPI rule for overrides, but purity isn't a type system and
-          // therefore must be special-cased.
+          // superclass method is pure, but an implementation in a subclass is not, WPI
+          // ought to treat **neither** as pure. The purity kind of the superclass method is
+          // the LUB of its own purity and the purity of all the methods that override
+          // it. Logically, this rule is the same as the WPI rule for overrides, but purity
+          // isn't a type system and therefore must be special-cased.
           Set<? extends ExecutableElement> overriddenMethods =
               ElementUtils.getOverriddenMethods(methodElt, types);
           for (ExecutableElement overriddenElt : overriddenMethods) {
@@ -1997,7 +1997,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, anno);
       } else {
         // If the expression is "this", then get the type of the method receiver.
-        // TODO: There are other expressions that can be converted to trees, "#1" for example.
+        // TODO: There are other expressions that can be converted to trees, "#1" for
+        // example.
         if (expressionString.equals("this")) {
           AnnotatedTypeMirror atype = atypeFactory.getReceiverType(tree);
           if (atype != null) {
@@ -2326,9 +2327,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     if (TreeUtils.isPolyExpression(tree)) {
       // From the JLS:
-      // A poly reference conditional expression is compatible with a target type T if its second
-      // and third operand expressions are compatible with T.  In the Checker Framework this check
-      // happens in #commonAssignmentCheck.
+      // A poly reference conditional expression is compatible with a target type T if its
+      // second and third operand expressions are compatible with T.  In the Checker
+      // Framework this check happens in #commonAssignmentCheck.
       return super.visitConditionalExpression(tree, p);
     }
 
@@ -2473,8 +2474,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       reported = true; // don't issue cast unsafe warning.
     }
 
-    // Don't call TypeHierarchy#isSubtype(exprType, castType) because the underlying Java types will
-    // not be in the correct subtyping relationship if this is a downcast.
+    // Don't call TypeHierarchy#isSubtype(exprType, castType) because the underlying Java types
+    // will not be in the correct subtyping relationship if this is a downcast.
     if (!reported && !isTypeCastSafe(castType, exprType)) {
       checker.reportWarning(
           typeCastTree, "cast.unsafe", exprType.toString(true), castType.toString(true));
@@ -3892,8 +3893,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               functionTypeReturnType);
       return overrideChecker.checkOverride();
     } else {
-      // If the functionalInterface is not a declared type, it must be from a wildcard from a raw
-      // type. In that case, only return false if raw types should not be ignored.
+      // If the functionalInterface is not a declared type, it must be from a wildcard from a
+      // raw type. In that case, only return false if raw types should not be ignored.
       return !atypeFactory.ignoreRawTypeArguments;
     }
   }
