@@ -101,7 +101,7 @@ public class AnnotationMirrorSet
   /**
    * Returns an unmodifiable AnnotationMirrorSet with the given elements.
    *
-   * @param annos the annotation mirrors that will constitute the new unmodifable set
+   * @param annos the annotation mirrors that will constitute the new unmodifiable set
    * @return an unmodifiable AnnotationMirrorSet with the given elements
    */
   public static AnnotationMirrorSet unmodifiableSet(Collection<? extends AnnotationMirror> annos) {
