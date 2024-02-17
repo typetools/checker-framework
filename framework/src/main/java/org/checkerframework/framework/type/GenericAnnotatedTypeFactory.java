@@ -2303,7 +2303,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");
       if (flowdotdir.equals("")) {
-        throw new UserError("Emtpy string provided for -Aflowdotdir command-line argument");
+        throw new UserError("Empty string provided for -Aflowdotdir command-line argument");
       }
       boolean verbose = checker.hasOption("verbosecfg");
 

@@ -132,7 +132,7 @@ public class AnnotationBuilder {
    *
    * @param elementName the name of an element/field to initialize
    * @param elementValue the initial value for the element/field
-   * @return a mappnig from the element name to the element value
+   * @return a mapping from the element name to the element value
    */
   public static Map<String, AnnotationValue> elementNamesValues(
       String elementName, Object elementValue) {
