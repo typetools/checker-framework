@@ -35,7 +35,7 @@ public class ValueCheckerUtils {
    * Get a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
-   * @param castTo the type that is casted to
+   * @param castTo the type that is cast to
    * @param atypeFactory the type factory
    * @return a list of values after the casting
    */

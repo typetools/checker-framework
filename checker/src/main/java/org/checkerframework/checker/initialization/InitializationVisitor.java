@@ -248,7 +248,7 @@ public class InitializationVisitor<
     // Warn about uninitialized static fields.
     Tree.Kind nodeKind = tree.getKind();
     // Skip interfaces (and annotations, which are interfaces).  In an interface, every static
-    // field must be initialized.  Java forbids uninitialized variables and static initalizer
+    // field must be initialized.  Java forbids uninitialized variables and static initializer
     // blocks.
     if (nodeKind != Tree.Kind.INTERFACE && nodeKind != Tree.Kind.ANNOTATION_TYPE) {
       boolean isStatic = true;

@@ -33,7 +33,7 @@ public class FieldAccessNode extends Node {
    * Creates a new FieldAccessNode.
    *
    * @param tree the tree from which to create a FieldAccessNode
-   * @param receiver the receiver for the resuling FieldAccessNode
+   * @param receiver the receiver for the resulting FieldAccessNode
    */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));

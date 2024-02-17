@@ -66,7 +66,7 @@ public final class TypesUtils {
    *
    * @param clazz a class
    * @param types the type utilities
-   * @param elements the element utiliites
+   * @param elements the element utilities
    * @return the TypeMirror for {@code clazz}
    */
   public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
