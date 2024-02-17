@@ -324,21 +324,28 @@ public abstract class AbstractCFGVisualizer<
       storesFrom = analysis.getResult();
     } else {
       TransferInput<V, S> input = analysis.getInput(bb);
-      assert input != null : "@AssumeAssertion(nullness): invariant";
-      storesFrom = input;
-      isTwoStores = input.containsTwoStores();
-      regularStore = input.getRegularStore();
-      thenStore = input.getThenStore();
-      elseStore = input.getElseStore();
+      // Per the documentation of AbstractAnalysis#inputs, null means no information.
+      if (input == null) {
+        regularStore = null;
+        storesFrom = null;
+      } else {
+        storesFrom = input;
+        isTwoStores = input.containsTwoStores();
+        regularStore = input.getRegularStore();
+        thenStore = input.getThenStore();
+        elseStore = input.getElseStore();
+      }
     }
 
     StringBuilder sbStore = new StringBuilder();
     if (verbose) {
-      sbStore.append(storesFrom.getClassAndUid() + separator);
+      sbStore.append((storesFrom == null ? "null" : storesFrom.getClassAndUid()) + separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
-    if (!isTwoStores) {
+    if (regularStore == null) {
+      sbStore.append("()");
+    } else if (!isTwoStores) {
       sbStore.append(visualizeStore(regularStore));
     } else {
       assert thenStore != null : "@AssumeAssertion(nullness): invariant";
