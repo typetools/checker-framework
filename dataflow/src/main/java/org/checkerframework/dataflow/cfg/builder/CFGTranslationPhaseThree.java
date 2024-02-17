@@ -168,8 +168,8 @@ public class CFGTranslationPhaseThree {
           if (succ.getType() == BlockType.REGULAR_BLOCK) {
             RegularBlockImpl rs = (RegularBlockImpl) succ;
             if (rs.getRegularSuccessor() == rs) {
-              // Do not attempt to merge a block with a self edge, as it leads to non-termination in
-              // the merging algorithm.
+              // Do not attempt to merge a block with a self edge, as it leads to
+              // non-termination in the merging algorithm.
               break;
             }
             if (rs.getPredecessors().size() == 1) {

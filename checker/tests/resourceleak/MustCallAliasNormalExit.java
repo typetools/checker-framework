@@ -51,22 +51,22 @@ public class MustCallAliasNormalExit {
   }
 
   public static void testUse3(@Owning InputStream inputStream) throws Exception {
-    // If mcaneFactory throws, then inputStream goes out of scope w/o being closed.  But, @Owning
-    // only requires that the resource be closed at normal exit, so this is OK.
+    // If mcaneFactory throws, then inputStream goes out of scope w/o being closed.  But,
+    // @Owning only requires that the resource be closed at normal exit, so this is OK.
     MustCallAliasNormalExit mcane = mcaneFactory(inputStream);
     mcane.close();
   }
 
   // TODO: this is a false positive due to imprecision in our analysis.  At the program point
   // before the call to mcane.close(), the inferred @CalledMethods type of inputStream is
-  // @CalledMethods(""), due to the control-flow merge.  Further, this program point may be reached
-  // with mcane _not_ being a resource alias of inputStream, if mcaneFactory throws an exception.
-  // In this scenario, the analysis reasons that the exit may be reached without close() being
-  // called on inputStream.  But, if mcane is not a resource alias of inputStream, then
-  // the inputStream.close() call in the catch block must have executed, so this is a false
+  // @CalledMethods(""), due to the control-flow merge.  Further, this program point may be
+  // reached with mcane _not_ being a resource alias of inputStream, if mcaneFactory throws an
+  // exception.  In this scenario, the analysis reasons that the exit may be reached without
+  // close() being called on inputStream.  But, if mcane is not a resource alias of inputStream,
+  // then the inputStream.close() call in the catch block must have executed, so this is a false
   // positive.  Removing this false positive would require greater path sensitivity in the
-  // consistency analyzer, by tracking both resource aliases and @CalledMethods types for each path
-  // in an Obligation.  See https://github.com/typetools/checker-framework/issues/5658
+  // consistency analyzer, by tracking both resource aliases and @CalledMethods types for each
+  // path in an Obligation.  See https://github.com/typetools/checker-framework/issues/5658 .
   // :: error: required.method.not.called
   public static void testUse4(@Owning InputStream inputStream) throws Exception {
     MustCallAliasNormalExit mcane = null;

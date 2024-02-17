@@ -162,10 +162,9 @@ public class UseOfVariable extends AbstractType {
     if (!hasPrimaryAnno) {
       variable.getBounds().addBound(kind, bound);
     } else {
-      // If the use has a primary annotation, then add the bound but with that annotations set to
-      // bottom
-      // or top.  This makes it so that the java type is still a bound, but the qualifiers do not
-      // change the results of inference.
+      // If the use has a primary annotation, then add the bound but with that annotations
+      // set to bottom or top.  This makes it so that the java type is still a bound, but
+      // the qualifiers do not change the results of inference.
       if (kind == BoundKind.LOWER) {
         bound.getAnnotatedType().replaceAnnotations(bots);
         variable.getBounds().addBound(kind, bound);

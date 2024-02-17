@@ -384,8 +384,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @return a set of the annotations on this
    */
-  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is removed,
-  // rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
+  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is
+  // removed, rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
   public AnnotationMirrorSet getEffectiveAnnotations() {
     AnnotationMirrorSet effectiveAnnotations = getErased().getPrimaryAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
@@ -1087,7 +1087,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       if (typeArgs != null) {
         return typeArgs;
       } else if (isUnderlyingTypeRaw()) {
-        // Initialize the type arguments with wildcards marks as type arguments from raw types.
+        // Initialize the type arguments with wildcards marks as type arguments from raw
+        // types.
         BoundsInitializer.initializeTypeArgs(this);
         return typeArgs;
       } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
@@ -1857,8 +1858,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedTypeVariable shallowCopy(boolean copyAnnotations) {
-      // Because type variables can refer to themselves, they can't be shallow copied, so return a
-      // deep copy instead.
+      // Because type variables can refer to themselves, they can't be shallow copied, so
+      // return a deep copy instead.
       AnnotatedTypeVariable type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();
@@ -2196,8 +2197,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedWildcardType shallowCopy(boolean copyAnnotations) {
-      // Because wildcards can refer to themselves, they can't be shallow copied, so return a deep
-      // copy instead.
+      // Because wildcards can refer to themselves, they can't be shallow copied, so return a
+      // deep copy instead.
       AnnotatedWildcardType type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();
