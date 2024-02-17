@@ -173,10 +173,10 @@ public class TreeBuilder {
     // Find the close() method
     Symbol.MethodSymbol closeMethod = null;
 
-    // We could use elements.getAllMembers(exprElement) to find the close method, but in rare cases
-    // calling that method crashes with a Symbol$CompletionFailure exception.  See
-    // https://github.com/typetools/checker-framework/issues/6396.  The code below directly searches
-    // all supertypes for the method and avoids the crash.
+    // We could use elements.getAllMembers(exprElement) to find the close method, but in rare
+    // cases calling that method crashes with a Symbol$CompletionFailure exception.  See
+    // https://github.com/typetools/checker-framework/issues/6396.  The code below directly
+    // searches all supertypes for the method and avoids the crash.
     for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
       for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
         if (!(m instanceof Symbol.MethodSymbol)) {

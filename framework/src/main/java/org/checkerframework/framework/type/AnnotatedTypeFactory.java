@@ -2465,8 +2465,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           //          throw new BugInCF(
           //              "AnnotatedTypeFactory.methodFromUse:mismatch between"
-          //                  + " declared method type variables and the inferred method type
-          // arguments."
+          //                  + " declared method type variables and the inferred method
+          // type arguments."
           //                  + " Method type variables: "
           //                  + methodType.getTypeVariables()
           //                  + "; "
@@ -4756,8 +4756,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
         if (wildcardType.isTypeArgOfRawType()) {
-          // Keep the type arguments from raw types so that it is ignored by later subtyping and
-          // containment checks.
+          // Keep the type arguments from raw types so that it is ignored by later
+          // subtyping and containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
           TypeMirror correctArgType;
@@ -4908,8 +4908,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedTypeMirror applyCaptureConversion(
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
 
-    // If the type contains type arguments of raw types, don't capture, but mark all wildcards that
-    // should have been captured as "raw" before it is returned.
+    // If the type contains type arguments of raw types, don't capture, but mark all
+    // wildcards that should have been captured as "raw" before it is returned.
     if (typeMirror.getKind() == TypeKind.DECLARED && type.getKind() == TypeKind.DECLARED) {
       boolean fromRawType = false;
       AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
@@ -5610,8 +5610,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // `!otherConditionMap.containsKey(expr)` test.
         // If a condition map contains the key "every expression", that means that inference
         // completed without inferring any conditions of that type.  For example, if no
-        // @EnsuresCalledMethods was inferred for any expression, the map would contain the key
-        // "every expression", which is not a legal Java expression.
+        // @EnsuresCalledMethods was inferred for any expression, the map would contain the
+        // key "every expression", which is not a legal Java expression.
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
           // `otherInferredType` was inferred to be the top type.

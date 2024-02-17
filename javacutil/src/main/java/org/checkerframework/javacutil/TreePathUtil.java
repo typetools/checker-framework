@@ -253,8 +253,8 @@ public final class TreePathUtil {
    */
   public static @Nullable Tree getContextForPolyExpression(TreePath treePath) {
     // If a lambda or a method reference is the expression in a type cast, then the type cast is
-    // the context.  If a method or constructor invocation is the expression in a type cast, then
-    // the invocation has no context.
+    // the context.  If a method or constructor invocation is the expression in a type cast,
+    // then the invocation has no context.
     boolean isLambdaOrMethodRef =
         treePath.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION
             || treePath.getLeaf().getKind() == Kind.MEMBER_REFERENCE;
@@ -311,9 +311,9 @@ public final class TreePathUtil {
         return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
       default:
         if (TreeUtils.isYield(parent)) {
-          // A yield statement is only legal within a switch expression. Walk up the path to the
-          // case tree instead of the switch expression tree so the code remains backward
-          // compatible.
+          // A yield statement is only legal within a switch expression. Walk up the path
+          // to the case tree instead of the switch expression tree so the code remains
+          // backward compatible.
           TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
           assert pathToCase != null
               : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
@@ -324,7 +324,8 @@ public final class TreePathUtil {
           @SuppressWarnings("interning:not.interned") // AST node comparison
           boolean switchIsLeaf = SwitchExpressionUtils.getExpression(parent) == treePath.getLeaf();
           if (switchIsLeaf) {
-            // The assignment context for the switch selector expression is simply boolean.
+            // The assignment context for the switch selector expression is simply
+            // boolean.
             // No point in going on.
             return null;
           }
