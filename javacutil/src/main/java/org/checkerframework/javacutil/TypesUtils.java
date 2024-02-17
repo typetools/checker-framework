@@ -933,21 +933,6 @@ public final class TypesUtils {
    *
    * @param type a type mirror
    * @return true if {@code type} is a type variable created during capture conversion
-   * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
-   */
-  @Deprecated // 2021-07-06
-  public static boolean isCaptured(TypeMirror type) {
-    if (type.getKind() != TypeKind.TYPEVAR) {
-      return false;
-    }
-    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
-  }
-
-  /**
-   * Returns true if {@code type} is a type variable created during capture conversion.
-   *
-   * @param type a type mirror
-   * @return true if {@code type} is a type variable created during capture conversion
    */
   public static boolean isCapturedTypeVariable(TypeMirror type) {
     if (type.getKind() != TypeKind.TYPEVAR) {

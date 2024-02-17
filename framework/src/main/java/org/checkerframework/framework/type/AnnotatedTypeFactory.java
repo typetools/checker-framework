@@ -75,7 +75,6 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -3570,56 +3569,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       elementToTreeCache.put(elt, fromElt);
     }
     return fromElt;
-  }
-
-  /**
-   * Returns the class tree enclosing {@code tree}.
-   *
-   * @param tree the tree whose enclosing class is returned
-   * @return the class tree enclosing {@code tree}
-   * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
-   */
-  @Deprecated // 2021-11-01
-  protected final ClassTree getCurrentClassTree(Tree tree) {
-    return TreePathUtil.enclosingClass(getPath(tree));
-  }
-
-  /**
-   * Returns the receiver type of the method enclosing {@code tree}.
-   *
-   * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
-   *
-   * @param tree the tree used to find the enclosing method
-   * @return receiver type of the most enclosing method being visited
-   * @deprecated Use {@link #getSelfType(Tree)} instead
-   */
-  @Deprecated // 2021-11-01
-  protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-    TreePath path = getPath(tree);
-    if (path == null) {
-      return null;
-    }
-    @SuppressWarnings("interning:assignment") // used for == test
-    @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
-    ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
-
-    boolean found = false;
-
-    for (Tree member : enclosingClass.getMembers()) {
-      if (member.getKind() == Tree.Kind.METHOD) {
-        if (member == enclosingMethod) {
-          found = true;
-        }
-      }
-    }
-
-    if (found && enclosingMethod != null) {
-      AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-      return method.getReceiverType();
-    } else {
-      // We are within an anonymous class or field initializer
-      return this.getAnnotatedType(enclosingClass);
-    }
   }
 
   /**
