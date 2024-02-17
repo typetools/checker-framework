@@ -16,6 +16,9 @@ import org.checkerframework.javacutil.TypesUtils;
 /** TypeVariableSubstitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
 
+  /** Create a TypeVariableSubstitutor. */
+  public TypeVariableSubstitutor() {}
+
   /**
    * Given a mapping from type variable to its type argument, replace each instance of a type
    * variable with a copy of type argument.
