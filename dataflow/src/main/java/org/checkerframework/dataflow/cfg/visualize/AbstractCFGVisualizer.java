@@ -196,7 +196,7 @@ public abstract class AbstractCFGVisualizer<
    *     {@link StringCFGVisualizer}
    * @return the String representation of the block
    */
-  protected String visualizeBlockHelper(
+  protected String visualizeBlockWithSeparator(
       Block bb, @Nullable Analysis<V, S, T> analysis, String separator) {
     StringBuilder sbBlock = new StringBuilder();
     String contents = loopOverBlockContents(bb, analysis, separator);

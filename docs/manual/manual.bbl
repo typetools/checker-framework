@@ -585,6 +585,13 @@ Fausto Spoto and Michael~D. Ernst.
 \newblock In {\em ICSE 2011, Proceedings of the 33rd International Conference
   on Software Engineering}, pages 231--240, Waikiki, Hawaii, USA, May 2011.
 
+\bibitem[SGT{\etalchar{+}}23]{ShadabGTEKLLS2023}
+Narges Shadab, Pritam Gharat, Shrey Tiwari, Michael~D. Ernst, Martin Kellogg,
+  Shuvendu Lahiri, Akash Lal, and Manu Sridharan.
+\newblock Inference of resource management specifications.
+\newblock {\em Proceedings of the ACM on Programming Languages}, 7(OOPSLA2,
+  article \#282):1705--1728, October 2023.
+
 \bibitem[She11]{Sherwany2011}
 Amanj Sherwany.
 \newblock The design, implementation and evaluation of a pluggable type checker
