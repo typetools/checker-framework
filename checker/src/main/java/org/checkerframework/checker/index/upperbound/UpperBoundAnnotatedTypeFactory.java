@@ -90,7 +90,7 @@ import org.plumelib.util.IPair;
  * <ul>
  *   <li>1. Math.min has unusual semantics that combines annotations for the UBC.
  *   <li>2. The return type of Random.nextInt depends on the argument, but is not equal to it, so a
- *       polymorhpic qualifier is insufficient.
+ *       polymorphic qualifier is insufficient.
  *   <li>3. Unary negation on a NegativeIndexFor (from the SearchIndex Checker) results in a
  *       LTLengthOf for the same arrays.
  *   <li>4. Right shifting by a constant between 0 and 30 preserves the type of the left side
