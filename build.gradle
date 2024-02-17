@@ -254,7 +254,12 @@ allprojects { currentProj ->
       }
       targetExclude doNotFormat
 
-      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      if (project.hasProperty('eisopFormatting')) {
+        googleJavaFormat(versions.googleJavaFormat).aosp()
+        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+      } else {
+        googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      }
       formatAnnotations()
     }
 
@@ -264,7 +269,11 @@ allprojects { currentProj ->
         target '**/*.gradle'
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(2)
+        if (project.hasProperty('eisopFormatting')) {
+          indentWithSpaces(4)
+        } else {
+          indentWithSpaces(2)
+        }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
       }
