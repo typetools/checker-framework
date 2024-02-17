@@ -1,9 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -41,41 +38,6 @@ public class ReturnNode extends Node {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
     this.returnTree = returnTree;
-  }
-
-  /**
-   * Creates a node for the given return statement.
-   *
-   * @param returnTree return tree
-   * @param result the returned expression
-   * @param types types util
-   * @param methodTree method tree
-   * @deprecated use {@link #ReturnNode(ReturnTree, Node, Types)}
-   */
-  @Deprecated // 2021-10-19
-  public ReturnNode(
-      ReturnTree returnTree, @Nullable Node result, Types types, MethodTree methodTree) {
-    this(returnTree, result, types);
-  }
-
-  /**
-   * Creates a node for the given return statement.
-   *
-   * @param returnTree return tree
-   * @param result the returned expression
-   * @param types types util
-   * @param lambda lambda
-   * @param methodSymbol methodSymbol
-   * @deprecated use {@link #ReturnNode(ReturnTree, Node, Types)}
-   */
-  @Deprecated // 2021-10-19
-  public ReturnNode(
-      ReturnTree returnTree,
-      @Nullable Node result,
-      Types types,
-      LambdaExpressionTree lambda,
-      MethodSymbol methodSymbol) {
-    this(returnTree, result, types);
   }
 
   /** The result of the return node, {@code null} otherwise. */
