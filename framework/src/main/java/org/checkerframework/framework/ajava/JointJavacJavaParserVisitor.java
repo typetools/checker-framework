@@ -2319,7 +2319,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+   * Given a javac tree and JavaParser node which were visited but didn't correspond to each other,
    * throws an exception indicating that the visiting process failed for those nodes.
    *
    * @param javacTree a tree that was visited
@@ -2340,7 +2340,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+   * Given a javac tree and JavaParser node which were visited but didn't correspond to each other,
    * throws an exception indicating that the visiting process failed for those nodes because {@code
    * javaParserNode} was expected to be of type {@code expectedType}.
    *
