@@ -146,7 +146,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   // TODO: Merge that code in commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
-  // valueExp, String errorKey, boolean isLocalVariableAssignement), because the method below
+  // valueExp, String errorKey, boolean isLocalVariableAssignment), because the method below
   // isn't called for pseudo-assignments, but the mentioned one is. The issue of copy-pasting the
   // code from this method to the other one is that a declaration such as: List<@Unique Object>
   // will raise a unique.leaked warning, as there is a pseudo-assignment from @Unique to a

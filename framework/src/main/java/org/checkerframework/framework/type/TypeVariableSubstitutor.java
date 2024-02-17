@@ -13,8 +13,11 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** TypeVariableSusbtitutor replaces type variables from a declaration with arguments to its use. */
+/** TypeVariableSubstitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
+
+  /** Create a TypeVariableSubstitutor. */
+  public TypeVariableSubstitutor() {}
 
   /**
    * Given a mapping from type variable to its type argument, replace each instance of a type
