@@ -90,7 +90,8 @@ public class AnnotationMirrorSet
    * @return a new unmodifiable {@link AnnotationMirrorSet} that contains only {@code value}
    */
   public static AnnotationMirrorSet singleton(AnnotationMirror value) {
-    // The implementation could be more efficient if Collections.singleton returned a NavigableSet.
+    // The implementation could be more efficient if Collections.singleton returned a
+    // NavigableSet.
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     result.add(value);
     result.makeUnmodifiable();

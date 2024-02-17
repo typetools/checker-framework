@@ -409,8 +409,8 @@ public abstract class JavaExpression {
             CollectionsPlume.mapList(JavaExpression::fromTree, mn.getArguments());
         JavaExpression methodReceiver;
         if (ElementUtils.isStatic(invokedMethod)) {
-          @SuppressWarnings(
-              "nullness:assignment" // enclosingTypeElement(ExecutableElement): @NonNull
+          @SuppressWarnings("nullness:assignment" // enclosingTypeElement(ExecutableElement):
+          // @NonNull
           )
           @NonNull TypeElement methodType = ElementUtils.enclosingTypeElement(invokedMethod);
           methodReceiver = new ClassName(methodType.asType());

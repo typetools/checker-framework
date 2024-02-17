@@ -74,8 +74,8 @@ class TryWithResourcesVariable {
   }
 
   static void closeFinalFieldUnsupported() throws Exception {
-    // This is a false positive (i.e., there is no resource leak), but our checker reports a warning
-    // since it does not support this coding pattern
+    // This is a false positive (i.e., there is no resource leak), but our checker reports a
+    // warning since it does not support this coding pattern.
     // :: error: (required.method.not.called)
     FinalResourceField finalResourceField = new FinalResourceField();
     try (finalResourceField.socketField) {}
@@ -93,8 +93,8 @@ class TryWithResourcesVariable {
   }
 
   static void closeWrapperUnsupported() throws Exception {
-    // This is a false positive (i.e., there is no resource leak), but our checker reports a warning
-    // since it does not support this coding pattern
+    // This is a false positive (i.e., there is no resource leak), but our checker reports a
+    // warning since it does not support this coding pattern.
     // :: error: (required.method.not.called)
     FinalResourceFieldWrapper finalResourceFieldWrapper = new FinalResourceFieldWrapper();
     try (finalResourceFieldWrapper.frField.socketField) {}

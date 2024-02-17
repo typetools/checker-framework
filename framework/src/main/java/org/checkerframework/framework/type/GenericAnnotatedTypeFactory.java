@@ -2421,8 +2421,8 @@ public abstract class GenericAnnotatedTypeFactory<
           defaultForTypeAnnotator.visit(typeArg);
         }
       } else if (type.getKind().isPrimitive()) {
-        // Don't apply the default for local variables with primitive types. (The primary location
-        // is the only location, so this is a special case of the above.)
+        // Don't apply the default for local variables with primitive types. (The primary
+        // location is the only location, so this is a special case of the above.)
       } else {
         defaultQualifierForUseTypeAnnotator.visit(type);
         defaultForTypeAnnotator.visit(type);

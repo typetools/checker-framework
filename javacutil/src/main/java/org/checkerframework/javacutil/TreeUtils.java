@@ -2744,8 +2744,8 @@ public final class TreeUtils {
         return true;
       }
       if (expression.getKind() == Tree.Kind.METHOD_INVOCATION) {
-        // This seems to be a bug in at least Java 11.  If a method has type arguments, then it is
-        // a standalone expression.
+        // This seems to be a bug in at least Java 11.  If a method has type arguments, then
+        // it is a standalone expression.
         return !((MethodInvocationTree) expression).getTypeArguments().isEmpty();
       }
     }

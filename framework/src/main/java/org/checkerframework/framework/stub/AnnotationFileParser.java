@@ -981,7 +981,8 @@ public class AnnotationFileParser {
       typeDeclTypeParameters = processType(typeDecl, typeElt);
       typeParameters.addAll(typeDeclTypeParameters);
     } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
-      // TODO: This test is never satisfied, because it is the opposite of that on the line above.
+      // TODO: This test is never satisfied, because it is the opposite of that on the line
+      // above.
       if (!(typeDecl instanceof ClassOrInterfaceDeclaration)) {
         warn(
             typeDecl,
@@ -1818,8 +1819,8 @@ public class AnnotationFileParser {
       } else if (param.getTypeBound() != null && !param.getTypeBound().isEmpty()) {
         annotate(paramType.getLowerBound(), param.getAnnotations(), param);
         if (param.getTypeBound().size() == 1) {
-          // The additional declAnnos (third argument) is always null in this call to `annotate`,
-          // but the type bound (second argument) might have annotations.
+          // The additional declAnnos (third argument) is always null in this call to
+          // `annotate`, but the type bound (second argument) might have annotations.
           annotate(paramType.getUpperBound(), param.getTypeBound().get(0), null, param);
         } else {
           // param.getTypeBound().size() > 1
@@ -1837,13 +1838,14 @@ public class AnnotationFileParser {
             annotate(paramType.getUpperBound(), typeBoundsWithAnotations.get(0), null, param);
           } else {
             // TODO: add support for intersection types
-            // One problem is that `annotate()` removes any existing annotations from the same
-            // qualifier hierarchies, so paramType.getLowerBound() would end up with the annotations
-            // of only the last type bound.
+            // One problem is that `annotate()` removes any existing annotations from
+            // the same qualifier hierarchies, so paramType.getLowerBound() would end up
+            // with the annotations of only the last type bound.
 
             // String msg =
             //     String.format(
-            //         "annotateTypeParameters: multiple type bounds:  typeParameters=%s;  "
+            //         "annotateTypeParameters: multiple type bounds:
+            // typeParameters=%s;  "
             //             + "param #%d=%s;  bounds=%s;  decl=%s;  elt=%s (%s).",
             //         typeParameters,
             //         i,
