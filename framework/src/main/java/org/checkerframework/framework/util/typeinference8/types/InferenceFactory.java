@@ -593,8 +593,8 @@ public class InferenceFactory {
     TypeMirror preColonTreeType = TreeUtils.typeOf(memRef.getQualifierExpression());
     if (TreeUtils.isDiamondMemberReference(memRef)
         || TreeUtils.isLikeDiamondMemberReference(memRef)) {
-      // If memRef is a constructor or method of a generic class whose type argument isn't specified
-      // such as HashSet::new or HashSet::put
+      // If memRef is a constructor or method of a generic class whose type argument isn't
+      // specified such as HashSet::new or HashSet::put
       // then add variables for the type arguments to the class.
       TypeElement classEle = (TypeElement) ((Type) preColonTreeType).asElement();
       DeclaredType classTypeMirror = (DeclaredType) classEle.asType();

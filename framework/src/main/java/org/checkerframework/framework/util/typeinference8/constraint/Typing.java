@@ -236,7 +236,8 @@ public class Typing extends TypeConstraint {
 
       return set;
     } else {
-      // The constraint reduces to true if T is among the supertypes of S, and false otherwise.
+      // The constraint reduces to true if T is among the supertypes of S, and false
+      // otherwise.
       return ((InferenceType) S).isSubType((ProperType) T);
     }
   }

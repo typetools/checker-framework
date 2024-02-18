@@ -309,7 +309,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
           if (result == null) {
             result = nameRegexes.anno;
           } else {
-            // This could combine the annotatations instead, but I think doing so
+            // This could combine the annotations instead, but I think doing so
             // silently would confuse users.
             throw new TypeSystemError(
                 "Multiple annotations are applicable to the name \"%s\"", name);

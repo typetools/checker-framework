@@ -571,10 +571,10 @@ public class RemoveAnnotationsForInference {
         if (v instanceof StringLiteralExpr) {
           result.add(((StringLiteralExpr) v).asString());
         } else if (v instanceof NameExpr) {
-          // TODO: is it better to return null here, thus causing nothing under this warning
-          // to be treated as "suppressed", or to return any keys that are string literals?
-          // Returning null here ensures that if any argument to the SW annotation isn't a string
-          // literal, then none of them are considered.
+          // TODO: is it better to return null here, thus causing nothing under this
+          // warning to be treated as "suppressed", or to return any keys that are string
+          // literals?  Returning null here ensures that if any argument to the SW
+          // annotation isn't a string literal, then none of them are considered.
           return null;
         } else {
           throw new BugInCF("Unexpected annotation element of type %s: %s", v.getClass(), v);

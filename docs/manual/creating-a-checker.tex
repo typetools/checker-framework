@@ -2157,10 +2157,15 @@ command-line options. \\
   The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
 
-  The argument is a comma-separated sequence of keys or key--value pairs.
-  The first argument is the fully-qualified name of the
+  The argument is a comma-separated sequence.
+  The first element is the fully-qualified name of the
   \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
-  that should be used. The remaining keys or key--value pairs are
+  that should be used. Currently, the possibilities are:
+  \begin{itemize}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{StringCFGVisualizer}
+  \end{itemize}
+  The remaining keys or key--value pairs are
   passed to \<CFGVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>
