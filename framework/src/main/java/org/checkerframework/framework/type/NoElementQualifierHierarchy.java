@@ -86,7 +86,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
 
   /**
    * Creates and returns a mapping from qualifier kind to an annotation mirror created from the
-   * qualifier kind's annotation class. Only works for annotations that have no elements/arguments.
+   * qualifier kind's annotation class.
    *
    * @param elements element utils
    * @return a mapping from qualifier kind to its annotation mirror
