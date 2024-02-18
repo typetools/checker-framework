@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +19,8 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -43,29 +39,31 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    */
   public final AnnotationMirror BOTTOM;
 
-  /**
-   * Map from trees representing expressions to the temporary variables that represent them in the
-   * store.
-   *
-   * <p>Consider the following code, adapted from Apache Zookeeper:
-   *
-   * <pre>
-   *   sock = SocketChannel.open();
-   *   sock.socket().setSoLinger(false, -1);
-   * </pre>
-   *
-   * This code is safe from resource leaks: sock is an unconnected socket and therefore has no
-   * must-call obligation. The expression sock.socket() similarly has no must-call obligation
-   * because it is a resource alias, but without a temporary variable that represents that
-   * expression in the store, the resource leak checker wouldn't be able to determine that.
-   *
-   * <p>These temporary variables are only created once---here---but are used by all three parts of
-   * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
-   * shared in the same way that subcheckers share CFG structure; see {@link
-   * #getSharedCFGForTree(Tree)}.
-   */
-  /*package-private*/ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
-      new IdentityHashMap<>(100);
+  // /**
+  //  * Map from trees representing expressions to the temporary variables that represent them in
+  // the
+  //  * store.
+  //  *
+  //  * <p>Consider the following code, adapted from Apache Zookeeper:
+  //  *
+  //  * <pre>
+  //  *   sock = SocketChannel.open();
+  //  *   sock.socket().setSoLinger(false, -1);
+  //  * </pre>
+  //  *
+  //  * This code is safe from resource leaks: sock is an unconnected socket and therefore has no
+  //  * must-call obligation. The expression sock.socket() similarly has no must-call obligation
+  //  * because it is a resource alias, but without a temporary variable that represents that
+  //  * expression in the store, the resource leak checker wouldn't be able to determine that.
+  //  *
+  //  * <p>These temporary variables are only created once---here---but are used by all three parts
+  // of
+  //  * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
+  //  * shared in the same way that subcheckers share CFG structure; see {@link
+  //  * #getSharedCFGForTree(Tree)}.
+  //  */
+  // /*package-private*/ final IdentityHashMap<Tree, LocalVariableNode> tempVars =
+  //     new IdentityHashMap<>(100);
 
   /** The MustCallOnElements.value field/element. */
   private final ExecutableElement mustCallOnElementsValueElement =
@@ -96,14 +94,14 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    */
   private static Map<Tree, ExpressionTree> arrayTreeForLoopWithThisCondition = new HashMap<>();
 
-  /** True if -AnoLightweightOwnership was passed on the command line. */
-  private final boolean noLightweightOwnership;
+  // /** True if -AnoLightweightOwnership was passed on the command line. */
+  // private final boolean noLightweightOwnership;
 
-  /**
-   * True if -AenableWpiForRlc (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) was passed on
-   * the command line.
-   */
-  private final boolean enableWpiForRlc;
+  // /**
+  //  * True if -AenableWpiForRlc (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) was passed on
+  //  * the command line.
+  //  */
+  // private final boolean enableWpiForRlc;
 
   /**
    * Creates a MustCallOnElementsAnnotatedTypeFactory.
@@ -114,8 +112,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallOnElementsUnknown.class);
     BOTTOM = createMustCall(Collections.emptyList());
-    noLightweightOwnership = checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
-    enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    // noLightweightOwnership =
+    // checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    // enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
   }
 
@@ -145,38 +144,44 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
 
   public static void createArrayObligationForLessThan(Tree tree, List<String> methods) {
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of a method calling for-loop, but is not a"
+            + " LESS_THAN tree";
     whichObligationsDoesLoopWithThisConditionCreateMap.put(tree, methods);
   }
 
   public static void closeArrayObligationForLessThan(Tree tree, String method) {
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of a method calling for-loop, but is not a"
+            + " LESS_THAN tree";
     whichMethodDoesLoopWithThisConditionCallMap.put(tree, method);
   }
 
   public static void putArrayAffectedByLoopWithThisCondition(
       Tree condition, ExpressionTree arrayTree) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a"
+            + " LESS_THAN tree";
     arrayTreeForLoopWithThisCondition.put(condition, arrayTree);
   }
 
   public static List<String> whichObligationsDoesLoopWithThisConditionCreate(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of a method calling for-loop, but is not a"
+            + " LESS_THAN tree";
     return whichObligationsDoesLoopWithThisConditionCreateMap.get(condition);
   }
 
   public static String whichMethodDoesLoopWithThisConditionCall(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of a method calling for-loop, but is not a"
+            + " LESS_THAN tree";
     return whichMethodDoesLoopWithThisConditionCallMap.get(condition);
   }
 
   public static ExpressionTree getArrayTreeForLoopWithThisCondition(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
-        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a LESS_THAN tree";
+        : "Trying to associate Tree as condition of an obligation changing for-loop, but is not a"
+            + " LESS_THAN tree";
     return arrayTreeForLoopWithThisCondition.get(condition);
   }
 
@@ -186,7 +191,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
     // GenericAnnotatedTypeFactory, but this works here because we know the Must Call Checker is
     // always the first subchecker that's sharing tempvars.
-    tempVars.clear();
+    // tempVars.clear();
   }
 
   @Override

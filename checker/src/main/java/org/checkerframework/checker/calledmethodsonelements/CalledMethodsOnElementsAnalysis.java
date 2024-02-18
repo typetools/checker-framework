@@ -23,8 +23,8 @@ public class CalledMethodsOnElementsAnalysis extends AccumulationAnalysis {
           // Use the Nullness Checker instead.
           NullPointerException.class.getCanonicalName(),
           // Ignore run-time errors, which cannot be predicted statically. Doing
-          // so is unsound in the sense that they could still occur - e.g., the
-          // program could run out of memory - but if they did, the checker's
+          // so is unsound in the sense that they could still occur -- e.g., the
+          // program could run out of memory -- but if they did, the checker's
           // results would be useless anyway.
           Error.class.getCanonicalName(),
           RuntimeException.class.getCanonicalName());
@@ -33,7 +33,7 @@ public class CalledMethodsOnElementsAnalysis extends AccumulationAnalysis {
    * Creates a new {@code CalledMethodsOnElementsAnalysis}.
    *
    * @param checker the checker
-   * @param factory the factory
+   * @param factory the type factory
    */
   protected CalledMethodsOnElementsAnalysis(
       BaseTypeChecker checker, CalledMethodsOnElementsAnnotatedTypeFactory factory) {

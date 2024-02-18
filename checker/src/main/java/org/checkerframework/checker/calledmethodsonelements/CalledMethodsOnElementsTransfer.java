@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -19,8 +18,6 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -30,17 +27,23 @@ import org.plumelib.util.CollectionsPlume;
 /** A transfer function that accumulates the names of methods called. */
 public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
 
-  /**
-   * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} requires a TransferInput,
-   * but the actual exceptional stores need to be modified in {@link #accumulate(Node,
-   * TransferResult, String...)}, which only has access to a TransferResult. So this field is set to
-   * non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} via a call to
-   * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} (which reads the CFStores
-   * from the TransferInput) before the call to accumulate(); accumulate() can then use this field
-   * to read the CFStores; and then finally this field is then reset to null afterwards to prevent
-   * it from being used somewhere it shouldn't be.
-   */
-  private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
+  // /**
+  //  * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} requires a
+  // TransferInput,
+  //  * but the actual exceptional stores need to be modified in {@link #accumulate(Node,
+  //  * TransferResult, String...)}, which only has access to a TransferResult. So this field is set
+  // to
+  //  * non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} via a call
+  // to
+  //  * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} (which reads the
+  // CFStores
+  //  * from the TransferInput) before the call to accumulate(); accumulate() can then use this
+  // field
+  //  * to read the CFStores; and then finally this field is then reset to null afterwards to
+  // prevent
+  //  * it from being used somewhere it shouldn't be.
+  //  */
+  // private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
 
   /**
    * The element for the CalledMethodsOnElements annotation's value element. Stored in a field in
@@ -123,7 +126,8 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
     TransferResult<AccumulationValue, AccumulationStore> res = super.visitLessThan(node, input);
     BinaryTree tree = node.getTree();
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
-        : "failed assumption: binaryTree in calledmethodsonelements transfer function is not lessthan tree";
+        : "failed assumption: binaryTree in calledmethodsonelements transfer function is not"
+            + " lessthan tree";
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
     if (calledMethod != null) {
@@ -145,13 +149,13 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * Extract the current called-methods type from {@code currentType}, and then add each element of
-   * {@code methodNames} to it, and return the result. This method is similar to GLB, but should be
-   * used when the new methods come from a source other than an {@code CalledMethodsOnElements}
+   * Extract the current called-methods type from {@code currentType}, and then add {@code
+   * methodName} to it, and return the result. This method is similar to GLB, but should be used
+   * when the new methods come from a source other than an {@code CalledMethodsOnElements}
    * annotation.
    *
    * @param currentType the current type in the called-methods hierarchy
-   * @param methodNames the names of the new methods to add to the type
+   * @param methodName the name of the new method to add to the type
    * @return the new annotation to be added to the type, or null if the current type cannot be
    *     converted to an accumulator annotation
    */

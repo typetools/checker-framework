@@ -19,7 +19,6 @@ import javax.lang.model.element.Name;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -30,8 +29,8 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MustCallOnElementsVisitor
     extends BaseTypeVisitor<MustCallOnElementsAnnotatedTypeFactory> {
 
-  /** True if -AnoLightweightOwnership was passed on the command line. */
-  private final boolean noLightweightOwnership;
+  // /** True if -AnoLightweightOwnership was passed on the command line. */
+  // private final boolean noLightweightOwnership;
 
   /**
    * Creates a new MustCallVisitor.
@@ -40,7 +39,8 @@ public class MustCallOnElementsVisitor
    */
   public MustCallOnElementsVisitor(BaseTypeChecker checker) {
     super(checker);
-    noLightweightOwnership = checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    // noLightweightOwnership =
+    // checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
   }
 
   /**
@@ -93,8 +93,7 @@ public class MustCallOnElementsVisitor
               (ExpressionStatementTree) tree.getUpdate().get(0));
       if (arrayNameInHeader == null) {
         // header is not as expected, but loop body correctly initializes a resource
-        checker.reportWarning(
-            tree, "patternmatch.unsuccessful");
+        checker.reportWarning(tree, "patternmatch.unsuccessful");
         return super.visitForLoop(tree, p);
       }
       if (arrayNameInHeader != arrayNameInBody) {

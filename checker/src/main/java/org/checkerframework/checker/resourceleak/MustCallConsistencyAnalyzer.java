@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -48,9 +47,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -1173,7 +1172,7 @@ class MustCallConsistencyAnalyzer {
         // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
         checkReassignmentToOwningArray(obligations, assignmentNode);
       } else {
-        Element asgnElm = TreeUtils.elementFromTree(assignmentNode.getTree());
+        // Element asgnElm = TreeUtils.elementFromTree(assignmentNode.getTree());
         checker.reportError(
             assignmentNode.getTree(),
             "Assigning to an @OwningArray array index outside of a designated loop.");
@@ -1201,9 +1200,9 @@ class MustCallConsistencyAnalyzer {
           toClear = MethodExitKind.ALL;
         }
 
-        @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
-        @Nullable TypeElement enclosingType =
-            enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+        // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+        // @Nullable TypeElement enclosingType =
+        //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
 
         removeObligationsContainingVar(
             obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
@@ -1730,12 +1729,13 @@ class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
+  @SuppressWarnings("UnusedVariable")
   private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
     // preconditions: assignment to index of an @OwningArray.
     // However, the rhs might not necessarily create obligations TODO
     // check whether obligations are fulfilled, if not, issue warning  TODO
     ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
-    ExpressionTree arrayTree = lhs.getArrayExpression();
+    // ExpressionTree arrayTree = lhs.getArrayExpression();
     MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
 
@@ -1753,7 +1753,7 @@ class MustCallConsistencyAnalyzer {
     if (mcValues.isEmpty()) {
       return;
     }
-    VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+    // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
     checker.reportError(
         node.getTree(),
         "required.method.not.called",
