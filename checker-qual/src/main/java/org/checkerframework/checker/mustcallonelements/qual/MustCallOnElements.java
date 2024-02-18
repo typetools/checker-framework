@@ -1,4 +1,4 @@
-package org.checkerframework.checker.mustcall.qual;
+package org.checkerframework.checker.mustcallonelements.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -25,7 +25,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({MustCallUnknown.class})
+@SubtypeOf({MustCallOnElementsUnknown.class})
 @DefaultQualifierInHierarchy
 @DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER, TypeUseLocation.UPPER_BOUND})
 public @interface MustCallOnElements {
