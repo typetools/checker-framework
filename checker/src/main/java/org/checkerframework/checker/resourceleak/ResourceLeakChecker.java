@@ -11,9 +11,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -144,6 +146,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     } else {
       checkers.add(MustCallChecker.class);
     }
+    checkers.add(MustCallOnElementsChecker.class);
+    checkers.add(CalledMethodsOnElementsChecker.class);
 
     return checkers;
   }

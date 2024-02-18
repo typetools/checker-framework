@@ -8,9 +8,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * This annotation represents a predicate on {@code @}{@link CalledMethodsOnElements} annotations.
- * If method {@code c()}'s receiver type is annotated with {@code @CalledMethodsOnElementsPredicate("a || b")},
- * then it is acceptable to call either method {@code a()} or method {@code b()} before calling method
- * {@code c()}.
+ * If method {@code c()}'s receiver type is annotated with
+ * {@code @CalledMethodsOnElementsPredicate("a || b")}, then it is acceptable to call either method
+ * {@code a()} or method {@code b()} before calling method {@code c()}.
  *
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */

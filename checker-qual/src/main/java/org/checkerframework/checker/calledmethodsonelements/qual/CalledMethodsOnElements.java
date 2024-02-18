@@ -8,14 +8,16 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * If an expression has type {@code @CalledMethodsOnElements({"m1", "m2"})}, then methods {@code m1} and
- * {@code m2} have definitely been called on the elements of the value, which must be an array.
- * Other methods might or might not have been called. "Been called" is defined as having been invoked:
- * a method has "been called" even if it might never return or might throw an exception.
+ * If an expression has type {@code @CalledMethodsOnElements({"m1", "m2"})}, then methods {@code m1}
+ * and {@code m2} have definitely been called on the elements of the value, which must be an array.
+ * Other methods might or might not have been called. "Been called" is defined as having been
+ * invoked: a method has "been called" even if it might never return or might throw an exception.
  *
  * <p>The subtyping relationship is:
  *
- * <pre>{@code @CalledMethodsOnElements({"m1", "m2", "m3"}) <: @CalledMethodsOnElements({"m1", "m2"})}</pre>
+ * <pre>
+ * {@code @CalledMethodsOnElements({"m1", "m2", "m3"}) <: @CalledMethodsOnElements({"m1", "m2"})}
+ * </pre>
  *
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
@@ -25,7 +27,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @DefaultQualifierInHierarchy
 public @interface CalledMethodsOnElements {
   /**
-   * Methods that have definitely been called on the elements of the array expression whose type is annotated.
+   * Methods that have definitely been called on the elements of the array expression whose type is
+   * annotated.
    *
    * @return methods that have definitely been called
    */

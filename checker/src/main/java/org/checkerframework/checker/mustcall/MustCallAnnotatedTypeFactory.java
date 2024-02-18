@@ -1,11 +1,9 @@
 package org.checkerframework.checker.mustcall;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -14,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,10 +28,10 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
-import org.checkerframework.checker.mustcall.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -127,12 +124,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private final ExecutableElement createsMustCallForValueElement =
       TreeUtils.getMethod(CreatesMustCallFor.class, "value", 0, processingEnv);
 
-  /** Set of assignments that open an obligation for an @OwningArray array. */
-  private static Set<AssignmentTree> obligationCreatingAssignments = new HashSet<>();
-
-  /** Set of method accesses that fulfill an obligation for an @OwningArray array. */
-  private static Set<MemberSelectTree> obligationFulfillingMethodAccess = new HashSet<>();
-
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
 
@@ -160,22 +151,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.postInit();
-  }
-
-  public static boolean doesMethodAccessCloseArrayObligation(MemberSelectTree memSelect) {
-    return obligationFulfillingMethodAccess.contains(memSelect);
-  }
-
-  public static void fulfillArrayObligationForMethodAccess(MemberSelectTree memSelect) {
-    obligationFulfillingMethodAccess.add(memSelect);
-  }
-
-  public static boolean doesAssignmentCreateArrayObligation(AssignmentTree assgn) {
-    return obligationCreatingAssignments.contains(assgn);
-  }
-
-  public static void createArrayObligationForAssignment(AssignmentTree assgn) {
-    obligationCreatingAssignments.add(assgn);
   }
 
   @Override

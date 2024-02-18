@@ -13,8 +13,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-
-import java.lang.reflect.AnnotatedType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,25 +45,23 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.MustCall;
-import org.checkerframework.checker.mustcall.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.checker.mustcall.qual.OwningArray;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -85,7 +81,6 @@ import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1166,8 +1161,9 @@ class MustCallConsistencyAnalyzer {
 
     // Ownership transfer to index of @OwningArray array.
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
-    if (isOwningArray && typeFactory.canCreateObligations() &&
-        lhs.getTree() instanceof ArrayAccessTree) {
+    if (isOwningArray
+        && typeFactory.canCreateObligations()
+        && lhs.getTree() instanceof ArrayAccessTree) {
       // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
       // check whether obligations have been fulfilled prior to reassignment
       if (MustCallAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
@@ -1180,7 +1176,8 @@ class MustCallConsistencyAnalyzer {
             assignmentNode.getTree(),
             "Assigning to an @OwningArray array index outside of a designated loop.");
       }
-      // really unsure about the remainder of this code that deletes obligations for the local var TODO
+      // really unsure about the remainder of this code that deletes obligations for the local var
+      // TODO
       // Remove Obligations from local variables, now that the @OwningArray is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (rhs instanceof LocalVariableNode) {
@@ -1729,7 +1726,6 @@ class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
-
   private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
     // preconditions: assignment to index of an @OwningArray.
     // However, the rhs might not necessarily create obligations TODO
@@ -1741,11 +1737,12 @@ class MustCallConsistencyAnalyzer {
 
     Element lhsElm = TreeUtils.elementFromTree(lhs.getTree());
     AnnotatedTypeMirror atm = mcTypeFactory.getAnnotatedType(lhsElm);
-    // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not annotatedarraytype";
+    // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
+    // annotatedarraytype";
     // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
     // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
     AnnotationMirror mcAnno = atm.getPrimaryAnnotation(MustCallOnElements.class);
-    assert(mcAnno != null) : "implement mustcallonelements first";
+    assert (mcAnno != null) : "implement mustcallonelements first";
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
             mcAnno, mcTypeFactory.getMustCallOnElementsValueElement(), String.class);
