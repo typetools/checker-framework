@@ -17,7 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -31,8 +32,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
  * rules between @MustCallOnElements annotations.
  */
-public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
-    implements CreatesMustCallForElementSupplier {
+public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @}{@link MustCallOnElementsUnknown} annotation. */
   public final AnnotationMirror TOP;
@@ -219,5 +219,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     Arrays.sort(methodArray);
     builder.setValue("value", methodArray);
     return builder.build();
+  }
+
+  public ExecutableElement getMustCallOnElementsValueElement() {
+    return mustCallOnElementsValueElement;
   }
 }

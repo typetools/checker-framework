@@ -49,6 +49,8 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -1166,7 +1168,7 @@ class MustCallConsistencyAnalyzer {
         && lhs.getTree() instanceof ArrayAccessTree) {
       // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
       // check whether obligations have been fulfilled prior to reassignment
-      if (MustCallAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+      if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
           (AssignmentTree) assignmentNode.getTree())) {
         // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
         checkReassignmentToOwningArray(obligations, assignmentNode);
@@ -1734,8 +1736,8 @@ class MustCallConsistencyAnalyzer {
     // check whether obligations are fulfilled, if not, issue warning  TODO
     ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
     ExpressionTree arrayTree = lhs.getArrayExpression();
-    MustCallAnnotatedTypeFactory mcTypeFactory =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
+        typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
 
     Element lhsElm = TreeUtils.elementFromTree(lhs.getTree());
     AnnotatedTypeMirror atm = mcTypeFactory.getAnnotatedType(lhsElm);

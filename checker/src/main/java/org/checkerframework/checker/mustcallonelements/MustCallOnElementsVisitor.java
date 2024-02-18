@@ -85,25 +85,25 @@ public class MustCallOnElementsVisitor
           || !((IdentifierTree) idx).getName().equals(((VariableTree) init).getName()))
         return super.visitForLoop(tree, p);
       // ensure indexed array is the same as the one we took the length of in loop condition
-      Name arrayNameInBody = arrayNameFromExpression(arrayAcct.getExpression());
-      if (!arrayNameInBody.equals(arrayNameInHeader)) return super.visitForLoop(tree, p);
-    }
-    Name arrayNameInHeader =
-        verifyAllElementsAreCalledOn(
-            (StatementTree) tree.getInitializer().get(0),
-            (BinaryTree) tree.getCondition(),
-            (ExpressionStatementTree) tree.getUpdate().get(0));
-    if (arrayNameInHeader == null) {
-      // header is not as expected, but loop body correctly initializes a resource
-      checker.reportWarning(
-          tree, "mustcall.not.inheritable", ElementUtils.getQualifiedName(classEle));
-      return super.visitForLoop(tree, p);
-    }
-    if (arrayNameInHeader != arrayNameInBody) {
-      // array name in header and footer not equal
+      Name arrayNameInBody = arrayNameFromExpression(arrayAccT.getExpression());
+      Name arrayNameInHeader =
+          verifyAllElementsAreCalledOn(
+              (StatementTree) tree.getInitializer().get(0),
+              (BinaryTree) tree.getCondition(),
+              (ExpressionStatementTree) tree.getUpdate().get(0));
+      if (arrayNameInHeader == null) {
+        // header is not as expected, but loop body correctly initializes a resource
+        checker.reportWarning(
+            tree, "patternmatch.unsuccessful");
+        return super.visitForLoop(tree, p);
+      }
+      if (arrayNameInHeader != arrayNameInBody) {
+        // array name in header and footer not equal
 
-      return super.visitForLoop(tree, p);
+        return super.visitForLoop(tree, p);
+      }
     }
+    return super.visitForLoop(tree, p);
 
     // ExpressionTree rhs = assgn.getExpression();
     // if (rhs instanceof NewClassTree) {
@@ -144,7 +144,6 @@ public class MustCallOnElementsVisitor
     //   if (lhsIsOwningArray) {
     //     MustCallAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(stmtTree);
     //   }
-    return super.visitForLoop(tree, p);
   }
 
   /**

@@ -108,10 +108,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
-  /** The MustCall.value field/element. */
-  private final ExecutableElement mustCallOnElementsValueElement =
-      TreeUtils.getMethod(MustCallOnElements.class, "value", 0, processingEnv);
-
   /** The InheritableMustCall.value field/element. */
   /*package-private*/ final ExecutableElement inheritableMustCallValueElement =
       TreeUtils.getMethod(InheritableMustCall.class, "value", 0, processingEnv);
@@ -349,10 +345,6 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   public ExecutableElement getMustCallValueElement() {
     return mustCallValueElement;
-  }
-
-  public ExecutableElement getMustCallOnElementsValueElement() {
-    return mustCallOnElementsValueElement;
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
