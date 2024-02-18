@@ -98,7 +98,9 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
     for (QualifierKind kind : qualifierKindHierarchy.allQualifierKinds()) {
       if (kind.hasElements()) {
         throw new TypeSystemError(
-            kind + " has elements, so the checker cannot use NoElementQualifierHierarchy");
+            kind
+                + " has elements, so the checker cannot use NoElementQualifierHierarchy."
+                + " The checker should override createQualifierHierarchy().");
       }
       quals.put(kind, AnnotationBuilder.fromClass(elements, kind.getAnnotationClass()));
     }
