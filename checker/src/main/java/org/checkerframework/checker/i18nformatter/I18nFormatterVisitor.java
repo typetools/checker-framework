@@ -66,7 +66,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
             int paraml = paramTypes.length;
             int formatl = formatCats.length;
 
-            // For assignments, "i18nformat.missing.arguments" and "i18nformat.excess.arguments" are
+            // For assignments, "i18nformat.missing.arguments" and
+            // "i18nformat.excess.arguments" are
             // issued from commonAssignmentCheck().
             if (paraml < formatl) {
               tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);

@@ -2700,8 +2700,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @return true if the switch is exhaustive; ignoring any default case
      */
     private boolean exhaustiveIgnoreDefault() {
-      // Switch expressions are always exhaustive, but they might have a default case, which is why
-      // the above loop is not fused with the below loop.
+      // Switch expressions are always exhaustive, but they might have a default case, which
+      // is why the above loop is not fused with the below loop.
       if (!TreeUtils.isSwitchStatement(switchTree)) {
         return true;
       }
@@ -2709,8 +2709,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       int enumCaseLabels = 0;
       for (CaseTree caseTree : caseTrees) {
         for (Tree caseLabel : CaseUtils.getLabels(caseTree)) {
-          // Java guarantees that if one of the cases is the null literal, the switch is exhaustive.
-          // Also if certain other constructs exist.
+          // Java guarantees that if one of the cases is the null literal, the switch is
+          // exhaustive. Also if certain other constructs exist.
           if (caseLabel.getKind() == Kind.NULL_LITERAL
               || TreeUtils.isBindingPatternTree(caseLabel)
               || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
@@ -3752,14 +3752,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void handleTryResourcesAndBlock(TryTree tryTree, Void p, List<? extends Tree> resources) {
     if (resources.isEmpty()) {
-      // Either `tryTree` was not a try-with-resources, or this method was called recursively and
-      // all the resources have been handled.  Just scan the main try block.
+      // Either `tryTree` was not a try-with-resources, or this method was called
+      // recursively and all the resources have been handled.  Just scan the main try block.
       scan(tryTree.getBlock(), p);
       return;
     }
 
-    // Handle the first resource declaration in the list.  The rest will be handled by a recursive
-    // call.
+    // Handle the first resource declaration in the list.  The rest will be handled by a
+    // recursive call.
     Tree resourceDeclarationTree = resources.get(0);
 
     extendWithNode(
@@ -3777,10 +3777,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
 
-    // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these nodes
-    // *before* pushing a TryFinallyFrame for the finally block that will close the resource.  If
-    // any exception occurs due to code within the resource declaration, the corresponding variable
-    // or field is *not* automatically closed (as it was never assigned a value).
+    // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these
+    // nodes *before* pushing a TryFinallyFrame for the finally block that will close the
+    // resource.  If any exception occurs due to code within the resource declaration, the
+    // corresponding variable or field is *not* automatically closed (as it was never
+    // assigned a value).
     Node resourceCloseNode = scan(resourceDeclarationTree, p);
 
     // Now, set things up for our synthetic finally block that closes the resource.

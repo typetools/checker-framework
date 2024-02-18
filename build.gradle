@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.0',
-    errorprone : '2.24.1',
+    errorprone : '2.25.0',
   ]
 }
 
@@ -269,7 +269,11 @@ allprojects { currentProj ->
         target '**/*.gradle'
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(2)
+        if (project.hasProperty('eisopFormatting')) {
+          indentWithSpaces(4)
+        } else {
+          indentWithSpaces(2)
+        }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
       }
