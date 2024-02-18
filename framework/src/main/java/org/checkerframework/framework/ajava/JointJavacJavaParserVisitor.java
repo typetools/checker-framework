@@ -758,14 +758,14 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         assert javacInitializers.hasNext();
         StatementTree javacInitializer = javacInitializers.next();
         if (javacInitializer.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-          // JavaParser doesn't wrap other kinds of expressions in an expression statement,
-          // but javac does. For example, suppose that the initializer is "index++", as in
-          // the test all-systems/LightWeightCache.java.
+          // JavaParser doesn't wrap other kinds of expressions in an expression
+          // statement, but javac does. For example, suppose that the initializer is
+          // "index++", as in the test all-systems/LightWeightCache.java.
           ((ExpressionStatementTree) javacInitializer).getExpression().accept(this, initializer);
         } else {
-          // This is likely to lead to a crash, if it ever happens: javacInitializer
-          // is a StatementTree of some kind, but initializer is a raw expression (not wrapped in a
-          // statement).
+          // This is likely to lead to a crash, if it ever happens: javacInitializer is a
+          // StatementTree of some kind, but initializer is a raw expression (not wrapped
+          // in a statement).
           javacInitializer.accept(this, initializer);
         }
       }
@@ -1127,9 +1127,9 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     // TODO: Implement this.
     //
     // Some notes:
-    // - javacTree.getPrimaryAnnotations() seems to always return empty, any annotations on the base
-    // type seem to go on the type itself in javacTree.getType(). The JavaParser version doesn't
-    // even have a corresponding getPrimaryAnnotations method.
+    // - javacTree.getPrimaryAnnotations() seems to always return empty, any annotations on
+    // the base type seem to go on the type itself in javacTree.getType(). The JavaParser
+    // version doesn't even have a corresponding getPrimaryAnnotations method.
     // - When there are no initializers, both systems use similar representations. The
     // dimensions line up.
     // - When there is an initializer, they differ greatly for multi-dimensional arrays. Javac
@@ -2319,7 +2319,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+   * Given a javac tree and JavaParser node which were visited but didn't correspond to each other,
    * throws an exception indicating that the visiting process failed for those nodes.
    *
    * @param javacTree a tree that was visited
@@ -2340,7 +2340,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
   }
 
   /**
-   * Given a javac tree and JavaPaser node which were visited but didn't correspond to each other,
+   * Given a javac tree and JavaParser node which were visited but didn't correspond to each other,
    * throws an exception indicating that the visiting process failed for those nodes because {@code
    * javaParserNode} was expected to be of type {@code expectedType}.
    *

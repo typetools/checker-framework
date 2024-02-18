@@ -6,7 +6,8 @@ public class VarargsFormatter {
     Formatter f = new Formatter();
 
     // vararg as parameter
-    // :: warning: non-varargs call of varargs method with inexact argument type for last parameter;
+    // :: warning: non-varargs call of varargs method with inexact argument type for last
+    // parameter;
     f.format("Nothing", null); // equivalent to (Object[])null
     f.format("Nothing", (Object[]) null);
     f.format("%s", (Object[]) null);

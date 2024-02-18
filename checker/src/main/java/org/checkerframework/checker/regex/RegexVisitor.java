@@ -99,8 +99,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
           // When checking implementations of java.util.regex.MatcherResult, calls to
           // group (and other methods) don't have a receiver tree.  So, just do the
           // regular checking.
-          // Verifying an implemenation of a subclass of MatcherResult is out of the scope
-          // of this checker.
+          // Verifying an implementation of a subclass of MatcherResult is out of the
+          // scope of this checker.
           return super.visitMethodInvocation(tree, p);
         }
         int annoGroups = 0;

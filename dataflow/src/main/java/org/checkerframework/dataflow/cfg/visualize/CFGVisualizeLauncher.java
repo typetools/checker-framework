@@ -215,7 +215,6 @@ public final class CFGVisualizeLauncher {
    * @return control flow graph of the specified method
    */
   public static ControlFlowGraph generateMethodCFG(String file, String clas, String method) {
-
     CFGProcessor cfgProcessor = new CFGProcessor(clas, method);
 
     Context context = new Context();
@@ -223,9 +222,9 @@ public final class CFGVisualizeLauncher {
     JavaCompiler javac = new JavaCompiler(context);
 
     JavaFileObject l;
-    try (@SuppressWarnings(
-            "mustcall:type.arguments.not.inferred") // Context isn't annotated for the Must Call
-        // Checker.
+    try (@SuppressWarnings("mustcall:type.arguments.not.inferred" // Context isn't annotated for
+        // the Must Call Checker.
+        )
         JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class)) {
       l = fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();
     } catch (IOException e) {
