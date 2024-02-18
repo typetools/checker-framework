@@ -75,8 +75,8 @@ public class GuavaCrash {
         (table1, table2) -> {
           //          for (Table.Cell<R, C, V> cell2 : table2.cellSet()) {
           //            mergeTables(
-          //                table1, cell2.getRowKey(), cell2.getColumnKey(), cell2.getValue(),
-          // mergeFunction);
+          //                table1, cell2.getRowKey(), cell2.getColumnKey(),
+          // cell2.getValue(), mergeFunction);
           //          }
           return table1;
         });

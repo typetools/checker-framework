@@ -348,8 +348,8 @@ class MustCallConsistencyAnalyzer {
           return null;
         }
         List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
-        // Really, annoVals should never be empty here; we should not have created the obligation in
-        // the first place
+        // Really, annoVals should never be empty here; we should not have created the
+        // obligation in the first place.
         // TODO: add an assertion that annoVals is non-empty and address any failures
         result.put(alias, annoVals);
       }
@@ -546,8 +546,8 @@ class MustCallConsistencyAnalyzer {
      */
     public String stringForErrorMessage() {
       String referenceStr = reference.toString();
-      // we assume that any temporary variable name will not be a syntactically-valid identifier
-      // or keyword
+      // We assume that any temporary variable name will not be a syntactically-valid
+      // identifier or keyword.
       return !SourceVersion.isIdentifier(referenceStr) ? tree.toString() : referenceStr;
     }
   }
@@ -1273,9 +1273,10 @@ class MustCallConsistencyAnalyzer {
               toClear);
         }
 
-        // Finally, if any obligations containing this var remain, then closing the field will
-        // satisfy them.  Here we are overly cautious and only track final fields.  In the
-        // future we could perhaps relax this guard with careful handling for field reassignments.
+        // Finally, if any obligations containing this var remain, then closing the field
+        // will satisfy them.  Here we are overly cautious and only track final fields.  In
+        // the future we could perhaps relax this guard with careful handling for field
+        // reassignments.
         if (ElementUtils.isFinal(lhsElement)) {
           addAliasToObligationsContainingVar(
               obligations,
@@ -1610,16 +1611,16 @@ class MustCallConsistencyAnalyzer {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
-    // The following code handles a special case where the field being assigned is itself getting
-    // passed in an owning position to another method on the RHS of the assignment.
+    // The following code handles a special case where the field being assigned is itself
+    // getting passed in an owning position to another method on the RHS of the assignment.
     // For example, if the field's type is a class whose constructor takes another instance
-    // of itself (such as a node in a linked list) in an owning position, re-assigning the field
-    // to a new instance that takes the field's value as an owning parameter is safe (the new value
-    // has taken responsibility for closing the old value). In such a case, it is not required
-    // that the must-call obligation of the field be satisfied via method calls before the
-    // assignment, since the invoked method will take ownership of the object previously
-    // referenced by the field and handle the obligation. This fixes the false positive in
-    // https://github.com/typetools/checker-framework/issues/5971.
+    // of itself (such as a node in a linked list) in an owning position, re-assigning the
+    // field to a new instance that takes the field's value as an owning parameter is safe
+    // (the new value has taken responsibility for closing the old value). In such a case,
+    // it is not required that the must-call obligation of the field be satisfied via method
+    // calls before the assignment, since the invoked method will take ownership of the
+    // object previously referenced by the field and handle the obligation. This fixes the
+    // false positive in https://github.com/typetools/checker-framework/issues/5971.
     Node rhs = node.getExpression();
     if (!noLightweightOwnership
         && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
@@ -1644,7 +1645,8 @@ class MustCallConsistencyAnalyzer {
         // and later varargs arguments will continue to be tracked at the call-site.
         // For now, just skip this case - the worst that will happen is a false positive in
         // cases like the varargs one described above.
-        // TODO allow for ownership transfer here if needed in future, but for now do nothing
+        // TODO allow for ownership transfer here if needed in future, but for now do
+        // nothing
       }
     }
 
@@ -2097,8 +2099,9 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the Obligations for the current block
    * @param currentBlock the current block
    * @param successor a successor of the current block
-   * @param exceptionType the type of edge from <code>currentBlock</code> to <code>successor</code>:
-   *     <code>null</code> for normal control flow, or a throwable type for exceptional control flow
+   * @param exceptionType the type of edge from <code>currentBlock</code> to <code>successor
+   *     </code>: <code>null</code> for normal control flow, or a throwable type for exceptional
+   *     control flow
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
    */
@@ -2204,14 +2207,15 @@ class MustCallConsistencyAnalyzer {
           continue;
         }
 
-        // Which stores from the called-methods and must-call checkers are used in the consistency
-        // check varies depending on the context.  Generally speaking, we would like to use the
-        // store propagated along the CFG edge from currentBlock to successor.  But, there are
-        // special cases to consider.  The rules are:
-        // 1. if the current block has no nodes, it is either a ConditionalBlock or a SpecialBlock.
-        //    For the called-methods store, we obtain the exact CFG edge store that we need (see
-        //    getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API limitations,
-        //    we use the following heuristics:
+        // Which stores from the called-methods and must-call checkers are used in the
+        // consistency check varies depending on the context.  Generally speaking, we would
+        // like to use the store propagated along the CFG edge from currentBlock to
+        // successor.  But, there are special cases to consider.  The rules are:
+        // 1. if the current block has no nodes, it is either a ConditionalBlock or a
+        //    SpecialBlock.
+        //    For the called-methods store, we obtain the exact CFG edge store that we need
+        //    (see getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API
+        //    limitations, we use the following heuristics:
         //    1a. if there is information about any alias in the resource alias set
         //        in the successor store, use the successor's MC store, which
         //        contains whatever information is true after this block finishes.
@@ -2234,11 +2238,12 @@ class MustCallConsistencyAnalyzer {
         AccumulationStore cmStore;
         if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
           cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
-          // For the Must Call Checker, we currently apply a less precise handling and do not get
-          // the store for the specific CFG edge from currentBlock to successor.  We do not believe
-          // this will impact precision except in convoluted and uncommon cases.  If we find that
-          // we need more precision, we can revisit this, but it will require additional API support
-          // in the AnalysisResult type to get the information that we need.
+          // For the Must Call Checker, we currently apply a less precise handling and do
+          // not get the store for the specific CFG edge from currentBlock to successor.
+          // We do not believe this will impact precision except in convoluted and
+          // uncommon cases.  If we find that we need more precision, we can revisit this,
+          // but it will require additional API support in the AnalysisResult type to get
+          // the information that we need.
           mcStore =
               mcAtf.getStoreForBlock(
                   obligationGoesOutOfScopeBeforeSuccessor,
@@ -2435,8 +2440,9 @@ class MustCallConsistencyAnalyzer {
     Map<ResourceAlias, List<String>> mustCallValues =
         obligation.getMustCallMethods(typeFactory, mcStore);
 
-    // optimization: if mustCallValues is null, always issue a warning (there is no way to satisfy
-    // the check). A null mustCallValue occurs when the type is top (@MustCallUnknown).
+    // Optimization: if mustCallValues is null, always issue a warning (there is no way to
+    // satisfy the check). A null mustCallValue occurs when the type is top
+    // (@MustCallUnknown).
     if (mustCallValues == null) {
       // Report the error at the first alias' definition. This choice is arbitrary but
       // consistent.

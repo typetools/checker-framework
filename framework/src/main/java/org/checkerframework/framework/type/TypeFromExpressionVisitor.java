@@ -62,7 +62,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>{@code UnaryTree}
  * </ul>
  *
- * Other expressions are in fact type trees and their annotataed type mirrors are computed as type
+ * Other expressions are in fact type trees and their annotated type mirrors are computed as type
  * trees:
  *
  * <ul>

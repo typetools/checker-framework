@@ -248,13 +248,13 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
       }
       TypeMirror type = checkCanonicalName(qualifiedName);
       if (type == null) {
-        // There is a chance that the user named a real type, but the class is not accessible for
-        // some reason. We'll issue a warning (in case this was a typo) but add the type as
-        // ignored anyway (in case it's just an inaccessible type).
+        // There is a chance that the user named a real type, but the class is not
+        // accessible for some reason. We'll issue a warning (in case this was a typo) but
+        // add the type as ignored anyway (in case it's just an inaccessible type).
         //
-        // Note that if the user asked to ignore subtypes of this exception, this code won't do it
-        // because we can't know what those subtypes are. We have to treat this as if it were
-        // "=qualifiedName" even if no equals sign was provided.
+        // Note that if the user asked to ignore subtypes of this exception, this code won't
+        // do it because we can't know what those subtypes are. We have to treat this as if
+        // it were "=qualifiedName" even if no equals sign was provided.
         message(
             Diagnostic.Kind.WARNING,
             "The exception '%s' appears in the -A%s=%s option, but it does not seem to exist",
@@ -268,7 +268,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     } else if (!exceptionSpecifier.trim().isEmpty()) {
       message(
           Diagnostic.Kind.WARNING,
-          "The string '%s' appears in the -A%s=%s option, but it is not a legal exception specifier",
+          "The string '%s' appears in the -A%s=%s option,"
+              + " but it is not a legal exception specifier",
           exceptionSpecifier,
           IGNORED_EXCEPTIONS,
           ignoredExceptionsOptionValue);
@@ -283,7 +284,7 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
    * @return the referenced type, or null if it does not exist
    */
   @SuppressWarnings({
-    "signature:argument", // `s` is not a qualified name, but we pass it to getTypeElement anyway
+    "signature:argument", // `s` is not a qualified name, but we pass it to getTypeElement
   })
   protected @Nullable TypeMirror checkCanonicalName(String s) {
     TypeElement elem = getProcessingEnvironment().getElementUtils().getTypeElement(s);
