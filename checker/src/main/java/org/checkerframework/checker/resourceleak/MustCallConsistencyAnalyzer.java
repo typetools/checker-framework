@@ -48,9 +48,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
-import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -1173,10 +1173,8 @@ class MustCallConsistencyAnalyzer {
         // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
         checkReassignmentToOwningArray(obligations, assignmentNode);
       } else {
-        Element asgnElm = TreeUtils.elementFromTree(assignmentNode.getTree());
         checker.reportError(
-            assignmentNode.getTree(),
-            "Assigning to an @OwningArray array index outside of a designated loop.");
+            assignmentNode.getTree(), "bad assignment");
       }
       // really unsure about the remainder of this code that deletes obligations for the local var
       // TODO
@@ -1746,6 +1744,11 @@ class MustCallConsistencyAnalyzer {
     // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
     // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
     AnnotationMirror mcAnno = atm.getPrimaryAnnotation(MustCallOnElements.class);
+    System.out.println("annotation: " + atm);
+    System.out.println("mcanno: " + mcAnno);
+    if (mcAnno == null) {
+      return;
+    }
     assert (mcAnno != null) : "implement mustcallonelements first";
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
@@ -1756,11 +1759,7 @@ class MustCallConsistencyAnalyzer {
     VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
     checker.reportError(
         node.getTree(),
-        "required.method.not.called",
-        formatMissingMustCallMethods(mcValues),
-        "@OwningArray" + lhsElm.getSimpleName().toString(),
-        lhsElm.asType().toString(),
-        "Array reassigned with possibly open obligations.");
+        "unfulfilled.mustcallonelements.obligations");
   }
 
   /**

@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * @checker_framework.manual #called-methods-checker Called Methods Checker
  */
-@SubtypeOf({CalledMethodsOnElements.class, CalledMethodsOnElementsPredicate.class})
+@SubtypeOf({CalledMethodsOnElements.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})

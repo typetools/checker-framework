@@ -3,7 +3,6 @@ package org.checkerframework.checker.calledmethodsonelements;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
 import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
-import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsPredicate;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.TreeUtils;
@@ -21,11 +20,11 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends AccumulationAnn
    * @param checker the checker
    */
   public CalledMethodsOnElementsAnnotatedTypeFactory(BaseTypeChecker checker) {
-    super(
-        checker,
-        CalledMethodsOnElements.class,
-        CalledMethodsOnElementsBottom.class,
-        CalledMethodsOnElementsPredicate.class);
+    super(checker, CalledMethodsOnElements.class, CalledMethodsOnElementsBottom.class);
+    // Don't call postInit() for subclasses.
+    if (this.getClass() == CalledMethodsOnElementsAnnotatedTypeFactory.class) {
+      this.postInit();
+    }
   }
 
   // @Override

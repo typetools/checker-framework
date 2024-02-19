@@ -126,6 +126,7 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not lessthan tree";
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
+    System.out.println("called method: " + calledMethod);
     if (calledMethod != null) {
       AccumulationStore thenStore = res.getThenStore();
       AccumulationStore elseStore = res.getElseStore();
