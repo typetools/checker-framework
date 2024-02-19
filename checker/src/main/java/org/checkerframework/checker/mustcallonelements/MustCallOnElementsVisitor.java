@@ -23,10 +23,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
-import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -83,8 +81,13 @@ public class MustCallOnElementsVisitor
     ExpressionTree lhs;
     if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
       lhs = ((AssignmentTree) stmtTree).getVariable();
-    } else if (stmtTree instanceof MemberSelectTree) { // possiblity deallocating loop
-      lhs = ((MemberSelectTree) stmtTree).getExpression();
+    } else if (stmtTree instanceof MethodInvocationTree) { // possiblity deallocating loop
+      lhs = ((MethodInvocationTree) stmtTree).getMethodSelect();
+      if (lhs instanceof MemberSelectTree) {
+        lhs = ((MemberSelectTree) lhs).getExpression();
+      } else {
+        return super.visitForLoop(tree, p);
+      }
     } else { // neither
       return super.visitForLoop(tree, p);
     }
@@ -152,19 +155,14 @@ public class MustCallOnElementsVisitor
             condition, ((ArrayAccessTree) lhs).getExpression());
       }
     } else {
-      MemberSelectTree methodCall = (MemberSelectTree) stmtTree;
+      MemberSelectTree methodCall = (MemberSelectTree) ((MethodInvocationTree) stmtTree).getMethodSelect();
       Name methodName = methodCall.getIdentifier();
-      // System.out.println(
-      //                    "Annotation type in the pattern matcher is " +
-      //                    arrayNameInHeader + " " + arrayNameInBody);
-      // check whether the RHS actually has must-call obligations
       ExpressionTree condition = tree.getCondition();
       MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(methodCall);
       MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(
           condition, methodName.toString());
       MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
           condition, methodCall.getExpression());
-
     }
 
     return super.visitForLoop(tree, p);

@@ -134,9 +134,7 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
           MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
               node.getTree());
       AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-      System.out.println("current type: " + currentType.toString());
       AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(currentType, calledMethod);
-      System.out.println("new type: " + newType.toString());
       JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
       elseStore.insertValue(receiverReceiver, newType);
 

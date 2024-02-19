@@ -1173,8 +1173,7 @@ class MustCallConsistencyAnalyzer {
         // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
         checkReassignmentToOwningArray(obligations, assignmentNode);
       } else {
-        checker.reportError(
-            assignmentNode.getTree(), "bad assignment");
+        checker.reportError(assignmentNode.getTree(), "bad assignment");
       }
       // really unsure about the remainder of this code that deletes obligations for the local var
       // TODO
@@ -1757,9 +1756,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
     VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
-    checker.reportError(
-        node.getTree(),
-        "unfulfilled.mustcallonelements.obligations");
+    checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
   }
 
   /**
