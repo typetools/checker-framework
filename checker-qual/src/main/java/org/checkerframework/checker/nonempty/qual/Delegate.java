@@ -5,21 +5,29 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Ths type qualifier belongs to the Delegation type system. It is not used on its own, but in
- * conjunction with other type systems that need to reason about delegation in method calls, such as
- * {@link org.checkerframework.checker.nonempty.NonEmptyChecker}.
+ * This is an annotation that indicates a field is a delegate, fields are not delegates by default.
  *
- * <p>This type qualifier indicates that the object acts as a delegate through which calls are made;
- * postconditions that apply to the annotated object's method should also apply to the method that
- * delegates calls to the annotated object.
+ * <p>Here is a way that this annotation may be used:
  *
- * <p>TODO: create manual entry for Delegation Checker and add here.
+ * <pre><code>
+ * class MyEnumeration&lt;T&gt; implements Enumeration&lt;T&gt; {
+ *    {@literal @}Delegate
+ *    private Enumeration&lt;T&gt; e;
+ *
+ *    public boolean hasMoreElements() {
+ *      return e.hasMoreElements();
+ *    }
+ * }
+ * </code></pre>
+ *
+ * In the example above, {@code MyEnumeration.hasMoreElements()} delegates a call to {@code
+ * e.hasMoreElements()}.
+ *
+ * @checker_framework.manual #non-empty-checker Non-Empty Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf(UnknownDelegate.class)
+@Target({ElementType.FIELD})
 public @interface Delegate {}
