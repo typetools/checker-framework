@@ -35,7 +35,7 @@ public class CalledMethodsOnElementsAnalysis extends AccumulationAnalysis {
    * @param checker the checker
    * @param factory the type factory
    */
-  protected CalledMethodsOnElementsAnalysis(
+  public CalledMethodsOnElementsAnalysis(
       BaseTypeChecker checker, CalledMethodsOnElementsAnnotatedTypeFactory factory) {
     super(checker, factory);
   }

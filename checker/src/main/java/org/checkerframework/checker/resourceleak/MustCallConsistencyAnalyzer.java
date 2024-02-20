@@ -1172,10 +1172,7 @@ class MustCallConsistencyAnalyzer {
         // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
         checkReassignmentToOwningArray(obligations, assignmentNode);
       } else {
-        // Element asgnElm = TreeUtils.elementFromTree(assignmentNode.getTree());
-        checker.reportError(
-            assignmentNode.getTree(),
-            "Assigning to an @OwningArray array index outside of a designated loop.");
+        checker.reportError(assignmentNode.getTree(), "bad assignment");
       }
       // really unsure about the remainder of this code that deletes obligations for the local var
       // TODO
@@ -1746,6 +1743,11 @@ class MustCallConsistencyAnalyzer {
     // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
     // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
     AnnotationMirror mcAnno = atm.getPrimaryAnnotation(MustCallOnElements.class);
+    System.out.println("annotation: " + atm);
+    System.out.println("mcanno: " + mcAnno);
+    if (mcAnno == null) {
+      return;
+    }
     assert (mcAnno != null) : "implement mustcallonelements first";
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
@@ -1754,13 +1756,7 @@ class MustCallConsistencyAnalyzer {
       return;
     }
     // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
-    checker.reportError(
-        node.getTree(),
-        "required.method.not.called",
-        formatMissingMustCallMethods(mcValues),
-        "@OwningArray" + lhsElm.getSimpleName().toString(),
-        lhsElm.asType().toString(),
-        "Array reassigned with possibly open obligations.");
+    checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
   }
 
   /**

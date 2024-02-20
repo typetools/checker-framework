@@ -3,10 +3,15 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,15 +19,34 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
@@ -111,7 +135,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public MustCallOnElementsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallOnElementsUnknown.class);
-    BOTTOM = createMustCall(Collections.emptyList());
+    BOTTOM = createMustCallOnElements(Collections.emptyList());
     // noLightweightOwnership =
     // checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     // enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
@@ -125,6 +149,99 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    */
   private final Map<List<String>, AnnotationMirror> mustCallOnElementsAnnotations =
       new HashMap<>(10);
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
+  }
+
+  /**
+   * Return the temporary variable for node, if it exists. See {@code #tempVars}.
+   *
+   * @param node a CFG node
+   * @return the corresponding temporary variable, or null if there is not one
+   */
+  public @Nullable LocalVariableNode getTempVar(Node node) {
+    return tempVars.get(node.getTree());
+  }
+
+  @Override
+  protected TreeAnnotator createTreeAnnotator() {
+    return new ListTreeAnnotator(
+        super.createTreeAnnotator(), new MustCallOnElementsTreeAnnotator(this));
+  }
+
+  @Override
+  protected TypeAnnotator createTypeAnnotator() {
+    return new ListTypeAnnotator(
+        super.createTypeAnnotator(), new MustCallOnElementsTypeAnnotator(this));
+  }
+
+  /**
+   * Treat non-owning-array method parameters as @MustCallOnElementsUnknown (top) when the method is
+   * called.
+   */
+  @Override
+  public void methodFromUsePreSubstitution(
+      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    ExecutableElement declaration;
+    if (tree instanceof MethodInvocationTree) {
+      declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+    } else if (tree instanceof MemberReferenceTree) {
+      declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
+    } else {
+      throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
+    }
+    changeNonOwningParameterTypesToTop(declaration, type);
+    super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
+  }
+
+  /**
+   * Changes the type of each parameter not annotated as @OwningArray to @MustCallOnElementsUnknown
+   * (top). Also replaces the component type of the varargs array, if applicable.
+   *
+   * <p>This method is not responsible for handling receivers, which can never be owning.
+   *
+   * @param declaration a method or constructor declaration
+   * @param type the method or constructor's type
+   */
+  private void changeNonOwningParameterTypesToTop(
+      ExecutableElement declaration, AnnotatedExecutableType type) {
+    // Formal parameters without a declared owning annotation are disregarded by the RLC
+    // _analysis_, as their @MustCallOnElements obligation is set to Top in this method. However,
+    // this computation is not desirable for RLC _inference_ in unannotated programs,
+    // where a goal is to infer and add @Owning annotations to formal parameters.
+    if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
+      return;
+    }
+    List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
+    for (int i = 0; i < parameterTypes.size(); i++) {
+      Element paramDecl = declaration.getParameters().get(i);
+      if (noLightweightOwnership || getDeclAnnotation(paramDecl, OwningArray.class) == null) {
+        AnnotatedTypeMirror paramType = parameterTypes.get(i);
+        paramType.replaceAnnotation(TOP);
+      }
+    }
+    if (declaration.isVarArgs()) {
+      // also modify the component type of a varargs array
+      AnnotatedTypeMirror varargsType =
+          ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() - 1)).getComponentType();
+      varargsType.replaceAnnotation(TOP);
+    }
+  }
+
+  @Override
+  protected void constructorFromUsePreSubstitution(
+      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    ExecutableElement declaration = TreeUtils.elementFromUse(tree);
+    changeNonOwningParameterTypesToTop(declaration, type);
+    super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
+  }
 
   public static boolean doesMethodAccessCloseArrayObligation(MemberSelectTree memSelect) {
     return obligationFulfillingMethodAccess.contains(memSelect);
@@ -206,7 +323,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * @param val the methods that should be called
    * @return an annotation indicating that the given methods should be called
    */
-  public AnnotationMirror createMustCall(List<String> val) {
+  public AnnotationMirror createMustCallOnElements(List<String> val) {
     return mustCallOnElementsAnnotations.computeIfAbsent(val, this::createMustCallOnElementsImpl);
   }
 
@@ -229,4 +346,145 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public ExecutableElement getMustCallOnElementsValueElement() {
     return mustCallOnElementsValueElement;
   }
+
+  /**
+   * Returns true if the given type should never have a must-call-on-elements obligation.
+   *
+   * @param type the type to check
+   * @return true if the given type should never have a must-call-on-elements obligation
+   */
+  public boolean shouldHaveNoMustCallOnElementsObligation(TypeMirror type) {
+    return type.getKind().isPrimitive() || TypesUtils.isClass(type) || TypesUtils.isString(type);
+  }
+
+  @Override
+  protected QualifierHierarchy createQualifierHierarchy() {
+    return new MustCallOnElementsQualifierHierarchy(
+        this.getSupportedTypeQualifiers(), this.getProcessingEnv(), this);
+  }
+
+  /** Qualifier hierarchy for the Must Call Checker. */
+  class MustCallOnElementsQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
+
+    /**
+     * Creates a SubtypeIsSubsetQualifierHierarchy from the given classes.
+     *
+     * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
+     * @param processingEnv processing environment
+     * @param atypeFactory the associated type factory
+     */
+    public MustCallOnElementsQualifierHierarchy(
+        Collection<Class<? extends Annotation>> qualifierClasses,
+        ProcessingEnvironment processingEnv,
+        GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+      super(qualifierClasses, processingEnv, atypeFactory);
+    }
+
+    @Override
+    public boolean isSubtypeShallow(
+        AnnotationMirror subQualifier,
+        TypeMirror subType,
+        AnnotationMirror superQualifier,
+        TypeMirror superType) {
+      if (shouldHaveNoMustCallOnElementsObligation(subType)
+          || shouldHaveNoMustCallOnElementsObligation(superType)) {
+        return true;
+      }
+      return super.isSubtypeShallow(subQualifier, subType, superQualifier, superType);
+    }
+
+    @Override
+    public @Nullable AnnotationMirror leastUpperBoundShallow(
+        AnnotationMirror qualifier1, TypeMirror tm1, AnnotationMirror qualifier2, TypeMirror tm2) {
+      boolean tm1NoMustCallOnElements = shouldHaveNoMustCallOnElementsObligation(tm1);
+      boolean tm2NoMustCallOnElements = shouldHaveNoMustCallOnElementsObligation(tm2);
+      if (tm1NoMustCallOnElements == tm2NoMustCallOnElements) {
+        return super.leastUpperBoundShallow(qualifier1, tm1, qualifier2, tm2);
+      } else if (tm1NoMustCallOnElements) {
+        return qualifier1;
+      } else { // if (tm2NoMustCallOnElements) {
+        return qualifier2;
+      }
+    }
+  }
+
+  /**
+   * The TreeAnnotator for the MustCallOnElements type system.
+   *
+   * <p>This tree annotator treats non-owning method parameters as bottom, regardless of their
+   * declared type, when they appear in the body of the method. Doing so is safe because being
+   * non-owning means, by definition, that their must-call obligations are only relevant in the
+   * callee. (This behavior is disabled if the {@code -AnoLightweightOwnership} option is passed to
+   * the checker.)
+   *
+   * <p>The tree annotator also changes the type of resource variables to remove "close" from their
+   * must-call types, because the try-with-resources statement guarantees that close() is called on
+   * all such variables.
+   */
+  private class MustCallOnElementsTreeAnnotator extends TreeAnnotator {
+    /**
+     * Create a MustCallOnElementsTreeAnnotator.
+     *
+     * @param mustCallOnElementsAnnotatedTypeFactory the type factory
+     */
+    public MustCallOnElementsTreeAnnotator(
+        MustCallOnElementsAnnotatedTypeFactory mustCallOnElementsAnnotatedTypeFactory) {
+      super(mustCallOnElementsAnnotatedTypeFactory);
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+      Element elt = TreeUtils.elementFromUse(tree);
+      // The following changes are not desired for RLC _inference_ in unannotated programs,
+      // where a goal is to infer and add @Owning annotations to formal parameters.
+      // Therefore, if WPI is enabled, they should not be executed.
+      if (getWholeProgramInference() == null
+          && elt.getKind() == ElementKind.PARAMETER
+          && (noLightweightOwnership || getDeclAnnotation(elt, OwningArray.class) == null)) {
+        // Parameters that are not annotated with @Owning should be treated as bottom
+        // (to suppress warnings about them). An exception is polymorphic parameters,
+        // which might be @MustCallOnElementsAlias (and so wouldn't be annotated with @Owning):
+        // these are not modified, to support verification of @MustCallOnElementsAlias
+        // annotations.
+        type.replaceAnnotation(BOTTOM);
+      }
+      return super.visitIdentifier(tree, type);
+    }
+  }
+
+  // @Override
+  // protected QualifierUpperBounds createQualifierUpperBounds() {
+  //   return new MustCallOnElementsQualifierUpperBounds();
+  // }
+
+  // /** Support @InheritableMustCallOnElements meaning @MustCallOnElements on all subtypes. */
+  // class MustCallOnElementsQualifierUpperBounds extends QualifierUpperBounds {
+
+  //   /**
+  //    * Creates a {@link QualifierUpperBounds} from the MustCallOnElements Checker the annotations
+  // that are in
+  //    * the type hierarchy.
+  //    */
+  //   public MustCallOnElementsQualifierUpperBounds() {
+  //     super(MustCallOnElementsAnnotatedTypeFactory.this);
+  //   }
+
+  //   @Override
+  //   protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
+  //     AnnotationMirrorSet explict = super.getAnnotationFromElement(element);
+  //     if (!explict.isEmpty()) {
+  //       return explict;
+  //     }
+  //     AnnotationMirror inheritableMustCallOnElements = getDeclAnnotation(element,
+  // InheritableMustCallOnElements.class);
+  //     if (inheritableMustCallOnElements != null) {
+  //       List<String> mustCallOnElementsVal =
+  //           AnnotationUtils.getElementValueArray(
+  //               inheritableMustCallOnElements, inheritableMustCallOnElementsValueElement,
+  // String.class);
+  //       return AnnotationMirrorSet.singleton(createMustCallOnElements(mustCallOnElementsVal));
+  //     }
+  //     return AnnotationMirrorSet.emptySet();
+  //   }
+  // }
 }

@@ -18,6 +18,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #must-call-checker Must Call Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target({ElementType.TYPE_USE}) // , ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 public @interface MustCallOnElementsUnknown {}
