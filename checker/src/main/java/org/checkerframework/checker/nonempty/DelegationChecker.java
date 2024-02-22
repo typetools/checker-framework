@@ -41,7 +41,7 @@ public class DelegationChecker extends BaseTypeChecker {
 
   static class Visitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-    /** The maximum number of fields marked with {@link Delegate} allowed by in a class. */
+    /** The maximum number of fields marked with {@link Delegate} permitted in a class. */
     private final int MAX_NUM_DELEGATE_FIELDS = 1;
 
     /** The field marked with {@link Delegate} for the current class. */
