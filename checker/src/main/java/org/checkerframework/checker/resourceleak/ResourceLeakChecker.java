@@ -146,8 +146,8 @@ public class ResourceLeakChecker extends CalledMethodsChecker {
     } else {
       checkers.add(MustCallChecker.class);
     }
-    checkers.add(MustCallOnElementsChecker.class);
     checkers.add(CalledMethodsOnElementsChecker.class);
+    checkers.add(MustCallOnElementsChecker.class);
 
     return checkers;
   }

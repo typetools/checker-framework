@@ -3,8 +3,11 @@ package org.checkerframework.checker.calledmethodsonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -22,7 +25,9 @@ import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -126,22 +131,83 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not lessthan tree";
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
-    System.out.println("called method: " + calledMethod);
     if (calledMethod != null) {
-      AccumulationStore thenStore = res.getThenStore();
-      AccumulationStore elseStore = res.getElseStore();
       ExpressionTree arrayTree =
           MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
               node.getTree());
-      AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-      AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(currentType, calledMethod);
-      JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
-      elseStore.insertValue(receiverReceiver, newType);
-
-      return new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+      accumulate(arrayTree, res, calledMethod);
+      return new ConditionalTransferResult<>(
+          res.getResultValue(), res.getThenStore(), res.getElseStore());
     }
     return res;
   }
+
+  public void accumulate(
+      ExpressionTree tree,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      String... values) {
+    List<String> valuesAsList = Arrays.asList(values);
+    JavaExpression target = JavaExpression.fromTree(tree);
+    System.out.println("oldtype: " + result.getElseStore().getValue(target));
+    if (CFAbstractStore.canInsertJavaExpression(target)) {
+      if (result.containsTwoStores()) {
+        updateValueAndInsertIntoStore(result.getThenStore(), target, valuesAsList);
+        updateValueAndInsertIntoStore(result.getElseStore(), target, valuesAsList);
+      } else {
+        updateValueAndInsertIntoStore(result.getRegularStore(), target, valuesAsList);
+      }
+    }
+    System.out.println("newtype: " + result.getElseStore().getValue(target));
+  }
+
+  private void updateValueAndInsertIntoStore(
+      AccumulationStore store, JavaExpression target, List<String> values) {
+    // Make a modifiable copy of the list.
+    List<String> valuesAsList = new ArrayList<>(values);
+    AccumulationValue flowValue = store.getValue(target);
+    if (flowValue != null) {
+      Set<String> accumulatedValues = flowValue.getAccumulatedValues();
+      if (accumulatedValues != null) {
+        valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
+      } else {
+        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+        assert flowAnnos.size() <= 1;
+        for (AnnotationMirror anno : flowAnnos) {
+          if (atypeFactory.isAccumulatorAnnotation(anno)) {
+            List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
+            if (!oldFlowValues.isEmpty()) {
+              // valuesAsList cannot have its length changed -- it is backed by an
+              // array -- but if oldFlowValues is not empty, it is a new, modifiable
+              // list.
+              oldFlowValues.addAll(valuesAsList);
+              valuesAsList = oldFlowValues;
+            }
+          }
+        }
+      }
+    }
+    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+    store.insertValue(target, newAnno);
+  }
+
+  //   ExecutableElement method = TreeUtils.elementFromUse(node.getTree());
+  //   Node receiver = node.getTarget().getReceiver();
+  //   if (receiver != null) {
+  //     String methodName = node.getTarget().getMethod().getSimpleName().toString();
+  //     methodName =
+  //         ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
+  //             .adjustMethodNameUsingValueChecker(methodName, node.getTree());
+  //     accumulate(receiver, superResult, methodName);
+  //   }
+  //   TransferResult<AccumulationValue, AccumulationStore> finalResult =
+  //       new ConditionalTransferResult<>(
+  //           superResult.getResultValue(),
+  //           superResult.getThenStore(),
+  //           superResult.getElseStore(),
+  //           exceptionalStores);
+  //   exceptionalStores = null;
+  //   return finalResult;
+  // }
 
   /**
    * Extract the current called-methods type from {@code currentType}, and then add each element of
@@ -170,6 +236,7 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(
             type, calledMethodsOnElementsValueElement, String.class);
+
     List<String> newList = CollectionsPlume.append(currentMethods, methodName);
 
     return atypeFactory.createAccumulatorAnnotation(newList);

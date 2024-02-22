@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -41,6 +41,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -1168,13 +1171,12 @@ class MustCallConsistencyAnalyzer {
         && lhs.getTree() instanceof ArrayAccessTree) {
       // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
       // check whether obligations have been fulfilled prior to reassignment
-      if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+      if (!MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
           (AssignmentTree) assignmentNode.getTree())) {
-        // assignment is in a pattern-matched loop: check whether obligations have been fulfilled
-        checkReassignmentToOwningArray(obligations, assignmentNode);
-      } else {
+        // assignment not in a pattern-matched loop: not permitted for @OwningArray
         checker.reportError(assignmentNode.getTree(), "bad assignment");
       }
+      checkReassignmentToOwningArray(obligations, assignmentNode);
       // really unsure about the remainder of this code that deletes obligations for the local var
       // TODO
       // Remove Obligations from local variables, now that the @OwningArray is responsible.
@@ -1732,19 +1734,23 @@ class MustCallConsistencyAnalyzer {
     // However, the rhs might not necessarily create obligations TODO
     // check whether obligations are fulfilled, if not, issue warning  TODO
     ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
-    ExpressionTree arrayTree = lhs.getArrayExpression();
+    IdentifierTree arrayTree = (IdentifierTree) lhs.getArray().getTree();
+    Element lhsElm = TreeUtils.elementFromTree(arrayTree);
     MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
         typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+    CalledMethodsOnElementsAnnotatedTypeFactory cmTypeFactory =
+        typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
 
-    Element lhsElm = TreeUtils.elementFromTree(lhs.getTree());
-    AnnotatedTypeMirror atm = mcTypeFactory.getAnnotatedType(lhsElm);
+    AnnotatedTypeMirror mcAtm = mcTypeFactory.getAnnotatedType(lhsElm);
+    AnnotatedTypeMirror cmAtm = cmTypeFactory.getAnnotatedType(lhsElm);
     // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
     // annotatedarraytype";
     // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
     // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
-    AnnotationMirror mcAnno = atm.getPrimaryAnnotation(MustCallOnElements.class);
-    System.out.println("annotation: " + atm);
-    System.out.println("mcanno: " + mcAnno);
+    AnnotationMirror mcAnno = mcAtm.getPrimaryAnnotation(MustCallOnElements.class);
+    AnnotationMirror cmAnno = cmAtm.getPrimaryAnnotation(CalledMethodsOnElements.class);
+    System.out.println("lhsElm: " + lhsElm);
+    System.out.println("annotations: " + mcAtm + " " + cmAtm);
     if (mcAnno == null) {
       return;
     }

@@ -4,10 +4,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -35,9 +32,8 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
@@ -45,9 +41,9 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -138,7 +134,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     BOTTOM = createMustCallOnElements(Collections.emptyList());
     noLightweightOwnership = checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
-    this.postInit();
+    if (checker instanceof MustCallOnElementsChecker) {
+      this.postInit();
+    }
   }
 
   /**
@@ -185,20 +183,20 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * Treat non-owning-array method parameters as @MustCallOnElementsUnknown (top) when the method is
    * called.
    */
-  @Override
-  public void methodFromUsePreSubstitution(
-      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
-    ExecutableElement declaration;
-    if (tree instanceof MethodInvocationTree) {
-      declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
-    } else if (tree instanceof MemberReferenceTree) {
-      declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
-    } else {
-      throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
-    }
-    changeNonOwningParameterTypesToTop(declaration, type);
-    super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
-  }
+  // @Override
+  // public void methodFromUsePreSubstitution(
+  //     ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+  //   ExecutableElement declaration;
+  //   if (tree instanceof MethodInvocationTree) {
+  //     declaration = TreeUtils.elementFromUse((MethodInvocationTree) tree);
+  //   } else if (tree instanceof MemberReferenceTree) {
+  //     declaration = (ExecutableElement) TreeUtils.elementFromUse(tree);
+  //   } else {
+  //     throw new TypeSystemError("unexpected type of method tree: " + tree.getKind());
+  //   }
+  //   changeNonOwningParameterTypesToTop(declaration, type);
+  //   super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
+  // }
 
   /**
    * Changes the type of each parameter not annotated as @OwningArray to @MustCallOnElementsUnknown
@@ -209,38 +207,39 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * @param declaration a method or constructor declaration
    * @param type the method or constructor's type
    */
-  private void changeNonOwningParameterTypesToTop(
-      ExecutableElement declaration, AnnotatedExecutableType type) {
-    // Formal parameters without a declared owning annotation are disregarded by the RLC
-    // _analysis_, as their @MustCallOnElements obligation is set to Top in this method. However,
-    // this computation is not desirable for RLC _inference_ in unannotated programs,
-    // where a goal is to infer and add @Owning annotations to formal parameters.
-    if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
-      return;
-    }
-    List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
-    for (int i = 0; i < parameterTypes.size(); i++) {
-      Element paramDecl = declaration.getParameters().get(i);
-      if (noLightweightOwnership || getDeclAnnotation(paramDecl, OwningArray.class) == null) {
-        AnnotatedTypeMirror paramType = parameterTypes.get(i);
-        paramType.replaceAnnotation(TOP);
-      }
-    }
-    if (declaration.isVarArgs()) {
-      // also modify the component type of a varargs array
-      AnnotatedTypeMirror varargsType =
-          ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() - 1)).getComponentType();
-      varargsType.replaceAnnotation(TOP);
-    }
-  }
+  // private void changeNonOwningParameterTypesToTop(
+  //     ExecutableElement declaration, AnnotatedExecutableType type) {
+  //   // Formal parameters without a declared owning annotation are disregarded by the RLC
+  //   // _analysis_, as their @MustCallOnElements obligation is set to Top in this method. However,
+  //   // this computation is not desirable for RLC _inference_ in unannotated programs,
+  //   // where a goal is to infer and add @Owning annotations to formal parameters.
+  //   if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
+  //     return;
+  //   }
+  //   List<AnnotatedTypeMirror> parameterTypes = type.getParameterTypes();
+  //   for (int i = 0; i < parameterTypes.size(); i++) {
+  //     Element paramDecl = declaration.getParameters().get(i);
+  //     if (noLightweightOwnership || getDeclAnnotation(paramDecl, OwningArray.class) == null) {
+  //       AnnotatedTypeMirror paramType = parameterTypes.get(i);
+  //       paramType.replaceAnnotation(TOP);
+  //     }
+  //   }
+  //   if (declaration.isVarArgs()) {
+  //     // also modify the component type of a varargs array
+  //     AnnotatedTypeMirror varargsType =
+  //         ((AnnotatedArrayType) parameterTypes.get(parameterTypes.size() -
+  // 1)).getComponentType();
+  //     varargsType.replaceAnnotation(TOP);
+  //   }
+  // }
 
-  @Override
-  protected void constructorFromUsePreSubstitution(
-      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
-    ExecutableElement declaration = TreeUtils.elementFromUse(tree);
-    changeNonOwningParameterTypesToTop(declaration, type);
-    super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
-  }
+  // @Override
+  // protected void constructorFromUsePreSubstitution(
+  //     NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+  //   ExecutableElement declaration = TreeUtils.elementFromUse(tree);
+  //   changeNonOwningParameterTypesToTop(declaration, type);
+  //   super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
+  // }
 
   public static boolean doesMethodAccessCloseArrayObligation(MemberSelectTree memSelect) {
     return obligationFulfillingMethodAccess.contains(memSelect);
@@ -408,7 +407,6 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * declared type, when they appear in the body of the method. Doing so is safe because being
    * non-owning means, by definition, that their must-call obligations are only relevant in the
    * callee. (This behavior is disabled if the {@code -AnoLightweightOwnership} option is passed to
-   * the checker.)
    *
    * <p>The tree annotator also changes the type of resource variables to remove "close" from their
    * must-call types, because the try-with-resources statement guarantees that close() is called on
