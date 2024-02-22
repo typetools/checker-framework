@@ -115,50 +115,6 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
-  // @Override
-  // public TransferResult<AccumulationValue, AccumulationStore> visitMethodAccess(
-  //     MethodAccessNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-  //   TransferResult<AccumulationValue, AccumulationStore> superResult =
-  //       super.visitMethodAccess(node, input);
-  //   ExecutableElement method = node.getMethod();
-  //   Node receiver = node.getReceiver();
-
-  //   // check whether this is a marked method call (by checking the ast node), then update the
-  // type
-  //   ExpressionTree tree = (ExpressionTree) node.getTree();
-  //   if (tree instanceof MemberSelectTree) {
-  //     // member select could also be a field, this might be a bug TODO
-  //     MemberSelectTree memT = (MemberSelectTree) tree;
-  //     // System.out.println("Tree is MemberSelect with chosen method " +
-  //     //                    memT.getIdentifier().toString());
-  //     if (MustCallAnnotatedTypeFactory.doesMethodAccessCloseArrayObligation(memT)) {
-  //       // System.out.println("Fulfills an obligation: " +
-  //       //                   node.getMethod().getSimpleName());
-  //     }
-  //     accumulate(receiver, superResult, method.getSimpleName().toString());
-  //   }
-  //   // assert(tree instanceof IdentifierTree) : "Programmer assumption fails: googoogaga";
-  //   // Node receiver = node.getReceiver();
-  //   // if (receiver != null) {
-  //   // String methodName = method.getSimpleName().toString();
-  //   // is this enough? Because the below line does not work, but it is necessary
-  //   // in visitMethodInvocation TODO
-
-  //   // methodName =
-  //   //     ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-  //   //         .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-  //   //   accumulate(receiver, superResult, methodName);
-  //   // }
-  //   TransferResult<AccumulationValue, AccumulationStore> finalResult =
-  //       new ConditionalTransferResult<>(
-  //           superResult.getResultValue(),
-  //           superResult.getThenStore(),
-  //           superResult.getElseStore(),
-  //           exceptionalStores);
-  //   exceptionalStores = null;
-  //   return finalResult;
-  // }
-
   @Override
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
