@@ -19,8 +19,8 @@ import org.checkerframework.javacutil.ElementUtils;
 public class MustCallOnElementsVisitor
     extends BaseTypeVisitor<MustCallOnElementsAnnotatedTypeFactory> {
 
-  /** True if -AnoLightweightOwnership was passed on the command line. */
-  private final boolean noLightweightOwnership;
+  // /** True if -AnoLightweightOwnership was passed on the command line. */
+  // private final boolean noLightweightOwnership;
 
   /**
    * Creates a new MustCallOnElementsVisitor.
@@ -29,23 +29,9 @@ public class MustCallOnElementsVisitor
    */
   public MustCallOnElementsVisitor(BaseTypeChecker checker) {
     super(checker);
-    this.checker = checker;
-    noLightweightOwnership = checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    // noLightweightOwnership =
+    // checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
   }
-
-  private BaseTypeChecker checker;
-
-  /**
-   * Issues an error if the given re-assignment to an {@code @OwningArray} array is not valid. A
-   * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
-   * the must-call obligations of the field.
-   *
-   * <p>Despite the name of this method, the argument {@code node} might be the first and only
-   * assignment to a field.
-   *
-   * @param obligations current tracked Obligations
-   * @param node an assignment to a non-final, owning field
-   */
 
   // @Override
   // public Void visitAssignment(AssignmentTree node, Void p) {

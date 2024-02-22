@@ -1200,9 +1200,9 @@ class MustCallConsistencyAnalyzer {
           toClear = MethodExitKind.ALL;
         }
 
-        @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
-        @Nullable TypeElement enclosingType =
-            enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+        // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+        // @Nullable TypeElement enclosingType =
+        //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
 
         removeObligationsContainingVar(
             obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
@@ -1729,6 +1729,7 @@ class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
+  @SuppressWarnings("UnusedVariable")
   private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
     // preconditions: assignment to index of an @OwningArray.
     // However, the rhs might not necessarily create obligations TODO
@@ -1761,7 +1762,7 @@ class MustCallConsistencyAnalyzer {
     if (mcValues.isEmpty()) {
       return;
     }
-    VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+    // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
     checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
   }
 
