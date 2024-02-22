@@ -2,7 +2,6 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -53,12 +52,9 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     @Override
-    public void setRoot(CompilationUnitTree tree) {
-      delegate = null; // Unset the previous delegate when visiting a new class
-    }
-
-    @Override
     public void processClassTree(ClassTree tree) {
+      delegate = null; // Unset the previous delegate whenever a new class is visited
+      // TODO: what about inner classes?
       List<VariableTree> delegates = getDelegateFields(tree);
       if (delegates.size() > MAX_NUM_DELEGATE_FIELDS) {
         VariableTree latestDelegate = delegates.get(delegates.size() - 1);
