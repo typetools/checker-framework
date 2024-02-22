@@ -1,13 +1,25 @@
 package org.checkerframework.checker.mustcall;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +27,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
@@ -23,6 +36,8 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -72,6 +87,175 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitReturn(tree, p);
+  }
+
+  /**
+   * Checks whether the loop either: - initializes entries of an @Owning array - calls a method on
+   * entries of an @OwningArray array The pattern-match checks: - does the loop have a single
+   * statement? - is the statement an assignment? - is the LHS an element of an @OwningArray? - is
+   * the RHS a newly constructed Resource (of the form: new Resource();)? ...
+   */
+  @Override
+  public Void visitForLoop(ForLoopTree tree, Void p) {
+    BlockTree blockT = (BlockTree) tree.getStatement();
+    // pattern match the initializer, condition and update
+    if (blockT.getStatements().size() != 1 // ensure loop body has only one statement
+        || !(blockT.getStatements().get(0) instanceof ExpressionStatementTree)
+        || tree.getCondition().getKind() != Tree.Kind.LESS_THAN // ensure condition is: <
+        || tree.getUpdate().size() != 1
+        || tree.getInitializer().size() != 1) // ensure there's only one loop variable
+    return super.visitForLoop(tree, p);
+
+    // pattern-match the method body
+    ExpressionTree stmtTree =
+        ((ExpressionStatementTree) blockT.getStatements().get(0)).getExpression();
+    ExpressionTree lhs;
+    if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
+      lhs = ((AssignmentTree) stmtTree).getVariable();
+    } else if (stmtTree instanceof MethodInvocationTree) { // possiblity deallocating loop
+      lhs = ((MethodInvocationTree) stmtTree).getMethodSelect();
+      if (lhs instanceof MemberSelectTree) {
+        lhs = ((MemberSelectTree) lhs).getExpression();
+      } else {
+        return super.visitForLoop(tree, p);
+      }
+    } else { // neither
+      return super.visitForLoop(tree, p);
+    }
+    // verifiy lhs is an index of @OwningArray
+    Element lhsElt = TreeUtils.elementFromTree(lhs);
+    boolean lhsIsOwningArray = atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
+    // ensure lhs contains @OwningArray and is an array access
+    if (!lhsIsOwningArray || lhs.getKind() != Tree.Kind.ARRAY_ACCESS)
+      return super.visitForLoop(tree, p);
+    ArrayAccessTree arrayAccT = (ArrayAccessTree) lhs;
+    // ensure index is same as the one initialized in the loop header
+    StatementTree init = tree.getInitializer().get(0);
+    ExpressionTree idx = arrayAccT.getIndex();
+    if (!(init instanceof VariableTree)
+        || !(idx instanceof IdentifierTree)
+        || !((IdentifierTree) idx).getName().equals(((VariableTree) init).getName()))
+      return super.visitForLoop(tree, p);
+    // ensure indexed array is the same as the one we took the length of in loop condition
+    Name arrayNameInBody = arrayNameFromExpression(arrayAccT.getExpression());
+    if (arrayNameInBody == null) {
+      // expected array, but does not directly evaluate to an identifier
+      checker.reportWarning(arrayAccT, "unexpected.array.expression");
+      return super.visitForLoop(tree, p);
+    }
+    Name arrayNameInHeader =
+        verifyAllElementsAreCalledOn(
+            (StatementTree) tree.getInitializer().get(0),
+            (BinaryTree) tree.getCondition(),
+            (ExpressionStatementTree) tree.getUpdate().get(0));
+    if (arrayNameInHeader == null) {
+      // header is not as expected, but loop body correctly initializes a resource
+      checker.reportWarning(tree, "owningArray.allocation.unsuccessful", arrayNameInBody);
+      return super.visitForLoop(tree, p);
+    }
+    if (arrayNameInHeader != arrayNameInBody) {
+      // array name in header and footer not equal
+      return super.visitForLoop(tree, p);
+    }
+    // pattern match succeeded
+
+    if (stmtTree instanceof AssignmentTree) {
+      AssignmentTree assgn = (AssignmentTree) stmtTree;
+      if (!(assgn.getExpression() instanceof NewClassTree)) {
+        checker.reportWarning(assgn, "unexpected.rhs.allocatingassignment");
+      }
+      // mark for-loop as 'allocating-for-loop'
+      ExpressionTree className = ((NewClassTree) assgn.getExpression()).getIdentifier();
+      Element rhsElt = TreeUtils.elementFromTree(className);
+      MustCallAnnotatedTypeFactory mcTypeFactory = new MustCallAnnotatedTypeFactory(checker);
+      AnnotationMirror mcAnno =
+          mcTypeFactory.getAnnotatedType(rhsElt).getPrimaryAnnotation(MustCall.class);
+      List<String> mcValues =
+          AnnotationUtils.getElementValueArray(
+              mcAnno, mcTypeFactory.getMustCallValueElement(), String.class);
+      System.out.println("detected mustcall: " + mcValues);
+      // check whether the RHS actually has must-call obligations
+      if (mcValues != null) {
+        ExpressionTree condition = tree.getCondition();
+        MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
+        MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
+            condition, mcValues);
+        MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
+            condition, ((ArrayAccessTree) lhs).getExpression());
+      }
+    } else {
+      MemberSelectTree methodCall =
+          (MemberSelectTree) ((MethodInvocationTree) stmtTree).getMethodSelect();
+      ArrayAccessTree arrAcc = (ArrayAccessTree) methodCall.getExpression();
+      Name methodName = methodCall.getIdentifier();
+      System.out.println("detected calledmethod: " + methodName);
+      ExpressionTree condition = tree.getCondition();
+      MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(methodCall);
+      MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(
+          condition, methodName.toString());
+      MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
+          condition, arrAcc.getExpression());
+    }
+
+    return super.visitForLoop(tree, p);
+  }
+
+  /**
+   * Decides for a for-loop header whether the loop iterates over all elements of some array based
+   * on a pattern-match.
+   *
+   * @param init the initializer of the loop
+   * @param condition the loop condition
+   * @param update the loop update
+   * @return Name of the array the loop iterates over all elements of, or null if the pattern match
+   *     fails
+   */
+  protected Name verifyAllElementsAreCalledOn(
+      StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
+    Tree.Kind updateKind = update.getExpression().getKind();
+    if (updateKind == Tree.Kind.PREFIX_INCREMENT || updateKind == Tree.Kind.POSTFIX_INCREMENT) {
+      UnaryTree inc = (UnaryTree) update.getExpression();
+      // verify update is of form i++ or ++i and init is variable initializer
+      if (!(init instanceof VariableTree) || !(inc.getExpression() instanceof IdentifierTree))
+        return null;
+      VariableTree initVar = (VariableTree) init;
+      // verify that intializer is i=0
+      if (!(initVar.getInitializer() instanceof LiteralTree)
+          || !((LiteralTree) initVar.getInitializer()).getValue().equals(0)) {
+        return null;
+      }
+      // verify that condition is of the form: i<expr.identifier
+      if (!(condition.getRightOperand() instanceof MemberSelectTree)
+          || !(condition.getLeftOperand() instanceof IdentifierTree)) return null;
+      MemberSelectTree lengthAccess = (MemberSelectTree) condition.getRightOperand();
+      Name arrayName = arrayNameFromExpression(lengthAccess.getExpression());
+      if (initVar.getName()
+              == ((IdentifierTree) condition.getLeftOperand()).getName() // i=0 and i<n are same "i"
+          && initVar.getName()
+              == ((IdentifierTree) inc.getExpression()).getName() // i=0 and i++ are same "i"
+          && lengthAccess
+              .getIdentifier()
+              .toString()
+              .contentEquals("length")) { // condition is i<arr.length
+        return arrayName;
+      } else {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Get array name from an ExpressionTree expected to evaluate to an array
+   *
+   * @param arrayExpr ExpressionTree allegedly containing an array
+   * @return Name of the array the expression evaluates to or null if it doesn't
+   */
+  protected Name arrayNameFromExpression(ExpressionTree arrayExpr) {
+    if (arrayExpr.getKind() == Tree.Kind.IDENTIFIER) {
+      return ((IdentifierTree) arrayExpr).getName();
+    }
+    return null;
   }
 
   @Override

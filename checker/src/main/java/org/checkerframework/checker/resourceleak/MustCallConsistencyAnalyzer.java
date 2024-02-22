@@ -4,6 +4,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -38,6 +41,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -45,6 +51,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -56,6 +65,7 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -75,6 +85,7 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1153,6 +1164,59 @@ class MustCallConsistencyAnalyzer {
     Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
     rhs = getTempVarOrNode(rhs);
 
+    // Ownership transfer to index of @OwningArray array.
+    boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
+    if (isOwningArray
+        && typeFactory.canCreateObligations()
+        && lhs.getTree() instanceof ArrayAccessTree) {
+      // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
+      // check whether obligations have been fulfilled prior to reassignment
+      if (!MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+          (AssignmentTree) assignmentNode.getTree())) {
+        // assignment not in a pattern-matched loop: not permitted for @OwningArray
+        checker.reportError(assignmentNode.getTree(), "bad assignment");
+      }
+      checkReassignmentToOwningArray(obligations, assignmentNode);
+      // really unsure about the remainder of this code that deletes obligations for the local var
+      // TODO
+      // Remove Obligations from local variables, now that the @OwningArray is responsible.
+      // (When obligation creation is turned off, non-final fields cannot take ownership.)
+      if (rhs instanceof LocalVariableNode) {
+        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+
+        MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
+        boolean inConstructor =
+            containingMethod != null && TreeUtils.isConstructor(containingMethod);
+
+        // Determine which obligations this field assignment can clear.  In a constructor,
+        // assignments to `this.field` only clears obligations on normal return, since
+        // on exception `this` becomes inaccessible.
+        Set<MethodExitKind> toClear;
+        if (inConstructor
+            && lhs instanceof FieldAccessNode
+            && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
+          toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
+        } else {
+          toClear = MethodExitKind.ALL;
+        }
+
+        // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+        // @Nullable TypeElement enclosingType =
+        //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+
+        removeObligationsContainingVar(
+            obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+
+        // Finally, if any obligations containing this var remain, then closing the field will
+        // satisfy them.  Here we are overly cautious and only track final fields.  In the
+        // future we could perhaps relax this guard with careful handling for field reassignments.
+        addAliasToObligationsContainingVar(
+            obligations,
+            rhsVar,
+            new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
+      }
+    }
+
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
       boolean isOwningField = !noLightweightOwnership && typeFactory.hasOwning(lhsElement);
@@ -1652,6 +1716,54 @@ class MustCallConsistencyAnalyzer {
             " Non-final owning field might be overwritten");
       }
     }
+  }
+
+  /**
+   * Issues an error if the given re-assignment to an {@code @OwningArray} array is not valid. A
+   * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
+   * the must-call obligations of the field.
+   *
+   * <p>Despite the name of this method, the argument {@code node} might be the first and only
+   * assignment to a field.
+   *
+   * @param obligations current tracked Obligations
+   * @param node an assignment to a non-final, owning field
+   */
+  @SuppressWarnings("UnusedVariable")
+  private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
+    // preconditions: assignment to index of an @OwningArray.
+    // However, the rhs might not necessarily create obligations TODO
+    // check whether obligations are fulfilled, if not, issue warning  TODO
+    ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
+    IdentifierTree arrayTree = (IdentifierTree) lhs.getArray().getTree();
+    Element lhsElm = TreeUtils.elementFromTree(arrayTree);
+    MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
+        typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+    CalledMethodsOnElementsAnnotatedTypeFactory cmTypeFactory =
+        typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
+
+    AnnotatedTypeMirror mcAtm = mcTypeFactory.getAnnotatedType(lhsElm);
+    AnnotatedTypeMirror cmAtm = cmTypeFactory.getAnnotatedType(lhsElm);
+    // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
+    // annotatedarraytype";
+    // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
+    // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
+    AnnotationMirror mcAnno = mcAtm.getPrimaryAnnotation(MustCallOnElements.class);
+    AnnotationMirror cmAnno = cmAtm.getPrimaryAnnotation(CalledMethodsOnElements.class);
+    System.out.println("lhsElm: " + lhsElm);
+    System.out.println("annotations: " + mcAtm + " " + cmAtm);
+    if (mcAnno == null) {
+      return;
+    }
+    assert (mcAnno != null) : "implement mustcallonelements first";
+    List<String> mcValues =
+        AnnotationUtils.getElementValueArray(
+            mcAnno, mcTypeFactory.getMustCallOnElementsValueElement(), String.class);
+    if (mcValues.isEmpty()) {
+      return;
+    }
+    // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+    checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
   }
 
   /**
@@ -2262,7 +2374,7 @@ class MustCallConsistencyAnalyzer {
         if (hasMustCallAlias
             || (typeFactory.declaredTypeHasMustCall(param)
                 && !noLightweightOwnership
-                && paramElement.getAnnotation(Owning.class) != null)) {
+                && (paramElement.getAnnotation(Owning.class) != null))) {
           result.add(
               new Obligation(
                   ImmutableSet.of(

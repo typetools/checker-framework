@@ -88,6 +88,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
     MustCallAnnotatedTypeFactory mcAtf =
         rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    // AnnotationMirrorSet ecmAnnotations = getEnsuresCalledMethodsAnnotations(tree, rlTypeFactory);
+
     List<String> cmcfValues = getCreatesMustCallForValues(elt, mcAtf, rlTypeFactory);
     if (!cmcfValues.isEmpty()) {
       checkCreatesMustCallForOverrides(tree, elt, mcAtf, cmcfValues);

@@ -156,6 +156,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       AccumulationValue flowValue = result.getRegularStore().getValue(target);
+      // System.out.println(flowValue.toString());
       if (flowValue != null) {
         // Dataflow has already recorded information about the target.  Integrate it into
         // the list of values in the new annotation.
