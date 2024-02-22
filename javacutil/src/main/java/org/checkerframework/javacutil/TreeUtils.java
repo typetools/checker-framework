@@ -75,6 +75,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
@@ -330,6 +331,19 @@ public final class TreeUtils {
   @Pure
   public static @Nullable TypeElement elementFromUse(ClassTree tree) {
     return elementFromDeclaration(tree);
+  }
+
+  /**
+   * Returns the fields that are declared within the given class declaration.
+   *
+   * @param tree the {@link ClassTree} node to get the fields for
+   * @return the list of fields that are declared within the given class declaration
+   */
+  public static List<VariableTree> fieldsFromTree(ClassTree tree) {
+    return tree.getMembers().stream()
+        .filter(t -> t.getKind() == Kind.VARIABLE)
+        .map(t -> (VariableTree) t)
+        .collect(Collectors.toList());
   }
 
   /**

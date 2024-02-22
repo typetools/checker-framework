@@ -1,10 +1,5 @@
 package org.checkerframework.checker.initialization;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NavigableSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
@@ -30,17 +25,5 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     //   * "initialization" is not a checkername/prefix.
     result.add("fbc");
     return result;
-  }
-
-  /** Returns a list of all fields of the given class. */
-  public static List<VariableTree> getAllFields(ClassTree clazz) {
-    List<VariableTree> fields = new ArrayList<>();
-    for (Tree t : clazz.getMembers()) {
-      if (t.getKind() == Tree.Kind.VARIABLE) {
-        VariableTree vt = (VariableTree) t;
-        fields.add(vt);
-      }
-    }
-    return fields;
   }
 }
