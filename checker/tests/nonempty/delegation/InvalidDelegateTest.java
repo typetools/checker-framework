@@ -18,6 +18,7 @@ public class InvalidDelegateTest<K, V> extends IdentityHashMap<K, V> {
   @Override
   // :: warning: (invalid.delegate)
   public boolean containsKey(Object key) {
+    // :: error: (contracts.conditional.postcondition)
     return true;
   }
 

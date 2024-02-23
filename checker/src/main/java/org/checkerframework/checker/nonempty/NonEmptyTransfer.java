@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.Delegate;
+import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -57,8 +58,8 @@ public class NonEmptyTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(n.getTreePath());
-    if (enclosingMethod == null || TreeUtils.isConstructor(enclosingMethod)) {
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(n.getTreePath());
+    if (enclosingMethodTree == null || TreeUtils.isConstructor(enclosingMethodTree)) {
       return result;
     }
     Tree receiverTree = n.getTarget().getReceiver().getTree();
@@ -66,12 +67,14 @@ public class NonEmptyTransfer extends CFTransfer {
       return result;
     }
     Element receiver = TreeUtils.elementFromTree(receiverTree);
+    Element enclosingMethod = TreeUtils.elementFromDeclaration(enclosingMethodTree);
     AnnotationMirror delegateAnno = aTypeFactory.getDeclAnnotation(receiver, Delegate.class);
-    if (delegateAnno == null) {
+    AnnotationMirror nonEmptyConditionalPostconditionAnno =
+        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
+    if (delegateAnno == null || nonEmptyConditionalPostconditionAnno == null) {
       return result;
     }
     JavaExpression thisExpr = JavaExpression.getImplicitReceiver(receiver);
-    // TODO: check whether the modifier decl annos actually have ensures annos before refinement
     refineStoreForDelegationInvocation(
         thisExpr, JavaExpression.fromNode(n.getTarget().getReceiver()), result);
     return result;
@@ -157,10 +160,12 @@ public class NonEmptyTransfer extends CFTransfer {
   private void refineStoreForDelegationInvocation(
       JavaExpression targetExpr, JavaExpression delegate, TransferResult<CFValue, CFStore> result) {
     if (result.containsTwoStores()) {
+      // Update the "then" store
       CFStore thenStore = result.getThenStore();
       CFValue delegateThenStoreValue = thenStore.getValue(delegate);
       thenStore.replaceValue(targetExpr, delegateThenStoreValue);
 
+      // Update the "else" store
       CFStore elseStore = result.getElseStore();
       CFValue delegateElseStoreValue = elseStore.getValue(delegate);
       elseStore.replaceValue(targetExpr, delegateElseStoreValue);
