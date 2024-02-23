@@ -6,13 +6,13 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nonempty.qual.Delegate;
@@ -134,11 +134,8 @@ public class DelegationChecker extends BaseTypeChecker {
      * @return true if the given method declaration is annotated with {@link Override}
      */
     private boolean isMarkedWithOverride(MethodTree tree) {
-      ModifiersTree modifiersAndAnnos = tree.getModifiers();
-      List<AnnotationMirror> annosOnMethod =
-          TreeUtils.annotationsFromTypeAnnotationTrees(modifiersAndAnnos.getAnnotations());
-      return annosOnMethod.stream()
-          .anyMatch(anno -> atypeFactory.areSameByClass(anno, Override.class));
+      Element method = TreeUtils.elementFromDeclaration(tree);
+      return atypeFactory.getDeclAnnotation(method, Override.class) != null;
     }
 
     /**
