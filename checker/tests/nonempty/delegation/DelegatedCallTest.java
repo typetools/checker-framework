@@ -1,4 +1,5 @@
 import java.util.IdentityHashMap;
+import org.checkerframework.checker.nonempty.qual.Delegate;
 import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 
 public class DelegatedCallTest<K, V> extends IdentityHashMap<K, V> {
@@ -6,7 +7,7 @@ public class DelegatedCallTest<K, V> extends IdentityHashMap<K, V> {
   private static final long serialVersionUID = -5147442142854693854L;
 
   /** The wrapped map. */
-  private final IdentityHashMap<K, V> map;
+  @Delegate private final IdentityHashMap<K, V> map;
 
   private DelegatedCallTest(IdentityHashMap<K, V> map) {
     this.map = map;
