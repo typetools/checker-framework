@@ -11,6 +11,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -43,9 +44,9 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Determine whether this is valid.
+   * Determine whether this QualifierHierarchy is valid.
    *
-   * @return true if this is valid
+   * @return true if this QualifierHierarchy is valid
    */
   public boolean isValid() {
     return true;
@@ -71,6 +72,16 @@ public abstract class QualifierHierarchy {
    * @return the top (ultimate super) type qualifiers in the type system
    */
   public abstract AnnotationMirrorSet getTopAnnotations();
+
+  /**
+   * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
+   *
+   * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
+   * @return true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   */
+  public boolean isTop(AnnotationMirror qualifier) {
+    return AnnotationUtils.containsSame(getTopAnnotations(), qualifier);
+  }
 
   /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
@@ -219,12 +230,13 @@ public abstract class QualifierHierarchy {
    * only used by this method for special cases when qualifier subtyping depends on the Java
    * basetype.
    *
-   * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
-   * AnnotationMirror, TypeMirror)} than this method.
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
    *
-   * @param subQualifiers set of qualifiers; exactly one per hierarchy
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
    * @param subType the type associated with {@code subQualifiers}
-   * @param superQualifiers set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
    * @param superType the type associated with {@code superQualifiers}
    * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
@@ -250,12 +262,47 @@ public abstract class QualifierHierarchy {
   }
 
   /**
+   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
+   * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
+   * only used by this method for special cases when qualifier subtyping depends on the Java
+   * basetype.
+   *
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
+   *
+   * @param subQualifiers a set of qualifiers; exactly one per hierarchy
+   * @param superQualifiers a set of qualifiers; exactly one per hierarchy
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   *     qualifier in the same hierarchy in {@code superQualifiers}
+   */
+  public boolean isSubtypeQualifiersOnly(
+      Collection<? extends AnnotationMirror> subQualifiers,
+      Collection<? extends AnnotationMirror> superQualifiers) {
+    assertSameSize(subQualifiers, superQualifiers);
+    for (AnnotationMirror subQual : subQualifiers) {
+      AnnotationMirror superQual = findAnnotationInSameHierarchy(superQualifiers, subQual);
+      if (superQual == null) {
+        throw new BugInCF(
+            "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
+            subQual, StringsPlume.join(",", superQualifiers));
+      }
+      if (!isSubtypeQualifiersOnly(subQual, superQual)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
    * used by this method for special cases when qualifier subtyping depends on the Java basetype.
    *
-   * <p>Subtypes more often override {@link #isSubtypeShallow(AnnotationMirror, TypeMirror,
-   * AnnotationMirror, TypeMirror)} than this method.
+   * <p>Subtypes of {@code QualifierHierarchy} more often override {@link
+   * #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror, TypeMirror)} than this
+   * method.
    *
    * @param subQualifiers a set of qualifiers; exactly one per hierarchy
    * @param superQualifiers a set of qualifiers; exactly one per hierarchy
@@ -292,6 +339,30 @@ public abstract class QualifierHierarchy {
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
+   * Returns the least upper bound of all the collections of qualifiers. The result is the lub of
+   * the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
+   * @return the least upper bound of the collections of qualifiers
+   */
+  public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = new AnnotationMirrorSet(annos);
+      } else {
+        result = leastUpperBoundsQualifiersOnly(result, annos);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Returns the least upper bound (LUB) of the qualifiers {@code qualifier1} and {@code
    * qualifier2}. Returns {@code null} if the qualifiers are not from the same qualifier hierarchy.
    * Ignores Java basetypes.
@@ -312,6 +383,37 @@ public abstract class QualifierHierarchy {
   public final @Nullable AnnotationMirror leastUpperBoundQualifiersOnly(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2) {
     return leastUpperBoundQualifiers(qualifier1, qualifier2);
+  }
+
+  /**
+   * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
+   * qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
+   * @return the least upper bound of the two sets of qualifiers
+   */
+  public Set<? extends AnnotationMirror> leastUpperBoundsQualifiersOnly(
+      Collection<? extends AnnotationMirror> qualifiers1,
+      Collection<? extends AnnotationMirror> qualifiers2) {
+    assertSameSize(qualifiers1, qualifiers2);
+    if (qualifiers1.isEmpty()) {
+      throw new BugInCF(
+          "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets");
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror a1 : qualifiers1) {
+      for (AnnotationMirror a2 : qualifiers2) {
+        AnnotationMirror lub = leastUpperBoundQualifiersOnly(a1, a2);
+        if (lub != null) {
+          result.add(lub);
+        }
+      }
+    }
+
+    assertSameSize(result, qualifiers1);
+    return result;
   }
 
   /**
@@ -351,9 +453,9 @@ public abstract class QualifierHierarchy {
    * Returns the least upper bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
    * @param tm1 the type on which qualifiers1 appear
-   * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
    * @param tm2 the type on which qualifiers2 appear
    * @return the least upper bound of the two sets of qualifiers
    */
@@ -484,9 +586,40 @@ public abstract class QualifierHierarchy {
    * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
    * qualifier for the same hierarchy in each set.
    *
-   * @param qualifiers1 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
+   * @return the greatest lower bound of the two sets of qualifiers
+   */
+  public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
+      Collection<? extends AnnotationMirror> qualifiers1,
+      Collection<? extends AnnotationMirror> qualifiers2) {
+    assertSameSize(qualifiers1, qualifiers2);
+    if (qualifiers1.isEmpty()) {
+      throw new BugInCF(
+          "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets");
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror a1 : qualifiers1) {
+      for (AnnotationMirror a2 : qualifiers2) {
+        AnnotationMirror glb = greatestLowerBoundQualifiersOnly(a1, a2);
+        if (glb != null) {
+          result.add(glb);
+        }
+      }
+    }
+
+    assertSameSize(qualifiers1, qualifiers2, result);
+    return result;
+  }
+
+  /**
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
    * @param tm1 the type that is annotated by qualifier1
-   * @param qualifiers2 set of qualifiers; exactly one per hierarchy
+   * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
    * @param tm2 the type that is annotated by qualifier2
    * @return the greatest lower bound of the two sets of qualifiers
    */
@@ -516,6 +649,30 @@ public abstract class QualifierHierarchy {
   }
 
   /**
+   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
+   * of the qualifier for the same hierarchy in each set.
+   *
+   * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
+   *     one qualifier per hierarchy.
+   * @return the greatest lower bound of the collections of qualifiers
+   */
+  public Set<? extends AnnotationMirror> greatestLowerBoundsQualifiersOnly(
+      Collection<? extends Collection<? extends AnnotationMirror>> qualifiers) {
+    if (qualifiers.isEmpty()) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    Set<? extends AnnotationMirror> result = null;
+    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
+      if (result == null) {
+        result = new AnnotationMirrorSet(annos);
+      } else {
+        result = greatestLowerBoundsQualifiersOnly(result, annos);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Returns true if and only if {@link AnnotatedTypeMirror#getPrimaryAnnotations()} can return a
    * set with fewer qualifiers than the width of the QualifierHierarchy.
    *
@@ -541,7 +698,7 @@ public abstract class QualifierHierarchy {
    * top qualifier, then call {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}
    * directly is faster.
    *
-   * @param qualifiers set of annotations to search
+   * @param qualifiers the set of annotations to search
    * @param qualifier annotation that is in the same hierarchy as the returned annotation
    * @return annotation in the same hierarchy as qualifier, or null if one is not found
    */
@@ -555,7 +712,7 @@ public abstract class QualifierHierarchy {
    * Returns the annotation in {@code qualifiers} that is in the hierarchy for which {@code top} is
    * top.
    *
-   * @param qualifiers set of annotations to search
+   * @param qualifiers the set of annotations to search
    * @param top the top annotation in the hierarchy to which the returned annotation belongs
    * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
    */

@@ -358,7 +358,7 @@ public class AnnotationFileElementTypes {
         // If the file has a prefix of "checker.jar/" then look for the file in the top
         // level directory of the jar that contains the checker.
         if (path.startsWith("checker.jar/")) {
-          path = path.substring("checker.jar/".length());
+          path = "/" + path.substring("checker.jar/".length());
         }
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
           if (in != null) {
@@ -437,22 +437,6 @@ public class AnnotationFileElementTypes {
     maybeParseEnclosingJdkClass(e);
     AnnotatedTypeMirror type = annotationFileAnnos.atypes.get(e);
     return type == null ? null : type.deepCopy();
-  }
-
-  /**
-   * Returns the set of declaration annotations for {@code e} containing only annotations explicitly
-   * written in an annotation file or the empty set if {@code e} does not appear in an annotation
-   * file.
-   *
-   * @param elt element for which annotations are returned
-   * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
-   *     the annotation file and in the element. {@code null} is returned if {@code element} does
-   *     not appear in an annotation file.
-   * @deprecated use {@link #getDeclAnnotations}
-   */
-  @Deprecated // 2021-06-26
-  public @Nullable AnnotationMirrorSet getDeclAnnotation(Element elt) {
-    return getDeclAnnotations(elt);
   }
 
   /**
@@ -772,9 +756,6 @@ public class AnnotationFileElementTypes {
   private void parseJdkJarEntry(String jarEntryName) {
     if (stubDebug) {
       System.out.printf("entered parseJdkJarEntry(%s)%n", jarEntryName);
-      if (jarEntryName.contains("String")) {
-        new Error("stack trace").printStackTrace();
-      }
     }
 
     JarURLConnection connection = getJarURLConnectionToJdk();

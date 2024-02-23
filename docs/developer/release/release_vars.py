@@ -96,6 +96,7 @@ INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 # The central repositories for Checker Framework related projects
 LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
 LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
+GIT_SCRIPTS_REPO = "https://github.com/plume-lib/git-scripts"
 PLUME_SCRIPTS_REPO = "https://github.com/plume-lib/plume-scripts"
 CHECKLINK_REPO = "https://github.com/plume-lib/checklink"
 PLUME_BIB_REPO = "https://github.com/mernst/plume-bib"
@@ -119,6 +120,7 @@ CF_VERSION = (
 ANNO_TOOLS = os.path.join(BUILD_DIR, "annotation-tools")
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS, "annotation-file-utilities")
 
+GIT_SCRIPTS = os.path.join(BUILD_DIR, "git-scripts")
 PLUME_SCRIPTS = os.path.join(BUILD_DIR, "plume-scripts")
 CHECKLINK = os.path.join(BUILD_DIR, "checklink")
 PLUME_BIB = os.path.join(BUILD_DIR, "plume-bib")
@@ -152,8 +154,6 @@ os.environ["BIBINPUTS"] = ".:" + PLUME_BIB
 os.environ["TEXINPUTS"] = ".:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:"
 os.environ["PERLLIB"] = getAndAppend("PERLLIB", ":") + perl_libs
 os.environ["PERL5LIB"] = getAndAppend("PERL5LIB", ":") + perl_libs
-# Still needed for santiy checks
-os.environ["JAVA_8_HOME"] = "/usr/lib/jvm/java-1.8.0-openjdk/"
 os.environ["JAVA_17_HOME"] = "/usr/lib/jvm/java-17-openjdk/"
 os.environ["JAVA_HOME"] = os.environ["JAVA_17_HOME"]
 

@@ -175,10 +175,19 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private JavaDiagnosticReader(File toRead, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = toRead.getName();
+    LineNumberReader reader = null;
     try {
       reader = new LineNumberReader(new FileReader(toRead));
+      this.reader = reader;
       advance();
     } catch (IOException e) {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (Exception exceptionOnClose) {
+          e.addSuppressed(exceptionOnClose);
+        }
+      }
       throw new RuntimeException(e);
     }
   }
@@ -192,10 +201,19 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private JavaDiagnosticReader(JavaFileObject toReadFileObject, StringToTestDiagnosticLine codec) {
     this.codec = codec;
     this.filename = new File(toReadFileObject.getName()).getName();
+    LineNumberReader reader = null;
     try {
       reader = new LineNumberReader(toReadFileObject.openReader(true));
+      this.reader = reader;
       advance();
     } catch (IOException e) {
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (Exception exceptionOnClose) {
+          e.addSuppressed(exceptionOnClose);
+        }
+      }
       throw new RuntimeException(e);
     }
   }

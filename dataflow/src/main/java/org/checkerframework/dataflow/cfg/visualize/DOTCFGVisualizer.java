@@ -153,7 +153,7 @@ public class DOTCFGVisualizer<
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, getSeparator());
+    return super.visualizeBlockWithSeparator(bb, analysis, getSeparator());
   }
 
   @Override
@@ -187,9 +187,7 @@ public class DOTCFGVisualizer<
    */
   protected String dotOutputFileName(UnderlyingAST ast) {
     StringBuilder srcLoc = new StringBuilder();
-    StringBuilder outFile = new StringBuilder(outDir);
-
-    outFile.append("/");
+    StringBuilder outFile = new StringBuilder();
 
     if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
       CFGStatement cfgStatement = (CFGStatement) ast;
@@ -264,8 +262,13 @@ public class DOTCFGVisualizer<
     }
     outFile.append(".dot");
 
+    // make path safe for Linux
+    if (outFile.length() > 255) {
+      outFile.setLength(255);
+    }
     // make path safe for Windows
-    String outFileName = outFile.toString().replace("<", "_").replace(">", "");
+    String outFileBaseName = outFile.toString().replace("<", "_").replace(">", "");
+    String outFileName = outDir + "/" + outFileBaseName;
 
     generated.put(srcLoc.toString(), outFileName);
 

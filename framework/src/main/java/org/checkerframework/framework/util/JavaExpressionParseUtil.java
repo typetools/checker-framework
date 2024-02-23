@@ -791,11 +791,11 @@ public class JavaExpressionParseUtil {
       throw constructJavaExpressionParseError(methodName, "no such method");
     }
 
-    // `expr` should be a field access, a fully qualified class name, or a class name qualified with
-    // another class name (e.g. {@code OuterClass.InnerClass}).
-    // If the expression refers to a class that is not available to the resolver (the class wasn't
-    // passed to javac on the command line), then the argument can be "outerpackage.innerpackage",
-    // which will lead to a confusing error message.
+    // `expr` should be a field access, a fully qualified class name, or a class name qualified
+    // with another class name (e.g. {@code OuterClass.InnerClass}).  If the expression refers
+    // to a class that is not available to the resolver (the class wasn't passed to javac on
+    // the command line), then the argument can be "outerpackage.innerpackage", which will lead
+    // to a confusing error message.
     @Override
     public JavaExpression visit(FieldAccessExpr expr, Void aVoid) {
       setResolverField();
@@ -857,9 +857,7 @@ public class JavaExpressionParseUtil {
       List<@Nullable JavaExpression> dimensions =
           CollectionsPlume.mapList(
               (ArrayCreationLevel dimension) ->
-                  dimension.getDimension().isPresent()
-                      ? dimension.getDimension().get().accept(this, aVoid)
-                      : null,
+                  dimension.getDimension().map(dim -> dim.accept(this, aVoid)).orElse(null),
               expr.getLevels());
 
       List<JavaExpression> initializers;

@@ -351,13 +351,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return new DefaultTypeHierarchy(
         checker,
         getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
+        ignoreRawTypeArguments,
         checker.hasOption("invariantArrays")) {
       @Override
       public StructuralEqualityComparer createEqualityComparer() {
         return new StructuralEqualityComparer(areEqualVisitHistory) {
           @Override
-          protected boolean arePrimeAnnosEqual(
+          protected boolean arePrimaryAnnosEqual(
               AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
             type1.replaceAnnotation(
                 convertToUnknown(
@@ -368,7 +368,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     convertSpecialIntRangeToStandardIntRange(
                         type2.getPrimaryAnnotationInHierarchy(UNKNOWNVAL))));
 
-            return super.arePrimeAnnosEqual(type1, type2);
+            return super.arePrimaryAnnosEqual(type1, type2);
           }
         };
       }
@@ -430,10 +430,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * number of possible values of the enum.
    */
   @Override
-  public ParameterizedExecutableType methodFromUse(
-      ExpressionTree tree, ExecutableElement methodElt, AnnotatedTypeMirror receiverType) {
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
 
-    ParameterizedExecutableType superPair = super.methodFromUse(tree, methodElt, receiverType);
+    ParameterizedExecutableType superPair =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
     if (ElementUtils.matchesElement(methodElt, "values")
         && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
         && ElementUtils.isStatic(methodElt)) {
@@ -785,7 +789,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     } else if (TypesUtils.getClassFromType(resultType) == char[].class) {
       List<String> stringVals =
           CollectionsPlume.mapList(
-              (Object o) -> {
+              o -> {
                 if (o instanceof char[]) {
                   return new String((char[]) o);
                 } else {

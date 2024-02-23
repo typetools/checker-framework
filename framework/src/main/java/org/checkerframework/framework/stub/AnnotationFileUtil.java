@@ -129,9 +129,9 @@ public class AnnotationFileUtil {
 
     if (indexOfDot == -1) {
       // classes not within a package needs to be the first in the index file
-      assert !indexFile.getCompilationUnits().isEmpty();
-      assert indexFile.getCompilationUnits().get(0).getPackageDeclaration() == null;
-      return findDeclaration(className, indexFile.getCompilationUnits().get(0));
+      CompilationUnit cu = indexFile.getCompilationUnits().get(0);
+      assert !cu.getPackageDeclaration().isPresent();
+      return findDeclaration(className, cu);
     }
 
     String packageName = className.substring(0, indexOfDot);

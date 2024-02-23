@@ -18,7 +18,8 @@ import org.plumelib.util.RegexUtil;
 /** The qualifier hierarchy for the Value type system. */
 final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
 
-  // This shadows the same-named field in GenericAnnotatedTypeFactory, but has a more specific type.
+  // This shadows the same-named field in GenericAnnotatedTypeFactory, but has a more specific
+  // type.
   /** The type factory to use. */
   @SuppressWarnings("HidingField")
   private final ValueAnnotatedTypeFactory atypeFactory;

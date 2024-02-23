@@ -54,11 +54,11 @@ import org.plumelib.util.StringsPlume;
  * org.checkerframework.framework.source.SourceVisitor} implementation that type-checks assignments,
  * pseudo-assignments such as parameter passing and method invocation, and method overriding.
  *
- * <p>Most type-checker annotation processor should extend this class, instead of {@link
+ * <p>Most type-checker annotation processors should extend this class, instead of {@link
  * SourceChecker}. Checkers that require annotated types but not subtype checking (e.g. for testing
  * purposes) should extend {@link SourceChecker}. Non-type checkers (e.g. checkers to enforce coding
  * styles) can extend {@link SourceChecker} or {@link AbstractTypeProcessor}; the Checker Framework
- * is not designed for such checkers.
+ * is not specifically designed to support such checkers.
  *
  * <p>It is a convention that, for a type system Foo, the checker, the visitor, and the annotated
  * type factory are named as <i>FooChecker</i>, <i>FooVisitor</i>, and
@@ -343,8 +343,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
           throw (RuntimeException) err;
         }
       } else if (t instanceof NoSuchMethodException) {
-        // Note: it's possible that NoSuchMethodException was caused by `ctor.newInstance(args)`, if
-        // the constructor itself uses reflection.  But this case is unlikely.
+        // Note: it's possible that NoSuchMethodException was caused by
+        // `ctor.newInstance(args)`, if the constructor itself uses reflection.
+        // But this case is unlikely.
         throw new TypeSystemError(
             "Could not find constructor %s(%s)", name, StringsPlume.join(", ", paramTypes));
       }

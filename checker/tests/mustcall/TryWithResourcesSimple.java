@@ -1,4 +1,4 @@
-// A test that try-with-resources variables are always @MustCall({}).
+// A test that try-with-resources variables are always @MustCall({"close"}).
 
 import java.io.*;
 import java.net.*;
@@ -7,7 +7,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 public class TryWithResourcesSimple {
   static void test(String address, int port) {
     try (Socket socket = new Socket(address, port)) {
-      @MustCall({}) Object s = socket;
+      @MustCall({"close"}) Object s = socket;
     } catch (Exception e) {
 
     }
@@ -23,7 +23,7 @@ public class TryWithResourcesSimple {
     // "close", which is the only MC method for Socket itself.
     try (Socket socket = getFancySocket()) {
       // :: error: (assignment)
-      @MustCall({}) Object s = socket;
+      @MustCall({"close"}) Object s = socket;
     } catch (Exception e) {
 
     }
@@ -31,8 +31,9 @@ public class TryWithResourcesSimple {
 
   static void test_poly(String address, int port) {
     try (Socket socket = new Socket(address, port)) {
-      // getChannel is @MustCallAlias (= poly) with the socket, so it should also be @MC({})
-      @MustCall({}) Object s = socket.getChannel();
+      // getChannel is @MustCallAlias (= poly) with the socket, so it should also be
+      // @MC({"close"})
+      @MustCall({"close"}) Object s = socket.getChannel();
     } catch (Exception e) {
 
     }
@@ -41,7 +42,7 @@ public class TryWithResourcesSimple {
   static void test_two_mca_variables(String address, int port) {
     try (Socket socket = new Socket(address, port);
         InputStream in = socket.getInputStream()) {
-      @MustCall({}) Object s = in;
+      @MustCall({"close"}) Object s = in;
     } catch (Exception e) {
 
     }

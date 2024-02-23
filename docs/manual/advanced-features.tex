@@ -735,8 +735,8 @@ does not write any qualifiers on local variables within a method body
 However, the programmer must write type annotations for method
 signatures (arguments and return values) and fields, unless the default
 annotations are correct.
-Local type refinement does not change the source code; it re-runs every time
-you run a checker.
+Local type refinement does not change the source code to insert the
+inferred annotations on local variables.
 
 
 \subsectionAndLabel{Type refinement examples}{type-refinement-examples}
@@ -1178,17 +1178,20 @@ of the \<if> statement.
 
 If your code contains an \<assert> statement, then your code could behave
 in two different ways at run time, depending on whether assertions are
-enabled or disabled
-via the \<-ea> or \<-da> command-line options to java.
+enabled or disabled via the \<-ea>, \<-enableassertions>, \<-da>, or
+<-disableassertions> command-line options to \<java>.
 
 By default, the Checker Framework outputs warnings about any error that
 could happen at run time, whether assertions are enabled or disabled.
 
 If you supply the \<-AassumeAssertionsAreEnabled> command-line option, then
-the Checker Framework assumes assertions are enabled.  If you supply the
+the Checker Framework assumes assertions (that is, Java \<assert>
+statements) are enabled, as if Java is run with the \<-ea> or
+\<-enableassertions> command-line argument.  If you supply the
 \<-AassumeAssertionsAreDisabled> command-line option, then the Checker
-Framework assumes assertions are disabled.  You may not supply both
-command-line options.  It is uncommon to supply either one.
+Framework assumes assertions are disabled, as if Java is run with the
+\<-da> or \<-disableassertions> command-line argument.  You may not supply
+both command-line options.  It is uncommon to supply either one.
 
 These command-line arguments have no effect on processing of \<assert>
 statements whose message contains the text \<@AssumeAssertion>; see
@@ -1233,6 +1236,9 @@ expression as an argument include:
 \item \refqualclass{checker/nullness/qual}{RequiresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
+\item \refqualclass{checker/optional/qual}{RequiresPresent}
+\item \refqualclass{checker/optional/qual}{EnsuresPresent}
+\item \refqualclass{checker/optional/qual}{EnsuresPresentIf}
 % Not implemented: \refqualclass{checker/nullness/qual}{AssertNonNullIfNonNull}
 \item \refqualclass{checker/nullness/qual}{KeyFor}
 \item \refqualclass{checker/nullness/qual}{EnsuresKeyFor}
@@ -1246,15 +1252,15 @@ expression as an argument include:
 
 The set of permitted expressions is a subset of all Java expressions,
 with a few extensions.
-The extensions are formal parameters like \<\#1> and (for some type
-systems) \code{<self>}.
+The extensions are formal parameters like ``\<\#1>'' and (for some type
+systems) ``\code{<self>}''.
 
 \begin{itemize}
 \item
   \<this>, the receiver object.  You can write \<this> to annotate any
   variable or declaration where you could write \<this> in code.
   Notably, it cannot be used in annotations on declarations of
-  static fields or methods.  For a field, \<this> is the field's
+  static fields or static methods.  For a field, \<this> is the field's
   receiver (sometimes called its container).  For a local variable, it is the
   method's receiver.
 
@@ -1273,7 +1279,7 @@ systems) \code{<self>}.
 \item
   a formal parameter, e.g., \<\#2>.  It is represented as \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
-  refer to the receiver object; use \<this> instead.
+  refer to the receiver object; use ``\<this>'' instead.
 
   The formal parameter syntax \<\#1> is less natural in source code
   than writing the formal parameter name.  This syntax is necessary for
@@ -1335,7 +1341,7 @@ systems) \code{<self>}.
   This states that if \<readLine()> is called immediately after \<ready()>
   returns true, then \<readLine()> returns a non-null value.
 
-\item a binary expression, e.g., \<x + y> or <\#1 - 1>.  These are used by
+\item a binary expression, e.g., \<x + y> or \<\#1 - 1>.  These are used by
   the Index Checker, for example.
 
 \item a class name expression within another expression, e.g., ``String''
@@ -1617,7 +1623,7 @@ class @Marsupial-Animal {
 % TO DO:  give an example where @Dependent is actually needed
 
 
-% LocalWords:  MyClass qual DefaultQualifier subpackages lang
+% LocalWords:  MyClass qual DefaultQualifier subpackages lang de package1
 % LocalWords:  actuals toArray CollectionToArrayHeuristics nn RegexBottom
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
@@ -1626,7 +1632,7 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 % LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 % LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-% LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation
+% LocalWords:  computeValue arg myInt Anno Im InheritedAnnotation package2
 % LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit m2
 % LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 % LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier ClassName
@@ -1639,5 +1645,7 @@ class @Marsupial-Animal {
 % LocalWords:  EnsuresKeyFor EnsuresKeyForIf DivideByZeroException
 % LocalWords:  EnsuresLockHeld EnsuresLockHeldIf FieldInvariant fieldA
 % LocalWords:  fieldB myMethod SomeType runtime typedefs signedness
-% LocalWords:  Signedness MonotonicNonNull UpperBoundFor
-% LocalWords:  getTypeDeclarationBounds identityHashCode
+% LocalWords:  Signedness MonotonicNonNull UpperBoundFor enableassertions
+% LocalWords:  getTypeDeclarationBounds identityHashCode disableassertions
+% LocalWords:  AinvocationPreservesArgumentNullness RequiresPresent
+% LocalWords:  EnsuresPresent EnsuresPresentIf

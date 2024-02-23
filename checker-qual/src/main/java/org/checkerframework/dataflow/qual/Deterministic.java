@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * A method is called <em>deterministic</em> if it returns the same value (according to {@code ==})
- * every time it is called with the same parameters and in the same environment. The parameters
+ * every time it is called with the same arguments and in the same environment. The arguments
  * include the receiver, and the environment includes all of the Java heap (that is, all fields of
  * all objects and all static variables).
  *

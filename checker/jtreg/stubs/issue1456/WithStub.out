@@ -1,2 +1,2 @@
-Main.java:26:13: compiler.err.proc.messager: (type.argument)
+Main.java:26:13: compiler.err.proc.messager: (type.arguments.not.inferred)
 1 error

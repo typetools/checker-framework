@@ -146,7 +146,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   // TODO: Merge that code in commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree
-  // valueExp, String errorKey, boolean isLocalVariableAssignement), because the method below
+  // valueExp, String errorKey, boolean isLocalVariableAssignment), because the method below
   // isn't called for pseudo-assignments, but the mentioned one is. The issue of copy-pasting the
   // code from this method to the other one is that a declaration such as: List<@Unique Object>
   // will raise a unique.leaked warning, as there is a pseudo-assignment from @Unique to a
@@ -225,7 +225,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     if (elt.getKind().isField() && varType.hasExplicitAnnotation(Unique.class)) {
       checker.reportError(tree, "unique.location.forbidden");
     } else if (tree.getType() != null) {
-      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      // VariableTree#getType returns null for binding variables from a
+      // DeconstructionPatternTree.
       if (tree.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
         AnnotatedArrayType arrayType = (AnnotatedArrayType) varType;
         if (arrayType.getComponentType().hasPrimaryAnnotation(Unique.class)) {
@@ -265,7 +266,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
       return;
     }
 
-    // Don't issue warnings about @LeakedToResult or (implicit) @MaybeLeaked on constructor results.
+    // Don't issue warnings about @LeakedToResult or (implicit) @MaybeLeaked on constructor
+    // results.
     if (!returnType.hasPrimaryAnnotation(atypeFactory.NON_LEAKED)) {
       constructorType = constructorType.shallowCopy();
       constructorType.shallowCopyReturnType();

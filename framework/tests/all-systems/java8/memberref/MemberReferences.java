@@ -1,6 +1,3 @@
-// If conservativeUninferredTypeArguments option is used, then the lines marked
-// "TODO: Issue 802", will issue a methodref.inference.unimplemented warning.
-
 interface Supplier<R> {
   R supply();
 }
@@ -19,6 +16,7 @@ interface BiFunctionMR<T, U, R> {
 
 /** super # instMethod */
 // SUPER(ReferenceMode.INVOKE, false),
+@SuppressWarnings("all")
 class Super {
 
   Object func1(Object o) {
@@ -32,7 +30,6 @@ class Super {
   class Sub extends Super {
     void context() {
       FunctionMR<Object, Object> f1 = super::func1;
-      // TODO: Issue 802: type argument inference
       FunctionMR f2 = super::func2;
       // Top level wildcards are ignored when type checking
       FunctionMR<? extends String, ? extends String> f3 = super::<String>func2;
@@ -40,6 +37,7 @@ class Super {
   }
 }
 
+@SuppressWarnings("all")
 class SuperWithArg<U> {
 
   void func1(U o) {}
@@ -53,6 +51,7 @@ class SuperWithArg<U> {
 
 /** Type # instMethod. */
 // UNBOUNDED(ReferenceMode.INVOKE, true),
+@SuppressWarnings("all")
 class Unbound {
   <T> T func1(T o) {
     return o;
@@ -60,22 +59,19 @@ class Unbound {
 
   void context() {
     FunctionMR<String, String> f1 = String::toString;
-    // TODO: Issue 802: type argument inference
     BiFunctionMR<Unbound, String, String> f2 = Unbound::func1;
-    @SuppressWarnings("nullness:type.argument")
     BiFunctionMR<? extends Unbound, ? super Integer, ? extends Integer> f3 =
         Unbound::<Integer>func1;
   }
 }
 
+@SuppressWarnings("all")
 abstract class UnboundWithArg<U> {
   abstract U func1();
 
   void context() {
-    // TODO: Issue 802: type argument inference
     FunctionMR<UnboundWithArg<String>, String> f1 = UnboundWithArg::func1;
     FunctionMR<UnboundWithArg<String>, String> f2 = UnboundWithArg<String>::func1;
-    // TODO: Issue 802: type argument inference
     FunctionMR<? extends UnboundWithArg<String>, String> f3 = UnboundWithArg::func1;
     FunctionMR<? extends UnboundWithArg<String>, String> f4 = UnboundWithArg<String>::func1;
   }
@@ -83,13 +79,13 @@ abstract class UnboundWithArg<U> {
 
 /** Type # staticMethod. */
 // STATIC(ReferenceMode.INVOKE, false),
+@SuppressWarnings("all")
 class Static {
   static <T> T func1(T o) {
     return o;
   }
 
   void context() {
-    // TODO: Issue 802: type argument inference
     FunctionMR<String, String> f1 = Static::func1;
     FunctionMR<String, String> f2 = Static::<String>func1;
   }
@@ -97,21 +93,21 @@ class Static {
 
 /** Expr # instMethod. */
 // BOUND(ReferenceMode.INVOKE, false),
+@SuppressWarnings("all")
 class Bound {
   <T> T func1(T o) {
     return o;
   }
 
   void context(Bound bound) {
-    // TODO: Issue 802: type argument inference
     FunctionMR<String, String> f1 = bound::func1;
-    // TODO: Issue 802: type argument inference
     FunctionMR<String, String> f2 = this::func1;
     FunctionMR<String, String> f3 = this::<String>func1;
     FunctionMR<? extends String, ? extends String> f4 = this::<String>func1;
   }
 }
 
+@SuppressWarnings("all")
 class BoundWithArg<U> {
   void func1(U param) {}
 
@@ -123,6 +119,7 @@ class BoundWithArg<U> {
 
 /** Inner # new. */
 // IMPLICIT_INNER(ReferenceMode.NEW, false),
+@SuppressWarnings("all")
 class Outer {
   void context(Outer other) {
     Supplier<Inner> f1 = Inner::new;
@@ -131,9 +128,9 @@ class Outer {
   class Inner extends Outer {}
 }
 
+@SuppressWarnings("all")
 class OuterWithArg {
   void context() {
-    // TODO: Issue 802: type argument inference
     Supplier<Inner<String>> f1 = Inner::new;
     Supplier<? extends Inner<Number>> f2 = Inner<Number>::new;
     Supplier<? extends Inner<? extends Number>> f3 = Inner<Integer>::new;
@@ -144,6 +141,7 @@ class OuterWithArg {
 
 /** Toplevel # new. */
 // TOPLEVEL(ReferenceMode.NEW, false),
+@SuppressWarnings("all")
 class TopLevel {
   TopLevel() {}
 
@@ -151,19 +149,18 @@ class TopLevel {
 
   void context() {
     Supplier<TopLevel> f1 = TopLevel::new;
-    // TODO: Issue 802: type argument inference
     FunctionMR<String, TopLevel> f2 = TopLevel::new;
     FunctionMR<String, TopLevel> f3 = TopLevel::<String>new;
   }
 }
 
+@SuppressWarnings("all")
 class TopLevelWithArg<T> {
   TopLevelWithArg() {}
 
   <U> TopLevelWithArg(U s) {}
 
   void context() {
-    // TODO: Issue 802: type argument inference
     Supplier<TopLevelWithArg<String>> f1 = TopLevelWithArg::new;
     Supplier<TopLevelWithArg<String>> f2 = TopLevelWithArg<String>::new;
     FunctionMR<String, TopLevelWithArg<String>> f3 = TopLevelWithArg<String>::<String>new;
@@ -173,11 +170,9 @@ class TopLevelWithArg<T> {
 /** ArrayType # new. */
 // ARRAY_CTOR(ReferenceMode.NEW, false);
 
+@SuppressWarnings("all")
 class ArrayType {
   void context() {
-    // TODO: Signedness Checker does not default boxed primitives correctly.
-    // See Issue #797: https://github.com/typetools/checker-framework/issues/797
-    @SuppressWarnings({"signedness"})
     FunctionMR<Integer, String[]> string = String[]::new;
     FunctionMR<String[], String[]> clone = String[]::clone;
     FunctionMR<String[], String> toString = String[]::toString;

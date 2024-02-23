@@ -5,10 +5,11 @@
 The manual might already answer your question, so first please look for
 your answer in the manual,
 including this chapter and the FAQ (Chapter~\ref{faq}).
-If not, you can use the mailing list,
-\code{checker-framework-discuss@googlegroups.com}, to ask other users for
-help.  For archives and to subscribe, see \url{https://groups.google.com/forum/#!forum/checker-framework-discuss}.
-To report bugs, please see Section~\ref{reporting-bugs}.
+If you think you have found a bug in the Checker Framework,
+please report it (see Section~\ref{reporting-bugs}).
+For discussions of broad interest, you can use the mailing list,
+\code{checker-framework-discuss@googlegroups.com}.
+For archives and to subscribe, see \url{https://groups.google.com/forum/#!forum/checker-framework-discuss}.
 If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it (start with those labeled
 \href{https://github.com/typetools/checker-framework/issues?q=is\%3Aissue+is\%3Aopen+label\%3A\%22good+first+issue%22}{``good
@@ -748,7 +749,7 @@ pipx ensurepath
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh#L19
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
@@ -945,14 +946,14 @@ Building the Checker Framework depends on other repositories, such as
 You need to have compatible versions of each.
 
 After you \<git pull> in one of the repositories, you should do so in the
-others as well.  The script \<checker/bin-devel/build.sh> pulls all the
+others as well.  The script \<checker/bin-devel/clone-related.sh> pulls all the
 related repositories, so to build the latest development version of the
 Checker Framework you can do
 
 \begin{Verbatim}
 cd $CHECKERFRAMEWORK
 git pull
-checker/bin-devel/build.sh
+checker/bin-devel/clone-related.sh
 \end{Verbatim}
 
 

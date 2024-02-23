@@ -92,8 +92,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
               atypeFactory.fromElement(declaredType.getUnderlyingType().asElement());
       List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
       for (int i = 0; i < typeArgs.size(); i++) {
-        if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
-            || !((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
+        if (!AnnotatedTypes.isTypeArgOfRawType(typeArgs.get(i))) {
           // Sometimes the framework infers a more precise type argument, so just use it.
           continue;
         }
@@ -147,8 +146,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         propagateExtendsBound(wildcard, typeParam, tops);
       } else {
         // If this is thrown, then it means that there's a bug in one of the
-        // AnnotatedTypes.hasNoExplicit*Bound methods.  Probably something changed in the javac
-        // implementation.
+        // AnnotatedTypes.hasNoExplicit*Bound methods.  Probably something changed in the
+        // javac implementation.
         throw new BugInCF("Wildcard is neither unbound nor does it have an explicit bound.");
       }
     }

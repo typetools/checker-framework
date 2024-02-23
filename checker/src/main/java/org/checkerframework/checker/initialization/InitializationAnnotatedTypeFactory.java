@@ -3,10 +3,13 @@ package org.checkerframework.checker.initialization;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
@@ -797,7 +800,13 @@ public abstract class InitializationAnnotatedTypeFactory<
       boolean allInitialized = true;
       Type type = ((JCTree) tree).type;
       for (ExpressionTree a : tree.getArguments()) {
+        if (!TreeUtils.isStandaloneExpression(a)) {
+          continue;
+        }
+        boolean oldShouldCache = shouldCache;
+        shouldCache = false;
         AnnotatedTypeMirror t = getAnnotatedType(a);
+        shouldCache = oldShouldCache;
         allInitialized &= (isInitialized(t) || isFbcBottom(t));
       }
       if (!allInitialized) {
@@ -997,5 +1006,20 @@ public abstract class InitializationAnnotatedTypeFactory<
       assert (unknowninit1 || underinit1) && (unknowninit2 || underinit2);
       return createUnderInitializationAnnotation(typeFrame);
     }
+  }
+
+  @Override
+  protected ParameterizedExecutableType methodFromUse(
+      ExpressionTree tree,
+      ExecutableElement methodElt,
+      AnnotatedTypeMirror receiverType,
+      boolean inferTypeArgs) {
+    ParameterizedExecutableType x =
+        super.methodFromUse(tree, methodElt, receiverType, inferTypeArgs);
+    if (tree.getKind() == Kind.MEMBER_REFERENCE
+        && ((MemberReferenceTree) tree).getMode() == ReferenceMode.NEW) {
+      x.executableType.getReturnType().replaceAnnotation(INITIALIZED);
+    }
+    return x;
   }
 }

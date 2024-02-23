@@ -96,7 +96,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * Returns true if the set has an annotation from every hierarchy (or if it doesn't need to);
    * returns false if the set is missing an annotation from some hierarchy.
    *
-   * @param annos set of annotations
+   * @param annos a set of annotations
    * @param typeMirror where the annotations are written
    * @param atypeFactory the type factory
    * @return true if no annotations are missing
@@ -266,8 +266,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       mostSpecifTypeMirror = this.getUnderlyingType();
     }
 
-    MostSpecificVisitor ms =
-        new MostSpecificVisitor(this.getUnderlyingType(), other.getUnderlyingType(), backup);
+    MostSpecificVisitor ms = new MostSpecificVisitor(backup);
     AnnotationMirrorSet mostSpecific =
         ms.combineSets(
             this.getUnderlyingType(),
@@ -292,11 +291,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Create a {@link MostSpecificVisitor}.
      *
-     * @param aTypeMirror type of the "a" value
-     * @param bTypeMirror type of the "b" value
      * @param backup value to use if no most specific value is found
      */
-    public MostSpecificVisitor(TypeMirror aTypeMirror, TypeMirror bTypeMirror, V backup) {
+    public MostSpecificVisitor(V backup) {
       if (backup != null) {
         this.backupAMSet = backup.getAnnotations();
         // this.backupTypeMirror = backup.getUnderlyingType();
@@ -367,7 +364,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      *
      * @param qual1 a qualifier
      * @param qual2 a qualifier
-     * @return the qualifier that is the lowest in the hierarchy.
+     * @return the qualifier that is the lowest in the hierarchy
      */
     private final AnnotationMirror lowestQualifier(AnnotationMirror qual1, AnnotationMirror qual2) {
       if (qualHierarchy.isSubtypeQualifiersOnly(qual1, qual2)) {
@@ -432,9 +429,32 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
+   * of this method.
+   */
   @Override
-  public V leastUpperBound(@Nullable V other) {
+  public final V leastUpperBound(@Nullable V other) {
     return upperBound(other, false);
+  }
+
+  /**
+   * Compute the least upper bound of two abstract values. The returned value has a Java type of
+   * {@code typeMirror}. {@code typeMirror} should be an upper bound of the Java types of {@code
+   * this} an {@code other}, but it does not have be to the least upper bound.
+   *
+   * <p>Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead
+   * of this method.
+   *
+   * @param other another value
+   * @param typeMirror the underlying Java type of the returned value, which may or may not be the
+   *     least upper bound
+   * @return the least upper bound of two abstract values
+   */
+  public final V leastUpperBound(@Nullable V other, TypeMirror typeMirror) {
+    return upperBound(other, typeMirror, false);
   }
 
   /**
@@ -456,10 +476,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *   <li>Is commutative.
    * </ul>
    *
+   * Subclasses should override {@link #upperBound(CFAbstractValue, TypeMirror, boolean)} instead of
+   * this method.
+   *
    * @param previous must be the previous value
    * @return an upper bound of two values that is wider than the least upper bound of the two values
    */
-  public V widenUpperBound(@Nullable V previous) {
+  public final V widenUpperBound(@Nullable V previous) {
     return upperBound(previous, true);
   }
 
@@ -480,7 +503,24 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     TypeMirror lubTypeMirror =
         TypesUtils.leastUpperBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
+    return upperBound(other, lubTypeMirror, shouldWiden);
+  }
 
+  /**
+   * Returns an upper bound of {@code this} and {@code other}. The underlying type of the value
+   * returned is {@code upperBoundTypeMirror}. If {@code shouldWiden} is false, this method returns
+   * the least upper bound of {@code this} and {@code other}.
+   *
+   * <p>This is the implementation of {@link #leastUpperBound(CFAbstractValue, TypeMirror)}, {@link
+   * #leastUpperBound(CFAbstractValue)}, {@link #widenUpperBound(CFAbstractValue)}, and {@link
+   * #upperBound(CFAbstractValue, boolean)}. Subclasses may override it.
+   *
+   * @param other an abstract value
+   * @param upperBoundTypeMirror the underlying type of the returned value
+   * @param shouldWiden true if the method should perform widening
+   * @return an upper bound of this and {@code other}
+   */
+  protected V upperBound(@Nullable V other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     ValueLub valueLub = new ValueLub(shouldWiden);
     AnnotationMirrorSet lub =
         valueLub.combineSets(
@@ -488,8 +528,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             this.getAnnotations(),
             other.getUnderlyingType(),
             other.getAnnotations(),
-            canBeMissingAnnotations(lubTypeMirror));
-    return analysis.createAbstractValue(lub, lubTypeMirror);
+            canBeMissingAnnotations(upperBoundTypeMirror));
+    return analysis.createAbstractValue(lub, upperBoundTypeMirror);
   }
 
   /**

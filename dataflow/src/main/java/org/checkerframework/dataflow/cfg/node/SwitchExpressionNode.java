@@ -23,7 +23,7 @@ public class SwitchExpressionNode extends Node {
   private final LocalVariableNode switchExpressionVar;
 
   /**
-   * Creates a new SwitchExpressionNoode.
+   * Creates a new SwitchExpressionNode.
    *
    * @param type the type of the node
    * @param switchExpressionTree the {@code SwitchExpressionTree} for this node

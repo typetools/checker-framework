@@ -338,9 +338,11 @@ public class NullnessTransfer
   public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
       MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitMethodAccess(n, p);
-    // In contrast to the conditional makeNonNull in visitMethodInvocation, this
-    // makeNonNull is unconditional, as the receiver is definitely non-null after the access.
-    makeNonNull(result, n.getReceiver());
+    // The receiver of an instance method access is non-null. A static method access does not
+    // ensure that the receiver is non-null.
+    if (!n.isStatic()) {
+      makeNonNull(result, n.getReceiver());
+    }
     return result;
   }
 
@@ -348,7 +350,11 @@ public class NullnessTransfer
   public TransferResult<NullnessValue, NullnessStore> visitFieldAccess(
       FieldAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitFieldAccess(n, p);
-    makeNonNull(result, n.getReceiver());
+    // The receiver of an instance field access is non-null. A static field access does not
+    // ensure that the receiver is non-null.
+    if (!n.isStatic()) {
+      makeNonNull(result, n.getReceiver());
+    }
     return result;
   }
 
@@ -386,7 +392,8 @@ public class NullnessTransfer
     MethodInvocationTree tree = n.getTree();
     ExecutableElement method = TreeUtils.elementFromUse(tree);
 
-    boolean isMethodSideEffectFree = PurityUtils.isSideEffectFree(atypeFactory, method);
+    boolean isMethodSideEffectFree =
+        atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
     if (nonNullAssumptionAfterInvocation
         || isMethodSideEffectFree

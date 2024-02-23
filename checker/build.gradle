@@ -64,11 +64,14 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.560')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.651')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
-  testImplementation 'commons-io:commons-io:2.14.0'
+  testImplementation 'commons-io:commons-io:2.15.1'
+  // To test for an obscure crash in CFG construction for try-with-resources;
+  // see https://github.com/typetools/checker-framework/issues/6396
+  testImplementation 'org.apache.spark:spark-sql_2.12:3.3.2'
 
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
   testImplementation project(':framework-test')
@@ -910,7 +913,8 @@ task wpiManyTest(group: 'Verification') {
             '-i', "${project.projectDir}/tests/wpi-many/testin.txt",
             '-o', "${project.projectDir}/build/wpi-many-tests",
             '-s',
-            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak'
+            '--', '--checker', 'nullness,interning,lock,regex,signature,calledmethods,resourceleak',
+            '--extraJavacArgs=-AenableWpiForRlc'
       }
     } catch (Exception e) {
       println('Failure: Running wpi-many.sh failed with a non-zero exit code.')
@@ -1072,3 +1076,4 @@ publishing {
 signing {
   sign publishing.publications.checker
 }
+

@@ -1492,7 +1492,16 @@ In the same directory as \<\emph{MyChecker}Checker.java>, create a class
 named \<\emph{MyChecker}Transfer> that extends
 \refclass{framework/flow}{CFTransfer}.
 
-Leave the class body empty for now.  Your class will add functionality by
+Leave the class body empty for now, except for a constructor:
+
+\begin{Verbatim}
+  public MyCheckerTransfer(CFAnalysis analysis) {
+    super(analysis);
+  }
+\end{Verbatim}
+
+\noindent
+Your class will add functionality by
 overriding methods of \<CFTransfer>, which performs the default Checker
 Framework type refinement.
 
@@ -2042,10 +2051,6 @@ pseudo-assignment check (\<commonAssignmentCheck>) performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
 Section~\ref{creating-extending-visitor}.
 
-\item \code{-AshowInferenceSteps}: print debugging information
-about intermediate steps in method type argument inference
-(as performed by \refclass{framework/util/typeinference}{DefaultTypeArgumentInference}).
-
 \item \code{-AshowWpiFailedInferences}: print debugging information
 about failed inference steps during whole-program inference. Must
 be used with \code{-Ainfer}; see Section~\ref{whole-program-inference}.
@@ -2143,10 +2148,15 @@ command-line options. \\
   The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
 
-  The argument is a comma-separated sequence of keys or key--value pairs.
-  The first argument is the fully-qualified name of the
+  The argument is a comma-separated sequence.
+  The first element is the fully-qualified name of the
   \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
-  that should be used. The remaining keys or key--value pairs are
+  that should be used. Currently, the possibilities are:
+  \begin{itemize}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{DOTCFGVisualizer}
+  \item \<org.checkerframework.dataflow.cfg.visualize.>\refclass{org/checkerframework/dataflow/cfg/visualize}{StringCFGVisualizer}
+  \end{itemize}
+  The remaining keys or key--value pairs are
   passed to \<CFGVisualizer.init>.  Supported keys include
   \begin{itemize}
   \item \<verbose>

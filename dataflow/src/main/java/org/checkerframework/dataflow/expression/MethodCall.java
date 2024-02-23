@@ -88,7 +88,7 @@ public class MethodCall extends JavaExpression {
 
   @Override
   public boolean isDeterministic(AnnotationProvider provider) {
-    return PurityUtils.isDeterministic(provider, method)
+    return (PurityUtils.isDeterministic(provider, method) || provider.isDeterministic(method))
         && listIsDeterministic(arguments, provider);
   }
 
@@ -156,7 +156,7 @@ public class MethodCall extends JavaExpression {
   @Override
   public int hashCode() {
     if (method.getKind() == ElementKind.CONSTRUCTOR) {
-      return super.hashCode();
+      return System.identityHashCode(this);
     }
     return Objects.hash(method, receiver, arguments);
   }

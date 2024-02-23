@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.ExpressionStatementNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -83,10 +84,10 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The default analysis transfer function for the Checker Framework propagates information through
- * assignments and uses the {@link AnnotatedTypeFactory} to provide checker-specific logic how to
- * combine types (e.g., what is the type of a string concatenation, given the types of the two
- * operands) and as an abstraction function (e.g., determine the annotations on literals).
+ * The default analysis transfer function for the Checker Framework. It propagates information
+ * through assignments. It uses the {@link AnnotatedTypeFactory} to provide checker-specific logic
+ * to combine types (e.g., what is the type of a string concatenation, given the types of the two
+ * operands) and acts as an abstraction function (e.g., determine the annotations on literals).
  *
  * <p>Design note: CFAbstractTransfer and its subclasses are supposed to act as transfer functions.
  * But, since the AnnotatedTypeFactory already existed and performed checker-independent type
@@ -567,7 +568,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param value the value; possibly null
    * @param in the TransferResult to copy
-   * @return the input informatio
+   * @return the input information
    */
   @SideEffectFree
   protected TransferResult<V, S> recreateTransferResult(
@@ -667,8 +668,13 @@ public abstract class CFAbstractTransfer<
     V elseValue = p.getValueOfSubNode(n.getElseOperand());
     V resultValue = null;
     if (thenValue != null && elseValue != null) {
+      // If a conditional expression is a poly expression, then its Java type is the type of
+      // its context. (For example, the type of the conditional expression in `Object o = b
+      // ? "" :  "";` is `Object`, not `String`.)  So, use the Java type of the conditional
+      // expression and the annotations for each branch.
+      TypeMirror conditionalType = TreeUtils.typeOf(n.getTree());
       // The resulting abstract value is the merge of the 'then' and 'else' branch.
-      resultValue = thenValue.leastUpperBound(elseValue);
+      resultValue = thenValue.leastUpperBound(elseValue, conditionalType);
     }
     V finishedValue = finishValue(resultValue, thenStore, elseStore);
     return new ConditionalTransferResult<>(finishedValue, thenStore, elseStore);
@@ -969,6 +975,14 @@ public abstract class CFAbstractTransfer<
   }
 
   @Override
+  public TransferResult<V, S> visitDeconstructorPattern(
+      DeconstructorPatternNode n, TransferInput<V, S> in) {
+    // TODO: Implement getting the type of a DeconstructorPatternTree.
+    V value = null;
+    return createTransferResult(value, in);
+  }
+
+  @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
@@ -1006,7 +1020,7 @@ public abstract class CFAbstractTransfer<
    * @param tree a tree
    * @return whether to perform whole-program inference on the tree
    */
-  private boolean shouldPerformWholeProgramInference(Tree tree) {
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
     TreePath path = this.analysis.atypeFactory.getPath(tree);
     return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
   }
@@ -1019,7 +1033,7 @@ public abstract class CFAbstractTransfer<
    * @param lhsTree the left-hand side of an assignment
    * @return whether to perform whole-program inference
    */
-  private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
     // before calling InternalUtils.symbol(lhs).
     if (!shouldPerformWholeProgramInference(expressionTree)) {

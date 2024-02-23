@@ -224,7 +224,8 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return createSameLen(exprs);
         }
       } else {
-        // If one of the annotations is top, the glb is the other annotation; otherwise bottom.
+        // If one of the annotations is top, the glb is the other annotation; otherwise
+        // bottom.
         if (areSameByClass(a1, SameLenUnknown.class)) {
           return a2;
         } else if (areSameByClass(a2, SameLenUnknown.class)) {
