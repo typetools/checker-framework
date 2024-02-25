@@ -175,7 +175,7 @@ public class NonEmptyTransfer extends CFTransfer {
     AnnotationMirror conditionalPostconditionAnno =
         aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
     return delegateAnno != null
-        && (postConditionAnno != null && conditionalPostconditionAnno != null);
+        && (postConditionAnno != null || conditionalPostconditionAnno != null);
   }
 
   /**
