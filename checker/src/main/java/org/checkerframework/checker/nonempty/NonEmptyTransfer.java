@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.Delegate;
+import org.checkerframework.checker.nonempty.qual.EnsuresNonEmpty;
 import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -67,11 +68,7 @@ public class NonEmptyTransfer extends CFTransfer {
       return result;
     }
     Element receiver = TreeUtils.elementFromTree(receiverTree);
-    Element enclosingMethod = TreeUtils.elementFromDeclaration(enclosingMethodTree);
-    AnnotationMirror delegateAnno = aTypeFactory.getDeclAnnotation(receiver, Delegate.class);
-    AnnotationMirror nonEmptyConditionalPostconditionAnno =
-        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
-    if (delegateAnno == null || nonEmptyConditionalPostconditionAnno == null) {
+    if (!shouldRefineStoreForDelegationInvocation(receiver, enclosingMethodTree)) {
       return result;
     }
     JavaExpression thisExpr = JavaExpression.getImplicitReceiver(receiver);
@@ -156,7 +153,42 @@ public class NonEmptyTransfer extends CFTransfer {
     return result;
   }
 
-  // TODO: documentation
+  /**
+   * Return true if the transfer store for "this" should be updated, depending on whether a delegate
+   * method invocation is found within a method body.
+   *
+   * <p>Note: the Non-Empty Checker trusts the {@link Delegate} annotations it finds. The {@link
+   * DelegationChecker} verifies correct use of the delegation pattern. Since it is run alongside
+   * the Non-Empty Checker, the annotations it finds should be correct.
+   *
+   * @param receiver the receiver of a candidate delegate method call found in a method body
+   * @param enclosingMethodTree the method enclosing the candidate delegate call
+   * @return true if the receiver is annotated with {@link Delegate} and the method is annotated
+   *     with a postcondition annotation from the Non-Empty type system.
+   */
+  private boolean shouldRefineStoreForDelegationInvocation(
+      Element receiver, MethodTree enclosingMethodTree) {
+    Element enclosingMethod = TreeUtils.elementFromDeclaration(enclosingMethodTree);
+    AnnotationMirror delegateAnno = aTypeFactory.getDeclAnnotation(receiver, Delegate.class);
+    AnnotationMirror postConditionAnno =
+        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmpty.class);
+    AnnotationMirror conditionalPostconditionAnno =
+        aTypeFactory.getDeclAnnotation(enclosingMethod, EnsuresNonEmptyIf.class);
+    return delegateAnno != null
+        && (postConditionAnno != null && conditionalPostconditionAnno != null);
+  }
+
+  /**
+   * Updates the value in the store for the target expression when a delegate call is detected.
+   *
+   * <p>For example, if a field {@code map} is marked with {@link Delegate}, and the enclosing class
+   * delegates a call to it (e.g., a call to {@code containsValue(Object)}), then an instance of the
+   * enclosing class should have the same postconditions that hold for {@code map}.
+   *
+   * @param targetExpr the value for which the store should be updated
+   * @param delegate the delegate field
+   * @param result the transfer result
+   */
   private void refineStoreForDelegationInvocation(
       JavaExpression targetExpr, JavaExpression delegate, TransferResult<CFValue, CFStore> result) {
     if (result.containsTwoStores()) {
