@@ -1,14 +1,6 @@
 package org.checkerframework.checker.nonempty;
 
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -153,15 +145,16 @@ public class DelegationChecker extends BaseTypeChecker {
         return null;
       }
       StatementTree stmt = stmts.get(0);
-      if (!(stmt instanceof ReturnTree)) {
+      ExpressionTree lastExprInMethod = null;
+      if (stmt instanceof ExpressionStatementTree) {
+        lastExprInMethod = ((ExpressionStatementTree) stmt).getExpression();
+      } else if (stmt instanceof ReturnTree) {
+        lastExprInMethod = ((ReturnTree) stmt).getExpression();
+      }
+      if (!(lastExprInMethod instanceof MethodInvocationTree)) {
         return null;
       }
-      ReturnTree returnStmt = (ReturnTree) stmt;
-      ExpressionTree returnExpr = returnStmt.getExpression();
-      if (!(returnExpr instanceof MethodInvocationTree)) {
-        return null;
-      }
-      return (MethodInvocationTree) returnExpr;
+      return (MethodInvocationTree) lastExprInMethod;
     }
   }
 }
