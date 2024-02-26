@@ -54,7 +54,8 @@ class PureGetterTest {
     }
 
     if (otherOptional().isPresent()) {
-      // BUG: https://github.com/typetools/checker-framework/issues/6291 error: method.invocation
+      // BUG: https://github.com/typetools/checker-framework/issues/6291 error:
+      // method.invocation
       otherOptional().get();
     }
     if (otherOptional().isPresent()) {
@@ -64,7 +65,8 @@ class PureGetterTest {
     }
     if (otherOptional().isPresent()) {
       getOptional();
-      // BUG: https://github.com/typetools/checker-framework/issues/6291 error: method.invocation
+      // BUG: https://github.com/typetools/checker-framework/issues/6291 error:
+      // method.invocation
       otherOptional().get();
     }
     if (otherOptional().isPresent()) {

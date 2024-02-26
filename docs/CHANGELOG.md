@@ -1,5 +1,5 @@
-Version 3.43.0 (January 2, 2024)
---------------------------------
+Version 3.43.0 (?? ??, 2024)
+----------------------------
 
 **User-visible changes:**
 
@@ -11,6 +11,9 @@ A specialized inference algorithm for the Resource Leak Checker runs
 automatically as part of whole-program inference.
 
 **Implementation details:**
+
+Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
+`visualizeBlockWithSeparator()`.
 
 **Closed issues:**
 

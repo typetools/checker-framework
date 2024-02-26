@@ -45,7 +45,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       result.clearPrimaryAnnotations();
     } else if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
         || variableTree.getType() == null) {
-      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      // VariableTree#getType returns null for binding variables from a
+      // DeconstructionPatternTree.
       result = f.type(variableTree);
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those
@@ -78,7 +79,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       AnnotatedDeclaredType annotatedDeclaredType = (AnnotatedDeclaredType) result;
       // The underlying type of result does not have all annotations, but the TypeMirror of
       // variableTree.getType() does.
-      // VariableTree#getType returns null for binding variables from a DeconstructionPatternTree.
+      // VariableTree#getType returns null for binding variables from a
+      // DeconstructionPatternTree.
       if (variableTree.getType() != null
           && !TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
         DeclaredType declaredType = (DeclaredType) TreeUtils.typeOf(variableTree.getType());
@@ -166,12 +168,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       int index = lambdaDecl.getParameters().indexOf(f.declarationFromElement(paramElement));
       AnnotatedExecutableType functionType = f.getFunctionTypeFromTree(lambdaDecl);
       AnnotatedTypeMirror funcTypeParam = functionType.getParameterTypes().get(index);
-      // During type argument inference, the type of the parameters is assumed to be the same as
-      // the function parameter.
-      // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2.1).
-      // So if the underlying types are not the same type, then assume the lambda parameter is the
-      // same as the function type. (Use the erased types because the
-      // type arguments are not substituted when the annotated type arguments are.)
+      // During type argument inference, the type of the parameters is assumed to be the
+      // same as the function parameter.
+      // (https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.2.1).  So if
+      // the underlying types are not the same type, then assume the lambda parameter is the
+      // same as the function type. (Use the erased types because the type arguments are not
+      // substituted when the annotated type arguments are.)
       if (TypesUtils.isErasedSubtype(
           funcTypeParam.underlyingType, lambdaParam.underlyingType, f.types)) {
         return AnnotatedTypes.asSuper(f, funcTypeParam, lambdaParam);

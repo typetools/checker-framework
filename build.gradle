@@ -9,7 +9,7 @@ plugins {
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.2.1' apply false
+  id 'org.ajoberstar.grgit' version '5.2.2' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.0',
-    errorprone : '2.24.1',
+    errorprone : '2.25.0',
   ]
 }
 
@@ -254,7 +254,12 @@ allprojects { currentProj ->
       }
       targetExclude doNotFormat
 
-      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      if (project.hasProperty('eisopFormatting')) {
+        googleJavaFormat(versions.googleJavaFormat).aosp()
+        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+      } else {
+        googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      }
       formatAnnotations()
     }
 
@@ -264,7 +269,11 @@ allprojects { currentProj ->
         target '**/*.gradle'
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(2)
+        if (project.hasProperty('eisopFormatting')) {
+          indentWithSpaces(4)
+        } else {
+          indentWithSpaces(2)
+        }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
       }

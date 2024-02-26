@@ -384,8 +384,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @return a set of the annotations on this
    */
-  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is removed,
-  // rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
+  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is
+  // removed, rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
   public AnnotationMirrorSet getEffectiveAnnotations() {
     AnnotationMirrorSet effectiveAnnotations = getErased().getPrimaryAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
@@ -1139,34 +1139,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
-     * its annotated type arguments have been inferred.
-     *
-     * @return true iff the type was raw
-     * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    public boolean wasRaw() {
-      return isUnderlyingTypeRaw();
-    }
-
-    /**
      * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
      * supertypes of a raw type.
      */
     protected void setIsUnderlyingTypeRaw() {
       this.isUnderlyingTypeRaw = true;
-    }
-
-    /**
-     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
-     * supertypes of a raw type.
-     *
-     * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    protected void setWasRaw() {
-      setIsUnderlyingTypeRaw();
     }
 
     @Override
@@ -1885,8 +1862,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedTypeVariable shallowCopy(boolean copyAnnotations) {
-      // Because type variables can refer to themselves, they can't be shallow copied, so return a
-      // deep copy instead.
+      // Because type variables can refer to themselves, they can't be shallow copied, so
+      // return a deep copy instead.
       AnnotatedTypeVariable type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();
@@ -2224,8 +2201,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedWildcardType shallowCopy(boolean copyAnnotations) {
-      // Because wildcards can refer to themselves, they can't be shallow copied, so return a deep
-      // copy instead.
+      // Because wildcards can refer to themselves, they can't be shallow copied, so return a
+      // deep copy instead.
       AnnotatedWildcardType type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();
