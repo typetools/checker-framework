@@ -103,5 +103,6 @@ public class FlowSwitch {
       case Pair<I>(D d, C c) -> e2 = d;
       case Pair<I>(D d1, D d2) -> e2 = d2;
     }
+    e2.toString();
   }
 }
