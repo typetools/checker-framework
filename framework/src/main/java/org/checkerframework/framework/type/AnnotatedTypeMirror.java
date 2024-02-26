@@ -1112,34 +1112,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
-     * its annotated type arguments have been inferred.
-     *
-     * @return true iff the type was raw
-     * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    public boolean wasRaw() {
-      return isUnderlyingTypeRaw();
-    }
-
-    /**
      * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
      * supertypes of a raw type.
      */
     protected void setIsUnderlyingTypeRaw() {
       this.isUnderlyingTypeRaw = true;
-    }
-
-    /**
-     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
-     * supertypes of a raw type.
-     *
-     * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    protected void setWasRaw() {
-      setIsUnderlyingTypeRaw();
     }
 
     @Override

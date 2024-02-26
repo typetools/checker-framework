@@ -56,8 +56,8 @@ public abstract class AbstractAnalysis<
   protected @MonotonicNonNull ControlFlowGraph cfg;
 
   /**
-   * The transfer inputs of every basic block (assumed to be 'no information' if not present, inputs
-   * before blocks in forward analysis, after blocks in backward analysis).
+   * The transfer inputs of every basic block; assumed to be 'no information' if not present. The
+   * inputs are before blocks in forward analysis, and are after blocks in backward analysis.
    */
   protected final IdentityHashMap<Block, TransferInput<V, S>> inputs = new IdentityHashMap<>();
 

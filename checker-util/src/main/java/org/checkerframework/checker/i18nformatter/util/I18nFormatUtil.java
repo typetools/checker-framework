@@ -107,7 +107,7 @@ public class I18nFormatUtil {
     return true;
   }
 
-  /** An I18n cenversion directive. */
+  /** An I18n conversion directive. */
   private static class I18nConversion {
     /** The index into the string. */
     public final int index;
