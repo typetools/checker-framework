@@ -1,18 +1,5 @@
-Version 3.44.0 (February ??, 2024)
-----------------------------------
-
-**User-visible changes:**
-
-**Implementation details:**
-
-Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
-`visualizeBlockWithSeparator()`.
-
-**Closed issues:**
-
-
-Version 3.43.0 (January 2, 2024)
---------------------------------
+Version 3.43.0 (?? ??, 2024)
+----------------------------
 
 **User-visible changes:**
 
@@ -26,6 +13,9 @@ automatically as part of whole-program inference.
 **Implementation details:**
 
 Deprecated `ObjectCreationNode#getConstructor` in favor of new `ObjectCreationNode#getTypeToInstantiate()`.
+
+Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
+`visualizeBlockWithSeparator()`.
 
 **Closed issues:**
 
