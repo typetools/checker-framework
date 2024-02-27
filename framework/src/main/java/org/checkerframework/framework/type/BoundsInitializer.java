@@ -67,12 +67,12 @@ public class BoundsInitializer {
   }
 
   /**
-   * Returns a wildcard whose upper bound is the same as {@code typeVariable}. If the upper bound is
-   * an intersection, then this method returns an unbound wildcard.
+   * Returns a wildcard whose extends bound is the same as {@code typeVariable}'s upper bound. If
+   * the upper bound is an intersection, then this method returns an unbound wildcard.
    *
    * @param typeVariable a type variable
    * @param types types util
-   * @return a wildcard whose upper bound is the same as {@code typeVariable}
+   * @return a wildcard whose extends bound is the same as the upper bound of {@code typeVariable}
    */
   public static WildcardType getUpperBoundAsWildcard(TypeVariable typeVariable, Types types) {
     TypeMirror upperBound = typeVariable.getUpperBound();
@@ -82,9 +82,8 @@ public class BoundsInitializer {
       case TYPEVAR:
         return types.getWildcardType(upperBound, null);
       case INTERSECTION:
-        // Can't create a wildcard with an intersection as the upper bound, so use
-        // an unbound wildcard instead.  The extends bound of the
-        // AnnotatedWildcardType will be initialized properly by this class.
+        // Can't create a wildcard with an intersection as an extends bound, so use
+        // an unbound wildcard instead.
         return types.getWildcardType(null, null);
       default:
         throw new BugInCF(
@@ -107,19 +106,19 @@ public class BoundsInitializer {
      * A map from a Java type variable to its {@link AnnotatedTypeVariable}. Used to set up
      * recursive type variables.
      */
-    private final Map<TypeVariable, AnnotatedTypeVariable> typeVariableMap;
+    private final Map<TypeVariable, AnnotatedTypeVariable> typeVarToAtm = new HashMap<>();
 
     /**
      * A map from a Java wildcard to its {@link AnnotatedWildcardType}. Used to set up recursive
      * wildcards.
      */
-    private final Map<WildcardType, AnnotatedWildcardType> wildcardMap;
+    private final Map<WildcardType, AnnotatedWildcardType> wildcardToAtm = new HashMap<>();
 
     /**
      * A map from a Java type variable in a raw type to an {@link AnnotatedWildcardType}. Used to
      * set up recursive type variables.
      */
-    private final Map<TypeVariable, AnnotatedWildcardType> rawTypeMap = new HashMap<>();
+    private final Map<TypeVariable, AnnotatedWildcardType> typeParamToWildcard = new HashMap<>();
 
     /**
      * Creates a {@link BoundInitializerVisitor}.
@@ -128,15 +127,13 @@ public class BoundsInitializer {
      */
     public BoundInitializerVisitor(AnnotatedTypeFactory atypeFactory) {
       this.atypeFactory = atypeFactory;
-      typeVariableMap = new HashMap<>();
-      wildcardMap = new HashMap<>();
     }
 
     /**
-     * Creates a {@link AnnotatedTypeMirror} for {@code javaType}.
+     * Creates a {@link AnnotatedTypeMirror} with the same structure as {@code javaType}.
      *
      * @param javaType a Java type
-     * @return a new {@link AnnotatedTypeMirror} for {@code javaType}
+     * @return a new {@link AnnotatedTypeMirror} with the same structure as {@code javaType}
      */
     private AnnotatedTypeMirror createAnnotatedType(TypeMirror javaType) {
       return AnnotatedTypeMirror.createType(javaType, atypeFactory, false);
@@ -151,7 +148,7 @@ public class BoundsInitializer {
       TypeVariable t = annotatedTypeVariable.getUnderlyingType();
       if (!annotatedTypeVariable.isDeclaration()) {
         t = (TypeVariable) TypeAnnotationUtils.unannotatedType(t);
-        typeVariableMap.put(t, annotatedTypeVariable);
+        typeVarToAtm.put(t, annotatedTypeVariable);
       }
 
       TypeMirror lowerBound = TypesUtils.getTypeVariableLowerBound(t, atypeFactory.processingEnv);
@@ -166,7 +163,7 @@ public class BoundsInitializer {
      */
     private void initializeWildcard(AnnotatedWildcardType annotatedWildcardType) {
       WildcardType t = annotatedWildcardType.getUnderlyingType();
-      wildcardMap.put(t, annotatedWildcardType);
+      wildcardToAtm.put(t, annotatedWildcardType);
 
       TypeMirror lowerBound = TypesUtils.wildLowerBound(t, atypeFactory.processingEnv);
       annotatedWildcardType.setSuperBound(visit(lowerBound));
@@ -211,12 +208,12 @@ public class BoundsInitializer {
       if (annotatedDeclaredType.isUnderlyingTypeRaw()) {
         for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
           TypeVariable typeVar = (TypeVariable) typeParameterEle.asType();
-          AnnotatedWildcardType wildcardType = rawTypeMap.get(typeVar);
+          AnnotatedWildcardType wildcardType = typeParamToWildcard.get(typeVar);
           if (wildcardType == null) {
             TypeMirror javaTypeArg = getUpperBoundAsWildcard(typeVar, atypeFactory.types);
             wildcardType = (AnnotatedWildcardType) createAnnotatedType(javaTypeArg);
             wildcardType.setTypeArgOfRawType();
-            rawTypeMap.put(typeVar, wildcardType);
+            typeParamToWildcard.put(typeVar, wildcardType);
             initializeWildcard(wildcardType);
           }
           typeArgs.add(wildcardType);
@@ -234,7 +231,7 @@ public class BoundsInitializer {
     @Override
     public AnnotatedTypeMirror visitTypeVariable(TypeVariable t, Void unused) {
       t = (TypeVariable) TypeAnnotationUtils.unannotatedType(t);
-      AnnotatedTypeVariable annotatedTypeVariable = typeVariableMap.get(t);
+      AnnotatedTypeVariable annotatedTypeVariable = typeVarToAtm.get(t);
       if (annotatedTypeVariable != null) {
         return annotatedTypeVariable;
       }
@@ -247,7 +244,7 @@ public class BoundsInitializer {
 
     @Override
     public AnnotatedTypeMirror visitWildcard(WildcardType t, Void unused) {
-      AnnotatedWildcardType annotatedWildcardType = wildcardMap.get(t);
+      AnnotatedWildcardType annotatedWildcardType = wildcardToAtm.get(t);
       if (annotatedWildcardType != null) {
         return annotatedWildcardType;
       }
