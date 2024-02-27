@@ -54,9 +54,8 @@ public class DelegationChecker extends BaseTypeChecker {
       } else if (delegates.size() == 1) {
         delegate = delegates.get(0);
         // TODO: compare the current class's overridden methods with that of the supertype.
-        //        Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
-        //        Set<ExecutableElement> declaredMethodInSuperType =
-        // getDeclaredMethodsInSupertype(tree);
+        Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
+        Set<ExecutableElement> declaredMethodInSuperType = getDeclaredMethodsInSupertype(tree);
       }
       // Do nothing if no delegate field is found
       super.processClassTree(tree);
@@ -212,29 +211,45 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Return the set of methods declared by the given class's supertype.
+     * Return the set of methods declared by the class that the given class extends.
+     *
+     * <p>Note: only the methods declared by the class that the given class extends are returned.
+     * There is no need to check the methods declared in any interfaces that the given class
+     * implements, as those <i>must</i> be overridden/declared in the class.
      *
      * @param tree the class tree
-     * @return the set of method declared by the given class's supertype.
+     * @return the set of methods declared by the class that the given class extends.
      */
     @SuppressWarnings("UnusedMethod")
     private Set<ExecutableElement> getDeclaredMethodsInSupertype(ClassTree tree) {
       Set<ExecutableElement> declaredMethods = new HashSet<>();
-      List<AnnotatedTypeMirror.AnnotatedDeclaredType> superTypes =
-          atypeFactory.getAnnotatedType(tree).directSupertypes();
-      if (superTypes.isEmpty()) {
-        return declaredMethods;
-      }
-      // Multiple inheritance is illegal in Java
-      Class<?> superType = TypesUtils.getClassFromType(superTypes.get(0).getUnderlyingType());
+      AnnotatedTypeMirror superTypeTm = atypeFactory.getAnnotatedType(tree.getExtendsClause());
+      Class<?> superType = TypesUtils.getClassFromType(superTypeTm.getUnderlyingType());
       for (Method method : superType.getDeclaredMethods()) {
-        // TODO: check for overrides (e.g., remove(Object) remove(int))
         ExecutableElement methodElement =
             TreeUtils.getMethod(
-                superType.getName(), method.getName(), atypeFactory.getProcessingEnv());
+                superType.getName(),
+                method.getName(),
+                atypeFactory.getProcessingEnv(),
+                getParameterTypes(method));
         declaredMethods.add(methodElement);
       }
       return declaredMethods;
+    }
+
+    /**
+     * Get the list of formal parameter types for a given method.
+     *
+     * @param method the method
+     * @return the formal parameter types for the method
+     */
+    private String[] getParameterTypes(Method method) {
+      Class<?>[] paramClazzes = method.getParameterTypes();
+      String[] paramTypes = new String[paramClazzes.length];
+      for (int i = 0; i < paramClazzes.length; i++) {
+        paramTypes[i] = TypesUtils.typeFromClass(paramClazzes[i], types, elements).toString();
+      }
+      return paramTypes;
     }
   }
 }
