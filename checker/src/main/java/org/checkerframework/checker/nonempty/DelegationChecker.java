@@ -1,18 +1,17 @@
 package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.*;
-import java.util.ArrayList;
-import java.util.List;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.VariableElement;
+import java.lang.reflect.Method;
+import java.util.*;
+import javax.lang.model.element.*;
 import org.checkerframework.checker.nonempty.qual.Delegate;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * This class enforces checks for the {@link Delegate} annotation.
@@ -44,6 +43,7 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     @Override
+    @SuppressWarnings("UnusedVariable")
     public void processClassTree(ClassTree tree) {
       delegate = null; // Unset the previous delegate whenever a new class is visited
       // TODO: what about inner classes?
@@ -53,7 +53,12 @@ public class DelegationChecker extends BaseTypeChecker {
         checker.reportError(latestDelegate, "multiple.delegate.annotations");
       } else if (delegates.size() == 1) {
         delegate = delegates.get(0);
+        // TODO: compare the current class's overridden methods with that of the supertype.
+        //        Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
+        //        Set<ExecutableElement> declaredMethodInSuperType =
+        // getDeclaredMethodsInSupertype(tree);
       }
+      // Do nothing if no delegate field is found
       super.processClassTree(tree);
     }
 
@@ -63,13 +68,18 @@ public class DelegationChecker extends BaseTypeChecker {
       if (delegate == null || !isMarkedWithOverride(tree)) {
         return result;
       }
-      MethodInvocationTree delegatedMethodCall = getDelegatedCall(tree.getBody());
-      if (delegatedMethodCall == null) {
+      MethodInvocationTree candidateDelegateCall = getLastExpression(tree.getBody());
+      boolean hasExceptionalExit =
+          hasExceptionalExit(tree.getBody(), UnsupportedOperationException.class);
+      if (hasExceptionalExit) {
+        return result;
+      }
+      if (candidateDelegateCall == null) {
         checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
         return result;
       }
       Name enclosingMethodName = tree.getName();
-      if (!isValidDelegateCall(enclosingMethodName, delegatedMethodCall)) {
+      if (!isValidDelegateCall(enclosingMethodName, candidateDelegateCall)) {
         checker.reportWarning(tree, "invalid.delegate", tree.getName(), delegate.getName());
       }
       return result;
@@ -106,9 +116,8 @@ public class DelegationChecker extends BaseTypeChecker {
      * @return the fields of a class marked with a {@link Delegate} annotation
      */
     private List<VariableTree> getDelegateFields(ClassTree tree) {
-      List<VariableTree> fields = TreeUtils.fieldsFromTree(tree);
       List<VariableTree> delegateFields = new ArrayList<>();
-      for (VariableTree field : fields) {
+      for (VariableTree field : TreeUtils.fieldsFromTree(tree)) {
         List<AnnotationMirror> annosOnField =
             TreeUtils.annotationsFromTypeAnnotationTrees(field.getModifiers().getAnnotations());
         if (annosOnField.stream()
@@ -120,26 +129,16 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Return true if a method is marked with {@link Override}.
+     * Returns the last expression in a method body.
      *
-     * @param tree a method declaration
-     * @return true if the given method declaration is annotated with {@link Override}
+     * <p>This method is used to identify a possible delegate method call. It will check whether a
+     * method has only one statement (a method invocation or a return statement), and return the
+     * expression that is associated with it. Otherwise, it will return null.
+     *
+     * @param tree the method body
+     * @return the last expression in the method body
      */
-    private boolean isMarkedWithOverride(MethodTree tree) {
-      Element method = TreeUtils.elementFromDeclaration(tree);
-      return atypeFactory.getDeclAnnotation(method, Override.class) != null;
-    }
-
-    /**
-     * Returns the delegate method call, if found, in a method body.
-     *
-     * <p>A delegate method call should be the only statement in a method body. If this is not the
-     * case, or if there are other statements, return null.
-     *
-     * @param tree a method body
-     * @return the delegate method call
-     */
-    private @Nullable MethodInvocationTree getDelegatedCall(BlockTree tree) {
+    private @Nullable MethodInvocationTree getLastExpression(BlockTree tree) {
       List<? extends StatementTree> stmts = tree.getStatements();
       if (stmts.size() != 1) {
         return null;
@@ -155,6 +154,87 @@ public class DelegationChecker extends BaseTypeChecker {
         return null;
       }
       return (MethodInvocationTree) lastExprInMethod;
+    }
+
+    /**
+     * Return true if the last (and only) statement of the block throws an exception of the given
+     * class.
+     *
+     * @param tree a block tree
+     * @param clazz a class of exception (usually {@link UnsupportedOperationException})
+     * @return true if the last and only statement throws an exception of the given class
+     */
+    private boolean hasExceptionalExit(BlockTree tree, Class<?> clazz) {
+      List<? extends StatementTree> stmts = tree.getStatements();
+      if (stmts.size() != 1) {
+        return false;
+      }
+      StatementTree lastStmt = stmts.get(0);
+      if (!(lastStmt instanceof ThrowTree)) {
+        return false;
+      }
+      ThrowTree throwStmt = (ThrowTree) lastStmt;
+      AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(throwStmt.getExpression());
+      Class<?> exceptionClass = TypesUtils.getClassFromType(throwType.getUnderlyingType());
+      return exceptionClass.equals(clazz);
+    }
+
+    /**
+     * Return a set of all methods in the class that are marked with {@link Override}.
+     *
+     * @param tree the class tree
+     * @return a set of all methods in the class that are marked with {@link Override}
+     */
+    @SuppressWarnings("UnusedMethod")
+    private Set<ExecutableElement> getOverriddenMethods(ClassTree tree) {
+      Set<ExecutableElement> overriddenMethods = new HashSet<>();
+      for (Tree member : tree.getMembers()) {
+        if (!(member instanceof MethodTree)) {
+          continue;
+        }
+        MethodTree method = (MethodTree) member;
+        if (isMarkedWithOverride(method)) {
+          overriddenMethods.add(TreeUtils.elementFromDeclaration(method));
+        }
+      }
+      return overriddenMethods;
+    }
+
+    /**
+     * Return true if a method is marked with {@link Override}.
+     *
+     * @param tree the method declaration
+     * @return true if the given method declaration is annotated with {@link Override}
+     */
+    private boolean isMarkedWithOverride(MethodTree tree) {
+      Element method = TreeUtils.elementFromDeclaration(tree);
+      return atypeFactory.getDeclAnnotation(method, Override.class) != null;
+    }
+
+    /**
+     * Return the set of methods declared by the given class's supertype.
+     *
+     * @param tree the class tree
+     * @return the set of method declared by the given class's supertype.
+     */
+    @SuppressWarnings("UnusedMethod")
+    private Set<ExecutableElement> getDeclaredMethodsInSupertype(ClassTree tree) {
+      Set<ExecutableElement> declaredMethods = new HashSet<>();
+      List<AnnotatedTypeMirror.AnnotatedDeclaredType> superTypes =
+          atypeFactory.getAnnotatedType(tree).directSupertypes();
+      if (superTypes.isEmpty()) {
+        return declaredMethods;
+      }
+      // Multiple inheritance is illegal in Java
+      Class<?> superType = TypesUtils.getClassFromType(superTypes.get(0).getUnderlyingType());
+      for (Method method : superType.getDeclaredMethods()) {
+        // TODO: check for overrides (e.g., remove(Object) remove(int))
+        ExecutableElement methodElement =
+            TreeUtils.getMethod(
+                superType.getName(), method.getName(), atypeFactory.getProcessingEnv());
+        declaredMethods.add(methodElement);
+      }
+      return declaredMethods;
     }
   }
 }
