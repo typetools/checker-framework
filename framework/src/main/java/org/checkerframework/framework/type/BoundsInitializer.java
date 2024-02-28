@@ -33,9 +33,10 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /**
- * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
- * variables and wildcards. It ensures that recursive type variables refer to themselves at the
- * correct location.
+ * {@code BoundsInitializer} creates AnnotatedTypeMirrors (without annotations) for the bounds of
+ * type variables and wildcards. It ensures that recursive type variables refer to themselves at the
+ * correct location. Other kinds of composited types are lazily initialized in {@code
+ * AnnotatedTypeMirror}.
  *
  * <p>Its static helper methods are called from AnnotatedTypeMirror. When an initializer method is
  * called for a particular bound, the entirety of that bound, including circular references, is
@@ -97,7 +98,7 @@ public class BoundsInitializer {
    * wildcards, because at some point instead of creating a new type, a previously created type is
    * returned. This makes the {@code AnnotatedTypeMirror} recursive.
    */
-  static class BoundInitializerVisitor implements TypeVisitor<AnnotatedTypeMirror, Void> {
+  private static class BoundInitializerVisitor implements TypeVisitor<AnnotatedTypeMirror, Void> {
 
     /** AnnotatedTypeFactory used to create AnnotatedTypeMirrors. */
     private final AnnotatedTypeFactory atypeFactory;
