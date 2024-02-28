@@ -140,8 +140,8 @@ public class BoundsInitializer {
     }
 
     /**
-     * Initialize the upper and lower bounds of {@code annotatedTypeVariable}. This method should
-     * only be called once per {@link TypeVariable}.
+     * Sets the upper and lower bounds of {@code annotatedTypeVariable} by visiting each bound. This
+     * method should only be called once per {@link TypeVariable}.
      *
      * @param annotatedTypeVariable an annotated type variable
      */
@@ -158,8 +158,8 @@ public class BoundsInitializer {
     }
 
     /**
-     * Initialize the upper and lower bounds of {@code annotatedWildcardType}. This method should
-     * only be called once per {@link WildcardType}.
+     * Sets the extends and super bounds of {@code annotatedWildcardType} by calling visiting each
+     * bound. This method should only be called once per {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */
