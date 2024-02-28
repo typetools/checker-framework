@@ -35,7 +35,7 @@ import org.plumelib.util.CollectionsPlume;
 /**
  * {@code BoundsInitializer} creates AnnotatedTypeMirrors (without annotations) for the bounds of
  * type variables and wildcards. It ensures that recursive type variables refer to themselves at the
- * correct location. Other kinds of composited types are lazily initialized in {@code
+ * correct location. Other kinds of composite types are lazily initialized in {@code
  * AnnotatedTypeMirror}.
  *
  * <p>Its static helper methods are called from AnnotatedTypeMirror. When an initializer method is
@@ -93,10 +93,10 @@ public class BoundsInitializer {
   }
 
   /**
-   * A class that visits all parts of a TypeMirror and creates an {@link AnnotatedTypeMirror} to
-   * match the TypeMirror. This visitor is only used to initialize recursive type variables or
-   * wildcards, because at some point instead of creating a new type, a previously created type is
-   * returned. This makes the {@code AnnotatedTypeMirror} recursive.
+   * A class that creates an {@link AnnotatedTypeMirror} to match a TypeMirror. This visitor is only
+   * used to initialize recursive type variables or wildcards, because at some point instead of
+   * creating a new type, a previously created type is returned. This makes the {@code
+   * AnnotatedTypeMirror} recursive.
    */
   private static class BoundInitializerVisitor implements TypeVisitor<AnnotatedTypeMirror, Void> {
 
@@ -159,8 +159,8 @@ public class BoundsInitializer {
     }
 
     /**
-     * Sets the extends and super bounds of {@code annotatedWildcardType} by calling visiting each
-     * bound. This method should only be called once per {@link WildcardType}.
+     * Sets the extends and super bounds of {@code annotatedWildcardType} by visiting each bound.
+     * This method should only be called once per {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */

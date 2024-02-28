@@ -811,11 +811,11 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, the null
-   * type is returned.
+   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, returns the
+   * null type.
    *
    * @param typeVariable a type variable
-   * @param env the proceProcessingEnvironmentssi
+   * @param env the proceProcessingEnvironment
    * @return the lower bound of {@code typeVariable} or the null type
    */
   public static TypeMirror getTypeVariableLowerBound(
