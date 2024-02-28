@@ -49,7 +49,7 @@ public class BoundsInitializer {
   }
 
   /**
-   * Initialize the upper and lower bounds of {@code typeVar}.
+   * Creates and sets the upper and lower bounds of {@code typeVar}.
    *
    * @param typeVar an {@link AnnotatedTypeVariable}
    */
@@ -58,7 +58,7 @@ public class BoundsInitializer {
   }
 
   /**
-   * Initialize the upper and lower bounds of {@code wildcard}.
+   * Creates and sets the extends and super bounds of {@code wildcard}.
    *
    * @param wildcard an {@link AnnotatedWildcardType}
    */
