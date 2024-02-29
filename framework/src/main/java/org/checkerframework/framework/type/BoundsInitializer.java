@@ -50,7 +50,8 @@ public class BoundsInitializer {
   }
 
   /**
-   * Creates and sets the upper and lower bounds of {@code typeVar}.
+   * Creates and sets the upper and lower bounds of {@code typeVar} that match the upper and lower
+   * bounds of the underlying type of {@code typeVar}.
    *
    * @param typeVar an {@link AnnotatedTypeVariable}
    */
@@ -59,7 +60,8 @@ public class BoundsInitializer {
   }
 
   /**
-   * Creates and sets the extends and super bounds of {@code wildcard}.
+   * Creates and sets the extends and super bounds of {@code wildcard} that match the extends and
+   * super bounds of the underlying type of {@code wildcard}.
    *
    * @param wildcard an {@link AnnotatedWildcardType}
    */
@@ -141,8 +143,10 @@ public class BoundsInitializer {
     }
 
     /**
-     * Sets the upper and lower bounds of {@code annotatedTypeVariable} by visiting each bound. This
-     * method should only be called once per {@link TypeVariable}.
+     * Sets the upper and lower bounds of {@code annotatedTypeVariable} to {@code
+     * AnnotatedTypeMirror} that match the upper and lower bounds of the underlying type of {@code
+     * annotatedTypeVariable} by visiting each bound. This method should only be called once per
+     * {@link TypeVariable}.
      *
      * @param annotatedTypeVariable an annotated type variable
      */
@@ -159,8 +163,10 @@ public class BoundsInitializer {
     }
 
     /**
-     * Sets the extends and super bounds of {@code annotatedWildcardType} by visiting each bound.
-     * This method should only be called once per {@link WildcardType}.
+     * Sets the extends and super bounds of {@code annotatedWildcardType} to {@code
+     * AnnotatedTypeMirror} that match the upper and lower bounds of the underlying type of {@code
+     * annotatedWildcardType} by calling visiting each bound. This method should only be called once
+     * per {@link WildcardType}.
      *
      * @param annotatedWildcardType an annotated wildcard type
      */
