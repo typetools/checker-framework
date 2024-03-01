@@ -386,6 +386,9 @@ We recommend Azure Pipelines.
       (You might need to create a (free) account.)</li>
   <li>Click "Create a project to get started" and enter an appropriate name</li>
   <li>Click "public".</li>
+    <ul>
+      <li>If this option is not available, create the project and <a href="#project-visibility">modify its visibility</a> later.</li>
+    </ul>
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
   <li>Click "new pipeline"</li>
@@ -410,6 +413,18 @@ We recommend Azure Pipelines.
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
 </ul>
 
+<h3 id="project-visibility">How to change project visibility settings</h3>
+
+<p>
+To change your project's visibility settings (usually to "Public" to enable CI):
+</p>
+
+<ul>
+  <li>Browse to your project on <a href="https://dev.azure.com">dev.azure.com</a>.</li>
+  <li>Click the "Project Settings" button.</li>
+  <li>Click the "Visibility" dropdown.</li>
+  <li>Click "Public".</li>
+</ul>
 
 <h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
 
