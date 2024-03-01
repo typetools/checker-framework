@@ -811,6 +811,27 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, returns the
+   * null type.
+   *
+   * @param typeVariable a type variable
+   * @param env the proceProcessingEnvironment
+   * @return the lower bound of {@code typeVariable} or the null type
+   */
+  public static TypeMirror getTypeVariableLowerBound(
+      TypeVariable typeVariable, ProcessingEnvironment env) {
+    TypeMirror lb = typeVariable.getLowerBound();
+    if (lb != null) {
+      return lb;
+    }
+
+    // Use bottom type to ensure there is a lower bound.
+    Context context = ((JavacProcessingEnvironment) env).getContext();
+    Symtab syms = Symtab.instance(context);
+    return syms.botType;
+  }
+
+  /**
    * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
    * (called upperBound there) and jdk8u.
    */

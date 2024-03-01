@@ -1079,26 +1079,54 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns the type argument for this type.
+     * Returns the type arguments for this type.
      *
-     * @return the type argument for this type
+     * @return the type arguments for this type
      */
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
         return typeArgs;
-      } else if (isUnderlyingTypeRaw()) {
-        // Initialize the type arguments with wildcards marks as type arguments from raw
-        // types.
-        BoundsInitializer.initializeTypeArgs(this);
-        return typeArgs;
-      } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
-        typeArgs = Collections.emptyList();
-        return typeArgs;
-      } else {
-        // Initialize type argument for a non-raw declared type that has type arguments/
-        BoundsInitializer.initializeTypeArgs(this);
-        return typeArgs;
       }
+
+      DeclaredType t = getUnderlyingType();
+      typeArgs = new ArrayList<>(t.getTypeArguments().size());
+
+      if (isUnderlyingTypeRaw()) {
+        TypeElement typeElement = (TypeElement) atypeFactory.types.asElement(t);
+        Map<TypeVariable, AnnotatedTypeMirror> typeParameterToWildcard = new HashMap<>();
+        for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
+          TypeVariable typeParameterVar = (TypeVariable) typeParameterEle.asType();
+          TypeMirror wildcard =
+              BoundsInitializer.getUpperBoundAsWildcard(typeParameterVar, atypeFactory.types);
+          AnnotatedWildcardType atmWild =
+              (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
+          atmWild.setTypeArgOfRawType();
+          BoundsInitializer.initializeBounds(atmWild);
+          typeArgs.add(atmWild);
+          typeParameterToWildcard.put(typeParameterVar, atmWild);
+        }
+        TypeVariableSubstitutor suber = atypeFactory.getTypeVarSubstitutor();
+        for (AnnotatedTypeMirror atm : typeArgs) {
+          AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
+          wildcardType.setExtendsBound(
+              suber.substituteWithoutCopyingTypeArguments(
+                  typeParameterToWildcard, wildcardType.getExtendsBound()));
+        }
+      } else if (isDeclaration()) {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeVariable tv =
+              (AnnotatedTypeVariable)
+                  AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
+          typeArgs.add(tv);
+        }
+      } else {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeMirror typeArg =
+              AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, false);
+          typeArgs.add(typeArg);
+        }
+      }
+      return typeArgs;
     }
 
     /**
@@ -2075,7 +2103,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
-        BoundsInitializer.initializeSuperBound(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.superBound;
@@ -2105,7 +2133,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getExtendsBound() {
       if (extendsBound == null) {
-        BoundsInitializer.initializeExtendsBound(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.extendsBound;
