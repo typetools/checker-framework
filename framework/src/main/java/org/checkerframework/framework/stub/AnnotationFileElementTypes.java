@@ -454,7 +454,9 @@ public class AnnotationFileElementTypes {
       if (isParsing()) {
         System.out.printf("AFET.getDeclAnnotations(%s [%s])%n", elt, elt.getClass());
       } else {
-        System.out.printf("AFET.getDeclAnnotations(%s [%s]) IS NOT PARSING%n", elt, elt.getClass());
+        System.out.printf(
+            "AFET.getDeclAnnotations(%s [%s]) isParsing()==true, so will return empty set%n",
+            elt, elt.getClass());
       }
     }
 
@@ -894,12 +896,18 @@ public class AnnotationFileElementTypes {
    * @param jdkJarfile the URL pointing to the JDK jarfile
    */
   private void prepJdkFromJar(@SuppressWarnings("UnusedVariable") URL jdkJarfile) {
+    if (stubDebug) {
+      System.out.printf("prepJdkFromJar(%s)%n", jdkJarfile);
+    }
     JarURLConnection connection = getJarURLConnectionToJdk();
 
     try (JarFile jarFile = connection.getJarFile()) {
       ArrayList<JarEntry> entries = CollectionsPlume.makeArrayList(jarFile.entries());
       entries.sort(Comparator.comparing(Object::toString));
       for (JarEntry jarEntry : entries) {
+        if (stubDebug) {
+          System.out.printf("prepJdkFromJar: considering %s%n", jarEntry.getName());
+        }
         // filter out directories and non-Java files
         if (jarEntry.isDirectory()) {
           continue;
@@ -923,6 +931,7 @@ public class AnnotationFileElementTypes {
       if (stubDebug) {
         String factoryClass = factory.getClass().getSimpleName().toString();
         String jarFileURL = connection.getJarFileURL().toString();
+        System.out.printf("Just created remainingJdkStubFilesJar.%n");
         System.out.printf(
             "Contents of remainingJdkStubFilesJar for %s from %s:%n", factoryClass, jarFileURL);
         printSortedIndented(remainingJdkStubFilesJar.keySet());
