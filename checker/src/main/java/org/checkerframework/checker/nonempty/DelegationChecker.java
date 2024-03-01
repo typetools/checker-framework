@@ -54,8 +54,8 @@ public class DelegationChecker extends BaseTypeChecker {
       } else if (delegates.size() == 1) {
         delegate = delegates.get(0);
         // TODO: compare the current class's overridden methods with that of the supertype.
-        Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
-        Set<ExecutableElement> declaredMethodInSuperType = getDeclaredMethodsInSupertype(tree);
+        // Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
+        // Set<ExecutableElement> declaredMethodInSuperType = getDeclaredMethodsInSupertype(tree);
       }
       // Do nothing if no delegate field is found
       super.processClassTree(tree);
