@@ -1,9 +1,7 @@
 package org.checkerframework.checker.mustcall;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -293,13 +291,7 @@ public class MustCallTransfer extends CFTransfer {
       // Issue 6473
       // Adjusts handling of nearest enclosing element for temporary variables.
       // This approach ensures the correct enclosing element (method or class) is determined.
-      MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
-      if (enclosingMethodTree != null) {
-        enclosingElement = TreeUtils.elementFromDeclaration(enclosingMethodTree);
-      } else {
-        ClassTree enclosingClassTree = TreePathUtil.enclosingClass(path);
-        enclosingElement = TreeUtils.elementFromDeclaration(enclosingClassTree);
-      }
+      enclosingElement = TreePathUtil.findNearestEnclosingElement(path);
     }
     if (enclosingElement == null) {
       return null;
