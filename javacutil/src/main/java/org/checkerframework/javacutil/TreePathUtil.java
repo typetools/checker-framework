@@ -475,14 +475,18 @@ public final class TreePathUtil {
    * method replaces the CFGTranslationPhaseOne#findOwner method.
    *
    * @param path the {@link TreePath} to analyze for the nearest enclosing scope.
-   * @return the {@link Element} of the nearest enclosing method or class.
+   * @return the {@link Element} of the nearest enclosing method or class, or {@code null} if no
+   *     such enclosing element can be found.
    */
-  public static Element findNearestEnclosingElement(TreePath path) {
+  public static @Nullable Element findNearestEnclosingElement(TreePath path) {
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
     if (enclosingMethodTree != null) {
       return TreeUtils.elementFromDeclaration(enclosingMethodTree);
     }
     ClassTree enclosingClassTree = TreePathUtil.enclosingClass(path);
-    return TreeUtils.elementFromDeclaration(enclosingClassTree);
+    if (enclosingClassTree != null) {
+      return TreeUtils.elementFromDeclaration(enclosingClassTree);
+    }
+    return null;
   }
 }
