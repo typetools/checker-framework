@@ -1,9 +1,11 @@
 package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.*;
-import java.lang.reflect.Method;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nonempty.qual.Delegate;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -21,6 +23,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * <ul>
  *   <li>A class may have up to exactly one field marked with the {@link Delegate} annotation.
  *   <li>An overridden method's implementation must be exactly a call to the delegate field.
+ *   <li>A class overrides <i>all</i> methods declared in its superclass.
  * </ul>
  */
 public class DelegationChecker extends BaseTypeChecker {
@@ -53,9 +56,7 @@ public class DelegationChecker extends BaseTypeChecker {
         checker.reportError(latestDelegate, "multiple.delegate.annotations");
       } else if (delegates.size() == 1) {
         delegate = delegates.get(0);
-        // TODO: compare the current class's overridden methods with that of the supertype.
-        // Set<ExecutableElement> overridenMethods = getOverriddenMethods(tree);
-        // Set<ExecutableElement> declaredMethodInSuperType = getDeclaredMethodsInSupertype(tree);
+        checkSuperClassOverrides(tree);
       }
       // Do nothing if no delegate field is found
       super.processClassTree(tree);
@@ -179,12 +180,42 @@ public class DelegationChecker extends BaseTypeChecker {
     }
 
     /**
+     * Validate whether a class overrides all declared methods in its superclass.
+     *
+     * <p>This is a basic implementation that naively checks whether all the superclass methods have
+     * been overridden by the subclass. It is unlikely in practice that a delegating subclass needs
+     * to override <i>all</i> the methods in a superclass for postconditions to hold.
+     *
+     * @param tree a class tree
+     */
+    private void checkSuperClassOverrides(ClassTree tree) {
+      TypeElement classTreeElt = TreeUtils.elementFromDeclaration(tree);
+      if (classTreeElt == null || classTreeElt.getSuperclass() == null) {
+        return;
+      }
+      DeclaredType superClassMirror = (DeclaredType) classTreeElt.getSuperclass();
+      if (superClassMirror == null || superClassMirror.getKind() == TypeKind.NONE) {
+        return;
+      }
+      Set<ExecutableElement> overriddenMethods = getOverriddenMethods(tree);
+      Set<ExecutableElement> methodsDeclaredInSuperClass =
+          new HashSet<>(
+              ElementFilter.methodsIn(superClassMirror.asElement().getEnclosedElements()));
+      if (!overriddenMethods.containsAll(methodsDeclaredInSuperClass)) {
+        checker.reportWarning(
+            tree,
+            "delegate.override",
+            tree.getSimpleName(),
+            TypesUtils.getQualifiedName(superClassMirror));
+      }
+    }
+
+    /**
      * Return a set of all methods in the class that are marked with {@link Override}.
      *
      * @param tree the class tree
      * @return a set of all methods in the class that are marked with {@link Override}
      */
-    @SuppressWarnings("UnusedMethod")
     private Set<ExecutableElement> getOverriddenMethods(ClassTree tree) {
       Set<ExecutableElement> overriddenMethods = new HashSet<>();
       for (Tree member : tree.getMembers()) {
@@ -208,48 +239,6 @@ public class DelegationChecker extends BaseTypeChecker {
     private boolean isMarkedWithOverride(MethodTree tree) {
       Element method = TreeUtils.elementFromDeclaration(tree);
       return atypeFactory.getDeclAnnotation(method, Override.class) != null;
-    }
-
-    /**
-     * Return the set of methods declared by the class that the given class extends.
-     *
-     * <p>Note: only the methods declared by the class that the given class extends are returned.
-     * There is no need to check the methods declared in any interfaces that the given class
-     * implements, as those <i>must</i> be overridden/declared in the class.
-     *
-     * @param tree the class tree
-     * @return the set of methods declared by the class that the given class extends.
-     */
-    @SuppressWarnings("UnusedMethod")
-    private Set<ExecutableElement> getDeclaredMethodsInSupertype(ClassTree tree) {
-      Set<ExecutableElement> declaredMethods = new HashSet<>();
-      AnnotatedTypeMirror superTypeTm = atypeFactory.getAnnotatedType(tree.getExtendsClause());
-      Class<?> superType = TypesUtils.getClassFromType(superTypeTm.getUnderlyingType());
-      for (Method method : superType.getDeclaredMethods()) {
-        ExecutableElement methodElement =
-            TreeUtils.getMethod(
-                superType.getName(),
-                method.getName(),
-                atypeFactory.getProcessingEnv(),
-                getParameterTypes(method));
-        declaredMethods.add(methodElement);
-      }
-      return declaredMethods;
-    }
-
-    /**
-     * Get the list of formal parameter types for a given method.
-     *
-     * @param method the method
-     * @return the formal parameter types for the method
-     */
-    private String[] getParameterTypes(Method method) {
-      Class<?>[] paramClazzes = method.getParameterTypes();
-      String[] paramTypes = new String[paramClazzes.length];
-      for (int i = 0; i < paramClazzes.length; i++) {
-        paramTypes[i] = TypesUtils.typeFromClass(paramClazzes[i], types, elements).toString();
-      }
-      return paramTypes;
     }
   }
 }

@@ -1,6 +1,7 @@
 import java.util.IdentityHashMap;
 import org.checkerframework.checker.nonempty.qual.Delegate;
 
+// :: warning: (delegate.override)
 public class InvalidDelegateTest<K, V> extends IdentityHashMap<K, V> {
 
   @Delegate public IdentityHashMap<K, V> map;
