@@ -42,6 +42,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
+          <li><a href="#project-visibility">How to change project visibility settings</a></li>
           <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
@@ -385,7 +386,11 @@ We recommend Azure Pipelines.
   <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
       (You might need to create a (free) account.)</li>
   <li>Click "Create a project to get started" and enter an appropriate name</li>
-  <li>Click "public".</li>
+  <li>Click "public".
+    <ul>
+      <li>If this option is not available, create the project and <a href="#project-visibility">modify its visibility</a> later.</li>
+    </ul>
+  </li>
   <li>Click "create project"</li>
   <li>At the left, click the blue rocket labeled "pipelines"</li>
   <li>Click "new pipeline"</li>
@@ -410,6 +415,18 @@ We recommend Azure Pipelines.
   <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
 </ul>
 
+<h3 id="project-visibility">How to change project visibility settings</h3>
+
+<p>
+To change your project's visibility settings (usually to "Public" to enable CI):
+</p>
+
+<ul>
+  <li>Browse to your project on <a href="https://dev.azure.com">dev.azure.com</a>.</li>
+  <li>Click the "Project Settings" button.</li>
+  <li>Click the "Visibility" dropdown.</li>
+  <li>Click "Public".</li>
+</ul>
 
 <h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
 
@@ -473,7 +490,7 @@ for example to 6.2.0.2.
 See a separate document about the Checker Framework release process:
 <!-- This relative URL works from a clone, but not from the web. -->
 <a href="release/README-release-process.html">local version (link works from a clone)</a> or
-<a href="https://rawgit.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a>.
+<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/master/docs/developer/release/README-release-process.html">web version (from previous release)</a>.
 </p>
 
 

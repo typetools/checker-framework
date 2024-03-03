@@ -97,7 +97,7 @@ public class StringCFGVisualizer<
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, lineSeparator).trim();
+    return super.visualizeBlockWithSeparator(bb, analysis, lineSeparator).trim();
   }
 
   @Override

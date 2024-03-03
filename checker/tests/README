@@ -107,7 +107,7 @@ If a warning rather than an error is expected, insert the line
   // :: warning: (<warning-message-key>)
 If a stub parser warning is expected, insert the line
   //warning: AnnotationFileParser: <stub parser warning>
-If multiple errors are expected on a single line, duplicate everthing
+If multiple errors are expected on a single line, duplicate everything
 except the "//" comment characters, as in
   // :: error: (<error-message-key1>) :: error: (<error-message-key2>)
 If the expected failures line would be very long, you may break it across

@@ -174,8 +174,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
     } else {
-      // Indicates @MustCallUnknown, which should be treated (conservatively) as if it contains
-      // some must call values.
+      // Indicates @MustCallUnknown, which should be treated (conservatively) as if it
+      // contains some must call values.
       return false;
     }
   }
@@ -200,8 +200,8 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
     } else {
-      // Indicates @MustCallUnknown, which should be treated (conservatively) as if it contains
-      // some must call values.
+      // Indicates @MustCallUnknown, which should be treated (conservatively) as if it
+      // contains some must call values.
       return false;
     }
   }

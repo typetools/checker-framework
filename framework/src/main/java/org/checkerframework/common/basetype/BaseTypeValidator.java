@@ -698,8 +698,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       return atypeFactory.getTypeHierarchy().isSubtypeShallowEffective(lowerBound, upperBound);
     } else {
       // When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
-      // be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
-      // a bound.
+      // be reported as invalid.  Therefore, we do not do any other comparisons nor do we
+      // report a bound.
       return true;
     }
   }

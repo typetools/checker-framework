@@ -153,7 +153,7 @@ public class DOTCFGVisualizer<
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, getSeparator());
+    return super.visualizeBlockWithSeparator(bb, analysis, getSeparator());
   }
 
   @Override
