@@ -957,6 +957,9 @@ public class DependentTypesHelper {
     @Override
     protected Void scan(
         AnnotatedTypeMirror type, Function<AnnotationMirror, AnnotationMirror> func) {
+      if (visitedNodes.containsKey(type)) {
+        return null;
+      }
       for (AnnotationMirror anno : new AnnotationMirrorSet(type.getPrimaryAnnotations())) {
         AnnotationMirror newAnno = func.apply(anno);
         if (newAnno != null) {
