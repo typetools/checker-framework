@@ -384,8 +384,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @return a set of the annotations on this
    */
-  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is removed,
-  // rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
+  // TODO: When the current, deprecated `getAnnotations()` (deprecation date 2023-06-15) is
+  // removed, rename all the "getEffectiveAnnotation...()" methods to just "getAnnotation...()".
   public AnnotationMirrorSet getEffectiveAnnotations() {
     AnnotationMirrorSet effectiveAnnotations = getErased().getPrimaryAnnotations();
     //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
@@ -1079,25 +1079,54 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns the type argument for this type.
+     * Returns the type arguments for this type.
      *
-     * @return the type argument for this type
+     * @return the type arguments for this type
      */
     public List<AnnotatedTypeMirror> getTypeArguments() {
       if (typeArgs != null) {
         return typeArgs;
-      } else if (isUnderlyingTypeRaw()) {
-        // Initialize the type arguments with wildcards marks as type arguments from raw types.
-        BoundsInitializer.initializeTypeArgs(this);
-        return typeArgs;
-      } else if (getUnderlyingType().getTypeArguments().isEmpty()) {
-        typeArgs = Collections.emptyList();
-        return typeArgs;
-      } else {
-        // Initialize type argument for a non-raw declared type that has type arguments/
-        BoundsInitializer.initializeTypeArgs(this);
-        return typeArgs;
       }
+
+      DeclaredType t = getUnderlyingType();
+      typeArgs = new ArrayList<>(t.getTypeArguments().size());
+
+      if (isUnderlyingTypeRaw()) {
+        TypeElement typeElement = (TypeElement) atypeFactory.types.asElement(t);
+        Map<TypeVariable, AnnotatedTypeMirror> typeParameterToWildcard = new HashMap<>();
+        for (TypeParameterElement typeParameterEle : typeElement.getTypeParameters()) {
+          TypeVariable typeParameterVar = (TypeVariable) typeParameterEle.asType();
+          TypeMirror wildcard =
+              BoundsInitializer.getUpperBoundAsWildcard(typeParameterVar, atypeFactory.types);
+          AnnotatedWildcardType atmWild =
+              (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, atypeFactory, false);
+          atmWild.setTypeArgOfRawType();
+          BoundsInitializer.initializeBounds(atmWild);
+          typeArgs.add(atmWild);
+          typeParameterToWildcard.put(typeParameterVar, atmWild);
+        }
+        TypeVariableSubstitutor suber = atypeFactory.getTypeVarSubstitutor();
+        for (AnnotatedTypeMirror atm : typeArgs) {
+          AnnotatedWildcardType wildcardType = (AnnotatedWildcardType) atm;
+          wildcardType.setExtendsBound(
+              suber.substituteWithoutCopyingTypeArguments(
+                  typeParameterToWildcard, wildcardType.getExtendsBound()));
+        }
+      } else if (isDeclaration()) {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeVariable tv =
+              (AnnotatedTypeVariable)
+                  AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, true);
+          typeArgs.add(tv);
+        }
+      } else {
+        for (TypeMirror javaTypeArg : t.getTypeArguments()) {
+          AnnotatedTypeMirror typeArg =
+              AnnotatedTypeMirror.createType(javaTypeArg, atypeFactory, false);
+          typeArgs.add(typeArg);
+        }
+      }
+      return typeArgs;
     }
 
     /**
@@ -1111,34 +1140,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns true if the underlying type is raw. The receiver of this method is not raw, however;
-     * its annotated type arguments have been inferred.
-     *
-     * @return true iff the type was raw
-     * @deprecated Use {@link #isUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    public boolean wasRaw() {
-      return isUnderlyingTypeRaw();
-    }
-
-    /**
      * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
      * supertypes of a raw type.
      */
     protected void setIsUnderlyingTypeRaw() {
       this.isUnderlyingTypeRaw = true;
-    }
-
-    /**
-     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
-     * supertypes of a raw type.
-     *
-     * @deprecated Use {@link #setIsUnderlyingTypeRaw()} instead
-     */
-    @Deprecated // 2021-06-16
-    protected void setWasRaw() {
-      setIsUnderlyingTypeRaw();
     }
 
     @Override
@@ -1857,8 +1863,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedTypeVariable shallowCopy(boolean copyAnnotations) {
-      // Because type variables can refer to themselves, they can't be shallow copied, so return a
-      // deep copy instead.
+      // Because type variables can refer to themselves, they can't be shallow copied, so
+      // return a deep copy instead.
       AnnotatedTypeVariable type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();
@@ -2097,7 +2103,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getSuperBound() {
       if (superBound == null) {
-        BoundsInitializer.initializeSuperBound(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.superBound;
@@ -2127,7 +2133,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     public AnnotatedTypeMirror getExtendsBound() {
       if (extendsBound == null) {
-        BoundsInitializer.initializeExtendsBound(this);
+        BoundsInitializer.initializeBounds(this);
         fixupBoundAnnotations();
       }
       return this.extendsBound;
@@ -2196,8 +2202,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     @Override
     public AnnotatedWildcardType shallowCopy(boolean copyAnnotations) {
-      // Because wildcards can refer to themselves, they can't be shallow copied, so return a deep
-      // copy instead.
+      // Because wildcards can refer to themselves, they can't be shallow copied, so return a
+      // deep copy instead.
       AnnotatedWildcardType type = deepCopy(true);
       if (!copyAnnotations) {
         type.getPrimaryAnnotationsField().clear();

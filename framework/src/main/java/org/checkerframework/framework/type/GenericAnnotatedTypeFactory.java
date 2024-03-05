@@ -2303,7 +2303,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");
       if (flowdotdir.equals("")) {
-        throw new UserError("Emtpy string provided for -Aflowdotdir command-line argument");
+        throw new UserError("Empty string provided for -Aflowdotdir command-line argument");
       }
       boolean verbose = checker.hasOption("verbosecfg");
 
@@ -2421,8 +2421,8 @@ public abstract class GenericAnnotatedTypeFactory<
           defaultForTypeAnnotator.visit(typeArg);
         }
       } else if (type.getKind().isPrimitive()) {
-        // Don't apply the default for local variables with primitive types. (The primary location
-        // is the only location, so this is a special case of the above.)
+        // Don't apply the default for local variables with primitive types. (The primary
+        // location is the only location, so this is a special case of the above.)
       } else {
         defaultQualifierForUseTypeAnnotator.visit(type);
         defaultForTypeAnnotator.visit(type);

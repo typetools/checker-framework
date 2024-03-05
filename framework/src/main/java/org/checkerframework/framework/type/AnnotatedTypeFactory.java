@@ -75,7 +75,6 @@ import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.checker.interning.qual.FindDistinct;
-import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -2465,8 +2464,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (typeParamToTypeArg.get(tv.getUnderlyingType()) == null) {
           //          throw new BugInCF(
           //              "AnnotatedTypeFactory.methodFromUse:mismatch between"
-          //                  + " declared method type variables and the inferred method type
-          // arguments."
+          //                  + " declared method type variables and the inferred method
+          // type arguments."
           //                  + " Method type variables: "
           //                  + methodType.getTypeVariables()
           //                  + "; "
@@ -3503,7 +3502,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of {@code tree}, without any annotations
    */
   protected final AnnotatedTypeMirror type(Tree tree) {
-    boolean isDeclaration = TreeUtils.isTypeDeclaration(tree);
+    boolean isDeclaration = TreeUtils.isClassTree(tree);
 
     // Attempt to obtain the type via JCTree.
     if (TreeUtils.typeOf(tree) != null) {
@@ -3570,56 +3569,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       elementToTreeCache.put(elt, fromElt);
     }
     return fromElt;
-  }
-
-  /**
-   * Returns the class tree enclosing {@code tree}.
-   *
-   * @param tree the tree whose enclosing class is returned
-   * @return the class tree enclosing {@code tree}
-   * @deprecated Use {@code TreePathUtil.enclosingClass(getPath(tree))} instead.
-   */
-  @Deprecated // 2021-11-01
-  protected final ClassTree getCurrentClassTree(Tree tree) {
-    return TreePathUtil.enclosingClass(getPath(tree));
-  }
-
-  /**
-   * Returns the receiver type of the method enclosing {@code tree}.
-   *
-   * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
-   *
-   * @param tree the tree used to find the enclosing method
-   * @return receiver type of the most enclosing method being visited
-   * @deprecated Use {@link #getSelfType(Tree)} instead
-   */
-  @Deprecated // 2021-11-01
-  protected final @Nullable AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
-    TreePath path = getPath(tree);
-    if (path == null) {
-      return null;
-    }
-    @SuppressWarnings("interning:assignment") // used for == test
-    @InternedDistinct MethodTree enclosingMethod = TreePathUtil.enclosingMethod(path);
-    ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
-
-    boolean found = false;
-
-    for (Tree member : enclosingClass.getMembers()) {
-      if (member.getKind() == Tree.Kind.METHOD) {
-        if (member == enclosingMethod) {
-          found = true;
-        }
-      }
-    }
-
-    if (found && enclosingMethod != null) {
-      AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-      return method.getReceiverType();
-    } else {
-      // We are within an anonymous class or field initializer
-      return this.getAnnotatedType(enclosingClass);
-    }
   }
 
   /**
@@ -4756,8 +4705,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror wildcardUbType = wildcardType.getExtendsBound().getUnderlyingType();
 
         if (wildcardType.isTypeArgOfRawType()) {
-          // Keep the type arguments from raw types so that it is ignored by later subtyping and
-          // containment checks.
+          // Keep the type arguments from raw types so that it is ignored by later
+          // subtyping and containment checks.
           typeVarToTypeArg.put(typeVariable, wildcardType);
         } else if (isExtendsWildcard(wildcardType)) {
           TypeMirror correctArgType;
@@ -4908,8 +4857,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public AnnotatedTypeMirror applyCaptureConversion(
       AnnotatedTypeMirror type, TypeMirror typeMirror) {
 
-    // If the type contains type arguments of raw types, don't capture, but mark all wildcards that
-    // should have been captured as "raw" before it is returned.
+    // If the type contains type arguments of raw types, don't capture, but mark all
+    // wildcards that should have been captured as "raw" before it is returned.
     if (typeMirror.getKind() == TypeKind.DECLARED && type.getKind() == TypeKind.DECLARED) {
       boolean fromRawType = false;
       AnnotatedDeclaredType uncapturedType = (AnnotatedDeclaredType) type;
@@ -5610,8 +5559,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // `!otherConditionMap.containsKey(expr)` test.
         // If a condition map contains the key "every expression", that means that inference
         // completed without inferring any conditions of that type.  For example, if no
-        // @EnsuresCalledMethods was inferred for any expression, the map would contain the key
-        // "every expression", which is not a legal Java expression.
+        // @EnsuresCalledMethods was inferred for any expression, the map would contain the
+        // key "every expression", which is not a legal Java expression.
         if (otherConditionMap.containsKey("every expression")
             || !otherConditionMap.containsKey(expr)) {
           // `otherInferredType` was inferred to be the top type.

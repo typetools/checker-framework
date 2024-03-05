@@ -1004,7 +1004,7 @@ public class AnnotatedTypes {
    * @deprecated Use {@link #adaptParameters(AnnotatedTypeFactory,
    *     AnnotatedTypeMirror.AnnotatedExecutableType, List)} instead
    */
-  @Deprecated
+  @Deprecated // 2022-04-21
   public static List<AnnotatedTypeMirror> expandVarArgsParameters(
       AnnotatedTypeFactory atypeFactory,
       AnnotatedExecutableType method,
@@ -1143,33 +1143,6 @@ public class AnnotatedTypes {
       }
     }
     return parameterTypes.get(index);
-  }
-
-  /**
-   * Return a list of the AnnotatedTypeMirror of the passed expression trees, in the same order as
-   * the trees.
-   *
-   * @param atypeFactory a type factory
-   * @param paramTypes the parameter types to use as assignment context
-   * @param trees the AST nodes
-   * @return a list with the AnnotatedTypeMirror of each tree in trees
-   * @deprecated use CollectionsPlume.mapList(atypeFactory::getAnnotatedType, trees) instead.
-   */
-  @Deprecated
-  public static List<AnnotatedTypeMirror> getAnnotatedTypes(
-      AnnotatedTypeFactory atypeFactory,
-      List<AnnotatedTypeMirror> paramTypes,
-      List<? extends ExpressionTree> trees) {
-    if (paramTypes.size() != trees.size()) {
-      throw new BugInCF(
-          "AnnotatedTypes.getAnnotatedTypes: size mismatch! "
-              + "Parameter types: "
-              + paramTypes
-              + " Arguments: "
-              + trees);
-    }
-
-    return CollectionsPlume.mapList(atypeFactory::getAnnotatedType, trees);
   }
 
   /**
@@ -1597,7 +1570,7 @@ public class AnnotatedTypes {
    * @return true if wildcard type is explicitly super bounded
    * @deprecated Use {@link #hasExplicitSuperBound(AnnotatedTypeMirror)}
    */
-  @Deprecated
+  @Deprecated // 2023-02-28
   public static boolean isExplicitlySuperBounded(AnnotatedWildcardType wildcardType) {
     return hasExplicitSuperBound(wildcardType);
   }
@@ -1619,7 +1592,7 @@ public class AnnotatedTypes {
    * @return true if wildcard type is explicitly extends bounded
    * @deprecated Use {@link #hasExplicitExtendsBound(AnnotatedTypeMirror)}.
    */
-  @Deprecated
+  @Deprecated // 2023-02-28
   public static boolean isExplicitlyExtendsBounded(AnnotatedWildcardType wildcardType) {
     return hasExplicitExtendsBound(wildcardType);
   }

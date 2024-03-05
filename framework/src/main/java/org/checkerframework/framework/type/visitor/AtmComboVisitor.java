@@ -37,8 +37,8 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
    */
   default String defaultErrorMessage(
       AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param) {
-    // Message is on one line, without line breaks, because in a stack trace only the first line of
-    // the message may be shown.
+    // Message is on one line, without line breaks, because in a stack trace only the first line
+    // of the message may be shown.
     return String.format(
         "%s: unexpected combination:  type: [%s %s] %s  supertype: [%s %s] %s",
         this.getClass().getSimpleName(),
@@ -51,9 +51,9 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
   }
 
   /**
-   * Called by the default implementation of every AbstractAtmComboVisitor visit method. This
-   * methodnS issues a runtime exception by default. In general, it should handle the case where a
-   * visit method has been called with a pair of type mirrors that should never be passed to this
+   * Called by the default implementation of every AbstractAtmComboVisitor visit method. This method
+   * issues a runtime exception by default. In general, it should handle the case where a visit
+   * method has been called with a pair of type mirrors that should never be passed to this
    * particular visitor.
    *
    * @param type1 the first AnnotatedTypeMirror parameter to the visit method called

@@ -21,19 +21,23 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class FieldAccessNode extends Node {
-
+  /** The tree of the field access. */
   protected final Tree tree;
-  protected final VariableElement element;
-  protected final String field;
-  protected final Node receiver;
 
-  // TODO: add method to get modifiers (static, access level, ..)
+  /** The element of the accessed field. */
+  protected final VariableElement element;
+
+  /** The name of the accessed field. */
+  protected final String field;
+
+  /** The receiver node of the field access. */
+  protected final Node receiver;
 
   /**
    * Creates a new FieldAccessNode.
    *
    * @param tree the tree from which to create a FieldAccessNode
-   * @param receiver the receiver for the resuling FieldAccessNode
+   * @param receiver the receiver for the resulting FieldAccessNode
    */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
@@ -90,7 +94,11 @@ public class FieldAccessNode extends Node {
     return getReceiver() + "." + field;
   }
 
-  /** Is this a static field? */
+  /**
+   * Determine whether the field is static or not.
+   *
+   * @return whether the field is static or not
+   */
   public boolean isStatic() {
     return ElementUtils.isStatic(getElement());
   }

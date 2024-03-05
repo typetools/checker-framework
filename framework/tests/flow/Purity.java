@@ -125,7 +125,8 @@ public class Purity {
 
   @Pure
   String t13() {
-    // No "purity.not.deterministic.object.creation" error; an error was issued at the constructor.
+    // No "purity.not.deterministic.object.creation" error; an error was issued at the
+    // constructor.
     PureClass p = new PureClass();
     return "";
   }
@@ -144,7 +145,8 @@ public class Purity {
 
   @Deterministic
   String t13c() {
-    // No "purity.not.deterministic.object.creation" error; an error was issued at the constructor.
+    // No "purity.not.deterministic.object.creation" error; an error was issued at the
+    // constructor.
     PureClass p = new PureClass();
     return "";
   }

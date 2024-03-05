@@ -107,8 +107,8 @@ public class AnnotationStatistics extends SourceChecker {
       output = sj.toString();
     }
     if (hasOption("annotationserror")) {
-      // Issue annotation details a compiler warning rather than printed. This may be useful, for
-      // example, when Maven swallows non-warning output from the annotation processor.
+      // Issue annotation details a compiler warning rather than printed. This may be useful,
+      // for example, when Maven swallows non-warning output from the annotation processor.
       getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING, output);
     } else {
       System.out.println(output);
