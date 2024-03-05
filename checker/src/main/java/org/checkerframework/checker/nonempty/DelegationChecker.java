@@ -2,11 +2,13 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nonempty.qual.Delegate;
+import org.checkerframework.checker.nonempty.qual.DelegatorMustOverride;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -197,11 +199,21 @@ public class DelegationChecker extends BaseTypeChecker {
       if (superClassMirror == null || superClassMirror.getKind() == TypeKind.NONE) {
         return;
       }
-      Set<ExecutableElement> overriddenMethods = getOverriddenMethods(tree);
+      Set<Name> overriddenMethods =
+          getOverriddenMethods(tree).stream()
+              .map(ExecutableElement::getSimpleName)
+              .collect(Collectors.toSet());
       Set<ExecutableElement> methodsDeclaredInSuperClass =
           new HashSet<>(
               ElementFilter.methodsIn(superClassMirror.asElement().getEnclosedElements()));
-      if (!overriddenMethods.containsAll(methodsDeclaredInSuperClass)) {
+      Set<Name> methodsThatMustBeOverriden =
+          methodsDeclaredInSuperClass.stream()
+              .filter(e -> atypeFactory.getDeclAnnotation(e, DelegatorMustOverride.class) != null)
+              .map(ExecutableElement::getSimpleName)
+              .collect(Collectors.toSet());
+
+      // TODO: comparing a set of names isn't ideal, what about overloading?
+      if (!overriddenMethods.containsAll(methodsThatMustBeOverriden)) {
         checker.reportWarning(
             tree,
             "delegate.override",

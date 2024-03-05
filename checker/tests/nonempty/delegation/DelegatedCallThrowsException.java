@@ -3,7 +3,6 @@ import java.util.Map;
 import org.checkerframework.checker.nonempty.qual.Delegate;
 import org.checkerframework.checker.nonempty.qual.EnsuresNonEmptyIf;
 
-// :: warning: (delegate.override)
 public class DelegatedCallThrowsException<K, V> extends IdentityHashMap<K, V> {
 
   private static final long serialVersionUID = -5147442142854693854L;
