@@ -259,7 +259,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                   getMustCallValueElement(),
                   String.class,
                   Collections.emptyList());
-          // replacement only customized when parameter type has a non-empty must-call obligation
+          // Replacement is only customized when the parameter type has a non-empty
+          // must-call obligation.
           if (!extentReplacementVals.isEmpty()) {
             AnnotationMirror inheritableMustCall =
                 getDeclAnnotation(typeElement, InheritableMustCall.class);
@@ -271,9 +272,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
                       String.class,
                       Collections.emptyList());
               if (!inheritableMustCallVals.equals(extentReplacementVals)) {
-                // Use the must call values from the @InheritableMustCall annotation instead.
-                // This allows for wrapper types to have a must-call method with a different
-                // name than the must-call method for the wrapped type
+                // Use the must call values from the @InheritableMustCall annotation
+                // instead. This allows for wrapper types to have a must-call method
+                // with a different name than the must-call method for the wrapped
+                // type.
                 AnnotationMirror mustCall = createMustCall(inheritableMustCallVals);
                 realReplacements = new AnnotationMirrorMap<>();
                 realReplacements.put(POLY, mustCall);
@@ -302,10 +304,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    */
   private void changeNonOwningParameterTypesToTop(
       ExecutableElement declaration, AnnotatedExecutableType type) {
-    // Formal parameters without a declared owning annotation are disregarded by the RLC _analysis_,
-    // as their @MustCall obligation is set to Top in this method. However, this computation is not
-    // desirable for RLC _inference_ in unannotated programs, where a goal is to infer and add
-    // @Owning annotations to formal parameters.
+    // Formal parameters without a declared owning annotation are disregarded by the RLC
+    // _analysis_, as their @MustCall obligation is set to Top in this method. However,
+    // this computation is not desirable for RLC _inference_ in unannotated programs,
+    // where a goal is to infer and add @Owning annotations to formal parameters.
     if (getWholeProgramInference() != null && !isWpiEnabledForRLC()) {
       return;
     }
@@ -345,7 +347,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
-  class MustCallDefaultQualifierForUseTypeAnnotator extends DefaultQualifierForUseTypeAnnotator {
+  private class MustCallDefaultQualifierForUseTypeAnnotator
+      extends DefaultQualifierForUseTypeAnnotator {
 
     /** Creates a {@code MustCallDefaultQualifierForUseTypeAnnotator}. */
     public MustCallDefaultQualifierForUseTypeAnnotator() {
@@ -375,7 +378,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /** Support @InheritableMustCall meaning @MustCall on all subtypes. */
-  class MustCallQualifierUpperBounds extends QualifierUpperBounds {
+  private class MustCallQualifierUpperBounds extends QualifierUpperBounds {
 
     /**
      * Creates a {@link QualifierUpperBounds} from the MustCall Checker the annotations that are in
@@ -502,17 +505,18 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     @Override
     public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
       Element elt = TreeUtils.elementFromUse(tree);
-      // The following changes are not desired for RLC _inference_ in unannotated programs, where a
-      // goal is to infer and add @Owning annotations to formal parameters. Therefore, if WPI is
-      // enabled, they should not be executed.
+      // The following changes are not desired for RLC _inference_ in unannotated programs,
+      // where a goal is to infer and add @Owning annotations to formal parameters.
+      // Therefore, if WPI is enabled, they should not be executed.
       if (getWholeProgramInference() == null
           && elt.getKind() == ElementKind.PARAMETER
           && (noLightweightOwnership || getDeclAnnotation(elt, Owning.class) == null)) {
         if (!type.hasPrimaryAnnotation(POLY)) {
           // Parameters that are not annotated with @Owning should be treated as bottom
-          // (to suppress warnings about them). An exception is polymorphic parameters, which
-          // might be @MustCallAlias (and so wouldn't be annotated with @Owning): these are not
-          // modified, to support verification of @MustCallAlias annotations.
+          // (to suppress warnings about them). An exception is polymorphic parameters,
+          // which might be @MustCallAlias (and so wouldn't be annotated with @Owning):
+          // these are not modified, to support verification of @MustCallAlias
+          // annotations.
           type.replaceAnnotation(BOTTOM);
         }
       }
@@ -551,7 +555,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /** Qualifier hierarchy for the Must Call Checker. */
-  class MustCallQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
+  private class MustCallQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
 
     /**
      * Creates a SubtypeIsSubsetQualifierHierarchy from the given classes.

@@ -46,7 +46,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -2479,6 +2478,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 env.getTypeUtils()));
       }
 
+      // JLS 14.11.2
+      // https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.11.2
+      // states "For compatibility reasons, switch statements that are not enhanced switch
+      // statements are not required to be exhaustive".
+      // Switch expressions and enhanced switch statements are exhaustive.
+      boolean switchExprOrEnhanced =
+          !TreeUtils.isSwitchStatement(switchTree)
+              || TreeUtils.isEnhancedSwitchStatement((SwitchTree) switchTree);
       // Build CFG for the cases.
       int defaultIndex = -1;
       for (int i = 0; i < numCases; ++i) {
@@ -2489,8 +2496,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           // build the default case last.
           defaultIndex = i;
         } else if (i == numCases - 1 && defaultIndex == -1) {
-          // This is the last case, and it's not a default case.
-          buildCase(caseTree, i, exhaustiveIgnoreDefault());
+          // This is the last case, and there is no default case.
+          // Switch expressions and enhanced switch statements are exhaustive.
+          buildCase(caseTree, i, switchExprOrEnhanced);
         } else {
           buildCase(caseTree, i, false);
         }
@@ -2692,48 +2700,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Switch rules never fall through so add jump to the break target.
       assert breakTargetLC != null : "no target for case statement";
       extendWithExtendedNode(new UnconditionalJump(breakTargetLC.accessLabel()));
-    }
-
-    /**
-     * Returns true if the switch is exhaustive; ignoring any default case
-     *
-     * @return true if the switch is exhaustive; ignoring any default case
-     */
-    private boolean exhaustiveIgnoreDefault() {
-      // Switch expressions are always exhaustive, but they might have a default case, which is why
-      // the above loop is not fused with the below loop.
-      if (!TreeUtils.isSwitchStatement(switchTree)) {
-        return true;
-      }
-
-      int enumCaseLabels = 0;
-      for (CaseTree caseTree : caseTrees) {
-        for (Tree caseLabel : CaseUtils.getLabels(caseTree)) {
-          // Java guarantees that if one of the cases is the null literal, the switch is exhaustive.
-          // Also if certain other constructs exist.
-          if (caseLabel.getKind() == Kind.NULL_LITERAL
-              || TreeUtils.isBindingPatternTree(caseLabel)
-              || TreeUtils.isDeconstructionPatternTree(caseLabel)) {
-            return true;
-          }
-          if (caseLabel.getKind() == Kind.IDENTIFIER) {
-            enumCaseLabels++;
-          }
-        }
-      }
-
-      TypeMirror selectorTypeMirror = TreeUtils.typeOf(selectorExprTree);
-      if (selectorTypeMirror.getKind() == TypeKind.DECLARED) {
-        DeclaredType declaredType = (DeclaredType) selectorTypeMirror;
-        TypeElement declaredTypeElement = (TypeElement) declaredType.asElement();
-        if (declaredTypeElement.getKind() == ElementKind.ENUM) {
-          // The switch expression's type is an enumerated type.
-          List<VariableElement> enumConstants = ElementUtils.getEnumConstants(declaredTypeElement);
-          return enumConstants.size() == enumCaseLabels;
-        }
-      }
-
-      return false;
     }
   }
 
@@ -3752,14 +3718,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void handleTryResourcesAndBlock(TryTree tryTree, Void p, List<? extends Tree> resources) {
     if (resources.isEmpty()) {
-      // Either `tryTree` was not a try-with-resources, or this method was called recursively and
-      // all the resources have been handled.  Just scan the main try block.
+      // Either `tryTree` was not a try-with-resources, or this method was called
+      // recursively and all the resources have been handled.  Just scan the main try block.
       scan(tryTree.getBlock(), p);
       return;
     }
 
-    // Handle the first resource declaration in the list.  The rest will be handled by a recursive
-    // call.
+    // Handle the first resource declaration in the list.  The rest will be handled by a
+    // recursive call.
     Tree resourceDeclarationTree = resources.get(0);
 
     extendWithNode(
@@ -3777,10 +3743,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     LabelCell oldContinueTargetLC = continueTargetLC;
     Map<Name, Label> oldContinueLabels = continueLabels;
 
-    // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these nodes
-    // *before* pushing a TryFinallyFrame for the finally block that will close the resource.  If
-    // any exception occurs due to code within the resource declaration, the corresponding variable
-    // or field is *not* automatically closed (as it was never assigned a value).
+    // Add nodes for the resource declaration to the CFG.  NOTE: it is critical to add these
+    // nodes *before* pushing a TryFinallyFrame for the finally block that will close the
+    // resource.  If any exception occurs due to code within the resource declaration, the
+    // corresponding variable or field is *not* automatically closed (as it was never
+    // assigned a value).
     Node resourceCloseNode = scan(resourceDeclarationTree, p);
 
     // Now, set things up for our synthetic finally block that closes the resource.

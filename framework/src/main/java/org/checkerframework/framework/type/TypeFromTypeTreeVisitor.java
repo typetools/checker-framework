@@ -49,7 +49,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
-  /** Creates a {@link TypeFromTypeTreeVisitor}; */
+  /** Creates a TypeFromTypeTreeVisitor. */
   public TypeFromTypeTreeVisitor() {}
 
   /**
@@ -204,7 +204,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
     AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(tree);
     // If this type parameter is recursive and it is found again while visiting the bounds, then
-    // return use the same AnnotateTypeVariable object.
+    // use the same AnnotateTypeVariable object.
     visitedTypeParameter.put(tree, result);
 
     List<AnnotatedTypeMirror> bounds = new ArrayList<>(tree.getBounds().size());

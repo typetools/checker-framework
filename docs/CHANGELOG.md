@@ -1,5 +1,5 @@
-Version 3.43.0 (January 2, 2024)
---------------------------------
+Version 3.43.0 (?? ??, 2024)
+----------------------------
 
 **User-visible changes:**
 
@@ -11,6 +11,11 @@ A specialized inference algorithm for the Resource Leak Checker runs
 automatically as part of whole-program inference.
 
 **Implementation details:**
+
+Deprecated `ObjectCreationNode#getConstructor` in favor of new `ObjectCreationNode#getTypeToInstantiate()`.
+
+Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
+`visualizeBlockWithSeparator()`.
 
 **Closed issues:**
 
@@ -25,7 +30,7 @@ possibly throws an assertion.  Using it can make flow-sensitive type refinement
 more effective.
 
 In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
-Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`; use `DoNothingProcessor`.
 Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
 
 

@@ -66,7 +66,7 @@ public final class TypesUtils {
    *
    * @param clazz a class
    * @param types the type utilities
-   * @param elements the element utiliites
+   * @param elements the element utilities
    * @return the TypeMirror for {@code clazz}
    */
   public static TypeMirror typeFromClass(Class<?> clazz, Types types, Elements elements) {
@@ -811,11 +811,11 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, the null
-   * type is returned.
+   * Returns the lower bound of {@code typeVariable}. If it does not have a lower bound, returns the
+   * null type.
    *
    * @param typeVariable a type variable
-   * @param env the proceProcessingEnvironmentssi
+   * @param env the proceProcessingEnvironment
    * @return the lower bound of {@code typeVariable} or the null type
    */
   public static TypeMirror getTypeVariableLowerBound(
@@ -947,21 +947,6 @@ public final class TypesUtils {
    */
   public static boolean isErasedSubtype(TypeMirror subtype, TypeMirror supertype, Types types) {
     return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
-  }
-
-  /**
-   * Returns true if {@code type} is a type variable created during capture conversion.
-   *
-   * @param type a type mirror
-   * @return true if {@code type} is a type variable created during capture conversion
-   * @deprecated use {@link #isCapturedTypeVariable(TypeMirror)} instead
-   */
-  @Deprecated // 2021-07-06
-  public static boolean isCaptured(TypeMirror type) {
-    if (type.getKind() != TypeKind.TYPEVAR) {
-      return false;
-    }
-    return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
   }
 
   /**
