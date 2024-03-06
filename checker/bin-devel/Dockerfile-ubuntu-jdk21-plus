@@ -7,7 +7,7 @@
 
 # "ubuntu" is the latest LTS release.  "ubuntu:rolling" is the latest release.
 # As of 2023-11-15, "ubuntu:rolling" is still 23.04.
-FROM ubuntu:23.10
+FROM ubuntu:mantic-20240216
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 
 ## Keep this file in sync with ../../docs/manual/troubleshooting.tex
