@@ -416,7 +416,7 @@ import org.plumelib.util.UtilPlume;
   "ajavaChecks",
 
   // Convert type argument inference crashes into warnings. This is a boolean option that is
-  // set to true by default. So, use "-AconvertTypeArgInferenceCrashToWarning=false" to true
+  // set to true by default. So, use "-AconvertTypeArgInferenceCrashToWarning=false" to turn
   // this option off.
   "convertTypeArgInferenceCrashToWarning"
 })
