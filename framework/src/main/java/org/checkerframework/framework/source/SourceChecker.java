@@ -591,6 +591,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
 
+  /** Creates a source checker. */
+  protected SourceChecker() {}
+
   // Also see initChecker().
   @Override
   public final synchronized void init(ProcessingEnvironment env) {
