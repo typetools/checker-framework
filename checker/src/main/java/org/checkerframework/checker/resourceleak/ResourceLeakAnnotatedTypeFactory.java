@@ -183,7 +183,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return the {@code @MustCall} annotation if present, null otherwise
    * @throws IllegalArgumentException if the input object type is not supported
    */
-  private AnnotationMirror getMustCallAnnotation(Object obj) {
+  public AnnotationMirror getMustCallAnnotation(Object obj) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType;

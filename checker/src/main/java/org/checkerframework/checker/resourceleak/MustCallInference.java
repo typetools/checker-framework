@@ -381,6 +381,27 @@ public class MustCallInference {
   }
 
   /**
+   * This method checks if a field is an owning candidate. A field is an owning candidate if it has
+   * a non-empty must-call obligation. Unless, it is a @MustCallUnknown, in which we don't want to
+   * infer anything. So, we conservatively treat it as a non-owning candidate.
+   *
+   * @param resourceLeakAtf the type factory
+   * @param field the field to check
+   * @return true if the field is an owning candidate, false otherwise
+   */
+  private boolean isFieldOwningCandidate(
+      ResourceLeakAnnotatedTypeFactory resourceLeakAtf, Element field) {
+    AnnotationMirror mustCallAnnotation = resourceLeakAtf.getMustCallAnnotation(field);
+    if (mustCallAnnotation == null) {
+      // Indicates @MustCallUnknown. We want to  conservatively avoid inferring an @Owning
+      // annotation for @MustCallUnknown.
+      return false;
+    }
+    // Otherwise, the field is an @Owning candidate if it has a non-empty @MustCall obligation
+    return !resourceLeakAtf.getMustCallValues(mustCallAnnotation).isEmpty();
+  }
+
+  /**
    * Adds the node to the disposedFields map and the owningFields set if it is a field and its
    * must-call obligation is satisfied by the given method call. If so, it will be given an @Owning
    * annotation later.
@@ -393,7 +414,7 @@ public class MustCallInference {
     if (nodeElt == null || !nodeElt.getKind().isField()) {
       return;
     }
-    if (resourceLeakAtf.isFieldWithNonemptyMustCallValue(nodeElt)) {
+    if (isFieldOwningCandidate(resourceLeakAtf, nodeElt)) {
       node = NodeUtils.removeCasts(node);
       JavaExpression nodeJe = JavaExpression.fromNode(node);
       AnnotationMirror cmAnno = getCalledMethodsAnno(invocation, nodeJe);
