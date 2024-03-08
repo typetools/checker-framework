@@ -113,9 +113,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
                 AnnotationMirror top = entry.getValue();
                 if (type.hasPrimaryAnnotation(poly)) {
                   type.removePrimaryAnnotation(poly);
+                  // Do not add qualifiers to type variables and wildcards.
                   if (type.getKind() != TypeKind.TYPEVAR && type.getKind() != TypeKind.WILDCARD) {
-                    // Do not add qualifiers to type variables and
-                    // wildcards
+                    // It's not a type variable or wildcard.
                     type.addAnnotation(this.qualHierarchy.getBottomAnnotation(top));
                   }
                 }
@@ -475,7 +475,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Creates a mapping of polymorphic qualifiers to their instantiations by visiting each
      * composite type in {@code type}.
      *
-     * @param type the AnnotateTypeMirror used to find instantiations
+     * @param type the AnnotatedTypeMirror used to find instantiations
      * @param polyType the AnnotatedTypeMirror that may have polymorphic qualifiers
      * @return a mapping of polymorphic qualifiers to their instantiations
      */
