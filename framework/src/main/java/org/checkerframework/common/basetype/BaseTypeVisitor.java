@@ -728,11 +728,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
           // A polymorphic qualifier is not allowed on a static field even if the class
           // has a qualifier parameter.
-          hasIllegalPoly = polyScanner.visit(fieldType, polys);
+          hasInvalidPoly = hasInvalidPolyScanner.visit(fieldType, polys);
         } else {
-          hasIllegalPoly = polyScanner.visit(fieldType, illegalOnFieldsPolyQual);
+          hasInvalidPoly = hasInvalidPolyScanner.visit(fieldType, illegalOnFieldsPolyQual);
         }
-        for (DiagMessage dm : hasIllegalPoly) {
+        for (DiagMessage dm : hasInvalidPoly) {
           checker.report(mem, dm);
         }
       }
@@ -743,17 +743,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a use
    * of one of the polymorphic qualifiers.
    */
-  private final PolyTypeScanner polyScanner = new PolyTypeScanner();
+  private final HasInvalidPolyScanner hasInvalidPolyScanner = new HasInvalidPolyScanner();
 
   /**
    * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a use
    * of one of the polymorphic qualifiers.
    */
-  static class PolyTypeScanner
+  static class HasInvalidPolyScanner
       extends SimpleAnnotatedTypeScanner<List<DiagMessage>, AnnotationMirrorSet> {
 
-    /** Create PolyTypeScanner. */
-    private PolyTypeScanner() {
+    /** Create HasInvalidPolyScanner. */
+    private HasInvalidPolyScanner() {
       super(DiagMessage::mergeLists, Collections.emptyList());
     }
 
