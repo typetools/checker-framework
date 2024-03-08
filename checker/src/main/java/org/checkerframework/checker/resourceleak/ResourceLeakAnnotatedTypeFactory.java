@@ -107,13 +107,26 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Is the given element a candidate to be an owning field? A candidate owning field must have a
-   * non-empty must-call obligation.
+   * non-empty must-call obligation. This method retrieves the {@code @MustCall} annotation of a
+   * field, if any. If the {@code @MustCall} annotation is missing, which implies
+   * {@code @MustCallUnknown}, this method conservatively treats the field as having an empty
+   * must-call obligation and returns false. Otherwise, it checks if the {@code @MustCall} values
+   * are non-empty.
    *
    * @param element a element
    * @return true iff the given element is a field with non-empty @MustCall obligation
    */
   /*package-private*/ boolean isFieldWithNonemptyMustCallValue(Element element) {
-    return element.getKind().isField() && !hasEmptyMustCallValue(element);
+    if (!element.getKind().isField()) {
+      return false;
+    }
+    AnnotationMirror mustCallAnnotation = getMustCallAnnotation(element);
+    if (mustCallAnnotation == null) {
+      // Indicates @MustCallUnknown. We want to  conservatively avoid inferring an @Owning
+      // annotation for @MustCallUnknown. So, treating it as an empty must call value.
+      return false;
+    }
+    return !getMustCallValues(mustCallAnnotation).isEmpty();
   }
 
   @Override
@@ -156,6 +169,35 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
+   * Retrieves the {@code @MustCall} annotation for the given object, which can be either an {@link
+   * Element} or a {@link Tree}. This method supports a polymorphic input type to facilitate easy
+   * retrieval of the {@code @MustCall} annotation from different types of objects within the
+   * type-checking framework.
+   *
+   * <p>This method delegates to the {@code MustCallAnnotatedTypeFactory} to get the annotated type
+   * of the input object and then extracts the primary {@code @MustCall} annotation from it. If the
+   * input object type is unsupported, an {@code IllegalArgumentException} is thrown.
+   *
+   * @param obj the object for which to retrieve the {@code @MustCall} annotation. Must be either an
+   *     instance of {@link Element} or {@link Tree}.
+   * @return the {@code @MustCall} annotation if present, null otherwise
+   * @throws IllegalArgumentException if the input object type is not supported
+   */
+  private AnnotationMirror getMustCallAnnotation(Object obj) {
+    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
+        getTypeFactoryOfSubchecker(MustCallChecker.class);
+    AnnotatedTypeMirror mustCallAnnotatedType;
+    if (obj instanceof Element) {
+      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType((Element) obj);
+    } else if (obj instanceof Tree) {
+      mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType((Tree) obj);
+    } else {
+      throw new IllegalArgumentException("Unsupported type: " + obj.getClass().getName());
+    }
+    return mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
+  }
+
+  /**
    * Returns whether the {@link MustCall#value} element/argument of the @MustCall annotation on the
    * type of {@code tree} is definitely empty.
    *
@@ -166,11 +208,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true if the Must Call type is non-empty or top
    */
   /*package-private*/ boolean hasEmptyMustCallValue(Tree tree) {
-    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-        getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType = mustCallAnnotatedTypeFactory.getAnnotatedType(tree);
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation = getMustCallAnnotation(tree);
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
     } else {
@@ -191,12 +229,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @return true if the Must Call type is non-empty or top
    */
   /*package-private*/ boolean hasEmptyMustCallValue(Element element) {
-    MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
-        getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType =
-        mustCallAnnotatedTypeFactory.getAnnotatedType(element);
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
+    AnnotationMirror mustCallAnnotation = getMustCallAnnotation(element);
     if (mustCallAnnotation != null) {
       return getMustCallValues(mustCallAnnotation).isEmpty();
     } else {
