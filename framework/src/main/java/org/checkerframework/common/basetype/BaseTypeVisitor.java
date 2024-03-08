@@ -724,7 +724,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (Tree mem : classTree.getMembers()) {
       if (mem.getKind() == Tree.Kind.VARIABLE) {
         AnnotatedTypeMirror fieldType = atypeFactory.getAnnotatedType(mem);
-        List<DiagMessage> hasIllegalPoly;
+        List<DiagMessage> hasInvalidPoly;
         if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration((VariableTree) mem))) {
           // A polymorphic qualifier is not allowed on a static field even if the class
           // has a qualifier parameter.
