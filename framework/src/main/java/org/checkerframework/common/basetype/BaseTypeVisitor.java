@@ -605,7 +605,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    checkForPolymorphicQualifiers(classTree);
+    warnInvalidPolymorphicQualifier(classTree);
 
     checkExtendsAndImplements(classTree);
 
@@ -638,7 +638,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param classTree the class to check
    */
-  protected void checkForPolymorphicQualifiers(ClassTree classTree) {
+  protected void warnInvalidPolymorphicQualifier(ClassTree classTree) {
     if (TypesUtils.isAnonymous(TreeUtils.typeOf(classTree))) {
       // Anonymous class can have polymorphic annotations, so don't check them.
       return;
@@ -661,7 +661,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param typeParameterTrees the type parameters to check
    */
-  protected void checkForPolymorphicQualifiers(
+  protected void warnInvalidPolymorphicQualifier(
       List<? extends TypeParameterTree> typeParameterTrees) {
     for (Tree tree : typeParameterTrees) {
       tree.accept(polyTreeScanner, "in a type parameter");
@@ -1040,7 +1040,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
 
-      checkForPolymorphicQualifiers(tree.getTypeParameters());
+      warnInvalidPolymorphicQualifier(tree.getTypeParameters());
 
       return super.visitMethod(tree, p);
     } finally {
