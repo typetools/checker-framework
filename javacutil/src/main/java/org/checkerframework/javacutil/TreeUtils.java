@@ -2587,6 +2587,17 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given method invocation is a zero-argument varargs invocation.
+   *
+   * @param invok the method invocation
+   * @return true if the given method invocation is a zero-argument varargs invocation
+   */
+  public static boolean isZeroArgumentVarArgs(MethodInvocationTree invok) {
+    boolean isZeroArgumentCall = invok.getArguments().isEmpty();
+    return TreeUtils.isVarArgs(invok) && isZeroArgumentCall;
+  }
+
+  /**
    * Returns true if the given constructor invocation is a varargs invocation.
    *
    * @param newClassTree the constructor invocation

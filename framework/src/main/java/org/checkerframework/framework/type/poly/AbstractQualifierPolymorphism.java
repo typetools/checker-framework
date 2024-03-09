@@ -200,7 +200,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
               collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
     }
 
-    if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
+    if ((instantiationMapping != null && !instantiationMapping.isEmpty())
+        || TreeUtils.isZeroArgumentVarArgs(tree)) {
       replacer.visit(type, instantiationMapping);
     } else {
       completer.visit(type);
