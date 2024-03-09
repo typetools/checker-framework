@@ -105,30 +105,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     this.postInit();
   }
 
-  /**
-   * Is the given element a candidate to be an owning field? A candidate owning field must have a
-   * non-empty must-call obligation. This method retrieves the {@code @MustCall} annotation of a
-   * field, if any. If the {@code @MustCall} annotation is missing, which implies
-   * {@code @MustCallUnknown}, this method conservatively treats the field as having an empty
-   * must-call obligation and returns false. Otherwise, it checks if the {@code @MustCall} values
-   * are non-empty.
-   *
-   * @param element a element
-   * @return true iff the given element is a field with non-empty @MustCall obligation
-   */
-  /*package-private*/ boolean isFieldWithNonemptyMustCallValue(Element element) {
-    if (!element.getKind().isField()) {
-      return false;
-    }
-    AnnotationMirror mustCallAnnotation = getMustCallAnnotation(element);
-    if (mustCallAnnotation == null) {
-      // Indicates @MustCallUnknown. We want to  conservatively avoid inferring an @Owning
-      // annotation for @MustCallUnknown. So, treating it as an empty must call value.
-      return false;
-    }
-    return !getMustCallValues(mustCallAnnotation).isEmpty();
-  }
-
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return getBundledTypeQualifiers(
