@@ -2589,12 +2589,20 @@ public final class TreeUtils {
   /**
    * Returns true if the given method invocation is a zero-argument varargs invocation.
    *
+   * <p>This method checks two things: the first is that the given method invocation is a varargs
+   * invocation. The second is that the size of the argument list is equal to the size of the number
+   * of parameters minus one.
+   *
+   * <p>The second check handles the case where an empty varargs argument is passed for methods that
+   * <i>only</i> have the single varargs parameter, <i>and</i> methods that could have additional,
+   * non-varargs parameters.
+   *
    * @param invok the method invocation
    * @return true if the given method invocation is a zero-argument varargs invocation
    */
   public static boolean isZeroArgumentVarArgs(MethodInvocationTree invok) {
-    boolean isZeroArgumentCall = invok.getArguments().isEmpty();
-    return TreeUtils.isVarArgs(invok) && isZeroArgumentCall;
+    int numParams = elementFromUse(invok).getParameters().size();
+    return TreeUtils.isVarArgs(invok) && (invok.getArguments().size() == numParams - 1);
   }
 
   /**
