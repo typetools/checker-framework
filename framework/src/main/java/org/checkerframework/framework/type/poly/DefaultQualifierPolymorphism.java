@@ -59,8 +59,7 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
   }
 
   /**
-   * Replace a type qualifier with the bottom type from its type system, if it is a polymorphic
-   * qualifier.
+   * Replace a polymorphic type qualifier with the bottom type from its type system.
    *
    * @param type the type qualifier to possibly replace with the bottom type
    */
