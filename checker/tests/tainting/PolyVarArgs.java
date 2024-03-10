@@ -24,7 +24,6 @@ class PolyVarArgs {
     @Untainted String tainted = varArgsWithFormals(1);
   }
 
-
   @PolyTainted String varArgsNoFormals(@PolyTainted String... s) {
     throw new Error();
   }
@@ -33,4 +32,3 @@ class PolyVarArgs {
     throw new Error();
   }
 }
-
