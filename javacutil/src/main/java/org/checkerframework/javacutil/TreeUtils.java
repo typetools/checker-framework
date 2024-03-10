@@ -292,14 +292,16 @@ public final class TreeUtils {
   /**
    * Returns the type element corresponding to the given class declaration.
    *
+   * <p>This method returns null instead of crashing when no element exists for the class tree,
+   * which can happen for certain kinds of anonymous classes, such as Ordering$1 in
+   * PolyCollectorTypeVar.java in the all-systems test suite and "class MyFileFilter" in
+   * PurgeTxnLog.java.
+   *
    * @param tree class declaration
    * @return the element for the given class
    */
-  public static TypeElement elementFromDeclaration(ClassTree tree) {
+  public static @Nullable TypeElement elementFromDeclaration(ClassTree tree) {
     TypeElement result = (TypeElement) TreeInfo.symbolFor((JCTree) tree);
-    if (result == null) {
-      throw new BugInCF("null element for class tree %s", tree);
-    }
     return result;
   }
 
@@ -499,16 +501,13 @@ public final class TreeUtils {
    * Returns the ExecutableElement for the given method declaration.
    *
    * <p>The result can be null, when {@code tree} is a method in an anonymous class and that class
-   * has not been processed yet. An exception will be raised. Adapt your processing order.
+   * has not been processed yet. To work around this, adapt your processing order.
    *
    * @param tree a method declaration
    * @return the element for the given method
    */
-  public static ExecutableElement elementFromDeclaration(MethodTree tree) {
+  public static @Nullable ExecutableElement elementFromDeclaration(MethodTree tree) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
-    if (result == null) {
-      throw new BugInCF("null element for method tree (adapt your processing order) %s", tree);
-    }
     return result;
   }
 
@@ -595,14 +594,11 @@ public final class TreeUtils {
    * @param tree the variable
    * @return the element for the given variable
    */
-  public static VariableElement elementFromDeclaration(VariableTree tree) {
+  public static @Nullable VariableElement elementFromDeclaration(VariableTree tree) {
     VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
     // `result` can be null, for example for this variable declaration:
     //   PureFunc f1 = TestPure1::myPureMethod;
     // TODO: check claim above. Initializer expression should have no impact on variable.
-    if (result == null) {
-      throw new BugInCF("null element for variable tree %s", tree);
-    }
     return result;
   }
 

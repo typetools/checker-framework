@@ -735,13 +735,9 @@ public class WholeProgramInferenceJavaParserStorage
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
-            // elementFromDeclaration returns null instead of crashing when no element
-            // exists for the class tree, which can happen for certain kinds of
-            // anonymous classes, such as classes, such as Ordering$1 in
-            // PolyCollectorTypeVar.java in the all-systems test suite.
             TypeElement classElt = TreeUtils.elementFromDeclaration(tree);
             if (classElt == null) {
-              // If such an element does not exist, compute the name of the class,
+              // If such an element does not exist, compute the name of the class
               // instead. This method of computing the name is not 100% guaranteed to
               // be reliable, but it should be sufficient for WPI's purposes here: if
               // the wrong name is computed, the worst outcome is a false positive
