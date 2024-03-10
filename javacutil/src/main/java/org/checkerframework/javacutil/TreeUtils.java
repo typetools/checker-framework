@@ -2601,8 +2601,11 @@ public final class TreeUtils {
    * @return true if the given method invocation is a zero-argument varargs invocation
    */
   public static boolean isZeroArgumentVarArgs(MethodInvocationTree invok) {
+    if (!TreeUtils.isVarArgs(invok)) {
+      return false;
+    }
     int numParams = elementFromUse(invok).getParameters().size();
-    return TreeUtils.isVarArgs(invok) && (invok.getArguments().size() == numParams - 1);
+    return invok.getArguments().size() == numParams - 1;
   }
 
   /**
