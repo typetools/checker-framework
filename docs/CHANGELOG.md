@@ -17,6 +17,11 @@ Deprecated `ObjectCreationNode#getConstructor` in favor of new `ObjectCreationNo
 Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
 `visualizeBlockWithSeparator()`.
 
+Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
+ * isConstantCaseLabelTree
+ * isDefaultCaseLabelTree
+ * isPatternCaseLabelTree
+
 **Closed issues:**
 
 
