@@ -24,11 +24,28 @@ class PolyVarArgs {
     @Untainted String tainted = varArgsWithFormals(1);
   }
 
+  void testVarArgsWithPolyFormals() {
+    @Tainted String tainted = varArgsWithPolyFormals(1);
+
+    // :: warning: (cast.unsafe)
+    @Untainted int safeInt = (@Untainted int) 1;
+    @Untainted String untainted = varArgsWithPolyFormals(safeInt, "a");
+  }
+
+  void testVarArgsWithPolyFormalsInvalid() {
+    // :: error: (assignment)
+    @Untainted String tainted = varArgsWithPolyFormals(1);
+  }
+
   @PolyTainted String varArgsNoFormals(@PolyTainted String... s) {
     throw new Error();
   }
 
   @PolyTainted String varArgsWithFormals(int a, @PolyTainted String... s) {
+    throw new Error();
+  }
+
+  @PolyTainted String varArgsWithPolyFormals(@PolyTainted int a, @PolyTainted String... s) {
     throw new Error();
   }
 }
