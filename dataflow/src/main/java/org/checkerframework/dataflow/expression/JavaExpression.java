@@ -44,6 +44,7 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -134,6 +135,7 @@ public abstract class JavaExpression {
    *
    * @see #isUnassignableByOtherCode
    */
+  @Pure
   public abstract boolean isUnmodifiableByOtherCode();
 
   /**
@@ -703,7 +705,6 @@ public abstract class JavaExpression {
    * @return viewpoint-adapted version of this
    */
   public final JavaExpression atMethodBody(MethodTree methodTree) {
-    @SuppressWarnings("nullness:argument") // elementFromDeclaration is non-null for a parameter
     List<JavaExpression> parametersJe =
         CollectionsPlume.mapList(
             (VariableTree param) -> new LocalVariable(TreeUtils.elementFromDeclaration(param)),

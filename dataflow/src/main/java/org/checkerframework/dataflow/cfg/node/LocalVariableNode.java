@@ -60,7 +60,6 @@ public class LocalVariableNode extends Node {
    *
    * @return the element associated with this local variable
    */
-  @SuppressWarnings("nullness:return") // non-null if a LocalVariableNode was created
   public VariableElement getElement() {
     VariableElement el;
     if (tree instanceof IdentifierTree) {
