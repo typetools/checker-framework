@@ -37,11 +37,13 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
       AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
     if (replacements.isEmpty() && type.getEffectiveAnnotation() != null) {
       // If the 'replacements' map is empty, it is likely a case where a method with
-      // varargs was invoked with zero arguments.
+      // a varargs parameter was invoked with zero varargs actuals.
       // In this case, the polymorphic qualifiers should be replaced with the top type in
       // the qualifier hierarchy, since there is no further information to deduce.
-      replacePolyQualifiersWithTop(type);
-      return;
+      AnnotationMirror effectiveAnno = type.getEffectiveAnnotation();
+      if (qualHierarchy.isPolymorphicQualifier(effectiveAnno)) {
+        replacements.put(effectiveAnno, qualHierarchy.getTopAnnotation(effectiveAnno));
+      }
     }
     for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : replacements.entrySet()) {
       AnnotationMirror poly = pqentry.getKey();
@@ -55,19 +57,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
         }
         type.replaceAnnotation(qual);
       }
-    }
-  }
-
-  /**
-   * Replace a polymorphic type qualifier with the bottom type from its type system.
-   *
-   * @param type the type qualifier to possibly replace with the bottom type
-   */
-  private void replacePolyQualifiersWithTop(AnnotatedTypeMirror type) {
-    AnnotationMirror effectiveAnno = type.getEffectiveAnnotation();
-    if (qualHierarchy.isPolymorphicQualifier(effectiveAnno)) {
-      AnnotationMirror top = qualHierarchy.getTopAnnotation(effectiveAnno);
-      type.replaceAnnotation(top);
     }
   }
 

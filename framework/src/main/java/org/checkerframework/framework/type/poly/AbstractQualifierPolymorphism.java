@@ -201,7 +201,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
     }
 
     if ((instantiationMapping != null && !instantiationMapping.isEmpty())
-        || TreeUtils.isZeroArgumentVarArgs(tree)) {
+        || TreeUtils.isCallToVarArgsMethodWithZeroArgumentActuals(tree)) {
       replacer.visit(type, instantiationMapping);
     } else {
       completer.visit(type);
