@@ -21,6 +21,7 @@ dot_files
 .project
 .externalToolBuilders
 .settings
+**/*.factorypath
 
 # IDE files
 .idea
