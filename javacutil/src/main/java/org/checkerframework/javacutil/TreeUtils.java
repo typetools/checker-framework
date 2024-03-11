@@ -316,7 +316,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static TypeElement elementFromTree(ClassTree tree) {
+  public static @Nullable TypeElement elementFromTree(ClassTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -329,7 +329,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static TypeElement elementFromUse(ClassTree tree) {
+  public static @Nullable TypeElement elementFromUse(ClassTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -520,7 +520,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static ExecutableElement elementFromTree(MethodTree tree) {
+  public static @Nullable ExecutableElement elementFromTree(MethodTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -533,7 +533,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static ExecutableElement elementFromUse(MethodTree tree) {
+  public static @Nullable ExecutableElement elementFromUse(MethodTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -611,7 +611,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static VariableElement elementFromTree(VariableTree tree) {
+  public static @Nullable VariableElement elementFromTree(VariableTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -624,7 +624,7 @@ public final class TreeUtils {
    */
   @Deprecated // not for removal; retain to prevent calls to this overload
   @Pure
-  public static VariableElement elementFromUse(VariableTree tree) {
+  public static @Nullable VariableElement elementFromUse(VariableTree tree) {
     return elementFromDeclaration(tree);
   }
 
@@ -880,6 +880,9 @@ public final class TreeUtils {
    */
   public static boolean hasExplicitConstructor(ClassTree tree) {
     TypeElement elem = TreeUtils.elementFromDeclaration(tree);
+    if (elem == null) {
+      return false;
+    }
     for (ExecutableElement constructorElt :
         ElementFilter.constructorsIn(elem.getEnclosedElements())) {
       if (!isSynthetic(constructorElt)) {
@@ -911,7 +914,7 @@ public final class TreeUtils {
    */
   public static boolean isSynthetic(MethodTree tree) {
     ExecutableElement ee = TreeUtils.elementFromDeclaration(tree);
-    return isSynthetic(ee);
+    return ee != null && isSynthetic(ee);
   }
 
   /**
@@ -1809,7 +1812,7 @@ public final class TreeUtils {
   public static boolean isLocalVariable(Tree tree) {
     if (tree.getKind() == Tree.Kind.VARIABLE) {
       VariableElement varElt = elementFromDeclaration((VariableTree) tree);
-      return ElementUtils.isLocalVariable(varElt);
+      return varElt != null && ElementUtils.isLocalVariable(varElt);
     } else if (tree.getKind() == Tree.Kind.IDENTIFIER) {
       ExpressionTree etree = (ExpressionTree) tree;
       assert isUseOfElement(etree) : "@AssumeAssertion(nullness): tree kind";
