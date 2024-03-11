@@ -2588,13 +2588,13 @@ public final class TreeUtils {
 
   /**
    * Returns true if the given method invocation is an invocation of a method with a vararg
-   * parameter with zero vararg actuals.
+   * parameter, and the invocation has zero vararg actuals.
    *
    * @param invok the method invocation
    * @return true if the given method invocation is an invocation of a method with a vararg
-   *     parameter with zero vararg actuals
+   *     parameter, and the invocation has with zero vararg actuals
    */
-  public static boolean isCallToVarArgsMethodWithZeroArgumentActuals(MethodInvocationTree invok) {
+  public static boolean isCallToVarArgsMethodWithZeroVarargmentActuals(MethodInvocationTree invok) {
     if (!TreeUtils.isVarArgs(invok)) {
       return false;
     }
