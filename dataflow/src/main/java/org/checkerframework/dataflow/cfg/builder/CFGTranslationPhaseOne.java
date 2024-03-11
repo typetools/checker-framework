@@ -1669,7 +1669,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected VariableTree getAssertionsEnabledVariable() {
     if (ea == null) {
       String name = uniqueName("assertionsEnabled");
-      Element owner = findOwner();
+      Element owner = TreePathUtil.findNearestEnclosingElement(getCurrentPath());
       ExpressionTree initializer = null;
       ea =
           treeBuilder.buildVariableDecl(
@@ -1677,21 +1677,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(ea);
     }
     return ea;
-  }
-
-  /**
-   * Find nearest owner element (Method or Class) which holds current tree.
-   *
-   * @return nearest owner element of current tree
-   */
-  private Element findOwner() {
-    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-    if (enclosingMethod != null) {
-      return TreeUtils.elementFromDeclaration(enclosingMethod);
-    } else {
-      ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-      return TreeUtils.elementFromDeclaration(enclosingClass);
-    }
   }
 
   /**
@@ -2550,7 +2535,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Create a synthetic variable to which the switch selector expression will be assigned
       TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
       VariableTree selectorVarTree =
-          treeBuilder.buildVariableDecl(selectorExprType, uniqueName("switch"), findOwner(), null);
+          treeBuilder.buildVariableDecl(
+              selectorExprType,
+              uniqueName("switch"),
+              TreePathUtil.findNearestEnclosingElement(getCurrentPath()),
+              null);
       handleArtificialTree(selectorVarTree);
 
       VariableDeclarationNode selectorVarNode = new VariableDeclarationNode(selectorVarTree);
@@ -2586,7 +2575,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       TypeMirror switchExprType = TreeUtils.typeOf(switchTree);
       switchExprVarTree =
           treeBuilder.buildVariableDecl(
-              switchExprType, uniqueName("switchExpr"), findOwner(), null);
+              switchExprType,
+              uniqueName("switchExpr"),
+              TreePathUtil.findNearestEnclosingElement(getCurrentPath()),
+              null);
       handleArtificialTree(switchExprVarTree);
 
       VariableDeclarationNode switchExprVarNode = new VariableDeclarationNode(switchExprVarTree);
@@ -2737,7 +2729,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // create a synthetic variable for the value of the conditional expression
     VariableTree condExprVarTree =
-        treeBuilder.buildVariableDecl(exprType, uniqueName("condExpr"), findOwner(), null);
+        treeBuilder.buildVariableDecl(
+            exprType,
+            uniqueName("condExpr"),
+            TreePathUtil.findNearestEnclosingElement(getCurrentPath()),
+            null);
     handleArtificialTree(condExprVarTree);
     VariableDeclarationNode condExprVarNode = new VariableDeclarationNode(condExprVarTree);
     condExprVarNode.setInSource(false);
@@ -4169,7 +4165,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             TypeMirror exprType = TreeUtils.typeOf(exprTree);
             VariableTree tempVarDecl =
                 treeBuilder.buildVariableDecl(
-                    exprType, uniqueName("tempPostfix"), findOwner(), tree.getExpression());
+                    exprType,
+                    uniqueName("tempPostfix"),
+                    TreePathUtil.findNearestEnclosingElement(getCurrentPath()),
+                    tree.getExpression());
             handleArtificialTree(tempVarDecl);
             VariableDeclarationNode tempVarDeclNode = new VariableDeclarationNode(tempVarDecl);
             tempVarDeclNode.setInSource(false);

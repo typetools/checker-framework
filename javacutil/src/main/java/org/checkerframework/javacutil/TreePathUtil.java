@@ -467,4 +467,25 @@ public final class TreePathUtil {
     }
     return TreeUtils.toStringTruncated(path.getLeaf(), length);
   }
+
+  /**
+   * Retrieves the nearest enclosing method or class element for the specified path in the AST. This
+   * utility method prioritizes method elements over class elements. It returns the element of the
+   * closest method scope if available; otherwise, it defaults to the enclosing class scope.
+   *
+   * @param path the {@link TreePath} to analyze for the nearest enclosing scope.
+   * @return the {@link Element} of the nearest enclosing method or class, or {@code null} if no
+   *     such enclosing element can be found.
+   */
+  public static @Nullable Element findNearestEnclosingElement(TreePath path) {
+    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(path);
+    if (enclosingMethodTree != null) {
+      return TreeUtils.elementFromDeclaration(enclosingMethodTree);
+    }
+    ClassTree enclosingClassTree = TreePathUtil.enclosingClass(path);
+    if (enclosingClassTree != null) {
+      return TreeUtils.elementFromDeclaration(enclosingClassTree);
+    }
+    return null;
+  }
 }
