@@ -12,7 +12,8 @@ automatically as part of whole-program inference.
 
 **Implementation details:**
 
-Deprecated `ObjectCreationNode#getConstructor` in favor of new `ObjectCreationNode#getTypeToInstantiate()`.
+Deprecated `ObjectCreationNode#getConstructor` in favor of new
+`ObjectCreationNode#getTypeToInstantiate()`.
 
 Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
 `visualizeBlockWithSeparator()`.
@@ -21,6 +22,9 @@ Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
  * isConstantCaseLabelTree
  * isDefaultCaseLabelTree
  * isPatternCaseLabelTree
+
+Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
+`warnInvalidPolymorphicQualifier()`.
 
 **Closed issues:**
 
