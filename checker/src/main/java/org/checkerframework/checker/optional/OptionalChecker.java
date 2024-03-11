@@ -1,6 +1,8 @@
 package org.checkerframework.checker.optional;
 
 import java.util.Optional;
+import java.util.Set;
+import org.checkerframework.checker.nonempty.NonEmptyChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.StubFiles;
@@ -19,4 +21,11 @@ import org.checkerframework.framework.source.SupportedOptions;
 public class OptionalChecker extends BaseTypeChecker {
   /** Create an OptionalChecker. */
   public OptionalChecker() {}
+
+  @Override
+  protected Set<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends BaseTypeChecker>> checkers = super.getImmediateSubcheckerClasses();
+    checkers.add(NonEmptyChecker.class);
+    return checkers;
+  }
 }
