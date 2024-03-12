@@ -157,13 +157,9 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
 
   /**
    * Retrieves the {@code @MustCall} annotation for the given object, which can be either an {@link
-   * Element} or a {@link Tree}. This method supports a polymorphic input type to facilitate easy
-   * retrieval of the {@code @MustCall} annotation from different types of objects within the
-   * type-checking framework.
-   *
-   * <p>This method delegates to the {@code MustCallAnnotatedTypeFactory} to get the annotated type
-   * of the input object and then extracts the primary {@code @MustCall} annotation from it. If the
-   * input object type is unsupported, an {@code IllegalArgumentException} is thrown.
+   * Element} or a {@link Tree}. This method delegates to the {@code MustCallAnnotatedTypeFactory}
+   * to get the annotated type of the input object and then extracts the primary {@code @MustCall}
+   * annotation from it.
    *
    * @param obj the object for which to retrieve the {@code @MustCall} annotation. Must be either an
    *     instance of {@link Element} or {@link Tree}.
