@@ -1105,6 +1105,7 @@ public final class TreeUtils {
    * @return the expression's receiver tree, or null if it does not have an explicit receiver
    */
   public static @Nullable ExpressionTree getReceiverTree(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
     ExpressionTree receiver;
     switch (expression.getKind()) {
       case METHOD_INVOCATION:

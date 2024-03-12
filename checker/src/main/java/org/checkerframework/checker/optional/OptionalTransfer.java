@@ -2,7 +2,6 @@ package org.checkerframework.checker.optional;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -23,6 +22,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -52,10 +52,10 @@ public class OptionalTransfer extends CFTransfer {
   private final @Nullable ExecutableElement streamMin;
 
   /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
-  private final OptionalAnnotatedTypeFactory optTypeFactory;
+  private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
   /** The {@link NonEmptyAnnotatedTypeFactory} instance for this transfer class. */
-  private final @Nullable NonEmptyAnnotatedTypeFactory neTypeFactory;
+  private final @Nullable NonEmptyAnnotatedTypeFactory nonemptyTypeFactory;
 
   /**
    * Create an OptionalTransfer.
@@ -64,11 +64,12 @@ public class OptionalTransfer extends CFTransfer {
    */
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
-    optTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
-    neTypeFactory = optTypeFactory.getTypeFactoryOfSubcheckerOrNull(NonEmptyChecker.class);
-    Elements elements = optTypeFactory.getElementUtils();
+    optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
+    nonemptyTypeFactory =
+        optionalTypeFactory.getTypeFactoryOfSubcheckerOrNull(NonEmptyChecker.class);
+    Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
-    ProcessingEnvironment env = optTypeFactory.getProcessingEnv();
+    ProcessingEnvironment env = optionalTypeFactory.getProcessingEnv();
     optionalIfPresent = TreeUtils.getMethod("java.util.Optional", "ifPresent", 1, env);
     optionalIfPresentOrElse =
         TreeUtils.getMethodOrNull("java.util.Optional", "ifPresentOrElse", 2, env);
@@ -89,7 +90,7 @@ public class OptionalTransfer extends CFTransfer {
       LambdaExpressionTree lambdaTree = cfgLambda.getLambdaTree();
       List<? extends VariableTree> lambdaParams = lambdaTree.getParameters();
       if (lambdaParams.size() == 1) {
-        TreePath lambdaPath = optTypeFactory.getPath(lambdaTree);
+        TreePath lambdaPath = optionalTypeFactory.getPath(lambdaTree);
         Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
         if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
           MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
@@ -97,7 +98,7 @@ public class OptionalTransfer extends CFTransfer {
           if (methodElt.equals(optionalIfPresent) || methodElt.equals(optionalIfPresentOrElse)) {
             // `underlyingAST` is an invocation of `Optional.ifPresent()` or
             // `Optional.ifPresentOrElse()`.  In the lambda, the receiver is @Present.
-            JavaExpression receiverJe = JavaExpression.fromTree(getReceiverTree(invok));
+            JavaExpression receiverJe = JavaExpression.fromTree(TreeUtils.getReceiverTree(invok));
             result.insertValue(receiverJe, PRESENT);
           }
         }
@@ -121,30 +122,60 @@ public class OptionalTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
-    if (n.getTree() == null || neTypeFactory == null) {
+    if (n.getTree() == null || nonemptyTypeFactory == null) {
       return result;
     }
-    if (NodeUtils.isMethodInvocation(n, streamMax, optTypeFactory.getProcessingEnv())
-        || NodeUtils.isMethodInvocation(n, streamMin, optTypeFactory.getProcessingEnv())) {
-      ExpressionTree receiverTree = getReceiverTree(n.getTree());
-      AnnotatedTypeMirror receiverNonEmptyAtm = neTypeFactory.getAnnotatedType(receiverTree);
+    if (NodeUtils.isMethodInvocation(n, streamMax, optionalTypeFactory.getProcessingEnv())
+        || NodeUtils.isMethodInvocation(n, streamMin, optionalTypeFactory.getProcessingEnv())) {
+      ExpressionTree receiverTree = TreeUtils.getReceiverTree(n.getTree());
+      AnnotatedTypeMirror receiverNonEmptyAtm = nonemptyTypeFactory.getAnnotatedType(receiverTree);
       if (receiverNonEmptyAtm.hasEffectiveAnnotation(NonEmpty.class)) {
-        // TODO: debug this
-        JavaExpression internalRepr = JavaExpression.fromNode(n);
-        result.getRegularStore().insertValue(internalRepr, PRESENT);
-        AnnotatedTypeMirror returnType = optTypeFactory.getAnnotatedType(n.getTree());
-        System.out.println("ANNOTATED TYPE (BEFORE REPLACEMENT): " + returnType);
-        System.out.println("N=" + n);
-        returnType.replaceAnnotation(PRESENT);
-        System.out.println("ANNOTATED TYPE (AFTER REPLACEMENT): " + returnType);
-        System.out.println("N=" + n);
+        AnnotatedTypeMirror returnType = optionalTypeFactory.getAnnotatedType(n.getTree());
+        if (!returnType.hasPrimaryAnnotation(PRESENT)) {
+          makePresent(result, n);
+          refineToPresent(result);
+        }
       }
     }
     return result;
   }
 
-  private ExpressionTree getReceiverTree(MethodInvocationTree invok) {
-    ExpressionTree methodSelectTree = TreeUtils.withoutParens(invok.getMethodSelect());
-    return ((MemberSelectTree) methodSelectTree).getExpression();
+  /**
+   * Sets a given {@link Node} to {@code @Present} in the given {@code store}.
+   *
+   * @param store the store to update
+   * @param node the node that should be absent (non-present)
+   */
+  protected void makePresent(CFStore store, Node node) {
+    JavaExpression internalRepr = JavaExpression.fromNode(node);
+    store.insertValue(internalRepr, PRESENT);
+  }
+
+  /**
+   * Sets {@code node} to {@code @Present} in the given {@link TransferResult}.
+   *
+   * @param result the transfer result to side effect
+   * @param node the nod to make {@code @Present}
+   */
+  protected void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
+    if (result.containsTwoStores()) {
+      makePresent(result.getThenStore(), node);
+      makePresent(result.getElseStore(), node);
+    } else {
+      makePresent(result.getRegularStore(), node);
+    }
+  }
+
+  /**
+   * Refine the given result to {@code @Present}.
+   *
+   * @param result the result to refine to {@code @Present}.
+   */
+  protected void refineToPresent(TransferResult<CFValue, CFStore> result) {
+    CFValue oldResultValue = result.getResultValue();
+    CFValue refinedResultValue =
+        analysis.createSingleAnnotationValue(PRESENT, oldResultValue.getUnderlyingType());
+    CFValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
+    result.setResultValue(newResultValue);
   }
 }
