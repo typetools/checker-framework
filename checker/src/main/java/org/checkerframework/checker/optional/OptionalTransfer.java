@@ -6,7 +6,10 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.BinaryOperator;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -51,6 +54,9 @@ public class OptionalTransfer extends CFTransfer {
   /** The element for java.util.stream.Stream.min(), or null. */
   private final @Nullable ExecutableElement streamMin;
 
+  /** The element for java.util.stream.Stream.reduce(BinaryOperator&lt;T&gt;), or null. */
+  private final @Nullable ExecutableElement streamReduceNoIdentity;
+
   /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
   private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
@@ -75,6 +81,7 @@ public class OptionalTransfer extends CFTransfer {
         TreeUtils.getMethodOrNull("java.util.Optional", "ifPresentOrElse", 2, env);
     streamMax = TreeUtils.getMethodOrNull("java.util.stream.Stream", "max", 1, env);
     streamMin = TreeUtils.getMethodOrNull("java.util.stream.Stream", "min", 1, env);
+    streamReduceNoIdentity = TreeUtils.getMethodOrNull("java.util.stream.Stream", "reduce", 1, env);
   }
 
   @Override
@@ -125,8 +132,31 @@ public class OptionalTransfer extends CFTransfer {
     if (n.getTree() == null || nonemptyTypeFactory == null) {
       return result;
     }
-    if (NodeUtils.isMethodInvocation(n, streamMax, optionalTypeFactory.getProcessingEnv())
-        || NodeUtils.isMethodInvocation(n, streamMin, optionalTypeFactory.getProcessingEnv())) {
+    refineStreamOperations(n, result);
+    return result;
+  }
+
+  /**
+   * Refines the result of a call to {@link java.util.stream.Stream#max(Comparator)}, {@link
+   * java.util.stream.Stream#min(Comparator)}, or {@link
+   * java.util.stream.Stream#reduce(BinaryOperator)}.
+   *
+   * <p>The presence/emptiness of the Optional value returned in the method invocations above are
+   * dependent on whether the initial stream (i.e., the receiver) is empty (or not). That is,
+   * invoking the methods above on a {@code @NonEmpty} stream will return a {@code @Present}
+   * Optional, while invoking them on an empty stream will return an empty Optional.
+   *
+   * @param n the method invocation node
+   * @param result the transfer result to side effect
+   */
+  private void refineStreamOperations(
+      MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
+    assert nonemptyTypeFactory != null;
+    List<ExecutableElement> relevantStreamMethods =
+        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity);
+    if (relevantStreamMethods.stream()
+        .anyMatch(
+            op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
       ExpressionTree receiverTree = TreeUtils.getReceiverTree(n.getTree());
       AnnotatedTypeMirror receiverNonEmptyAtm = nonemptyTypeFactory.getAnnotatedType(receiverTree);
       if (receiverNonEmptyAtm.hasEffectiveAnnotation(NonEmpty.class)) {
@@ -137,18 +167,6 @@ public class OptionalTransfer extends CFTransfer {
         }
       }
     }
-    return result;
-  }
-
-  /**
-   * Sets a given {@link Node} to {@code @Present} in the given {@code store}.
-   *
-   * @param store the store to update
-   * @param node the node that should be absent (non-present)
-   */
-  protected void makePresent(CFStore store, Node node) {
-    JavaExpression internalRepr = JavaExpression.fromNode(node);
-    store.insertValue(internalRepr, PRESENT);
   }
 
   /**
@@ -157,7 +175,7 @@ public class OptionalTransfer extends CFTransfer {
    * @param result the transfer result to side effect
    * @param node the node to make {@code @Present}
    */
-  protected void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
+  private void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
     if (result.containsTwoStores()) {
       makePresent(result.getThenStore(), node);
       makePresent(result.getElseStore(), node);
@@ -167,11 +185,22 @@ public class OptionalTransfer extends CFTransfer {
   }
 
   /**
+   * Sets a given {@link Node} to {@code @Present} in the given {@code store}.
+   *
+   * @param store the store to update
+   * @param node the node that should be absent (non-present)
+   */
+  private void makePresent(CFStore store, Node node) {
+    JavaExpression internalRepr = JavaExpression.fromNode(node);
+    store.insertValue(internalRepr, PRESENT);
+  }
+
+  /**
    * Refine the given result to {@code @Present}.
    *
    * @param result the result to refine to {@code @Present}.
    */
-  protected void refineToPresent(TransferResult<CFValue, CFStore> result) {
+  private void refineToPresent(TransferResult<CFValue, CFStore> result) {
     CFValue oldResultValue = result.getResultValue();
     CFValue refinedResultValue =
         analysis.createSingleAnnotationValue(PRESENT, oldResultValue.getUnderlyingType());
