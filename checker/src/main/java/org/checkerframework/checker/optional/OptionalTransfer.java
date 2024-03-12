@@ -155,7 +155,7 @@ public class OptionalTransfer extends CFTransfer {
    * Sets {@code node} to {@code @Present} in the given {@link TransferResult}.
    *
    * @param result the transfer result to side effect
-   * @param node the nod to make {@code @Present}
+   * @param node the node to make {@code @Present}
    */
   protected void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
     if (result.containsTwoStores()) {
