@@ -18,6 +18,11 @@ Deprecated `ObjectCreationNode#getConstructor` in favor of new
 Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
 `visualizeBlockWithSeparator()`.
 
+Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
+ * isConstantCaseLabelTree
+ * isDefaultCaseLabelTree
+ * isPatternCaseLabelTree
+
 Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
 `warnInvalidPolymorphicQualifier()`.
 
