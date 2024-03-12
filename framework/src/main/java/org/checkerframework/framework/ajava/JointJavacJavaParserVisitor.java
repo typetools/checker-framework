@@ -1153,10 +1153,8 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     }
 
     javacTree.getIdentifier().accept(this, node.getType());
-    if (javacTree.getTypeArguments().isEmpty()) {
-      assert !node.getTypeArguments().isPresent();
-    } else {
-      assert node.getTypeArguments().isPresent();
+    assert javacTree.getTypeArguments().isPresent() == node.getTypeArguments().isPresent();
+    if (javacTree.getTypeArguments().isPresent()) {
       visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
     }
 
