@@ -382,8 +382,9 @@ public class MustCallInference {
 
   /**
    * This method checks if a field is an owning candidate. A field is an owning candidate if it has
-   * a non-empty must-call obligation. Unless, it is a @MustCallUnknown, in which we don't want to
-   * infer anything. So, we conservatively treat it as a non-owning candidate.
+   * a non-empty must-call obligation, unless it is {code @MustCallUnknown}. For a
+   * {code @MustCallUnknown} field, we don't want to infer anything. So, we conservatively treat it
+   * as a non-owning candidate.
    *
    * @param resourceLeakAtf the type factory
    * @param field the field to check
