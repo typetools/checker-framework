@@ -57,6 +57,12 @@ public class OptionalTransfer extends CFTransfer {
   /** The element for java.util.stream.Stream.reduce(BinaryOperator&lt;T&gt;), or null. */
   private final @Nullable ExecutableElement streamReduceNoIdentity;
 
+  /** The element for java.util.stream.Stream.findFirst(), or null. */
+  private final @Nullable ExecutableElement streamFindFirst;
+
+  /** The element for java.util.stream.Stream.findAny(), or null. */
+  private final @Nullable ExecutableElement streamFindAny;
+
   /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
   private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
@@ -82,6 +88,8 @@ public class OptionalTransfer extends CFTransfer {
     streamMax = TreeUtils.getMethodOrNull("java.util.stream.Stream", "max", 1, env);
     streamMin = TreeUtils.getMethodOrNull("java.util.stream.Stream", "min", 1, env);
     streamReduceNoIdentity = TreeUtils.getMethodOrNull("java.util.stream.Stream", "reduce", 1, env);
+    streamFindFirst = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findFirst", 0, env);
+    streamFindAny = TreeUtils.getMethodOrNull("java.util.stream.Stream", "findAny", 0, env);
   }
 
   @Override
@@ -153,7 +161,7 @@ public class OptionalTransfer extends CFTransfer {
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
     assert nonemptyTypeFactory != null;
     List<ExecutableElement> relevantStreamMethods =
-        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity);
+        Arrays.asList(streamMax, streamMin, streamReduceNoIdentity, streamFindFirst, streamFindAny);
     if (relevantStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
