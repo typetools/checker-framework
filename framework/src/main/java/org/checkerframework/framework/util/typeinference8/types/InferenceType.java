@@ -133,6 +133,40 @@ public class InferenceType extends AbstractType {
   }
 
   /**
+   * Same as {@link #create(AnnotatedTypeMirror, TypeMirror, Theta, AnnotationMirrorMap,
+   * Java8InferenceContext)}, but if {@code type} contains any type variables that are in {@code
+   * map}, but already have an instantiation, they are treated as proper types.
+   *
+   * @param type the annotated type mirror
+   * @param typeMirror the java type
+   * @param map a mapping from type variable to inference variable
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param context the context
+   * @return the abstract type for the given TypeMirror and AnnotatedTypeMirror
+   */
+  public static AbstractType createIgnoreInstantiated(
+      AnnotatedTypeMirror type,
+      TypeMirror typeMirror,
+      @Nullable Theta map,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context) {
+    assert type != null;
+    if (map == null) {
+      return new ProperType(type, typeMirror, qualifierVars, context);
+    }
+
+    if (typeMirror.getKind() == TypeKind.TYPEVAR && map.containsKey(type.getUnderlyingType())) {
+      return new UseOfVariable(
+          (AnnotatedTypeVariable) type, map.get(type.getUnderlyingType()), qualifierVars, context);
+    } else if (AnnotatedContainsInferenceVariable.hasAnyTypeVariable(
+        map.getNotInstantiated(), type)) {
+      return new InferenceType(type, typeMirror, map, qualifierVars, context);
+    } else {
+      return new ProperType(type, typeMirror, qualifierVars, context);
+    }
+  }
+
+  /**
    * Creates abstract types for each TypeMirror. The created type is an {@link InferenceType} if it
    * contains any type variables that are mapped to inference variables as specified by {@code map}.
    * Or if the type is a type variable that is mapped to an inference variable, it will return that
@@ -256,7 +290,8 @@ public class InferenceType extends AbstractType {
     }
 
     AnnotatedTypeMirror newType = typeFactory.getTypeVarSubstitutor().substitute(mapping, type);
-    return create(newType, newTypeJava, map, context);
+    return createIgnoreInstantiated(
+        newType, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context);
   }
 
   @Override

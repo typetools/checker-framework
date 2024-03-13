@@ -114,14 +114,19 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return result.swapTypeVariables(methodType, expressionTree);
       }
     } catch (Exception ex) {
-      // This should never happen, if javac infers type arguments so should the Checker
-      // Framework. However, given how buggy javac inference is, this probably will, so deal
-      // with it gracefully.
-      return new InferenceResult(
-          Collections.emptyList(),
-          false,
-          true,
-          "An exception occurred: " + ex.getLocalizedMessage());
+      if (typeFactory
+          .getChecker()
+          .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
+        // This should never happen, if javac infers type arguments so should the Checker
+        // Framework. However, given how buggy javac inference is, this probably will, so deal
+        // with it gracefully.
+        return new InferenceResult(
+            Collections.emptyList(),
+            false,
+            true,
+            "An exception occurred: " + ex.getLocalizedMessage());
+      }
+      throw ex;
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();
