@@ -399,7 +399,7 @@ public class InvocationTypeInference {
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
       }
-      if (target.isProper()) {
+      if (target.isProper() && target.getJavaType().getKind().isPrimitive()) {
         // From the JLS:
         // "T is a primitive type, and one of the primitive wrapper classes mentioned in
         // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
