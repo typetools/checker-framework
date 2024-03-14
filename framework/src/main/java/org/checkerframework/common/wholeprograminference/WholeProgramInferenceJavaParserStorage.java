@@ -75,6 +75,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference.OutputFormat;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.ajava.AnnotationMirrorToAnnotationExprConversion;
 import org.checkerframework.framework.ajava.AnnotationTransferVisitor;
 import org.checkerframework.framework.ajava.DefaultJointVisitor;
@@ -164,6 +165,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param qual an annotation class
    * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
    */
+  @Pure
   public static boolean isInvisible(Class<? extends Annotation> qual) {
     return Arrays.stream(qual.getAnnotations())
         .anyMatch(anno -> anno.annotationType() == InvisibleQualifier.class);
