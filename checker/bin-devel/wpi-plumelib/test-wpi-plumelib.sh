@@ -45,7 +45,6 @@ clean_compile_output() {
 
     # Remove uninteresting output
     sed -i '/^warning: \[path\] bad path element /d' "$out"
-    sed -i '/^.*warning: Option --illegal-access is deprecated and will be removed in a future release./d' "$out"
     sed -i '/^warning: \[options\] bootstrap class path not set/d' "$out"
     sed -i '/^warning: \[options\] system modules path not set in conjunction with -source 11/d' "$out"
 
