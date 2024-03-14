@@ -2579,6 +2579,24 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns true if the given method invocation is an invocation of a method with a vararg
+   * parameter, and the invocation has zero vararg actuals.
+   *
+   * @param invok the method invocation
+   * @return true if the given method invocation is an invocation of a method with a vararg
+   *     parameter, and the invocation has with zero vararg actuals
+   */
+  public static boolean isCallToVarArgsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
+    if (!TreeUtils.isVarArgs(invok)) {
+      return false;
+    }
+    int numParams = elementFromUse(invok).getParameters().size();
+    // The comparison of the number of arguments to the number of formals (minus one) checks whether
+    // there are no varargs actuals
+    return invok.getArguments().size() == numParams - 1;
+  }
+
+  /**
    * Returns true if the given constructor invocation is a varargs invocation.
    *
    * @param newClassTree the constructor invocation
