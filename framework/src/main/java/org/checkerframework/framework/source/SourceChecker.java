@@ -414,6 +414,11 @@ import org.plumelib.util.UtilPlume;
   // Also checks that annotations can be inserted. For each Java file, clears all annotations and
   // reinserts them, then checks if the original and modified ASTs are equivalent.
   "ajavaChecks",
+
+  // Converts type argument inference crashes into errors. By default, this option is true.
+  // Use "-AconvertTypeArgInferenceCrashToWarning=false" to turn this option off and allow type
+  // argument inference crashes to crash the type checker.
+  "convertTypeArgInferenceCrashToWarning"
 })
 public abstract class SourceChecker extends AbstractTypeProcessor implements OptionConfiguration {
 
@@ -585,6 +590,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /** True if the -AwarnUnneededSuppressions command-line argument was passed. */
   private boolean warnUnneededSuppressions;
+
+  /** Creates a source checker. */
+  protected SourceChecker() {}
 
   // Also see initChecker().
   @Override
