@@ -68,7 +68,8 @@ public class NonEmptyTransfer extends CFTransfer {
       return result;
     }
     Element receiver = TreeUtils.elementFromTree(receiverTree);
-    if (!shouldRefineStoreForDelegationInvocation(receiver, enclosingMethodTree)) {
+    if (receiver == null
+        || !shouldRefineStoreForDelegationInvocation(receiver, enclosingMethodTree)) {
       return result;
     }
     JavaExpression thisExpr = JavaExpression.getImplicitReceiver(receiver);
