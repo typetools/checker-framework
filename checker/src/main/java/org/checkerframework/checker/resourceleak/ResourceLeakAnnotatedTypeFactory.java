@@ -105,17 +105,6 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
     this.postInit();
   }
 
-  /**
-   * Is the given element a candidate to be an owning field? A candidate owning field must have a
-   * non-empty must-call obligation.
-   *
-   * @param element a element
-   * @return true iff the given element is a field with non-empty @MustCall obligation
-   */
-  /*package-private*/ boolean isFieldWithNonemptyMustCallValue(Element element) {
-    return element.getKind().isField() && !hasEmptyMustCallValue(element);
-  }
-
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return getBundledTypeQualifiers(
