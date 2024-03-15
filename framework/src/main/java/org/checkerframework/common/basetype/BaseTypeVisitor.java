@@ -101,6 +101,7 @@ import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.HasQualifierParameter;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -680,7 +681,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   protected void checkQualifierParameter(ClassTree classTree) {
     // Set of polymorphic qualifiers for hierarchies that do not have a qualifier parameter and
-    // therefor cannot appear on a field.
+    // therefore cannot appear on a field.
     AnnotationMirrorSet illegalOnFieldsPolyQual = new AnnotationMirrorSet();
     // Set of polymorphic annotations for all hierarchies
     AnnotationMirrorSet polys = new AnnotationMirrorSet();
@@ -694,6 +695,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // If there is no polymorphic qualifier in the hierarchy, it could still have a
       // @HasQualifierParameter that must be checked.
       // }
+
+      if (!atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
+          && atypeFactory.getDeclAnnotation(classElement, HasQualifierParameter.class) != null) {
+        checker.reportError(classTree, "invalid.qual.param", top);
+        break;
+      }
 
       if (atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
           && atypeFactory.hasExplicitNoQualifierParameterInHierarchy(classElement, top)) {

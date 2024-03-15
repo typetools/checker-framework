@@ -18,7 +18,7 @@ public class ExtendHasQual {
   static class MyBuffer2 extends Buffer {}
 
   @HasQualifierParameter(Nullable.class)
-  // :: error: (missing.has.qual.param)
+  // :: error: (invalid.qual.param)
   static class MyBuffer3 extends Buffer {}
 
   @HasQualifierParameter({Tainted.class, Nullable.class})
