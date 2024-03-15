@@ -698,6 +698,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
       if (!atypeFactory.hasExplicitQualifierParameterInHierarchy(classElement, top)
           && atypeFactory.getDeclAnnotation(classElement, HasQualifierParameter.class) != null) {
+        // The argument to a @HasQualifierParameter annotation must be the top type in the
+        // type system.
         checker.reportError(classTree, "invalid.qual.param", top);
         break;
       }
