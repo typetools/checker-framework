@@ -579,7 +579,7 @@ Or, set the \code{-AonlyUses} command-line option to a
 regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 The regular expressions are unanchored, unless you anchor them yourself
-with \<\^> or \<\$\>.
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
 
 For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
@@ -635,7 +635,7 @@ definitions should be type-checked.
 (For file names, use \code{-AskipFiles} and \code{-AonlyFiles} instead; see
 Section~\ref{askipfiles}.)
 The regular expressions are unanchored, unless you anchor them yourself
-with \<\^> or \<\$\>.
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
 
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
@@ -675,7 +675,7 @@ classes for which errors and warnings should be suppressed.
 Similarly, \code{-AonlyFiles} suppresses warnings everywhere
 \emph{except} in the given files.
 The regular expressions are unanchored, unless you anchor them yourself
-with \<\^> or \<\$\>.
+with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
 
 For example, if you use
 ``{\codesize\verb|-AskipFiles=/build/generated/|}'' on the command line
