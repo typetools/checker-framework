@@ -51,7 +51,7 @@ You can suppress warnings throughout the codebase by using the following mechani
 \item
   the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
-  the \code{-AskipDirs} command-line option (Section~\ref{askipdirs}),
+  the \code{-AskipFiles} and \code{-AonlyFiles} command-line options (Section~\ref{askipfiles}),
 \item
   the \code{-AuseConservativeDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
@@ -568,7 +568,8 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 You can suppress all errors and warnings at all \emph{uses} of a given
 class, or suppress all errors and warnings \emph{except} those at uses of a given
 class.  (The class itself is still type-checked, unless you also use
-the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+the \code{-AskipDefs}, \code{-AonlyDefs}, \code{-AskipFiles}, or \code{-AonlyFiles}
+command-line option, see~\ref{askipdefs}).
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
@@ -577,6 +578,8 @@ should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
 regular expression that matches fully-qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
+The regular expressions are unanchored, unless you anchor them yourself
+with \<\^> or \<\$\>.
 
 For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
@@ -629,6 +632,10 @@ regular expression that matches fully-qualified class names (not file names) who
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
+(For file names, use \code{-AskipFiles} and \code{-AonlyFiles} instead; see
+Section~\ref{askipfiles}.)
+The regular expressions are unanchored, unless you anchor them yourself
+with \<\^> or \<\$\>.
 
 For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
@@ -655,27 +662,36 @@ type-checking only part of a legacy codebase.  After you have verified the
 most important parts, you can incrementally check more classes until you
 are type-checking the whole thing.
 
-\sectionAndLabel{\code{-AskipDirs} command-line option}{askipdirs}
+
+\sectionAndLabel{\code{-AskipFiles} and \code{-AonlyFiles} command-line options}{askipfiles}
 
 You can suppresss all errors and warnings originating from classes that are
-located in a given directory/folder.
-Errors and warnings may also be suppressed on a more granular level.
-For example, the \code{-AonlyDefs} or the \code{-AskipDefs} command-line
-options enable you to include or exclude classes from checking.
+located in a given file or directory/folder, or all those that are \emph{not} in a
+given file or directory/folder.
 
-Set the \code{-AskipDirs} command-line option to a
-regular expression that matches the path to directories/folders containing
+Set the \code{-AskipFiles} command-line option to a
+regular expression that matches the path to files or directories/folders containing
 classes for which errors and warnings should be suppressed.
+Similarly, \code{-AonlyFiles} suppresses warnings everywhere
+\emph{except} in the given files.
+The regular expressions are unanchored, unless you anchor them yourself
+with \<\^> or \<\$\>.
 
 For example, if you use
-``{\codesize\verb|-AskipDirs=/build/generated|}'' on the command line
-(with appropriate quoting) when invoking
-\code{javac}, then the definitions of classes located in the
+``{\codesize\verb|-AskipFiles=/build/generated/|}'' on the command line
+when invoking
+\code{javac}, then the definitions of classes located in any
 \codesize\verb|/build/generated| directory will not be checked.
+
+If you supply both \code{-AskipFiles} and \code{-AonlyFiles}, then
+\code{-AskipFiles} takes precedence.
 
 A common scenario for using this argument is when you want to exclude certain
 directories/folders (such as those containing generated or legacy code) from
 type-checking.
+Another scenario is when a file contains multiple top-level classes, only
+one of which has a name that corresponds to the file name.
+
 
 \sectionAndLabel{\code{-Alint} command-line option\label{lint-options}}{alint}
 
