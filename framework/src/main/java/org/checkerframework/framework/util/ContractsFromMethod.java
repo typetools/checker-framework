@@ -215,10 +215,11 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}. May return null.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
+   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}.
+   *     Does not work for {@code PreconditionAnnotation} or {@code PostconditionAnnotation}.
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
