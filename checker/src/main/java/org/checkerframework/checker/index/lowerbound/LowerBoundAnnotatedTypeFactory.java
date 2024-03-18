@@ -123,6 +123,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also
     // be aliased in the constructor of ValueAnnotatedTypeFactory to the appropriate
     // @IntRangeFrom* annotation.
+    addAliasedTypeAnnotation("javax.annotation.Nonnegative", NN);
     addAliasedTypeAnnotation(IndexFor.class, NN);
     addAliasedTypeAnnotation(IndexOrLow.class, GTEN1);
     addAliasedTypeAnnotation(IndexOrHigh.class, NN);
