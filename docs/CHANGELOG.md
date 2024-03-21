@@ -3,6 +3,13 @@ Version 3.43.0 (?? ??, 2024)
 
 **User-visible changes:**
 
+Renamed command-line arguments:
+ * `-AskipDirs` has been renamed to `-AskipFiles`.
+   `-AskipDirs` will continue to work for the time being.
+
+New command-line arguments:
+ * `-AonlyFiles` complements `-AskipFiles`
+
 Method, constructor, lambda, and method reference type inference has been
 greatly improved.  The `-AconservativeUninferredTypeArguments` option is
 no longer necessary and has been removed.
@@ -49,7 +56,7 @@ Version 3.41.0 (December 4, 2023)
 **User-visible changes:**
 
 New command-line options:
-  -AassumePureGetters Unsoundly assume that every getter method is pure
+ * `-AassumePureGetters` Unsoundly assume that every getter method is pure
 
 **Implementation details:**
 

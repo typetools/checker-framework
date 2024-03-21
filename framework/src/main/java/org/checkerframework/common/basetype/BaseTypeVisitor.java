@@ -543,7 +543,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public final Void visitClass(ClassTree classTree, Void p) {
-    if (checker.shouldSkipDefs(classTree) || checker.shouldSkipDirs(classTree)) {
+    if (checker.shouldSkipDefs(classTree) || checker.shouldSkipFiles(classTree)) {
       // Not "return super.visitClass(classTree, p);" because that would recursively call
       // visitors on subtrees; we want to skip the class entirely.
       return null;
