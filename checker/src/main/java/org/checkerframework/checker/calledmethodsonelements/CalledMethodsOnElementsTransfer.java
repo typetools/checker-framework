@@ -2,62 +2,47 @@ package org.checkerframework.checker.calledmethodsonelements;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
-import org.checkerframework.common.accumulation.AccumulationStore;
-import org.checkerframework.common.accumulation.AccumulationTransfer;
-import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A transfer function that accumulates the names of methods called. */
-public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
-
-  // /**
-  //  * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} requires a
-  // TransferInput,
-  //  * but the actual exceptional stores need to be modified in {@link #accumulate(Node,
-  //  * TransferResult, String...)}, which only has access to a TransferResult. So this field is set
-  // to
-  //  * non-null in {@link #visitMethodInvocation(MethodInvocationNode, TransferInput)} via a call
-  // to
-  //  * {@link #makeExceptionalStores(MethodInvocationNode, TransferInput)} (which reads the
-  // CFStores
-  //  * from the TransferInput) before the call to accumulate(); accumulate() can then use this
-  // field
-  //  * to read the CFStores; and then finally this field is then reset to null afterwards to
-  // prevent
-  //  * it from being used somewhere it shouldn't be.
-  //  */
-  // private @Nullable Map<TypeMirror, AccumulationStore> exceptionalStores;
-
+public class CalledMethodsOnElementsTransfer extends CFTransfer {
   /**
    * The element for the CalledMethodsOnElements annotation's value element. Stored in a field in
    * this class to prevent the need to cast to CalledMethodsOnElements ATF every time it's used.
    */
   private final ExecutableElement calledMethodsOnElementsValueElement;
 
-  /** The type mirror for {@link Exception}. */
-  protected final TypeMirror javaLangExceptionType;
+  /** The type factory. */
+  private final CalledMethodsOnElementsAnnotatedTypeFactory atypeFactory;
+
+  private final ProcessingEnvironment env;
 
   /**
    * True if -AenableWpiForRlc was passed on the command line. See {@link
@@ -70,53 +55,31 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
    *
    * @param analysis the analysis
    */
-  public CalledMethodsOnElementsTransfer(CalledMethodsOnElementsAnalysis analysis) {
+  public CalledMethodsOnElementsTransfer(CFAnalysis analysis) {
     super(analysis);
-    calledMethodsOnElementsValueElement =
-        ((CalledMethodsOnElementsAnnotatedTypeFactory) atypeFactory)
-            .calledMethodsOnElementsValueElement;
-    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    if (analysis.getTypeFactory() instanceof CalledMethodsOnElementsAnnotatedTypeFactory) {
+      atypeFactory = (CalledMethodsOnElementsAnnotatedTypeFactory) analysis.getTypeFactory();
+    } else {
+      atypeFactory =
+          new CalledMethodsOnElementsAnnotatedTypeFactory(analysis.getTypeFactory().getChecker());
+    }
 
-    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    javaLangExceptionType =
-        env.getTypeUtils().getDeclaredType(ElementUtils.getTypeElement(env, Exception.class));
+    calledMethodsOnElementsValueElement = atypeFactory.calledMethodsOnElementsValueElement;
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
+    env = atypeFactory.getProcessingEnv();
   }
 
-  //   /**
-  //    * @param tree a tree
-  //    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-  //    *     -AenableWpiForRlc flag (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) is not
-  // passed
-  //    *     as a command line argument, otherwise returns the result of the super call
-  //    */
-  //   @Override
-  //   protected boolean shouldPerformWholeProgramInference(Tree tree) {
-  //     if (!isWpiEnabledForRLC()
-  //         &&
-  // atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
-  //       return false;
-  //     }
-  //     return super.shouldPerformWholeProgramInference(tree);
-  //   }
+  // /*
+  //  * If the called method has @EnsuresCalledMethods() postcondition, these methods will have to be
+  //  * added to the store
+  //  *  */
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitMethodInvocation(
+  //     MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+  //   TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
+  //   MethodInvocationTree tree = node.getTree();
 
-  //   /**
-  //    * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
-  //    *
-  //    * @param expressionTree a tree
-  //    * @param lhsTree its element
-  //    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-  //    *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
-  //    *     result of the super call
-  //    */
-  //   @Override
-  //   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
-  //     if (!isWpiEnabledForRLC()
-  //         &&
-  // atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
-  //       return false;
-  //     }
-  //     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
-  //   }
+  // }
 
   /**
    * {@inheritDoc}
@@ -126,9 +89,9 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
    * description).
    */
   @Override
-  public TransferResult<AccumulationValue, AccumulationStore> visitLessThan(
-      LessThanNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
-    TransferResult<AccumulationValue, AccumulationStore> res = super.visitLessThan(node, input);
+  public TransferResult<CFValue, CFStore> visitLessThan(
+      LessThanNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitLessThan(node, input);
     BinaryTree tree = node.getTree();
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not"
@@ -136,82 +99,41 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
     if (calledMethod != null) {
+      CFStore elseStore = res.getElseStore();
       ExpressionTree arrayTree =
           MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
               node.getTree());
-      accumulate(arrayTree, res, calledMethod);
-      return new ConditionalTransferResult<>(
-          res.getResultValue(), res.getThenStore(), res.getElseStore());
+      AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
+      AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(currentType, calledMethod);
+      JavaExpression target = JavaExpression.fromTree(arrayTree);
+      // System.out.println("type beore: " + elseStore.getValue(target));
+      elseStore.clearValue(target);
+      elseStore.insertValue(target, newType);
+      // System.out.println("type after: " + elseStore.getValue(target));
+      return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
     }
+    List<String> mustCall =
+        MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
+            tree);
+    if (mustCall != null) {
+      // array is newly assigned -> remove all calledmethods
+      ExpressionTree arrayTree =
+          MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
+              node.getTree());
+      JavaExpression target = JavaExpression.fromTree(arrayTree);
+      AnnotationMirror newAnno =
+          createAccumulatorAnnotation(Collections.emptyList(), atypeFactory.TOP);
+      CFStore thenStore = res.getThenStore();
+      CFStore elseStore = res.getElseStore();
+      // System.out.println("before cm: " + elseStore.getValue(target));
+      elseStore.clearValue(target);
+      elseStore.insertValue(target, newAnno);
+      // System.out.println("after cm: " + elseStore.getValue(target));
+      return new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+    }
+
     return res;
   }
-
-  public void accumulate(
-      ExpressionTree tree,
-      TransferResult<AccumulationValue, AccumulationStore> result,
-      String... values) {
-    List<String> valuesAsList = Arrays.asList(values);
-    JavaExpression target = JavaExpression.fromTree(tree);
-    System.out.println("oldtype: " + result.getElseStore().getValue(target));
-    if (CFAbstractStore.canInsertJavaExpression(target)) {
-      if (result.containsTwoStores()) {
-        updateValueAndInsertIntoStore(result.getThenStore(), target, valuesAsList);
-        updateValueAndInsertIntoStore(result.getElseStore(), target, valuesAsList);
-      } else {
-        updateValueAndInsertIntoStore(result.getRegularStore(), target, valuesAsList);
-      }
-    }
-    System.out.println("newtype: " + result.getElseStore().getValue(target));
-  }
-
-  private void updateValueAndInsertIntoStore(
-      AccumulationStore store, JavaExpression target, List<String> values) {
-    // Make a modifiable copy of the list.
-    List<String> valuesAsList = new ArrayList<>(values);
-    AccumulationValue flowValue = store.getValue(target);
-    if (flowValue != null) {
-      Set<String> accumulatedValues = flowValue.getAccumulatedValues();
-      if (accumulatedValues != null) {
-        valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
-      } else {
-        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-        assert flowAnnos.size() <= 1;
-        for (AnnotationMirror anno : flowAnnos) {
-          if (atypeFactory.isAccumulatorAnnotation(anno)) {
-            List<String> oldFlowValues = atypeFactory.getAccumulatedValues(anno);
-            if (!oldFlowValues.isEmpty()) {
-              // valuesAsList cannot have its length changed -- it is backed by an
-              // array -- but if oldFlowValues is not empty, it is a new, modifiable
-              // list.
-              oldFlowValues.addAll(valuesAsList);
-              valuesAsList = oldFlowValues;
-            }
-          }
-        }
-      }
-    }
-    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-    store.insertValue(target, newAnno);
-  }
-
-  //   ExecutableElement method = TreeUtils.elementFromUse(node.getTree());
-  //   Node receiver = node.getTarget().getReceiver();
-  //   if (receiver != null) {
-  //     String methodName = node.getTarget().getMethod().getSimpleName().toString();
-  //     methodName =
-  //         ((CalledMethodsAnnotatedTypeFactory) atypeFactory)
-  //             .adjustMethodNameUsingValueChecker(methodName, node.getTree());
-  //     accumulate(receiver, superResult, methodName);
-  //   }
-  //   TransferResult<AccumulationValue, AccumulationStore> finalResult =
-  //       new ConditionalTransferResult<>(
-  //           superResult.getResultValue(),
-  //           superResult.getThenStore(),
-  //           superResult.getElseStore(),
-  //           exceptionalStores);
-  //   exceptionalStores = null;
-  //   return finalResult;
-  // }
 
   /**
    * Extract the current called-methods type from {@code currentType}, and then add {@code
@@ -227,23 +149,53 @@ public class CalledMethodsOnElementsTransfer extends AccumulationTransfer {
   private @Nullable AnnotationMirror getUpdatedCalledMethodsOnElementsType(
       AnnotatedTypeMirror currentType, String methodName) {
     AnnotationMirror type;
-    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.top)) {
-      type = atypeFactory.top;
+    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.TOP)) {
+      type = atypeFactory.TOP;
     } else {
-      type = currentType.getPrimaryAnnotationInHierarchy(atypeFactory.top);
-    }
-
-    if (AnnotationUtils.areSame(type, atypeFactory.bottom)) {
-      return null;
+      type = currentType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      AnnotatedArrayType curType = (AnnotatedArrayType) currentType;
+      type = curType.getPrimaryAnnotation(CalledMethodsOnElements.class);
+      if (type == null) {
+        assert (curType.getPrimaryAnnotation(CalledMethodsOnElementsBottom.class) != null)
+            : "array annotation neither cmoe nor cmoeBottom";
+        type = atypeFactory.TOP;
+      }
     }
 
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(
             type, calledMethodsOnElementsValueElement, String.class);
-
     List<String> newList = CollectionsPlume.append(currentMethods, methodName);
 
-    return atypeFactory.createAccumulatorAnnotation(newList);
+    return createAccumulatorAnnotation(newList, type);
+  }
+
+  /**
+   * Creates a new instance of the accumulator annotation that contains the elements of {@code
+   * values}.
+   *
+   * @param values the arguments to the annotation. The values can contain duplicates and can be in
+   *     any order.
+   * @return an annotation mirror representing the accumulator annotation with {@code values}'s
+   *     arguments; this is top if {@code values} is empty
+   */
+  public AnnotationMirror createAccumulatorAnnotation(List<String> values, AnnotationMirror type) {
+    AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
+    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+    return builder.build();
+  }
+
+  /**
+   * Creates a new instance of the accumulator annotation that contains exactly one value.
+   *
+   * @param value the argument to the annotation
+   * @return an annotation mirror representing the accumulator annotation with {@code value} as its
+   *     argument
+   */
+  public AnnotationMirror createAccumulatorAnnotation(String value, AnnotationMirror type) {
+    AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
+    builder.setValue("value", Collections.singletonList(value));
+    return builder.build();
   }
 
   /**

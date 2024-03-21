@@ -89,6 +89,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   private final ExecutableElement mustCallOnElementsValueElement =
       TreeUtils.getMethod(MustCallOnElements.class, "value", 0, processingEnv);
 
+  /** Maps {@code @OwningArray} field to its MustCallOnElements obligations. */
+  private static Map<String, List<String>> mcoeObligationsForOwningArrayField = new HashMap<>();
+
   /** Set of assignments that open an obligation for an {@code @OwningArray} array. */
   private static Set<AssignmentTree> obligationCreatingAssignments = new HashSet<>();
 
@@ -240,6 +243,27 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   //   changeNonOwningParameterTypesToTop(declaration, type);
   //   super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   // }
+
+  /**
+   * Sets the mcoe obligations of the {@code @OwningArray} field to the given list of methods.
+   * The method does not verify that the string actually refers to such a field.
+   * @param fieldName name of the {@code @OwningArray} field
+   * @param obligations list of methods corresponding to the field's mcoe obligations
+   */
+  public static void putMcoeObligationsForOwningArrayField(String fieldName, List<String> obligations) {
+    mcoeObligationsForOwningArrayField.put(fieldName, obligations);
+  }
+
+  /**
+   * If the given string is an {@code @OwningArray} field, the method returns its mcoe obligations.
+   * If the string is not such a field or it doesn't have any oblgiations, the method returns
+   * the empty list. It does not verify whether the string actually refers to such a field.
+   * @param fieldName name of the {@code @OwningArray} field
+   * @return mustcall obligations of the given field
+   */
+  public static List<String> getMcoeObligationsForOwningArrayField(String fieldName) {
+    return mcoeObligationsForOwningArrayField.getOrDefault(fieldName, Collections.emptyList());
+  }
 
   public static boolean doesMethodAccessCloseArrayObligation(MemberSelectTree memSelect) {
     return obligationFulfillingMethodAccess.contains(memSelect);
