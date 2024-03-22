@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -54,6 +55,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
@@ -601,6 +603,9 @@ class MustCallConsistencyAnalyzer {
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
 
+    // verify that all @OwningArray fields are final
+    checkOwningArrayFields(cfg);
+
     // Add any owning parameters to the initial set of variables to track.
     BlockWithObligations entry =
         new BlockWithObligations(cfg.getEntryBlock(), computeOwningParameters(cfg));
@@ -611,6 +616,33 @@ class MustCallConsistencyAnalyzer {
       BlockWithObligations current = worklist.remove();
       propagateObligationsToSuccessorBlocks(
           cfg, current.obligations, current.block, visited, worklist);
+    }
+  }
+
+  /**
+   * Verifies all {@link OwningArray} fields for the enclosing class of the method corresponding to
+   * a CFG are final.
+   *
+   * @param cfg the CFG
+   */
+  private void checkOwningArrayFields(ControlFlowGraph cfg) {
+    if (cfg.getUnderlyingAST().getKind() == Kind.METHOD) {
+      MethodTree method = ((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod();
+      TreePath path = typeFactory.getPath(method);
+      ClassTree enclosingClass = TreePathUtil.enclosingClass(path);
+      for (Tree member : enclosingClass.getMembers()) {
+        if (member instanceof VariableTree) {
+          VariableTree tree = (VariableTree) member;
+          Element memberElm = TreeUtils.elementFromDeclaration(tree);
+          if (!noLightweightOwnership
+              && memberElm.getKind().isField()
+              && (memberElm.getAnnotation(OwningArray.class) != null)) {
+            if (!ElementUtils.isFinal(memberElm)) {
+              checker.reportError(member, "owningarray.field.not.final", tree.getName());
+            }
+          }
+        }
+      }
     }
   }
 
