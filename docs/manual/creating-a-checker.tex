@@ -1175,6 +1175,34 @@ To pass an option on the command line, call javac as follows:
 The value is returned as a single string and you have to perform the
 required parsing of the option.
 
+\subsubsectionAndLabel{Default Options}{creating-providing-command-line-options-default-options}
+
+The default options passed to a custom checker may be customized by overriding the
+\refmethodterse{framework/source}{SourceChecker}{getOptions}{()} method of the
+custom checker class.
+
+%% For more complicated options, one can use the standard
+%% \code{@SupportedOptions} annotation on the checker, as in:
+%%
+%% \begin{alltt}
+%%   \refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
+%% \end{alltt}
+%%
+%% The value of the option can be queried using
+%%
+%% \begin{Verbatim}
+%%   checker.getOption("myoption")
+%% \end{Verbatim}
+%%
+%% To pass an option on the command line, call javac as follows:
+%%
+%% \begin{Verbatim}
+%%   javac -processor mypackage.MyChecker -Amyoption=p1,p2
+%% \end{Verbatim}
+%%
+%% The value is returned as a single string and you have to perform the
+%% required parsing of the option.
+
 
 % TODO: describe -ANullnessChecker_option=value mechanism.
 % For the implementation, see SourceChecker#OPTION_SEPARATOR.
