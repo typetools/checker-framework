@@ -1178,8 +1178,23 @@ required parsing of the option.
 \subsubsectionAndLabel{Default Options}{creating-providing-command-line-options-default-options}
 
 The default options passed to a custom checker may be customized by overriding the
-\refmethodterse{framework/source}{SourceChecker}{getOptions}{()} method of the
+\refmethodterse{framework/source}{BaseTypeChecker}{getOptions}{()} method of the
 custom checker class.
+
+For example, to ignore the \<introduce.eliminate> warnings raised by the
+Optional Checker (Chapter~\ref{optional-checker}), override
+\refmethodterse{framework/source}{BaseTypeChecker}{getOptions}{()} as follows:
+
+\begin{Verbatim}
+  @Override
+  public Map<String, String> getOptions() {
+    Map<String, String> options = new HashMap<>(super.getOptions());
+    options.put("suppressWarnings", "optional:introduce.eliminate");
+    return options;
+  }
+\end{Verbatim}
+
+in the \refclass{checker/optional}{OptionalChecker} class.
 
 % TODO: describe -ANullnessChecker_option=value mechanism.
 % For the implementation, see SourceChecker#OPTION_SEPARATOR.
