@@ -16,10 +16,10 @@ public class DeconstructorPatternNode extends Node {
    * The {@code DeconstructorPatternTree}, declared as {@link Tree} to permit this file to compile
    * under JDK 20 and earlier.
    */
-  private final Tree deconstructorPattern;
+  protected final Tree deconstructorPattern;
 
   /** A list of nested pattern nodes. */
-  private final List<Node> nestedPatterns;
+  protected final List<Node> nestedPatterns;
 
   /**
    * Creates a {@code DeconstructorPatternNode}.
@@ -66,7 +66,7 @@ public class DeconstructorPatternNode extends Node {
    * A list of nested binding variables. This is lazily initialized and should only be accessed by
    * {@link #getBindingVariables()}.
    */
-  private @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
+  protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
    * Return all the binding variables in this pattern.

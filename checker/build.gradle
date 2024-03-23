@@ -1,6 +1,6 @@
 plugins {
   id 'java-library'
-
+  id 'base'
   // https://github.com/n0mer/gradle-git-properties
   // Generates file build/resources/main/git.properties when the `classes` task runs.
   id 'com.gorylenko.gradle-git-properties' version '2.4.1'
@@ -64,7 +64,7 @@ dependencies {
   testImplementation 'com.amazonaws:aws-java-sdk-ec2'
   testImplementation 'com.amazonaws:aws-java-sdk-kms'
   // The AWS SDK is used for testing the Called Methods Checker.
-  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.651')
+  testImplementation platform('com.amazonaws:aws-java-sdk-bom:1.12.670')
   // For the Resource Leak Checker's support for JavaEE.
   testImplementation 'javax.servlet:javax.servlet-api:4.0.1'
   // For the Resource Leak Checker's support for IOUtils.
@@ -168,6 +168,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task checkerJar(type: ShadowJar, dependsOn: compileJava, group: 'Build') {
   description "Builds checker-${project.version}.jar with all dependencies except checker-qual and checker-util."
   includeEmptyDirs = false
+  base {
+    archivesName = 'checker'
+  }
 
   from shadowJar.source
   configurations = shadowJar.configurations
@@ -994,8 +997,6 @@ task wpiManyTest(group: 'Verification') {
             || line.startsWith('warning: [path]')
             // Ignore bootstrap classpath warning:
             || line.startsWith('warning: [options] bootstrap')
-            // Ignore warnings about illegal access:
-            || line.contains('Option --illegal-access is deprecated')
             // Ignore the warnings about --add-opens arguments to the JVM
             || line.contains('warning: [options] --add-opens has no effect at compile time')
             // Ignore the summary line that reports the total number of warnings (which can be single or plural).

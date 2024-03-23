@@ -124,7 +124,7 @@ public class TreeUtilsAfterJava11 {
     public static boolean isDefaultCaseTree(CaseTree caseTree) {
       if (sourceVersionNumber >= 21) {
         for (Tree label : getLabels(caseTree, true)) {
-          if (TreeUtils.isDefaultCaseLabelTree(label)) {
+          if (isDefaultCaseLabelTree(label)) {
             return true;
           }
         }
@@ -132,6 +132,16 @@ public class TreeUtilsAfterJava11 {
       } else {
         return getExpressions(caseTree).isEmpty();
       }
+    }
+
+    /**
+     * Returns true if {@code tree} is a {@code DefaultCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
+     */
+    public static boolean isDefaultCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
     }
 
     /**
@@ -180,13 +190,13 @@ public class TreeUtilsAfterJava11 {
             (List<? extends Tree>) invokeNonNullResult(GET_LABELS, caseTree);
         List<Tree> labels = new ArrayList<>();
         for (Tree caseLabel : caseLabelTrees) {
-          if (TreeUtils.isDefaultCaseLabelTree(caseLabel)) {
+          if (isDefaultCaseLabelTree(caseLabel)) {
             if (useDefaultCaseLabelTree) {
               labels.add(caseLabel);
             }
-          } else if (TreeUtils.isConstantCaseLabelTree(caseLabel)) {
+          } else if (ConstantCaseLabelUtils.isConstantCaseLabelTree(caseLabel)) {
             labels.add(ConstantCaseLabelUtils.getConstantExpression(caseLabel));
-          } else if (TreeUtils.isPatternCaseLabelTree(caseLabel)) {
+          } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(caseLabel)) {
             labels.add(PatternCaseLabelUtils.getPattern(caseLabel));
           }
         }
@@ -250,6 +260,16 @@ public class TreeUtilsAfterJava11 {
      * otherwise.
      */
     private static @Nullable Method GET_CONSTANT_EXPRESSION = null;
+
+    /**
+     * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
+     */
+    public static boolean isConstantCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
+    }
 
     /**
      * Wrapper around {@code ConstantCaseLabelTree#getConstantExpression}.
@@ -333,6 +353,16 @@ public class TreeUtilsAfterJava11 {
 
     /** The PatternCaseLabelTree.getPattern method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_PATTERN = null;
+
+    /**
+     * Returns whether {@code tree} is a {@code PatternCaseLabelTree}.
+     *
+     * @param tree a tree to check
+     * @return true if {@code tree} is a {@code PatternCaseLabelTree}
+     */
+    public static boolean isPatternCaseLabelTree(Tree tree) {
+      return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
+    }
 
     /**
      * Wrapper around {@code PatternCaseLabelTree#getPattern}.

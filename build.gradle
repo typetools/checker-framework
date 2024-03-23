@@ -4,7 +4,7 @@ plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
   id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.5.0'
+  id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
@@ -55,11 +55,11 @@ ext {
   versions = [
     autoValue       : '1.10.4',
     googleJavaFormat : '1.19.2',
-    lombok          : '1.18.30',
+    lombok          : '1.18.32',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.0',
-    errorprone : '2.25.0',
+    errorprone : '2.26.1',
   ]
 }
 
@@ -568,6 +568,9 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   }
 
   classpath = configurations.allProjects
+  // disable interpreting module-info.java files until all sub-modules support them
+  modularity.inferModulePath = false
+
   doLast {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -622,6 +625,8 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     }
 
     classpath = configurations.allProjects
+    // disable interpreting module-info.java files until all sub-modules support them
+    modularity.inferModulePath = false
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
@@ -809,7 +814,7 @@ subprojects {
       manifest {
         attributes('Implementation-Version': "${project.version}")
         attributes('Implementation-URL': 'https://checkerframework.org')
-        if (! archiveFileName.get().endsWith('source.jar')) {
+        if (! archiveFileName.get().endsWith('source.jar') && ! archiveFileName.get().startsWith('checker-qual')) {
           attributes('Automatic-Module-Name': 'org.checkerframework.' + project.name.replaceAll('-', '.'))
         }
         if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
