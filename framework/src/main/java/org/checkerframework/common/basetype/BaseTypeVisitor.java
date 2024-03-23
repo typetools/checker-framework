@@ -91,6 +91,7 @@ import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
 import org.checkerframework.dataflow.util.PurityUtils;
@@ -128,6 +129,7 @@ import org.checkerframework.framework.util.Contract.Postcondition;
 import org.checkerframework.framework.util.Contract.Precondition;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.FieldInvariants;
+import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
@@ -240,6 +242,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@code when} element/field of the @Unused annotation. */
   protected final ExecutableElement unusedWhenElement;
 
+  /** The {@code value} element/field of the @{@link SideEffectsOnly} annotation. */
+  ExecutableElement sideEffectsOnlyValueElement;
+
   /** True if "-Ashowchecks" was passed on the command line. */
   protected final boolean showchecks;
 
@@ -304,6 +309,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         atypeFactory.fromElement(elements.getTypeElement(Vector.class.getCanonicalName()));
     targetValueElement = TreeUtils.getMethod(Target.class, "value", 0, env);
     unusedWhenElement = TreeUtils.getMethod(Unused.class, "when", 0, env);
+    sideEffectsOnlyValueElement =
+        TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, checker.getProcessingEnvironment());
     showchecks = checker.hasOption("showchecks");
     infer = checker.hasOption("infer");
     suggestPureMethods = checker.hasOption("suggestPureMethods") || infer;
@@ -1075,24 +1082,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * AnnotatedTypeMirror.AnnotatedDeclaredType, AnnotatedTypeMirror.AnnotatedExecutableType,
    * AnnotatedTypeMirror.AnnotatedDeclaredType)}.
    *
+   * <p>If the method {@code tree} is annotated with {@link SideEffectsOnly}, check that the method
+   * side-effects a subset of the expressions specified as annotation arguments/elements to {@link
+   * SideEffectsOnly}.
+   *
    * @param tree the method tree to check
    */
+  @SuppressWarnings("AlreadyChecked") // TEMPORARY, must fix
   protected void checkPurityAnnotations(MethodTree tree) {
     if (!checkPurityAnnotations) {
       return;
     }
 
-    if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
-      // There is nothing to check.
-      return;
-    }
+    // if (!suggestPureMethods && !PurityUtils.hasPurityAnnotation(atypeFactory, tree) &&
+    // !checkPurityAnnotations) {
+    //   // There is nothing to check.
+    //   return;
+    // }
 
     // `body` is lazily assigned.
     TreePath body = null;
     boolean bodyAssigned = false;
 
     if (suggestPureMethods || PurityUtils.hasPurityAnnotation(atypeFactory, tree)) {
-
       // check "no" purity
       EnumSet<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, tree);
       // @Deterministic makes no sense for a void method or constructor
@@ -1155,6 +1167,64 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           checker.reportWarning(tree, "purity.more.deterministic", tree.getName());
         } else {
           throw new BugInCF("Unexpected purity kind in " + additionalKinds);
+        }
+      }
+    }
+
+    if (checkPurityAnnotations) {
+      if (bodyAssigned == false) {
+        body = atypeFactory.getPath(tree.getBody());
+        bodyAssigned = true;
+      }
+      if (body == null) {
+        return;
+      }
+      @Nullable Element methodDeclElem = TreeUtils.elementFromDeclaration(tree);
+      AnnotationMirror sefOnlyAnnotation =
+          atypeFactory.getDeclAnnotation(methodDeclElem, SideEffectsOnly.class);
+      if (sefOnlyAnnotation == null) {
+        return;
+      }
+      List<String> sideEffectsOnlyExpressionStrings =
+          AnnotationUtils.getElementValueArray(
+              sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
+      List<JavaExpression> sideEffectsOnlyExpressions =
+          new ArrayList<>(sideEffectsOnlyExpressionStrings.size());
+      for (String st : sideEffectsOnlyExpressionStrings) {
+        try {
+          JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
+          sideEffectsOnlyExpressions.add(exprJe);
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+          checker.report(st, ex.getDiagMessage());
+          return;
+        }
+      }
+
+      if (sideEffectsOnlyExpressions.isEmpty()) {
+        return;
+      }
+
+      System.out.printf("sideEffectsOnlyExpressions = %s%n", sideEffectsOnlyExpressions);
+
+      SideEffectsOnlyChecker.ExtraSideEffects sefOnlyResult =
+          SideEffectsOnlyChecker.checkSideEffectsOnly(
+              body,
+              atypeFactory,
+              sideEffectsOnlyExpressions,
+              atypeFactory.getProcessingEnv(),
+              checker);
+
+      System.out.printf("sefOnlyResult = %s%n", sefOnlyResult);
+
+      List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getExprs();
+      System.out.printf("seOnlyIncorrectExprs = %s%n", seOnlyIncorrectExprs);
+
+      if (!seOnlyIncorrectExprs.isEmpty()) {
+        for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
+          if (!sideEffectsOnlyExpressions.contains(s.second)) {
+            System.out.printf("Error 2%n");
+            checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
+          }
         }
       }
     }
