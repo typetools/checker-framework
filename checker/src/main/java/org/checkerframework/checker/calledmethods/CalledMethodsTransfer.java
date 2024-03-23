@@ -27,6 +27,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
@@ -185,21 +186,25 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * allows propagation, along those paths, of the fact that the method being invoked in {@code
    * node} was definitely called.
    *
+   * @param <S> the type of store
+   * @param <V> the type of abstract values
    * @param node a method invocation
    * @param input the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
    *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
    *     {@code input}.
    */
-  private Map<TypeMirror, AccumulationStore> makeExceptionalStores(
-      MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
+  public static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
+      Map<TypeMirror, S> makeExceptionalStores(
+          MethodInvocationNode node, TransferInput<V, S> input) {
     if (!(node.getBlock() instanceof ExceptionBlock)) {
       // This can happen in some weird (buggy?) cases:
       // see https://github.com/typetools/checker-framework/issues/3585
       return Collections.emptyMap();
     }
+
     ExceptionBlock block = (ExceptionBlock) node.getBlock();
-    Map<TypeMirror, AccumulationStore> result = new LinkedHashMap<>();
+    Map<TypeMirror, S> result = new LinkedHashMap<>();
     block
         .getExceptionalSuccessors()
         .forEach((tm, b) -> result.put(tm, input.getRegularStore().copy()));
