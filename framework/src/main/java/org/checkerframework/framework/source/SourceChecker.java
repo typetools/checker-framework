@@ -1784,11 +1784,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param moreOpts the active options to add
    */
   protected void addOptions(Map<String, String> moreOpts) {
-    System.out.printf("Class=%s, moreOpts=%s\n", getClass(), moreOpts);
     Map<String, String> activeOpts = new HashMap<>(getOptions());
     activeOpts.putAll(moreOpts);
     activeOptions = Collections.unmodifiableMap(activeOpts);
-    System.out.printf("activeOptsAfterAssignment=%s\n", activeOpts);
   }
 
   @Override
