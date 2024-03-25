@@ -1,6 +1,5 @@
 import java.util.List;
 
-
 @SuppressWarnings("all") // Just check for crashes.
 public class Issue6421 {
 
