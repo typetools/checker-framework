@@ -2024,7 +2024,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         .getOptions()
         .forEach(
             (parentOptKey, parentOptVal) -> {
-              if (parentOptKey != null && parentOptVal != null) {
+              if (parentOptVal != null) {
                 allOptions.merge(parentOptKey, parentOptVal, this::combineOptionValues);
               }
             });
