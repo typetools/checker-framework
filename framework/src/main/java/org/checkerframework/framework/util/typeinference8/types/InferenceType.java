@@ -209,6 +209,9 @@ public class InferenceType extends AbstractType {
     }
 
     InferenceType variable = (InferenceType) o;
+    if (map != variable.map) {
+      return false;
+    }
     if (!type.equals(variable.type)) {
       return false;
     }
