@@ -2714,6 +2714,36 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Gets the type of the resulting constructor call of a MemberReferenceTree.
+   *
+   * @param memberReferenceTree MemberReferenceTree where the member is a constructor
+   * @param constructorType AnnotatedExecutableType of the declaration of the constructor
+   * @return AnnotatedTypeMirror of the resulting type of the constructor
+   */
+  public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(
+      MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
+    assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
+
+    // The return type for constructors should only have explicit annotations from the
+    // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
+
+    // The return type of the constructor will be the type of the expression of the member
+    // reference tree.
+    AnnotatedTypeMirror constructorReturnType =
+        fromTypeTree(memberReferenceTree.getQualifierExpression());
+
+    if (constructorReturnType.getKind() == TypeKind.DECLARED) {
+      // Keep only explicit annotations and those from @Poly
+      AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(
+          this, (AnnotatedDeclaredType) constructorReturnType, constructorType);
+    }
+
+    // Now add back defaulting.
+    addComputedTypeAnnotations(memberReferenceTree.getQualifierExpression(), constructorReturnType);
+    return constructorReturnType;
+  }
+
+  /**
    * The implementation of {@link #constructorFromUse(NewClassTree)} and {@link
    * #constructorFromUseWithoutTypeArgInference(NewClassTree)}.
    *
