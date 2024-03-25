@@ -2028,7 +2028,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
                 allOptions.merge(parentOptKey, parentOptVal, this::combineOptionValues);
               }
             });
-    return allOptions;
+    return Collections.unmodifiableMap(allOptions);
   }
 
   /**
