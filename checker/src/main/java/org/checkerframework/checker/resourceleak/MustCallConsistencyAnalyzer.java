@@ -39,6 +39,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -72,6 +73,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -1423,55 +1425,131 @@ class MustCallConsistencyAnalyzer {
 
     // Ownership transfer to index of @OwningArray array.
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
-    if (isOwningArray
-        && typeFactory.canCreateObligations()
-        && lhs.getTree() instanceof ArrayAccessTree) {
-      // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
-      // check whether obligations have been fulfilled prior to reassignment
-      if (!MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
-          (AssignmentTree) assignmentNode.getTree())) {
-        // assignment not in a pattern-matched loop: not permitted for @OwningArray
-        checker.reportError(assignmentNode.getTree(), "bad assignment");
-      }
-      // checkReassignmentToOwningArray(obligations, assignmentNode);
+    MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
+    boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
+    boolean lhsIsField = TreeUtils.elementFromTree(lhs.getTree()).getKind() == ElementKind.FIELD;
+    if (isOwningArray && typeFactory.canCreateObligations()) {
+      if (inConstructor) {
+        // assigning @OwningArray field to an @OwningArray argument in constructor is allowed
+        // verify whether rhs is an @OwningArray parameter
+        Tree lhsTree = lhs.getTree();
+        boolean rhsIsParam =
+            TreeUtils.elementFromTree(rhs.getTree()).getKind() == ElementKind.PARAMETER;
+        if (lhsTree instanceof ArrayAccessTree) {
+          //
 
-      // really unsure about the remainder of this code that deletes obligations for the local var
-      // TODO
-      // Remove Obligations from local variables, now that the @OwningArray is responsible.
-      // (When obligation creation is turned off, non-final fields cannot take ownership.)
-      if (rhs instanceof LocalVariableNode) {
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-
-        MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
-        boolean inConstructor =
-            containingMethod != null && TreeUtils.isConstructor(containingMethod);
-
-        // Determine which obligations this field assignment can clear.  In a constructor,
-        // assignments to `this.field` only clears obligations on normal return, since
-        // on exception `this` becomes inaccessible.
-        Set<MethodExitKind> toClear;
-        if (inConstructor
-            && lhs instanceof FieldAccessNode
-            && ((FieldAccessNode) lhs).getReceiver() instanceof ThisNode) {
-          toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
-        } else {
-          toClear = MethodExitKind.ALL;
         }
+        if (rhsIsParam) {
 
-        // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
-        // @Nullable TypeElement enclosingType =
-        //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+        } else {
+        }
+        // if (rhs.getTree() instanceof IdentifierTree) {
 
-        removeObligationsContainingVar(
-            obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+        // } else {
+        //   assert false : "in constructor: rhs of assignment expected to be Identifier";
+        // }
+      } else {
+        if (lhsIsField && containingMethod != null) {
+          // @OwningArray field may not be assigned (neither its elements) outside of constructor
+          // containingMethod != null implies it is not a declaration-definition (which is of course
+          // allowed for a field)
+          checker.reportError(
+              assignmentNode.getTree(),
+              "owningarray.field.outside.constructor.assigned",
+              lhs.getTree().toString());
+        } else if (lhs.getTree() instanceof VariableTree) {
+          // declaration of local @OwningArray. Can't be field since we're not in constructor and a @OwningArray
+          // field is enforced to be final
+          assert !lhsIsField
+            : "@OwningArray field assignment outside of constructor implies it's not final, but it must be.";
+          VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
+          obligations.add(
+              new Obligation(
+                  ImmutableSet.of(
+                      new ResourceAlias(
+                          JavaExpression.fromVariableTree(owningArrayDeclarationTree),
+                          TreeUtils.elementFromDeclaration(owningArrayDeclarationTree),
+                          owningArrayDeclarationTree)),
+                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+        } else if (lhs.getTree() instanceof IdentifierTree) {
+          // definition of @OwningArray.
+          Name arrayName = ((IdentifierTree) lhs.getTree()).getName();
 
-        // Finally, if any obligations containing this var remain, then closing the field will
-        // satisfy them.  Here we are overly cautious and only track final fields.  In the
-        // future we could perhaps relax this guard with careful handling for field reassignments.
-        addAliasToObligationsContainingVar(
-            obligations,
-            rhsVar,
-            new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
+          if (rhs instanceof ArrayCreationNode) {
+            // array is newly assigned.
+            ExpressionTree tree = (IdentifierTree) lhs.getTree();
+            CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
+            List<String> mcoeObligations = Collections.emptyList();
+            // if store does not contain the array tree, it must be the first assignment and hence
+            // legal
+            if (mcoeStore.getValue(JavaExpression.fromTree(tree)) != null) {
+              mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
+            }
+            if (mcoeObligations.isEmpty()) {
+              // if no mcoeObligations and rhs is new array it is safe to add the obligation,
+              // even in case of reassignment (since obligations is a set)
+
+              // obligations.add(
+              //     new Obligation(
+              //         ImmutableSet.of(new ResourceAlias(JavaExpression.fromTree(tree),
+              // TreeUtils.elementFromTree(tree), tree)),
+              //         Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+            } else {
+              checker.reportError(
+                  assignmentNode.getTree(),
+                  "owningarray.reassignment.with.open.obligations",
+                  mcoeObligations.toString(),
+                  arrayName);
+            }
+          } else {
+            // assigning an @OwningArray to anything else is not allowed outside of constructor
+            checker.reportError(
+                assignmentNode.getTree(),
+                "illegal.owningarray.assignment",
+                lhs.getTree().toString());
+          }
+        } else if (lhs.getTree() instanceof ArrayAccessTree) {
+          // assignment is to an element of the array, not the array pointer itself:
+          // check whether assignment is in a pattern-matched loop. if not, issue warning. if yes
+          // check whether obligations have been fulfilled prior to reassignment
+          if (!MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+              (AssignmentTree) assignmentNode.getTree())) {
+            // assignment not in a pattern-matched loop: not permitted for @OwningArray
+            // checker.reportError(assignmentNode.getTree(),
+            //                     "prohibited.owningarrayelement.assignment");
+            checker.reportError(
+                assignmentNode.getTree(),
+                "Assigning to element of @OwningArray index outside of a designated loop.");
+          }
+          // really unsure about the remainder of this code that deletes obligations for the local
+          // var
+          // TODO
+          // Remove Obligations from local variables, now that the @OwningArray is responsible.
+          // (When obligation creation is turned off, non-final fields cannot take ownership.)
+          if (rhs instanceof LocalVariableNode) {
+            LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+            Set<MethodExitKind> toClear = MethodExitKind.ALL;
+
+            // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+            // @Nullable TypeElement enclosingType =
+            //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+
+            removeObligationsContainingVar(
+                obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+
+            // Finally, if any obligations containing this var remain, then closing the field will
+            // satisfy them.  Here we are overly cautious and only track final fields.  In the
+            // future we could perhaps relax this guard with careful handling for field
+            // reassignments.
+            addAliasToObligationsContainingVar(
+                obligations,
+                rhsVar,
+                new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
+          }
+        } else {
+          assert false
+              : "uncovered case: lhs " + lhs.getTree() + " of kind " + lhs.getTree().getKind();
+        }
       }
     }
 
@@ -1493,11 +1571,6 @@ class MustCallConsistencyAnalyzer {
           && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
 
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-
-        MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
-        boolean inConstructor =
-            containingMethod != null && TreeUtils.isConstructor(containingMethod);
-
         // Determine which obligations this field assignment can clear.  In a constructor,
         // assignments to `this.field` only clears obligations on normal return, since
         // on exception `this` becomes inaccessible.
@@ -1543,7 +1616,8 @@ class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode) {
+    } else if (lhs instanceof LocalVariableNode
+               && !isOwningArray) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
@@ -2346,6 +2420,7 @@ class MustCallConsistencyAnalyzer {
         // nodes cannot create or modify the resource-alias sets that the algorithm is
         // tracking.
       }
+      // System.out.println("obligations after block " + currentBlock +  " " + obligations);
 
       propagateObligationsToSuccessorBlock(
           obligations,
@@ -2606,12 +2681,16 @@ class MustCallConsistencyAnalyzer {
    * there is a value for it in {@code successorStore}.
    *
    * @param successorStore the regular store of the successor block
+   * @param mcoeStore the mcoeStore of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
    */
   private boolean aliasInScopeInSuccessor(
       AccumulationStore successorStore, CFStore mcoeStore, ResourceAlias alias) {
+    // System.out.println("store in aliasInScope check: " + mcoeStore);
+    // System.out.println("alias: " + alias);
+    // System.out.println("contained in aliasInScope check? " + (mcoeStore.getValue(alias.reference) != null));
     return (successorStore.getValue(alias.reference) != null)
         || (mcoeStore.getValue(alias.reference) != null);
   }
