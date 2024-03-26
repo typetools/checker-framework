@@ -90,10 +90,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
-   * Checks whether the loop either: - initializes entries of an @Owning array - calls a method on
-   * entries of an @OwningArray array The pattern-match checks: - does the loop have a single
-   * statement? - is the statement an assignment? - is the LHS an element of an @OwningArray? - is
-   * the RHS a newly constructed Resource (of the form: new Resource();)? ...
+   * Checks through pattern-matching whether the loop either:
+   *
+   * <ul>
+   *   <li>initializes entries of an {@code @OwningArray}
+   *   <li>calls a method on entries of an {@code @OwningArray} array
+   * </ul>
+   *
+   * If yes, this is marked in some static datastructures in the
+   * {@code @MustCallOnElementsAnnotatedTypeFactory}
    */
   @Override
   public Void visitForLoop(ForLoopTree tree, Void p) {
@@ -122,10 +127,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     } else { // neither
       return super.visitForLoop(tree, p);
     }
-    // verifiy lhs is an index of @OwningArray
+    // ensure lhs contains @OwningArray and is an array access
     Element lhsElt = TreeUtils.elementFromTree(lhs);
     boolean lhsIsOwningArray = atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
-    // ensure lhs contains @OwningArray and is an array access
     if (!lhsIsOwningArray || lhs.getKind() != Tree.Kind.ARRAY_ACCESS)
       return super.visitForLoop(tree, p);
     ArrayAccessTree arrayAccT = (ArrayAccessTree) lhs;
@@ -177,16 +181,20 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check whether the RHS actually has must-call obligations
       if (mcValues != null) {
         ExpressionTree condition = tree.getCondition();
+        ExpressionTree arrayTree = ((ArrayAccessTree) lhs).getExpression();
+        assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
             condition, mcValues);
         MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-            condition, ((ArrayAccessTree) lhs).getExpression());
+            condition, arrayTree);
       }
     } else {
       MemberSelectTree methodCall =
           (MemberSelectTree) ((MethodInvocationTree) stmtTree).getMethodSelect();
       ArrayAccessTree arrAcc = (ArrayAccessTree) methodCall.getExpression();
+      ExpressionTree arrayTree = arrAcc.getExpression();
+      assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
       Name methodName = methodCall.getIdentifier();
       System.out.println("detected calledmethod: " + methodName);
       ExpressionTree condition = tree.getCondition();
@@ -194,7 +202,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(
           condition, methodName.toString());
       MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-          condition, arrAcc.getExpression());
+          condition, arrayTree);
     }
 
     return super.visitForLoop(tree, p);

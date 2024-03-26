@@ -1,32 +1,25 @@
 package org.checkerframework.checker.mustcallonelements;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import java.util.HashSet;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -37,36 +30,16 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreePathUtil;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.CollectionsPlume;
+import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Transfer function for the must-call type system. Its primary purposes are (1) to create temporary
- * variables for expressions (which allow those expressions to have refined information in the
- * store, which the consistency checker can use), and (2) to reset refined information when a method
- * annotated with @CreatesMustCallFor is called.
- */
+/** Transfer function for the MustCallOnElements type system. */
 public class MustCallOnElementsTransfer extends CFTransfer {
-
-  /** For building new AST nodes. */
-  private final TreeBuilder treeBuilder;
 
   /** The type factory. */
   private final MustCallOnElementsAnnotatedTypeFactory atypeFactory;
 
-  /**
-   * A cache for the default type for java.lang.String, to avoid needing to look it up for every
-   * implicit string conversion. See {@link #getDefaultStringType(StringConversionNode)}.
-   */
-  private @MonotonicNonNull AnnotationMirror defaultStringType;
-
-  /**
-   * True if -AenableWpiForRlc was passed on the command line. See {@link
-   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
-   */
+  /** True if -AenableWpiForRlc was passed on the command line. */
   private final boolean enableWpiForRlc;
 
   private final ProcessingEnvironment env;
@@ -87,40 +60,54 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     }
     enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     this.env = atypeFactory.getChecker().getProcessingEnvironment();
-    treeBuilder = new TreeBuilder(env);
   }
 
   @Override
   public TransferResult<CFValue, CFStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CFStore> input) {
-    if (!(atypeFactory instanceof MustCallOnElementsAnnotatedTypeFactory)) {
-      return super.visitLessThan(node, input);
-    }
     TransferResult<CFValue, CFStore> res = super.visitLessThan(node, input);
     BinaryTree tree = node.getTree();
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not lessthan tree";
-
-    List<String> mustcallMethods =
+    List<String> newMustCallMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
             tree);
-    if (mustcallMethods != null) {
-      CFStore thenStore = res.getElseStore();
-      CFStore elseStore = res.getElseStore();
-      ExpressionTree arrayTree =
-          MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
-              node.getTree());
-      AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-      AnnotationMirror newType = getUpdatedMustCallOnElementsType(currentType, mustcallMethods);
-      JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
-      thenStore.clearValue(receiverReceiver);
-      thenStore.insertValue(receiverReceiver, newType);
-      elseStore.clearValue(receiverReceiver);
-      elseStore.insertValue(receiverReceiver, newType);
-
-      return new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+    if (newMustCallMethods == null) {
+      // it is not an obligation-creating loop
+      return res;
     }
-    return res;
+    ExpressionTree arrayTree =
+      MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+    Element arrayElt = TreeUtils.elementFromTree(arrayTree);
+    if (arrayElt.getKind() == ElementKind.FIELD) {
+      List<String> previousMustCallMethods =
+        MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(arrayTree.toString());
+      if (previousMustCallMethods.isEmpty()) {
+        MustCallOnElementsAnnotatedTypeFactory.putMcoeObligationsForOwningArrayField(
+                            arrayTree.toString(),
+                            newMustCallMethods);
+      } else {
+        boolean areObligationsEqual =
+          new HashSet<String>(previousMustCallMethods).equals(
+                            new HashSet<String>(newMustCallMethods));
+        if (!areObligationsEqual) {
+          atypeFactory.getChecker().reportError(
+            arrayTree,
+            "wrong.mustCallOnElements.obligations.assigned",
+            arrayTree.toString(),
+            formatMissingMustCallMethods(previousMustCallMethods),
+            formatMissingMustCallMethods(newMustCallMethods));
+          return res;
+        }
+      }
+    }
+    CFStore elseStore = res.getElseStore();
+    AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
+    AnnotationMirror newType = getUpdatedMustCallOnElementsType(currentType, newMustCallMethods);
+    JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
+    elseStore.clearValue(receiverReceiver);
+    elseStore.insertValue(receiverReceiver, newType);
+    return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
   }
 
   /**
@@ -141,7 +128,12 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       type = atypeFactory.TOP;
     } else {
       AnnotatedArrayType curType = (AnnotatedArrayType) currentType;
-      type = curType.getComponentType().getPrimaryAnnotation(MustCallOnElements.class);
+      type = curType.getPrimaryAnnotation(MustCallOnElements.class);
+      if (type == null) {
+        assert (curType.getPrimaryAnnotation(MustCallOnElementsUnknown.class) != null)
+            : "array annotation neither MCOE nor MOCEunknown";
+        type = atypeFactory.BOTTOM;
+      }
     }
 
     ExecutableElement valueElement = atypeFactory.getMustCallOnElementsValueElement();
@@ -180,57 +172,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     return builder.build();
   }
 
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitMethodInvocation(
-  //     MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-  //   TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
-
-  //   updateStoreWithTempVar(result, n);
-  //   if (!noCreatesMustCallFor) {
-  //     List<JavaExpression> targetExprs =
-  //         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-  //             n, atypeFactory, atypeFactory);
-  //     for (JavaExpression targetExpr : targetExprs) {
-  //       AnnotationMirror defaultType =
-  //           atypeFactory
-  //               .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
-  //               .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-
-  //       if (result.containsTwoStores()) {
-  //         CFStore thenStore = result.getThenStore();
-  //         lubWithStoreValue(thenStore, targetExpr, defaultType);
-
-  //         CFStore elseStore = result.getElseStore();
-  //         lubWithStoreValue(elseStore, targetExpr, defaultType);
-  //       } else {
-  //         CFStore store = result.getRegularStore();
-  //         lubWithStoreValue(store, targetExpr, defaultType);
-  //       }
-  //     }
-  //   }
-  //   return result;
-  // }
-
   /**
-   * Computes the LUB of the current value in the store for expr, if it exists, and defaultType.
-   * Inserts that LUB into the store as the new value for expr.
-   *
-   * @param store a CFStore
-   * @param expr an expression that might be in the store
-   * @param defaultType the default type of the expression's static type
-   */
-  private void lubWithStoreValue(CFStore store, JavaExpression expr, AnnotationMirror defaultType) {
-    CFValue value = store.getValue(expr);
-    CFValue defaultTypeAsCFValue =
-        analysis.createSingleAnnotationValue(defaultType, expr.getType());
-    CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
-    store.clearValue(expr);
-    store.insertValue(expr, newValue);
-  }
-
-  /**
-   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
-   *
    * @param tree a tree
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
    *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
@@ -246,8 +188,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   }
 
   /**
-   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
-   *
    * @param expressionTree a tree
    * @param lhsTree its element
    * @return false if Resource Leak Checker is running as one of the upstream checkers and the
@@ -263,131 +203,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitObjectCreation(
-  //     ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> result = super.visitObjectCreation(node, input);
-  //   updateStoreWithTempVar(result, node);
-  //   return result;
-  // }
-
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitTernaryExpression(
-  //     TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-  //   if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-  //     // Add the synthetic variable created during CFG construction to the temporary
-  //     // variable map (rather than creating a redundant temp var)
-  //     atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
-  //   }
-  //   return result;
-  // }
-
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
-  //     SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
-  //   if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-  //     // Add the synthetic variable created during CFG construction to the temporary
-  //     // variable map (rather than creating a redundant temp var)
-  //     atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
-  //   }
-  //   return result;
-  // }
-
-  /**
-   * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as {@code node}.
-   *
-   * @param node the node to be assigned to a temporary variable
-   * @param result the transfer result containing the store to be modified
-   */
-  public void updateStoreWithTempVar(TransferResult<CFValue, CFStore> result, Node node) {
-    // Must-call obligations on primitives are not supported.
-    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
-      LocalVariableNode temp = getOrCreateTempVar(node);
-      if (temp != null) {
-        JavaExpression localExp = JavaExpression.fromNode(temp);
-        AnnotationMirror anm =
-            atypeFactory
-                .getAnnotatedType(node.getTree())
-                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-        insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
-      }
-    }
-  }
-
-  /**
-   * Either returns the temporary variable associated with node, or creates one if one does not
-   * exist.
-   *
-   * @param node a node, which must be an expression (not a statement)
-   * @return a temporary variable node representing {@code node} that can be placed into a store
-   */
-  private @Nullable LocalVariableNode getOrCreateTempVar(Node node) {
-    LocalVariableNode localVariableNode = atypeFactory.tempVars.get(node.getTree());
-    if (localVariableNode == null) {
-      VariableTree temp = createTemporaryVar(node);
-      if (temp != null) {
-        IdentifierTree identifierTree = treeBuilder.buildVariableUse(temp);
-        localVariableNode = new LocalVariableNode(identifierTree);
-        localVariableNode.setInSource(true);
-        atypeFactory.tempVars.put(node.getTree(), localVariableNode);
-      }
-    }
-    return localVariableNode;
-  }
-
-  /**
-   * Creates a variable declaration for the given expression node, if possible.
-   *
-   * <p>Note that error reporting code assumes that the names of temporary variables are not legal
-   * Java identifiers (see <a
-   * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
-   * temporary variable names generated here include an {@code '-'} character to make the names
-   * invalid.
-   *
-   * @param node an expression node
-   * @return a variable tree for the node, or null if an appropriate containing element cannot be
-   *     located
-   */
-  protected @Nullable VariableTree createTemporaryVar(Node node) {
-    ExpressionTree tree = (ExpressionTree) node.getTree();
-    TypeMirror treeType = TreeUtils.typeOf(tree);
-    Element enclosingElement;
-    TreePath path = atypeFactory.getPath(tree);
-    if (path == null) {
-      enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
-    } else {
-      ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromDeclaration(classTree);
-    }
-    if (enclosingElement == null) {
-      return null;
-    }
-    // Declare and initialize a new, unique variable
-    VariableTree tmpVarTree =
-        treeBuilder.buildVariableDecl(treeType, uniqueName("temp-var"), enclosingElement, tree);
-    return tmpVarTree;
-  }
-
-  /** A unique identifier counter for node names. */
-  private static AtomicLong uid = new AtomicLong();
-
-  /**
-   * Creates a unique, arbitrary string that can be used as a name for a temporary variable, using
-   * the given prefix. Can be used up to Long.MAX_VALUE times.
-   *
-   * <p>Note that the correctness of the Resource Leak Checker depends on these names actually being
-   * unique, because {@code LocalVariableNode}s derived from them are used as keys in a map.
-   *
-   * @param prefix the prefix for the name
-   * @return a unique name that starts with the prefix
-   */
-  protected String uniqueName(String prefix) {
-    return prefix + "-" + uid.getAndIncrement();
-  }
-
   /**
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
@@ -396,5 +211,16 @@ public class MustCallOnElementsTransfer extends CFTransfer {
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;
+  }
+
+  private String formatMissingMustCallMethods(List<String> mustCallVal) {
+    int size = mustCallVal.size();
+    if (size == 0) {
+      return "None";
+    } else if (size == 1) {
+      return "method " + mustCallVal.get(0);
+    } else {
+      return "methods " + String.join(", ", mustCallVal);
+    }
   }
 }

@@ -10,32 +10,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.calledmethodsonelements.*;
-import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
-import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
-import org.checkerframework.javacutil.*;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import com.sun.source.tree.Tree;
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
 import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -54,11 +28,16 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the Called Methods Checker. */
 public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
   /** The {@code @}{@link MustCallOnElements()} annotation. */
   public final AnnotationMirror TOP;
 
   /** The {@code @}{@link MustCallOnElements()} annotation. */
   public final AnnotationMirror BOTTOM;
+
+  /** The {@link CalledMethodsOnElements#value} element/argument. */
+  /*package-private*/ final ExecutableElement calledMethodsOnElementsValueElement =
+      TreeUtils.getMethod(CalledMethodsOnElements.class, "value", 0, processingEnv);
 
   /**
    * Fetches the store from the results of dataflow for {@code first}. If {@code afterFirstStore} is
@@ -107,11 +86,11 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
     return builder.build();
   }
 
-  /** The {@link CalledMethodsOnElements#value} element/argument. */
-  /*package-private*/ final ExecutableElement calledMethodsOnElementsValueElement =
-     TreeUtils.getMethod(CalledMethodsOnElements.class, "value", 0, processingEnv);
+  public ExecutableElement getCalledMethodsOnElementsValueElement() {
+    return calledMethodsOnElementsValueElement;
+  }
 
-   @Override
+  @Override
   protected QualifierHierarchy createQualifierHierarchy() {
     return new CalledMethodsOnElementsQualifierHierarchy(
         this.getSupportedTypeQualifiers(), this.getProcessingEnv(), this);

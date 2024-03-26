@@ -2,7 +2,6 @@ package org.checkerframework.checker.calledmethodsonelements;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +17,6 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -70,7 +68,8 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   }
 
   // /*
-  //  * If the called method has @EnsuresCalledMethods() postcondition, these methods will have to be
+  //  * If the called method has @EnsuresCalledMethods() postcondition, these methods will have to
+  // be
   //  * added to the store
   //  *  */
   // @Override

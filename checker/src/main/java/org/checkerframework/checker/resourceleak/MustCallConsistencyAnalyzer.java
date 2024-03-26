@@ -6,6 +6,111 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
+import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -45,6 +150,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
 import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -55,6 +161,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -71,6 +178,109 @@ import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.IPair;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.calledmethodsonelements.CalledMethodsOnElementsChecker;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
+import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
+import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.MustCallAlias;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
+import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.accumulation.AccumulationStore;
+import org.checkerframework.common.accumulation.AccumulationValue;
+import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
+import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -174,6 +384,18 @@ class MustCallConsistencyAnalyzer {
    * to access the Must Call Checker.
    */
   private final ResourceLeakAnnotatedTypeFactory typeFactory;
+
+  /**
+   * The type factory for the MustCallOnElements Checker, which is used to get MustCallOnElements
+   * types
+   */
+  private final MustCallOnElementsAnnotatedTypeFactory mcoeTypeFactory;
+
+  /**
+   * The type factory for the CalledMethodsOnElements Checker, which is used to get
+   * CalledMethodsOnElements types
+   */
+  private final CalledMethodsOnElementsAnnotatedTypeFactory cmoeTypeFactory;
 
   /**
    * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
@@ -571,6 +793,9 @@ class MustCallConsistencyAnalyzer {
   /*package-private*/ MustCallConsistencyAnalyzer(
       ResourceLeakAnnotatedTypeFactory typeFactory, ResourceLeakAnalysis analysis) {
     this.typeFactory = typeFactory;
+    this.mcoeTypeFactory = typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+    this.cmoeTypeFactory =
+        typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
     this.checker = (ResourceLeakChecker) typeFactory.getChecker();
     this.analysis = analysis;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
@@ -1176,6 +1401,211 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Verifies whether a loop, specified through the passed LessThanNode loop condition, is:
+   *
+   * <ul>
+   *   <li>1. an allocating loop (a pattern-matched loop that creates obligations for an
+   *       {@code @OwningArray} array)
+   *   <li>2. whether the array, for which the loop creates mcoe obligations, has open mcoe
+   *       obligations
+   * </ul>
+   *
+   * If both are true, the loop is illegal, since the mcoe obligations of a previous allocation were
+   * not fulfilled. In this case, an error is reported.
+   *
+   * @param node the node that is the condition for the for loop
+   */
+  private void verifyAllocatingForLoop(LessThanNode node) {
+    BinaryTree tree = node.getTree();
+    // check whether the loop specified through the condition was pattern-matched as an allocating
+    // loop
+    if (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
+        == null) {
+      return;
+    }
+    ExpressionTree arr =
+        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+    assert arr != null
+        : "invariant violated: pattern-matcher didn't put array tree into datastructure";
+    // check whether obligations have been fulfilled prior to reassignment
+    List<String> mcoeObligations =
+        getMustCallOnElementsObligations(mcoeTypeFactory.getStoreForTree(arr), arr);
+    List<String> cmoeObligations =
+        getCalledMethodsOnElements(cmoeTypeFactory.getStoreForTree(arr), arr);
+    System.out.println(
+        "verifying assignmentloop: " + mcoeObligations + "\n        -> " + cmoeObligations);
+    mcoeObligations.removeAll(cmoeObligations);
+    if (mcoeObligations.isEmpty()) {
+      return;
+    }
+    checker.reportError(
+        arr,
+        "illegal.owningarray.allocation",
+        arr.toString(),
+        formatMissingMustCallMethods(mcoeObligations));
+  }
+
+  /**
+   * Returns a list of methods considered "called on elements" of the given tree (expected to be an
+   * array identifier) The list is extracted from the store passed as an argument.
+   *
+   * @param cmoeStore the store holding cmoe type annotation information
+   * @param arrTree the array identifier tree
+   * @return list of the methods called on the elements of the given array (in dedicated,
+   *     pattern-matched for-loops)
+   */
+  private List<String> getCalledMethodsOnElements(CFStore cmoeStore, ExpressionTree arrTree) {
+    CFValue cfval = cmoeStore.getValue(JavaExpression.fromTree(arrTree));
+    Element arrElm = TreeUtils.elementFromTree(arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return Collections.emptyList();
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return Collections.emptyList();
+      }
+    }
+    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
+    AnnotationMirror cmoeAnno =
+        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), CalledMethodsOnElements.class);
+    AnnotationMirror cmoeAnnoBottom =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), CalledMethodsOnElementsBottom.class);
+    assert cmoeAnno != null || cmoeAnnoBottom != null
+        : "No cmoe annotation for " + arrTree + " in store.";
+    if (cmoeAnnoBottom != null) {
+      return Collections.emptyList();
+    } else {
+      return AnnotationUtils.getElementValueArray(
+          cmoeAnno, cmoeTypeFactory.getCalledMethodsOnElementsValueElement(), String.class);
+    }
+  }
+
+  /**
+   * Returns a list of methods considered "called on elements" of the given tree (expected to be an
+   * array identifier) The list is extracted from the store passed as an argument.
+   *
+   * @param cmoeStore the store holding cmoe type annotation information
+   * @param arrTree the array identifier tree
+   * @return list of the methods called on the elements of the given array (in dedicated,
+   *     pattern-matched for-loops)
+   */
+  private List<String> getCalledMethodsOnElements(CFStore cmoeStore, VariableTree arrTree) {
+    CFValue cfval = cmoeStore.getValue(JavaExpression.fromVariableTree(arrTree));
+    Element arrElm = TreeUtils.elementFromDeclaration(arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return Collections.emptyList();
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return Collections.emptyList();
+      }
+    }
+    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
+    AnnotationMirror cmoeAnno =
+        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), CalledMethodsOnElements.class);
+    AnnotationMirror cmoeAnnoBottom =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), CalledMethodsOnElementsBottom.class);
+    assert cmoeAnno != null || cmoeAnnoBottom != null
+        : "No cmoe annotation for " + arrTree + " in store.";
+    if (cmoeAnnoBottom != null) {
+      return Collections.emptyList();
+    } else {
+      return AnnotationUtils.getElementValueArray(
+          cmoeAnno, cmoeTypeFactory.getCalledMethodsOnElementsValueElement(), String.class);
+    }
+  }
+
+  /**
+   * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
+   * array specified by the given tree (expected to be an array identifier). The list is extracted
+   * from the store passed as an argument.
+   *
+   * @param mcoeStore store containing MustCallOnElements type annotation information
+   * @param arrTree the array identifier tree
+   * @return list of the MustCallOnElements obligations of the given array
+   */
+  private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, ExpressionTree arrTree) {
+    CFValue cfval = mcoeStore.getValue(JavaExpression.fromTree(arrTree));
+    Element arrElm = TreeUtils.elementFromTree(arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return Collections.emptyList();
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return Collections.emptyList();
+      }
+    }
+    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
+    AnnotationMirror mcoeAnno =
+        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), MustCallOnElements.class);
+    AnnotationMirror mcoeAnnoUnknown =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), MustCallOnElementsUnknown.class);
+    assert mcoeAnno != null || mcoeAnnoUnknown != null
+        : "No mcoe annotation for " + arrTree + " in store.";
+    if (mcoeAnnoUnknown != null) {
+      return Collections.emptyList();
+    } else {
+      return AnnotationUtils.getElementValueArray(
+          mcoeAnno, mcoeTypeFactory.getMustCallOnElementsValueElement(), String.class);
+    }
+  }
+
+  /**
+   * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
+   * array specified by the given tree (expected to be an array identifier). The list is extracted
+   * from the store passed as an argument.
+   *
+   * @param mcoeStore store containing MustCallOnElements type annotation information
+   * @param arrTree the array identifier tree
+   * @return list of the MustCallOnElements obligations of the given array
+   */
+  private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, VariableTree arrTree) {
+    CFValue cfval = mcoeStore.getValue(JavaExpression.fromVariableTree(arrTree));
+    Element arrElm = TreeUtils.elementFromDeclaration(arrTree);
+    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
+      if (ElementUtils.isFinal(arrElm)) {
+        if (cfval == null) {
+          // entry block doesn't have final field in store yet
+          return Collections.emptyList();
+        }
+      } else {
+        // nonfinal OwningArray field is illegal. An error was already issued.
+        // Prevent program crash and return here.
+        return Collections.emptyList();
+      }
+    }
+    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
+    AnnotationMirror mcoeAnno =
+        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), MustCallOnElements.class);
+    AnnotationMirror mcoeAnnoUnknown =
+        AnnotationUtils.getAnnotationByClass(
+            cfval.getAnnotations(), MustCallOnElementsUnknown.class);
+    assert mcoeAnno != null || mcoeAnnoUnknown != null
+        : "No mcoe annotation for " + arrTree + " in store.";
+    if (mcoeAnnoUnknown != null) {
+      return Collections.emptyList();
+    } else {
+      return AnnotationUtils.getElementValueArray(
+          mcoeAnno, mcoeTypeFactory.getMustCallOnElementsValueElement(), String.class);
+    }
+  }
+
+  /**
    * Updates a set of Obligations to account for an assignment. Assigning to an owning field might
    * remove Obligations, assigning to a resource variable might remove obligations, assigning to a
    * new local variable might modify an Obligation (by increasing the size of its resource alias
@@ -1208,7 +1638,8 @@ class MustCallConsistencyAnalyzer {
         // assignment not in a pattern-matched loop: not permitted for @OwningArray
         checker.reportError(assignmentNode.getTree(), "bad assignment");
       }
-      checkReassignmentToOwningArray(obligations, assignmentNode);
+      // checkReassignmentToOwningArray(obligations, assignmentNode);
+
       // really unsure about the remainder of this code that deletes obligations for the local var
       // TODO
       // Remove Obligations from local variables, now that the @OwningArray is responsible.
@@ -2113,6 +2544,8 @@ class MustCallConsistencyAnalyzer {
           updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+        } else if (node instanceof LessThanNode) {
+          verifyAllocatingForLoop((LessThanNode) node);
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
