@@ -29,10 +29,10 @@ import org.checkerframework.javacutil.TypesUtils;
 /** The annotated type factory for the Called Methods Checker. */
 public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** The {@code @}{@link MustCallOnElements()} annotation. */
+  /** The {@code @CalledMethodsOnElements()} annotation. */
   public final AnnotationMirror TOP;
 
-  /** The {@code @}{@link MustCallOnElements()} annotation. */
+  /** The {@code CalledMethodsOnElements()} annotation. */
   public final AnnotationMirror BOTTOM;
 
   /** The {@link CalledMethodsOnElements#value} element/argument. */
@@ -86,6 +86,11 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
     return builder.build();
   }
 
+  /**
+   * Returns the cmoe value element.
+   *
+   * @return the cmoe value element.
+   */
   public ExecutableElement getCalledMethodsOnElementsValueElement() {
     return calledMethodsOnElementsValueElement;
   }

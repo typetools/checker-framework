@@ -22,7 +22,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
@@ -62,7 +61,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   public final AnnotationMirror TOP;
 
   /**
-   * The {@code @}{@link MustCallOnElements}{@code ()} annotation. It is the default in unannotated
+   * The {@code @}{@link MustCallOnElements} annotation. It is the default in unannotated
    * code.
    */
   public final AnnotationMirror BOTTOM;
@@ -177,7 +176,8 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     super(checker);
     TOP = AnnotationBuilder.fromClass(elements, MustCallOnElementsUnknown.class);
     BOTTOM = createMustCallOnElements(Collections.emptyList());
-    // noLightweightOwnership = checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    // noLightweightOwnership =
+    // checker.hasOption(MustCallOnElementsChecker.NO_LIGHTWEIGHT_OWNERSHIP);
     enableWpiForRlc = checker.hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     if (checker instanceof MustCallOnElementsChecker) {
       this.postInit();
@@ -225,19 +225,22 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   /**
-   * Sets the mcoe obligations of the {@code @OwningArray} field to the given list of methods.
-   * The method does not verify that the string actually refers to such a field.
+   * Sets the mcoe obligations of the {@code @OwningArray} field to the given list of methods. The
+   * method does not verify that the string actually refers to such a field.
+   *
    * @param fieldName name of the {@code @OwningArray} field
    * @param obligations list of methods corresponding to the field's mcoe obligations
    */
-  public static void putMcoeObligationsForOwningArrayField(String fieldName, List<String> obligations) {
+  public static void putMcoeObligationsForOwningArrayField(
+      String fieldName, List<String> obligations) {
     mcoeObligationsForOwningArrayField.put(fieldName, obligations);
   }
 
   /**
    * If the given string is an {@code @OwningArray} field, the method returns its mcoe obligations.
-   * If the string is not such a field or it doesn't have any oblgiations, the method returns
-   * the empty list. It does not verify whether the string actually refers to such a field.
+   * If the string is not such a field or it doesn't have any oblgiations, the method returns the
+   * empty list. It does not verify whether the string actually refers to such a field.
+   *
    * @param fieldName name of the {@code @OwningArray} field
    * @return mustcall obligations of the given field
    */
@@ -510,7 +513,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
       // Therefore, if WPI is enabled, they should not be executed.
       if (getWholeProgramInference() == null
           && elt.getKind() == ElementKind.PARAMETER
-          &&  getDeclAnnotation(elt, OwningArray.class) == null) {
+          && getDeclAnnotation(elt, OwningArray.class) == null) {
         // Parameters that are not annotated with @Owning should be treated as bottom
         // (to suppress warnings about them). An exception is polymorphic parameters,
         // which might be @MustCallOnElementsAlias (and so wouldn't be annotated with @Owning):

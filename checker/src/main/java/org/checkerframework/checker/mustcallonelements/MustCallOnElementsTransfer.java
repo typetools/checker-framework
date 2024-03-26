@@ -4,13 +4,13 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import java.util.HashSet;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
@@ -30,8 +30,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.CollectionsPlume;
 import org.checkerframework.javacutil.TreeUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /** Transfer function for the MustCallOnElements type system. */
 public class MustCallOnElementsTransfer extends CFTransfer {
@@ -77,33 +77,35 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       return res;
     }
     ExpressionTree arrayTree =
-      MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
     Element arrayElt = TreeUtils.elementFromTree(arrayTree);
     if (arrayElt.getKind() == ElementKind.FIELD) {
       List<String> previousMustCallMethods =
-        MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(arrayTree.toString());
+          MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(
+              arrayTree.toString());
       if (previousMustCallMethods.isEmpty()) {
         MustCallOnElementsAnnotatedTypeFactory.putMcoeObligationsForOwningArrayField(
-                            arrayTree.toString(),
-                            newMustCallMethods);
+            arrayTree.toString(), newMustCallMethods);
       } else {
         boolean areObligationsEqual =
-          new HashSet<String>(previousMustCallMethods).equals(
-                            new HashSet<String>(newMustCallMethods));
+            new HashSet<String>(previousMustCallMethods)
+                .equals(new HashSet<String>(newMustCallMethods));
         if (!areObligationsEqual) {
-          atypeFactory.getChecker().reportError(
-            arrayTree,
-            "wrong.mustCallOnElements.obligations.assigned",
-            arrayTree.toString(),
-            formatMissingMustCallMethods(previousMustCallMethods),
-            formatMissingMustCallMethods(newMustCallMethods));
+          atypeFactory
+              .getChecker()
+              .reportError(
+                  arrayTree,
+                  "wrong.mustCallOnElements.obligations.assigned",
+                  arrayTree.toString(),
+                  formatMissingMustCallMethods(previousMustCallMethods),
+                  formatMissingMustCallMethods(newMustCallMethods));
           return res;
         }
       }
     }
     CFStore elseStore = res.getElseStore();
-    AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-    AnnotationMirror newType = getUpdatedMustCallOnElementsType(currentType, newMustCallMethods);
+    // AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
+    AnnotationMirror newType = getMustCallOnElementsType(newMustCallMethods);
     JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
     elseStore.clearValue(receiverReceiver);
     elseStore.insertValue(receiverReceiver, newType);
@@ -121,56 +123,39 @@ public class MustCallOnElementsTransfer extends CFTransfer {
    * @return the new annotation to be added to the type, or null if the current type cannot be
    *     converted to an accumulator annotation
    */
-  private @Nullable AnnotationMirror getUpdatedMustCallOnElementsType(
-      AnnotatedTypeMirror currentType, List<String> methodNames) {
-    AnnotationMirror type;
-    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.TOP)) {
-      type = atypeFactory.TOP;
-    } else {
-      AnnotatedArrayType curType = (AnnotatedArrayType) currentType;
-      type = curType.getPrimaryAnnotation(MustCallOnElements.class);
-      if (type == null) {
-        assert (curType.getPrimaryAnnotation(MustCallOnElementsUnknown.class) != null)
-            : "array annotation neither MCOE nor MOCEunknown";
-        type = atypeFactory.BOTTOM;
-      }
-    }
-
-    ExecutableElement valueElement = atypeFactory.getMustCallOnElementsValueElement();
-    List<String> currentMethods =
-        AnnotationUtils.getElementValueArray(type, valueElement, String.class);
-    List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
-
-    return createAccumulatorAnnotation(newList, type);
-  }
-
-  /**
-   * Creates a new instance of the accumulator annotation that contains the elements of {@code
-   * values}.
-   *
-   * @param values the arguments to the annotation. The values can contain duplicates and can be in
-   *     any order.
-   * @return an annotation mirror representing the accumulator annotation with {@code values}'s
-   *     arguments; this is top if {@code values} is empty
-   */
-  public AnnotationMirror createAccumulatorAnnotation(List<String> values, AnnotationMirror type) {
-    AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
-    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+  private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
+    AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
+    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
     return builder.build();
   }
 
-  /**
-   * Creates a new instance of the accumulator annotation that contains exactly one value.
-   *
-   * @param value the argument to the annotation
-   * @return an annotation mirror representing the accumulator annotation with {@code value} as its
-   *     argument
-   */
-  public AnnotationMirror createAccumulatorAnnotation(String value, AnnotationMirror type) {
-    AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
-    builder.setValue("value", Collections.singletonList(value));
-    return builder.build();
-  }
+  // /**
+  //  * Creates a new instance of the accumulator annotation that contains the elements of {@code
+  //  * values}.
+  //  *
+  //  * @param values the arguments to the annotation. The values can contain duplicates and can be in
+  //  *     any order.
+  //  * @return an annotation mirror representing the accumulator annotation with {@code values}'s
+  //  *     arguments; this is top if {@code values} is empty
+  //  */
+  // public AnnotationMirror createAccumulatorAnnotation(List<String> values, AnnotationMirror type) {
+  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
+  //   builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+  //   return builder.build();
+  // }
+
+  // /**
+  //  * Creates a new instance of the accumulator annotation that contains exactly one value.
+  //  *
+  //  * @param value the argument to the annotation
+  //  * @return an annotation mirror representing the accumulator annotation with {@code value} as its
+  //  *     argument
+  //  */
+  // public AnnotationMirror createAccumulatorAnnotation(String value, AnnotationMirror type) {
+  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
+  //   builder.setValue("value", Collections.singletonList(value));
+  //   return builder.build();
+  // }
 
   /**
    * @param tree a tree
@@ -213,6 +198,12 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     return enableWpiForRlc;
   }
 
+  /**
+   * Pretty-prints a list of mustcall values into a string to output in a warning message.
+   *
+   * @param mustCallVal a list of mustcall values
+   * @return a string, which is a pretty-print of the method list
+   */
   private String formatMissingMustCallMethods(List<String> mustCallVal) {
     int size = mustCallVal.size();
     if (size == 0) {
