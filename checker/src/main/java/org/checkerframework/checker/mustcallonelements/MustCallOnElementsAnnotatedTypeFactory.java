@@ -60,10 +60,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   /** The {@code @}{@link MustCallOnElementsUnknown} annotation. */
   public final AnnotationMirror TOP;
 
-  /**
-   * The {@code @}{@link MustCallOnElements} annotation. It is the default in unannotated
-   * code.
-   */
+  /** The {@code @}{@link MustCallOnElements} annotation. It is the default in unannotated code. */
   public final AnnotationMirror BOTTOM;
 
   /**

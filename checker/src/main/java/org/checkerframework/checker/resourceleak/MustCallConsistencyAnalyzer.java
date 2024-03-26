@@ -2398,13 +2398,14 @@ class MustCallConsistencyAnalyzer {
                 + exceptionType;
     // Computed outside the Obligation loop for efficiency.
     AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
+    final CFStore mcoeStore = mcoeTypeFactory.getStoreForBlock(true, successor, null);
     for (Obligation obligation : obligations) {
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in
       // the successor.
       boolean obligationGoesOutOfScopeBeforeSuccessor = true;
       for (ResourceAlias resourceAlias : obligation.resourceAliases) {
-        if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
+        if (aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, resourceAlias)) {
           obligationGoesOutOfScopeBeforeSuccessor = false;
           break;
         }
@@ -2501,6 +2502,16 @@ class MustCallConsistencyAnalyzer {
         //        the block.
         CFStore mcStore;
         AccumulationStore cmStore;
+        CFStore mcoeStoreCurrent =
+            mcoeTypeFactory.getStoreForBlock(
+                obligationGoesOutOfScopeBeforeSuccessor,
+                currentBlock, // 1a. (MC)
+                successor); // 1b. (MC)
+        CFStore cmoeStoreCurrent =
+            cmoeTypeFactory.getStoreForBlock(
+                obligationGoesOutOfScopeBeforeSuccessor,
+                currentBlock, // 1a. (MC)
+                successor); // 1b. (MC)
         if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
           cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
           // For the Must Call Checker, we currently apply a less precise handling and do
@@ -2545,6 +2556,8 @@ class MustCallConsistencyAnalyzer {
             exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
         if (obligation.whenToEnforce.contains(exitKind)) {
           checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+          checkMustCallOnElements(
+              obligation, mcoeStoreCurrent, cmoeStoreCurrent, exitReasonForErrorMessage);
         }
       } else {
         // In this case, there is info in the successor store about some alias in the
@@ -2553,7 +2566,7 @@ class MustCallConsistencyAnalyzer {
         // scope.
         Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
         copyOfResourceAliases.removeIf(
-            alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
+            alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, mcoeStore, alias));
         successorObligations.add(new Obligation(copyOfResourceAliases, obligation.whenToEnforce));
       }
     }
@@ -2597,8 +2610,10 @@ class MustCallConsistencyAnalyzer {
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
    */
-  private boolean aliasInScopeInSuccessor(AccumulationStore successorStore, ResourceAlias alias) {
-    return successorStore.getValue(alias.reference) != null;
+  private boolean aliasInScopeInSuccessor(
+      AccumulationStore successorStore, CFStore mcoeStore, ResourceAlias alias) {
+    return (successorStore.getValue(alias.reference) != null)
+        || (mcoeStore.getValue(alias.reference) != null);
   }
 
   /**
@@ -2686,6 +2701,44 @@ class MustCallConsistencyAnalyzer {
       }
     }
     return null;
+  }
+
+  /**
+   * For the given Obligation, checks whether the first alias is an {@code @OwningArray} and if yes,
+   * whether it's the only alias (aliases of such arrays are not allowed) and whether its
+   * {@code @MustCallOnElements} obligation are satisfied, based on {@code @CalledMethodsOnElements}
+   * and {@code @MustCallOnElements} types in the given stores.
+   *
+   * @param obligation the Obligation
+   * @param mcoeStore the mustCallOnElements store
+   * @param cmoeStore the calledMethodsOnElements store
+   * @param exitReasonForErrorMessage if the {@code @MustCallOnElements} obligation is not
+   *     satisfied, a useful explanation to include in the error message
+   */
+  private void checkMustCallOnElements(
+      Obligation obligation,
+      CFStore mcoeStore,
+      CFStore cmoeStore,
+      String exitReasonForErrorMessage) {
+    for (ResourceAlias alias : obligation.resourceAliases) {
+      if (typeFactory.hasOwningArray(alias.element)) {
+        assert obligation.resourceAliases.size() == 1 : "aliases of @OwningArray not allowed";
+        List<String> mcoeValues =
+            getMustCallOnElementsObligations(mcoeStore, (VariableTree) alias.tree);
+        List<String> cmoeValues = getCalledMethodsOnElements(cmoeStore, (VariableTree) alias.tree);
+        System.out.println(
+            "verifying exit: " + alias + " " + mcoeValues + "\n        -> " + cmoeValues);
+        mcoeValues.removeAll(cmoeValues);
+        if (!mcoeValues.isEmpty()) {
+          checker.reportError(
+              alias.tree,
+              "unfulfilled.mustcallonelements.obligations",
+              formatMissingMustCallMethods(mcoeValues),
+              alias.tree.toString(),
+              exitReasonForErrorMessage);
+        }
+      }
+    }
   }
 
   /**

@@ -3,17 +3,13 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
-import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -26,10 +22,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -128,34 +121,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
     return builder.build();
   }
-
-  // /**
-  //  * Creates a new instance of the accumulator annotation that contains the elements of {@code
-  //  * values}.
-  //  *
-  //  * @param values the arguments to the annotation. The values can contain duplicates and can be in
-  //  *     any order.
-  //  * @return an annotation mirror representing the accumulator annotation with {@code values}'s
-  //  *     arguments; this is top if {@code values} is empty
-  //  */
-  // public AnnotationMirror createAccumulatorAnnotation(List<String> values, AnnotationMirror type) {
-  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
-  //   builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
-  //   return builder.build();
-  // }
-
-  // /**
-  //  * Creates a new instance of the accumulator annotation that contains exactly one value.
-  //  *
-  //  * @param value the argument to the annotation
-  //  * @return an annotation mirror representing the accumulator annotation with {@code value} as its
-  //  *     argument
-  //  */
-  // public AnnotationMirror createAccumulatorAnnotation(String value, AnnotationMirror type) {
-  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, type);
-  //   builder.setValue("value", Collections.singletonList(value));
-  //   return builder.build();
-  // }
 
   /**
    * @param tree a tree
