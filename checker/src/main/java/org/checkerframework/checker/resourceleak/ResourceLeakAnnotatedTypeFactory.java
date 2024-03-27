@@ -18,6 +18,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.qual.EnsuresCalledMethodsOnElements;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -56,13 +57,25 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   private final ExecutableElement mustCallValueElement =
       TreeUtils.getMethod(MustCall.class, "value", 0, processingEnv);
 
+  /** The EnsuresCalledMethodsOnElements.value element/field. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsOnElementsValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.class, "value", 0, processingEnv);
+
   /** The EnsuresCalledMethods.value element/field. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsValueElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "value", 0, processingEnv);
 
+  /** The EnsuresCalledMethodsOnElements.methods element/field. */
+  /*package-private*/ final ExecutableElement ensuresCalledMethodsOnElementsMethodsElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.class, "methods", 0, processingEnv);
+
   /** The EnsuresCalledMethods.methods element/field. */
   /*package-private*/ final ExecutableElement ensuresCalledMethodsMethodsElement =
       TreeUtils.getMethod(EnsuresCalledMethods.class, "methods", 0, processingEnv);
+
+  /** The EnsuresCalledMethodsOnElements.List.value element/field. */
+  private final ExecutableElement ensuresCalledMethodsOnElementsListValueElement =
+      TreeUtils.getMethod(EnsuresCalledMethodsOnElements.List.class, "value", 0, processingEnv);
 
   /** The EnsuresCalledMethods.List.value element/field. */
   private final ExecutableElement ensuresCalledMethodsListValueElement =
@@ -386,6 +399,15 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
       }
     }
     return super.getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
+  }
+
+  /**
+   * Returns the {@link EnsuresCalledMethodsOnElements.List#value} element.
+   *
+   * @return the {@link EnsuresCalledMethodsOnElements.List#value} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsOnElementsListValueElement() {
+    return ensuresCalledMethodsOnElementsListValueElement;
   }
 
   /**

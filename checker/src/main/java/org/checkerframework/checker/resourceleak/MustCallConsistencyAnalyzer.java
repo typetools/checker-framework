@@ -72,7 +72,6 @@ import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
-import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -94,7 +93,6 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -1458,10 +1456,11 @@ class MustCallConsistencyAnalyzer {
               "owningarray.field.outside.constructor.assigned",
               lhs.getTree().toString());
         } else if (lhs.getTree() instanceof VariableTree) {
-          // declaration of local @OwningArray. Can't be field since we're not in constructor and a @OwningArray
+          // declaration of local @OwningArray. Can't be field since we're not in constructor and a
+          // @OwningArray
           // field is enforced to be final
           assert !lhsIsField
-            : "@OwningArray field assignment outside of constructor implies it's not final, but it must be.";
+              : "@OwningArray field assignment outside of constructor implies it's not final, but it must be.";
           VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
           obligations.add(
               new Obligation(
@@ -1616,8 +1615,7 @@ class MustCallConsistencyAnalyzer {
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhs instanceof LocalVariableNode
-               && !isOwningArray) {
+    } else if (lhs instanceof LocalVariableNode && !isOwningArray) {
       LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
@@ -2050,53 +2048,53 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
-  /**
-   * Issues an error if the given re-assignment to an {@code @OwningArray} array is not valid. A
-   * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
-   * the must-call obligations of the field.
-   *
-   * <p>Despite the name of this method, the argument {@code node} might be the first and only
-   * assignment to a field.
-   *
-   * @param obligations current tracked Obligations
-   * @param node an assignment to a non-final, owning field
-   */
-  @SuppressWarnings("UnusedVariable")
-  private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
-    // preconditions: assignment to index of an @OwningArray.
-    // However, the rhs might not necessarily create obligations TODO
-    // check whether obligations are fulfilled, if not, issue warning  TODO
-    ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
-    IdentifierTree arrayTree = (IdentifierTree) lhs.getArray().getTree();
-    Element lhsElm = TreeUtils.elementFromTree(arrayTree);
-    MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
-    CalledMethodsOnElementsAnnotatedTypeFactory cmTypeFactory =
-        typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
+  // /**
+  //  * Issues an error if the given re-assignment to an {@code @OwningArray} array is not valid. A
+  //  * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
+  //  * the must-call obligations of the field.
+  //  *
+  //  * <p>Despite the name of this method, the argument {@code node} might be the first and only
+  //  * assignment to a field.
+  //  *
+  //  * @param obligations current tracked Obligations
+  //  * @param node an assignment to a non-final, owning field
+  //  */
+  // @SuppressWarnings("UnusedVariable")
+  // private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
+  //   // preconditions: assignment to index of an @OwningArray.
+  //   // However, the rhs might not necessarily create obligations TODO
+  //   // check whether obligations are fulfilled, if not, issue warning  TODO
+  //   ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
+  //   IdentifierTree arrayTree = (IdentifierTree) lhs.getArray().getTree();
+  //   Element lhsElm = TreeUtils.elementFromTree(arrayTree);
+  //   MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
+  //       typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+  //   CalledMethodsOnElementsAnnotatedTypeFactory cmTypeFactory =
+  //       typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
 
-    AnnotatedTypeMirror mcAtm = mcTypeFactory.getAnnotatedType(lhsElm);
-    AnnotatedTypeMirror cmAtm = cmTypeFactory.getAnnotatedType(lhsElm);
-    // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
-    // annotatedarraytype";
-    // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
-    // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
-    AnnotationMirror mcAnno = mcAtm.getPrimaryAnnotation(MustCallOnElements.class);
-    AnnotationMirror cmAnno = cmAtm.getPrimaryAnnotation(CalledMethodsOnElements.class);
-    System.out.println("lhsElm: " + lhsElm);
-    System.out.println("annotations: " + mcAtm + " " + cmAtm);
-    if (mcAnno == null) {
-      return;
-    }
-    assert (mcAnno != null) : "implement mustcallonelements first";
-    List<String> mcValues =
-        AnnotationUtils.getElementValueArray(
-            mcAnno, mcTypeFactory.getMustCallOnElementsValueElement(), String.class);
-    if (mcValues.isEmpty()) {
-      return;
-    }
-    // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
-    checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
-  }
+  //   AnnotatedTypeMirror mcAtm = mcTypeFactory.getAnnotatedType(lhsElm);
+  //   AnnotatedTypeMirror cmAtm = cmTypeFactory.getAnnotatedType(lhsElm);
+  //   // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
+  //   // annotatedarraytype";
+  //   // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
+  //   // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
+  //   AnnotationMirror mcAnno = mcAtm.getPrimaryAnnotation(MustCallOnElements.class);
+  //   AnnotationMirror cmAnno = cmAtm.getPrimaryAnnotation(CalledMethodsOnElements.class);
+  //   System.out.println("lhsElm: " + lhsElm);
+  //   System.out.println("annotations: " + mcAtm + " " + cmAtm);
+  //   if (mcAnno == null) {
+  //     return;
+  //   }
+  //   assert (mcAnno != null) : "implement mustcallonelements first";
+  //   List<String> mcValues =
+  //       AnnotationUtils.getElementValueArray(
+  //           mcAnno, mcTypeFactory.getMustCallOnElementsValueElement(), String.class);
+  //   if (mcValues.isEmpty()) {
+  //     return;
+  //   }
+  //   // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
+  //   checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
+  // }
 
   /**
    * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
@@ -2690,7 +2688,8 @@ class MustCallConsistencyAnalyzer {
       AccumulationStore successorStore, CFStore mcoeStore, ResourceAlias alias) {
     // System.out.println("store in aliasInScope check: " + mcoeStore);
     // System.out.println("alias: " + alias);
-    // System.out.println("contained in aliasInScope check? " + (mcoeStore.getValue(alias.reference) != null));
+    // System.out.println("contained in aliasInScope check? " + (mcoeStore.getValue(alias.reference)
+    // != null));
     return (successorStore.getValue(alias.reference) != null)
         || (mcoeStore.getValue(alias.reference) != null);
   }

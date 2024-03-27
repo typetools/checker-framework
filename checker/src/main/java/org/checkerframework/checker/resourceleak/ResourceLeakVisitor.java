@@ -17,6 +17,7 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.calledmethodsonelements.qual.EnsuresCalledMethodsOnElements;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -24,6 +25,8 @@ import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -377,6 +380,35 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
+   * Get all {@link EnsuresCalledMethodsOnElements} annotations on an element.
+   *
+   * @param elt an executable element that might have {@link EnsuresCalledMethodsOnElements}
+   *     annotations
+   * @param atypeFactory a <code>ResourceLeakAnnotatedTypeFactory</code>
+   * @return a set of {@link EnsuresCalledMethodsOnElements} annotations
+   */
+  @Pure
+  private static AnnotationMirrorSet getEnsuresCalledMethodsOnElementsAnnotations(
+      ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
+    AnnotationMirror ensuresCmoeAnnos =
+        atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsOnElements.List.class);
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    if (ensuresCmoeAnnos != null) {
+      result.addAll(
+          AnnotationUtils.getElementValueArray(
+              ensuresCmoeAnnos,
+              atypeFactory.getEnsuresCalledMethodsOnElementsListValueElement(),
+              AnnotationMirror.class));
+    }
+    AnnotationMirror ensuresCalledMethod =
+        atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsOnElements.class);
+    if (ensuresCalledMethod != null) {
+      result.add(ensuresCalledMethod);
+    }
+    return result;
+  }
+
+  /**
    * Get all {@link EnsuresCalledMethods} annotations on an element.
    *
    * @param elt an executable element that might have {@link EnsuresCalledMethods} annotations
@@ -408,10 +440,12 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   public Void visitVariable(VariableTree tree, Void p) {
     VariableElement varElement = TreeUtils.elementFromDeclaration(tree);
 
-    if (varElement.getKind().isField()
-        && !noLightweightOwnership
-        && rlTypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
-      checkOwningField(varElement);
+    if (varElement.getKind().isField() && !noLightweightOwnership) {
+      if (rlTypeFactory.getDeclAnnotation(varElement, Owning.class) != null) {
+        checkOwningField(varElement);
+      } else if (rlTypeFactory.getDeclAnnotation(varElement, OwningArray.class) != null) {
+        checkOwningArrayField(varElement);
+      }
     }
 
     return super.visitVariable(tree, p);
@@ -452,6 +486,154 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     @Override
     public int hashCode() {
       return Objects.hash(mustCallMethod, exitKind);
+    }
+  }
+
+  /**
+   * Checks validity of a field {@code field} with an {@code @}{@link OwningArray} annotation. Say
+   * the type of {@code field} is {@code @MustCallOnElements("m")}}. This method checks that the
+   * enclosing class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2},
+   * and that {@code m2} has an annotation {@code @EnsuresCalledMethodsOnElements(value =
+   * "this.field", methods = "m")}, guaranteeing that the {@code @MustCallOnElements} obligation of
+   * the field will be satisfied.
+   *
+   * @param field the declaration of the field to check
+   */
+  private void checkOwningArrayField(VariableElement field) {
+    String fieldName = field.getSimpleName().toString();
+    System.out.println("fieldname: " + fieldName);
+    // TypeMirror tm = field.asType();
+    // if (!(tm instanceof ArrayType)) {
+    //   checker.reportError(field, "owningarray.not.array", fieldName);
+    // }
+    // TypeMirror compType = ((ArrayType) tm).getComponentType();
+    // assert compType.getKind() == TypeKind.DECLARED
+    //   : "@OwningArray component type expected to be declared type";
+    // DeclaredType declType = (DeclaredType) compType;
+    // assert declType.asElement() instanceof TypeElement : "not variableelement";
+    // TypeElement typeElm = (TypeElement) declType.asElement();
+    // System.out.println("elem: ");
+    // TypeMirror tm2 = typeElm.asType();
+    // System.out.println("elem: " + tm2.getAnnotationMirrors());
+
+    // if (checker.shouldSkipUses(field)) {
+    //   return;
+    // }
+
+    Set<Modifier> modifiers = field.getModifiers();
+    if (!modifiers.contains(Modifier.FINAL)) {
+      // @OwningArray must be final. the consistency checker reports an error. don't execute any
+      // checks
+      return;
+    }
+
+    List<String> mustCallOnElementsObligationsOfOwningField =
+        MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(fieldName);
+
+    System.out.println("field obligations: " + mustCallOnElementsObligationsOfOwningField);
+    if (mustCallOnElementsObligationsOfOwningField.isEmpty()) {
+      return;
+    }
+
+    // This value is side-effected.
+    Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
+    for (String mustCallMethod : mustCallOnElementsObligationsOfOwningField) {
+      for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
+          MustCallConsistencyAnalyzer.MethodExitKind.values()) {
+        unsatisfiedMustCallObligationsOfOwningField.add(
+            new DestructorObligation(mustCallMethod, exitKind));
+      }
+    }
+
+    String error;
+    Element enclosingElement = field.getEnclosingElement();
+    List<String> enclosingMustCallValues = rlTypeFactory.getMustCallValues(enclosingElement);
+
+    if (enclosingMustCallValues == null) {
+      error =
+          " The enclosing element "
+              + ElementUtils.getQualifiedName(enclosingElement)
+              + " doesn't have a @MustCall annotation";
+    } else if (enclosingMustCallValues.isEmpty()) {
+      error =
+          " The enclosing element "
+              + ElementUtils.getQualifiedName(enclosingElement)
+              + " has an empty @MustCall annotation";
+    } else {
+      error = " [[checkOwningField() did not find a reason!]]"; // should be reassigned
+      List<? extends Element> siblingsOfOwningField = enclosingElement.getEnclosedElements();
+      for (Element siblingElement : siblingsOfOwningField) {
+        if (siblingElement.getKind() == ElementKind.METHOD
+            && enclosingMustCallValues.contains(siblingElement.getSimpleName().toString())) {
+
+          ExecutableElement siblingMethod = (ExecutableElement) siblingElement;
+
+          AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
+              getEnsuresCalledMethodsOnElementsAnnotations(siblingMethod, rlTypeFactory);
+          for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
+            List<String> values =
+                AnnotationUtils.getElementValueArray(
+                    ensuresCalledMethodsAnno,
+                    rlTypeFactory.ensuresCalledMethodsOnElementsValueElement,
+                    String.class);
+            for (String value : values) {
+              if (expressionEqualsField(value, field)) {
+                List<String> methods =
+                    AnnotationUtils.getElementValueArray(
+                        ensuresCalledMethodsAnno,
+                        rlTypeFactory.ensuresCalledMethodsOnElementsMethodsElement,
+                        String.class);
+                for (String method : methods) {
+                  unsatisfiedMustCallObligationsOfOwningField.remove(
+                      new DestructorObligation(
+                          method, MustCallConsistencyAnalyzer.MethodExitKind.NORMAL_RETURN));
+                }
+              }
+            }
+
+            Set<EnsuresCalledMethodOnExceptionContract> exceptionalPostconds =
+                rlTypeFactory.getExceptionalPostconditions(siblingMethod);
+            for (EnsuresCalledMethodOnExceptionContract postcond : exceptionalPostconds) {
+              if (expressionEqualsField(postcond.getExpression(), field)) {
+                unsatisfiedMustCallObligationsOfOwningField.remove(
+                    new DestructorObligation(
+                        postcond.getMethod(),
+                        MustCallConsistencyAnalyzer.MethodExitKind.EXCEPTIONAL_EXIT));
+              }
+            }
+
+            // Optimization: stop early as soon as we've exhausted the list of
+            // obligations.
+            if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+              return;
+            }
+          }
+
+          if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+            // This variable could be set immediately before reporting the error, but
+            // IMO it is more clear to set it here.
+            error =
+                "Postconditions written on MustCall methods are missing: "
+                    + formatMissingMustCallMethodPostconditions(
+                        field, unsatisfiedMustCallObligationsOfOwningField);
+          }
+        }
+      }
+    }
+
+    if (!unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
+      Set<String> missingMethods = new LinkedHashSet<>();
+      for (DestructorObligation obligation : unsatisfiedMustCallObligationsOfOwningField) {
+        missingMethods.add(obligation.mustCallMethod);
+      }
+
+      checker.reportError(
+          field,
+          "required.method.not.called",
+          MustCallConsistencyAnalyzer.formatMissingMustCallMethods(new ArrayList<>(missingMethods)),
+          "field " + field.getSimpleName().toString(),
+          field.asType().toString(),
+          error);
     }
   }
 
