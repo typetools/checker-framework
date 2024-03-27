@@ -139,12 +139,15 @@ public class InvocationType {
       returnType = typeFactory.getAnnotatedType(e);
     } else if (invocation.getKind() == Tree.Kind.METHOD_INVOCATION
         || invocation.getKind() == Tree.Kind.MEMBER_REFERENCE) {
-      returnType = annotatedExecutableType.getReturnType();
       if (invocation.getKind() == Kind.MEMBER_REFERENCE
           && ((MemberReferenceTree) invocation).getMode() == ReferenceMode.NEW) {
+        returnType =
+            context.typeFactory.getResultingTypeOfConstructorMemberReference(
+                (MemberReferenceTree) invocation, annotatedExecutableType);
         returnTypeJava = returnType.getUnderlyingType();
       } else {
         returnTypeJava = methodType.getReturnType();
+        returnType = annotatedExecutableType.getReturnType();
       }
 
     } else {
