@@ -490,7 +490,7 @@ public class InvocationTypeInference {
         c.add(new CheckedExceptionConstraint(ei, fi, map));
         LambdaExpressionTree lambda = (LambdaExpressionTree) ei;
         for (ExpressionTree expression : TreeUtils.getReturnedExpressions(lambda)) {
-          c.addAll(createAdditionalArgConstraints(expression, fi, map));
+          c.addAll(createAdditionalArgConstraintsNoLambda(expression));
         }
         break;
       case METHOD_INVOCATION:
@@ -517,6 +517,57 @@ public class InvocationTypeInference {
                   },
                   (c1, c2) -> null);
           scanner.scanSwitchExpression(ei, null);
+        }
+        // no constraints
+    }
+
+    return c;
+  }
+
+  /**
+   * Recursively search for method invocations and new class trees. If any are found, the additional
+   * variables, bounds, and constraints are returned. This method is called by {@link
+   * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
+   * encounters a lambda. This method is different be because it does not add checked exception
+   * constraints for lambdas or method references.
+   *
+   * @param expression expression to search
+   * @return additional constraints
+   */
+  private ConstraintSet createAdditionalArgConstraintsNoLambda(ExpressionTree expression) {
+    ConstraintSet c = new ConstraintSet();
+
+    switch (expression.getKind()) {
+      case LAMBDA_EXPRESSION:
+        LambdaExpressionTree lambda = (LambdaExpressionTree) expression;
+        for (ExpressionTree returnedExpression : TreeUtils.getReturnedExpressions(lambda)) {
+          c.addAll(createAdditionalArgConstraintsNoLambda(returnedExpression));
+        }
+        break;
+      case METHOD_INVOCATION:
+      case NEW_CLASS:
+        if (TreeUtils.isPolyExpression(expression)) {
+          c.add(new AdditionalArgument(expression));
+        }
+        break;
+      case PARENTHESIZED:
+        c.addAll(createAdditionalArgConstraintsNoLambda(TreeUtils.withoutParens(expression)));
+        break;
+      case CONDITIONAL_EXPRESSION:
+        ConditionalExpressionTree conditional = (ConditionalExpressionTree) expression;
+        c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getTrueExpression()));
+        c.addAll(createAdditionalArgConstraintsNoLambda(conditional.getFalseExpression()));
+        break;
+      default:
+        if (TreeUtils.isSwitchExpression(expression)) {
+          SwitchExpressionScanner<Void, Void> scanner =
+              new FunctionalSwitchExpressionScanner<>(
+                  (ExpressionTree tree, Void unused) -> {
+                    c.addAll(createAdditionalArgConstraintsNoLambda(tree));
+                    return null;
+                  },
+                  (c1, c2) -> null);
+          scanner.scanSwitchExpression(expression, null);
         }
         // no constraints
     }
