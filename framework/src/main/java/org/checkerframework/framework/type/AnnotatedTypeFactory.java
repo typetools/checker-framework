@@ -2725,7 +2725,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
 
     // The return type for constructors should only have explicit annotations from the
-    // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
+    // constructor. The code below recreates some of the logic from TypeFromTree.visitNewClass to do
+    // this.
 
     // The return type of the constructor will be the type of the expression of the member
     // reference tree.
