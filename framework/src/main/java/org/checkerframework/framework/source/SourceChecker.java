@@ -2032,14 +2032,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Combines two comma-delimited strings with no duplicates into a single comma-delimited string.
+   * Combines two comma-delimited strings into a single comma-delimited string that does not contain
+   * duplicates.
    *
    * <p>Checker option values are comma-delimited. This method provides a way to combine two option
    * values while discarding possible duplicates.
    *
    * @param optionValueA the first comma-delimited string
    * @param optionValueB the second comma-delimited string
-   * @return a comma-delimited string containing values from the first and second string
+   * @return a comma-delimited string containing values from the first and second string, with no
+   *     duplicates
    */
   private String combineOptionValues(String optionValueA, String optionValueB) {
     Set<String> optionValueASet =
