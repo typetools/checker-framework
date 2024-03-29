@@ -50,6 +50,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     // Also support the shorter keys used by typetools
     return super.messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)
         || super.messageKeyMatches(
-        messageKey.replace(".invalid", ""), messageKeyInSuppressWarningsString);
+            messageKey.replace(".invalid", ""), messageKeyInSuppressWarningsString);
   }
 }
