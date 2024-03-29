@@ -3,13 +3,19 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -23,6 +29,8 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -65,62 +73,54 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     List<String> newMustCallMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
             tree);
-    if (newMustCallMethods == null) {
-      // it is not an obligation-creating loop
-      return res;
-    }
+    String calledMethod =
+        MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(
+            tree);
     ExpressionTree arrayTree =
         MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
-    Element arrayElt = TreeUtils.elementFromTree(arrayTree);
-    if (arrayElt.getKind() == ElementKind.FIELD) {
-      List<String> previousMustCallMethods =
-          MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(
-              arrayTree.toString());
-      if (previousMustCallMethods.isEmpty()) {
-        MustCallOnElementsAnnotatedTypeFactory.putMcoeObligationsForOwningArrayField(
-            arrayTree.toString(), newMustCallMethods);
-      } else {
-        boolean areObligationsEqual =
-            new HashSet<String>(previousMustCallMethods)
-                .equals(new HashSet<String>(newMustCallMethods));
-        if (!areObligationsEqual) {
-          atypeFactory
-              .getChecker()
-              .reportError(
-                  arrayTree,
-                  "wrong.mustCallOnElements.obligations.assigned",
-                  arrayTree.toString(),
-                  formatMissingMustCallMethods(previousMustCallMethods),
-                  formatMissingMustCallMethods(newMustCallMethods));
-          return res;
-        }
-      }
-    }
     CFStore elseStore = res.getElseStore();
-    // AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-    AnnotationMirror newType = getMustCallOnElementsType(newMustCallMethods);
     JavaExpression receiverReceiver = JavaExpression.fromTree(arrayTree);
-    elseStore.clearValue(receiverReceiver);
-    elseStore.insertValue(receiverReceiver, newType);
-    return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
+    if (newMustCallMethods != null) {
+      // this is an obligation-creating loop
+      AnnotationMirror newType = getMustCallOnElementsType(newMustCallMethods);
+      elseStore.clearValue(receiverReceiver);
+      elseStore.insertValue(receiverReceiver, newType);
+      return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
+    } else if (calledMethod != null) {
+      // this loop fulfills an obligation - remove that methodname from
+      // the MustCallOnElements type of the array
+      CFValue oldTypeValue = elseStore.getValue(receiverReceiver);
+      assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
+      AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
+      List<String> mcoeMethods =
+          AnnotationUtils.getElementValueArray(
+              oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
+      mcoeMethods.remove(calledMethod);
+      AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
+      elseStore.clearValue(receiverReceiver);
+      elseStore.insertValue(receiverReceiver, newType);
+      return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
+    }
+    return res;
   }
 
   /**
-   * Extract the current called-methods type from {@code currentType}, and then add each element of
-   * {@code methodNames} to it, and return the result. This method is similar to GLB, but should be
-   * used when the new methods come from a source other than an {@code CalledMethodsOnElements}
-   * annotation.
+   * Generate an annotation from a list of method names.
    *
-   * @param currentType the current type in the called-methods hierarchy
-   * @param methodNames the names of the new methods to add to the type
-   * @return the new annotation to be added to the type, or null if the current type cannot be
-   *     converted to an accumulator annotation
+   * @param methodNames the names of the methods to add to the type
+   * @return the annotation with the given methods as value
    */
   private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
     AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
     builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
     return builder.build();
   }
+
+  // private @Nullable AnnotationMirror removeFromMcoeType(AnnotationMirror type, String method) {
+  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
+  //   builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
+  //   return builder.build();
+  // }
 
   /**
    * @param tree a tree
@@ -163,20 +163,20 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     return enableWpiForRlc;
   }
 
-  /**
-   * Pretty-prints a list of mustcall values into a string to output in a warning message.
-   *
-   * @param mustCallVal a list of mustcall values
-   * @return a string, which is a pretty-print of the method list
-   */
-  private String formatMissingMustCallMethods(List<String> mustCallVal) {
-    int size = mustCallVal.size();
-    if (size == 0) {
-      return "None";
-    } else if (size == 1) {
-      return "method " + mustCallVal.get(0);
-    } else {
-      return "methods " + String.join(", ", mustCallVal);
-    }
-  }
+  // /**
+  //  * Pretty-prints a list of mustcall values into a string to output in a warning message.
+  //  *
+  //  * @param mustCallVal a list of mustcall values
+  //  * @return a string, which is a pretty-print of the method list
+  //  */
+  // private String formatMissingMustCallMethods(List<String> mustCallVal) {
+  //   int size = mustCallVal.size();
+  //   if (size == 0) {
+  //     return "None";
+  //   } else if (size == 1) {
+  //     return "method " + mustCallVal.get(0);
+  //   } else {
+  //     return "methods " + String.join(", ", mustCallVal);
+  //   }
+  // }
 }

@@ -97,18 +97,18 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
             + " lessthan tree";
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
+    ExpressionTree arrayTree =
+        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
+            node.getTree());
+    JavaExpression target = JavaExpression.fromTree(arrayTree);
+    CFStore elseStore = res.getElseStore();
     if (calledMethod != null) {
-      CFStore elseStore = res.getElseStore();
-      ExpressionTree arrayTree =
-          MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
-              node.getTree());
-      AnnotatedTypeMirror currentType = atypeFactory.getAnnotatedType(arrayTree);
-      AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(currentType, calledMethod);
-      JavaExpression target = JavaExpression.fromTree(arrayTree);
-      // System.out.println("type beore: " + elseStore.getValue(target));
+      CFValue oldTypeValue = elseStore.getValue(target);
+      assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
+      AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
+      AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(oldType, calledMethod);
       elseStore.clearValue(target);
       elseStore.insertValue(target, newType);
-      // System.out.println("type after: " + elseStore.getValue(target));
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
     }
     List<String> mustCall =
@@ -116,19 +116,11 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
             tree);
     if (mustCall != null) {
       // array is newly assigned -> remove all calledmethods
-      ExpressionTree arrayTree =
-          MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
-              node.getTree());
-      JavaExpression target = JavaExpression.fromTree(arrayTree);
       AnnotationMirror newAnno =
           createAccumulatorAnnotation(Collections.emptyList(), atypeFactory.TOP);
-      CFStore thenStore = res.getThenStore();
-      CFStore elseStore = res.getElseStore();
-      // System.out.println("before cm: " + elseStore.getValue(target));
       elseStore.clearValue(target);
       elseStore.insertValue(target, newAnno);
-      // System.out.println("after cm: " + elseStore.getValue(target));
-      return new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+      return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
     }
 
     return res;
@@ -140,32 +132,17 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    * when the new methods come from a source other than an {@code CalledMethodsOnElements}
    * annotation.
    *
-   * @param currentType the current type in the called-methods hierarchy
+   * @param type the current type in the called-methods hierarchy
    * @param methodName the name of the new method to add to the type
    * @return the new annotation to be added to the type, or null if the current type cannot be
    *     converted to an accumulator annotation
    */
   private @Nullable AnnotationMirror getUpdatedCalledMethodsOnElementsType(
-      AnnotatedTypeMirror currentType, String methodName) {
-    AnnotationMirror type;
-    if (currentType == null || !currentType.hasPrimaryAnnotationInHierarchy(atypeFactory.TOP)) {
-      type = atypeFactory.TOP;
-    } else {
-      type = currentType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
-      AnnotatedArrayType curType = (AnnotatedArrayType) currentType;
-      type = curType.getPrimaryAnnotation(CalledMethodsOnElements.class);
-      if (type == null) {
-        assert (curType.getPrimaryAnnotation(CalledMethodsOnElementsBottom.class) != null)
-            : "array annotation neither cmoe nor cmoeBottom";
-        type = atypeFactory.TOP;
-      }
-    }
-
+      AnnotationMirror type, String methodName) {
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(
             type, calledMethodsOnElementsValueElement, String.class);
     List<String> newList = CollectionsPlume.append(currentMethods, methodName);
-
     return createAccumulatorAnnotation(newList, type);
   }
 

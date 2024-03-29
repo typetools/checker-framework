@@ -3,6 +3,8 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +16,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsVisitor;
 import org.checkerframework.checker.calledmethods.EnsuresCalledMethodOnExceptionContract;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
@@ -22,10 +26,11 @@ import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
-import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -490,6 +495,26 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
+   * Returns the list of mustcall obligations for a type.
+   *
+   * @param type the type
+   * @return the list of mustcall obligations for the type
+   */
+  private List<String> getMustCallValuesForType(TypeMirror type) {
+    InheritableMustCall imcAnnotation =
+        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+    }
+    return new ArrayList<>(mcValues);
+  }
+
+  /**
    * Checks validity of a field {@code field} with an {@code @}{@link OwningArray} annotation. Say
    * the type of {@code field} is {@code @MustCallOnElements("m")}}. This method checks that the
    * enclosing class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2},
@@ -502,23 +527,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private void checkOwningArrayField(VariableElement field) {
     String fieldName = field.getSimpleName().toString();
     System.out.println("fieldname: " + fieldName);
-    // TypeMirror tm = field.asType();
-    // if (!(tm instanceof ArrayType)) {
-    //   checker.reportError(field, "owningarray.not.array", fieldName);
-    // }
-    // TypeMirror compType = ((ArrayType) tm).getComponentType();
-    // assert compType.getKind() == TypeKind.DECLARED
-    //   : "@OwningArray component type expected to be declared type";
-    // DeclaredType declType = (DeclaredType) compType;
-    // assert declType.asElement() instanceof TypeElement : "not variableelement";
-    // TypeElement typeElm = (TypeElement) declType.asElement();
-    // System.out.println("elem: ");
-    // TypeMirror tm2 = typeElm.asType();
-    // System.out.println("elem: " + tm2.getAnnotationMirrors());
-
-    // if (checker.shouldSkipUses(field)) {
-    //   return;
-    // }
 
     Set<Modifier> modifiers = field.getModifiers();
     if (!modifiers.contains(Modifier.FINAL)) {
@@ -527,17 +535,18 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       return;
     }
 
-    List<String> mustCallOnElementsObligationsOfOwningField =
-        MustCallOnElementsAnnotatedTypeFactory.getMcoeObligationsForOwningArrayField(fieldName);
+    // since @OwningArray is enforced to be array, the following cast is guaranteed to succeed
+    TypeMirror componentType = ((ArrayType) field.asType()).getComponentType();
+    List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
 
-    System.out.println("field obligations: " + mustCallOnElementsObligationsOfOwningField);
-    if (mustCallOnElementsObligationsOfOwningField.isEmpty()) {
+    System.out.println("field obligations: " + mcoeObligationsOfOwningField);
+    if (mcoeObligationsOfOwningField.isEmpty()) {
       return;
     }
 
     // This value is side-effected.
     Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
-    for (String mustCallMethod : mustCallOnElementsObligationsOfOwningField) {
+    for (String mustCallMethod : mcoeObligationsOfOwningField) {
       for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
           MustCallConsistencyAnalyzer.MethodExitKind.values()) {
         unsatisfiedMustCallObligationsOfOwningField.add(
