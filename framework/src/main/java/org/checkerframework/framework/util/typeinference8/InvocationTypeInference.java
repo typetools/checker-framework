@@ -528,7 +528,7 @@ public class InvocationTypeInference {
    * Recursively search for method invocations and new class trees. If any are found, the additional
    * variables, bounds, and constraints are returned. This method is called by {@link
    * #createAdditionalArgConstraints(ExpressionTree, AbstractType, Theta)} when that method
-   * encounters a lambda. This method is different be because it does not add checked exception
+   * encounters a lambda. This method is different because it does not add checked exception
    * constraints for lambdas or method references.
    *
    * @param expression expression to search
