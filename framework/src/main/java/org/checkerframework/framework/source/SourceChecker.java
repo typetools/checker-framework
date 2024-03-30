@@ -2035,8 +2035,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Combines two comma-delimited strings into a single comma-delimited string that does not contain
    * duplicates.
    *
-   * <p>Checker option values are comma-delimited. This method provides a way to combine two option
-   * values while discarding possible duplicates.
+   * <p>Checker option values are comma-delimited. This method combines two option values while
+   * discarding possible duplicates.
    *
    * @param optionValueA the first comma-delimited string
    * @param optionValueB the second comma-delimited string
