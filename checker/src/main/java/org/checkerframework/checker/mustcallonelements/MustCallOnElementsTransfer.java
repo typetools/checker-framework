@@ -3,17 +3,9 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -29,9 +21,7 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Transfer function for the MustCallOnElements type system. */
@@ -63,6 +53,44 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     this.env = atypeFactory.getChecker().getProcessingEnvironment();
   }
 
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitVariableDeclaration(
+  //     VariableDeclarationNode node, TransferInput<CFValue, CFStore> input) {
+  //   TransferResult<CFValue, CFStore> res = super.visitVariableDeclaration(node, input);
+  //   // since @OwningArray is enforced to be array, the following cast is guaranteed to succeed
+  //   VariableElement elmnt = TreeUtils.elementFromDeclaration(node.getTree());
+  //   if (atypeFactory.getDeclAnnotation(elmnt, OwningArray.class) != null
+  //       && elmnt.getKind() == ElementKind.FIELD) {
+  //     TypeMirror componentType = ((ArrayType) elmnt.asType()).getComponentType();
+  //     List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+  //     AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+  //     JavaExpression field = JavaExpression.fromVariableTree(node.getTree());
+  //     res.getRegularStore().clearValue(field);
+  //     res.getRegularStore().insertValue(field, newType);
+  //   }
+  //   return res;
+  // }
+
+  // /**
+  //  * Returns the list of mustcall obligations for a type.
+  //  *
+  //  * @param type the type
+  //  * @return the list of mustcall obligations for the type
+  //  */
+  // private List<String> getMustCallValuesForType(TypeMirror type) {
+  //   InheritableMustCall imcAnnotation =
+  //       TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+  //   MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+  //   Set<String> mcValues = new HashSet<>();
+  //   if (mcAnnotation != null) {
+  //     mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+  //   }
+  //   if (imcAnnotation != null) {
+  //     mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+  //   }
+  //   return new ArrayList<>(mcValues);
+  // }
+
   @Override
   public TransferResult<CFValue, CFStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CFStore> input) {
@@ -74,8 +102,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
             tree);
     String calledMethod =
-        MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(
-            tree);
+        MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
     ExpressionTree arrayTree =
         MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
     CFStore elseStore = res.getElseStore();
@@ -115,12 +142,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
     return builder.build();
   }
-
-  // private @Nullable AnnotationMirror removeFromMcoeType(AnnotationMirror type, String method) {
-  //   AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
-  //   builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
-  //   return builder.build();
-  // }
 
   /**
    * @param tree a tree

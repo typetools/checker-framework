@@ -8,8 +8,6 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElements;
-import org.checkerframework.checker.calledmethodsonelements.qual.CalledMethodsOnElementsBottom;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -23,8 +21,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.plumelib.util.CollectionsPlume;
@@ -67,19 +63,6 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     env = atypeFactory.getProcessingEnv();
   }
 
-  // /*
-  //  * If the called method has @EnsuresCalledMethods() postcondition, these methods will have to
-  // be
-  //  * added to the store
-  //  *  */
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitMethodInvocation(
-  //     MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
-  //   MethodInvocationTree tree = node.getTree();
-
-  // }
-
   /**
    * {@inheritDoc}
    *
@@ -98,8 +81,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     String calledMethod =
         MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
     ExpressionTree arrayTree =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
-            node.getTree());
+        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
     JavaExpression target = JavaExpression.fromTree(arrayTree);
     CFStore elseStore = res.getElseStore();
     if (calledMethod != null) {

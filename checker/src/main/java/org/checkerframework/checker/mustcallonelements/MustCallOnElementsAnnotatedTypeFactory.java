@@ -6,7 +6,9 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,7 +24,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
@@ -47,6 +51,7 @@ import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 
 /**
  * The annotated type factory for the Must Call Checker. Primarily responsible for the subtyping
@@ -473,6 +478,57 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     public MustCallOnElementsTreeAnnotator(
         MustCallOnElementsAnnotatedTypeFactory mustCallOnElementsAnnotatedTypeFactory) {
       super(mustCallOnElementsAnnotatedTypeFactory);
+    }
+
+    /*
+     * Change the @MustCallOnElements() type of @OwningArray fields to include all methods
+     * in the value of the @MustCall() annotation of the component class. For example the
+     * type of a Socket[] would be set to @MustCallOnElements("close"), no matter the
+     * declared type.
+     */
+    @Override
+    public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
+      Element elt = TreeUtils.elementFromDeclaration(tree);
+      if (elt.getKind() == ElementKind.FIELD
+          && atypeFactory.getDeclAnnotation(elt, OwningArray.class) != null) {
+        TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
+        List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+        AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+        type.replaceAnnotation(newType);
+      }
+      return super.visitVariable(tree, type);
+    }
+
+    /**
+     * Generate an annotation from a list of method names.
+     *
+     * @param methodNames the names of the methods to add to the type
+     * @return the annotation with the given methods as value
+     */
+    private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
+      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BOTTOM);
+      builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
+      return builder.build();
+    }
+
+    /**
+     * Returns the list of mustcall obligations for a type.
+     *
+     * @param type the type
+     * @return the list of mustcall obligations for the type
+     */
+    private List<String> getMustCallValuesForType(TypeMirror type) {
+      InheritableMustCall imcAnnotation =
+          TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+      MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+      Set<String> mcValues = new HashSet<>();
+      if (mcAnnotation != null) {
+        mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+      }
+      if (imcAnnotation != null) {
+        mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+      }
+      return new ArrayList<>(mcValues);
     }
 
     @Override
