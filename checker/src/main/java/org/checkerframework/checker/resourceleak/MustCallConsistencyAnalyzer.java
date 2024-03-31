@@ -1119,7 +1119,8 @@ class MustCallConsistencyAnalyzer {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          if (typeFactory.hasOwning(parameter)) {
+          if (typeFactory.hasOwning(parameter)
+              || typeFactory.hasOwningArray(parameter)) {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the

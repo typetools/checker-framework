@@ -33,6 +33,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -547,11 +548,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     // This value is side-effected.
     Set<DestructorObligation> unsatisfiedMustCallObligationsOfOwningField = new LinkedHashSet<>();
     for (String mustCallMethod : mcoeObligationsOfOwningField) {
-      for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
-          MustCallConsistencyAnalyzer.MethodExitKind.values()) {
+      // for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
+      //     MustCallConsistencyAnalyzer.MethodExitKind.values()) {
         unsatisfiedMustCallObligationsOfOwningField.add(
-            new DestructorObligation(mustCallMethod, exitKind));
-      }
+            new DestructorObligation(mustCallMethod, MethodExitKind.NORMAL_RETURN));
+      // }
     }
 
     String error;
