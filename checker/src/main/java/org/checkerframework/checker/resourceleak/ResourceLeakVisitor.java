@@ -550,8 +550,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
     for (String mustCallMethod : mcoeObligationsOfOwningField) {
       // for (MustCallConsistencyAnalyzer.MethodExitKind exitKind :
       //     MustCallConsistencyAnalyzer.MethodExitKind.values()) {
-        unsatisfiedMustCallObligationsOfOwningField.add(
-            new DestructorObligation(mustCallMethod, MethodExitKind.NORMAL_RETURN));
+      unsatisfiedMustCallObligationsOfOwningField.add(
+          new DestructorObligation(mustCallMethod, MethodExitKind.NORMAL_RETURN));
       // }
     }
 

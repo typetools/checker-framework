@@ -1119,8 +1119,7 @@ class MustCallConsistencyAnalyzer {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          if (typeFactory.hasOwning(parameter)
-              || typeFactory.hasOwningArray(parameter)) {
+          if (typeFactory.hasOwning(parameter) || typeFactory.hasOwningArray(parameter)) {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the
@@ -2049,54 +2048,6 @@ class MustCallConsistencyAnalyzer {
     }
   }
 
-  // /**
-  //  * Issues an error if the given re-assignment to an {@code @OwningArray} array is not valid. A
-  //  * re-assignment is valid if the called methods type of the lhs before the assignment satisfies
-  //  * the must-call obligations of the field.
-  //  *
-  //  * <p>Despite the name of this method, the argument {@code node} might be the first and only
-  //  * assignment to a field.
-  //  *
-  //  * @param obligations current tracked Obligations
-  //  * @param node an assignment to a non-final, owning field
-  //  */
-  // @SuppressWarnings("UnusedVariable")
-  // private void checkReassignmentToOwningArray(Set<Obligation> obligations, AssignmentNode node) {
-  //   // preconditions: assignment to index of an @OwningArray.
-  //   // However, the rhs might not necessarily create obligations TODO
-  //   // check whether obligations are fulfilled, if not, issue warning  TODO
-  //   ArrayAccessNode lhs = (ArrayAccessNode) node.getTarget();
-  //   IdentifierTree arrayTree = (IdentifierTree) lhs.getArray().getTree();
-  //   Element lhsElm = TreeUtils.elementFromTree(arrayTree);
-  //   MustCallOnElementsAnnotatedTypeFactory mcTypeFactory =
-  //       typeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
-  //   CalledMethodsOnElementsAnnotatedTypeFactory cmTypeFactory =
-  //       typeFactory.getTypeFactoryOfSubchecker(CalledMethodsOnElementsChecker.class);
-
-  //   AnnotatedTypeMirror mcAtm = mcTypeFactory.getAnnotatedType(lhsElm);
-  //   AnnotatedTypeMirror cmAtm = cmTypeFactory.getAnnotatedType(lhsElm);
-  //   // assert(atm instanceof AnnotatedArrayType) : "my assumption wrong: atm is not
-  //   // annotatedarraytype";
-  //   // AnnotatedArrayType arrType = (AnnotatedArrayType) atm;
-  //   // AnnotationMirror mcAnno = arrType.getComponentType().getPrimaryAnnotation(MustCall.class);
-  //   AnnotationMirror mcAnno = mcAtm.getPrimaryAnnotation(MustCallOnElements.class);
-  //   AnnotationMirror cmAnno = cmAtm.getPrimaryAnnotation(CalledMethodsOnElements.class);
-  //   System.out.println("lhsElm: " + lhsElm);
-  //   System.out.println("annotations: " + mcAtm + " " + cmAtm);
-  //   if (mcAnno == null) {
-  //     return;
-  //   }
-  //   assert (mcAnno != null) : "implement mustcallonelements first";
-  //   List<String> mcValues =
-  //       AnnotationUtils.getElementValueArray(
-  //           mcAnno, mcTypeFactory.getMustCallOnElementsValueElement(), String.class);
-  //   if (mcValues.isEmpty()) {
-  //     return;
-  //   }
-  //   // VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
-  //   checker.reportError(node.getTree(), "unfulfilled.mustcallonelements.obligations");
-  // }
-
   /**
    * Checks that the method that encloses an assignment is marked with @CreatesMustCallFor
    * annotation whose target is the object whose field is being re-assigned.
@@ -2419,7 +2370,6 @@ class MustCallConsistencyAnalyzer {
         // nodes cannot create or modify the resource-alias sets that the algorithm is
         // tracking.
       }
-      // System.out.println("obligations after block " + currentBlock +  " " + obligations);
 
       propagateObligationsToSuccessorBlock(
           obligations,
@@ -2687,10 +2637,6 @@ class MustCallConsistencyAnalyzer {
    */
   private boolean aliasInScopeInSuccessor(
       AccumulationStore successorStore, CFStore mcoeStore, ResourceAlias alias) {
-    // System.out.println("store in aliasInScope check: " + mcoeStore);
-    // System.out.println("alias: " + alias);
-    // System.out.println("contained in aliasInScope check? " + (mcoeStore.getValue(alias.reference)
-    // != null));
     return (successorStore.getValue(alias.reference) != null)
         || (mcoeStore.getValue(alias.reference) != null);
   }
