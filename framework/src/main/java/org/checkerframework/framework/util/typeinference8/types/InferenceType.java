@@ -200,6 +200,7 @@ public class InferenceType extends AbstractType {
   }
 
   @Override
+  @SuppressWarnings("interning:not.interned") // maps should be ==
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -209,6 +210,9 @@ public class InferenceType extends AbstractType {
     }
 
     InferenceType variable = (InferenceType) o;
+    if (map != variable.map) {
+      return false;
+    }
     if (!type.equals(variable.type)) {
       return false;
     }
