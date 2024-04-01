@@ -303,10 +303,11 @@ public class InvocationTypeInference {
     List<AbstractType> formals = methodType.getParameterTypes(map, args.size());
     if (TreeUtils.isLikeDiamondMemberReference(methodType.getInvocation())) {
       // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.1
-      //  If ReferenceType is a raw type, and there exists a parameterization of this type, G<..
-      //  .>, that is a supertype of P1, the type to search is the result of capture conversion
-      //  (§5.1.10) applied to G<...>; otherwise, the type to search is the same as the type of
-      //  the first search. Type arguments, if any, are given by the method reference expression.
+      //  If ReferenceType is a raw type, and there exists a parameterization of this type,
+      // G<...>, that is a supertype of P1, the type to search is the result of capture
+      // conversion (§5.1.10) applied to G<...>; otherwise, the type to search is the same
+      // as the type of the first search. Type arguments, if any, are given by the method
+      // reference expression.
       AbstractType receiver = args.remove(0);
       args.add(0, receiver.capture(context));
     }
@@ -398,10 +399,10 @@ public class InvocationTypeInference {
         resolve.incorporateToFixedPoint(newBounds);
         return resolve;
       }
-      if (target.isProper()) {
+      if (target.isProper() && target.getJavaType().getKind().isPrimitive()) {
         // From the JLS:
-        // "T is a primitive type, and one of the primitive wrapper classes mentioned in 5.1.7 is
-        // an instantiation, upper bound, or lower bound for [the variable] in B2."
+        // "T is a primitive type, and one of the primitive wrapper classes mentioned in
+        // 5.1.7 is an instantiation, upper bound, or lower bound for [the variable] in B2."
         ConstraintSet constraintSet = new ConstraintSet(new Typing(r, target, Kind.SUBTYPE));
         BoundSet newBounds = constraintSet.reduce(context);
         b2.incorporateToFixedPoint(newBounds);
@@ -444,9 +445,9 @@ public class InvocationTypeInference {
           c.addAll(aa.reduce(context));
         }
       } else {
-        // Wait to reduce additional argument constraints from lambdas and method references because
-        // the additional constraints might require other inference variables to be resolved before
-        // the constraint can be created.
+        // Wait to reduce additional argument constraints from lambdas and method references
+        // because the additional constraints might require other inference variables to be
+        // resolved before the constraint can be created.
         c.addAll(createAdditionalArgConstraints(ei, fi, map));
       }
     }
@@ -610,7 +611,8 @@ public class InvocationTypeInference {
         c.applyInstantiations();
       }
       if (!alphas.isEmpty()) {
-        // Resolve any remaining variables that have bounds that are variable or inference types.
+        // Resolve any remaining variables that have bounds that are variable or inference
+        // types.
         Resolution.resolve(alphas, b3, context);
         c.applyInstantiations();
       }

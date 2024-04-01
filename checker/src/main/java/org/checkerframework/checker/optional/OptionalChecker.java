@@ -11,7 +11,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  *
  * @checker_framework.manual #optional-checker Optional Checker
  */
-// TODO: For a call to ofNullable, if the argument has type
+// TODO: For a call to `@Optional#ofNullable`, if the argument has type
 // @NonNull, make the return type have type @Present.
 @RelevantJavaTypes(Optional.class)
 @StubFiles({"javaparser.astub"})

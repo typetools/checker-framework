@@ -178,9 +178,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   private void checkOwningOverrides(
       MethodTree tree, ExecutableElement overrider, MustCallAnnotatedTypeFactory mcAtf) {
     for (ExecutableElement overridden : ElementUtils.getOverriddenMethods(overrider, this.types)) {
-      // Check for @Owning parameters. Must use an explicitly-indexed for loop so that the same
-      // parameter index can be accessed in the overrider's parameter list, which is the same
-      // length.
+      // Check for @Owning parameters. Must use an explicitly-indexed for loop so that the
+      // same parameter index can be accessed in the overrider's parameter list, which is
+      // the same length.
       for (int i = 0; i < overridden.getParameters().size(); i++) {
         if (mcAtf.getDeclAnnotation(overridden.getParameters().get(i), Owning.class) != null) {
           if (mcAtf.getDeclAnnotation(overrider.getParameters().get(i), Owning.class) == null) {
@@ -280,9 +280,11 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       String message =
           isMustCallAliasAnnotationOnParameter
               ? String.format(
-                  "there is no @MustCallAlias annotation on %s, even though the parameter %s is annotated with @MustCallAlias",
+                  "there is no @MustCallAlias annotation on %s, even though the parameter %s is"
+                      + " annotated with @MustCallAlias",
                   locationOfCheck, paramWithMustCallAliasAnno)
-              : "no parameter has a @MustCallAlias annotation, even though the return type is annotated with @MustCallAlias";
+              : "no parameter has a @MustCallAlias annotation, even though the return type is"
+                  + " annotated with @MustCallAlias";
       checker.reportWarning(tree, "mustcallalias.method.return.and.param", message);
     }
   }
@@ -549,7 +551,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
               }
             }
 
-            // Optimization: stop early as soon as we've exhausted the list of obligations
+            // Optimization: stop early as soon as we've exhausted the list of
+            // obligations.
             if (unsatisfiedMustCallObligationsOfOwningField.isEmpty()) {
               return;
             }
@@ -595,7 +598,8 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       JavaExpression je = StringToJavaExpression.atFieldDecl(e, field, this.checker);
       return je instanceof FieldAccess && ((FieldAccess) je).getField().equals(field);
     } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-      // The parsing error will be reported elsewhere, assuming e was derived from an annotation.
+      // The parsing error will be reported elsewhere, assuming e was derived from an
+      // annotation.
       return false;
     }
   }

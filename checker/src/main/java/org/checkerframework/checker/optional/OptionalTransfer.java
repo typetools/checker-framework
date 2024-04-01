@@ -88,7 +88,8 @@ public class OptionalTransfer extends CFTransfer {
     }
 
     // TODO: Similar logic to the above can be applied in the Nullness Checker.
-    // Some methods take a function as an argument, guaranteeing that, if the function is called:
+    // Some methods take a function as an argument, guaranteeing that, if the function is
+    // called:
     //  * the value passed to the function is non-null
     //  * some other argument to the method is non-null
     // Examples:

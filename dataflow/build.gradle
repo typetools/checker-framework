@@ -1,5 +1,6 @@
 plugins {
   id 'java-library'
+  id 'base'
 }
 
 dependencies {
@@ -28,7 +29,9 @@ def createDataflowShaded(shadedPkgName) {
   tasks.create(name: "dataflow${shadedPkgName}Jar", type: ShadowJar, dependsOn: compileJava, group: 'Build') {
     description "Builds dataflow-${shadedPkgName}.jar."
     includeEmptyDirs = false
-    archiveBaseName.set("dataflow-${shadedPkgName}")
+    base {
+      archivesName = "dataflow-${shadedPkgName}"
+    }
     // Without this line, the Maven artifact will have the classifier "all".
     archiveClassifier.set('')
 
@@ -44,8 +47,8 @@ def createDataflowShaded(shadedPkgName) {
     }
 
     // Relocate external dependencies
-    relocate 'org.plume', "org.checkerframework.${shadedPkgName}.org.plume"
-    relocate 'com.google', 'org.checkerframework.com.google'
+    relocate 'org.plumelib', "org.checkerframework.${shadedPkgName}.org.plumelib"
+    relocate 'com.google', "org.checkerframework.${shadedPkgName}.com.google"
   }
 }
 
@@ -147,8 +150,8 @@ def testDataflowAnalysis(taskName, dirName, className, diff) {
 }
 
 // When adding a new test case, don't forget to add the temporary files to `../.gitignore`.
-testDataflowAnalysis("cfgConstructionTest", "cfgconstruction", "cfgconstruction.CFGConstruction", false)
 testDataflowAnalysis("busyExpressionTest", "busyexpr", "busyexpr.BusyExpression", true)
+testDataflowAnalysis("cfgConstructionTest", "cfgconstruction", "cfgconstruction.CFGConstruction", false)
 testDataflowAnalysis("constantPropagationTest", "constant-propagation", "constantpropagation.ConstantPropagation", true)
 testDataflowAnalysis("issue3447Test", "issue3447", "livevar.LiveVariable", false)
 testDataflowAnalysis("liveVariableTest", "live-variable", "livevar.LiveVariable", true)

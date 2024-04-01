@@ -92,7 +92,7 @@ public class InstanceOfNode extends Node {
    * A list of all binding variables in this instanceof. This is lazily initialized, use {@link
    * #getBindingVariables()}.
    */
-  @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
+  protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
    * Return all the binding variables in this instanceof.

@@ -16,8 +16,8 @@ class PolyMustCallDifferentNames {
     private final @Owning Wrapped field;
 
     public @PolyMustCall Wrapper1(@PolyMustCall Wrapped w) {
-      // we get this error since we only have a field-assignment special case for @MustCallAlias,
-      // not @PolyMustCall
+      // we get this error since we only have a field-assignment special case for
+      // @MustCallAlias, not @PolyMustCall.
       // :: error: (assignment)
       this.field = w;
     }

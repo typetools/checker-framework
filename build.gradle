@@ -4,18 +4,18 @@ plugins {
   // https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
   id 'com.github.johnrengelman.shadow' version '8.1.1'
   // https://plugins.gradle.org/plugin/de.undercouch.download
-  id 'de.undercouch.download' version '5.5.0'
+  id 'de.undercouch.download' version '5.6.0'
   id 'java'
   // https://github.com/tbroyer/gradle-errorprone-plugin
   id 'net.ltgt.errorprone' version '3.1.0'
   // https://plugins.gradle.org/plugin/org.ajoberstar.grgit
-  id 'org.ajoberstar.grgit' version '5.2.1' apply false
+  id 'org.ajoberstar.grgit' version '5.2.2' apply false
 
   id 'groovy' // needed for formatting Gradle files
   // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
   // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
   // Only works on JDK 11+ (even including the plugin crashes Gradle on JDK 8).
-  id 'com.diffplug.spotless' version '6.24.0'
+  id 'com.diffplug.spotless' version '6.25.0'
 }
 apply plugin: 'de.undercouch.download'
 
@@ -28,8 +28,6 @@ repositories {
 }
 
 ext {
-  release = false
-
   // This call to `isCompatibleWith` causes a Gradle run-time failure: "No signature of method".
   // isJava17compatible = JavaVersion.isCompatibleWith(JavaVersion.VERSION_17)
   isJava17orHigher = JavaVersion.current() >= JavaVersion.VERSION_17
@@ -43,6 +41,7 @@ ext {
   annotationTools = "${parentDir}/annotation-tools"
   afu = "${annotationTools}/annotation-file-utilities"
 
+  gitScriptsHome = "${project(':checker').projectDir}/bin-devel/.git-scripts"
   plumeScriptsHome = "${project(':checker').projectDir}/bin-devel/.plume-scripts"
   htmlToolsHome = "${project(':checker').projectDir}/bin-devel/.html-tools"
   doLikeJavacHome = "${project(':checker').projectDir}/bin/.do-like-javac"
@@ -56,11 +55,11 @@ ext {
   versions = [
     autoValue       : '1.10.4',
     googleJavaFormat : '1.19.2',
-    lombok          : '1.18.30',
+    lombok          : '1.18.32',
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.0',
-    errorprone : '2.24.1',
+    errorprone : '2.26.1',
   ]
 }
 
@@ -187,17 +186,18 @@ allprojects { currentProj ->
   // patterns of files to skip for individual sub-projects
   def perProjectDoNotFormat = [
     'checker': [
+      'bin-devel/.git-scripts/**',
       'bin-devel/.plume-scripts/**',
+      'dist/**',
       'tests/ainfer-*/annotated/*',
-      'tests/nullness-javac-errors/*',
-      'tests/calledmethods-delomboked/*',
       'tests/build/**',
-      'dist/**'
+      'tests/calledmethods-delomboked/*',
+      'tests/nullness-javac-errors/*',
     ],
     'dataflow': ['manual/examples/'],
     'framework': [
-      'tests/returnsrcvrdelomboked/*',
-      'tests/build/**'
+      'tests/build/**',
+      'tests/returnsreceiverdelomboked/*',
     ],
   ]
   spotless {
@@ -254,7 +254,12 @@ allprojects { currentProj ->
       }
       targetExclude doNotFormat
 
-      googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      if (project.hasProperty('eisopFormatting')) {
+        googleJavaFormat(versions.googleJavaFormat).aosp()
+        importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+      } else {
+        googleJavaFormat(versions.googleJavaFormat) // the formatter to apply to Java files
+      }
       formatAnnotations()
     }
 
@@ -264,7 +269,11 @@ allprojects { currentProj ->
         target '**/*.gradle'
         targetExclude doNotFormat
         greclipse()  // which formatter Spotless should use to format .gradle files.
-        indentWithSpaces(2)
+        if (project.hasProperty('eisopFormatting')) {
+          indentWithSpaces(4)
+        } else {
+          indentWithSpaces(2)
+        }
         trimTrailingWhitespace()
         // endWithNewline() // Don't want to end empty files with a newline
       }
@@ -559,6 +568,9 @@ task allJavadoc(type: Javadoc, group: 'Documentation') {
   }
 
   classpath = configurations.allProjects
+  // disable interpreting module-info.java files until all sub-modules support them
+  modularity.inferModulePath = false
+
   doLast {
     copy {
       from 'docs/logo/Checkmark/CFCheckmark_favicon.png'
@@ -613,6 +625,8 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     }
 
     classpath = configurations.allProjects
+    // disable interpreting module-info.java files until all sub-modules support them
+    modularity.inferModulePath = false
 
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
@@ -700,6 +714,7 @@ def createCloneTask(taskName, url, directory, extraArgs = []) {
 }
 
 
+createCloneTask('getGitScripts', 'https://github.com/plume-lib/git-scripts.git', gitScriptsHome)
 createCloneTask('getPlumeScripts', 'https://github.com/plume-lib/plume-scripts.git', plumeScriptsHome)
 createCloneTask('getHtmlTools', 'https://github.com/plume-lib/html-tools.git', htmlToolsHome)
 createCloneTask('getDoLikeJavac', 'https://github.com/kelloggm/do-like-javac.git', doLikeJavacHome)
@@ -754,6 +769,7 @@ subprojects {
     //  * Repeat until no new classes appear (all are under org/checkerframework/).
 
     // Relocate packages that might conflict with user's classpath.
+    relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
     relocate 'org.apache', 'org.checkerframework.org.apache'
     relocate 'org.relaxng', 'org.checkerframework.org.relaxng'
     relocate 'org.plumelib', 'org.checkerframework.org.plumelib'
@@ -766,13 +782,6 @@ subprojects {
     relocate 'plume', 'org.checkerframework.plume'
 
     exclude '**/module-info.class'
-
-    doFirst {
-      if (release) {
-        // Only relocate JavaParser during a release:
-        relocate 'com.github.javaparser', 'org.checkerframework.com.github.javaparser'
-      }
-    }
   }
 
   if (!project.name.startsWith('checker-qual-android')) {
@@ -805,7 +814,7 @@ subprojects {
       manifest {
         attributes('Implementation-Version': "${project.version}")
         attributes('Implementation-URL': 'https://checkerframework.org')
-        if (! archiveFileName.get().endsWith('source.jar')) {
+        if (! archiveFileName.get().endsWith('source.jar') && ! archiveFileName.get().startsWith('checker-qual')) {
           attributes('Automatic-Module-Name': 'org.checkerframework.' + project.name.replaceAll('-', '.'))
         }
         if (archiveFileName.get().startsWith('checker-qual') || archiveFileName.get().startsWith('checker-util')) {
@@ -944,7 +953,11 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      maxParallelForks = Integer.MAX_VALUE
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
+        maxParallelForks = Integer.MAX_VALUE
+      }
 
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
@@ -1065,17 +1078,13 @@ task buildAll(group: 'Build') {
     dependsOn("${subproject.name}:sourcesJar")
   }
   dependsOn('framework:allJavadocJar', 'framework:allSourcesJar', 'checker:allJavadocJar', 'checker:allSourcesJar', 'checker-qual:jar', 'checker-util:jar')
+  dependsOn('checker:assembleForJavac')
 }
 
 task releaseBuild(group: 'Build') {
-  description 'Build everything required for a release'
+  description 'Cleans, then builds everything required for a release'
   dependsOn(clean)
-  doFirst {
-    release = true
-  }
-  // Use finalizedBy rather than dependsOn so that release is set to true before any of the tasks are run.
-  finalizedBy(buildAll)
-  finalizedBy('checker:assembleForJavac')
+  dependsOn(buildAll)
 }
 
 // No group so it does not show up in the output of `gradlew tasks`

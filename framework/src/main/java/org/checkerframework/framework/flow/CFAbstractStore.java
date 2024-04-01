@@ -1362,8 +1362,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public String visualize(CFGVisualizer<?, S, ?> viz) {
-    /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
-     * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
+    // This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
+    // CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of
+    // GenericAnnotatedTypeFactory.
     @SuppressWarnings("unchecked")
     CFGVisualizer<V, S, ?> castedViz = (CFGVisualizer<V, S, ?>) viz;
     String internal = internalVisualize(castedViz);

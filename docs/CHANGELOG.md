@@ -1,13 +1,37 @@
-Version 3.43.0 (January 2, 2024)
---------------------------------
+Version 3.43.0 (?? ??, 2024)
+----------------------------
 
 **User-visible changes:**
+
+Renamed command-line arguments:
+ * `-AskipDirs` has been renamed to `-AskipFiles`.
+   `-AskipDirs` will continue to work for the time being.
+
+New command-line arguments:
+ * `-AonlyFiles` complements `-AskipFiles`
 
 Method, constructor, lambda, and method reference type inference has been
 greatly improved.  The `-AconservativeUninferredTypeArguments` option is
 no longer necessary and has been removed.
 
+A specialized inference algorithm for the Resource Leak Checker runs
+automatically as part of whole-program inference.
+
 **Implementation details:**
+
+Deprecated `ObjectCreationNode#getConstructor` in favor of new
+`ObjectCreationNode#getTypeToInstantiate()`.
+
+Renamed `AbstractCFGVisualizer.visualizeBlockHelper()` to
+`visualizeBlockWithSeparator()`.
+
+Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
+ * isConstantCaseLabelTree
+ * isDefaultCaseLabelTree
+ * isPatternCaseLabelTree
+
+Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
+`warnInvalidPolymorphicQualifier()`.
 
 **Closed issues:**
 
@@ -22,7 +46,7 @@ possibly throws an assertion.  Using it can make flow-sensitive type refinement
 more effective.
 
 In `org.checkerframework.common.util.debug`, renamed `EmptyProcessor` to `DoNothingProcessor`.
-Removed `org.checkerframework.common.util.report.DoNothingChecker`.
+Removed `org.checkerframework.common.util.report.DoNothingChecker`; use `DoNothingProcessor`.
 Moved `ReportChecker` from `org.checkerframework.common.util.report` to `org.checkerframework.common.util.count.report`.
 
 
@@ -32,7 +56,7 @@ Version 3.41.0 (December 4, 2023)
 **User-visible changes:**
 
 New command-line options:
-  -AassumePureGetters Unsoundly assume that every getter method is pure
+ * `-AassumePureGetters` Unsoundly assume that every getter method is pure
 
 **Implementation details:**
 

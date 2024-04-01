@@ -31,7 +31,8 @@ public class TryWithResourcesSimple {
 
   static void test_poly(String address, int port) {
     try (Socket socket = new Socket(address, port)) {
-      // getChannel is @MustCallAlias (= poly) with the socket, so it should also be @MC({"close"})
+      // getChannel is @MustCallAlias (= poly) with the socket, so it should also be
+      // @MC({"close"})
       @MustCall({"close"}) Object s = socket.getChannel();
     } catch (Exception e) {
 

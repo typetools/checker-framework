@@ -46,17 +46,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedExecutableType methodType) {
     TreePath pathToExpression = typeFactory.getPath(expressionTree);
 
-    // In order to find the type arguments for expressionTree, type arguments for outer method calls
-    // may need be inferred, too.
+    // In order to find the type arguments for expressionTree, type arguments for outer method
+    // calls may need be inferred, too.
     // So, first find the outermost tree that is required to infer the type arguments for
     // expressionTree
     ExpressionTree outerTree = outerInference(expressionTree, pathToExpression.getParentPath());
 
     for (InvocationTypeInference i : java8InferenceStack) {
       if (i.getInferenceExpression() == outerTree) {
-        // Inference is running and is asking for the type of the method before type arguments are
-        // substituted. So don't infer any type arguments.  This happens when getting the type of a
-        // lambda's returned expression.
+        // Inference is running and is asking for the type of the method before type
+        // arguments are substituted. So don't infer any type arguments.  This happens when
+        // getting the type of a lambda's returned expression.
         List<Variable> instantiated = new ArrayList<>();
         Theta m = i.context.maps.get(expressionTree);
         if (m == null) {
@@ -114,14 +114,19 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return result.swapTypeVariables(methodType, expressionTree);
       }
     } catch (Exception ex) {
-      // This should never happen, if javac infers type arguments so should the Checker
-      // Framework. However, given how buggy javac inference is, this probably will, so deal with it
-      // gracefully.
-      return new InferenceResult(
-          Collections.emptyList(),
-          false,
-          true,
-          "An exception occurred: " + ex.getLocalizedMessage());
+      if (typeFactory
+          .getChecker()
+          .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
+        // This should never happen, if javac infers type arguments so should the Checker
+        // Framework. However, given how buggy javac inference is, this probably will, so deal
+        // with it gracefully.
+        return new InferenceResult(
+            Collections.emptyList(),
+            false,
+            true,
+            "An exception occurred: " + ex.getLocalizedMessage());
+      }
+      throw ex;
     } finally {
       if (!java8InferenceStack.isEmpty()) {
         java8Inference = java8InferenceStack.pop();

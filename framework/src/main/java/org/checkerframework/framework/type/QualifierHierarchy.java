@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -11,6 +12,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
@@ -71,6 +73,16 @@ public abstract class QualifierHierarchy {
    * @return the top (ultimate super) type qualifiers in the type system
    */
   public abstract AnnotationMirrorSet getTopAnnotations();
+
+  /**
+   * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
+   *
+   * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
+   * @return true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   */
+  public boolean isTop(AnnotationMirror qualifier) {
+    return AnnotationUtils.containsSame(getTopAnnotations(), qualifier);
+  }
 
   /**
    * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
@@ -340,13 +352,11 @@ public abstract class QualifierHierarchy {
     if (qualifiers.isEmpty()) {
       return AnnotationMirrorSet.emptySet();
     }
-    Set<? extends AnnotationMirror> result = null;
-    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
-      if (result == null) {
-        result = new AnnotationMirrorSet(annos);
-      } else {
-        result = leastUpperBoundsQualifiersOnly(result, annos);
-      }
+    Iterator<? extends Collection<? extends AnnotationMirror>> itor = qualifiers.iterator();
+    Set<? extends AnnotationMirror> result = new AnnotationMirrorSet(itor.next());
+    while (itor.hasNext()) {
+      Collection<? extends AnnotationMirror> annos = itor.next();
+      result = leastUpperBoundsQualifiersOnly(result, annos);
     }
     return result;
   }
@@ -650,13 +660,11 @@ public abstract class QualifierHierarchy {
     if (qualifiers.isEmpty()) {
       return AnnotationMirrorSet.emptySet();
     }
-    Set<? extends AnnotationMirror> result = null;
-    for (Collection<? extends AnnotationMirror> annos : qualifiers) {
-      if (result == null) {
-        result = new AnnotationMirrorSet(annos);
-      } else {
-        result = greatestLowerBoundsQualifiersOnly(result, annos);
-      }
+    Iterator<? extends Collection<? extends AnnotationMirror>> itor = qualifiers.iterator();
+    Set<? extends AnnotationMirror> result = new AnnotationMirrorSet(itor.next());
+    while (itor.hasNext()) {
+      Collection<? extends AnnotationMirror> annos = itor.next();
+      result = greatestLowerBoundsQualifiersOnly(result, annos);
     }
     return result;
   }

@@ -108,7 +108,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates a SignatureAnnotatedTypeFactory.
    *
-   * @param checker the type-checker assocated with this type factory
+   * @param checker the type-checker associated with this type factory
    */
   public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);

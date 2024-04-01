@@ -90,7 +90,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
       new AnnotationMirrorMap<>();
 
   /** The visit method returns true if the passed type has any polymorphic qualifiers. */
-  protected final SimpleAnnotatedTypeScanner<Boolean, Void> polyScanner;
+  protected final SimpleAnnotatedTypeScanner<Boolean, Void> hasPolyScanner;
 
   /**
    * Creates an {@link AbstractQualifierPolymorphism} instance that uses the given checker for
@@ -130,7 +130,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
               return null;
             });
 
-    this.polyScanner =
+    this.hasPolyScanner =
         new SimpleAnnotatedTypeScanner<>(
             (type, notused) -> {
               for (AnnotationMirror a : type.getPrimaryAnnotations()) {
@@ -158,7 +158,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
 
   @Override
   public boolean hasPolymorphicQualifiers(AnnotatedTypeMirror type) {
-    return polyScanner.visit(type);
+    return hasPolyScanner.visit(type);
   }
 
   /**
@@ -200,7 +200,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
               collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
     }
 
-    if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
+    if ((instantiationMapping != null && !instantiationMapping.isEmpty())
+        || TreeUtils.isCallToVarArgsMethodWithZeroVarargsActuals(tree)) {
       replacer.visit(type, instantiationMapping);
     } else {
       completer.visit(type);

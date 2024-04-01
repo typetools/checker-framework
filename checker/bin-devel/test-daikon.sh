@@ -16,7 +16,7 @@ echo "running \"./gradlew assembleForJavac\" for checker-framework"
 ./gradlew assembleForJavac --console=plain -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 # daikon-typecheck: 15 minutes
-"$SCRIPTDIR/.plume-scripts/git-clone-related" codespecs daikon
+"$SCRIPTDIR/.git-scripts/git-clone-related" codespecs daikon
 cd ../daikon
 git log | head -n 5
 make compile
