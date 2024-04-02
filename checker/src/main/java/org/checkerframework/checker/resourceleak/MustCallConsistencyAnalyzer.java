@@ -10,8 +10,10 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -215,6 +217,10 @@ class MustCallConsistencyAnalyzer {
 
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
+
+  /** The set of @OwningArray fields whose elements have already been assigned. If field is already
+   * in this set, the new assignment is illegal. */
+  private Set<Name> alreadyAllocatedArrays;
 
   /** A description for how a method might exit. */
   /*package-private*/ enum MethodExitKind {
@@ -622,6 +628,7 @@ class MustCallConsistencyAnalyzer {
     // not yet been removed and analyzed.
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
+    this.alreadyAllocatedArrays = new HashSet<>();
 
     // verify that all @OwningArray fields are final
     checkOwningArrayFields(cfg);
@@ -1421,7 +1428,7 @@ class MustCallConsistencyAnalyzer {
     Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
     rhs = getTempVarOrNode(rhs);
 
-    // Ownership transfer to index of @OwningArray array.
+    // update obligations for assignments to @OwningArray array
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
     MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
     boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
@@ -1433,32 +1440,56 @@ class MustCallConsistencyAnalyzer {
         // assigning @OwningArray field to an @OwningArray argument in constructor is allowed
         // verify whether rhs is an @OwningArray parameter
         Tree lhsTree = lhs.getTree();
-        boolean rhsIsParam =
-            TreeUtils.elementFromTree(rhs.getTree()).getKind() == ElementKind.PARAMETER;
+        Element rhsElement = TreeUtils.elementFromTree(rhs.getTree());
+        boolean rhsIsParam = rhsElement != null && rhsElement.getKind() == ElementKind.PARAMETER;
         boolean rhsIsOwningArray = typeFactory.hasOwningArray(TreeUtils.elementFromTree(lhsTree));
         if (lhsTree instanceof ArrayAccessTree) {
           // possibly allocating for-loop
-          if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation((AssignmentTree) assignmentNode.getTree())) {
-            // allocating for-loop
+          if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
+              (AssignmentTree) assignmentNode.getTree())) {
+            // allocating for-loop: remove obligation of RHS
+            assert rhs instanceof LocalVariableNode
+              : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
+              + rhs.getTree().getKind();
+            LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+            Set<MethodExitKind> toClear = MethodExitKind.ALL;
+            removeObligationsContainingVar(
+                obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+
+            // check whether elements of field have been assigned previously in the constructor
+            ExpressionTree arrayTree = ((ArrayAccessTree) lhsTree).getExpression();
+            assert arrayTree instanceof IdentifierTree
+              : "LHS of pattern-matched assignment-loop assumed to be IdentifierTree, but is: "
+              + arrayTree.getKind();
+            Name arrayName = ((IdentifierTree) arrayTree).getName();
+            if (this.alreadyAllocatedArrays.contains(arrayName)) {
+              checker.reportError(
+                  assignmentNode.getTree(),
+                  "owningarray.field.elements.assigned.multiple.times");
+            } else {
+              this.alreadyAllocatedArrays.add(arrayName);
+            }
+          } else {
+            // illegal assignment to elements of @OwningArray field
+            checker.reportError(
+                assignmentNode.getTree(),
+                "illegal.owningarray.field.elements.assignment");
           }
-
-        }
-        if (rhsIsParam && rhsIsOwningArray) {
-          // this is the allowed assignment case
+        } else if ((rhsIsParam && rhsIsOwningArray)
+                   || (rhs.getTree() instanceof NewArrayTree)) {
+            // these are the allowed assignment cases. "final" enforces that there is only one assignment overall
         } else {
+            // any other assignment to @OwningArray field is not allowed
+            checker.reportError(
+                assignmentNode.getTree(),
+                "illegal.owningarray.field.assignment");
         }
-        // if (rhs.getTree() instanceof IdentifierTree) {
-
-        // } else {
-        //   assert false : "in constructor: rhs of assignment expected to be Identifier";
-        // }
       } else {
         if (lhsIsField) {
           // @OwningArray field may not be assigned (neither its elements) outside of constructor
           checker.reportError(
               assignmentNode.getTree(),
-              "owningarray.field.outside.constructor.assigned",
-              lhs.getTree().toString());
+              "owningarray.field.assigned.outside.constructor");
         } else if (lhs.getTree() instanceof VariableTree) {
           // declaration of local @OwningArray. Can't be field since we're in the else clause
           VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
@@ -1484,16 +1515,7 @@ class MustCallConsistencyAnalyzer {
             if (mcoeStore.getValue(JavaExpression.fromTree(tree)) != null) {
               mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
             }
-            if (mcoeObligations.isEmpty()) {
-              // if no mcoeObligations and rhs is new array it is safe to add the obligation,
-              // even in case of reassignment (since obligations is a set)
-
-              // obligations.add(
-              //     new Obligation(
-              //         ImmutableSet.of(new ResourceAlias(JavaExpression.fromTree(tree),
-              // TreeUtils.elementFromTree(tree), tree)),
-              //         Collections.singleton(MethodExitKind.NORMAL_RETURN)));
-            } else {
+            if (!mcoeObligations.isEmpty()) {
               checker.reportError(
                   assignmentNode.getTree(),
                   "owningarray.reassignment.with.open.obligations",
@@ -1520,31 +1542,15 @@ class MustCallConsistencyAnalyzer {
                 assignmentNode.getTree(),
                 "Assigning to element of @OwningArray index outside of a designated loop.");
           }
-          // really unsure about the remainder of this code that deletes obligations for the local
-          // var
-          // TODO
           // Remove Obligations from local variables, now that the @OwningArray is responsible.
           // (When obligation creation is turned off, non-final fields cannot take ownership.)
-          if (rhs instanceof LocalVariableNode) {
-            LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-            Set<MethodExitKind> toClear = MethodExitKind.ALL;
-
-            // @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
-            // @Nullable TypeElement enclosingType =
-            //     enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
-
-            removeObligationsContainingVar(
-                obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
-
-            // Finally, if any obligations containing this var remain, then closing the field will
-            // satisfy them.  Here we are overly cautious and only track final fields.  In the
-            // future we could perhaps relax this guard with careful handling for field
-            // reassignments.
-            addAliasToObligationsContainingVar(
-                obligations,
-                rhsVar,
-                new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
-          }
+          assert rhs instanceof LocalVariableNode
+            : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
+            + rhs.getTree().getKind();
+          LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+          Set<MethodExitKind> toClear = MethodExitKind.ALL;
+          removeObligationsContainingVar(
+              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
         } else {
           assert false
               : "uncovered case: lhs " + lhs.getTree() + " of kind " + lhs.getTree().getKind();
@@ -2364,7 +2370,16 @@ class MustCallConsistencyAnalyzer {
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
         } else if (node instanceof LessThanNode) {
-          verifyAllocatingForLoop((LessThanNode) node);
+          // check if the allocating for-loop has any open obligations.
+          // Since @OwningArray fields have different default type, don't execute the check for them
+          ExpressionTree arr =
+              MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
+          boolean isOwningArrayField = arr != null
+              && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
+              && TreeUtils.elementFromTree(arr).getKind() == ElementKind.FIELD;
+          if (!isOwningArrayField) {
+            verifyAllocatingForLoop((LessThanNode) node);
+          }
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2689,8 +2704,8 @@ class MustCallConsistencyAnalyzer {
           result.add(
               new Obligation(
                   ImmutableSet.of(
-                      new ResourceAlias(JavaExpression.fromVariableTree(param),
-                                        paramElement, param)),
+                      new ResourceAlias(
+                          JavaExpression.fromVariableTree(param), paramElement, param)),
                   Collections.singleton(MethodExitKind.NORMAL_RETURN)));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing
           // method.
