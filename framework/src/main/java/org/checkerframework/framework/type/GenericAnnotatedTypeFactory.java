@@ -7,7 +7,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -104,7 +103,6 @@ import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
@@ -900,34 +898,6 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(elt, supertype);
       }
     }
-  }
-
-  /**
-   * Gets the type of the resulting constructor call of a MemberReferenceTree.
-   *
-   * @param memberReferenceTree MemberReferenceTree where the member is a constructor
-   * @param constructorType AnnotatedExecutableType of the declaration of the constructor
-   * @return AnnotatedTypeMirror of the resulting type of the constructor
-   */
-  public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(
-      MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
-    assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
-
-    // The return type for constructors should only have explicit annotations from the
-    // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
-
-    // The return type of the constructor will be the type of the expression of the member
-    // reference tree.
-    AnnotatedDeclaredType constructorReturnType =
-        (AnnotatedDeclaredType) fromTypeTree(memberReferenceTree.getQualifierExpression());
-
-    // Keep only explicit annotations and those from @Poly
-    AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(
-        this, constructorReturnType, constructorType);
-
-    // Now add back defaulting.
-    addComputedTypeAnnotations(memberReferenceTree.getQualifierExpression(), constructorReturnType);
-    return constructorReturnType;
   }
 
   /**
