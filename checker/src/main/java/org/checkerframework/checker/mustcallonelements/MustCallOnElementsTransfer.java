@@ -3,17 +3,13 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
@@ -22,8 +18,10 @@ import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -33,7 +31,6 @@ import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Transfer function for the MustCallOnElements type system. */
@@ -121,6 +118,71 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   //   }
   //   return res;
   // }
+
+  /*
+   * Empties the @MustCallOnElements() type of arguments passed as @OwningArray parameters to the
+   * constructor and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
+   */
+  @Override
+  public TransferResult<CFValue, CFStore> visitObjectCreation(
+      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
+    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+    List<? extends VariableElement> params = constructor.getParameters();
+    List<Node> args = node.getArguments();
+    Iterator<? extends VariableElement> paramIterator = params.iterator();
+    Iterator<Node> argIterator = args.iterator();
+    while (paramIterator.hasNext() && argIterator.hasNext()) {
+      VariableElement param = paramIterator.next();
+      Node arg = argIterator.next();
+      if (param.getAnnotation(OwningArray.class) != null) {
+        if (TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) == null) {
+          atypeFactory.getChecker().reportError(node.getTree(), "unexpected.argument.ownership");
+        }
+        System.out.println("owningarray param: " + param);
+        JavaExpression array = JavaExpression.fromNode(arg);
+        res.getRegularStore().clearValue(array);
+        res.getRegularStore()
+            .insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
+      }
+    }
+    return res;
+  }
+
+  /*
+   * Empties the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
+   * method and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
+   */
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
+    ExecutableElement method = node.getTarget().getMethod();
+    List<? extends VariableElement> params = method.getParameters();
+    List<Node> args = node.getArguments();
+    Iterator<? extends VariableElement> paramIterator = params.iterator();
+    Iterator<Node> argIterator = args.iterator();
+    while (paramIterator.hasNext() && argIterator.hasNext()) {
+      VariableElement param = paramIterator.next();
+      Node arg = argIterator.next();
+      boolean argIsOwningArray =
+          TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) != null;
+      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+      if (paramIsOwningArray) {
+        if (!argIsOwningArray) {
+          atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
+        }
+        System.out.println("owningarray param: " + param);
+        JavaExpression array = JavaExpression.fromNode(arg);
+        res.getRegularStore().clearValue(array);
+        res.getRegularStore()
+            .insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
+      } else if (argIsOwningArray) {
+        atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
+      }
+    }
+    return res;
+  }
 
   @Override
   public TransferResult<CFValue, CFStore> visitLessThan(

@@ -10,7 +10,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
@@ -218,8 +217,10 @@ class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
-  /** The set of @OwningArray fields whose elements have already been assigned. If field is already
-   * in this set, the new assignment is illegal. */
+  /**
+   * The set of @OwningArray fields whose elements have already been assigned. If field is already
+   * in this set, the new assignment is illegal.
+   */
   private Set<Name> alreadyAllocatedArrays;
 
   /** A description for how a method might exit. */
@@ -1221,14 +1222,12 @@ class MustCallConsistencyAnalyzer {
     BinaryTree tree = node.getTree();
     // check whether the loop specified through the condition was pattern-matched as an allocating
     // loop
-    if (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
-        == null) {
-      return;
-    }
     ExpressionTree arr =
         MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
-    assert arr != null
-        : "invariant violated: pattern-matcher didn't put array tree into datastructure";
+    if (arr == null) {
+      // not an allocating loop
+      return;
+    }
     // check whether obligations have been fulfilled prior to reassignment
     List<String> mcoeObligations =
         getMustCallOnElementsObligations(mcoeTypeFactory.getStoreForTree(arr), arr);
@@ -1449,8 +1448,8 @@ class MustCallConsistencyAnalyzer {
               (AssignmentTree) assignmentNode.getTree())) {
             // allocating for-loop: remove obligation of RHS
             assert rhs instanceof LocalVariableNode
-              : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
-              + rhs.getTree().getKind();
+                : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
+                    + rhs.getTree().getKind();
             LocalVariableNode rhsVar = (LocalVariableNode) rhs;
             Set<MethodExitKind> toClear = MethodExitKind.ALL;
             removeObligationsContainingVar(
@@ -1459,37 +1458,32 @@ class MustCallConsistencyAnalyzer {
             // check whether elements of field have been assigned previously in the constructor
             ExpressionTree arrayTree = ((ArrayAccessTree) lhsTree).getExpression();
             assert arrayTree instanceof IdentifierTree
-              : "LHS of pattern-matched assignment-loop assumed to be IdentifierTree, but is: "
-              + arrayTree.getKind();
+                : "LHS of pattern-matched assignment-loop assumed to be IdentifierTree, but is: "
+                    + arrayTree.getKind();
             Name arrayName = ((IdentifierTree) arrayTree).getName();
             if (this.alreadyAllocatedArrays.contains(arrayName)) {
               checker.reportError(
-                  assignmentNode.getTree(),
-                  "owningarray.field.elements.assigned.multiple.times");
+                  assignmentNode.getTree(), "owningarray.field.elements.assigned.multiple.times");
             } else {
               this.alreadyAllocatedArrays.add(arrayName);
             }
           } else {
             // illegal assignment to elements of @OwningArray field
             checker.reportError(
-                assignmentNode.getTree(),
-                "illegal.owningarray.field.elements.assignment");
+                assignmentNode.getTree(), "illegal.owningarray.field.elements.assignment");
           }
-        } else if ((rhsIsParam && rhsIsOwningArray)
-                   || (rhs.getTree() instanceof NewArrayTree)) {
-            // these are the allowed assignment cases. "final" enforces that there is only one assignment overall
+        } else if ((rhsIsParam && rhsIsOwningArray) || (rhs.getTree() instanceof NewArrayTree)) {
+          // these are the allowed assignment cases. "final" enforces that there is only one
+          // assignment overall
         } else {
-            // any other assignment to @OwningArray field is not allowed
-            checker.reportError(
-                assignmentNode.getTree(),
-                "illegal.owningarray.field.assignment");
+          // any other assignment to @OwningArray field is not allowed
+          checker.reportError(assignmentNode.getTree(), "illegal.owningarray.field.assignment");
         }
       } else {
         if (lhsIsField) {
           // @OwningArray field may not be assigned (neither its elements) outside of constructor
           checker.reportError(
-              assignmentNode.getTree(),
-              "owningarray.field.assigned.outside.constructor");
+              assignmentNode.getTree(), "owningarray.field.assigned.outside.constructor");
         } else if (lhs.getTree() instanceof VariableTree) {
           // declaration of local @OwningArray. Can't be field since we're in the else clause
           VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
@@ -1545,8 +1539,8 @@ class MustCallConsistencyAnalyzer {
           // Remove Obligations from local variables, now that the @OwningArray is responsible.
           // (When obligation creation is turned off, non-final fields cannot take ownership.)
           assert rhs instanceof LocalVariableNode
-            : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
-            + rhs.getTree().getKind();
+              : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
+                  + rhs.getTree().getKind();
           LocalVariableNode rhsVar = (LocalVariableNode) rhs;
           Set<MethodExitKind> toClear = MethodExitKind.ALL;
           removeObligationsContainingVar(
@@ -2373,10 +2367,12 @@ class MustCallConsistencyAnalyzer {
           // check if the allocating for-loop has any open obligations.
           // Since @OwningArray fields have different default type, don't execute the check for them
           ExpressionTree arr =
-              MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
-          boolean isOwningArrayField = arr != null
-              && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
-              && TreeUtils.elementFromTree(arr).getKind() == ElementKind.FIELD;
+              MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
+                  node.getTree());
+          boolean isOwningArrayField =
+              arr != null
+                  && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
+                  && TreeUtils.elementFromTree(arr).getKind() == ElementKind.FIELD;
           if (!isOwningArrayField) {
             verifyAllocatingForLoop((LessThanNode) node);
           }
