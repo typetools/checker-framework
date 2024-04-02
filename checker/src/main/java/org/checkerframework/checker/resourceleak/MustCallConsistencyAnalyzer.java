@@ -1427,18 +1427,24 @@ class MustCallConsistencyAnalyzer {
     boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
     boolean lhsIsField = TreeUtils.elementFromTree(lhs.getTree()).getKind() == ElementKind.FIELD;
     if (isOwningArray && typeFactory.canCreateObligations()) {
-      if (inConstructor) {
+      if (containingMethod == null) {
+        // this is a declaration-definition of an @OwningArray field. nothing to check.
+      } else if (inConstructor && lhsIsField) {
         // assigning @OwningArray field to an @OwningArray argument in constructor is allowed
         // verify whether rhs is an @OwningArray parameter
         Tree lhsTree = lhs.getTree();
         boolean rhsIsParam =
             TreeUtils.elementFromTree(rhs.getTree()).getKind() == ElementKind.PARAMETER;
+        boolean rhsIsOwningArray = typeFactory.hasOwningArray(TreeUtils.elementFromTree(lhsTree));
         if (lhsTree instanceof ArrayAccessTree) {
-          //
+          // possibly allocating for-loop
+          if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation((AssignmentTree) assignmentNode.getTree())) {
+            // allocating for-loop
+          }
 
         }
-        if (rhsIsParam) {
-
+        if (rhsIsParam && rhsIsOwningArray) {
+          // this is the allowed assignment case
         } else {
         }
         // if (rhs.getTree() instanceof IdentifierTree) {
@@ -1447,20 +1453,14 @@ class MustCallConsistencyAnalyzer {
         //   assert false : "in constructor: rhs of assignment expected to be Identifier";
         // }
       } else {
-        if (lhsIsField && containingMethod != null) {
+        if (lhsIsField) {
           // @OwningArray field may not be assigned (neither its elements) outside of constructor
-          // containingMethod != null implies it is not a declaration-definition (which is of course
-          // allowed for a field)
           checker.reportError(
               assignmentNode.getTree(),
               "owningarray.field.outside.constructor.assigned",
               lhs.getTree().toString());
         } else if (lhs.getTree() instanceof VariableTree) {
-          // declaration of local @OwningArray. Can't be field since we're not in constructor and a
-          // @OwningArray
-          // field is enforced to be final
-          assert !lhsIsField
-              : "@OwningArray field assignment outside of constructor implies it's not final, but it must be.";
+          // declaration of local @OwningArray. Can't be field since we're in the else clause
           VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
           obligations.add(
               new Obligation(
@@ -2684,6 +2684,17 @@ class MustCallConsistencyAnalyzer {
           // Increment numMustCall for each @Owning parameter tracked by the enclosing
           // method.
           incrementNumMustCall(paramElement);
+        }
+        if (paramElement.getAnnotation(OwningArray.class) != null) {
+          result.add(
+              new Obligation(
+                  ImmutableSet.of(
+                      new ResourceAlias(JavaExpression.fromVariableTree(param),
+                                        paramElement, param)),
+                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+          // Increment numMustCall for each @Owning parameter tracked by the enclosing
+          // method.
+          // incrementNumMustCall(paramElement);
         }
       }
       return result;

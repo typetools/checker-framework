@@ -3,17 +3,27 @@ package org.checkerframework.checker.mustcallonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -22,6 +32,8 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** Transfer function for the MustCallOnElements type system. */
@@ -71,25 +83,44 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   //   return res;
   // }
 
-  // /**
-  //  * Returns the list of mustcall obligations for a type.
-  //  *
-  //  * @param type the type
-  //  * @return the list of mustcall obligations for the type
-  //  */
-  // private List<String> getMustCallValuesForType(TypeMirror type) {
-  //   InheritableMustCall imcAnnotation =
-  //       TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
-  //   MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
-  //   Set<String> mcValues = new HashSet<>();
-  //   if (mcAnnotation != null) {
-  //     mcValues.addAll(Arrays.asList(mcAnnotation.value()));
-  //   }
-  //   if (imcAnnotation != null) {
-  //     mcValues.addAll(Arrays.asList(imcAnnotation.value()));
-  //   }
-  //   return new ArrayList<>(mcValues);
-  // }
+  /**
+   * Returns the list of mustcall obligations for a type.
+   *
+   * @param type the type
+   * @return the list of mustcall obligations for the type
+   */
+  private List<String> getMustCallValuesForType(TypeMirror type) {
+    InheritableMustCall imcAnnotation =
+        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+    }
+    return new ArrayList<>(mcValues);
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitFieldAccess(
+      FieldAccessNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitFieldAccess(node, input);
+    Element elmnt = TreeUtils.elementFromTree(node.getTree());
+    if (atypeFactory.getDeclAnnotation(elmnt, OwningArray.class) != null
+        && elmnt.getKind() == ElementKind.FIELD) {
+      // since @OwningArray is enforced to be array, the following cast is guaranteed to succeed
+      TypeMirror componentType = ((ArrayType) elmnt.asType()).getComponentType();
+      List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+      AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+      JavaExpression field = JavaExpression.fromTree((ExpressionTree) node.getTree());
+      res.getRegularStore().clearValue(field);
+      res.getRegularStore().insertValue(field, newType);
+    }
+    System.out.println("changed type of: " + node);
+    return res;
+  }
 
   @Override
   public TransferResult<CFValue, CFStore> visitLessThan(
