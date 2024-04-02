@@ -3,26 +3,42 @@ package org.checkerframework.checker.calledmethodsonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.*;
+import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A transfer function that accumulates the names of methods called. */
@@ -63,6 +79,90 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     env = atypeFactory.getProcessingEnv();
   }
 
+  /*
+   * Empties the @MustCallOnElements() type of arguments passed as @OwningArray parameters to the
+   * constructor and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
+   */
+  @Override
+  public TransferResult<CFValue, CFStore> visitObjectCreation(
+      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
+    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+    List<? extends VariableElement> params = constructor.getParameters();
+    List<Node> args = node.getArguments();
+    Iterator<? extends VariableElement> paramIterator = params.iterator();
+    Iterator<Node> argIterator = args.iterator();
+    while (paramIterator.hasNext() && argIterator.hasNext()) {
+      VariableElement param = paramIterator.next();
+      Node arg = argIterator.next();
+      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+      if (paramIsOwningArray) {
+        System.out.println("owningarray param: " + param);
+        JavaExpression array = JavaExpression.fromNode(arg);
+        AnnotationMirror oldType = res.getRegularStore().getValue(array).getAnnotations().first();
+        TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
+        List<String> mcoeObligationsOfComponent = getMustCallValuesForType(componentType);
+        res.getRegularStore().clearValue(array);
+        res.getRegularStore()
+            .insertValue(
+                array, getUpdatedCalledMethodsOnElementsType(oldType, mcoeObligationsOfComponent));
+      }
+    }
+    return res;
+  }
+
+  /*
+   * Empties the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
+   * method.
+   */
+  @Override
+  public TransferResult<CFValue, CFStore> visitMethodInvocation(
+      MethodInvocationNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitMethodInvocation(node, input);
+    ExecutableElement method = node.getTarget().getMethod();
+    List<? extends VariableElement> params = method.getParameters();
+    List<Node> args = node.getArguments();
+    Iterator<? extends VariableElement> paramIterator = params.iterator();
+    Iterator<Node> argIterator = args.iterator();
+    while (paramIterator.hasNext() && argIterator.hasNext()) {
+      VariableElement param = paramIterator.next();
+      Node arg = argIterator.next();
+      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+      if (paramIsOwningArray) {
+        System.out.println("owningarray param: " + param);
+        JavaExpression array = JavaExpression.fromNode(arg);
+        AnnotationMirror oldType = res.getRegularStore().getValue(array).getAnnotations().first();
+        TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
+        List<String> mcoeObligationsOfComponent = getMustCallValuesForType(componentType);
+        res.getRegularStore().clearValue(array);
+        res.getRegularStore()
+            .insertValue(
+                array, getUpdatedCalledMethodsOnElementsType(oldType, mcoeObligationsOfComponent));
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Returns the list of mustcall obligations for a type.
+   *
+   * @param type the type
+   * @return the list of mustcall obligations for the type
+   */
+  private List<String> getMustCallValuesForType(TypeMirror type) {
+    InheritableMustCall imcAnnotation =
+        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+    }
+    return new ArrayList<>(mcValues);
+  }
+
   /**
    * {@inheritDoc}
    *
@@ -88,7 +188,8 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
       CFValue oldTypeValue = elseStore.getValue(target);
       assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
       AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
-      AnnotationMirror newType = getUpdatedCalledMethodsOnElementsType(oldType, calledMethod);
+      AnnotationMirror newType =
+          getUpdatedCalledMethodsOnElementsType(oldType, Collections.singletonList(calledMethod));
       elseStore.clearValue(target);
       elseStore.insertValue(target, newType);
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
@@ -115,16 +216,16 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    * annotation.
    *
    * @param type the current type in the called-methods hierarchy
-   * @param methodName the name of the new method to add to the type
+   * @param methodNames list of names of the new methods to add to the type
    * @return the new annotation to be added to the type, or null if the current type cannot be
    *     converted to an accumulator annotation
    */
   private @Nullable AnnotationMirror getUpdatedCalledMethodsOnElementsType(
-      AnnotationMirror type, String methodName) {
+      AnnotationMirror type, List<String> methodNames) {
     List<String> currentMethods =
         AnnotationUtils.getElementValueArray(
             type, calledMethodsOnElementsValueElement, String.class);
-    List<String> newList = CollectionsPlume.append(currentMethods, methodName);
+    List<String> newList = CollectionsPlume.concatenate(currentMethods, methodNames);
     return createAccumulatorAnnotation(newList, type);
   }
 
