@@ -24,7 +24,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
@@ -352,6 +354,96 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   @Override
+  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    super.addComputedTypeAnnotations(tree, type, useFlow);
+    if (tree instanceof VariableTree) {
+      VariableTree varTree = (VariableTree) tree;
+      Element elt = TreeUtils.elementFromDeclaration(varTree);
+      boolean noMcoeAnno = true;
+      for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
+        DeclaredType annotype = paramAnno.getAnnotationType();
+        String annotypeQualifiedName =
+            ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
+        String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
+        if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+          // is @MustCallOnElements annotation
+          noMcoeAnno = false;
+          break;
+        }
+      }
+      if (noMcoeAnno) { // don't override an existing manual annotation
+        if (elt.getKind() == ElementKind.FIELD
+            && getDeclAnnotation(elt, OwningArray.class) != null) {
+          TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
+          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+          type.replaceAnnotation(newType);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+    super.addComputedTypeAnnotations(elt, type);
+    if (elt.asType() instanceof ArrayType) {
+      boolean noMcoeAnno = true;
+      for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
+        DeclaredType annotype = paramAnno.getAnnotationType();
+        String annotypeQualifiedName =
+            ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
+        String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
+        if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+          // is @MustCallOnElements annotation
+          noMcoeAnno = false;
+          break;
+        }
+      }
+      if (noMcoeAnno) { // don't override an existing manual annotation
+        if (elt.getKind() == ElementKind.FIELD
+            && getDeclAnnotation(elt, OwningArray.class) != null) {
+          TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
+          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+          type.replaceAnnotation(newType);
+        }
+      }
+    }
+  }
+
+  /**
+   * Generate an annotation from a list of method names.
+   *
+   * @param methodNames the names of the methods to add to the type
+   * @return the annotation with the given methods as value
+   */
+  private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BOTTOM);
+    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
+    return builder.build();
+  }
+
+  /**
+   * Returns the list of mustcall obligations for a type.
+   *
+   * @param type the type
+   * @return the list of mustcall obligations for the type
+   */
+  private List<String> getMustCallValuesForType(TypeMirror type) {
+    InheritableMustCall imcAnnotation =
+        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+    }
+    return new ArrayList<>(mcValues);
+  }
+
+  @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
     super.setRoot(root);
     // TODO: This should probably be guarded by isSafeToClearSharedCFG from
@@ -478,57 +570,6 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     public MustCallOnElementsTreeAnnotator(
         MustCallOnElementsAnnotatedTypeFactory mustCallOnElementsAnnotatedTypeFactory) {
       super(mustCallOnElementsAnnotatedTypeFactory);
-    }
-
-    /*
-     * Change the @MustCallOnElements() type of @OwningArray fields to include all methods
-     * in the value of the @MustCall() annotation of the component class. For example the
-     * type of a Socket[] would be set to @MustCallOnElements("close"), no matter the
-     * declared type.
-     */
-    @Override
-    public Void visitVariable(VariableTree tree, AnnotatedTypeMirror type) {
-      Element elt = TreeUtils.elementFromDeclaration(tree);
-      if (elt.getKind() == ElementKind.FIELD
-          && atypeFactory.getDeclAnnotation(elt, OwningArray.class) != null) {
-        TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
-        List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-        AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
-        type.replaceAnnotation(newType);
-      }
-      return super.visitVariable(tree, type);
-    }
-
-    /**
-     * Generate an annotation from a list of method names.
-     *
-     * @param methodNames the names of the methods to add to the type
-     * @return the annotation with the given methods as value
-     */
-    private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
-      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BOTTOM);
-      builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
-      return builder.build();
-    }
-
-    /**
-     * Returns the list of mustcall obligations for a type.
-     *
-     * @param type the type
-     * @return the list of mustcall obligations for the type
-     */
-    private List<String> getMustCallValuesForType(TypeMirror type) {
-      InheritableMustCall imcAnnotation =
-          TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
-      MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
-      Set<String> mcValues = new HashSet<>();
-      if (mcAnnotation != null) {
-        mcValues.addAll(Arrays.asList(mcAnnotation.value()));
-      }
-      if (imcAnnotation != null) {
-        mcValues.addAll(Arrays.asList(imcAnnotation.value()));
-      }
-      return new ArrayList<>(mcValues);
     }
 
     @Override
