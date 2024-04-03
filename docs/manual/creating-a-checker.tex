@@ -1325,9 +1325,9 @@ which is the Checker Framework's representation of an annotated type.
   has access to both the tree (the AST node) and its type.
 
   A \<TreeAnnotator> is best suited to changing the type of an expression.
-  Don't try to use a \<TreeAnnotator> to change the type of a variable
-  declaration, because that change will not generally be seen at uses of
-  the variable.
+  Don't try to use a \<TreeAnnotator> to change the type of a variable or
+  method declaration, because that change will not generally be seen at
+  uses of the variable or method.
 
   After defining your \<TreeAnnotator>, override \<createTreeAnnotator> (in
   your subclass of \<AnnotatedTypeFactory>) to return a
