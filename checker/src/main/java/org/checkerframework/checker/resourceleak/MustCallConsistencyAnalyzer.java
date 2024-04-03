@@ -1408,11 +1408,12 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Removes all obligations containing the specified variable.
+   *
    * @param obligations the set of currently tracked obligations
    * @param node the local variable node
    */
   private void removeObligationForNode(Set<Obligation> obligations, LocalVariableNode node) {
-    LocalVariableNode rhsVar =  node;
+    LocalVariableNode rhsVar = node;
     Set<MethodExitKind> toClear = MethodExitKind.ALL;
     removeObligationsContainingVar(
         obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
@@ -1438,12 +1439,17 @@ class MustCallConsistencyAnalyzer {
     // Use the temporary variable for the rhs if it exists.
     Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
     rhs = getTempVarOrNode(rhs);
+    Element rhsElement = TreeUtils.elementFromTree(rhs.getTree());
 
     // update obligations for assignments to @OwningArray array
     boolean isOwningArray = !noLightweightOwnership && typeFactory.hasOwningArray(lhsElement);
+    boolean rhsIsOwningArray = rhsElement != null && typeFactory.hasOwningArray(rhsElement);
+    boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
     MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
     boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
-    boolean lhsIsField = TreeUtils.elementFromTree(lhs.getTree()).getKind() == ElementKind.FIELD;
+    if (!isOwningArray && rhsIsOwningArray) {
+      checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
+    }
     if (isOwningArray && typeFactory.canCreateObligations()) {
       if (containingMethod == null) {
         // this is a declaration-definition of an @OwningArray field. nothing to check.
@@ -1451,9 +1457,7 @@ class MustCallConsistencyAnalyzer {
         // assigning @OwningArray field to an @OwningArray argument in constructor is allowed
         // verify whether rhs is an @OwningArray parameter
         Tree lhsTree = lhs.getTree();
-        Element rhsElement = TreeUtils.elementFromTree(rhs.getTree());
         boolean rhsIsParam = rhsElement != null && rhsElement.getKind() == ElementKind.PARAMETER;
-        boolean rhsIsOwningArray = typeFactory.hasOwningArray(TreeUtils.elementFromTree(lhsTree));
         if (lhsTree instanceof ArrayAccessTree) {
           // possibly allocating for-loop
           if (MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
@@ -2776,9 +2780,10 @@ class MustCallConsistencyAnalyzer {
       CFStore mcoeStore,
       CFStore cmoeStore,
       String exitReasonForErrorMessage) {
+    // there should only be one alias for this obligation, as enforced by the assignment rules.
+    // If this is not the case, an error has already been issued.
     for (ResourceAlias alias : obligation.resourceAliases) {
       if (typeFactory.hasOwningArray(alias.element)) {
-        assert obligation.resourceAliases.size() == 1 : "aliases of @OwningArray not allowed";
         List<String> mcoeValues =
             getMustCallOnElementsObligations(mcoeStore, (VariableTree) alias.tree);
         List<String> cmoeValues = getCalledMethodsOnElements(cmoeStore, (VariableTree) alias.tree);
