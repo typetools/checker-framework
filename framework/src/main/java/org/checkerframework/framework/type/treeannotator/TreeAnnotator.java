@@ -12,9 +12,16 @@ import org.plumelib.util.SystemPlume;
 /**
  * {@link TreeAnnotator} is an abstract SimpleTreeVisitor to be used with {@link ListTreeAnnotator}.
  *
+ * <p>A TreeAnnotator is mainly intended to change the type of an expression. If a TreeAnnotator
+ * changes the type of a variable declaration, that change will not generally be seen at uses of the
+ * variable, because uses of a variable tend to obtain the variable's type from an Element (which
+ * always exists) rather than from a Tree (which might or might not be available at the time of the
+ * variable's use).
+ *
  * <p>This class does not visit component parts of the tree. By default, the visit methods all call
  * {@link #defaultAction(Tree, Object)}, which does nothing unless overridden. Therefore, subclass
- * do not need to call super unless they override {@link #defaultAction(Tree, Object)}.
+ * implementations of methods do not need to call {@code super()} unless they override {@link
+ * #defaultAction(Tree, Object)}.
  *
  * @see ListTreeAnnotator
  * @see PropagationTreeAnnotator
