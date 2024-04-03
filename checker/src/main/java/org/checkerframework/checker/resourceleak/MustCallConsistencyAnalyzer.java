@@ -1127,7 +1127,7 @@ class MustCallConsistencyAnalyzer {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          if (typeFactory.hasOwning(parameter) || typeFactory.hasOwningArray(parameter)) {
+          if (typeFactory.hasOwning(parameter)) {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the
@@ -1472,8 +1472,13 @@ class MustCallConsistencyAnalyzer {
             checker.reportError(
                 assignmentNode.getTree(), "illegal.owningarray.field.elements.assignment");
           }
-        } else if ((rhsIsParam && rhsIsOwningArray) || (rhs.getTree() instanceof NewArrayTree)) {
-          // these are the allowed assignment cases. "final" enforces that there is only one
+        } else if (rhsIsParam && rhsIsOwningArray) {
+          LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+          Set<MethodExitKind> toClear = MethodExitKind.ALL;
+          removeObligationsContainingVar(
+              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+        } else if (rhs.getTree() instanceof NewArrayTree) {
+          // this is an allowed assignment case. "final" enforces that there is only one
           // assignment overall
         } else {
           // any other assignment to @OwningArray field is not allowed
