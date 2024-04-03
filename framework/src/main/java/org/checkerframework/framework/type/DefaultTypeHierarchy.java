@@ -402,7 +402,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
               outsideTypeVar.getUpperBound(),
               canBeCovariant);
       areEqualVisitHistory.put(inside, outside, currentTop, result);
-      return result;
+      if (result) {
+        return true;
+      }
+      areEqualVisitHistory.remove(inside, outsideTypeVar, currentTop);
     }
 
     // The remainder of the method is bullet 6, "T <= T".
