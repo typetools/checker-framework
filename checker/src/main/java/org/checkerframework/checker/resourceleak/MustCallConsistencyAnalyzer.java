@@ -1407,6 +1407,18 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Removes all obligations containing the specified variable.
+   * @param obligations the set of currently tracked obligations
+   * @param node the local variable node
+   */
+  private void removeObligationForNode(Set<Obligation> obligations, LocalVariableNode node) {
+    LocalVariableNode rhsVar =  node;
+    Set<MethodExitKind> toClear = MethodExitKind.ALL;
+    removeObligationsContainingVar(
+        obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+  }
+
+  /**
    * Updates a set of Obligations to account for an assignment. Assigning to an owning field might
    * remove Obligations, assigning to a resource variable might remove obligations, assigning to a
    * new local variable might modify an Obligation (by increasing the size of its resource alias
@@ -1450,10 +1462,7 @@ class MustCallConsistencyAnalyzer {
             assert rhs instanceof LocalVariableNode
                 : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
                     + rhs.getTree().getKind();
-            LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-            Set<MethodExitKind> toClear = MethodExitKind.ALL;
-            removeObligationsContainingVar(
-                obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+            removeObligationForNode(obligations, (LocalVariableNode) rhs);
 
             // check whether elements of field have been assigned previously in the constructor
             ExpressionTree arrayTree = ((ArrayAccessTree) lhsTree).getExpression();
@@ -1473,10 +1482,8 @@ class MustCallConsistencyAnalyzer {
                 assignmentNode.getTree(), "illegal.owningarray.field.elements.assignment");
           }
         } else if (rhsIsParam && rhsIsOwningArray) {
-          LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-          Set<MethodExitKind> toClear = MethodExitKind.ALL;
-          removeObligationsContainingVar(
-              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+          // assigning @OwningArray parameter to @OwningArray field. remove obligation for parameter
+          removeObligationForNode(obligations, (LocalVariableNode) rhs);
         } else if (rhs.getTree() instanceof NewArrayTree) {
           // this is an allowed assignment case. "final" enforces that there is only one
           // assignment overall
@@ -1546,10 +1553,7 @@ class MustCallConsistencyAnalyzer {
           assert rhs instanceof LocalVariableNode
               : "rhs of pattern-matched assignment assumed to be LocalVariableNode, but its tree is "
                   + rhs.getTree().getKind();
-          LocalVariableNode rhsVar = (LocalVariableNode) rhs;
-          Set<MethodExitKind> toClear = MethodExitKind.ALL;
-          removeObligationsContainingVar(
-              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+          removeObligationForNode(obligations, (LocalVariableNode) rhs);
         } else {
           assert false
               : "uncovered case: lhs " + lhs.getTree() + " of kind " + lhs.getTree().getKind();
