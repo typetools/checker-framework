@@ -139,7 +139,6 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         if (TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) == null) {
           atypeFactory.getChecker().reportError(node.getTree(), "unexpected.argument.ownership");
         }
-        System.out.println("owningarray param: " + param);
         JavaExpression array = JavaExpression.fromNode(arg);
         res.getRegularStore().clearValue(array);
         res.getRegularStore()
@@ -172,13 +171,10 @@ public class MustCallOnElementsTransfer extends CFTransfer {
         if (!argIsOwningArray) {
           atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
         }
-        System.out.println("owningarray param: " + param);
         JavaExpression array = JavaExpression.fromNode(arg);
         res.getRegularStore().clearValue(array);
         res.getRegularStore()
             .insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
-      } else if (argIsOwningArray) {
-        atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");
       }
     }
     return res;
