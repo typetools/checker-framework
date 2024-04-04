@@ -2753,7 +2753,9 @@ public final class TreeUtils {
         new TreeScanner<Void, Void>() {
           @Override
           public Void visitReturn(ReturnTree tree, Void o) {
-            returnExpressions.add(tree.getExpression());
+            if (tree.getExpression() != null) {
+              returnExpressions.add(tree.getExpression());
+            }
             return super.visitReturn(tree, o);
           }
         };
