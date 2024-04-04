@@ -1322,9 +1322,16 @@ which is the Checker Framework's representation of an annotated type.
   \refclass{framework/type/treeannotator}{TreeAnnotator},
   typically as a private inner class of your \<AnnotatedTypeFactory>.
   There is a method of \<TreeAnnotator> for every AST node, and the visitor
-  has access to both the tree (the AST node) and its type.  In your
-  subclass of \<AnnotatedTypeFactory>, override \<createTreeAnnotator> to
-  return a \<ListTreeAnnotator> containing that annotator, as in
+  has access to both the tree (the AST node) and its type.
+
+  A \<TreeAnnotator> is best suited to changing the type of an expression.
+  Don't try to use a \<TreeAnnotator> to change the type of a variable or
+  method declaration, because that change will not generally be seen at
+  uses of the variable or method.
+
+  After defining your \<TreeAnnotator>, override \<createTreeAnnotator> (in
+  your subclass of \<AnnotatedTypeFactory>) to return a
+  \<ListTreeAnnotator> containing your new \<TreeAnnotator>, as in:
 
 \begin{Verbatim}
   @Override
@@ -1334,10 +1341,11 @@ which is the Checker Framework's representation of an annotated type.
 \end{Verbatim}
 
   \noindent
-  (or put your TreeAnnotator first; several tree annotators are run by
+  In code like the above, you might choose to put your TreeAnnotator first.
+  Several tree annotators are run by
   default, and among them, \<PropagationTreeAnnotator>
   adds annotations to \<AnnotatedTypeMirror>s that do not have an annotation,
-  but has no effect on those that have an annotation).
+  but has no effect on those that have an annotation.
 
 \item
   Define a subclass of a
