@@ -1526,24 +1526,33 @@ class MustCallConsistencyAnalyzer {
           // @OwningArray field may not be assigned (neither its elements) outside of constructor
           checker.reportError(
               assignmentNode.getTree(), "owningarray.field.assigned.outside.constructor");
-        } else if (lhs.getTree() instanceof VariableTree) {
-          // declaration of local @OwningArray. Can't be field since we're in the else clause
-          VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
-          obligations.add(
-              new Obligation(
-                  ImmutableSet.of(
-                      new ResourceAlias(
-                          JavaExpression.fromVariableTree(owningArrayDeclarationTree),
-                          TreeUtils.elementFromDeclaration(owningArrayDeclarationTree),
-                          owningArrayDeclarationTree)),
-                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
-        } else if (lhs.getTree() instanceof IdentifierTree) {
-          // definition of @OwningArray.
-          Name arrayName = ((IdentifierTree) lhs.getTree()).getName();
+        } else if (lhs.getTree() instanceof IdentifierTree
+            || lhs.getTree() instanceof VariableTree) {
+          if (lhs.getTree() instanceof VariableTree) {
+            // declaration of local @OwningArray. Can't be field since we're in the else clause
+            VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
+            obligations.add(
+                new Obligation(
+                    ImmutableSet.of(
+                        new ResourceAlias(
+                            JavaExpression.fromVariableTree(owningArrayDeclarationTree),
+                            TreeUtils.elementFromDeclaration(owningArrayDeclarationTree),
+                            owningArrayDeclarationTree)),
+                    Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+          }
+          // definition/declaration of @OwningArray.
+          Name arrayName =
+              (lhs.getTree() instanceof VariableTree)
+                  ? ((VariableTree) lhs.getTree()).getName()
+                  : ((IdentifierTree) lhs.getTree()).getName();
+          JavaExpression array =
+              (lhs.getTree() instanceof VariableTree)
+                  ? JavaExpression.fromVariableTree((VariableTree) lhs.getTree())
+                  : JavaExpression.fromTree((IdentifierTree) lhs.getTree());
 
           if (rhs instanceof ArrayCreationNode) {
             // array is newly assigned.
-            ExpressionTree tree = (IdentifierTree) lhs.getTree();
+            Tree tree = lhs.getTree();
             CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
             List<String> mcoeObligations = Collections.emptyList();
             // if store does not contain the array tree, it must be the first assignment and hence
@@ -1554,8 +1563,11 @@ class MustCallConsistencyAnalyzer {
                     + " the store does not contain array "
                     + tree
                     + " yet");
-            if (mcoeStore.getValue(JavaExpression.fromTree(tree)) != null) {
-              mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
+            if (mcoeStore.getValue(array) != null) {
+              mcoeObligations =
+                  (lhs.getTree() instanceof VariableTree)
+                      ? getMustCallOnElementsObligations(mcoeStore, (VariableTree) tree)
+                      : getMustCallOnElementsObligations(mcoeStore, (IdentifierTree) tree);
               if (mcoeObligations == null) {
                 // mcoe type of lhs is @MustCallOnElementsUnknown - a state of revoked ownership.
                 // newly assigning returns ownership of potential new resources that populate this
