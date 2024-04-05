@@ -6,7 +6,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,10 +24,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
@@ -361,35 +358,32 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * methods of the component, if no manual annotation is present.
    * For example the type of: final @OwningArray Socket[] s is changed to @MustCallOnElements("close").
    */
-  @Override
-  public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-    super.addComputedTypeAnnotations(tree, type, useFlow);
-    if (tree instanceof VariableTree) {
-      VariableTree varTree = (VariableTree) tree;
-      Element elt = TreeUtils.elementFromDeclaration(varTree);
-      boolean noMcoeAnno = true;
-      for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
-        DeclaredType annotype = paramAnno.getAnnotationType();
-        String annotypeQualifiedName =
-            ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
-        String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
-        if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
-          // is @MustCallOnElements annotation
-          noMcoeAnno = false;
-          break;
-        }
-      }
-      if (noMcoeAnno) { // don't override an existing manual annotation
-        if ((elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.PARAMETER)
-            && getDeclAnnotation(elt, OwningArray.class) != null) {
-          TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
-          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
-          type.replaceAnnotation(newType);
-        }
-      }
-    }
-  }
+  // @Override
+  // public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+  //   super.addComputedTypeAnnotations(tree, type, useFlow);
+  //   if (tree instanceof VariableTree) {
+  //     VariableTree varTree = (VariableTree) tree;
+  //     Element elt = TreeUtils.elementFromDeclaration(varTree);
+  //     boolean noMcoeAnno = true;
+  //     for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
+  //       if (AnnotationUtils.areSameByName(paramAnno,
+  // MustCallOnElements.class.getCanonicalName())) {
+  //         // is @MustCallOnElements annotation
+  //         noMcoeAnno = false;
+  //         break;
+  //       }
+  //     }
+  //     if (noMcoeAnno) { // don't override an existing manual annotation
+  //       if ((elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.PARAMETER)
+  //           && getDeclAnnotation(elt, OwningArray.class) != null) {
+  //         TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
+  //         List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+  //         AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+  //         type.replaceAnnotation(newType);
+  //       }
+  //     }
+  //   }
+  // }
 
   /*
    * Change the default @MustCallOnElements type value of @OwningArray fields and @OwningArray method parameters
@@ -415,11 +409,8 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
           // @OwningArray parameter
           boolean noMcoeAnno = true;
           for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
-            DeclaredType annotype = paramAnno.getAnnotationType();
-            String annotypeQualifiedName =
-                ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
-            String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
-            if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+            if (AnnotationUtils.areSameByName(
+                paramAnno, MustCallOnElements.class.getCanonicalName())) {
               // is @MustCallOnElements annotation
               noMcoeAnno = false;
               break;
@@ -440,11 +431,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
       }
       boolean noMcoeAnno = true;
       for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
-        DeclaredType annotype = paramAnno.getAnnotationType();
-        String annotypeQualifiedName =
-            ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
-        String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
-        if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+        if (AnnotationUtils.areSameByName(paramAnno, MustCallOnElements.class.getCanonicalName())) {
           // is @MustCallOnElements annotation
           noMcoeAnno = false;
           break;

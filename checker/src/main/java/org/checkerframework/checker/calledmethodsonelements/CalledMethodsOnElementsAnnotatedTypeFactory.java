@@ -20,7 +20,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.SubtypeIsSubsetQualifierHierarchy;
 import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
@@ -102,10 +101,10 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
   }
 
   /** Qualifier hierarchy for the Must Call Checker. */
-  class CalledMethodsOnElementsQualifierHierarchy extends SubtypeIsSubsetQualifierHierarchy {
+  class CalledMethodsOnElementsQualifierHierarchy extends SubtypeIsSupersetQualifierHierarchy {
 
     /**
-     * Creates a SubtypeIsSubsetQualifierHierarchy from the given classes.
+     * Creates a SubtypeIsSuperSetQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param processingEnv processing environment

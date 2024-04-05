@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -1222,12 +1223,15 @@ class MustCallConsistencyAnalyzer {
     BinaryTree tree = node.getTree();
     // check whether the loop specified through the condition was pattern-matched as an allocating
     // loop
-    ExpressionTree arr =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
-    if (arr == null) {
+    if (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
+        == null) {
       // not an allocating loop
       return;
     }
+    ExpressionTree arr =
+        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+    assert arr != null
+        : "array tree of allocating for-loop not in expected datastructure: fix in MustCallVisitor.java";
     // check whether obligations have been fulfilled prior to reassignment
     List<String> mcoeObligations =
         getMustCallOnElementsObligations(mcoeTypeFactory.getStoreForTree(arr), arr);
@@ -1281,8 +1285,11 @@ class MustCallConsistencyAnalyzer {
     if (cmoeAnnoBottom != null) {
       return Collections.emptyList();
     } else {
-      return AnnotationUtils.getElementValueArray(
-          cmoeAnno, cmoeTypeFactory.getCalledMethodsOnElementsValueElement(), String.class);
+      AnnotationValue av =
+          cmoeAnno.getElementValues().get(cmoeTypeFactory.getCalledMethodsOnElementsValueElement());
+      return av == null
+          ? Collections.emptyList()
+          : AnnotationUtils.annotationValueToList(av, String.class);
     }
   }
 
@@ -1321,8 +1328,11 @@ class MustCallConsistencyAnalyzer {
     if (cmoeAnnoBottom != null) {
       return Collections.emptyList();
     } else {
-      return AnnotationUtils.getElementValueArray(
-          cmoeAnno, cmoeTypeFactory.getCalledMethodsOnElementsValueElement(), String.class);
+      AnnotationValue av =
+          cmoeAnno.getElementValues().get(cmoeTypeFactory.getCalledMethodsOnElementsValueElement());
+      return av == null
+          ? Collections.emptyList()
+          : AnnotationUtils.annotationValueToList(av, String.class);
     }
   }
 
@@ -1361,8 +1371,11 @@ class MustCallConsistencyAnalyzer {
     if (mcoeAnnoUnknown != null) {
       return Collections.emptyList();
     } else {
-      return AnnotationUtils.getElementValueArray(
-          mcoeAnno, mcoeTypeFactory.getMustCallOnElementsValueElement(), String.class);
+      AnnotationValue av =
+          mcoeAnno.getElementValues().get(mcoeTypeFactory.getMustCallOnElementsValueElement());
+      return av == null
+          ? Collections.emptyList()
+          : AnnotationUtils.annotationValueToList(av, String.class);
     }
   }
 
@@ -1401,8 +1414,11 @@ class MustCallConsistencyAnalyzer {
     if (mcoeAnnoUnknown != null) {
       return Collections.emptyList();
     } else {
-      return AnnotationUtils.getElementValueArray(
-          mcoeAnno, mcoeTypeFactory.getMustCallOnElementsValueElement(), String.class);
+      AnnotationValue av =
+          mcoeAnno.getElementValues().get(mcoeTypeFactory.getMustCallOnElementsValueElement());
+      return av == null
+          ? Collections.emptyList()
+          : AnnotationUtils.annotationValueToList(av, String.class);
     }
   }
 

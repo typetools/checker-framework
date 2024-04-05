@@ -3,17 +3,21 @@ package org.checkerframework.checker.calledmethodsonelements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
@@ -21,12 +25,12 @@ import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -36,7 +40,6 @@ import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A transfer function that accumulates the names of methods called. */
@@ -81,54 +84,56 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    * Empties the @MustCallOnElements() type of arguments passed as @OwningArray parameters to the
    * constructor and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
    */
-  @Override
-  public TransferResult<CFValue, CFStore> visitObjectCreation(
-      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
-    TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
-    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
-    List<? extends VariableElement> params = constructor.getParameters();
-    List<Node> args = node.getArguments();
-    Iterator<? extends VariableElement> paramIterator = params.iterator();
-    Iterator<Node> argIterator = args.iterator();
-    while (paramIterator.hasNext() && argIterator.hasNext()) {
-      VariableElement param = paramIterator.next();
-      Node arg = argIterator.next();
-      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
-      if (paramIsOwningArray) {
-        JavaExpression array = JavaExpression.fromNode(arg);
-        AnnotationMirror oldType = res.getRegularStore().getValue(array).getAnnotations().first();
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitObjectCreation(
+  //     ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
+  //   TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
+  //   ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+  //   List<? extends VariableElement> params = constructor.getParameters();
+  //   List<Node> args = node.getArguments();
+  //   Iterator<? extends VariableElement> paramIterator = params.iterator();
+  //   Iterator<Node> argIterator = args.iterator();
+  //   while (paramIterator.hasNext() && argIterator.hasNext()) {
+  //     VariableElement param = paramIterator.next();
+  //     Node arg = argIterator.next();
+  //     boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+  //     if (paramIsOwningArray) {
+  //       JavaExpression array = JavaExpression.fromNode(arg);
+  //       AnnotationMirror oldType =
+  // res.getRegularStore().getValue(array).getAnnotations().first();
 
-        // extract the @MustCallOnElement values of the parameter
-        List<String> mcoeObligationsOfComponent = Collections.emptyList();
-        for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
-          DeclaredType annotype = paramAnno.getAnnotationType();
-          String annotypeQualifiedName =
-              ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
-          String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
-          if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
-            // is @MustCallOnElements annotation
-            for (ExecutableElement key : paramAnno.getElementValues().keySet()) {
-              AnnotationValue value = paramAnno.getElementValues().get(key);
-              if ("value".equals(key.getSimpleName().toString())) {
-                // Assuming the value is a list of strings (which it should be for a String array
-                // annotation element)
-                List<?> values = (List<?>) value.getValue();
-                List<String> stringValues =
-                    values.stream().map(Object::toString).collect(Collectors.toList());
-                mcoeObligationsOfComponent =
-                    CollectionsPlume.concatenate(mcoeObligationsOfComponent, stringValues);
-              }
-            }
-          }
-        }
-        res.getRegularStore().clearValue(array);
-        res.getRegularStore()
-            .insertValue(
-                array, getUpdatedCalledMethodsOnElementsType(oldType, mcoeObligationsOfComponent));
-      }
-    }
-    return res;
-  }
+  //       // extract the @MustCallOnElement values of the parameter
+  //       List<String> mcoeObligationsOfComponent = Collections.emptyList();
+  //       for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
+  //         DeclaredType annotype = paramAnno.getAnnotationType();
+  //         String annotypeQualifiedName =
+  //             ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
+  //         String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
+  //         if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+  //           // is @MustCallOnElements annotation
+  //           for (ExecutableElement key : paramAnno.getElementValues().keySet()) {
+  //             AnnotationValue value = paramAnno.getElementValues().get(key);
+  //             if ("value".equals(key.getSimpleName().toString())) {
+  //               // Assuming the value is a list of strings (which it should be for a String array
+  //               // annotation element)
+  //               List<?> values = (List<?>) value.getValue();
+  //               List<String> stringValues =
+  //                   values.stream().map(Object::toString).collect(Collectors.toList());
+  //               mcoeObligationsOfComponent =
+  //                   CollectionsPlume.concatenate(mcoeObligationsOfComponent, stringValues);
+  //             }
+  //           }
+  //         }
+  //       }
+  //       res.getRegularStore().clearValue(array);
+  //       res.getRegularStore()
+  //           .insertValue(
+  //               array, getUpdatedCalledMethodsOnElementsType(oldType,
+  // mcoeObligationsOfComponent));
+  //     }
+  //   }
+  //   return res;
+  // }
 
   /*
    * Empties the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
@@ -153,13 +158,12 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
 
         // extract the @MustCallOnElement values of the parameter
         List<String> mcoeObligationsOfComponent = Collections.emptyList();
+        boolean paramHasMcoeAnno = false;
         for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
-          DeclaredType annotype = paramAnno.getAnnotationType();
-          String annotypeQualifiedName =
-              ElementUtils.getBinaryName((TypeElement) annotype.asElement()).toString();
-          String mustCallOnElementsQualifiedName = MustCallOnElements.class.getCanonicalName();
-          if (annotypeQualifiedName.equals(mustCallOnElementsQualifiedName)) {
+          if (AnnotationUtils.areSameByName(
+              paramAnno, MustCallOnElements.class.getCanonicalName())) {
             // is @MustCallOnElements annotation
+            paramHasMcoeAnno = true;
             for (ExecutableElement key : paramAnno.getElementValues().keySet()) {
               AnnotationValue value = paramAnno.getElementValues().get(key);
               if ("value".equals(key.getSimpleName().toString())) {
@@ -174,13 +178,40 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
             }
           }
         }
-        res.getRegularStore().clearValue(array);
-        res.getRegularStore()
-            .insertValue(
-                array, getUpdatedCalledMethodsOnElementsType(oldType, mcoeObligationsOfComponent));
+        if (!paramHasMcoeAnno) {
+          // if no mcoe anno, the mcoe type defaults to all obligations of the component
+          assert param.asType() instanceof ArrayType : "@OwningArray parameter is not arraytype";
+          mcoeObligationsOfComponent =
+              getMustCallValuesForType(((ArrayType) param.asType()).getComponentType());
+        }
+        CFStore store = res.getRegularStore();
+        store.clearValue(array);
+        store.insertValue(
+            array, getUpdatedCalledMethodsOnElementsType(oldType, mcoeObligationsOfComponent));
+        return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
       }
     }
     return res;
+  }
+
+  /**
+   * Returns the list of mustcall obligations for a type.
+   *
+   * @param type the type
+   * @return the list of mustcall obligations for the type
+   */
+  private List<String> getMustCallValuesForType(TypeMirror type) {
+    InheritableMustCall imcAnnotation =
+        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
+    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    Set<String> mcValues = new HashSet<>();
+    if (mcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+    }
+    if (imcAnnotation != null) {
+      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+    }
+    return new ArrayList<>(mcValues);
   }
 
   /**
