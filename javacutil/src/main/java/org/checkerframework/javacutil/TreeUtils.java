@@ -2758,6 +2758,12 @@ public final class TreeUtils {
             }
             return super.visitReturn(tree, o);
           }
+
+          @Override
+          public Void visitLambdaExpression(LambdaExpressionTree node, Void unused) {
+            // Don't visit inside anther lambda.
+            return null;
+          }
         };
     scanner.scan(lambda, null);
     return returnExpressions;
