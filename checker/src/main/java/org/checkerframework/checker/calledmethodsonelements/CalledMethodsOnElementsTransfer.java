@@ -21,6 +21,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
@@ -176,6 +177,11 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
                     CollectionsPlume.concatenate(mcoeObligationsOfComponent, stringValues);
               }
             }
+          }
+          if (AnnotationUtils.areSameByName(
+              paramAnno, MustCallOnElementsUnknown.class.getCanonicalName())) {
+            // if mcoeUnknown annotation, no methods are guaranteed to be called
+            paramHasMcoeAnno = true;
           }
         }
         if (!paramHasMcoeAnno) {

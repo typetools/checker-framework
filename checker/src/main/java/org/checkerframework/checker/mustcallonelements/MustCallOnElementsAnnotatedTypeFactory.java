@@ -415,6 +415,11 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
               noMcoeAnno = false;
               break;
             }
+            if (AnnotationUtils.areSameByName(
+                paramAnno, MustCallOnElementsUnknown.class.getCanonicalName())) {
+              noMcoeAnno = false;
+              break;
+            }
           }
           if (noMcoeAnno) { // don't override an existing manual annotation
             TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
@@ -433,6 +438,11 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
       for (AnnotationMirror paramAnno : elt.asType().getAnnotationMirrors()) {
         if (AnnotationUtils.areSameByName(paramAnno, MustCallOnElements.class.getCanonicalName())) {
           // is @MustCallOnElements annotation
+          noMcoeAnno = false;
+          break;
+        }
+        if (AnnotationUtils.areSameByName(
+            paramAnno, MustCallOnElementsUnknown.class.getCanonicalName())) {
           noMcoeAnno = false;
           break;
         }

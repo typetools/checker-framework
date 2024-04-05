@@ -1137,6 +1137,10 @@ class MustCallConsistencyAnalyzer {
               // Transfer ownership!
               obligations.remove(localObligation);
             }
+          } else if (typeFactory.hasOwningArray(parameter) && node instanceof ObjectCreationNode) {
+            // remove obligation for @OwningArray constructor call
+            Obligation localObligation = getObligationForVar(obligations, local);
+            obligations.remove(localObligation);
           }
         }
       }
@@ -1235,6 +1239,10 @@ class MustCallConsistencyAnalyzer {
     // check whether obligations have been fulfilled prior to reassignment
     List<String> mcoeObligations =
         getMustCallOnElementsObligations(mcoeTypeFactory.getStoreForTree(arr), arr);
+    if (mcoeObligations == null) {
+      checker.reportError(arr, "assignment.without.ownership", arr.toString());
+      mcoeObligations = Collections.emptyList();
+    }
     List<String> cmoeObligations =
         getCalledMethodsOnElements(cmoeTypeFactory.getStoreForTree(arr), arr);
     System.out.println(
@@ -1338,8 +1346,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
-   * array specified by the given tree (expected to be an array identifier). The list is extracted
-   * from the store passed as an argument.
+   * array specified by the given tree (expected to be an array identifier) or null if there is a
+   * {@code @MustCallOnElementsUnknown} annotation. The list is extracted from the store passed as
+   * an argument.
    *
    * @param mcoeStore store containing MustCallOnElements type annotation information
    * @param arrTree the array identifier tree
@@ -1369,7 +1378,7 @@ class MustCallConsistencyAnalyzer {
     assert mcoeAnno != null || mcoeAnnoUnknown != null
         : "No mcoe annotation for " + arrTree + " in store.";
     if (mcoeAnnoUnknown != null) {
-      return Collections.emptyList();
+      return null;
     } else {
       AnnotationValue av =
           mcoeAnno.getElementValues().get(mcoeTypeFactory.getMustCallOnElementsValueElement());
@@ -1381,8 +1390,9 @@ class MustCallConsistencyAnalyzer {
 
   /**
    * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
-   * array specified by the given tree (expected to be an array identifier). The list is extracted
-   * from the store passed as an argument.
+   * array specified by the given tree (expected to be an array identifier) or null if there is a
+   * {@code @MustCallOnElementsUnknown} annotation. The list is extracted from the store passed as
+   * an argument.
    *
    * @param mcoeStore store containing MustCallOnElements type annotation information
    * @param arrTree the array identifier tree
@@ -1412,7 +1422,7 @@ class MustCallConsistencyAnalyzer {
     assert mcoeAnno != null || mcoeAnnoUnknown != null
         : "No mcoe annotation for " + arrTree + " in store.";
     if (mcoeAnnoUnknown != null) {
-      return Collections.emptyList();
+      return null;
     } else {
       AnnotationValue av =
           mcoeAnno.getElementValues().get(mcoeTypeFactory.getMustCallOnElementsValueElement());
@@ -1538,10 +1548,22 @@ class MustCallConsistencyAnalyzer {
             List<String> mcoeObligations = Collections.emptyList();
             // if store does not contain the array tree, it must be the first assignment and hence
             // legal
+            System.out.println(
+                "here, at "
+                    + assignmentNode.getTree()
+                    + " the store does not contain array "
+                    + tree
+                    + " yet");
             if (mcoeStore.getValue(JavaExpression.fromTree(tree)) != null) {
               mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
+              if (mcoeObligations == null) {
+                // mcoe type of lhs is @MustCallOnElementsUnknown - a state of revoked ownership.
+                // newly assigning returns ownership of potential new resources that populate this
+                // memory region. Hence this should not throw an error.
+                mcoeObligations = Collections.emptyList();
+              }
             }
-            if (!mcoeObligations.isEmpty()) {
+            if (mcoeObligations != null && !mcoeObligations.isEmpty()) {
               checker.reportError(
                   assignmentNode.getTree(),
                   "owningarray.reassignment.with.open.obligations",
@@ -2802,6 +2824,18 @@ class MustCallConsistencyAnalyzer {
       if (typeFactory.hasOwningArray(alias.element)) {
         List<String> mcoeValues =
             getMustCallOnElementsObligations(mcoeStore, (VariableTree) alias.tree);
+        if (mcoeValues == null) {
+          // mcoe type is @MustCallOnElementsUnknown - a state of revoked ownership.
+          // since the obligation is revoked in this case, this has to be a manual mcoeUnknown
+          // annotation to mask obligations. report an error for unfulfilled obligations.
+          checker.reportError(
+              alias.tree,
+              "unfulfilled.mustcallonelements.obligations",
+              "unknown",
+              alias.tree.toString(),
+              exitReasonForErrorMessage);
+          mcoeValues = Collections.emptyList(); // prevents other errors or crashes
+        }
         List<String> cmoeValues = getCalledMethodsOnElements(cmoeStore, (VariableTree) alias.tree);
         System.out.println(
             "verifying exit: " + alias + " " + mcoeValues + "\n        -> " + cmoeValues);

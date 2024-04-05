@@ -22,6 +22,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -123,30 +124,31 @@ public class MustCallOnElementsTransfer extends CFTransfer {
    * Empties the @MustCallOnElements() type of arguments passed as @OwningArray parameters to the
    * constructor and enforces that only @OwningArray arguments are passed to @OwningArray parameters.
    */
-  // @Override
-  // public TransferResult<CFValue, CFStore> visitObjectCreation(
-  //     ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
-  //   TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
-  //   ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
-  //   List<? extends VariableElement> params = constructor.getParameters();
-  //   List<Node> args = node.getArguments();
-  //   Iterator<? extends VariableElement> paramIterator = params.iterator();
-  //   Iterator<Node> argIterator = args.iterator();
-  //   while (paramIterator.hasNext() && argIterator.hasNext()) {
-  //     VariableElement param = paramIterator.next();
-  //     Node arg = argIterator.next();
-  //     if (param.getAnnotation(OwningArray.class) != null) {
-  //       if (TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) == null) {
-  //         atypeFactory.getChecker().reportError(node.getTree(), "unexpected.argument.ownership");
-  //       }
-  //       JavaExpression array = JavaExpression.fromNode(arg);
-  //       res.getRegularStore().clearValue(array);
-  //       res.getRegularStore()
-  //           .insertValue(array, getMustCallOnElementsType(Collections.emptyList()));
-  //     }
-  //   }
-  //   return res;
-  // }
+  @Override
+  public TransferResult<CFValue, CFStore> visitObjectCreation(
+      ObjectCreationNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> res = super.visitObjectCreation(node, input);
+    ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
+    List<? extends VariableElement> params = constructor.getParameters();
+    List<Node> args = node.getArguments();
+    Iterator<? extends VariableElement> paramIterator = params.iterator();
+    Iterator<Node> argIterator = args.iterator();
+    while (paramIterator.hasNext() && argIterator.hasNext()) {
+      VariableElement param = paramIterator.next();
+      Node arg = argIterator.next();
+      if (param.getAnnotation(OwningArray.class) != null) {
+        if (TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) == null) {
+          atypeFactory.getChecker().reportError(node.getTree(), "unexpected.argument.ownership");
+        }
+        JavaExpression array = JavaExpression.fromNode(arg);
+        CFStore store = res.getRegularStore();
+        store.clearValue(array);
+        store.insertValue(array, getMustCallOnElementsUnknown());
+        return new RegularTransferResult<CFValue, CFStore>(res.getResultValue(), store);
+      }
+    }
+    return res;
+  }
 
   /*
    * Empties the @MustCallOnElements type of arguments passed as @OwningArray parameters to the
@@ -231,6 +233,16 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   private @Nullable AnnotationMirror getMustCallOnElementsType(List<String> methodNames) {
     AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.BOTTOM);
     builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(methodNames));
+    return builder.build();
+  }
+
+  /**
+   * Return a {@code @MustCallOnElementsUnknown} annotation.
+   *
+   * @return a {@code @MustCallOnElementsUnknown} AnnotationMirror.
+   */
+  private AnnotationMirror getMustCallOnElementsUnknown() {
+    AnnotationBuilder builder = new AnnotationBuilder(this.env, atypeFactory.TOP);
     return builder.build();
   }
 

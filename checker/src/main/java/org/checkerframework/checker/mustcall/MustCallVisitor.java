@@ -37,7 +37,6 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -128,8 +127,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return super.visitForLoop(tree, p);
     }
     // ensure lhs contains @OwningArray and is an array access
-    Element lhsElt = TreeUtils.elementFromTree(lhs);
-    boolean lhsIsOwningArray = atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
+    // Element lhsElt = TreeUtils.elementFromTree(lhs);
+    boolean lhsIsOwningArray = true;
+    // boolean lhsIsOwningArray = atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
     if (!lhsIsOwningArray || lhs.getKind() != Tree.Kind.ARRAY_ACCESS)
       return super.visitForLoop(tree, p);
     ArrayAccessTree arrayAccT = (ArrayAccessTree) lhs;
