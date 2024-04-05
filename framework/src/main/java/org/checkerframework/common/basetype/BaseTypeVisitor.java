@@ -1201,10 +1201,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       if (sideEffectsOnlyExpressions.isEmpty()) {
+        // A @SideEffectsOnly annotation with an empty expression array is equivalent to
+        // a @SideEffectFree annotation.
+        checker.reportWarning(tree, "purity.more.sideeffectfree", tree.getName());
         return;
       }
-
-      System.out.printf("sideEffectsOnlyExpressions = %s%n", sideEffectsOnlyExpressions);
 
       SideEffectsOnlyChecker.ExtraSideEffects sefOnlyResult =
           SideEffectsOnlyChecker.checkSideEffectsOnly(
