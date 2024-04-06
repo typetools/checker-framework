@@ -1267,52 +1267,18 @@ class MustCallConsistencyAnalyzer {
    * @return list of the methods called on the elements of the given array (in dedicated,
    *     pattern-matched for-loops)
    */
-  private List<String> getCalledMethodsOnElements(CFStore cmoeStore, ExpressionTree arrTree) {
-    CFValue cfval = cmoeStore.getValue(JavaExpression.fromTree(arrTree));
-    Element arrElm = TreeUtils.elementFromTree(arrTree);
-    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
-      if (ElementUtils.isFinal(arrElm)) {
-        if (cfval == null) {
-          // entry block doesn't have final field in store yet
-          return Collections.emptyList();
-        }
-      } else {
-        // nonfinal OwningArray field is illegal. An error was already issued.
-        // Prevent program crash and return here.
-        return Collections.emptyList();
-      }
-    }
-    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
-    AnnotationMirror cmoeAnno =
-        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), CalledMethodsOnElements.class);
-    AnnotationMirror cmoeAnnoBottom =
-        AnnotationUtils.getAnnotationByClass(
-            cfval.getAnnotations(), CalledMethodsOnElementsBottom.class);
-    assert cmoeAnno != null || cmoeAnnoBottom != null
-        : "No cmoe annotation for " + arrTree + " in store.";
-    if (cmoeAnnoBottom != null) {
-      return Collections.emptyList();
-    } else {
-      AnnotationValue av =
-          cmoeAnno.getElementValues().get(cmoeTypeFactory.getCalledMethodsOnElementsValueElement());
-      return av == null
-          ? Collections.emptyList()
-          : AnnotationUtils.annotationValueToList(av, String.class);
-    }
-  }
-
-  /**
-   * Returns a list of methods considered "called on elements" of the given tree (expected to be an
-   * array identifier) The list is extracted from the store passed as an argument.
-   *
-   * @param cmoeStore the store holding cmoe type annotation information
-   * @param arrTree the array identifier tree
-   * @return list of the methods called on the elements of the given array (in dedicated,
-   *     pattern-matched for-loops)
-   */
-  private List<String> getCalledMethodsOnElements(CFStore cmoeStore, VariableTree arrTree) {
-    CFValue cfval = cmoeStore.getValue(JavaExpression.fromVariableTree(arrTree));
-    Element arrElm = TreeUtils.elementFromDeclaration(arrTree);
+  private List<String> getCalledMethodsOnElements(CFStore cmoeStore, Tree arrTree) {
+    assert (arrTree instanceof VariableTree) || (arrTree instanceof IdentifierTree)
+        : "MCOE obligation must be either from definition or declaration";
+    JavaExpression arrayJX =
+        (arrTree instanceof VariableTree)
+            ? JavaExpression.fromVariableTree((VariableTree) arrTree)
+            : JavaExpression.fromTree((IdentifierTree) arrTree);
+    CFValue cfval = cmoeStore.getValue(arrayJX);
+    Element arrElm =
+        (arrTree instanceof VariableTree)
+            ? TreeUtils.elementFromDeclaration((VariableTree) arrTree)
+            : TreeUtils.elementFromTree((IdentifierTree) arrTree);
     if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
       if (ElementUtils.isFinal(arrElm)) {
         if (cfval == null) {
@@ -1351,56 +1317,21 @@ class MustCallConsistencyAnalyzer {
    * an argument.
    *
    * @param mcoeStore store containing MustCallOnElements type annotation information
-   * @param arrTree the array identifier tree
+   * @param arrTree the array variable/identifier tree
    * @return list of the MustCallOnElements obligations of the given array
    */
-  private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, ExpressionTree arrTree) {
-    CFValue cfval = mcoeStore.getValue(JavaExpression.fromTree(arrTree));
-    Element arrElm = TreeUtils.elementFromTree(arrTree);
-    if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
-      if (ElementUtils.isFinal(arrElm)) {
-        if (cfval == null) {
-          // entry block doesn't have final field in store yet
-          return Collections.emptyList();
-        }
-      } else {
-        // nonfinal OwningArray field is illegal. An error was already issued.
-        // Prevent program crash and return here.
-        return Collections.emptyList();
-      }
-    }
-    assert cfval != null : "No mcoe annotation for " + arrTree + " in store.";
-    AnnotationMirror mcoeAnno =
-        AnnotationUtils.getAnnotationByClass(cfval.getAnnotations(), MustCallOnElements.class);
-    AnnotationMirror mcoeAnnoUnknown =
-        AnnotationUtils.getAnnotationByClass(
-            cfval.getAnnotations(), MustCallOnElementsUnknown.class);
-    assert mcoeAnno != null || mcoeAnnoUnknown != null
-        : "No mcoe annotation for " + arrTree + " in store.";
-    if (mcoeAnnoUnknown != null) {
-      return null;
-    } else {
-      AnnotationValue av =
-          mcoeAnno.getElementValues().get(mcoeTypeFactory.getMustCallOnElementsValueElement());
-      return av == null
-          ? Collections.emptyList()
-          : AnnotationUtils.annotationValueToList(av, String.class);
-    }
-  }
-
-  /**
-   * Returns a list of methods that have to be "called on elements" on the {@code @OwningArray}
-   * array specified by the given tree (expected to be an array identifier) or null if there is a
-   * {@code @MustCallOnElementsUnknown} annotation. The list is extracted from the store passed as
-   * an argument.
-   *
-   * @param mcoeStore store containing MustCallOnElements type annotation information
-   * @param arrTree the array identifier tree
-   * @return list of the MustCallOnElements obligations of the given array
-   */
-  private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, VariableTree arrTree) {
-    CFValue cfval = mcoeStore.getValue(JavaExpression.fromVariableTree(arrTree));
-    Element arrElm = TreeUtils.elementFromDeclaration(arrTree);
+  private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, Tree arrTree) {
+    assert (arrTree instanceof VariableTree) || (arrTree instanceof IdentifierTree)
+        : "MCOE obligation must be either from definition or declaration";
+    JavaExpression arrayJX =
+        (arrTree instanceof VariableTree)
+            ? JavaExpression.fromVariableTree((VariableTree) arrTree)
+            : JavaExpression.fromTree((IdentifierTree) arrTree);
+    CFValue cfval = mcoeStore.getValue(arrayJX);
+    Element arrElm =
+        (arrTree instanceof VariableTree)
+            ? TreeUtils.elementFromDeclaration((VariableTree) arrTree)
+            : TreeUtils.elementFromTree((IdentifierTree) arrTree);
     if (arrElm.getKind() == ElementKind.FIELD && arrElm.getAnnotation(OwningArray.class) != null) {
       if (ElementUtils.isFinal(arrElm)) {
         if (cfval == null) {
@@ -1539,6 +1470,24 @@ class MustCallConsistencyAnalyzer {
                             TreeUtils.elementFromDeclaration(owningArrayDeclarationTree),
                             owningArrayDeclarationTree)),
                     Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+          } else {
+            // definition of local @OwningArray. If rhs is new array and the type is MCOEunknown,
+            // signifying a state
+            // of revoked ownership add obligation back, and with that, ownership
+            IdentifierTree owningArrayDeclarationTree = (IdentifierTree) lhs.getTree();
+            CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
+            boolean isMcoeUnknown =
+                getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
+            if ((rhs instanceof ArrayCreationNode) && isMcoeUnknown) {
+              obligations.add(
+                  new Obligation(
+                      ImmutableSet.of(
+                          new ResourceAlias(
+                              JavaExpression.fromTree(owningArrayDeclarationTree),
+                              TreeUtils.elementFromTree(owningArrayDeclarationTree),
+                              owningArrayDeclarationTree)),
+                      Collections.singleton(MethodExitKind.NORMAL_RETURN)));
+            }
           }
           // definition/declaration of @OwningArray.
           Name arrayName =
@@ -1564,10 +1513,7 @@ class MustCallConsistencyAnalyzer {
                     + tree
                     + " yet");
             if (mcoeStore.getValue(array) != null) {
-              mcoeObligations =
-                  (lhs.getTree() instanceof VariableTree)
-                      ? getMustCallOnElementsObligations(mcoeStore, (VariableTree) tree)
-                      : getMustCallOnElementsObligations(mcoeStore, (IdentifierTree) tree);
+              mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
               if (mcoeObligations == null) {
                 // mcoe type of lhs is @MustCallOnElementsUnknown - a state of revoked ownership.
                 // newly assigning returns ownership of potential new resources that populate this
@@ -2834,8 +2780,7 @@ class MustCallConsistencyAnalyzer {
     // If this is not the case, an error has already been issued.
     for (ResourceAlias alias : obligation.resourceAliases) {
       if (typeFactory.hasOwningArray(alias.element)) {
-        List<String> mcoeValues =
-            getMustCallOnElementsObligations(mcoeStore, (VariableTree) alias.tree);
+        List<String> mcoeValues = getMustCallOnElementsObligations(mcoeStore, alias.tree);
         if (mcoeValues == null) {
           // mcoe type is @MustCallOnElementsUnknown - a state of revoked ownership.
           // since the obligation is revoked in this case, this has to be a manual mcoeUnknown
@@ -2848,7 +2793,7 @@ class MustCallConsistencyAnalyzer {
               exitReasonForErrorMessage);
           mcoeValues = Collections.emptyList(); // prevents other errors or crashes
         }
-        List<String> cmoeValues = getCalledMethodsOnElements(cmoeStore, (VariableTree) alias.tree);
+        List<String> cmoeValues = getCalledMethodsOnElements(cmoeStore, alias.tree);
         System.out.println(
             "verifying exit: " + alias + " " + mcoeValues + "\n        -> " + cmoeValues);
         mcoeValues.removeAll(cmoeValues);
