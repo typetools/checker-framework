@@ -1,10 +1,9 @@
 package org.checkerframework.common.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -247,7 +246,7 @@ public class TypeVisualizer {
      * @param file the file to write to
      */
     private void write(File file) {
-      try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), UTF_8)) {
+      try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
         writer.write("digraph " + graphName + "{");
         writer.newLine();
         for (String line : lines) {

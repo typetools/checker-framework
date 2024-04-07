@@ -1,7 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.Position;
 import com.github.javaparser.ast.CompilationUnit;
@@ -31,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -272,7 +271,8 @@ public class RemoveAnnotationsForInference {
     }
 
     try (PrintWriter pw =
-        new PrintWriter(Files.newBufferedWriter(Paths.get(absolutePath.toString()), UTF_8))) {
+        new PrintWriter(
+            Files.newBufferedWriter(Paths.get(absolutePath.toString()), StandardCharsets.UTF_8))) {
       for (String line : lines) {
         pw.println(line);
       }

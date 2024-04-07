@@ -1,7 +1,5 @@
 package org.checkerframework.framework.stub;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,6 +7,7 @@ import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -91,15 +90,16 @@ public class AddAnnotatedFor {
     String filename = useFile ? args[0] : "System.in";
     try (Reader r =
         useFile
-            ? Files.newBufferedReader(Paths.get(filename), UTF_8)
-            : new InputStreamReader(System.in, UTF_8)) {
+            ? Files.newBufferedReader(Paths.get(filename), StandardCharsets.UTF_8)
+            : new InputStreamReader(System.in, StandardCharsets.UTF_8)) {
       IndexFileParser.parse(new LineNumberReader(r), filename, scene);
     }
     scene.prune();
     addAnnotatedFor(scene);
     IndexFileWriter.write(
         scene,
-        new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out, UTF_8)), true));
+        new PrintWriter(
+            new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)), true));
   }
 
   /**
