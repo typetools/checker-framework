@@ -534,7 +534,7 @@ public class InsertAjavaAnnotations {
   public void insertAnnotations(String annotationFilePath, String javaFilePath) {
     try {
       File javaFile = new File(javaFilePath);
-      String fileContents = FilesPlume.readFile(javaFile);
+      String fileContents = FilesPlume.fileContents(javaFile);
       String lineSeparator = FilesPlume.inferLineSeparator(annotationFilePath);
       try (FileInputStream annotationInputStream = new FileInputStream(annotationFilePath)) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
