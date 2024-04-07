@@ -399,35 +399,34 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
       // change the type of that param
       ExecutableElement method = (ExecutableElement) elt;
       AnnotatedExecutableType methodType = (AnnotatedExecutableType) type;
-      // System.out.println("elt: " + method);
       Iterator<? extends VariableElement> paramIterator = method.getParameters().iterator();
       Iterator<AnnotatedTypeMirror> paramTypeIterator = methodType.getParameterTypes().iterator();
       while (paramIterator.hasNext() && paramTypeIterator.hasNext()) {
         VariableElement param = paramIterator.next();
         AnnotatedTypeMirror paramType = paramTypeIterator.next();
-        if (getDeclAnnotation(param, OwningArray.class) != null) {
-          // @OwningArray parameter
-          boolean noMcoeAnno = true;
-          for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
-            if (AnnotationUtils.areSameByName(
-                paramAnno, MustCallOnElements.class.getCanonicalName())) {
-              // is @MustCallOnElements annotation
-              noMcoeAnno = false;
-              break;
-            }
-            if (AnnotationUtils.areSameByName(
-                paramAnno, MustCallOnElementsUnknown.class.getCanonicalName())) {
-              noMcoeAnno = false;
-              break;
-            }
+        // if (getDeclAnnotation(param, OwningArray.class) != null) {
+        // @OwningArray parameter
+        boolean noMcoeAnno = true;
+        for (AnnotationMirror paramAnno : param.asType().getAnnotationMirrors()) {
+          if (AnnotationUtils.areSameByName(
+              paramAnno, MustCallOnElements.class.getCanonicalName())) {
+            // is @MustCallOnElements annotation
+            noMcoeAnno = false;
+            break;
           }
-          if (noMcoeAnno) { // don't override an existing manual annotation
-            TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
-            List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-            AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
-            paramType.replaceAnnotation(newType);
+          if (AnnotationUtils.areSameByName(
+              paramAnno, MustCallOnElementsUnknown.class.getCanonicalName())) {
+            noMcoeAnno = false;
+            break;
           }
         }
+        if (noMcoeAnno) { // don't override an existing manual annotation
+          TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
+          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+          paramType.replaceAnnotation(newType);
+        }
+        // }
       }
     } else if (elt.asType() instanceof ArrayType) {
       if (!(elt instanceof VariableElement)) {
@@ -448,8 +447,9 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
         }
       }
       if (noMcoeAnno) { // don't override an existing manual annotation
-        if ((elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.PARAMETER)
-            && getDeclAnnotation(elt, OwningArray.class) != null) {
+        if ((elt.getKind() == ElementKind.FIELD
+                && getDeclAnnotation(elt, OwningArray.class) != null)
+            || elt.getKind() == ElementKind.PARAMETER) {
           TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
           List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
           AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
