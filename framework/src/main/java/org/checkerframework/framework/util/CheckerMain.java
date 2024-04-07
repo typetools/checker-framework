@@ -1,16 +1,20 @@
 package org.checkerframework.framework.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -581,7 +585,7 @@ public class CheckerMain {
         @SuppressWarnings("builder:required.method.not.called") // don't want to close System.out
         PrintWriter writer =
             (outputFilename.equals("-")
-                ? new PrintWriter(System.out)
+                ? new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out, UTF_8)))
                 : new PrintWriter(outputFilename, "UTF-8"));
         for (int i = 0; i < args.size(); i++) {
           String arg = args.get(i);
@@ -596,7 +600,7 @@ public class CheckerMain {
             // Read argfile and include its parameters in the output file.
             String inputFilename = arg.substring(1);
 
-            try (BufferedReader br = new BufferedReader(new FileReader(inputFilename))) {
+            try (BufferedReader br = Files.newBufferedReader(Paths.get(inputFilename), UTF_8)) {
               String line;
               while ((line = br.readLine()) != null) {
                 writer.print(line);

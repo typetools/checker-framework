@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,7 +53,7 @@ public class ExecUtil {
 
     public Redirection(OutputStream out, int bufferSize) {
       this.buffer = new char[bufferSize];
-      this.out = new OutputStreamWriter(out);
+      this.out = new OutputStreamWriter(out, UTF_8);
     }
 
     public void redirect(InputStream inStream) {
@@ -61,7 +63,7 @@ public class ExecUtil {
       this.thread =
           new Thread(
               () -> {
-                try (InputStreamReader in = new InputStreamReader(inStream)) {
+                try (InputStreamReader in = new InputStreamReader(inStream, UTF_8)) {
                   int read = 0;
                   while (read > -1) {
                     read = in.read(buffer);

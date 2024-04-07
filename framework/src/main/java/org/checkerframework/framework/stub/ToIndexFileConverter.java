@@ -1,5 +1,7 @@
 package org.checkerframework.framework.stub;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
@@ -197,7 +199,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               + e.getMessage());
     }
     extractScene(iu, scene);
-    try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
+    try (Writer w = new BufferedWriter(new OutputStreamWriter(out, UTF_8))) {
       IndexFileWriter.write(scene, w);
     }
   }

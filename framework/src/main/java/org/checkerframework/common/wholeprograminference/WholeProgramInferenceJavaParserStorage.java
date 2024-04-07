@@ -1,5 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
@@ -36,10 +38,8 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
@@ -1071,7 +1071,7 @@ public class WholeProgramInferenceJavaParserStorage
    * @param root the compilation unit to be written
    */
   private void writeAjavaFile(File outputPath, CompilationUnitAnnos root) {
-    try (Writer writer = new BufferedWriter(new FileWriter(outputPath))) {
+    try (Writer writer = Files.newBufferedWriter(outputPath.toPath(), UTF_8)) {
 
       // This implementation uses JavaParser's lexical preserving printing, which writes the
       // file such that its formatting is close to the original source file it was parsed from

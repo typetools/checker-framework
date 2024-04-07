@@ -1,5 +1,7 @@
 package org.checkerframework.framework.source;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.base.Splitter;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -2862,7 +2864,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     gitPropertiesPrinted = true;
 
     try (InputStream in = getClass().getResourceAsStream("/git.properties");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in)); ) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8)); ) {
       String line;
       while ((line = reader.readLine()) != null) {
         System.out.println(line);

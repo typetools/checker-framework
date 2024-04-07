@@ -1,5 +1,7 @@
 package org.checkerframework.common.wholeprograminference;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.common.collect.ComparisonChain;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -745,7 +747,7 @@ public final class SceneToStubWriter {
               if (fileWriter != null || printWriter != null) {
                 throw new Error("This can't happen");
               }
-              fileWriter = new FileWriter(filename);
+              fileWriter = new FileWriter(filename, UTF_8);
               printWriter = new PrintWriter(fileWriter);
             } catch (IOException e) {
               throw new BugInCF("error writing file during WPI: " + filename);

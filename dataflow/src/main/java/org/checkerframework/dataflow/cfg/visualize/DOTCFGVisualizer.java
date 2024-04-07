@@ -1,11 +1,18 @@
 package org.checkerframework.dataflow.cfg.visualize;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -96,7 +103,7 @@ public class DOTCFGVisualizer<
     }
     String dotFileName = dotOutputFileName(cfg.underlyingAST);
 
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(dotFileName))) {
+    try (BufferedWriter out = new BufferedWriter(new FileWriter(dotFileName, UTF_8))) {
       out.write(dotGraph);
     } catch (IOException e) {
       throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
@@ -342,7 +349,8 @@ public class DOTCFGVisualizer<
   @Override
   public void shutdown() {
     // Open for append, in case of multiple sub-checkers.
-    try (FileWriter fstream = new FileWriter(outDir + "/methods.txt", true);
+    try (Writer fstream =
+            Files.newBufferedWriter(Paths.get(outDir + "/methods.txt"), UTF_8, CREATE, APPEND);
         BufferedWriter out = new BufferedWriter(fstream)) {
       for (Map.Entry<String, String> kv : generated.entrySet()) {
         out.write(kv.getKey());

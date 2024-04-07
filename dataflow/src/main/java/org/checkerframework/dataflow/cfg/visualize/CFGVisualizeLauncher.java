@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.cfg.visualize;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
@@ -281,7 +283,7 @@ public final class CFGVisualizeLauncher {
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
     Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
-    try (FileWriter out = new FileWriter(outputFile)) {
+    try (FileWriter out = new FileWriter(outputFile, UTF_8)) {
       if (res != null && res.get("stringGraph") != null) {
         out.write(res.get("stringGraph").toString());
       }

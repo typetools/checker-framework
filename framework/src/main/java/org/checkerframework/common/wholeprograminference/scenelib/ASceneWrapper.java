@@ -1,9 +1,13 @@
 package org.checkerframework.common.wholeprograminference.scenelib;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -167,7 +171,7 @@ public class ASceneWrapper {
                 aMethod.contracts = contractAnnotations;
               }
             }
-            try (FileWriter fw = new FileWriter(filepath)) {
+            try (Writer fw = Files.newBufferedWriter(Paths.get(filepath), UTF_8)) {
               IndexFileWriter.write(scene, fw);
             }
             break;
