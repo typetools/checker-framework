@@ -387,6 +387,25 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
               canBeCovariant);
       areEqualVisitHistory.put(inside, outside, currentTop, result);
       return result;
+    } else if (TypesUtils.isCapturedTypeVariable(outside.getUnderlyingType())) {
+      // Sometimes the wildcard has been captured too early, so treat the captured type variable
+      // as wildcard.
+      // This is all cases except bullet 6, "T <= T".
+      AnnotatedTypeVariable outsideTypeVar = (AnnotatedTypeVariable) outside;
+
+      // Add a placeholder in case of recursion, to prevent infinite regress.
+      areEqualVisitHistory.put(inside, outside, currentTop, true);
+      boolean result =
+          isContainedWithinBounds(
+              inside,
+              outsideTypeVar.getLowerBound(),
+              outsideTypeVar.getUpperBound(),
+              canBeCovariant);
+      areEqualVisitHistory.put(inside, outside, currentTop, result);
+      if (result) {
+        return true;
+      }
+      areEqualVisitHistory.remove(inside, outsideTypeVar, currentTop);
     }
 
     // The remainder of the method is bullet 6, "T <= T".
