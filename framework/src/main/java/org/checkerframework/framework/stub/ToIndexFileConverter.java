@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -197,7 +198,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               + e.getMessage());
     }
     extractScene(iu, scene);
-    try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
+    try (Writer w = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
       IndexFileWriter.write(scene, w);
     }
   }

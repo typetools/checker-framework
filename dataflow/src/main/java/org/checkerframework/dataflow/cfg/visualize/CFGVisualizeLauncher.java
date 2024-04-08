@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import javax.tools.JavaFileManager;
@@ -281,7 +282,7 @@ public final class CFGVisualizeLauncher {
   public static void writeStringOfCFG(
       String inputFile, String method, String clas, String outputFile, Analysis<?, ?, ?> analysis) {
     Map<String, Object> res = generateStringOfCFG(inputFile, method, clas, true, analysis);
-    try (FileWriter out = new FileWriter(outputFile)) {
+    try (FileWriter out = new FileWriter(outputFile, StandardCharsets.UTF_8)) {
       if (res != null && res.get("stringGraph") != null) {
         out.write(res.get("stringGraph").toString());
       }
