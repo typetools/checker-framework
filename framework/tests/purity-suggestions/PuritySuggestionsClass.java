@@ -1,5 +1,6 @@
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 // various tests for the checker to automatically suggest pure methods (most methods have been
 // copied from Purity.java)
@@ -170,5 +171,13 @@ public class PuritySuggestionsClass {
   String t12() {
     NonPureClass p = new NonPureClass();
     return "";
+  }
+
+  // Class with a method annotated with @SideEffectsOnly({})
+  private static class EmptySideEffectsOnly {
+
+    @SideEffectsOnly({})
+    // :: warning: (purity.more.sideeffectfree)
+    void foo() {}
   }
 }
