@@ -17,8 +17,10 @@ public class EmptySideEffectsOnly {
   void method(Object x) {}
 
   @SideEffectsOnly({})
+  // :: warning: (purity.more.sideeffectfree)
   void method1(@SideEffectsOnlyToyBottom Object x) {}
 
   @SideEffectsOnly({})
+  // :: warning: (purity.more.sideeffectfree)
   void method2(@SideEffectsOnlyToyBottom Object x) {}
 }
