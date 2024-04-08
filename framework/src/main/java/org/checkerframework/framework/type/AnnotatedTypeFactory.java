@@ -36,6 +36,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Target;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -847,7 +848,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
       while (urls.hasMoreElements()) {
         URL url = urls.nextElement();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
+        try (BufferedReader in =
+            new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
           result.addAll(in.lines().collect(Collectors.toList()));
         }
       }

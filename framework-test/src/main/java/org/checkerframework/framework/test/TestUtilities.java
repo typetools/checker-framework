@@ -3,14 +3,14 @@ package org.checkerframework.framework.test;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -250,7 +250,7 @@ public class TestUtilities {
       return false;
     }
 
-    try (Scanner in = new Scanner(file)) {
+    try (Scanner in = new Scanner(file, StandardCharsets.UTF_8)) {
       while (in.hasNext()) {
         String nextLine = in.nextLine();
         if (nextLine.contains("@skip-test")
@@ -265,7 +265,7 @@ public class TestUtilities {
           return false;
         }
       }
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
@@ -371,7 +371,12 @@ public class TestUtilities {
    * @param lines what lines to write
    */
   public static void writeLines(File file, Iterable<?> lines) {
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw =
+        Files.newBufferedWriter(
+            file.toPath(),
+            StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.APPEND)) {
       Iterator<?> iter = lines.iterator();
       while (iter.hasNext()) {
         Object next = iter.next();
@@ -397,7 +402,13 @@ public class TestUtilities {
       List<String> missing,
       boolean usingNoMsgText,
       boolean testFailed) {
-    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+    try (PrintWriter pw =
+        new PrintWriter(
+            Files.newBufferedWriter(
+                file.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND))) {
       pw.println("File: " + testFile.getAbsolutePath());
       pw.println("TestFailed: " + testFailed);
       pw.println("Using nomsgtxt: " + usingNoMsgText);
@@ -435,7 +446,12 @@ public class TestUtilities {
    * @param config the configuration to append to the end of the file
    */
   public static void writeTestConfiguration(File file, TestConfiguration config) {
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw =
+        Files.newBufferedWriter(
+            file.toPath(),
+            StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.APPEND)) {
       bw.write(config.toString());
       bw.newLine();
       bw.newLine();
@@ -450,7 +466,13 @@ public class TestUtilities {
       Iterable<? extends JavaFileObject> files,
       Iterable<String> options,
       Iterable<String> processors) {
-    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+    try (PrintWriter pw =
+        new PrintWriter(
+            Files.newBufferedWriter(
+                file.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND))) {
       pw.println("Files:");
       for (JavaFileObject f : files) {
         pw.println("    " + f.getName());
