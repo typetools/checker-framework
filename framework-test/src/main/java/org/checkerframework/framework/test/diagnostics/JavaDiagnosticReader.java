@@ -2,9 +2,10 @@ package org.checkerframework.framework.test.diagnostics;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -177,7 +178,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     this.filename = toRead.getName();
     LineNumberReader reader = null;
     try {
-      reader = new LineNumberReader(new FileReader(toRead));
+      reader =
+          new LineNumberReader(Files.newBufferedReader(toRead.toPath(), StandardCharsets.UTF_8));
       this.reader = reader;
       advance();
     } catch (IOException e) {

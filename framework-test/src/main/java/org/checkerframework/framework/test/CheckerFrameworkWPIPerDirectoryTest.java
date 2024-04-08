@@ -1,7 +1,8 @@
 package org.checkerframework.framework.test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -103,14 +104,14 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
    * @return whether {@code file} contains {@code skipComment}
    */
   public static boolean hasSkipComment(File file, String skipComment) {
-    try (Scanner in = new Scanner(file)) {
+    try (Scanner in = new Scanner(file, StandardCharsets.UTF_8)) {
       while (in.hasNext()) {
         String nextLine = in.nextLine();
         if (nextLine.contains(skipComment)) {
           return true;
         }
       }
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
     return false;

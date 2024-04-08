@@ -445,8 +445,6 @@ allprojects { currentProj ->
         options.errorprone.errorproneArgs = [
           // Many compiler classes are interned.
           '-Xep:ReferenceEquality:OFF',
-          // These might be worth fixing.
-          '-Xep:DefaultCharset:OFF',
           // Not useful to suggest Splitter; maybe clean up.
           '-Xep:StringSplitter:OFF',
           // Too broad, rejects seemingly-correct code.
