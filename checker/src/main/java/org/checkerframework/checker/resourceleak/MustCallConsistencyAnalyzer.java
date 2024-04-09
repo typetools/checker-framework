@@ -669,6 +669,9 @@ class MustCallConsistencyAnalyzer {
             if (!ElementUtils.isFinal(memberElm)) {
               checker.reportError(member, "owningarray.field.not.final", tree.getName());
             }
+            if (ElementUtils.isStatic(memberElm)) {
+              checker.reportError(member, "owningarray.field.static", tree.getName());
+            }
           }
         }
       }

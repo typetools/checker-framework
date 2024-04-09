@@ -4,6 +4,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -31,6 +33,9 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.MustCallOnElementsChecker;
+import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
@@ -516,6 +521,35 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
   }
 
   /**
+   * Returns the {@code @MustCallOnElements} obligations of an element that is a
+   * {@code @OwningArray} field. If the passed element has no {@code @MustCallOnElements}
+   * annotation, the obligations of its component are returned and if it has an annotation, its
+   * value is returned.
+   *
+   * @param field an Element corresponding to an {@code @OwningArray} field
+   * @return list of {@code @MustCallOnElements} obligations of the field
+   */
+  private List<String> getMcoeObligationsForField(Element field) {
+    List<String> mcList = Collections.emptyList();
+    boolean noMcoeAnno = true;
+    for (AnnotationMirror anno : field.asType().getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(anno, MustCallOnElements.class.getCanonicalName())) {
+        MustCallOnElementsAnnotatedTypeFactory mcoeAtf =
+            rlTypeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
+        AnnotationValue av =
+            anno.getElementValues().get(mcoeAtf.getMustCallOnElementsValueElement());
+        mcList = AnnotationUtils.annotationValueToList(av, String.class);
+        noMcoeAnno = false;
+        break;
+      }
+    }
+    if (noMcoeAnno) {
+      mcList = getMustCallValuesForType(((ArrayType) field.asType()).getComponentType());
+    }
+    return mcList;
+  }
+
+  /**
    * Checks validity of a field {@code field} with an {@code @}{@link OwningArray} annotation. Say
    * the type of {@code field} is {@code @MustCallOnElements("m")}}. This method checks that the
    * enclosing class of {@code field} has a type {@code @MustCall("m2")} for some method {@code m2},
@@ -526,9 +560,6 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * @param field the declaration of the field to check
    */
   private void checkOwningArrayField(VariableElement field) {
-    String fieldName = field.getSimpleName().toString();
-    System.out.println("fieldname: " + fieldName);
-
     Set<Modifier> modifiers = field.getModifiers();
     if (!modifiers.contains(Modifier.FINAL)) {
       // @OwningArray must be final. the consistency checker reports an error. don't execute any
@@ -536,11 +567,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
       return;
     }
 
-    // since @OwningArray is enforced to be array, the following cast is guaranteed to succeed
-    TypeMirror componentType = ((ArrayType) field.asType()).getComponentType();
-    List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-
-    System.out.println("field obligations: " + mcoeObligationsOfOwningField);
+    List<String> mcoeObligationsOfOwningField = getMcoeObligationsForField(field);
     if (mcoeObligationsOfOwningField.isEmpty()) {
       return;
     }

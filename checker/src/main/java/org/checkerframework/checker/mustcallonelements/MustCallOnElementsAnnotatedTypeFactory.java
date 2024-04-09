@@ -426,7 +426,6 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
           AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
           paramType.replaceAnnotation(newType);
         }
-        // }
       }
     } else if (elt.asType() instanceof ArrayType) {
       if (!(elt instanceof VariableElement)) {
