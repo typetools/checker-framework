@@ -8,6 +8,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -28,6 +30,8 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nonempty.qual.RequiresNonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.OptionalCreator;
 import org.checkerframework.checker.optional.qual.OptionalEliminator;
@@ -40,6 +44,8 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.IPair;
@@ -71,6 +77,9 @@ public class OptionalVisitor
   /** The element for java.util.stream.Stream.map(). */
   private final ExecutableElement streamMap;
 
+  /** Set of methods to be checked by the Non-Empty Checker. */
+  private final Set<MethodTree> methodsForNonEmptyChecker;
+
   /**
    * Create an OptionalVisitor.
    *
@@ -87,6 +96,7 @@ public class OptionalVisitor
 
     streamFilter = TreeUtils.getMethod("java.util.stream.Stream", "filter", 1, env);
     streamMap = TreeUtils.getMethod("java.util.stream.Stream", "map", 1, env);
+    methodsForNonEmptyChecker = new HashSet<>();
   }
 
   @Override
@@ -332,6 +342,41 @@ public class OptionalVisitor
   }
 
   @Override
+  public Void visitMethod(MethodTree tree, Void p) {
+    if (this.isAnnotatedWithNonEmptyPrecondition(tree)
+        || this.isAnyFormalAnnotatedWithNonEmpty(tree)
+        || this.isReturnTypeAnnotatedWithNonEmpty(tree)) {
+      methodsForNonEmptyChecker.add(tree);
+    }
+    return super.visitMethod(tree, p);
+  }
+
+  private boolean isAnnotatedWithNonEmptyPrecondition(MethodTree tree) {
+    return TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations())
+        .stream()
+        .anyMatch(am -> atypeFactory.areSameByClass(am, RequiresNonEmpty.class));
+  }
+
+  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodTree tree) {
+    List<? extends VariableTree> params = tree.getParameters();
+    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
+    for (VariableTree vt : params) {
+      annotationMirrors.addAll(
+          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
+    }
+    return annotationMirrors.stream()
+        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+  }
+
+  private boolean isReturnTypeAnnotatedWithNonEmpty(MethodTree tree) {
+    if (tree.getReturnType() == null) {
+      return false;
+    }
+    return TreeUtils.typeOf(tree.getReturnType()).getAnnotationMirrors().stream()
+        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+  }
+
+  @Override
   public Void visitBinary(BinaryTree tree, Void p) {
     handleCompareToNull(tree);
     return super.visitBinary(tree, p);
@@ -472,6 +517,7 @@ public class OptionalVisitor
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
+    handleNonEmptyVariableDeclaration(tree);
     VariableElement ve = TreeUtils.elementFromDeclaration(tree);
     TypeMirror tm = ve.asType();
     if (isOptionalType(tm)) {
@@ -489,6 +535,18 @@ public class OptionalVisitor
       }
     }
     return super.visitVariable(tree, p);
+  }
+
+  private void handleNonEmptyVariableDeclaration(VariableTree tree) {
+    boolean isAnnotatedWithNonEmpty =
+        TreeUtils.annotationsFromTypeAnnotationTrees(tree.getModifiers().getAnnotations()).stream()
+            .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+    if (isAnnotatedWithNonEmpty) {
+      methodsForNonEmptyChecker.add(TreePathUtil.enclosingMethod(this.getCurrentPath()));
+      System.out.printf(
+          "Methods to check with the Non-Empty Checker = %s\n",
+          methodsForNonEmptyChecker.stream().map(MethodTree::getName).collect(Collectors.toSet()));
+    }
   }
 
   /**

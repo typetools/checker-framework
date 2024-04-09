@@ -1,6 +1,5 @@
 package org.checkerframework.checker.optional;
 
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -14,9 +13,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
-import org.checkerframework.checker.nonempty.NonEmptyAnnotatedTypeFactory;
-import org.checkerframework.checker.nonempty.NonEmptyChecker;
-import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -32,7 +28,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -66,9 +61,6 @@ public class OptionalTransfer extends CFTransfer {
   /** The {@link OptionalAnnotatedTypeFactory} instance for this transfer class. */
   private final OptionalAnnotatedTypeFactory optionalTypeFactory;
 
-  /** The {@link NonEmptyAnnotatedTypeFactory} instance for this transfer class. */
-  private final @Nullable NonEmptyAnnotatedTypeFactory nonemptyTypeFactory;
-
   /**
    * Create an OptionalTransfer.
    *
@@ -77,8 +69,6 @@ public class OptionalTransfer extends CFTransfer {
   public OptionalTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     optionalTypeFactory = (OptionalAnnotatedTypeFactory) analysis.getTypeFactory();
-    nonemptyTypeFactory =
-        optionalTypeFactory.getTypeFactoryOfSubcheckerOrNull(NonEmptyChecker.class);
     Elements elements = optionalTypeFactory.getElementUtils();
     PRESENT = AnnotationBuilder.fromClass(elements, Present.class);
     ProcessingEnvironment env = optionalTypeFactory.getProcessingEnv();
@@ -137,7 +127,7 @@ public class OptionalTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
-    if (n.getTree() == null || nonemptyTypeFactory == null) {
+    if (n.getTree() == null) {
       return result;
     }
     refineStreamOperations(n, result);
@@ -159,21 +149,13 @@ public class OptionalTransfer extends CFTransfer {
    */
   private void refineStreamOperations(
       MethodInvocationNode n, TransferResult<CFValue, CFStore> result) {
-    assert nonemptyTypeFactory != null;
     List<ExecutableElement> relevantStreamMethods =
         Arrays.asList(streamMax, streamMin, streamReduceNoIdentity, streamFindFirst, streamFindAny);
     if (relevantStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
-      ExpressionTree receiverTree = TreeUtils.getReceiverTree(n.getTree());
-      AnnotatedTypeMirror receiverNonEmptyAtm = nonemptyTypeFactory.getAnnotatedType(receiverTree);
-      if (receiverNonEmptyAtm.hasEffectiveAnnotation(NonEmpty.class)) {
-        AnnotatedTypeMirror returnType = optionalTypeFactory.getAnnotatedType(n.getTree());
-        if (!returnType.hasPrimaryAnnotation(PRESENT)) {
-          makePresent(result, n);
-          refineToPresent(result);
-        }
-      }
+      // TODO: refine result to @Present if the receiver is @NonEmpty
+      assert result != null; // stub for debugging
     }
   }
 
@@ -183,6 +165,7 @@ public class OptionalTransfer extends CFTransfer {
    * @param result the transfer result to side effect
    * @param node the node to make {@code @Present}
    */
+  @SuppressWarnings("UnusedMethod")
   private void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
     if (result.containsTwoStores()) {
       makePresent(result.getThenStore(), node);
@@ -208,6 +191,7 @@ public class OptionalTransfer extends CFTransfer {
    *
    * @param result the result to refine to {@code @Present}.
    */
+  @SuppressWarnings("UnusedMethod")
   private void refineToPresent(TransferResult<CFValue, CFStore> result) {
     CFValue oldResultValue = result.getResultValue();
     CFValue refinedResultValue =
