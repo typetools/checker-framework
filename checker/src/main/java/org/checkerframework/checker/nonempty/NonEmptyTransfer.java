@@ -43,7 +43,7 @@ public class NonEmptyTransfer extends CFTransfer {
   private final ExecutableElement indexOf;
 
   /** A {@link NonEmptyAnnotatedTypeFactory} instance. */
-  private final NonEmptyAnnotatedTypeFactory aTypeFactory;
+  protected final NonEmptyAnnotatedTypeFactory aTypeFactory;
 
   public NonEmptyTransfer(CFAnalysis analysis) {
     super(analysis);

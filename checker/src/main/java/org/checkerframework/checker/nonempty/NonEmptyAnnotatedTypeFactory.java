@@ -2,6 +2,7 @@ package org.checkerframework.checker.nonempty;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
@@ -32,6 +33,13 @@ public class NonEmptyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected TreeAnnotator createTreeAnnotator() {
     return new ListTreeAnnotator(super.createTreeAnnotator(), new NonEmptyTreeAnnotator(this));
+  }
+
+  protected boolean isAnnotatedWithNonEmpty(Tree tree) {
+    System.out.printf("NonEmptyAnnotatedTypeFactory::Checking if tree = [%s] is annotated with @NonEmpty\n", tree);
+    AnnotatedTypeMirror annotatedTypeMirror = this.getAnnotatedType(tree);
+    System.out.printf("Annotated Type Mirror for [%s] = %s\n", tree, annotatedTypeMirror);
+    return false; // stub
   }
 
   /** The tree annotator for the Non-Empty Checker. */

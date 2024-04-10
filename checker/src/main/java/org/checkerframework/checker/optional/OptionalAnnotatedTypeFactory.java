@@ -10,8 +10,8 @@ import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nonempty.NonEmptyAnnotatedTypeFactory;
 import org.checkerframework.checker.optional.qual.Present;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** OptionalAnnotatedTypeFactory for the Optional Checker. */
-public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class OptionalAnnotatedTypeFactory extends NonEmptyAnnotatedTypeFactory {
 
   /** The element for java.util.Optional.map(). */
   private final ExecutableElement optionalMap;
@@ -130,5 +130,9 @@ public class OptionalAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public CFTransfer createFlowTransferFunction(
       CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     return new OptionalTransfer(analysis);
+  }
+
+  public boolean isTreeAnnotatedWithNonEmpty(ExpressionTree tree) {
+    return super.isAnnotatedWithNonEmpty(tree);
   }
 }
