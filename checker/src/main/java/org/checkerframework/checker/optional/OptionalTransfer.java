@@ -154,7 +154,7 @@ public class OptionalTransfer extends CFTransfer {
     if (relevantStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
-       optionalTypeFactory.isTreeAnnotatedWithNonEmpty(TreeUtils.getReceiverTree(n.getTree()));
+      optionalTypeFactory.isTreeAnnotatedWithNonEmpty(TreeUtils.getReceiverTree(n.getTree()));
       // TODO: refine result to @Present if the receiver is @NonEmpty
       assert result != null; // stub for debugging
     }
