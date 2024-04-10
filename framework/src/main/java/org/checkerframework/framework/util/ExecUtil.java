@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 /** Utilities for executing external processes. */
 public class ExecUtil {
@@ -51,7 +52,7 @@ public class ExecUtil {
 
     public Redirection(OutputStream out, int bufferSize) {
       this.buffer = new char[bufferSize];
-      this.out = new OutputStreamWriter(out);
+      this.out = new OutputStreamWriter(out, StandardCharsets.UTF_8);
     }
 
     public void redirect(InputStream inStream) {
@@ -61,7 +62,8 @@ public class ExecUtil {
       this.thread =
           new Thread(
               () -> {
-                try (InputStreamReader in = new InputStreamReader(inStream)) {
+                try (InputStreamReader in =
+                    new InputStreamReader(inStream, StandardCharsets.UTF_8)) {
                   int read = 0;
                   while (read > -1) {
                     read = in.read(buffer);
