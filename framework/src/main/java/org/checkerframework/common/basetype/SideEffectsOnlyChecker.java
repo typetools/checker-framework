@@ -1,7 +1,6 @@
 package org.checkerframework.common.basetype;
 
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -18,6 +17,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -144,89 +144,127 @@ public class SideEffectsOnlyChecker {
     }
 
     @Override
-    public Void visitCatch(CatchTree node, Void aVoid) {
-      return super.visitCatch(node, aVoid);
-    }
-
-    @Override
     // TODO: Similar logic for NewClassTree?
     public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
       Element invokedElem = TreeUtils.elementFromUse(node);
-      AnnotationMirror pureAnno = annoProvider.getDeclAnnotation(invokedElem, Pure.class);
-      AnnotationMirror sideEffectFreeAnno =
-          annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class);
+      boolean isMarkedPure = annoProvider.getDeclAnnotation(invokedElem, Pure.class) != null;
+      boolean isMarkedSideEffectFree =
+          annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
       // If the invoked method has no side effects, there is, nothing to do.
-      if (pureAnno != null || sideEffectFreeAnno != null) {
+      if (isMarkedPure || isMarkedSideEffectFree) {
         return super.visitMethodInvocation(node, aVoid);
       }
 
-      MethodTree enclosingMethod =
-          TreePathUtil.enclosingMethod(checker.getTypeFactory().getPath(node));
-      ExecutableElement enclosingMethodElement = null;
-      if (enclosingMethod != null) {
-        enclosingMethodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
-      }
-      AnnotationMirror sideEffectsOnlyAnno = null;
-      if (enclosingMethodElement != null) {
-        annoProvider.getDeclAnnotation(enclosingMethodElement, SideEffectsOnly.class);
-      }
-      System.out.printf(
-          "invokedElem = %s, sideEffectsOnlyAnno = %s%n", invokedElem, sideEffectsOnlyAnno);
+      AnnotationMirror sideEffectsOnlyAnnotation =
+          getSideEffectsOnlyAnnotationOnEnclosingMethod(node);
+      assert sideEffectsOnlyAnnotation != null
+          : "This method should only be invoked when the @SideEffectsOnly annotation is not null";
+      //      System.out.printf(
+      //          "invokedElem = %s, sideEffectsOnlyAnno = %s%n", invokedElem, sideEffectsOnlyAnno);
 
       // The arguments to @SideEffectsOnly, or an empty list if there is no @SideEffectsOnly.
-      List<String> sideEffectsOnlyExpressionStrings;
-      if (sideEffectsOnlyAnno == null) {
-        sideEffectsOnlyExpressionStrings = Collections.emptyList();
-      } else {
-        ExecutableElement sideEffectsOnlyValueElement =
-            TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
-        sideEffectsOnlyExpressionStrings =
-            AnnotationUtils.getElementValueArray(
-                sideEffectsOnlyAnno, sideEffectsOnlyValueElement, String.class);
+      List<String> sideEffectsOnlyExpressionStrings =
+          getExpressionStringsFromSideEffectsOnly(sideEffectsOnlyAnnotation);
+
+      List<? extends ExpressionTree> args = this.getArgumentsFromMethodInvocation(node);
+
+      System.out.printf("Method Invocation args = %s\n", args);
+      System.out.printf(
+          "Side Effects Only Expression Strings = %s\n", sideEffectsOnlyExpressionStrings);
+      // The invoked method is annotated with @SideEffectsOnly.
+      // Add annotation values to seOnlyIncorrectExprs
+      // that are not present in sideEffectsOnlyExpressions.
+      /* TODO
+      ExecutableElement sideEffectsOnlyValueElement =
+          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
+      */
+
+      MethodTree enclosingMethodBody = TreePathUtil.enclosingMethod(this.getCurrentPath());
+
+      List<JavaExpression> sideEffectsOnlyExprInv = new ArrayList<>();
+      for (String st : sideEffectsOnlyExpressionStrings) {
+        try {
+          System.out.printf("Calling StrToJExpr(st = %s, node = %s)\n", st, node);
+          //          JavaExpression exprJe = StringToJavaExpression.atMethodInvocation(st, node,
+          // checker); // This code wasn't being invoked before
+          JavaExpression exprJe =
+              StringToJavaExpression.atMethodBody(st, enclosingMethodBody, checker);
+          sideEffectsOnlyExprInv.add(exprJe);
+        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
+          checker.report(st, ex.getDiagMessage());
+        }
       }
 
+      System.out.printf(
+          "Permissible @SideEffectsOnlyExpressions = %s\n", sideEffectsOnlyExpressions);
+      System.out.printf("sideEffectsOnlyExprInv = %s\n", sideEffectsOnlyExprInv);
+
+      for (JavaExpression expr : sideEffectsOnlyExprInv) {
+        if (!sideEffectsOnlyExpressions.contains(expr)) {
+          extraSideEffects.addExpr(node, expr);
+        }
+      }
+      System.out.printf("Extra side effects = %s\n", extraSideEffects.getExprs());
+      return super.visitMethodInvocation(node, aVoid);
+    }
+
+    /**
+     * Returns the {@link SideEffectsOnly} annotation (if it exists, else null) on the enclosing
+     * method of a given method invocation.
+     *
+     * @param tree the method invocation
+     * @return the {@link SideEffectsOnly} annotation on the enclosing method of a given method
+     *     invocation
+     */
+    private AnnotationMirror getSideEffectsOnlyAnnotationOnEnclosingMethod(
+        MethodInvocationTree tree) {
+      MethodTree enclosingMethod =
+          TreePathUtil.enclosingMethod(checker.getTypeFactory().getPath(tree));
+      if (enclosingMethod == null) {
+        return null;
+      }
+      return annoProvider.getDeclAnnotation(
+          TreeUtils.elementFromDeclaration(enclosingMethod), SideEffectsOnly.class);
+    }
+
+    /**
+     * Extracts the expressions that are passed as arguments to a {@link SideEffectsOnly}
+     * annotation.
+     *
+     * @param sideEffectsOnlyAnnotation the {@link SideEffectsOnly} annotation
+     * @return the expressions that are passed as arguments to the {@link SideEffectsOnly}
+     *     annotation
+     */
+    private List<String> getExpressionStringsFromSideEffectsOnly(
+        @Nullable AnnotationMirror sideEffectsOnlyAnnotation) {
+      if (sideEffectsOnlyAnnotation == null) {
+        return Collections.emptyList();
+      }
+      System.out.printf("@SideEffectsOnlyAnnotation = %s\n", sideEffectsOnlyAnnotation);
+      ExecutableElement sideEffectsOnlyValueElement =
+          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
+      return AnnotationUtils.getElementValueArray(
+          sideEffectsOnlyAnnotation,
+          sideEffectsOnlyValueElement,
+          String.class,
+          Collections.emptyList());
+    }
+
+    private List<? extends ExpressionTree> getArgumentsFromMethodInvocation(
+        MethodInvocationTree methodInvok) {
       // TODO: This needs to collect all subexpressions of the given expression.  For now it just
       // considers the actual arguments, which is incomplete.
-      List<? extends ExpressionTree> args = node.getArguments();
-      ExpressionTree receiver = TreeUtils.getReceiverTree(node);
-      List<ExpressionTree> subexpressions;
+      List<? extends ExpressionTree> args = methodInvok.getArguments();
+      ExpressionTree receiver = TreeUtils.getReceiverTree(methodInvok);
+      List<ExpressionTree> exprs;
       if (receiver == null) {
-        subexpressions = new ArrayList<>(args);
+        exprs = new ArrayList<>(args);
       } else {
-        subexpressions = new ArrayList<>(args.size() + 1);
-        subexpressions.add(receiver);
-        subexpressions.addAll(args);
+        exprs = new ArrayList<>(args.size() + 1);
+        exprs.add(receiver);
+        exprs.addAll(args);
       }
-
-      if (sideEffectsOnlyAnno == null) {
-        System.out.printf("Error 1%n");
-        // For each expression in `node`:
-        checker.reportError(node, "purity.incorrect.sideeffectsonly", node);
-      } else {
-        // The invoked method is annotated with @SideEffectsOnly.
-        // Add annotation values to seOnlyIncorrectExprs
-        // that are not present in sideEffectsOnlyExpressions.
-        /* TODO
-        ExecutableElement sideEffectsOnlyValueElement =
-            TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
-        */
-        List<JavaExpression> sideEffectsOnlyExprInv = new ArrayList<>();
-        for (String st : sideEffectsOnlyExpressionStrings) {
-          try {
-            JavaExpression exprJe = StringToJavaExpression.atMethodInvocation(st, node, checker);
-            sideEffectsOnlyExprInv.add(exprJe);
-          } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-            checker.report(st, ex.getDiagMessage());
-          }
-        }
-
-        for (JavaExpression expr : sideEffectsOnlyExprInv) {
-          if (!sideEffectsOnlyExpressions.contains(expr)) {
-            extraSideEffects.addExpr(node, expr);
-          }
-        }
-      }
-      return super.visitMethodInvocation(node, aVoid);
+      return exprs;
     }
 
     @Override

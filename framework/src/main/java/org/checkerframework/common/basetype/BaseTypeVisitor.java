@@ -1215,15 +1215,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               atypeFactory.getProcessingEnv(),
               checker);
 
-      System.out.printf("sefOnlyResult = %s%n", sefOnlyResult);
+      // System.out.printf("sefOnlyResult = %s%n", sefOnlyResult);
 
       List<IPair<Tree, JavaExpression>> seOnlyIncorrectExprs = sefOnlyResult.getExprs();
-      System.out.printf("seOnlyIncorrectExprs = %s%n", seOnlyIncorrectExprs);
+      // System.out.printf("seOnlyIncorrectExprs = %s%n", seOnlyIncorrectExprs);
 
       if (!seOnlyIncorrectExprs.isEmpty()) {
         for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
           if (!sideEffectsOnlyExpressions.contains(s.second)) {
-            System.out.printf("Error 2%n");
+            // System.out.printf("Error 2%n");
             checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
           }
         }
