@@ -116,7 +116,7 @@ aliasing patterns related to resource leaks:
   For more details, see Section~\ref{resource-leak-ownership}.
 \item[\refqualclass{checker/mustcallonelements/qual}{OwningArray}]
   expresses ownership over an array of resources. Everything not explicitly annotated \<@OwningArray> is not owning and its elements may not be assigned to objects with calling obligations.
-  For more details, see Section~\ref{resource-leak-ownership}.
+  For more details, see Section~\ref{resource-leak-arrays}.
 
 \item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
   represents a ``resource-aliasing'' relationship.  Resource aliases are
@@ -692,7 +692,7 @@ void m1(@OwningArray Socket[] s) {
 }
 \end{verbatim}
 
-To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the @OwningArray parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the obligation for the passed argument, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and add the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
+To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the obligation for the passed argument, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and add the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
 
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
@@ -706,7 +706,7 @@ After calling \texttt{m1}, \textit{arr} behaves like a freshly allocated array a
 \<@OwningArray> fields must be final and non-static. Thus, they can only be defined either in the constructor or at the declaration point.
 The default type of such an array after declaration is \<@MustCallOnElements(obligation)>, where \textit{obligation} is the set of \<@MustCall> methods of the component type. The default \<@CalledMethodsOnElements> type is the empty \<@CalledMethodsOnElements({})>.
 Since the lifetime of a field coincides with the lifetime of the object itself, the obligations of the field must be fulfilled at the time the object itself is deallocated.
-Thus, a class with an \<@OwningArray> field has to have a \<@MustCall("d")> annotation, where \texttt{d()} is some destructor method that fulfills all obligations of the \<@OwningArray> fields, indicated with an appropriate \<@EnsuresCalledMethodsOnElements> annotation:
+Thus, a class with an \<@OwningArray> field has to have a \<@MustCall("d")> annotation, where \texttt{d()} is some destructor method that fulfills all obligations of the \<@OwningArray> fields, indicated by an appropriate \<@EnsuresCalledMethodsOnElements> annotation:
 
 \begin{verbatim}
 @MustCall("destruct")
@@ -722,14 +722,14 @@ class A {
 }
 \end{verbatim}
 
-This ensures that any client that constructs an instance of A will have to call destruct() on it, which in turn ensures that the obligations of the field are fulfilled.
+This ensures that any client that constructs an instance of A will have to call \texttt{destruct()} on it, which in turn ensures that the obligations of the field are fulfilled.
 
 The elements of an \<@OwningArray> field may only be assigned in the constructor and only once. Thus, an \<@OwningArray> field provides immutability beyond just the final keyword, as even its elements are immutable once the enclosing class is constructed. The array stored in the field does not necessarily have to be allocated in the constructor, but may also be passed as an argument to the constructor, see Section~\ref{resource-leak-arrays-constructor}.
 
 \subsectionAndLabel{\<@OwningArray> constructor parameters}{resource-leak-arrays-constructor}
 Constructors are special in the context of this checker, since they're the only methods where \<@OwningArray> fields may be assigned.
 
-When \<@OwningArray> is written on a constructor parameter, the default of the parameter is \<@MustCallOnElements(\textit{obligations})>, where \textit{obligations} is the set of \<@MustCall> obligations of the component type. It is allowed to put any manual \<@MustCallOnElements> annotation to override this default however.
+When \<@OwningArray> is written on a constructor parameter, the default of the parameter is \<@MustCallOnElements(obligations)>, where \textit{obligations} is the set of \<@MustCall> obligations of the component type. It is allowed to put any manual \<@MustCallOnElements> annotation to override this default however.
 
 An \<@OwningArray> constructor argument may be assigned to an \<@OwningArray> field, which removes the obligation of the parameter.
 
