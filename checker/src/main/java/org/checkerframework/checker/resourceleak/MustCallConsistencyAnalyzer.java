@@ -1380,10 +1380,42 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Updates a set of Obligations to account for an assignment. Assigning to an owning field might
-   * remove Obligations, assigning to a resource variable might remove obligations, assigning to a
-   * new local variable might modify an Obligation (by increasing the size of its resource alias
-   * set), etc.
+   * Updates a set of Obligations to account for an assignment and enforces the assignment rules for
+   * the MustCallOnElements checker.
+   *
+   * <p>Assigning to an owning field might remove Obligations, assigning to a resource variable
+   * might remove obligations, assigning to a new local variable might modify an Obligation (by
+   * increasing the size of its resource alias set), etc.
+   *
+   * <p>Obligation creation rules for MustCallOnElements checker.
+   *
+   * <ul>
+   *   <li>1. A declaration assignment where the lhs is {@code @OwningArray} always creates an
+   *       obligation for the array annotated {@code @OwningArray}.
+   *   <li>2. A reassignment to a new array where lhs is {@code @OwningArray} and
+   *       {@code @MustCallOnElementsUnknown} creates an obligation for the array.
+   *   <li>3. A constructor assignment of an {@code @OwningArray} parameter to an
+   *       {@code @OwningArray} field removes the obligation of the parameter.
+   *   <li>4. An assignment in a pattern-matched assignment loop removes the obligation of the rhs
+   * </ul>
+   *
+   * <p>Assignment rules:
+   *
+   * <ul>
+   *   <li>1. When rhs contains annotated {@code @OwningArray} and lhs does not, the assignment is
+   *       always illegal.
+   *   <li>2. {@code @OwningArray} field and its elements may not be assigned outside of
+   *       constructor.
+   *   <li>3. When lhs is a local {@code @OwningArray} identifier, the rhs may only be a newly
+   *       allocated array.
+   *   <li>4. Before an assignment-loop for {@code @OwningArray} arr, arr must not have any open
+   *       calling obligations.
+   *   <li>5. The elements of an {@code @OwningArray} may only be assigned in an allocating loop.
+   *   <li>6. The elements of an {@code @OwningArray} field may only be assigned once in the
+   *       constructor.
+   *   <li>7. An {@code @OwningArray} field may only be assigned to a new array or an
+   *       {@code @OwningArray} parameter and only in the constructor.
+   * </ul>
    *
    * @param obligations the set of Obligations to update
    * @param cfg the control flow graph that contains {@code assignmentNode}
@@ -1407,6 +1439,8 @@ class MustCallConsistencyAnalyzer {
     boolean lhsIsField = lhsElement.getKind() == ElementKind.FIELD;
     MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
     boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
+
+    // enforce 1. assignment rule
     if (!isOwningArray && rhsIsOwningArray) {
       checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
     }
@@ -1434,6 +1468,8 @@ class MustCallConsistencyAnalyzer {
                 : "LHS of pattern-matched assignment-loop assumed to be IdentifierTree, but is: "
                     + arrayTree.getKind();
             Name arrayName = ((IdentifierTree) arrayTree).getName();
+            // enforces 6. assignment rule:
+            // elements of @OwningArray field may only be assigned once in constructor
             if (this.alreadyAllocatedArrays.contains(arrayName)) {
               checker.reportError(
                   assignmentNode.getTree(), "owningarray.field.elements.assigned.multiple.times");
@@ -1441,7 +1477,8 @@ class MustCallConsistencyAnalyzer {
               this.alreadyAllocatedArrays.add(arrayName);
             }
           } else {
-            // illegal assignment to elements of @OwningArray field
+            // enforces 5. assignment rule:
+            // illegal assignment to elements of @OwningArray field in constructor
             checker.reportError(
                 assignmentNode.getTree(), "illegal.owningarray.field.elements.assignment");
           }
@@ -1452,12 +1489,14 @@ class MustCallConsistencyAnalyzer {
           // this is an allowed assignment case. "final" enforces that there is only one
           // assignment overall
         } else {
+          // enforces 7. assignment rule
           // any other assignment to @OwningArray field is not allowed
           checker.reportError(assignmentNode.getTree(), "illegal.owningarray.field.assignment");
         }
       } else {
+        // enforce 2. assignment rule:
+        // @OwningArray field may not be assigned (neither its elements) outside of constructor
         if (lhsIsField) {
-          // @OwningArray field may not be assigned (neither its elements) outside of constructor
           checker.reportError(
               assignmentNode.getTree(), "owningarray.field.assigned.outside.constructor");
         } else if (lhs.getTree() instanceof IdentifierTree
@@ -1524,6 +1563,8 @@ class MustCallConsistencyAnalyzer {
                 mcoeObligations = Collections.emptyList();
               }
             }
+            // enforces 4. assignment rule:
+            // no open obligations for an @OwningArray that is assigned in a loop
             if (mcoeObligations != null && !mcoeObligations.isEmpty()) {
               checker.reportError(
                   assignmentNode.getTree(),
@@ -1531,8 +1572,9 @@ class MustCallConsistencyAnalyzer {
                   mcoeObligations.toString(),
                   arrayName);
             }
-          } else {
+            // enforces 3. assignment rule:
             // assigning an @OwningArray to anything else is not allowed outside of constructor
+          } else {
             checker.reportError(
                 assignmentNode.getTree(),
                 "illegal.owningarray.assignment",
@@ -1544,12 +1586,9 @@ class MustCallConsistencyAnalyzer {
           // check whether obligations have been fulfilled prior to reassignment
           if (!MustCallOnElementsAnnotatedTypeFactory.doesAssignmentCreateArrayObligation(
               (AssignmentTree) assignmentNode.getTree())) {
-            // assignment not in a pattern-matched loop: not permitted for @OwningArray
-            // checker.reportError(assignmentNode.getTree(),
-            //                     "prohibited.owningarrayelement.assignment");
-            checker.reportError(
-                assignmentNode.getTree(),
-                "Assigning to element of @OwningArray index outside of a designated loop.");
+            // enforces 5. assignment rule:
+            // assignment not in a pattern-matched loop - not permitted for @OwningArray
+            checker.reportError(assignmentNode.getTree(), "illegal.owningarray.element.assignment");
           }
           // Remove Obligations from local variables, now that the @OwningArray is responsible.
           // (When obligation creation is turned off, non-final fields cannot take ownership.)
