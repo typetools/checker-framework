@@ -1252,6 +1252,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // ...
   }
 
+  /**
+   * Return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
+   * appears on a method declaration.
+   *
+   * @param methodDeclaration the method declaration
+   * @return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
+   *     appears on a method declaration
+   */
   private @Nullable AnnotationMirror getPureOrSideEffectFreeAnnotation(Element methodDeclaration) {
     AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(methodDeclaration, Pure.class);
     if (pureAnnotation != null) {
