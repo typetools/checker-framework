@@ -11,21 +11,16 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
@@ -112,7 +107,7 @@ public class SideEffectsOnlyChecker {
     /**
      * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
      */
-    List<JavaExpression> sideEffectsOnlyExpressions;
+    List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
 
     /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
@@ -138,19 +133,17 @@ public class SideEffectsOnlyChecker {
         ProcessingEnvironment processingEnv,
         BaseTypeChecker checker) {
       this.annoProvider = annoProvider;
-      this.sideEffectsOnlyExpressions = sideEffectsOnlyExpressions;
+      this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
       this.processingEnv = processingEnv;
       this.checker = checker;
     }
 
     @Override
-    // TODO: Similar logic for NewClassTree?
     public Void visitMethodInvocation(MethodInvocationTree node, Void aVoid) {
       Element invokedElem = TreeUtils.elementFromUse(node);
       boolean isMarkedPure = annoProvider.getDeclAnnotation(invokedElem, Pure.class) != null;
       boolean isMarkedSideEffectFree =
           annoProvider.getDeclAnnotation(invokedElem, SideEffectFree.class) != null;
-      // If the invoked method has no side effects, there is, nothing to do.
       if (isMarkedPure || isMarkedSideEffectFree) {
         return super.visitMethodInvocation(node, aVoid);
       }
@@ -159,52 +152,18 @@ public class SideEffectsOnlyChecker {
           getSideEffectsOnlyAnnotationOnEnclosingMethod(node);
       assert sideEffectsOnlyAnnotation != null
           : "This method should only be invoked when the @SideEffectsOnly annotation is not null";
-      //      System.out.printf(
-      //          "invokedElem = %s, sideEffectsOnlyAnno = %s%n", invokedElem, sideEffectsOnlyAnno);
 
-      // The arguments to @SideEffectsOnly, or an empty list if there is no @SideEffectsOnly.
-      List<String> sideEffectsOnlyExpressionStrings =
-          getExpressionStringsFromSideEffectsOnly(sideEffectsOnlyAnnotation);
+      List<JavaExpression> actualSideEffectedExprs =
+          this.getJavaExpressionsFromMethodInvocation(node);
 
-      List<? extends ExpressionTree> args = this.getArgumentsFromMethodInvocation(node);
-
-      System.out.printf("Method Invocation args = %s\n", args);
-      System.out.printf(
-          "Side Effects Only Expression Strings = %s\n", sideEffectsOnlyExpressionStrings);
-      // The invoked method is annotated with @SideEffectsOnly.
-      // Add annotation values to seOnlyIncorrectExprs
-      // that are not present in sideEffectsOnlyExpressions.
-      /* TODO
-      ExecutableElement sideEffectsOnlyValueElement =
-          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
-      */
-
-      MethodTree enclosingMethodBody = TreePathUtil.enclosingMethod(this.getCurrentPath());
-
-      List<JavaExpression> sideEffectsOnlyExprInv = new ArrayList<>();
-      for (String st : sideEffectsOnlyExpressionStrings) {
-        try {
-          System.out.printf("Calling StrToJExpr(st = %s, node = %s)\n", st, node);
-          //          JavaExpression exprJe = StringToJavaExpression.atMethodInvocation(st, node,
-          // checker); // This code wasn't being invoked before
-          JavaExpression exprJe =
-              StringToJavaExpression.atMethodBody(st, enclosingMethodBody, checker);
-          sideEffectsOnlyExprInv.add(exprJe);
-        } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-          checker.report(st, ex.getDiagMessage());
-        }
-      }
-
-      System.out.printf(
-          "Permissible @SideEffectsOnlyExpressions = %s\n", sideEffectsOnlyExpressions);
-      System.out.printf("sideEffectsOnlyExprInv = %s\n", sideEffectsOnlyExprInv);
-
-      for (JavaExpression expr : sideEffectsOnlyExprInv) {
-        if (!sideEffectsOnlyExpressions.contains(expr)) {
+      for (JavaExpression expr : actualSideEffectedExprs) {
+        // The check for JavaExpression.isUnmodifiableByOtherCode() is required to filter out values
+        // that cannot be modified (e.g., Integer).
+        if (!sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
+            && !expr.isUnmodifiableByOtherCode()) {
           extraSideEffects.addExpr(node, expr);
         }
       }
-      System.out.printf("Extra side effects = %s\n", extraSideEffects.getExprs());
       return super.visitMethodInvocation(node, aVoid);
     }
 
@@ -228,32 +187,15 @@ public class SideEffectsOnlyChecker {
     }
 
     /**
-     * Extracts the expressions that are passed as arguments to a {@link SideEffectsOnly}
-     * annotation.
+     * Returns the arguments to a method invocation, including the receiver.
      *
-     * @param sideEffectsOnlyAnnotation the {@link SideEffectsOnly} annotation
-     * @return the expressions that are passed as arguments to the {@link SideEffectsOnly}
-     *     annotation
+     * @param methodInvok a method invocation
+     * @return the arguments to a method invocation, including the receiver
      */
-    private List<String> getExpressionStringsFromSideEffectsOnly(
-        @Nullable AnnotationMirror sideEffectsOnlyAnnotation) {
-      if (sideEffectsOnlyAnnotation == null) {
-        return Collections.emptyList();
-      }
-      System.out.printf("@SideEffectsOnlyAnnotation = %s\n", sideEffectsOnlyAnnotation);
-      ExecutableElement sideEffectsOnlyValueElement =
-          TreeUtils.getMethod(SideEffectsOnly.class, "value", 0, processingEnv);
-      return AnnotationUtils.getElementValueArray(
-          sideEffectsOnlyAnnotation,
-          sideEffectsOnlyValueElement,
-          String.class,
-          Collections.emptyList());
-    }
-
-    private List<? extends ExpressionTree> getArgumentsFromMethodInvocation(
+    private List<JavaExpression> getJavaExpressionsFromMethodInvocation(
         MethodInvocationTree methodInvok) {
-      // TODO: This needs to collect all subexpressions of the given expression.  For now it just
-      // considers the actual arguments, which is incomplete.
+      // TODO: collect all subexpressions of the given expression.  For now it just considers the
+      // actual arguments, which is incomplete.
       List<? extends ExpressionTree> args = methodInvok.getArguments();
       ExpressionTree receiver = TreeUtils.getReceiverTree(methodInvok);
       List<ExpressionTree> exprs;
@@ -264,7 +206,7 @@ public class SideEffectsOnlyChecker {
         exprs.add(receiver);
         exprs.addAll(args);
       }
-      return exprs;
+      return exprs.stream().map(JavaExpression::fromTree).collect(Collectors.toList());
     }
 
     @Override
@@ -275,7 +217,7 @@ public class SideEffectsOnlyChecker {
     @Override
     public Void visitAssignment(AssignmentTree node, Void aVoid) {
       JavaExpression javaExpr = JavaExpression.fromTree(node.getVariable());
-      if (!sideEffectsOnlyExpressions.contains(javaExpr)) {
+      if (!sideEffectsOnlyExpressionsFromAnnotation.contains(javaExpr)) {
         extraSideEffects.addExpr(node, javaExpr);
       }
       return super.visitAssignment(node, aVoid);
