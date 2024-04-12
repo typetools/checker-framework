@@ -148,13 +148,26 @@ public class SideEffectsOnlyChecker {
         return super.visitMethodInvocation(node, aVoid);
       }
 
-      AnnotationMirror sideEffectsOnlyAnnotation =
+      AnnotationMirror sideEffectsOnlyAnnotationOnEnclosingMethod =
           getSideEffectsOnlyAnnotationOnEnclosingMethod(node);
-      assert sideEffectsOnlyAnnotation != null
+      assert sideEffectsOnlyAnnotationOnEnclosingMethod != null
           : "This method should only be invoked when the @SideEffectsOnly annotation is not null";
+
+      boolean isInvokedMethodMarkedWithSideEffectsOnly =
+          annoProvider.getDeclAnnotation(invokedElem, SideEffectsOnly.class) != null;
 
       List<JavaExpression> actualSideEffectedExprs =
           this.getJavaExpressionsFromMethodInvocation(node);
+
+      // If the invoked method is NOT marked with @SideEffectsOnly, it may modify anything
+      if (!isInvokedMethodMarkedWithSideEffectsOnly) {
+        // What does it modify? Check the arguments for the method invocation
+        if (actualSideEffectedExprs.isEmpty()) {
+          // If the args is empty, it might be modifying anything
+          checker.reportError(
+              node, "purity.incorrect.sideeffectsonly", sideEffectsOnlyExpressionsFromAnnotation);
+        }
+      }
 
       for (JavaExpression expr : actualSideEffectedExprs) {
         // The check for JavaExpression.isUnmodifiableByOtherCode() is required to filter out values
