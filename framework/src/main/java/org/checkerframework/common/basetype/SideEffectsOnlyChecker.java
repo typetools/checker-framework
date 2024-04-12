@@ -163,7 +163,7 @@ public class SideEffectsOnlyChecker {
       if (!isInvokedMethodMarkedWithSideEffectsOnly) {
         // What does it modify? Check the arguments for the method invocation
         if (actualSideEffectedExprs.isEmpty()) {
-          // If the args is empty, it might be modifying anything
+          // If the args are empty, it might be modifying anything
           checker.reportError(
               node, "purity.incorrect.sideeffectsonly", sideEffectsOnlyExpressionsFromAnnotation);
         }

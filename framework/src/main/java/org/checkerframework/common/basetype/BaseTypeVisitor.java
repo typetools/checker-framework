@@ -1185,6 +1185,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (sefOnlyAnnotation == null) {
         return;
       }
+      AnnotationMirror pureOrSideEffectFreeAnnotation =
+          getPureOrSideEffectFreeAnnotation(methodDeclElem);
+      if (pureOrSideEffectFreeAnnotation != null) {
+        // It is an error if a @SideEffectsOnly annotation appears with a @Pure or @SideEffectFree
+        // annotation
+        checker.reportError(
+            tree,
+            "purity.incorrect.annotation.conflict",
+            tree.getName(),
+            pureOrSideEffectFreeAnnotation);
+        return;
+      }
       List<String> sideEffectsOnlyExpressionStrings =
           AnnotationUtils.getElementValueArray(
               sefOnlyAnnotation, sideEffectsOnlyValueElement, String.class);
@@ -1238,6 +1250,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       bodyAssigned = true;
     }
     // ...
+  }
+
+  private @Nullable AnnotationMirror getPureOrSideEffectFreeAnnotation(Element methodDeclaration) {
+    AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(methodDeclaration, Pure.class);
+    if (pureAnnotation != null) {
+      return pureAnnotation;
+    }
+    return atypeFactory.getDeclAnnotation(methodDeclaration, SideEffectFree.class);
   }
 
   /**
