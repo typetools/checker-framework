@@ -234,10 +234,10 @@ public class SideEffectsOnlyChecker {
      * side-effected beyond the expressions provided in the annotation:
      *
      * <ul>
-     *   <li>The expression does <b>bold</b> appear in the expressions passed as arguments to the
+     *   <li>The expression does <b>not</b> appear in the expressions passed as arguments to the
      *       {@link SideEffectsOnly} annotation
      *   <li>The expression is modifiable by other code
-     *   <li>The expression is <bold>not</bold> aliased by other variables in the method body
+     *   <li>The expression is <b>not</b> aliased by other variables in the method body
      * </ul>
      *
      * @param expr the expression to check for side-effecting
