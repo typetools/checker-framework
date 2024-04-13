@@ -8,10 +8,13 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -97,8 +100,8 @@ public class SideEffectsOnlyChecker {
   }
 
   /**
-   * Class that visits that visits various nodes and computes mutated expressions that are not
-   * specified as annotation values to {@link SideEffectsOnly}.
+   * Class that visits various nodes and computes mutated expressions that are not specified as
+   * annotation values to {@link SideEffectsOnly}.
    */
   protected static class SideEffectsOnlyCheckerHelper extends TreePathScanner<Void, Void> {
     /** Result computed by SideEffectsOnlyCheckerHelper. */
@@ -108,6 +111,9 @@ public class SideEffectsOnlyChecker {
      * List of expressions specified as annotation arguments in {@link SideEffectsOnly} annotation.
      */
     List<JavaExpression> sideEffectsOnlyExpressionsFromAnnotation;
+
+    /** Map of expressions that are aliased to other expressions. */
+    Map<JavaExpression, JavaExpression> aliasedExpressions;
 
     /** The annotation provider. */
     protected final AnnotationProvider annoProvider;
@@ -132,6 +138,7 @@ public class SideEffectsOnlyChecker {
         List<JavaExpression> sideEffectsOnlyExpressions,
         ProcessingEnvironment processingEnv,
         BaseTypeChecker checker) {
+      this.aliasedExpressions = new HashMap<>();
       this.annoProvider = annoProvider;
       this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
       this.processingEnv = processingEnv;
@@ -168,15 +175,9 @@ public class SideEffectsOnlyChecker {
               node, "purity.incorrect.sideeffectsonly", sideEffectsOnlyExpressionsFromAnnotation);
         }
       }
-
-      for (JavaExpression expr : actualSideEffectedExprs) {
-        // The check for JavaExpression.isUnmodifiableByOtherCode() is required to filter out values
-        // that cannot be modified (e.g., Integer).
-        if (!sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
-            && !expr.isUnmodifiableByOtherCode()) {
-          extraSideEffects.addExpr(node, expr);
-        }
-      }
+      actualSideEffectedExprs.stream()
+          .filter(this::isAdditionalSideEffectedExpression)
+          .forEach(expr -> extraSideEffects.addExpr(node, expr));
       return super.visitMethodInvocation(node, aVoid);
     }
 
@@ -222,6 +223,30 @@ public class SideEffectsOnlyChecker {
       return exprs.stream().map(JavaExpression::fromTree).collect(Collectors.toList());
     }
 
+    /**
+     * Returns true if the given expression is a side-effected expression beyond what is described
+     * in the {@link SideEffectsOnly} annotation.
+     *
+     * <p>The following criteria must be met in determining whether a given expression is
+     * side-effected beyond the expressions provided in the annotation:
+     *
+     * <ul>
+     *   <li>The expression does <b>bold</b> appear in the expressions passed as arguments to the
+     *       {@link SideEffectsOnly} annotation
+     *   <li>The expression is modifiable by other code
+     *   <li>The expression is <bold>not</bold> aliased by other variables in the method body
+     * </ul>
+     *
+     * @param expr the expression to check for side-effecting
+     * @return true if the given expression is a side-effected expressio beyond what is described in
+     *     the {@link SideEffectsOnly} annotation
+     */
+    private boolean isAdditionalSideEffectedExpression(JavaExpression expr) {
+      return !sideEffectsOnlyExpressionsFromAnnotation.contains(expr)
+          && !expr.isUnmodifiableByOtherCode()
+          && !aliasedExpressions.containsKey(expr);
+    }
+
     @Override
     public Void visitNewClass(NewClassTree node, Void aVoid) {
       return super.visitNewClass(node, aVoid);
@@ -234,6 +259,14 @@ public class SideEffectsOnlyChecker {
         extraSideEffects.addExpr(node, javaExpr);
       }
       return super.visitAssignment(node, aVoid);
+    }
+
+    @Override
+    public Void visitVariable(VariableTree node, Void aVoid) {
+      JavaExpression name = JavaExpression.fromVariableTree(node);
+      JavaExpression expr = JavaExpression.fromTree(node.getInitializer());
+      aliasedExpressions.put(name, expr);
+      return super.visitVariable(node, aVoid);
     }
 
     @Override
