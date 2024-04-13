@@ -172,7 +172,10 @@ public class SideEffectsOnlyChecker {
         if (actualSideEffectedExprs.isEmpty()) {
           // If the args are empty, it might be modifying anything
           checker.reportError(
-              node, "purity.incorrect.sideeffectsonly", sideEffectsOnlyExpressionsFromAnnotation);
+              node,
+              "purity.incorrect.sideeffectsonly",
+              invokedElem.getSimpleName(),
+              sideEffectsOnlyExpressionsFromAnnotation);
         }
       }
       actualSideEffectedExprs.stream()

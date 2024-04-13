@@ -1236,7 +1236,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (IPair<Tree, JavaExpression> s : seOnlyIncorrectExprs) {
           if (!sideEffectsOnlyExpressions.contains(s.second)) {
             // System.out.printf("Error 2%n");
-            checker.reportError(s.first, "purity.incorrect.sideeffectsonly", s.second.toString());
+            checker.reportError(
+                s.first, "purity.incorrect.sideeffectsonly", tree.getName(), s.second.toString());
           }
         }
       }
