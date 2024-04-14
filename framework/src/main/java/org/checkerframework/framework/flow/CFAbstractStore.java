@@ -404,7 +404,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
-   * <p>A non-empty {@param sideEffectsOnlyExpressions} is indicative that the invoked method has
+   * <p>A non-empty {@code sideEffectsOnlyExpressions} is indicative that the invoked method has
    * side-effects. In this case, remove information for fields that actually appear in the list of
    * side-effected expressions.
    *
