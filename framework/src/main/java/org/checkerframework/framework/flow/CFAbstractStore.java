@@ -248,6 +248,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForMethodCall(
       MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
+    System.out.printf("UPDATE FOR METHOD CALL AT = %s\n", methodInvocationNode);
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
     GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
@@ -306,7 +307,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory);
+        updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
       }
 
       // update array values
@@ -403,13 +404,25 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>More specifically, remove all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
+   * <p>A non-empty {@param sideEffectsOnlyExpressions} is indicative that the invoked method has
+   * side-effects. In this case, remove information for fields that actually appear in the list of
+   * side-effected expressions.
+   *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
+   * @param sideEffectsOnlyExpressions the expressions that are side-effected by a method call
    */
   private void updateFieldValuesForMethodCall(
-      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory) {
+      GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory,
+      List<JavaExpression> sideEffectsOnlyExpressions) {
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
+
+      if (!sideEffectsOnlyExpressions.isEmpty()
+          && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
+        return;
+      }
+
       V value = e.getValue();
 
       V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
