@@ -2765,7 +2765,7 @@ public final class TreeUtils {
             return null;
           }
         };
-    scanner.scan(lambda, null);
+    scanner.scan(lambda.getBody(), null);
     return returnExpressions;
   }
 
