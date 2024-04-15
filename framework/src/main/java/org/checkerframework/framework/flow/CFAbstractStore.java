@@ -404,7 +404,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * fields that have a monotonic annotation.
    *
    * <p>A non-empty {@code sideEffectsOnlyExpressions} is indicative that the invoked method has
-   * side-effects. In this case, remove information for fields that actually appear in the list of
+   * side effects. In this case, remove information for fields that actually appear in the list of
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
@@ -416,18 +416,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
+      V value = e.getValue();
 
       if (!sideEffectsOnlyExpressions.isEmpty()
           && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
-        return;
-      }
-
-      V value = e.getValue();
-
-      V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
-      if (newValue != null) {
-        // Keep information for all hierarchies where we had a monotonic annotation.
-        newFieldValues.put(fieldAccess, newValue);
+        // If the field hasn't been side-effected, there is no need to compute a new value for it
+        newFieldValues.put(fieldAccess, value);
+      } else {
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
+        if (newValue != null) {
+          // Keep information for all hierarchies where we had a monotonic annotation.
+          newFieldValues.put(fieldAccess, newValue);
+        }
       }
     }
     fieldValues = newFieldValues;
