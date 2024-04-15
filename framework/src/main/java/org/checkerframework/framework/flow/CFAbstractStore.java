@@ -416,14 +416,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     Map<FieldAccess, V> newFieldValues = new HashMap<>(CollectionsPlume.mapCapacity(fieldValues));
     for (Map.Entry<FieldAccess, V> e : fieldValues.entrySet()) {
       FieldAccess fieldAccess = e.getKey();
-      V value = e.getValue();
+      V previousValue = e.getValue();
 
       if (!sideEffectsOnlyExpressions.isEmpty()
           && !sideEffectsOnlyExpressions.contains(fieldAccess)) {
         // If the field hasn't been side-effected, there is no need to compute a new value for it
-        newFieldValues.put(fieldAccess, value);
+        newFieldValues.put(fieldAccess, previousValue);
       } else {
-        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, value);
+        V newValue = newFieldValueAfterMethodCall(fieldAccess, atypeFactory, previousValue);
         if (newValue != null) {
           // Keep information for all hierarchies where we had a monotonic annotation.
           newFieldValues.put(fieldAccess, newValue);
