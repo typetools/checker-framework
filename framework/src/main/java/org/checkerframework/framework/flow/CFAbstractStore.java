@@ -248,7 +248,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public void updateForMethodCall(
       MethodInvocationNode methodInvocationNode, AnnotatedTypeFactory atypeFactory, V val) {
-    System.out.printf("UPDATE FOR METHOD CALL AT = %s\n", methodInvocationNode);
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
     @SuppressWarnings("unchecked")
     GenericAnnotatedTypeFactory<V, S, ?, ?> gatypeFactory =
