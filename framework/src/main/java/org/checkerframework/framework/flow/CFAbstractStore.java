@@ -286,24 +286,27 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
+      // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
+      if (!sideEffectsOnlyExpressions.isEmpty()) {
+        System.out.printf("SIDE EFFECTS ONLY EXPRESSIONS = %s\n", sideEffectsOnlyExpressions);
+        for (JavaExpression e : sideEffectsOnlyExpressions) {
+          if (!e.isUnmodifiableByOtherCode()) {
+            System.out.printf(
+                "UNREFINING INFORMATION ABOUT: %s AT CALL: %s\n", e, methodInvocationNode);
+            // Remove any computed information about the expression.
+            localVariableValues.keySet().remove(e);
+            fieldValues.keySet().remove(e);
+          }
+        }
+      } else {
+        localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+        thisValue = null;
+        fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+      }
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
       if (sideEffectsUnrefineAliases) {
-        // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
-        if (!sideEffectsOnlyExpressions.isEmpty()) {
-          for (JavaExpression e : sideEffectsOnlyExpressions) {
-            if (!e.isUnmodifiableByOtherCode()) {
-              // Remove any computed information about the expression.
-              localVariableValues.keySet().remove(e);
-              fieldValues.keySet().remove(e);
-            }
-          }
-        } else {
-          localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-          thisValue = null;
-          fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-        }
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields)
         updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
