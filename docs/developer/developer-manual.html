@@ -162,10 +162,12 @@ main directory or any subproject runs the <code>allTests</code> task only in the
 </p>
 
 <p>
-An iterative build-test-debug cycle where you assemble the Checker Framework and execute its tests can sometimes
-lead to a state where Gradle is not able to compile the system for no obvious reason.
-This is especially common when you kill tests before they fully finish, or kill compilation before it is fully complete, leading
-a state or inconsistent build cache.
+An iterative build-test-debug cycle where you assemble the Checker Framework
+and execute its tests can sometimes lead to a state where Gradle is not able to
+compile and build the system for no obvious reason.
+This is especially common when you kill tests before they fully finish, or kill
+compilation before it is fully complete, leading to a bad state or an
+inconsistent build cache.
 </p>
 
 <p>
