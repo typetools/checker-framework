@@ -3,7 +3,6 @@ package org.checkerframework.checker.resourceleak;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,6 +16,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
@@ -507,15 +507,22 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * @return the list of mustcall obligations for the type
    */
   private List<String> getMustCallValuesForType(TypeMirror type) {
-    InheritableMustCall imcAnnotation =
-        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
-    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    MustCallAnnotatedTypeFactory mcAtf =
+        rlTypeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    AnnotationMirror imcAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
     Set<String> mcValues = new HashSet<>();
     if (mcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
     }
     if (imcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
     }
     return new ArrayList<>(mcValues);
   }
@@ -538,7 +545,9 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
             rlTypeFactory.getTypeFactoryOfSubchecker(MustCallOnElementsChecker.class);
         AnnotationValue av =
             anno.getElementValues().get(mcoeAtf.getMustCallOnElementsValueElement());
-        mcList = AnnotationUtils.annotationValueToList(av, String.class);
+        if (av != null) {
+          mcList = AnnotationUtils.annotationValueToList(av, String.class);
+        }
         noMcoeAnno = false;
         break;
       }

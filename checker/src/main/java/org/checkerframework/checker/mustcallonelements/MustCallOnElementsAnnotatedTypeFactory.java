@@ -24,9 +24,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
@@ -394,7 +396,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   @Override
   public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
     super.addComputedTypeAnnotations(elt, type);
-    if (elt.getKind() == ElementKind.METHOD) {
+    if (elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.CONSTRUCTOR) {
       // is a param @OwningArray?
       // change the type of that param
       ExecutableElement method = (ExecutableElement) elt;
@@ -421,10 +423,12 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
           }
         }
         if (noMcoeAnno) { // don't override an existing manual annotation
-          TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
-          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
-          paramType.replaceAnnotation(newType);
+          if (param.asType() instanceof ArrayType) {
+            TypeMirror componentType = ((ArrayType) param.asType()).getComponentType();
+            List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+            AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+            paramType.replaceAnnotation(newType);
+          }
         }
       }
     } else if (elt.asType() instanceof ArrayType) {
@@ -449,10 +453,12 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
         if ((elt.getKind() == ElementKind.FIELD
                 && getDeclAnnotation(elt, OwningArray.class) != null)
             || elt.getKind() == ElementKind.PARAMETER) {
-          TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
-          List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
-          AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
-          type.replaceAnnotation(newType);
+          if (elt.asType() instanceof ArrayType) {
+            TypeMirror componentType = ((ArrayType) elt.asType()).getComponentType();
+            List<String> mcoeObligationsOfOwningField = getMustCallValuesForType(componentType);
+            AnnotationMirror newType = getMustCallOnElementsType(mcoeObligationsOfOwningField);
+            type.replaceAnnotation(newType);
+          }
         }
       }
     }
@@ -477,15 +483,21 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * @return the list of mustcall obligations for the type
    */
   private List<String> getMustCallValuesForType(TypeMirror type) {
-    InheritableMustCall imcAnnotation =
-        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
-    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    MustCallAnnotatedTypeFactory mcAtf = new MustCallAnnotatedTypeFactory(checker);
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    AnnotationMirror imcAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
     Set<String> mcValues = new HashSet<>();
     if (mcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
     }
     if (imcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
     }
     return new ArrayList<>(mcValues);
   }

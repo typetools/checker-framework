@@ -346,6 +346,15 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     return mustCallValueElement;
   }
 
+  /**
+   * Returns the {@link InheritableMustCall#value} element.
+   *
+   * @return the {@link InheritableMustCall#value} element
+   */
+  public ExecutableElement getInheritableMustCallValueElement() {
+    return inheritableMustCallValueElement;
+  }
+
   /** Support @InheritableMustCall meaning @MustCall on all subtype elements. */
   private class MustCallDefaultQualifierForUseTypeAnnotator
       extends DefaultQualifierForUseTypeAnnotator {

@@ -212,9 +212,13 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       CFValue oldTypeValue = elseStore.getValue(receiverReceiver);
       assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
       AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
-      List<String> mcoeMethods =
-          AnnotationUtils.getElementValueArray(
-              oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
+      List<String> mcoeMethods = Collections.emptyList();
+      if (oldType.getElementValues().get(atypeFactory.getMustCallOnElementsValueElement())
+          != null) {
+        mcoeMethods =
+            AnnotationUtils.getElementValueArray(
+                oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
+      }
       mcoeMethods.remove(calledMethod);
       AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
       elseStore.clearValue(receiverReceiver);

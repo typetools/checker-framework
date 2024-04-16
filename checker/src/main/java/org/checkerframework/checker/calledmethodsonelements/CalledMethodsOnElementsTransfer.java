@@ -4,7 +4,6 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,9 +14,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.*;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
@@ -207,15 +208,22 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    * @return the list of mustcall obligations for the type
    */
   private List<String> getMustCallValuesForType(TypeMirror type) {
-    InheritableMustCall imcAnnotation =
-        TypesUtils.getClassFromType(type).getAnnotation(InheritableMustCall.class);
-    MustCall mcAnnotation = TypesUtils.getClassFromType(type).getAnnotation(MustCall.class);
+    MustCallAnnotatedTypeFactory mcAtf =
+        new MustCallAnnotatedTypeFactory(atypeFactory.getChecker());
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    AnnotationMirror imcAnnotation =
+        mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
+    AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
     Set<String> mcValues = new HashSet<>();
     if (mcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(mcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              mcAnnotation, mcAtf.getMustCallValueElement(), String.class));
     }
     if (imcAnnotation != null) {
-      mcValues.addAll(Arrays.asList(imcAnnotation.value()));
+      mcValues.addAll(
+          AnnotationUtils.getElementValueArray(
+              imcAnnotation, mcAtf.getInheritableMustCallValueElement(), String.class));
     }
     return new ArrayList<>(mcValues);
   }

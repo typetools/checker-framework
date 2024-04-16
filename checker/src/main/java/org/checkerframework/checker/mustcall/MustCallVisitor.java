@@ -5,6 +5,8 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -17,12 +19,16 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -104,15 +110,107 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     BlockTree blockT = (BlockTree) tree.getStatement();
     // pattern match the initializer, condition and update
     if (blockT.getStatements().size() != 1 // ensure loop body has only one statement
-        || !(blockT.getStatements().get(0) instanceof ExpressionStatementTree)
         || tree.getCondition().getKind() != Tree.Kind.LESS_THAN // ensure condition is: <
-        || tree.getUpdate().size() != 1
+        || tree.getUpdate().size() != 1 // ensure there's only one loop variable
         || tree.getInitializer().size() != 1) // ensure there's only one loop variable
     return super.visitForLoop(tree, p);
 
+    ExpressionTree stmtToAnalyze = null;
+    StatementTree topLevelStmt = blockT.getStatements().get(0);
+    if (topLevelStmt instanceof TryTree) {
+      TryTree topLevelTry = (TryTree) blockT.getStatements().get(0);
+      AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
+      StatementTree[] wrappedStmt = new StatementTree[1];
+      TreeScanner<Void, Void> scanner =
+          new TreeScanner<Void, Void>() {
+            /*
+             * Ensures the finally block has no break statements, calls visitCatch() on the catch blocks
+             * and ensures there's only one statement in the try-block, which is either itself a tryTree
+             * (solved recursively) or is a statement, which is then extracted and stored in "wrappedStmt".
+             */
+            @Override
+            public Void visitTry(TryTree tree, Void o) {
+              if (blockIsIllegal.get()) {
+                // check already failed, short circuit
+                return super.visitTry(tree, o);
+              }
+              if (tree.getBlock() == null) {
+                blockIsIllegal.set(true);
+                return super.visitTry(tree, o);
+              }
+              List<? extends StatementTree> stmtList = tree.getBlock().getStatements();
+              if (stmtList == null || stmtList.size() != 1) {
+                blockIsIllegal.set(true);
+                return super.visitTry(tree, o);
+              } else {
+                for (StatementTree stmt : stmtList) {
+                  if (stmt instanceof TryTree) {
+                    visitTry((TryTree) stmt, o);
+                  } else {
+                    if (wrappedStmt[0] == null) {
+                      wrappedStmt[0] = stmt;
+                    }
+                  }
+                }
+              }
+              if (tree.getCatches() != null) {
+                for (CatchTree c : tree.getCatches()) {
+                  visitCatch(c, o);
+                }
+              }
+              if (tree.getFinallyBlock() != null) {
+                for (StatementTree finallyStmt : tree.getFinallyBlock().getStatements()) {
+                  if (finallyStmt instanceof BreakTree) {
+                    blockIsIllegal.set(true);
+                    return super.visitTry(tree, o);
+                  }
+                }
+              }
+              return super.visitTry(tree, o);
+            }
+
+            /*
+             * Ensures catch block doesn't break out of the loop or throw any exceptions.
+             */
+            @Override
+            public Void visitCatch(CatchTree tree, Void o) {
+              if (blockIsIllegal.get()) {
+                // check already failed, short circuit
+                return super.visitCatch(tree, o);
+              }
+              if (tree.getBlock() != null) {
+                for (StatementTree stmt : tree.getBlock().getStatements()) {
+                  if (stmt instanceof ThrowTree) {
+                    blockIsIllegal.set(true);
+                  } else if (stmt instanceof TryTree) {
+                    visitTry((TryTree) stmt, o);
+                  } else if (stmt instanceof BreakTree) {
+                    blockIsIllegal.set(true);
+                  }
+                }
+              }
+              return super.visitCatch(tree, o);
+            }
+          };
+      scanner.scan(topLevelTry, null);
+      if (blockIsIllegal.get()
+          || wrappedStmt[0] == null
+          || !(wrappedStmt[0] instanceof ExpressionStatementTree)) {
+        return super.visitForLoop(tree, p);
+      }
+      stmtToAnalyze = ((ExpressionStatementTree) wrappedStmt[0]).getExpression();
+    } else if (topLevelStmt instanceof ExpressionStatementTree) {
+      stmtToAnalyze = ((ExpressionStatementTree) topLevelStmt).getExpression();
+    } else {
+      return super.visitForLoop(tree, p);
+    }
+
     // pattern-match the method body
-    ExpressionTree stmtTree =
-        ((ExpressionStatementTree) blockT.getStatements().get(0)).getExpression();
+    assert stmtToAnalyze != null : "stmtToAnalyze unexpectedly null";
+    if (stmtToAnalyze == null) {
+      return super.visitForLoop(tree, p);
+    }
+    ExpressionTree stmtTree = stmtToAnalyze;
     ExpressionTree lhs;
     if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
       lhs = ((AssignmentTree) stmtTree).getVariable();
