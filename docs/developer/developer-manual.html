@@ -161,6 +161,22 @@ Alternatively, running <code>:framework:allTests</code> from the
 main directory or any subproject runs the <code>allTests</code> task only in the <code>framework</code> project.
 </p>
 
+<p>
+An iterative build-test-debug cycle where you assemble the Checker Framework and execute its tests can sometimes
+lead to a state where Gradle is not able to compile the system for no obvious reason.
+This is especially common when you kill tests before they fully finish, or kill compilation before it is fully complete, leading
+a state or inconsistent build cache.
+</p>
+
+<p>
+Below are some steps you might try to resolve this issue (in order):
+</p>
+<ul>
+  <li><code>./gradlew --no-build-cache assemble</code>: attempts to rebuild the Checker Framework without the build cache.
+  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of pids for Gradle.
+  <li>Delete the Gradle build cache, usually located at <code>~/.gradle/caches</code>. Note: this will delete the entire build
+      cache; the build step for the Checker Framework will need to re-download all required dependencies.
+</ul>
 
 <h2 id="tests">Testing the Checker Framework</h2>
 
