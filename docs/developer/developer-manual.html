@@ -43,7 +43,7 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#ci">Continuous Integration</a>
         <ul>
           <li><a href="#project-visibility">How to change project visibility settings</a></li>
-          <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
+          <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
@@ -428,17 +428,27 @@ To change your project's visibility settings (usually to "Public" to enable CI):
   <li>Click "Public".</li>
 </ul>
 
-<h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
+<h3 id="ci-failure">Reproducing Continuous Integration build failures</h3>
 
 <p>
-Sometimes, CI tests for your pull request may fail even though your local build passed.
-This is usually because the CI service performed more tests than you ran locally.
+If a CI job fails, examine the CI logs.
 </p>
 
 <p>
-First, examine the CI service's logs, which contain diagnostic output from the
-failing command.  You can determine which command was run from the logs, or
-from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+You can also run the same test locally.  Each CI job runs a different command.
+You can see the commands in
+file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+usually on lines starting with <code>bash:</code>.  The scripts that are run
+generally just invoke gradle to run particular tasks.
+</p>
+
+<p>
+Sometimes, CI tests for your pull request may fail even though the same command
+passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
+are run in a Docker container, and you can use that container if necessary.  The
+container names are in top-level
+file <a href="https://github.com/typetools/checker-framework/blob/master/azure-pipelines.yml"><code>azure-pipelines.yml</code></a>,
+on lines starting with <code>container:</code>.
 </p>
 
 
