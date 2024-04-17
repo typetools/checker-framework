@@ -95,6 +95,118 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
+   * Returns the ExpressionTree from the single statement contained in the innermost try-block or
+   * null if any of the following rules is violated:
+   *
+   * <ul>
+   *   <li>the try-block may only contain one statement, either an ExpressionStatement or another
+   *       try-catch-construct
+   *   <li>the catch-blocks and the finally-block may not contain any break, throw or return
+   *       statements or method calls that can throw an exception
+   * </ul>
+   *
+   * @param tree the top-level TryTree
+   * @return the ExpressionTree from the single statement contained in the innermost try-block or
+   *     null if any rule is violated
+   */
+  private ExpressionTree getSingleStmtFromTryBlock(TryTree tree) {
+    AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
+    StatementTree[] wrappedStmt = new StatementTree[1];
+    TreeScanner<Void, Void> scanner =
+        new TreeScanner<Void, Void>() {
+          /*
+           * Ensures the finally block has no break statements, calls visitCatch() on the catch blocks
+           * and ensures there's only one statement in the try-block, which is either itself a tryTree
+           * (solved recursively) or is a statement, which is then extracted and stored in "wrappedStmt".
+           */
+          @Override
+          public Void visitTry(TryTree tree, Void o) {
+            if (tree.getBlock() == null) {
+              blockIsIllegal.set(true);
+            }
+            List<? extends StatementTree> stmtList = tree.getBlock().getStatements();
+            if (stmtList == null || stmtList.size() != 1) {
+              blockIsIllegal.set(true);
+            } else {
+              for (StatementTree stmt : stmtList) {
+                if (stmt instanceof TryTree) {
+                  visitTry((TryTree) stmt, o);
+                } else {
+                  if (wrappedStmt[0] == null) {
+                    wrappedStmt[0] = stmt;
+                  }
+                }
+              }
+            }
+            if (tree.getCatches() != null) {
+              for (CatchTree c : tree.getCatches()) {
+                visitBlock(c.getBlock(), o);
+              }
+            }
+            if (tree.getFinallyBlock() != null) {
+              visitBlock(tree.getFinallyBlock(), o);
+            }
+            // if I return super.visitTry(tree, o), somehow the StatementScanner is applied to
+            // the top-level try-block, I don't understand why. Returning null fixes the issue.
+            // return super.visitTry(tree, o);
+            return null;
+          }
+
+          /*
+           * Handles statement blocks inside catch/finally blocks and ensures no break, return
+           * or throw statement is executed within them.
+           */
+          @Override
+          public Void visitBlock(BlockTree tree, Void o) {
+            if (tree != null) {
+              tree.accept(new StatementScanner(), null);
+            }
+            return super.visitBlock(tree, o);
+          }
+
+          /**
+           * Sets the blockIsIllegal boolean for any throw, return, break or method invocation with
+           * non-empty throws-declaration encountered while traversing the given tree.
+           */
+          class StatementScanner extends TreeScanner<Void, Void> {
+            @Override
+            public Void visitThrow(ThrowTree tt, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitThrow(tt, p);
+            }
+
+            @Override
+            public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
+              ExecutableElement method = TreeUtils.elementFromUse(mit);
+              if (method.getThrownTypes() != null) {
+                blockIsIllegal.set(true);
+              }
+              return super.visitMethodInvocation(mit, p);
+            }
+
+            @Override
+            public Void visitBreak(BreakTree bt, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitBreak(bt, p);
+            }
+
+            @Override
+            public Void visitReturn(ReturnTree rt, Void p) {
+              blockIsIllegal.set(true);
+              return super.visitReturn(rt, p);
+            }
+          }
+        };
+    scanner.scan(tree, null);
+    if (blockIsIllegal.get()
+        || wrappedStmt[0] == null
+        || !(wrappedStmt[0] instanceof ExpressionStatementTree)) {
+      return null;
+    }
+    return ((ExpressionStatementTree) wrappedStmt[0]).getExpression();
+  }
+
+  /**
    * Checks through pattern-matching whether the loop either:
    *
    * <ul>
@@ -118,98 +230,16 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     ExpressionTree stmtToAnalyze = null;
     StatementTree topLevelStmt = blockT.getStatements().get(0);
     if (topLevelStmt instanceof TryTree) {
-      TryTree topLevelTry = (TryTree) blockT.getStatements().get(0);
-      AtomicBoolean blockIsIllegal = new AtomicBoolean(false);
-      StatementTree[] wrappedStmt = new StatementTree[1];
-      TreeScanner<Void, Void> scanner =
-          new TreeScanner<Void, Void>() {
-            /*
-             * Ensures the finally block has no break statements, calls visitCatch() on the catch blocks
-             * and ensures there's only one statement in the try-block, which is either itself a tryTree
-             * (solved recursively) or is a statement, which is then extracted and stored in "wrappedStmt".
-             */
-            @Override
-            public Void visitTry(TryTree tree, Void o) {
-              if (blockIsIllegal.get()) {
-                // check already failed, short circuit
-                return super.visitTry(tree, o);
-              }
-              if (tree.getBlock() == null) {
-                blockIsIllegal.set(true);
-                return super.visitTry(tree, o);
-              }
-              List<? extends StatementTree> stmtList = tree.getBlock().getStatements();
-              if (stmtList == null || stmtList.size() != 1) {
-                blockIsIllegal.set(true);
-                return super.visitTry(tree, o);
-              } else {
-                for (StatementTree stmt : stmtList) {
-                  if (stmt instanceof TryTree) {
-                    visitTry((TryTree) stmt, o);
-                  } else {
-                    if (wrappedStmt[0] == null) {
-                      wrappedStmt[0] = stmt;
-                    }
-                  }
-                }
-              }
-              if (tree.getCatches() != null) {
-                for (CatchTree c : tree.getCatches()) {
-                  visitCatch(c, o);
-                }
-              }
-              if (tree.getFinallyBlock() != null) {
-                for (StatementTree finallyStmt : tree.getFinallyBlock().getStatements()) {
-                  if (finallyStmt instanceof BreakTree) {
-                    blockIsIllegal.set(true);
-                    return super.visitTry(tree, o);
-                  }
-                }
-              }
-              return super.visitTry(tree, o);
-            }
-
-            /*
-             * Ensures catch block doesn't break out of the loop or throw any exceptions.
-             */
-            @Override
-            public Void visitCatch(CatchTree tree, Void o) {
-              if (blockIsIllegal.get()) {
-                // check already failed, short circuit
-                return super.visitCatch(tree, o);
-              }
-              if (tree.getBlock() != null) {
-                for (StatementTree stmt : tree.getBlock().getStatements()) {
-                  if (stmt instanceof ThrowTree) {
-                    blockIsIllegal.set(true);
-                  } else if (stmt instanceof TryTree) {
-                    visitTry((TryTree) stmt, o);
-                  } else if (stmt instanceof BreakTree) {
-                    blockIsIllegal.set(true);
-                  }
-                }
-              }
-              return super.visitCatch(tree, o);
-            }
-          };
-      scanner.scan(topLevelTry, null);
-      if (blockIsIllegal.get()
-          || wrappedStmt[0] == null
-          || !(wrappedStmt[0] instanceof ExpressionStatementTree)) {
-        return super.visitForLoop(tree, p);
-      }
-      stmtToAnalyze = ((ExpressionStatementTree) wrappedStmt[0]).getExpression();
+      stmtToAnalyze = getSingleStmtFromTryBlock((TryTree) topLevelStmt);
     } else if (topLevelStmt instanceof ExpressionStatementTree) {
       stmtToAnalyze = ((ExpressionStatementTree) topLevelStmt).getExpression();
-    } else {
+    }
+
+    if (stmtToAnalyze == null) {
       return super.visitForLoop(tree, p);
     }
 
     // pattern-match the method body
-    assert stmtToAnalyze != null : "stmtToAnalyze unexpectedly null";
-    if (stmtToAnalyze == null) {
-      return super.visitForLoop(tree, p);
-    }
     ExpressionTree stmtTree = stmtToAnalyze;
     ExpressionTree lhs;
     if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
