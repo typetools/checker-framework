@@ -115,9 +115,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     TreeScanner<Void, Void> scanner =
         new TreeScanner<Void, Void>() {
           /*
-           * Ensures the finally block has no break statements, calls visitCatch() on the catch blocks
-           * and ensures there's only one statement in the try-block, which is either itself a tryTree
-           * (solved recursively) or is a statement, which is then extracted and stored in "wrappedStmt".
+           * Recursively extracts the single statement from the innermost try-block or flags the block
+           * as illegal if there's more than one statement at any point in a try-block.
+           * Calls visitBlock(BlockTree) on the catch and finally blocks to verify them.
            */
           @Override
           public Void visitTry(TryTree tree, Void o) {
@@ -153,8 +153,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           }
 
           /*
-           * Handles statement blocks inside catch/finally blocks and ensures no break, return
-           * or throw statement is executed within them.
+           * Handles statement blocks inside catch/finally blocks by running a StatementScanner on them.
            */
           @Override
           public Void visitBlock(BlockTree tree, Void o) {
