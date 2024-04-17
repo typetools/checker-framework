@@ -47,6 +47,7 @@ import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -1998,7 +1999,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private String @Nullable [] getSuppressWarningsStringsFromOption() {
     if (!computedSuppressWarningsStringsFromOption) {
       computedSuppressWarningsStringsFromOption = true;
-      Map<String, String> options = getOptions();
+      Map<String, String> options = getAllOptions();
       if (options.containsKey("suppressWarnings")) {
         String swStrings = options.get("suppressWarnings");
         if (swStrings != null) {
@@ -2008,6 +2009,48 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     return this.suppressWarningsStringsFromOption;
+  }
+
+  /**
+   * Returns the options passed to this checker and its immediate parent checker.
+   *
+   * @return the options passed to this checker and its immediate parent checker
+   */
+  private Map<String, String> getAllOptions() {
+    if (parentChecker == null) {
+      return getOptions();
+    }
+    Map<String, String> allOptions = new HashMap<>(this.getOptions());
+    parentChecker
+        .getOptions()
+        .forEach(
+            (parentOptKey, parentOptVal) -> {
+              if (parentOptVal != null) {
+                allOptions.merge(parentOptKey, parentOptVal, this::combineOptionValues);
+              }
+            });
+    return Collections.unmodifiableMap(allOptions);
+  }
+
+  /**
+   * Combines two comma-delimited strings into a single comma-delimited string that does not contain
+   * duplicates.
+   *
+   * <p>Checker option values are comma-delimited. This method combines two option values while
+   * discarding possible duplicates.
+   *
+   * @param optionValueA the first comma-delimited string
+   * @param optionValueB the second comma-delimited string
+   * @return a comma-delimited string containing values from the first and second string, with no
+   *     duplicates
+   */
+  private String combineOptionValues(String optionValueA, String optionValueB) {
+    Set<String> optionValueASet =
+        Arrays.stream(optionValueA.split(",")).collect(Collectors.toSet());
+    Set<String> optionValueBSet =
+        Arrays.stream(optionValueB.split(",")).collect(Collectors.toSet());
+    optionValueASet.addAll(optionValueBSet);
+    return String.join(",", optionValueASet);
   }
 
   /**
