@@ -16,6 +16,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
@@ -27,7 +28,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -43,6 +46,7 @@ import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
+import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -63,6 +67,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
+
+  /** Stores the size variable of the most recent array allocation per array name. */
+  private final Map<Name, Name> arrayInitializationSize = new HashMap<>();
 
   /**
    * Creates a new MustCallVisitor.
@@ -92,6 +99,28 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitReturn(tree, p);
+  }
+
+  /**
+   * If the VariableTree initializes a new array, the dimension variable of this array is put into
+   * the arrayInitializationSize datastructure, such that when pattern-matching a loop, the size of
+   * this array can be used as a loop bound.
+   */
+  @Override
+  public Void visitVariable(VariableTree tree, Void p) {
+    if (tree.getInitializer() instanceof NewArrayTree) {
+      if (TreeUtils.elementFromDeclaration(tree).getAnnotation(OwningArray.class) != null) {
+        NewArrayTree nat = (NewArrayTree) tree.getInitializer();
+        if (nat.getDimensions().size() == 1) {
+          ExpressionTree dim = nat.getDimensions().get(0);
+          if (dim instanceof IdentifierTree) {
+            Name variable = ((IdentifierTree) dim).getName();
+            arrayInitializationSize.put(tree.getName(), variable);
+          }
+        }
+      }
+    }
+    return super.visitVariable(tree, p);
   }
 
   /**
@@ -226,20 +255,19 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         || tree.getInitializer().size() != 1) // ensure there's only one loop variable
     return super.visitForLoop(tree, p);
 
-    ExpressionTree stmtToAnalyze = null;
+    ExpressionTree stmtTree = null;
     StatementTree topLevelStmt = blockT.getStatements().get(0);
     if (topLevelStmt instanceof TryTree) {
-      stmtToAnalyze = getSingleStmtFromTryBlock((TryTree) topLevelStmt);
+      stmtTree = getSingleStmtFromTryBlock((TryTree) topLevelStmt);
     } else if (topLevelStmt instanceof ExpressionStatementTree) {
-      stmtToAnalyze = ((ExpressionStatementTree) topLevelStmt).getExpression();
+      stmtTree = ((ExpressionStatementTree) topLevelStmt).getExpression();
     }
 
-    if (stmtToAnalyze == null) {
+    if (stmtTree == null) {
       return super.visitForLoop(tree, p);
     }
 
     // pattern-match the method body
-    ExpressionTree stmtTree = stmtToAnalyze;
     ExpressionTree lhs;
     if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
       lhs = ((AssignmentTree) stmtTree).getVariable();
@@ -254,9 +282,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return super.visitForLoop(tree, p);
     }
     // ensure lhs contains @OwningArray and is an array access
-    // Element lhsElt = TreeUtils.elementFromTree(lhs);
     boolean lhsIsOwningArray = true;
-    // boolean lhsIsOwningArray = atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
     if (!lhsIsOwningArray || lhs.getKind() != Tree.Kind.ARRAY_ACCESS)
       return super.visitForLoop(tree, p);
     ArrayAccessTree arrayAccT = (ArrayAccessTree) lhs;
@@ -274,18 +300,25 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       checker.reportWarning(arrayAccT, "unexpected.array.expression");
       return super.visitForLoop(tree, p);
     }
-    Name arrayNameInHeader =
+
+    // ensure that the loop bound agrees with the array in the body, i.e. ensure that the returned
+    // identifier from the loop header "n" is either equal to the size variable of the array in the
+    // body (if condition is i < n) or it's equal to the name "arr" of the array in the body itself
+    // (if condition is i < arr.length)
+    Name arrayInBodySizeVariable = arrayInitializationSize.get(arrayNameInBody);
+    Name identifierInHeader =
         verifyAllElementsAreCalledOn(
             (StatementTree) tree.getInitializer().get(0),
             (BinaryTree) tree.getCondition(),
             (ExpressionStatementTree) tree.getUpdate().get(0));
-    if (arrayNameInHeader == null) {
-      // header is not as expected, but loop body correctly initializes a resource
-      checker.reportWarning(tree, "owningArray.allocation.unsuccessful", arrayNameInBody);
-      return super.visitForLoop(tree, p);
-    }
-    if (arrayNameInHeader != arrayNameInBody) {
-      // array name in header and footer not equal
+    if (identifierInHeader == null
+        || (identifierInHeader != arrayNameInBody
+            && identifierInHeader != arrayInBodySizeVariable)) {
+      checker.reportWarning(
+          tree,
+          "owningArray.allocation.unsuccessful",
+          (arrayInBodySizeVariable == null) ? "n" : arrayInBodySizeVariable.toString(),
+          arrayNameInBody);
       return super.visitForLoop(tree, p);
     }
     // pattern match succeeded
@@ -337,13 +370,29 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
   /**
    * Decides for a for-loop header whether the loop iterates over all elements of some array based
-   * on a pattern-match.
+   * on a pattern-match with one-sided error with the following rules:
+   *
+   * <ul>
+   *   <li>only one loop variable
+   *   <li>initialization must be of the form i = 0
+   *   <li>condition must be of the form (i < arr.length) or (i < n), where n and arr are
+   *       identifiers
+   *   <li>update must be prefix or postfix
+   * </ul>
+   *
+   * Returns:
+   *
+   * <ul>
+   *   <li>null if any rule is violated
+   *   <li>the name of the array if the loop condition is of the form (i < arr.length)
+   *   <li>n if it is of the form (i < n), where n is an identifier.
+   * </ul>
    *
    * @param init the initializer of the loop
    * @param condition the loop condition
    * @param update the loop update
-   * @return Name of the array the loop iterates over all elements of, or null if the pattern match
-   *     fails
+   * @return null if any rule is violated, or the name of the array if the loop condition is of the
+   *     form (i < arr.length) or n if it is of the form (i < n), where n is an identifier.
    */
   protected Name verifyAllElementsAreCalledOn(
       StatementTree init, BinaryTree condition, ExpressionStatementTree update) {
@@ -359,22 +408,27 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           || !((LiteralTree) initVar.getInitializer()).getValue().equals(0)) {
         return null;
       }
-      // verify that condition is of the form: i<expr.identifier
-      if (!(condition.getRightOperand() instanceof MemberSelectTree)
-          || !(condition.getLeftOperand() instanceof IdentifierTree)) return null;
-      MemberSelectTree lengthAccess = (MemberSelectTree) condition.getRightOperand();
-      Name arrayName = arrayNameFromExpression(lengthAccess.getExpression());
-      if (initVar.getName()
-              == ((IdentifierTree) condition.getLeftOperand()).getName() // i=0 and i<n are same "i"
-          && initVar.getName()
-              == ((IdentifierTree) inc.getExpression()).getName() // i=0 and i++ are same "i"
-          && lengthAccess
-              .getIdentifier()
-              .toString()
-              .contentEquals("length")) { // condition is i<arr.length
-        return arrayName;
-      } else {
-        return null;
+      // verify that condition is of the form: i < something
+      if (!(condition.getLeftOperand() instanceof IdentifierTree)) return null;
+
+      if (condition.getRightOperand() instanceof MemberSelectTree) {
+        MemberSelectTree lengthAccess = (MemberSelectTree) condition.getRightOperand();
+        Name arrayName = arrayNameFromExpression(lengthAccess.getExpression());
+        if (initVar.getName()
+                == ((IdentifierTree) condition.getLeftOperand())
+                    .getName() // i=0 and i<n are same "i"
+            && initVar.getName()
+                == ((IdentifierTree) inc.getExpression()).getName() // i=0 and i++ are same "i"
+            && lengthAccess
+                .getIdentifier()
+                .toString()
+                .contentEquals("length")) { // condition is i<arr.length
+          return arrayName;
+        } else {
+          return null;
+        }
+      } else if (condition.getRightOperand() instanceof IdentifierTree) {
+        return ((IdentifierTree) condition.getRightOperand()).getName();
       }
     }
     return null;
@@ -428,6 +482,26 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       if (lhsIsOwningField && rhsIsMCA && rhsIsConstructorParam) {
         // Do not execute common assignment check.
         return null;
+      }
+    }
+
+    // if RHS is new array, put the array size varaible into a datastructure, s.t. it may be used as
+    // a
+    // loop bound when pattern-matching a loop
+    if (tree.getExpression() instanceof NewArrayTree) {
+      NewArrayTree nat = (NewArrayTree) tree.getExpression();
+      if (tree.getVariable() instanceof IdentifierTree) {
+        IdentifierTree identifier = (IdentifierTree) tree.getVariable();
+        if (TreeUtils.elementFromTree(identifier).getAnnotation(OwningArray.class) != null) {
+          arrayInitializationSize.remove(identifier.getName());
+          if (nat.getDimensions().size() == 1) {
+            ExpressionTree dim = nat.getDimensions().get(0);
+            if (dim instanceof IdentifierTree) {
+              Name variable = ((IdentifierTree) dim).getName();
+              arrayInitializationSize.put(identifier.getName(), variable);
+            }
+          }
+        }
       }
     }
 
