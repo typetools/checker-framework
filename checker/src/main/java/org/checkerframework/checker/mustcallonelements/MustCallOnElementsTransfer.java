@@ -6,6 +6,7 @@ import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -193,8 +194,8 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     List<String> newMustCallMethods =
         MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(
             tree);
-    String calledMethod =
-        MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
+    Set<String> calledMethods =
+        MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(tree);
     ExpressionTree arrayTree =
         MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
     if (arrayTree == null) return res;
@@ -206,7 +207,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
       elseStore.clearValue(receiverReceiver);
       elseStore.insertValue(receiverReceiver, newType);
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);
-    } else if (calledMethod != null) {
+    } else if (calledMethods != null && calledMethods.size() > 0) {
       // this loop fulfills an obligation - remove that methodname from
       // the MustCallOnElements type of the array
       CFValue oldTypeValue = elseStore.getValue(receiverReceiver);
@@ -219,7 +220,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
             AnnotationUtils.getElementValueArray(
                 oldType, atypeFactory.getMustCallOnElementsValueElement(), String.class);
       }
-      mcoeMethods.remove(calledMethod);
+      mcoeMethods.removeAll(calledMethods);
       AnnotationMirror newType = getMustCallOnElementsType(mcoeMethods);
       elseStore.clearValue(receiverReceiver);
       elseStore.insertValue(receiverReceiver, newType);

@@ -420,6 +420,24 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
   }
 
   /**
+   * Returns the {@link EnsuresCalledMethods#value} element.
+   *
+   * @return the {@link EnsuresCalledMethods#value} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsValueElement() {
+    return ensuresCalledMethodsValueElement;
+  }
+
+  /**
+   * Returns the {@link EnsuresCalledMethods#methods} element.
+   *
+   * @return the {@link EnsuresCalledMethods#methods} element
+   */
+  public ExecutableElement getEnsuresCalledMethodsMethodsElement() {
+    return ensuresCalledMethodsMethodsElement;
+  }
+
+  /**
    * Returns the {@link CreatesMustCallFor#value} element.
    *
    * @return the {@link CreatesMustCallFor#value} element

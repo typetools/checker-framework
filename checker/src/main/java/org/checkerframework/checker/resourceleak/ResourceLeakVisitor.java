@@ -427,7 +427,7 @@ public class ResourceLeakVisitor extends CalledMethodsVisitor {
    * @return a set of {@link EnsuresCalledMethods} annotations
    */
   @Pure
-  private static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
+  public static AnnotationMirrorSet getEnsuresCalledMethodsAnnotations(
       ExecutableElement elt, ResourceLeakAnnotatedTypeFactory atypeFactory) {
     AnnotationMirror ensuresCalledMethodsAnnos =
         atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethods.List.class);

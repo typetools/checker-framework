@@ -243,19 +243,19 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
         : "failed assumption: binaryTree in calledmethodsonelements transfer function is not"
             + " lessthan tree";
-    String calledMethod =
-        MustCallOnElementsAnnotatedTypeFactory.whichMethodDoesLoopWithThisConditionCall(tree);
+    Set<String> calledMethods =
+        MustCallOnElementsAnnotatedTypeFactory.whichMethodsDoesLoopWithThisConditionCall(tree);
     ExpressionTree arrayTree =
         MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(node.getTree());
     if (arrayTree == null) return res;
     JavaExpression target = JavaExpression.fromTree(arrayTree);
     CFStore elseStore = res.getElseStore();
-    if (calledMethod != null) {
+    if (calledMethods != null && calledMethods.size() > 0) {
       CFValue oldTypeValue = elseStore.getValue(target);
       assert oldTypeValue != null : "Array " + arrayTree + " not in Store.";
       AnnotationMirror oldType = oldTypeValue.getAnnotations().first();
       AnnotationMirror newType =
-          getUpdatedCalledMethodsOnElementsType(oldType, Collections.singletonList(calledMethod));
+          getUpdatedCalledMethodsOnElementsType(oldType, new ArrayList<>(calledMethods));
       elseStore.clearValue(target);
       elseStore.insertValue(target, newType);
       return new ConditionalTransferResult<>(res.getResultValue(), res.getThenStore(), elseStore);

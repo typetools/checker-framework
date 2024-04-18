@@ -29,8 +29,10 @@ import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -47,6 +49,9 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.OwningArray;
+import org.checkerframework.checker.resourceleak.ResourceLeakAnnotatedTypeFactory;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
+import org.checkerframework.checker.resourceleak.ResourceLeakVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -235,6 +240,46 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   }
 
   /**
+   * Extracts the ArrayAccessTree within the statement if the statement is:
+   *
+   * <ul>
+   *   <li>an assignment and the LHS is the array access
+   *   <li>a method invocation on an array element
+   *   <li>a method invocation with an array element as the ONLY argument
+   * </ul>
+   *
+   * @param tree the statement tree
+   * @return the ArrayAccessTree within the tree or null if there is none
+   */
+  private ArrayAccessTree extractArrayAccessFromStatement(ExpressionTree tree) {
+    if (tree == null) return null;
+    ExpressionTree operand = null;
+    if (tree instanceof AssignmentTree) { // possibly allocating loop
+      operand = ((AssignmentTree) tree).getVariable();
+    } else if (tree instanceof MethodInvocationTree) { // possiblity deallocating loop
+      MethodInvocationTree mit = (MethodInvocationTree) tree;
+      operand = mit.getMethodSelect();
+      if (operand instanceof MemberSelectTree) {
+        operand = ((MemberSelectTree) operand).getExpression();
+      } else if (mit.getArguments() != null && mit.getArguments().size() == 1) {
+        for (ExpressionTree arg : mit.getArguments()) {
+          if (arg instanceof ArrayAccessTree) {
+            return (ArrayAccessTree) arg;
+          }
+        }
+      } else {
+        operand = null;
+      }
+    }
+
+    if (operand != null && operand.getKind() == Tree.Kind.ARRAY_ACCESS) {
+      return (ArrayAccessTree) operand;
+    } else {
+      return null;
+    }
+  }
+
+  /**
    * Checks through pattern-matching whether the loop either:
    *
    * <ul>
@@ -267,37 +312,24 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       return super.visitForLoop(tree, p);
     }
 
-    // pattern-match the method body
-    ExpressionTree lhs;
-    if (stmtTree instanceof AssignmentTree) { // possibly allocating loop
-      lhs = ((AssignmentTree) stmtTree).getVariable();
-    } else if (stmtTree instanceof MethodInvocationTree) { // possiblity deallocating loop
-      lhs = ((MethodInvocationTree) stmtTree).getMethodSelect();
-      if (lhs instanceof MemberSelectTree) {
-        lhs = ((MemberSelectTree) lhs).getExpression();
-      } else {
-        return super.visitForLoop(tree, p);
-      }
-    } else { // neither
+    // extract the array access tree in case it exists in the statement
+    ArrayAccessTree arrayAccess = extractArrayAccessFromStatement(stmtTree);
+    if (arrayAccess == null) {
       return super.visitForLoop(tree, p);
     }
-    // ensure lhs contains @OwningArray and is an array access
-    boolean lhsIsOwningArray = true;
-    if (!lhsIsOwningArray || lhs.getKind() != Tree.Kind.ARRAY_ACCESS)
-      return super.visitForLoop(tree, p);
-    ArrayAccessTree arrayAccT = (ArrayAccessTree) lhs;
-    // ensure index is same as the one initialized in the loop header
+
+    // ensure array access index is same as the one initialized in the loop header
     StatementTree init = tree.getInitializer().get(0);
-    ExpressionTree idx = arrayAccT.getIndex();
+    ExpressionTree idx = arrayAccess.getIndex();
     if (!(init instanceof VariableTree)
         || !(idx instanceof IdentifierTree)
         || !((IdentifierTree) idx).getName().equals(((VariableTree) init).getName()))
       return super.visitForLoop(tree, p);
     // ensure indexed array is the same as the one we took the length of in loop condition
-    Name arrayNameInBody = arrayNameFromExpression(arrayAccT.getExpression());
+    Name arrayNameInBody = arrayNameFromExpression(arrayAccess.getExpression());
     if (arrayNameInBody == null) {
       // expected array, but does not directly evaluate to an identifier
-      checker.reportWarning(arrayAccT, "unexpected.array.expression");
+      checker.reportWarning(arrayAccess, "unexpected.array.expression");
       return super.visitForLoop(tree, p);
     }
 
@@ -341,7 +373,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       // check whether the RHS actually has must-call obligations
       if (mcValues != null) {
         ExpressionTree condition = tree.getCondition();
-        ExpressionTree arrayTree = ((ArrayAccessTree) lhs).getExpression();
+        ExpressionTree arrayTree = arrayAccess.getExpression();
         assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
@@ -349,23 +381,68 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
             condition, arrayTree);
       }
-    } else {
-      MemberSelectTree methodCall =
-          (MemberSelectTree) ((MethodInvocationTree) stmtTree).getMethodSelect();
-      ArrayAccessTree arrAcc = (ArrayAccessTree) methodCall.getExpression();
-      ExpressionTree arrayTree = arrAcc.getExpression();
-      assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
-      Name methodName = methodCall.getIdentifier();
-      System.out.println("detected calledmethod: " + methodName);
+    } else if (stmtTree instanceof MethodInvocationTree) {
+      // TODO fix this part
+      MethodInvocationTree mit = (MethodInvocationTree) stmtTree;
+      Set<String> methodNames = getCoeMethodName(mit);
+      if (methodNames == null || methodNames.size() == 0) return super.visitForLoop(tree, p);
+      System.out.println("detected calledmethods: " + methodNames);
       ExpressionTree condition = tree.getCondition();
-      MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(methodCall);
+      MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(
+          mit.getMethodSelect());
       MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(
-          condition, methodName.toString());
+          condition, methodNames);
       MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-          condition, arrayTree);
+          condition, arrayAccess.getExpression());
     }
 
     return super.visitForLoop(tree, p);
+  }
+
+  /**
+   * Returns the <code>Name</code>'s of methods ensured to be called on the elements of the first
+   * argument of the method in the given <code>MethodInvocationTree</code>. For example:
+   *
+   * <p><code>m(arr)</code> where <code>m</code> has an {@code @EnsuresCalledMethods(value="#1",
+   * methods="close")} annotation, the method would return <code>{"close"}</code>.
+   *
+   * @param methodInvocation the method invocation tree
+   * @return <code>Name</code>'s of methods ensured to be called on the elements of the first
+   *     argument of the given method invocation tree
+   */
+  private Set<String> getCoeMethodName(MethodInvocationTree methodInvocation) {
+    ExpressionTree methodCall = methodInvocation.getMethodSelect();
+    if (methodCall instanceof MemberSelectTree) {
+      return Collections.singleton(((MemberSelectTree) methodCall).getIdentifier().toString());
+    } else if (methodCall instanceof IdentifierTree) {
+      ExecutableElement method = TreeUtils.elementFromUse(methodInvocation);
+      ResourceLeakChecker rlc = new ResourceLeakChecker();
+      rlc.init(checker.getProcessingEnvironment());
+      ResourceLeakAnnotatedTypeFactory rlAtf = new ResourceLeakAnnotatedTypeFactory(rlc);
+      AnnotationMirrorSet allEnsuresCalledMethodsAnnos =
+          ResourceLeakVisitor.getEnsuresCalledMethodsAnnotations(method, rlAtf);
+      Set<String> methodsCalledOnFirstArg = new HashSet<>();
+      for (AnnotationMirror ensuresCalledMethodsAnno : allEnsuresCalledMethodsAnnos) {
+        List<String> values =
+            AnnotationUtils.getElementValueArray(
+                ensuresCalledMethodsAnno,
+                rlAtf.getEnsuresCalledMethodsValueElement(),
+                String.class);
+        for (String value : values) {
+          if (value.equals("#1")) {
+            List<String> methods =
+                AnnotationUtils.getElementValueArray(
+                    ensuresCalledMethodsAnno,
+                    rlAtf.getEnsuresCalledMethodsMethodsElement(),
+                    String.class);
+            methodsCalledOnFirstArg.addAll(methods);
+          }
+        }
+      }
+      return methodsCalledOnFirstArg;
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -375,7 +452,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * <ul>
    *   <li>only one loop variable
    *   <li>initialization must be of the form i = 0
-   *   <li>condition must be of the form (i < arr.length) or (i < n), where n and arr are
+   *   <li>condition must be of the form (i &lt; arr.length) or (i &lt; n), where n and arr are
    *       identifiers
    *   <li>update must be prefix or postfix
    * </ul>
@@ -384,15 +461,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *
    * <ul>
    *   <li>null if any rule is violated
-   *   <li>the name of the array if the loop condition is of the form (i < arr.length)
-   *   <li>n if it is of the form (i < n), where n is an identifier.
+   *   <li>the name of the array if the loop condition is of the form (i &lt; arr.length)
+   *   <li>n if it is of the form (i &lt; n), where n is an identifier.
    * </ul>
    *
    * @param init the initializer of the loop
    * @param condition the loop condition
    * @param update the loop update
    * @return null if any rule is violated, or the name of the array if the loop condition is of the
-   *     form (i < arr.length) or n if it is of the form (i < n), where n is an identifier.
+   *     form (i &lt; arr.length) or n if it is of the form (i &lt; n), where n is an identifier.
    */
   protected Name verifyAllElementsAreCalledOn(
       StatementTree init, BinaryTree condition, ExpressionStatementTree update) {

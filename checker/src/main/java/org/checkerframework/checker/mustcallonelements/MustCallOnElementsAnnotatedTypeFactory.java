@@ -4,7 +4,6 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -104,13 +103,14 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   private static Set<AssignmentTree> obligationCreatingAssignments = new HashSet<>();
 
   /** Set of method accesses that fulfill an obligation for an {@code @OwningArray} array. */
-  private static Set<MemberSelectTree> obligationFulfillingMethodAccess = new HashSet<>();
+  private static Set<ExpressionTree> obligationFulfillingMethodAccess = new HashSet<>();
 
   /**
-   * Maps the AST-node corresponding to the loop condition of a loop calling a method on an
-   * {@code @OwningArray} to the name of the method called.
+   * Maps the AST-node corresponding to the loop condition of a loop calling methods on an
+   * {@code @OwningArray} to the names of the methods called.
    */
-  private static Map<Tree, String> whichMethodDoesLoopWithThisConditionCallMap = new HashMap<>();
+  private static Map<Tree, Set<String>> whichMethodsDoesLoopWithThisConditionCallMap =
+      new HashMap<>();
 
   /**
    * Maps the AST-node corresponding to the loop condition of a loop assigning a resource to an
@@ -231,22 +231,22 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * returns whether the specified member-select AST node is in a pattern-matched loop that fulfills
    * an {@code @OwningArray} obligation.
    *
-   * @param memSelect the member-select AST node
+   * @param method the method call AST node
    * @return whether the node is in a pattern-matched loop fulfilling an mcoe obligation
    */
-  public static boolean doesMethodAccessCloseArrayObligation(MemberSelectTree memSelect) {
-    return obligationFulfillingMethodAccess.contains(memSelect);
+  public static boolean doesMethodAccessCloseArrayObligation(ExpressionTree method) {
+    return obligationFulfillingMethodAccess.contains(method);
   }
 
   /**
-   * Marks the specified member-select AST node as one that fulfills a mcoe obligation for an
+   * Marks the specified method call AST node as one that fulfills a mcoe obligation for an
    * {@code @OwningArray} array, i.e. marks the node as being in a pattern-matched loop. Only call
    * when the corrresponding loop has been successfully pattern-matched.
    *
-   * @param memSelect the member-select AST node
+   * @param method the method call AST node
    */
-  public static void fulfillArrayObligationForMethodAccess(MemberSelectTree memSelect) {
-    obligationFulfillingMethodAccess.add(memSelect);
+  public static void fulfillArrayObligationForMethodAccess(ExpressionTree method) {
+    obligationFulfillingMethodAccess.add(method);
   }
 
   /**
@@ -290,12 +290,12 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * second argument.
    *
    * @param tree the less-than AST node
-   * @param method the method that is called on the array elements in the loop
+   * @param methods the method that is called on the array elements in the loop
    */
-  public static void closeArrayObligationForLessThan(Tree tree, String method) {
+  public static void closeArrayObligationForLessThan(Tree tree, Set<String> methods) {
     assert (tree.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    whichMethodDoesLoopWithThisConditionCallMap.put(tree, method);
+    whichMethodsDoesLoopWithThisConditionCallMap.put(tree, methods);
   }
 
   /**
@@ -328,18 +328,17 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   /**
-   * Returns the name of the method that is called in the pattern-matched,
-   * MustCallOnElements-fulfilling loop specified by the given Tree, which is the condition of said
-   * loop.
+   * Returns the names of the methods called in the pattern-matched, MustCallOnElements-fulfilling
+   * loop specified by the given Tree, which is expected to be the condition of said loop.
    *
    * @param condition the condition of a pattern-matched loop that closes a MustCallOnElements
    *     obligation
-   * @return name of the method that is called on the elements of the array in the loop
+   * @return names of the methods called on the elements of the array in the loop
    */
-  public static String whichMethodDoesLoopWithThisConditionCall(Tree condition) {
+  public static Set<String> whichMethodsDoesLoopWithThisConditionCall(Tree condition) {
     assert (condition.getKind() == Tree.Kind.LESS_THAN)
         : "Trying to associate Tree as condition of a method calling for-loop, but is not a LESS_THAN tree";
-    return whichMethodDoesLoopWithThisConditionCallMap.get(condition);
+    return whichMethodsDoesLoopWithThisConditionCallMap.get(condition);
   }
 
   /**
