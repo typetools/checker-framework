@@ -136,7 +136,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *   <li>the try-block may only contain one statement, either an ExpressionStatement or another
    *       try-catch-construct
    *   <li>the catch-blocks and the finally-block may not contain any break, throw or return
-   *       statements or method calls that can throw an exception
+   *       statements or method calls
    * </ul>
    *
    * @param tree the top-level TryTree
@@ -197,10 +197,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             return super.visitBlock(tree, o);
           }
 
-          /**
-           * Sets the blockIsIllegal boolean for any throw, return, break or method invocation with
-           * non-empty throws-declaration encountered while traversing the given tree.
-           */
+          /** Sets the blockIsIllegal boolean for any throw, return, break or method invocation */
           class StatementScanner extends TreeScanner<Void, Void> {
             @Override
             public Void visitThrow(ThrowTree tt, Void p) {
@@ -210,10 +207,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
 
             @Override
             public Void visitMethodInvocation(MethodInvocationTree mit, Void p) {
-              ExecutableElement method = TreeUtils.elementFromUse(mit);
-              if (method.getThrownTypes() != null) {
-                blockIsIllegal.set(true);
-              }
+              blockIsIllegal.set(true);
+              // ExecutableElement method = TreeUtils.elementFromUse(mit);
+              // if (method.getThrownTypes() != null) {
+              //   blockIsIllegal.set(true);
+              // }
               return super.visitMethodInvocation(mit, p);
             }
 
@@ -353,8 +351,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           arrayNameInBody);
       return super.visitForLoop(tree, p);
     }
-    // pattern match succeeded
 
+    // pattern match succeeded, now mark the loop in the respective datastructures
     if (stmtTree instanceof AssignmentTree) {
       AssignmentTree assgn = (AssignmentTree) stmtTree;
       if (!(assgn.getExpression() instanceof NewClassTree)) {
@@ -382,9 +380,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
             condition, arrayTree);
       }
     } else if (stmtTree instanceof MethodInvocationTree) {
-      // TODO fix this part
       MethodInvocationTree mit = (MethodInvocationTree) stmtTree;
-      Set<String> methodNames = getCoeMethodName(mit);
+      Set<String> methodNames = getCoeMethodNames(mit);
       if (methodNames == null || methodNames.size() == 0) return super.visitForLoop(tree, p);
       System.out.println("detected calledmethods: " + methodNames);
       ExpressionTree condition = tree.getCondition();
@@ -410,7 +407,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    * @return <code>Name</code>'s of methods ensured to be called on the elements of the first
    *     argument of the given method invocation tree
    */
-  private Set<String> getCoeMethodName(MethodInvocationTree methodInvocation) {
+  private Set<String> getCoeMethodNames(MethodInvocationTree methodInvocation) {
     ExpressionTree methodCall = methodInvocation.getMethodSelect();
     if (methodCall instanceof MemberSelectTree) {
       return Collections.singleton(((MemberSelectTree) methodCall).getIdentifier().toString());
