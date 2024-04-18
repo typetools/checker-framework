@@ -40,6 +40,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCall;
@@ -114,13 +115,18 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
     if (tree.getInitializer() instanceof NewArrayTree) {
-      if (TreeUtils.elementFromDeclaration(tree).getAnnotation(OwningArray.class) != null) {
+      VariableElement arrayElement = TreeUtils.elementFromDeclaration(tree);
+      if (arrayElement.getAnnotation(OwningArray.class) != null) {
         NewArrayTree nat = (NewArrayTree) tree.getInitializer();
         if (nat.getDimensions().size() == 1) {
           ExpressionTree dim = nat.getDimensions().get(0);
           if (dim instanceof IdentifierTree) {
-            Name variable = ((IdentifierTree) dim).getName();
-            arrayInitializationSize.put(tree.getName(), variable);
+            IdentifierTree dimVariable = (IdentifierTree) dim;
+            Element varElement = TreeUtils.elementFromTree(dimVariable);
+            Name varName = dimVariable.getName();
+            if (ElementUtils.isEffectivelyFinal(varElement)) {
+              arrayInitializationSize.put(tree.getName(), varName);
+            }
           }
         }
       }
@@ -450,7 +456,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
    *   <li>only one loop variable
    *   <li>initialization must be of the form i = 0
    *   <li>condition must be of the form (i &lt; arr.length) or (i &lt; n), where n and arr are
-   *       identifiers
+   *       identifiers and n is effectively final
    *   <li>update must be prefix or postfix
    * </ul>
    *
@@ -560,19 +566,23 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     }
 
     // if RHS is new array, put the array size varaible into a datastructure, s.t. it may be used as
-    // a
-    // loop bound when pattern-matching a loop
+    // a loop bound when pattern-matching a loop
     if (tree.getExpression() instanceof NewArrayTree) {
       NewArrayTree nat = (NewArrayTree) tree.getExpression();
       if (tree.getVariable() instanceof IdentifierTree) {
         IdentifierTree identifier = (IdentifierTree) tree.getVariable();
-        if (TreeUtils.elementFromTree(identifier).getAnnotation(OwningArray.class) != null) {
+        Element arrayElement = TreeUtils.elementFromTree(identifier);
+        if (arrayElement.getAnnotation(OwningArray.class) != null) {
           arrayInitializationSize.remove(identifier.getName());
           if (nat.getDimensions().size() == 1) {
             ExpressionTree dim = nat.getDimensions().get(0);
             if (dim instanceof IdentifierTree) {
-              Name variable = ((IdentifierTree) dim).getName();
-              arrayInitializationSize.put(identifier.getName(), variable);
+              IdentifierTree dimVariable = (IdentifierTree) dim;
+              Element varElement = TreeUtils.elementFromTree(dimVariable);
+              Name varName = dimVariable.getName();
+              if (ElementUtils.isEffectivelyFinal(varElement)) {
+                arrayInitializationSize.put(identifier.getName(), varName);
+              }
             }
           }
         }
