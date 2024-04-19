@@ -17,15 +17,14 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.*;
+import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The annotated type factory for the Called Methods Checker. */
+/** The annotated type factory for the Called Methods On Elements Checker. */
 public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @CalledMethodsOnElements()} annotation. */

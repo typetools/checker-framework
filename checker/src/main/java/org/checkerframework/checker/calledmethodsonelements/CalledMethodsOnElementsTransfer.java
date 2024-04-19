@@ -19,7 +19,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
-import org.checkerframework.checker.mustcall.qual.*;
+import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
+import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcallonelements.MustCallOnElementsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElements;
 import org.checkerframework.checker.mustcallonelements.qual.MustCallOnElementsUnknown;
@@ -38,10 +39,9 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.*;
-import org.checkerframework.javacutil.*;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
 /** A transfer function that accumulates the names of methods called. */
