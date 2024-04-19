@@ -1,5 +1,6 @@
 import java.io.Serializable;
 
+@SuppressWarnings("all") // Just check for crashes.
 public class GuavaCrash<C extends Comparable<?>> {
   void method(Range<C> restriction, Range<Cut<C>> lowerBoundWindow) {
     Cut<Cut<C>> upperBoundOnLowerBounds =
