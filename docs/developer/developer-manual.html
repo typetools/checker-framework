@@ -175,9 +175,9 @@ Below are some steps you might try to resolve this issue (in order):
 </p>
 <ul>
   <li><code>./gradlew --no-build-cache assemble</code>: attempts to rebuild the Checker Framework without the build cache.
+  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of pids for Gradle.
   <li><code>git clean -fdx</code>: removes all files that are not under version control. <b>Add or stash files that you would like to
       keep before running this command</b>.
-  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of pids for Gradle.
   <li>Delete the Gradle build cache, usually located at <code>~/.gradle/caches</code>. Note: this will delete the entire build
       cache, including the cache for other Gradle projects on your machine; the build step for the Checker Framework will need to re-download all required dependencies.
 </ul>
