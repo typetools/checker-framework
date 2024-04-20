@@ -633,7 +633,9 @@ for (int i = 0; i < s.length; i++) {
 }
 // 2. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 \end{verbatim}
-The loop must iterate from 0 to \<s.length> with either a pre-increment or post-increment update and exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch block may not throw any exceptions for successful pattern-matching.
+The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods or return for successful pattern-matching.
+
+In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements.
 
 \subsectionAndLabel{Must-call and called-methods for arrays}{resource-leak-arrays-mcoe-cmoe}
 Must-call-on-elements and called-methods-on-elements provide similar semantics for arrays as must-call and called-methods do for objects.
@@ -676,6 +678,24 @@ for (int i = 0; i < arr.length; i++) {
 
 The same pattern-match rules as for the assignment of elements apply (see Section~\ref{resource-leak-arrays-declaration}).
 The operation has no precondition. The semantics is that "someMethod" is added to the \<@CalledMethodsOnElements> type of arr and removed from the \<@MustCallOnElements> type of arr.
+
+The obligation can also be fulfilled by calling a single-parameter method, which has an \<@EnsuresCalledMethods> annotation, with the array element as an argument:
+\begin{verbatim}
+// 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
+for (int i = 0; i < arr.length; i++) {
+    method(arr[i]); // method calls 'close' on arr[i]
+}
+// 2. @MustCallOnElements({}) @CalledMethodsOnElements({"close"})
+
+...
+
+@EnsuresCalledMethods(value="#1", methods={"close"})
+void method(Socket s) {
+    try {
+        s.close();
+    } catch (Exception e) {}
+}
+\end{verbatim}
 
 \subsectionAndLabel{\<@OwningArray> method parameters }{resource-leak-arrays-parameters}
 When \<@OwningArray> is written on a method parameter, the default of the parameter is \<@MustCallOnElements(\textit{obligations})>, where \textit{obligations} is the set of \<@MustCall> obligations of the component type. It is allowed to put any manual \<@MustCallOnElements> annotation to override this default however.
