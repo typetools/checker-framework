@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -84,6 +83,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
 
 /**
@@ -2586,7 +2586,7 @@ class MustCallConsistencyAnalyzer {
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
       }
-      List<Block> duplicateBlocks = duplicates(blocksWithDuplicates);
+      List<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
       StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
       for (BlockWithObligations bwo : bwos) {
         ImmutableSet<Obligation> obligations = bwo.obligations;
@@ -2604,19 +2604,5 @@ class MustCallConsistencyAnalyzer {
       }
       return result.toString();
     }
-  }
-
-  // TODO: Use from plume-lib's CollectionsPlume once version 1.9.0 is released.
-  /**
-   * Returns the elements (once each) that appear more than once in the given collection.
-   *
-   * @param <T> the type of elements
-   * @param c a collection
-   * @return the elements (once each) that appear more than once in the given collection
-   */
-  public static <T> List<T> duplicates(Collection<T> c) {
-    // Inefficient (because of streams) but simple implementation.
-    Set<T> withoutDuplicates = new HashSet<>();
-    return c.stream().filter(n -> !withoutDuplicates.add(n)).collect(Collectors.toList());
   }
 }
