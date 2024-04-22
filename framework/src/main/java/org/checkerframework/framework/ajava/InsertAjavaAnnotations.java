@@ -525,27 +525,26 @@ public class InsertAjavaAnnotations {
   }
 
   /**
-   * Inserts all annotations from the ajava file at {@code annotationFilePath} into {@code
-   * javaFilePath}.
+   * Inserts all annotations from an ajava file into a Java file.
    *
-   * @param annotationFilePath path to an ajava file
-   * @param javaFilePath path to a Java file to insert annotation into
+   * @param annotationFileName an ajava file
+   * @param javaFileName a Java file to insert annotation into
    */
-  public void insertAnnotations(String annotationFilePath, String javaFilePath) {
+  public void insertAnnotations(String annotationFileName, String javaFileName) {
     try {
-      File javaFile = new File(javaFilePath);
-      String fileContents = FilesPlume.fileContents(javaFile);
-      String lineSeparator = FilesPlume.inferLineSeparator(annotationFilePath);
-      try (FileInputStream annotationInputStream = new FileInputStream(annotationFilePath)) {
+      File javaFile = new File(javaFileName);
+      String fileContents = FilesPlume.readString(Path.of(javaFileName));
+      String lineSeparator = FilesPlume.inferLineSeparator(annotationFileName);
+      try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
-        FilesPlume.writeFile(javaFile, result);
+        FilesPlume.writeString(javaFile, result);
       }
     } catch (IOException e) {
       System.err.println(
           "Failed to insert annotations from file "
-              + annotationFilePath
+              + annotationFileName
               + " into file "
-              + javaFilePath);
+              + javaFileName);
       System.exit(1);
     }
   }

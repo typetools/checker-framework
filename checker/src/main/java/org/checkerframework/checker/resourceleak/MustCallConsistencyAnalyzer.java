@@ -2586,7 +2586,7 @@ class MustCallConsistencyAnalyzer {
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
       }
-      List<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
+      Collection<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
       StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
       for (BlockWithObligations bwo : bwos) {
         ImmutableSet<Obligation> obligations = bwo.obligations;
