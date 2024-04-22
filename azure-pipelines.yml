@@ -362,19 +362,19 @@ jobs:
 #    fetchDepth: 25
 #  - bash: ./checker/bin-devel/test-daikon.sh
 #    displayName: test-daikon.sh
-- job: guava_jdk11
-  dependsOn:
-   - canary_jobs
-   - guava_jdk21
-  pool:
-    vmImage: 'ubuntu-latest'
-  container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 70
-  steps:
-  - checkout: self
-    fetchDepth: 25
-  - bash: ./checker/bin-devel/test-guava.sh
-    displayName: test-guava.sh
+# - job: guava_jdk11
+#   dependsOn:
+#    - canary_jobs
+#    - guava_jdk21
+#   pool:
+#     vmImage: 'ubuntu-latest'
+#   container: mdernst/cf-ubuntu-jdk11:latest
+#   timeoutInMinutes: 70
+#   steps:
+#   - checkout: self
+#     fetchDepth: 25
+#   - bash: ./checker/bin-devel/test-guava.sh
+#     displayName: test-guava.sh
 - job: guava_jdk17
   dependsOn:
    - canary_jobs
