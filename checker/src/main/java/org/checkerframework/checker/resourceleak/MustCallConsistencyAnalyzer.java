@@ -17,6 +17,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.JCTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1442,7 +1443,15 @@ class MustCallConsistencyAnalyzer {
 
     // enforce 1. assignment rule
     if (!isOwningArray && rhsIsOwningArray) {
-      checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
+      assert (assignmentNode.getTree() instanceof JCTree)
+          : "tree corresponding to assignmentNode must be JCTree";
+      // enhanced for-loops are desugared and a synthetic assignment of some array to the
+      // loop-over array is created. NO WARNING for such assignments. the if statement checks
+      // whether the assignment has a valid position in the source code. if not, it is synthetic
+      JCTree jctree = (JCTree) assignmentNode.getTree();
+      if (jctree.getStartPosition() > 0) {
+        checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
+      }
     }
     if (isOwningArray && typeFactory.canCreateObligations()) {
       if (containingMethod == null) {
