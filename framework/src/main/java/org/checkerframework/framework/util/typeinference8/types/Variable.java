@@ -109,7 +109,7 @@ import org.checkerframework.javacutil.TypesUtils;
    * @param map used to determine if the bounds refer to another variable
    */
   public void initialBounds(Theta map) {
-    TypeMirror upperBound = typeVariableJava.getUpperBound();
+    TypeMirror upperBound = typeVariable.getUpperBound().getUnderlyingType();
     // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise,
     // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
     // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
