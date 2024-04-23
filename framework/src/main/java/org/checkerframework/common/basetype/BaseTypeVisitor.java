@@ -1207,7 +1207,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           JavaExpression exprJe = StringToJavaExpression.atMethodBody(st, tree, checker);
           sideEffectsOnlyExpressions.add(exprJe);
         } catch (JavaExpressionParseUtil.JavaExpressionParseException ex) {
-          checker.report(st, ex.getDiagMessage());
+          DiagMessage diagMessage = ex.getDiagMessage();
+          if (diagMessage.getMessageKey().equals("flowexpr.parse.error")) {
+            checker.reportError(methodTree, "flowexpr.parse.error", st);
+          } else {
+            checker.report(st, ex.getDiagMessage());
+          }
           return;
         }
       }
