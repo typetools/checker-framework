@@ -2,7 +2,7 @@ SH_SCRIPTS = $(shell grep -r -l '^\#! \?\(/bin/\|/usr/bin/env \)sh' * | grep -v 
 BASH_SCRIPTS = $(shell grep -r -l '^\#! \?\(/bin/\|/usr/bin/env \)bash' * | grep -v .git | grep -v "~")
 
 shell-script-style:
-	shellcheck --format=gcc ${SH_SCRIPTS} ${BASH_SCRIPTS}
+	shellcheck --format=gcc -P SCRIPTDIR ${SH_SCRIPTS} ${BASH_SCRIPTS}
 	checkbashisms ${SH_SCRIPTS}
 
 showvars:
