@@ -8,6 +8,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -132,6 +133,20 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
     return super.visitVariable(tree, p);
+  }
+
+  @Override
+  public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+    MustCallAnnotatedTypeFactory mcatf = new MustCallAnnotatedTypeFactory(checker);
+    ExpressionTree collectionExpr = tree.getExpression();
+    if (mcatf.getDeclAnnotation(TreeUtils.elementFromTree(collectionExpr), OwningArray.class)
+        != null) {
+      // mark the loop
+      // System.out.println("expr: " + tree.getExpression());
+      // System.out.println("var: " + tree.getVariable());
+      // System.out.println("stmt: " + tree.getStatement());
+    }
+    return super.visitEnhancedForLoop(tree, p);
   }
 
   /**

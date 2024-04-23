@@ -283,7 +283,7 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
    * @param node a node
    * @return true iff the given node is a temporary variable
    */
-  /*package-private*/ boolean isTempVar(Node node) {
+  /*package-private*/ public boolean isTempVar(Node node) {
     return tempVarToTree.containsKey(node);
   }
 

@@ -342,7 +342,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   }
 
   /**
-   * Fetches the array AST-node, for which a MustCallOnElements obligation is opened/closed in the
+   * Returns the array AST-node, for which a MustCallOnElements obligation is opened/closed in the
    * loop, for which the given lessThan AST-node is the condition.
    *
    * @param condition the less-than AST-node
