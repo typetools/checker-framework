@@ -297,7 +297,7 @@ public abstract class CFAbstractTransfer<
         // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
-        store.methodValues.clear();
+        store.methodCallValues.clear();
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }

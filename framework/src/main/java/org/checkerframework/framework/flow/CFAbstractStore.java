@@ -104,7 +104,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Information collected about method calls, using the internal representation {@link MethodCall}.
    */
-  protected final Map<MethodCall, V> methodValues;
+  protected final Map<MethodCall, V> methodCallValues;
 
   /**
    * Information collected about <i>classname</i>.class values, using the internal representation
@@ -150,7 +150,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     localVariableValues = new HashMap<>();
     thisValue = null;
     fieldValues = new HashMap<>();
-    methodValues = new HashMap<>();
+    methodCallValues = new HashMap<>();
     arrayValues = new HashMap<>();
     classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
@@ -172,7 +172,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     localVariableValues = new HashMap<>(other.localVariableValues);
     thisValue = other.thisValue;
     fieldValues = new HashMap<>(other.fieldValues);
-    methodValues = new HashMap<>(other.methodValues);
+    methodCallValues = new HashMap<>(other.methodCallValues);
     arrayValues = new HashMap<>(other.arrayValues);
     classValues = new HashMap<>(other.classValues);
     sequentialSemantics = other.sequentialSemantics;
@@ -286,42 +286,81 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (hasSideEffect) {
 
       boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
-      // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
-      if (!sideEffectsOnlyExpressions.isEmpty()) {
-        System.out.printf("SIDE EFFECTS ONLY EXPRESSIONS = %s\n", sideEffectsOnlyExpressions);
-        for (JavaExpression e : sideEffectsOnlyExpressions) {
-          if (!e.isUnmodifiableByOtherCode()) {
-            System.out.printf(
-                "UNREFINING INFORMATION ABOUT: %s AT CALL: %s\n", e, methodInvocationNode);
-            // Remove any computed information about the expression.
-            localVariableValues.keySet().remove(e);
-            fieldValues.keySet().remove(e);
-          }
-        }
-      } else {
-        localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-        thisValue = null;
-        fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-      }
 
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
       if (sideEffectsUnrefineAliases) {
+        // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
+        if (!sideEffectsOnlyExpressions.isEmpty()) {
+          for (JavaExpression e : sideEffectsOnlyExpressions) {
+            if (!e.isUnmodifiableByOtherCode()) {
+              // Remove any computed information about the expression.
+              localVariableValues.keySet().remove(e);
+              fieldValues.keySet().remove(e);
+            }
+          }
+        } else {
+          localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+          thisValue = null;
+          fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+        }
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields)
         updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
       }
 
-      // update array values
+      // Update array values
       arrayValues.clear();
 
-      // update method values
-      methodValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
+      // Update information about method calls
+      updateMethodCallValues(sideEffectsOnlyExpressions);
     }
 
-    // store information about method call if possible
+    // store information about method calls if possible
     JavaExpression methodCall = JavaExpression.fromNode(methodInvocationNode);
     replaceValue(methodCall, val);
+  }
+
+  /**
+   * Update information about method calls given the list of side-effected expressions.
+   *
+   * @param sideEffectsOnlyExpressions the list of side-effected expressions
+   */
+  private void updateMethodCallValues(List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (sideEffectsOnlyExpressions.isEmpty()) {
+      methodCallValues
+          .keySet()
+          .removeIf(methodCallValue -> !methodCallValue.isUnmodifiableByOtherCode());
+    } else {
+      methodCallValues
+          .keySet()
+          .removeIf(
+              methodCallValue ->
+                  hasMethodCallInformationChanged(methodCallValue, sideEffectsOnlyExpressions));
+    }
+  }
+
+  /**
+   * Returns true if information about a method call might have changed.
+   *
+   * <p>Information about a method call might have changed if:
+   *
+   * <ul>
+   *   <li>It is modifiable by other code
+   *   <li>It contains expressions that appear in the list of expressions that are provided to a
+   *       {@code @SideEffectsOnly} annotation
+   * </ul>
+   *
+   * @param methodCallValue the method call value
+   * @param sideEffectsOnlyExpressions the list of expressions provided to a
+   *     {@code @SideEffectsOnly} annotation
+   * @return true if information about a method call might have changed
+   */
+  private boolean hasMethodCallInformationChanged(
+      JavaExpression methodCallValue, List<JavaExpression> sideEffectsOnlyExpressions) {
+    return !methodCallValue.isUnmodifiableByOtherCode()
+        && sideEffectsOnlyExpressions.stream()
+            .anyMatch(methodCallValue::containsSyntacticEqualJavaExpression);
   }
 
   /**
@@ -697,10 +736,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       MethodCall method = (MethodCall) expr;
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
-        V oldValue = methodValues.get(method);
+        V oldValue = methodCallValues.get(method);
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
-          methodValues.put(method, newValue);
+          methodCallValues.put(method, newValue);
         }
       }
     } else if (expr instanceof ArrayAccess) {
@@ -817,7 +856,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       fieldValues.remove(fieldAcc);
     } else if (expr instanceof MethodCall) {
       MethodCall method = (MethodCall) expr;
-      methodValues.remove(method);
+      methodCallValues.remove(method);
     } else if (expr instanceof ArrayAccess) {
       ArrayAccess a = (ArrayAccess) expr;
       arrayValues.remove(a);
@@ -847,7 +886,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return fieldValues.get(fieldAcc);
     } else if (expr instanceof MethodCall) {
       MethodCall method = (MethodCall) expr;
-      return methodValues.get(method);
+      return methodCallValues.get(method);
     } else if (expr instanceof ArrayAccess) {
       ArrayAccess a = (ArrayAccess) expr;
       return arrayValues.get(a);
@@ -909,7 +948,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     if (method == null) {
       return null;
     }
-    return methodValues.get(method);
+    return methodCallValues.get(method);
   }
 
   /**
@@ -1055,7 +1094,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // case 3:
-    methodValues.clear();
+    methodCallValues.clear();
   }
 
   /**
@@ -1106,7 +1145,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     // case 3:
-    methodValues.clear();
+    methodCallValues.clear();
   }
 
   /**
@@ -1143,7 +1182,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    Iterator<Map.Entry<MethodCall, V>> methodValuesIterator = methodValues.entrySet().iterator();
+    Iterator<Map.Entry<MethodCall, V>> methodValuesIterator =
+        methodCallValues.entrySet().iterator();
     while (methodValuesIterator.hasNext()) {
       Map.Entry<MethodCall, V> entry = methodValuesIterator.next();
       MethodCall otherMethodAccess = entry.getKey();
@@ -1273,16 +1313,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
       }
     }
-    for (Map.Entry<MethodCall, V> e : other.methodValues.entrySet()) {
+    for (Map.Entry<MethodCall, V> e : other.methodCallValues.entrySet()) {
       // information about methods that are only part of one store, but not the other are
       // discarded, as one store implicitly contains 'top' for that field.
       MethodCall el = e.getKey();
-      V thisVal = methodValues.get(el);
+      V thisVal = methodCallValues.get(el);
       if (thisVal != null) {
         V otherVal = e.getValue();
         V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
         if (mergedVal != null) {
-          newStore.methodValues.put(el, mergedVal);
+          newStore.methodCallValues.put(el, mergedVal);
         }
       }
     }
@@ -1335,9 +1375,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return false;
       }
     }
-    for (Map.Entry<MethodCall, V> e : other.methodValues.entrySet()) {
+    for (Map.Entry<MethodCall, V> e : other.methodCallValues.entrySet()) {
       MethodCall key = e.getKey();
-      V value = methodValues.get(key);
+      V value = methodCallValues.get(key);
       if (value == null || !value.equals(e.getValue())) {
         return false;
       }
@@ -1410,8 +1450,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     for (ArrayAccess fa : ToStringComparator.sorted(arrayValues.keySet())) {
       res.add(viz.visualizeStoreArrayVal(fa, arrayValues.get(fa)));
     }
-    for (MethodCall fa : ToStringComparator.sorted(methodValues.keySet())) {
-      res.add(viz.visualizeStoreMethodVals(fa, methodValues.get(fa)));
+    for (MethodCall fa : ToStringComparator.sorted(methodCallValues.keySet())) {
+      res.add(viz.visualizeStoreMethodVals(fa, methodCallValues.get(fa)));
     }
     for (ClassName fa : ToStringComparator.sorted(classValues.keySet())) {
       res.add(viz.visualizeStoreClassVals(fa, classValues.get(fa)));
