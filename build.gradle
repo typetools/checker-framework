@@ -955,6 +955,13 @@ subprojects {
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
         maxParallelForks = Integer.MAX_VALUE
+        // Azure seems to time out when a task doesn't produce periodic output.
+        if (project.name.is('checker')) {
+          testLogging {
+            events "started", "skipped", "failed"
+            displayGranularity 3
+          }
+        }
       }
 
       if (project.name.is('checker')) {
