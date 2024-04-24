@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -223,6 +222,13 @@ class MustCallConsistencyAnalyzer {
    * in this set, the new assignment is illegal.
    */
   private Set<Name> alreadyAllocatedArrays;
+
+  /**
+   * An AssignmentNode within a loop might create obligations that are supposed to be effective only
+   * after the loop, which is not implementable. This map stores these obligations that an
+   * AssignmentNode may ignore, since it created them itself.
+   */
+  private Map<AssignmentNode, Set<Obligation>> obligationsToIgnore;
 
   /** A description for how a method might exit. */
   /*package-private*/ enum MethodExitKind {
@@ -664,6 +670,7 @@ class MustCallConsistencyAnalyzer {
     Set<BlockWithObligations> visited = new HashSet<>();
     Deque<BlockWithObligations> worklist = new ArrayDeque<>();
     this.alreadyAllocatedArrays = new HashSet<>();
+    this.obligationsToIgnore = new HashMap<>();
 
     // verify that all @OwningArray fields are final
     checkOwningArrayFields(cfg);
@@ -1273,27 +1280,30 @@ class MustCallConsistencyAnalyzer {
    * @param node the node that is the condition for the for loop
    * @param obligations the set of obligations tracked in the analysis
    */
-  private void verifyAllocatingForLoop(LessThanNode node, Set<Obligation> obligations) {
-    BinaryTree tree = node.getTree();
-    // check whether the loop specified through the condition was pattern-matched as an allocating
-    // loop
-    if (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
-        == null) {
-      // not an allocating loop
-      return;
-    }
-    ExpressionTree arr =
-        MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
-    assert arr != null
-        : "array tree of allocating for-loop not in expected datastructure: fix in MustCallVisitor.java";
-    checkMustCallOnElements(
-        getObligationForVar(obligations, arr),
-        mcoeTypeFactory.getStoreForTree(arr),
-        cmoeTypeFactory.getStoreForTree(arr),
-        false,
-        arr,
-        "");
-  }
+  // private void verifyAllocatingForLoop(LessThanNode node, Set<Obligation> obligations) {
+  //   BinaryTree tree = node.getTree();
+  //   // check whether the loop specified through the condition was pattern-matched as an
+  // allocating
+  //   // loop
+  //   if
+  // (MustCallOnElementsAnnotatedTypeFactory.whichObligationsDoesLoopWithThisConditionCreate(tree)
+  //       == null) {
+  //     // not an allocating loop
+  //     return;
+  //   }
+  //   ExpressionTree arr =
+  //       MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(tree);
+  //   assert arr != null
+  //       : "array tree of allocating for-loop not in expected datastructure: fix in
+  // MustCallVisitor.java";
+  //   checkMustCallOnElements(
+  //       getObligationForVar(obligations, arr),
+  //       mcoeTypeFactory.getStoreForTree(arr),
+  //       cmoeTypeFactory.getStoreForTree(arr),
+  //       false,
+  //       arr,
+  //       "");
+  // }
 
   /**
    * Returns a list of methods considered "called on elements" of the given tree (expected to be an
@@ -1419,6 +1429,19 @@ class MustCallConsistencyAnalyzer {
         obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
   }
 
+  // /**
+  //  * Removes all obligations containing the specified tree.
+  //  *
+  //  * @param obligations the set of currently tracked obligations
+  //  * @param tree the variable tree
+  //  */
+  // private void removeObligationForTree(Set<Obligation> obligations, Tree tree) {
+  //   LocalVariableNode rhsVar = node;
+  //   Set<MethodExitKind> toClear = MethodExitKind.ALL;
+  //   removeObligationsContainingVar(
+  //       obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
+  // }
+
   /**
    * Updates a set of Obligations to account for an assignment and enforces the assignment rules for
    * the MustCallOnElements checker.
@@ -1489,16 +1512,14 @@ class MustCallConsistencyAnalyzer {
       //   checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
       // } else {
       if (lhs instanceof LocalVariableNode) {
-        System.out.println("lhs: " + lhs);
-        System.out.println("lhselem: " + lhsElement);
-        System.out.println("lhstree: " + lhs.getTree());
         if (rhs instanceof LocalVariableNode) {
           addAliasToObligationsContainingVar(
               obligations,
               (LocalVariableNode) rhs,
               new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         } else {
-          // not good: rhs is field and I don't know how to add an alias to a field obligation
+          // TODO not good: rhs is field and I don't know how to add an alias to a field obligation
+          // solution proposed in my notes:
           assert false : "womp womp";
         }
       }
@@ -1573,11 +1594,12 @@ class MustCallConsistencyAnalyzer {
           if (lhs.getTree() instanceof VariableTree) {
             // declaration of local @OwningArray. Can't be field since we're in the else clause
             VariableTree owningArrayDeclarationTree = (VariableTree) lhs.getTree();
-            obligations.add(
+            Obligation newObligation =
                 new CollectionObligation(
                     ImmutableSet.of(
                         new ResourceAlias(arrayJx, element, owningArrayDeclarationTree)),
-                    MethodExitKind.ALL));
+                    Collections.singleton(MethodExitKind.NORMAL_RETURN));
+            obligations.add(newObligation);
           } else {
             // definition of local @OwningArray. If rhs is new array and the type is MCOEunknown,
             // signifying a state
@@ -1587,42 +1609,16 @@ class MustCallConsistencyAnalyzer {
             boolean isMcoeUnknown =
                 getMustCallOnElementsObligations(mcoeStore, lhs.getTree()) == null;
             if ((rhs instanceof ArrayCreationNode) && isMcoeUnknown) {
-              obligations.add(
+              Obligation newObligation =
                   new CollectionObligation(
                       ImmutableSet.of(
                           new ResourceAlias(arrayJx, element, owningArrayDefinitionTree)),
-                      MethodExitKind.ALL));
+                      Collections.singleton(MethodExitKind.NORMAL_RETURN));
+              obligations.add(newObligation);
             }
           }
           // definition/declaration of @OwningArray.
-
-          if (rhs instanceof ArrayCreationNode) {
-            // CFStore mcoeStore = mcoeTypeFactory.getStoreBefore(assignmentNode.getTree());
-            // List<String> mcoeObligations = Collections.emptyList();
-            // // if store does not contain the array tree, it must be the first assignment and
-            // hence
-            // // legal
-            // if (mcoeStore.getValue(array) != null) {
-            //   mcoeObligations = getMustCallOnElementsObligations(mcoeStore, tree);
-            //   if (mcoeObligations == null) {
-            //     // mcoe type of lhs is @MustCallOnElementsUnknown - a state of revoked ownership.
-            //     // newly assigning returns ownership of potential new resources that populate
-            // this
-            //     // memory region. Hence this should not throw an error.
-            //     mcoeObligations = Collections.emptyList();
-            //   }
-            // }
-            // // enforces 4. assignment rule:
-            // // no open obligations for an @OwningArray that is assigned in a loop
-            // System.out.println("checking in updateAssignment: " + mcoeObligations);
-            // if (mcoeObligations != null && !mcoeObligations.isEmpty()) {
-            //   checker.reportError(
-            //       assignmentNode.getTree(),
-            //       "owningarray.reassignment.with.open.obligations",
-            //       mcoeObligations.toString(),
-            //       arrayName);
-            // }
-          } else {
+          if (!(rhs instanceof ArrayCreationNode)) {
             // enforces 3. assignment rule:
             // assigning an @OwningArray to anything else is not allowed outside of constructor
             checker.reportError(
@@ -1649,27 +1645,43 @@ class MustCallConsistencyAnalyzer {
           }
           removeObligationForNode(obligations, (LocalVariableNode) rhs);
 
-          // 4. assignment rule is enforced in verifyAllocatingForLoop(). We can
-          // assume here the loop is correct, i.e. the array has no open calling obligations at this
-          // point
-          // and the elements may be reassigned.
-          // Thus, we can remove the old obligation (it is fulfilled) and create a new one
+          // enforce 4. assignment rule by calling checkMustCallOnElements()
+          // if it decides the loop is correct, i.e. the array has no open calling obligations at
+          // this
+          // point and the elements may be reassigned, we can remove the current obligation (it has
+          // been
+          // fulfilled) and create a new one with only this array
           ExpressionTree arrayTree = ((ArrayAccessTree) lhs.getTree()).getExpression();
           if (!(arrayTree instanceof IdentifierTree)) {
             throw new BugInCF(
                 "array in ArrayAccessTree expected to be IdentifierTree, but is "
                     + arrayTree.getKind());
           }
-          Obligation oldObligation = getObligationForVar(obligations, arrayTree);
-          obligations.remove(oldObligation);
-          obligations.add(
-              new CollectionObligation(
-                  ImmutableSet.of(
-                      new ResourceAlias(
-                          JavaExpression.fromTree(arrayTree),
-                          TreeUtils.elementFromTree(arrayTree),
-                          arrayTree)),
-                  MethodExitKind.ALL));
+          Obligation currentObligation = getObligationForVar(obligations, arrayTree);
+          if (!obligationsToIgnore
+                  .getOrDefault(assignmentNode, new HashSet<>())
+                  .contains(currentObligation)
+              && checkMustCallOnElements(
+                  currentObligation,
+                  mcoeTypeFactory.getStoreForTree(arrayTree),
+                  cmoeTypeFactory.getStoreForTree(arrayTree),
+                  false,
+                  arrayTree,
+                  "")) {
+            removeObligationForVar(obligations, arrayTree);
+            Obligation newObligation =
+                new CollectionObligation(
+                    ImmutableSet.of(
+                        new ResourceAlias(
+                            JavaExpression.fromTree(arrayTree),
+                            TreeUtils.elementFromTree(arrayTree),
+                            arrayTree)),
+                    Collections.singleton(MethodExitKind.NORMAL_RETURN));
+            obligationsToIgnore
+                .computeIfAbsent(assignmentNode, k -> new HashSet<>())
+                .add(newObligation);
+            obligations.add(newObligation);
+          }
         } else {
           throw new BugInCF(
               "uncovered case in MCConsistencyAnalyzer#updateObligationsForAssignment(): lhs "
@@ -2512,16 +2524,16 @@ class MustCallConsistencyAnalyzer {
         } else if (node instanceof LessThanNode) {
           // check if the allocating for-loop has any open obligations.
           // Since @OwningArray fields have different default type, don't execute the check for them
-          ExpressionTree arr =
-              MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
-                  node.getTree());
-          boolean isOwningArrayField =
-              arr != null
-                  && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
-                  && TreeUtils.elementFromTree(arr).getKind() == ElementKind.FIELD;
-          if (!isOwningArrayField) {
-            verifyAllocatingForLoop((LessThanNode) node, obligations);
-          }
+          // ExpressionTree arr =
+          //     MustCallOnElementsAnnotatedTypeFactory.getArrayTreeForLoopWithThisCondition(
+          //         node.getTree());
+          // boolean isOwningArrayField =
+          //     arr != null
+          //         && TreeUtils.elementFromTree(arr).getAnnotation(OwningArray.class) != null
+          //         && TreeUtils.elementFromTree(arr).getKind() == ElementKind.FIELD;
+          // if (!isOwningArrayField) {
+          //   // verifyAllocatingForLoop((LessThanNode) node, obligations);
+          // }
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -2927,10 +2939,30 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * For the given Obligation, checks whether the first alias is an {@code @OwningArray} and if yes,
-   * whether it's the only alias (aliases of such arrays are not allowed) and whether its
-   * {@code @MustCallOnElements} obligation are satisfied, based on {@code @CalledMethodsOnElements}
-   * and {@code @MustCallOnElements} types in the given stores.
+   * Removes the Obligations whose resource alias set contains the given tree in {@code
+   * Obligations}.
+   *
+   * @param obligations a set of Obligations
+   * @param tree variable tree of interest
+   */
+  /*package-private*/ static void removeObligationForVar(Set<Obligation> obligations, Tree tree) {
+    Iterator<Obligation> iter = obligations.iterator();
+    while (iter.hasNext()) {
+      Obligation obligation = iter.next();
+      if (obligation.canBeSatisfiedThrough(tree)) {
+        iter.remove();
+      }
+    }
+  }
+
+  /**
+   * For the given Obligation, computes the union of {@code @MustCallOnElements} values and
+   * {@code @CalledMethodsOnElements} values over all aliases of the obligation. If the union over
+   * the {@code CalledMethodsOnElements} values is not a superset, an error is issued. The error
+   * issued depends on whether the check occurs at an exit or at a reassignment. This information is
+   * passed with the {@code @isExit} flag. Returns true if the check is successful, i.e. either the
+   * obligation is not a {@code @CollectionObligation} anyways or the {@code MustCallOnElements}
+   * values are a subset of the {@code @CalledMethodsOnElements} values.
    *
    * @param obligation the Obligation
    * @param mcoeStore the mustCallOnElements store
@@ -2939,8 +2971,11 @@ class MustCallConsistencyAnalyzer {
    * @param isExit whether the check occurs for an exit
    * @param exitReasonForErrorMessage if the {@code @MustCallOnElements} obligation is not
    *     satisfied, a useful explanation to include in the error message
+   * @return true if the check is successful, i.e. either the obligation is not a
+   *     {@code @CollectionObligation} anyways or the {@code MustCallOnElements} values are a subset
+   *     of the {@code @CalledMethodsOnElements} values.
    */
-  private void checkMustCallOnElements(
+  private boolean checkMustCallOnElements(
       Obligation obligation,
       CFStore mcoeStore,
       CFStore cmoeStore,
@@ -2948,7 +2983,7 @@ class MustCallConsistencyAnalyzer {
       Tree occurence,
       String exitReasonForErrorMessage) {
     if (!(obligation instanceof CollectionObligation)) {
-      return;
+      return true;
     }
     Set<String> mcoeValues = new HashSet<>();
     Set<String> cmoeValues = new HashSet<>();
@@ -2965,12 +3000,12 @@ class MustCallConsistencyAnalyzer {
               "unknown",
               alias.tree.toString(),
               exitReasonForErrorMessage);
-          return;
+          return false;
         } else {
           // this is not an exit, but verification of assignment loop. Cannot reassign with revoked
           // ownership.
           checker.reportError(alias.tree, "assignment.without.ownership", alias.tree.toString());
-          return;
+          return false;
         }
       }
       mcoeValues.addAll(mcoeValuesOfAlias);
@@ -2979,9 +3014,22 @@ class MustCallConsistencyAnalyzer {
     ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
     if (isExit) {
       System.out.println(
-          "verifying exit: " + firstAlias + " " + mcoeValues + "\n        -> " + cmoeValues);
+          "verifying exit "
+              + obligation.hashCode()
+              + ": "
+              + firstAlias
+              + " "
+              + mcoeValues
+              + "\n        -> "
+              + cmoeValues);
     } else {
-      System.out.println("verifying assignmentloop: " + mcoeValues + "\n        -> " + cmoeValues);
+      System.out.println(
+          "verifying assignmentloop "
+              + obligation.hashCode()
+              + ": "
+              + mcoeValues
+              + "\n        -> "
+              + cmoeValues);
     }
     mcoeValues.removeAll(cmoeValues);
     if (!mcoeValues.isEmpty()) {
@@ -2992,14 +3040,17 @@ class MustCallConsistencyAnalyzer {
             formatMissingMustCallMethods(new ArrayList<>(mcoeValues)),
             firstAlias.tree.toString(),
             exitReasonForErrorMessage);
+        return false;
       } else {
         checker.reportError(
             occurence,
             "illegal.owningarray.allocation",
             occurence.toString(),
             formatMissingMustCallMethods(new ArrayList<>(mcoeValues)));
+        return false;
       }
     }
+    return true;
   }
 
   /**

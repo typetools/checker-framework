@@ -142,8 +142,8 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitArrayAccess(
       ArrayAccessNode node, TransferInput<CFValue, CFStore> input) {
-    ExpressionTree arrayExpr = node.getArrayExpression();
-    System.out.println("arrayexpre: " + arrayExpr);
+    // ExpressionTree arrayExpr = node.getArrayExpression();
+    // System.out.println("arrayexpre: " + arrayExpr);
     return super.visitArrayAccess(node, input);
   }
 
