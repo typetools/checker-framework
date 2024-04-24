@@ -757,6 +757,11 @@ subprojects {
       // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
       exclude group: 'org.checkerframework'
     }
+    // Without this, running the Checker Framework leads to "class file for
+    // javax.annotation.meta.TypeQualifierDefault not found".  I was not able to
+    // figure out how to use Gradle's exclusions (of transitive dependencies) in
+    // order to avoid the need for this.
+    annotatedGuava 'com.google.code.findbugs:jsr305:3.0.2'
   }
 
   shadowJar {
