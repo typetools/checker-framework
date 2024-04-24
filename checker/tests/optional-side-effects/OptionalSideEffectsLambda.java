@@ -3,16 +3,15 @@ import java.util.Optional;
 import org.checkerframework.checker.optional.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
-class Main {
+class OptionalSideEffectsLambda {
 
   void fooWithEnhancedFor(OptContainer container, List<String> strs) {
     if (!container.getOptStr().isPresent()) {
       return;
     }
     for (String s : strs) {
-      bar(container);
+      bar(container); // OK
     }
-    strs.forEach(s -> bar(container));
   }
 
   void fooWithForEach(OptContainer container, List<String> strs) {
@@ -25,11 +24,6 @@ class Main {
   @RequiresPresent("#1.getOptStr()")
   @SideEffectFree
   void bar(OptContainer container) {}
-
-  @Pure
-  int baz() {
-    return 1;
-  }
 
   class OptContainer {
 
