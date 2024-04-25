@@ -8,7 +8,6 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -153,16 +152,16 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     return super.visitVariable(tree, p);
   }
 
-  @Override
-  public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-    MustCallAnnotatedTypeFactory mcatf = new MustCallAnnotatedTypeFactory(checker);
-    ExpressionTree collectionExpr = tree.getExpression();
-    if (mcatf.getDeclAnnotation(TreeUtils.elementFromTree(collectionExpr), OwningArray.class)
-        != null) {
-      // mark the loop
-    }
-    return super.visitEnhancedForLoop(tree, p);
-  }
+  // @Override
+  // public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+  //   MustCallAnnotatedTypeFactory mcatf = new MustCallAnnotatedTypeFactory(checker);
+  //   ExpressionTree collectionExpr = tree.getExpression();
+  //   if (mcatf.getDeclAnnotation(TreeUtils.elementFromTree(collectionExpr), OwningArray.class)
+  //       != null) {
+  //     // mark the loop
+  //   }
+  //   return super.visitEnhancedForLoop(tree, p);
+  // }
 
   /**
    * Returns the ExpressionTree from the single statement contained in the innermost try-block or
@@ -380,11 +379,11 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (identifierInHeader == null
         || (identifierInHeader != arrayNameInBody
             && identifierInHeader != arrayInBodySizeVariable)) {
-      checker.reportWarning(
-          tree,
-          "owningArray.allocation.unsuccessful",
-          (arrayInBodySizeVariable == null) ? "n" : arrayInBodySizeVariable.toString(),
-          arrayNameInBody);
+      // checker.reportWarning(
+      //     tree,
+      //     "owningArray.allocation.unsuccessful",
+      //     (arrayInBodySizeVariable == null) ? "n" : arrayInBodySizeVariable.toString(),
+      //     arrayNameInBody);
       return super.visitForLoop(tree, p);
     }
 
@@ -392,7 +391,8 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (stmtTree instanceof AssignmentTree) {
       AssignmentTree assgn = (AssignmentTree) stmtTree;
       if (!(assgn.getExpression() instanceof NewClassTree)) {
-        checker.reportWarning(assgn, "unexpected.rhs.allocatingassignment");
+        // checker.reportWarning(assgn, "unexpected.rhs.allocatingassignment");
+        return super.visitForLoop(tree, p);
       }
       // mark for-loop as 'allocating-for-loop'
       ExpressionTree className = ((NewClassTree) assgn.getExpression()).getIdentifier();

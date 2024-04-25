@@ -484,6 +484,7 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
   private List<String> getMustCallValuesForType(TypeMirror type) {
     MustCallAnnotatedTypeFactory mcAtf = new MustCallAnnotatedTypeFactory(checker);
     TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) return new ArrayList<>();
     AnnotationMirror imcAnnotation =
         mcAtf.getDeclAnnotation(typeElement, InheritableMustCall.class);
     AnnotationMirror mcAnnotation = mcAtf.getDeclAnnotation(typeElement, MustCall.class);
