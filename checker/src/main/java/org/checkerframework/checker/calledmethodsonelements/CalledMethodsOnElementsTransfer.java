@@ -30,7 +30,6 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -41,7 +40,6 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsPlume;
 
@@ -326,24 +324,26 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitLessThan(
       LessThanNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> res = super.visitLessThan(node, input);
-    if (TreeUtils.statementIsSynthetic(node.getTree())) {
-      Node rhs = node.getRightOperand();
-      System.out.println("rhs: " + rhs);
-      if (rhs instanceof FieldAccessNode) {
-        FieldAccessNode accessNode = (FieldAccessNode) rhs;
-        if (accessNode.getFieldName().equals("length")) {
-          MustCallAnnotatedTypeFactory mcatf =
-              new MustCallAnnotatedTypeFactory(atypeFactory.getChecker());
-          Node collectionNode = accessNode.getReceiver();
-          System.out.println("receiver: " + collectionNode);
-          if (mcatf.getDeclAnnotation(
-                  TreeUtils.elementFromTree(collectionNode.getTree()), OwningArray.class)
-              != null) {
-            System.out.println("collectionNode: " + accessNode.getFieldName());
-          }
-        }
-      }
-    }
+    // if (TreeUtils.statementIsSynthetic(node.getTree())) {
+    //   BinaryTree lessThanTree = node.getTree();
+    //   System.out.println("ltTree: " + lessThanTree);
+    //     Node rhs = node.getRightOperand();
+    //     System.out.println("rhs: " + rhs);
+    //     if (rhs instanceof FieldAccessNode) {
+    //       FieldAccessNode accessNode = (FieldAccessNode) rhs;
+    //       if (accessNode.getFieldName().equals("length")) {
+    //         MustCallAnnotatedTypeFactory mcatf =
+    //             new MustCallAnnotatedTypeFactory(atypeFactory.getChecker());
+    //         Node collectionNode = accessNode.getReceiver();
+    //         System.out.println("receiver: " + collectionNode);
+    //         if (mcatf.getDeclAnnotation(
+    //                 TreeUtils.elementFromTree(collectionNode.getTree()), OwningArray.class)
+    //             != null) {
+    //           System.out.println("collectionNode: " + accessNode.getFieldName());
+    //         }
+    //       }
+    //     }
+    // }
 
     res = updateTransferResultForAllocatingForLoop(node, res);
     return updateTransferResultForFulfillingForLoop(node, res);

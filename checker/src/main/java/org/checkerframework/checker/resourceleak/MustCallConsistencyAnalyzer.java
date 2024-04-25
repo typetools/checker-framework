@@ -1315,6 +1315,9 @@ class MustCallConsistencyAnalyzer {
    *     pattern-matched for-loops)
    */
   private List<String> getCalledMethodsOnElements(CFStore cmoeStore, Tree arrTree) {
+    if (arrTree instanceof AssignmentTree) {
+      arrTree = ((AssignmentTree) arrTree).getVariable();
+    }
     if (!(arrTree instanceof VariableTree) && !(arrTree instanceof IdentifierTree)) {
       throw new BugInCF(
           "MCOE obligation %s must be either from definition or declaration, but is %s",
@@ -1371,6 +1374,9 @@ class MustCallConsistencyAnalyzer {
    * @return list of the MustCallOnElements obligations of the given array
    */
   private List<String> getMustCallOnElementsObligations(CFStore mcoeStore, Tree arrTree) {
+    if (arrTree instanceof AssignmentTree) {
+      arrTree = ((AssignmentTree) arrTree).getVariable();
+    }
     if (!(arrTree instanceof VariableTree) && !(arrTree instanceof IdentifierTree)) {
       throw new BugInCF(
           "MCOE obligation %s must be either from definition or declaration, but is %s",
@@ -1465,8 +1471,8 @@ class MustCallConsistencyAnalyzer {
    * <p>Assignment rules:
    *
    * <ul>
-   *   <li>1. When rhs contains annotated {@code @OwningArray} and lhs does not, the assignment is
-   *       always illegal.
+   *   <li>1. An {@code @OwningArray} field may only be assigned to a new array or an
+   *       {@code @OwningArray} parameter and only in the constructor.
    *   <li>2. {@code @OwningArray} field and its elements may not be assigned outside of
    *       constructor.
    *   <li>3. When lhs is a local {@code @OwningArray} identifier, the rhs may only be a newly
@@ -1476,8 +1482,6 @@ class MustCallConsistencyAnalyzer {
    *   <li>5. The elements of an {@code @OwningArray} may only be assigned in an allocating loop.
    *   <li>6. The elements of an {@code @OwningArray} field may only be assigned once in the
    *       constructor.
-   *   <li>7. An {@code @OwningArray} field may only be assigned to a new array or an
-   *       {@code @OwningArray} parameter and only in the constructor.
    * </ul>
    *
    * @param obligations the set of Obligations to update
@@ -1503,28 +1507,6 @@ class MustCallConsistencyAnalyzer {
     MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
     boolean inConstructor = containingMethod != null && TreeUtils.isConstructor(containingMethod);
 
-    // enforce 1. assignment rule
-    if (!isOwningArray && rhsIsOwningArray) {
-      // enhanced for-loops are desugared and a synthetic assignment of some array to the
-      // looped-over array is created. NO WARNING for such assignments. the if statement checks
-      // whether the assignment has a valid position in the source code. if not, it is synthetic
-      // if (!TreeUtils.statementIsSynthetic(assignmentNode.getTree())) {
-      //   checker.reportError(assignmentNode.getTree(), "illegal.aliasing");
-      // } else {
-      if (lhs instanceof LocalVariableNode) {
-        if (rhs instanceof LocalVariableNode) {
-          addAliasToObligationsContainingVar(
-              obligations,
-              (LocalVariableNode) rhs,
-              new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
-        } else {
-          // TODO not good: rhs is field and I don't know how to add an alias to a field obligation
-          // solution proposed in my notes:
-          assert false : "womp womp";
-        }
-      }
-      // }
-    }
     if (isOwningArray) {
       if (containingMethod == null) {
         // this is a declaration-definition of an @OwningArray field. nothing to check.
@@ -1658,9 +1640,10 @@ class MustCallConsistencyAnalyzer {
                     + arrayTree.getKind());
           }
           Obligation currentObligation = getObligationForVar(obligations, arrayTree);
-          if (!obligationsToIgnore
-                  .getOrDefault(assignmentNode, new HashSet<>())
-                  .contains(currentObligation)
+          if ((currentObligation == null
+                  || !obligationsToIgnore
+                      .getOrDefault(assignmentNode, new HashSet<>())
+                      .contains(currentObligation))
               && checkMustCallOnElements(
                   currentObligation,
                   mcoeTypeFactory.getStoreForTree(arrayTree),
@@ -1668,7 +1651,7 @@ class MustCallConsistencyAnalyzer {
                   false,
                   arrayTree,
                   "")) {
-            removeObligationForVar(obligations, arrayTree);
+            obligations.remove(currentObligation);
             Obligation newObligation =
                 new CollectionObligation(
                     ImmutableSet.of(
@@ -2939,23 +2922,6 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Removes the Obligations whose resource alias set contains the given tree in {@code
-   * Obligations}.
-   *
-   * @param obligations a set of Obligations
-   * @param tree variable tree of interest
-   */
-  /*package-private*/ static void removeObligationForVar(Set<Obligation> obligations, Tree tree) {
-    Iterator<Obligation> iter = obligations.iterator();
-    while (iter.hasNext()) {
-      Obligation obligation = iter.next();
-      if (obligation.canBeSatisfiedThrough(tree)) {
-        iter.remove();
-      }
-    }
-  }
-
-  /**
    * For the given Obligation, computes the union of {@code @MustCallOnElements} values and
    * {@code @CalledMethodsOnElements} values over all aliases of the obligation. If the union over
    * the {@code CalledMethodsOnElements} values is not a superset, an error is issued. The error
@@ -3014,19 +2980,12 @@ class MustCallConsistencyAnalyzer {
     ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
     if (isExit) {
       System.out.println(
-          "verifying exit "
-              + obligation.hashCode()
-              + ": "
-              + firstAlias
-              + " "
-              + mcoeValues
-              + "\n        -> "
-              + cmoeValues);
+          "verifying exit: " + obligation + " " + mcoeValues + "\n        -> " + cmoeValues);
     } else {
       System.out.println(
-          "verifying assignmentloop "
-              + obligation.hashCode()
-              + ": "
+          "verifying assignmentloop: "
+              + obligation
+              + " "
               + mcoeValues
               + "\n        -> "
               + cmoeValues);

@@ -78,6 +78,9 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   /** Stores the size variable of the most recent array allocation per array name. */
   private final Map<Name, Name> arrayInitializationSize = new HashMap<>();
 
+  /** Maps aliases to the {@code @OwningArray} name they're aliasing. */
+  private final Map<String, ExpressionTree> aliasToOwningArrayMap;
+
   /**
    * Creates a new MustCallVisitor.
    *
@@ -86,6 +89,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   public MustCallVisitor(BaseTypeChecker checker) {
     super(checker);
     noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
+    aliasToOwningArrayMap = new HashMap<>();
   }
 
   @Override
@@ -111,11 +115,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   /**
    * If the VariableTree initializes a new array, the dimension variable of this array is put into
    * the arrayInitializationSize datastructure, such that when pattern-matching a loop, the size of
-   * this array can be used as a loop bound.
+   * this array can be used as a loop bound. Check whether the declaration contains an aliasing
+   * assignment where the LHS is non-@OwnignArray, but the RHS is. In this case, stores a mapping
+   * from the alias name to the RHS (as a Tree).
    */
   @Override
   public Void visitVariable(VariableTree tree, Void p) {
-    if (tree.getInitializer() instanceof NewArrayTree) {
+    ExpressionTree initializer = tree.getInitializer();
+
+    if (initializer instanceof NewArrayTree) {
       VariableElement arrayElement = TreeUtils.elementFromDeclaration(tree);
       if (arrayElement.getAnnotation(OwningArray.class) != null) {
         NewArrayTree nat = (NewArrayTree) tree.getInitializer();
@@ -131,6 +139,16 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
           }
         }
       }
+    } else if (initializer instanceof IdentifierTree) {
+      VariableElement lhsElt = TreeUtils.elementFromDeclaration(tree);
+      Element rhsElt = TreeUtils.elementFromTree(initializer);
+      boolean lhsIsOwningArray =
+          lhsElt != null && atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
+      boolean rhsIsOwningArray =
+          rhsElt != null && atypeFactory.getDeclAnnotation(rhsElt, OwningArray.class) != null;
+      if (rhsIsOwningArray && !lhsIsOwningArray) {
+        this.aliasToOwningArrayMap.put(tree.getName().toString(), initializer);
+      }
     }
     return super.visitVariable(tree, p);
   }
@@ -142,9 +160,6 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     if (mcatf.getDeclAnnotation(TreeUtils.elementFromTree(collectionExpr), OwningArray.class)
         != null) {
       // mark the loop
-      // System.out.println("expr: " + tree.getExpression());
-      // System.out.println("var: " + tree.getVariable());
-      // System.out.println("stmt: " + tree.getStatement());
     }
     return super.visitEnhancedForLoop(tree, p);
   }
@@ -394,11 +409,13 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
         ExpressionTree condition = tree.getCondition();
         ExpressionTree arrayTree = arrayAccess.getExpression();
         assert (arrayTree instanceof IdentifierTree) : "array expected to be identifier";
+        ExpressionTree affectedArray =
+            this.aliasToOwningArrayMap.getOrDefault(arrayTree.toString(), arrayTree);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForAssignment(assgn);
         MustCallOnElementsAnnotatedTypeFactory.createArrayObligationForLessThan(
             condition, mcValues);
         MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-            condition, arrayTree);
+            condition, affectedArray);
       }
     } else if (stmtTree instanceof MethodInvocationTree) {
       MethodInvocationTree mit = (MethodInvocationTree) stmtTree;
@@ -406,12 +423,15 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       if (methodNames == null || methodNames.size() == 0) return super.visitForLoop(tree, p);
       System.out.println("detected calledmethods: " + methodNames);
       ExpressionTree condition = tree.getCondition();
+      ExpressionTree affectedArray =
+          this.aliasToOwningArrayMap.getOrDefault(
+              arrayAccess.getExpression().toString(), arrayAccess.getExpression());
       MustCallOnElementsAnnotatedTypeFactory.fulfillArrayObligationForMethodAccess(
           mit.getMethodSelect());
       MustCallOnElementsAnnotatedTypeFactory.closeArrayObligationForLessThan(
           condition, methodNames);
       MustCallOnElementsAnnotatedTypeFactory.putArrayAffectedByLoopWithThisCondition(
-          condition, arrayAccess.getExpression());
+          condition, affectedArray);
     }
 
     return super.visitForLoop(tree, p);
@@ -604,8 +624,26 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
       }
     }
 
+    /*
+     * Check whether the assignment corresponds to an aliasing assignment where the LHS is non-@OwnignArray,
+     * but the RHS is. In this case, stores a mapping from the alias name to the RHS (as a JavaExpression).
+     */
+    boolean lhsIsOwningArray =
+        lhsElt != null && atypeFactory.getDeclAnnotation(lhsElt, OwningArray.class) != null;
+    boolean rhsIsOwningArray =
+        rhsElt != null && atypeFactory.getDeclAnnotation(rhsElt, OwningArray.class) != null;
+    if (rhsIsOwningArray && !lhsIsOwningArray) {
+      this.aliasToOwningArrayMap.put(lhs.toString(), rhs);
+    }
+
     return super.visitAssignment(tree, p);
   }
+
+  // @Override
+  // public TransferResult<CFValue, CFStore> visitAssignment(
+  //     AssignmentNode node, TransferInput<CFValue, CFStore> input) {
+  //   return super.visitAssignment(node, input);
+  // }
 
   /** An empty string list. */
   private static final List<String> emptyStringList = Collections.emptyList();
