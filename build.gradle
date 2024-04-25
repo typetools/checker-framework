@@ -965,6 +965,11 @@ subprojects {
             events "started", "skipped", "failed"
             displayGranularity 3
           }
+          afterSuite { descriptor, result ->
+            def duration = java.util.concurrent.TimeUnit.MILLISECONDS
+                .toSeconds(result.endTime - result.startTime)
+            println "Duration of $descriptor: $duration seconds"
+          }
         }
       }
 
