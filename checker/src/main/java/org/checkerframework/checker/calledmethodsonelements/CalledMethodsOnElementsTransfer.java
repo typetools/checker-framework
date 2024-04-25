@@ -378,6 +378,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    *
    * @param values the arguments to the annotation. The values can contain duplicates and can be in
    *     any order.
+   * @param type the {@code AnnotationMirror} to build upon
    * @return an annotation mirror representing the accumulator annotation with {@code values}'s
    *     arguments; this is top if {@code values} is empty
    */
