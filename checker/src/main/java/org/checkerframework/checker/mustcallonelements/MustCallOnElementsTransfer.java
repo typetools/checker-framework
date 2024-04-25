@@ -43,6 +43,7 @@ public class MustCallOnElementsTransfer extends CFTransfer {
   /** True if -AenableWpiForRlc was passed on the command line. */
   private final boolean enableWpiForRlc;
 
+  /** The processing environment. */
   private final ProcessingEnvironment env;
 
   /**

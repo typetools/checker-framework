@@ -543,6 +543,11 @@ public class MustCallOnElementsAnnotatedTypeFactory extends BaseAnnotatedTypeFac
     return builder.build();
   }
 
+  /**
+   * Returns the {@link MustCallOnElements#value} element.
+   *
+   * @return the {@link MustCallOnElements#value} element
+   */
   public ExecutableElement getMustCallOnElementsValueElement() {
     return mustCallOnElementsValueElement;
   }

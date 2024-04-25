@@ -46,17 +46,31 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
    *     successor, succ
    * @param first a block
    * @param succ first's successor
-   * @return the appropriate CFStore, populated with MustCall annotations, from the results of
-   *     running dataflow
+   * @return the appropriate CFStore, populated with CalledMethodsOnElements annotations, from the
+   *     results of running dataflow
    */
   public CFStore getStoreForBlock(boolean afterFirstStore, Block first, Block succ) {
     return afterFirstStore ? flowResult.getStoreAfter(first) : flowResult.getStoreBefore(succ);
   }
 
+  /**
+   * Fetches the store from the results of dataflow for before {@code block}.
+   *
+   * @param block a block
+   * @return the appropriate CFStore, populated with CalledMethodsOnElements annotations, from the
+   *     results of running dataflow
+   */
   public CFStore getStoreForBlock(Block block) {
     return flowResult.getStoreBefore(block);
   }
 
+  /**
+   * Fetches the store from the results of dataflow for before {@code tree}.
+   *
+   * @param tree a tree
+   * @return the appropriate CFStore, populated with CalledMethodsOnElements annotations, from the
+   *     results of running dataflow
+   */
   public CFStore getStoreForTree(Tree tree) {
     return flowResult.getStoreBefore(tree);
   }
@@ -76,6 +90,12 @@ public class CalledMethodsOnElementsAnnotatedTypeFactory extends BaseAnnotatedTy
     }
   }
 
+  /**
+   * Creates a {@code @CalledMethodsOnElements} annotation with the passed methods as value.
+   *
+   * @param methodList list of methods as strings
+   * @return a {@code @CalledMethodsOnElements} annotation with the passed methods as value
+   */
   private AnnotationMirror createCMOEAnnotation(List<String> methodList) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, CalledMethodsOnElements.class);
     String[] methodArray = methodList.toArray(new String[methodList.size()]);

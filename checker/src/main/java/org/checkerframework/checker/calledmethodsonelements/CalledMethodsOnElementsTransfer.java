@@ -54,6 +54,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
   /** The type factory. */
   private final CalledMethodsOnElementsAnnotatedTypeFactory atypeFactory;
 
+  /** The processing environment. */
   private final ProcessingEnvironment env;
 
   /**
@@ -390,6 +391,7 @@ public class CalledMethodsOnElementsTransfer extends CFTransfer {
    * Creates a new instance of the accumulator annotation that contains exactly one value.
    *
    * @param value the argument to the annotation
+   * @param type the {@code AnnotationMirror} to build upon
    * @return an annotation mirror representing the accumulator annotation with {@code value} as its
    *     argument
    */
