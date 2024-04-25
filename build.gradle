@@ -951,6 +951,9 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
+      // maxParallelForks controls the parallelism of a single Test
+      // task. --parallel controls parallelism for the entire build.
+
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
@@ -962,11 +965,16 @@ subprojects {
       } else {
         // Running under Azure Pipelines CI.
 
-        // On CI, Parallelism seems to lead to flaky failures.
+        // On CI, parallelism seems to lead to flaky failures.
         maxParallelForks = 1
 
-        // Azure seems to time out when a task doesn't produce periodic output.
+        // Diagnose Azure flaky failures.
         if (project.name.is('checker')) {
+          // Disable all test parallelism
+          systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+          systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+          systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'same_thread'
+
           testLogging {
             events "started", "skipped", "failed"
             displayGranularity 3
