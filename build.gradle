@@ -959,7 +959,18 @@ subprojects {
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
+        // Not running under Azure Pipelines CI.
         maxParallelForks = Integer.MAX_VALUE
+      } else {
+        // Running under Azure Pipelines CI.
+
+        // Azure seems to time out when a task doesn't produce periodic output.
+        if (project.name.is('checker')) {
+          testLogging {
+            events "started", "skipped", "failed"
+            displayGranularity 3
+          }
+        }
       }
 
       if (project.name.is('checker')) {
