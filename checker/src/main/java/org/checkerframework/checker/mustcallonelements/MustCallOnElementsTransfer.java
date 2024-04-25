@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -165,9 +166,9 @@ public class MustCallOnElementsTransfer extends CFTransfer {
     while (paramIterator.hasNext() && argIterator.hasNext()) {
       VariableElement param = paramIterator.next();
       Node arg = argIterator.next();
-      boolean argIsOwningArray =
-          TreeUtils.elementFromTree(arg.getTree()).getAnnotation(OwningArray.class) != null;
-      boolean paramIsOwningArray = param.getAnnotation(OwningArray.class) != null;
+      Element argElt = arg.getTree() != null ? TreeUtils.elementFromTree(arg.getTree()) : null;
+      boolean argIsOwningArray = argElt != null && argElt.getAnnotation(OwningArray.class) != null;
+      boolean paramIsOwningArray = param != null && param.getAnnotation(OwningArray.class) != null;
       if (paramIsOwningArray) {
         if (!argIsOwningArray) {
           atypeFactory.getChecker().reportError(arg.getTree(), "unexpected.argument.ownership");

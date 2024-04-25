@@ -357,7 +357,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
     ExpressionTree idx = arrayAccess.getIndex();
     if (!(init instanceof VariableTree)
         || !(idx instanceof IdentifierTree)
-        || !((IdentifierTree) idx).getName().equals(((VariableTree) init).getName()))
+        || ((IdentifierTree) idx).getName() != ((VariableTree) init).getName())
       return super.visitForLoop(tree, p);
     // ensure indexed array is the same as the one we took the length of in loop condition
     Name arrayNameInBody = arrayNameFromExpression(arrayAccess.getExpression());
