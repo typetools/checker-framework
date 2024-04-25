@@ -976,7 +976,7 @@ subprojects {
           systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'same_thread'
 
           testLogging {
-            events "started", "skipped", "failed"
+            events "started", "skipped", "failed", "passed"
             displayGranularity 3
           }
           afterSuite { descriptor, result ->
