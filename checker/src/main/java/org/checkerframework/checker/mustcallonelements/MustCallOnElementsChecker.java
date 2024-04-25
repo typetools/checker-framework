@@ -18,4 +18,9 @@ public class MustCallOnElementsChecker extends BaseTypeChecker {
    * manual.
    */
   public static final String NO_LIGHTWEIGHT_OWNERSHIP = "noLightweightOwnership";
+
+  /** Returns a {@code MustCallOnElementsChecker} */
+  public MustCallOnElementsChecker() {
+    super();
+  }
 }
