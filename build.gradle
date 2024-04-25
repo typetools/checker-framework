@@ -955,9 +955,15 @@ subprojects {
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
         // Not running under Azure Pipelines CI.
-        maxParallelForks = Integer.MAX_VALUE
+
+        // This uses Gradle's recommended value for `maxParallelForks`:
+        // https://docs.gradle.org/current/userguide/performance.html#optimize_java_projects
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
       } else {
         // Running under Azure Pipelines CI.
+
+        // On CI, Parallelism seems to lead to flaky failures.
+        maxParallelForks = 1
 
         // Azure seems to time out when a task doesn't produce periodic output.
         if (project.name.is('checker')) {
