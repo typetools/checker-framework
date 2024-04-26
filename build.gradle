@@ -977,7 +977,7 @@ subprojects {
 
           testLogging {
             events "started", "skipped", "failed", "passed"
-            displayGranularity 3
+            displayGranularity 2
           }
           afterSuite { descriptor, result ->
             def duration = java.util.concurrent.TimeUnit.MILLISECONDS
