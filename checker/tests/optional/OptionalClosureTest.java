@@ -9,7 +9,7 @@ class OptionalClosureTest {
   public Function<String, String> test() {
     if (opt.isPresent()) {
       // We *should* issue an error here. It's no good that opt is @Present here; it might be
-      // @MaybePresent at the time of invocation.
+      // @MaybePresent at the time of invocation, for which get() is illegal.
       // :: error: (method.invocation)
       return str -> opt.get();
     }
