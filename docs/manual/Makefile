@@ -81,9 +81,9 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png ../api
 
 .PHONY: contributors.tex
 contributors.tex:
-# Update plume-scripts even if it is already cloned
-	cd ../.. && (./gradlew --stacktrace getPlumeScripts || (sleep 60 && ./gradlew --stacktrace getPlumeScripts))
-	../../checker/bin-devel/.plume-scripts/git-authors --latex --punctuation > contributors.tex
+# Update git-scripts even if it is already cloned
+	cd ../.. && (./gradlew --stacktrace getGitScripts || (sleep 60 && ./gradlew --stacktrace getGitScripts))
+	../../checker/bin-devel/.git-scripts/git-authors --latex --punctuation > contributors.tex
 
 ../api:
 	cd ../.. && ./gradlew allJavadoc
