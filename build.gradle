@@ -956,6 +956,10 @@ subprojects {
       if (!System.getenv('TF_BUILD')?.equals('True')) {
         // Not running under Azure Pipelines CI.
         maxParallelForks = Integer.MAX_VALUE
+
+        // This uses Gradle's recommended value for `maxParallelForks`:
+        // https://docs.gradle.org/current/userguide/performance.html#optimize_java_projects
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
       } else {
         // Running under Azure Pipelines CI.
 
