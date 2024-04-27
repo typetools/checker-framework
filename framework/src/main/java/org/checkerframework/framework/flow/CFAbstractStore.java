@@ -285,29 +285,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             || atypeFactory.isSideEffectFree(method));
     if (hasSideEffect) {
 
-      boolean sideEffectsUnrefineAliases = gatypeFactory.sideEffectsUnrefineAliases;
-
-      // TODO: Also remove if any element/argument to the annotation is not
-      // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
-      if (sideEffectsUnrefineAliases) {
-        // TODO: Why is this code within the sideEffectsUnrefineAliases branch??
-        if (!sideEffectsOnlyExpressions.isEmpty()) {
-          for (JavaExpression e : sideEffectsOnlyExpressions) {
-            if (!e.isUnmodifiableByOtherCode()) {
-              // Remove any computed information about the expression.
-              localVariableValues.keySet().remove(e);
-              fieldValues.keySet().remove(e);
-            }
-          }
-        } else {
-          localVariableValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-          thisValue = null;
-          fieldValues.keySet().removeIf(e -> !e.isUnmodifiableByOtherCode());
-        }
-      } else {
-        // Case 2 (unassignable fields) and case 3 (monotonic fields)
-        updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
-      }
+      updateFieldValuesForMethodCall(gatypeFactory, sideEffectsOnlyExpressions);
 
       // Update array values
       arrayValues.clear();
