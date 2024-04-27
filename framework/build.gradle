@@ -31,7 +31,7 @@ configurations {
 dependencies {
   api project(':javacutil')
   api project(':dataflow')
-  api 'org.checkerframework:stubparser:3.25.6'
+  api 'org.checkerframework:stubparser:3.25.10'
   // AFU is an "includedBuild" imported in checker-framework/settings.gradle, so the version number doesn't matter.
   // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
   api('org.checkerframework:annotation-file-utilities:*') {
