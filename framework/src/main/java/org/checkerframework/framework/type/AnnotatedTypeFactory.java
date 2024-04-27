@@ -1008,7 +1008,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       if (candidateAjavaFiles.size() == 1) {
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
-        String ajavaPath = candidateAjavaFiles.toArray(new String[candidateAjavaFiles.size()])[0];
+        String ajavaPath = candidateAjavaFiles.toArray(new String[0])[0];
         try {
           currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
         } catch (Throwable e) {
