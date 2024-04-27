@@ -464,6 +464,8 @@ allprojects { currentProj ->
           '-Xep:ExtendsObject:OFF',
           // The Checker Framework is the only nullness tool we care about.
           '-Xep:NullableWildcard:OFF',
+          // In the visitor pattern, it is natural to forward a Void reference.
+          '-Xep:VoidUsed:OFF',
           // -Werror halts the build if Error Prone issues a warning, which ensures that
           // the errors get fixed.  On the downside, Error Prone (or maybe the compiler?)
           // stops as soon as it issues one warning, rather than outputting them all.
