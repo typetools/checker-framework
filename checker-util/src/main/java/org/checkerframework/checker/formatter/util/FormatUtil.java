@@ -257,7 +257,7 @@ public class FormatUtil {
           cs.add(new Conversion(c, indexFromFormat(m)));
       }
     }
-    return cs.toArray(new Conversion[cs.size()]);
+    return cs.toArray(new Conversion[0]);
   }
 
   public static class ExcessiveOrMissingFormatArgumentException
