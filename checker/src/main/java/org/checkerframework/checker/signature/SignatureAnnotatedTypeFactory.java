@@ -10,6 +10,8 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -68,6 +70,14 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror INTERNAL_FORM =
       AnnotationBuilder.fromClass(elements, InternalForm.class);
 
+  /** The {@literal @}{@link ClassGetSimpleName} annotation. */
+  protected final AnnotationMirror CLASS_GET_SIMPLE_NAME =
+      AnnotationBuilder.fromClass(elements, ClassGetSimpleName.class);
+
+  /** The {@literal @}{@link ClassGetSimpleName} annotation. */
+  protected final AnnotationMirror FULLY_QUALIFIED_NAME =
+      AnnotationBuilder.fromClass(elements, FullyQualifiedName.class);
+
   /** The {@literal @}{@link DotSeparatedIdentifiers} annotation. */
   protected final AnnotationMirror DOT_SEPARATED_IDENTIFIERS =
       AnnotationBuilder.fromClass(elements, DotSeparatedIdentifiers.class);
@@ -96,6 +106,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           processingEnv,
           "java.lang.CharSequence",
           "java.lang.CharSequence");
+
+  /** The {@link String#substring(int)} method. */
+  private final ExecutableElement substringInt =
+      TreeUtils.getMethod("java.lang.String", "substring", processingEnv, "int");
 
   /** The {@link Class#getName()} method. */
   private final ExecutableElement classGetName =
@@ -142,10 +156,10 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     result.addStandardLiteralQualifiers();
 
     // The below code achieves the same effect as writing a meta-annotation
-    //     @QualifierForLiterals(stringPatterns = "...")
-    // on each type qualifier definition.  Annotation elements cannot be computations (not even
+    // @QualifierForLiterals(stringPatterns = "...")
+    // on each type qualifier definition. Annotation elements cannot be computations (not even
     // string concatenations of literal strings) and cannot be not references to compile-time
-    // constants such as effectively-final fields.  So every `stringPatterns = "..."` would have
+    // constants such as effectively-final fields. So every `stringPatterns = "..."` would have
     // to be a literal string, which would be verbose ard hard to maintain.
     result.addStringPattern(
         SignatureRegexes.ArrayWithoutPackageRegex,
@@ -242,6 +256,25 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+      // This condition checks if the given tree represents a method invocation of substring().
+      // If it does, it's expected that a FullyQualifiedName instance can be converted to a
+      // ClassGetSimpleName if the argument inside substring() equals to the index of the first
+      // character after the last dot in the fully qualified name.
+      if (TreeUtils.isMethodInvocation(tree, substringInt, processingEnv)) {
+        String expressionAsString = tree.toString();
+        expressionAsString = expressionAsString.replaceAll("\\s", ""); // Remove all white spaces
+        String pattern = "(\\w+)\\.substring\\(\\1\\.lastIndexOf\\(\"\\.\"\\)\\+1\\)";
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(expressionAsString);
+        if (matcher.matches()) {
+          ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+          AnnotatedTypeMirror receiverType = getAnnotatedType(receiver);
+          if (receiverType.getPrimaryAnnotation(FullyQualifiedName.class) != null) {
+            type.replaceAnnotation(CLASS_GET_SIMPLE_NAME);
+          }
+        }
+      }
+
       if (TreeUtils.isMethodInvocation(tree, replaceCharChar, processingEnv)
           || TreeUtils.isMethodInvocation(tree, replaceCharSequenceCharSequence, processingEnv)) {
         char oldChar = ' '; // initial dummy value
