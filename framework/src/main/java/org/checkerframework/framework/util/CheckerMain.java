@@ -573,7 +573,7 @@ public class CheckerMain {
     }
 
     // Actually invoke the compiler
-    return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
+    return ExecUtil.execute(args.toArray(new String[0]), System.out, System.err);
   }
 
   private static void outputArgumentsToFile(String outputFilename, List<String> args) {
