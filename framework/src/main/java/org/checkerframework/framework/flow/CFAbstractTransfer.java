@@ -294,10 +294,8 @@ public abstract class CFAbstractTransfer<
         // Allow that local variables are retained; they are effectively final,
         // otherwise Java wouldn't allow access from within the lambda.
         // TODO: what about the other information? Can code further down be simplified?
-        // store.localVariableValues.clear();
         store.classValues.clear();
         store.arrayValues.clear();
-        store.methodValues.clear();
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
