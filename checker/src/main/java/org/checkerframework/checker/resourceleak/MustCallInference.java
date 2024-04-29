@@ -564,8 +564,7 @@ public class MustCallInference {
     for (String mustCallValue : methodToFields.keySet()) {
       Set<String> fields = methodToFields.get(mustCallValue);
       AnnotationMirror am =
-          createEnsuresCalledMethods(
-              fields.toArray(new String[fields.size()]), new String[] {mustCallValue});
+          createEnsuresCalledMethods(fields.toArray(new String[0]), new String[] {mustCallValue});
       WholeProgramInference wpi = resourceLeakAtf.getWholeProgramInference();
       wpi.addMethodDeclarationAnnotation(methodElt, am);
     }
