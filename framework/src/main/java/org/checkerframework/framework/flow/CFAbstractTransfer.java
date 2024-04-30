@@ -297,7 +297,7 @@ public abstract class CFAbstractTransfer<
         store.classValues.clear();
         store.arrayValues.clear();
         // Is there a way to check whether the CF is being run with -AassumePure here?
-        // Best-effort check, ideally we should remove a methodValue if its impure (not just
+        // Best-effort check, ideally we should remove a methodValue if it's impure (not just
         // non-deterministic)
         store
             .methodValues
