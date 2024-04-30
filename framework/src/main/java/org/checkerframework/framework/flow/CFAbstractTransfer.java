@@ -296,6 +296,13 @@ public abstract class CFAbstractTransfer<
         // TODO: what about the other information? Can code further down be simplified?
         store.classValues.clear();
         store.arrayValues.clear();
+        // Is there a way to check whether the CF is being run with -AassumePure here?
+        // Best-effort check, ideally we should remove a methodValue if its impure (not just
+        // non-deterministic)
+        store
+            .methodValues
+            .keySet()
+            .removeIf(methodValue -> !methodValue.isDeterministic(atypeFactory));
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }

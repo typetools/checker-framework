@@ -1,6 +1,7 @@
 import java.util.List;
 import java.util.Optional;
 import org.checkerframework.checker.optional.qual.*;
+import org.checkerframework.dataflow.qual.*;
 
 class Main {
 
@@ -21,6 +22,7 @@ class Main {
       this.opt = Optional.ofNullable(s);
     }
 
+    @Pure
     public Optional<String> getOpt() {
       return this.opt;
     }
