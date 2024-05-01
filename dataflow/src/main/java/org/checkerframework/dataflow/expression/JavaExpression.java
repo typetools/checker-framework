@@ -145,8 +145,9 @@ public abstract class JavaExpression {
    *
    * @see #isModifiableByOtherCode
    */
+  // TODO: Make abstract when isUnassignableByOtherCode is removed.
   @Pure
-  public abstract boolean isAssignableByOtherCode() {
+  public boolean isAssignableByOtherCode() {
     return !isUnassignableByOtherCode();
   }
 
@@ -172,7 +173,7 @@ public abstract class JavaExpression {
    * outside the containing method.
    *
    * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
-   * its type is mutable.  ({@code String) is an immutable type.)
+   * its type is mutable. ({@code String} is an immutable type.)
    *
    * @see #isUnassignableByOtherCode
    */
