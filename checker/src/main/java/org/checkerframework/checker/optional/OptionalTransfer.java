@@ -1,7 +1,10 @@
 package org.checkerframework.checker.optional;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -13,6 +16,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nonempty.qual.NonEmpty;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.optional.qual.Present;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -29,6 +33,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** The transfer function for the Optional Checker. */
@@ -154,10 +160,33 @@ public class OptionalTransfer extends CFTransfer {
     if (relevantStreamMethods.stream()
         .anyMatch(
             op -> NodeUtils.isMethodInvocation(n, op, optionalTypeFactory.getProcessingEnv()))) {
-      optionalTypeFactory.isTreeAnnotatedWithNonEmpty(TreeUtils.getReceiverTree(n.getTree()));
-      // TODO: refine result to @Present if the receiver is @NonEmpty
-      assert result != null; // stub for debugging
+      JavaExpression receiver = JavaExpression.getReceiver(TreeUtils.getReceiverTree(n.getTree()));
+      VariableTree receiverDeclaration =
+          getReceiverDeclaration(TreePathUtil.enclosingMethod(n.getTreePath()), receiver);
+      List<? extends AnnotationTree> receiverAnnotationTrees =
+          receiverDeclaration.getModifiers().getAnnotations();
+      List<AnnotationMirror> annotationMirrors =
+          TreeUtils.annotationsFromTypeAnnotationTrees(receiverAnnotationTrees);
+      if (annotationMirrors.stream()
+          .anyMatch(am -> AnnotationUtils.areSameByName(am, NonEmpty.class.getCanonicalName()))) {
+        // TODO: the receiver of the stream operation is @Non-Empty, therefore the result is
+        // @Present
+        makePresent(result, n);
+      }
     }
+    assert result != null;
+  }
+
+  private @Nullable VariableTree getReceiverDeclaration(MethodTree tree, JavaExpression receiver) {
+    for (StatementTree statement : tree.getBody().getStatements()) {
+      if (statement instanceof VariableTree) {
+        VariableTree localVariableTree = (VariableTree) statement;
+        if (localVariableTree.getName().toString().equals(receiver.toString())) {
+          return localVariableTree;
+        }
+      }
+    }
+    return null;
   }
 
   /**
