@@ -1,3 +1,16 @@
+Version 3.43.1 (June 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
+Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
+
+**Closed issues:**
+
+
 Version 3.43.0 (?? ??, 2024)
 ----------------------------
 
@@ -32,9 +45,6 @@ Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
 
 Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
 `warnInvalidPolymorphicQualifier()`.
-
-Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
-Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
 
 **Closed issues:**
 
