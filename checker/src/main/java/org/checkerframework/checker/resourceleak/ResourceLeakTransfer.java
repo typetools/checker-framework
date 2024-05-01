@@ -2,6 +2,9 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import com.sun.source.tree.MethodInvocationTree;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
@@ -17,6 +20,8 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The transfer function for the resource-leak extension to the called-methods type system. */
@@ -138,6 +143,14 @@ public class ResourceLeakTransfer extends CalledMethodsTransfer {
    */
   public void updateStoreWithTempVar(
       TransferResult<AccumulationValue, AccumulationStore> result, Node node) {
+    // If the node is a void method invocation then do not create temp vars for it.
+    if (node instanceof MethodInvocationNode) {
+      MethodInvocationTree methodInvocationTree = (MethodInvocationTree) node.getTree();
+      ExecutableElement executableElement = TreeUtils.elementFromUse(methodInvocationTree);
+      if (ElementUtils.getType(executableElement).getKind() == TypeKind.VOID) {
+        return;
+      }
+    }
     // Must-call obligations on primitives are not supported.
     if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
       MustCallAnnotatedTypeFactory mcAtf =
