@@ -144,7 +144,7 @@ public enum ConversionCategory {
           typesWithPrimitives.add(unwrapped);
         }
       }
-      this.types = typesWithPrimitives.toArray(new Class<?>[typesWithPrimitives.size()]);
+      this.types = typesWithPrimitives.toArray(new Class<?>[0]);
     }
   }
 
