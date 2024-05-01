@@ -953,6 +953,9 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
+      // maxParallelForks controls the parallelism of a single Test
+      // task. --parallel controls parallelism for the entire build.
+
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
@@ -963,6 +966,9 @@ subprojects {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
       } else {
         // Running under Azure Pipelines CI.
+
+        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
+        maxParallelForks = 1
 
         // Azure seems to time out when a task doesn't produce periodic output.
         if (project.name.is('checker')) {
