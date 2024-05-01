@@ -126,6 +126,8 @@ public abstract class JavaExpression {
    * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations whose
    * operands are all {@link #isUnmodifiableByOtherCode}.
    *
+   * @return true if no subexpression of this can be assigned to from outside the current method
+   *     body
    * @see #isUnmodifiableByOtherCode
    * @deprecated use {@link #isAssignableByOtherCode}
    */
@@ -137,12 +139,14 @@ public abstract class JavaExpression {
 
   /**
    * Returns true if some subexpression of this can be assigned to from outside the current method
-   * call.
+   * body.
    *
    * <p>This is false for local variables, the self reference, final field accesses whose receiver
    * is {@link #isUnassignableByOtherCode}, and operations whose operands are all not {@link
    * #isModifiableByOtherCode}.
    *
+   * @return true if some subexpression of this can be assigned to from outside the current method
+   *     body
    * @see #isModifiableByOtherCode
    */
   // TODO: Make abstract when isUnassignableByOtherCode is removed.
@@ -158,6 +162,8 @@ public abstract class JavaExpression {
    * <p>Approximately, this returns true if the expression is {@link #isUnassignableByOtherCode} and
    * its type is immutable.
    *
+   * @return true if the value of this expression cannot be changed from outside the current method
+   *     body
    * @see #isUnassignableByOtherCode
    * @deprecated use {@link #isModifiableByOtherCode}
    */
@@ -175,6 +181,8 @@ public abstract class JavaExpression {
    * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
    * its type is mutable. ({@code String} is an immutable type.)
    *
+   * @return true if the value of this expression can be changed from outside the current method
+   *     body
    * @see #isUnassignableByOtherCode
    */
   // TODO: Make abstract when isUnmodifiableByOtherCode is removed.
