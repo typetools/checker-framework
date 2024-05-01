@@ -33,6 +33,9 @@ Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
 Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
 `warnInvalidPolymorphicQualifier()`.
 
+Renamed `CFAbstractStore#methodValues` to
+`CFAbstractStore#methodCallExpressions`.
+
 **Closed issues:**
 
 
