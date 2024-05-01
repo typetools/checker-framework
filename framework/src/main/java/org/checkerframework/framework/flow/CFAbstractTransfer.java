@@ -302,7 +302,11 @@ public abstract class CFAbstractTransfer<
         store
             .methodValues
             .keySet()
-            .removeIf(methodValue -> !methodValue.isDeterministic(atypeFactory));
+            .removeIf(methodValue -> !methodValue.isUnmodifiableByOtherCode());
+        // Remove iff the lambda is immediately used + does not have side effects
+        // Add new annotation called @DoesNotEscape
+        // lambda.getParent() is marked with @DoesNotEscape
+        // - And the lambda body does not have side effects
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
