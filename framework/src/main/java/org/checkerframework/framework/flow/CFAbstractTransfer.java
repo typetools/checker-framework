@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -307,6 +308,16 @@ public abstract class CFAbstractTransfer<
         // Add new annotation called @DoesNotEscape
         // lambda.getParent() is marked with @DoesNotEscape
         // - And the lambda body does not have side effects
+
+        // Scratch work here.
+        CFGLambda lambda = (CFGLambda) underlyingAST;
+        LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
+        TreePath lambdaPath = atypeFactory.getPath(lambdaTree);
+        Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
+        if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+          // TODO: check if any of the formal params to the method to which the lambda is passed is
+          // marked with @NonLeaked
+        }
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
@@ -374,6 +385,19 @@ public abstract class CFAbstractTransfer<
 
     return store;
   }
+
+  //  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodInvocationTree methodInvok,
+  // AnnotatedTypeFactory aTypeFactory) {
+  //    ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvok);
+  //    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
+  //    for (VariableTree vt : params) {
+  //      annotationMirrors.addAll(
+  //          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
+  //    }
+  //    return annotationMirrors.stream()
+  //        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
+  //  }
+  //
 
   /**
    * Add field values to the initial store before {@code methodTree}.
