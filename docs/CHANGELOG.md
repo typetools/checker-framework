@@ -1,3 +1,13 @@
+Version 3.44.0 (?? ??, 2024)
+----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Renamed `CFAbstractStore#methodValues` to
+`CFAbstractStore#methodCallExpressions`.
+
 Version 3.43.0 (?? ??, 2024)
 ----------------------------
 
@@ -32,9 +42,6 @@ Moved methods from `TreeUtils` to subclasses of `TreeUtilsAfterJava11`:
 
 Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
 `warnInvalidPolymorphicQualifier()`.
-
-Renamed `CFAbstractStore#methodValues` to
-`CFAbstractStore#methodCallExpressions`.
 
 **Closed issues:**
 
