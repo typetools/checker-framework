@@ -406,7 +406,7 @@ public class ControlFlowGraph implements UniqueId {
    * @param t a tree that might correspond to a node in the CFG
    * @return the method that contains {@code t}'s Node, or null
    */
-  public @Nullable MethodTree getContainingMethod(Tree t) {
+  public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
       UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
       return cfgMethod.getMethod();
@@ -421,7 +421,7 @@ public class ControlFlowGraph implements UniqueId {
    * @param t a tree that might be within a class
    * @return the class that contains the given tree, or null
    */
-  public @Nullable ClassTree getContainingClass(Tree t) {
+  public @Nullable ClassTree getEnclosingClass(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
       UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
       return cfgMethod.getClassTree();

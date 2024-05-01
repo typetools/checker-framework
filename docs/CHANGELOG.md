@@ -1,3 +1,19 @@
+Version 3.43.1 (June 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Deprecated methods:
+ * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
+ * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
+
+**Closed issues:**
+
+
 Version 3.43.0 (?? ??, 2024)
 ----------------------------
 

@@ -626,7 +626,7 @@ public class AnnotationFileParser {
     return result;
   }
 
-  // If a member is imported, then consider every containing class to also be imported.
+  // If a member is imported, then consider every enclosing class to also be imported.
   private void addEnclosingTypesToImportedTypes(Element element) {
     for (Element enclosedEle : element.getEnclosedElements()) {
       if (enclosedEle.getKind().isClass()) {
@@ -906,8 +906,8 @@ public class AnnotationFileParser {
    * removed after processing the type's members. Otherwise, this method removes them.
    *
    * @param typeDecl the type declaration to process
-   * @param outerTypeName the name of the containing class, when processing a nested class;
-   *     otherwise null
+   * @param outerTypeName the name of the enclosing class, when processing a nested class; otherwise
+   *     null
    * @param classTree the tree corresponding to typeDecl if processing an ajava file, null otherwise
    * @return a list of types variables for {@code typeDecl}. Only non-null if processing an ajava
    *     file, in which case the contents should be removed from {@link #typeParameters} after
