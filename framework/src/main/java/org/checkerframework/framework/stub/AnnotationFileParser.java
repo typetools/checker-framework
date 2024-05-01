@@ -626,7 +626,11 @@ public class AnnotationFileParser {
     return result;
   }
 
-  // If a member is imported, then consider every enclosing class to also be imported.
+  /**
+   * Handle wildcard imports by adding, to {@link #importedTypes}, every enclosed type.
+   *
+   * @param element an element for a type or package
+   */
   private void addEnclosingTypesToImportedTypes(Element element) {
     for (Element enclosedEle : element.getEnclosedElements()) {
       if (enclosedEle.getKind().isClass()) {
