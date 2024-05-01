@@ -127,9 +127,28 @@ public abstract class JavaExpression {
    * operands are all {@link #isUnmodifiableByOtherCode}.
    *
    * @see #isUnmodifiableByOtherCode
+   * @deprecated use {@link #isAssignableByOtherCode}
+   */
+  @Deprecated // 2024-04-30
+  @Pure
+  public boolean isUnassignableByOtherCode() {
+    return !isAssignableByOtherCode();
+  }
+
+  /**
+   * Returns true if some subexpression of this can be assigned to from outside the current method
+   * call.
+   *
+   * <p>This is false for local variables, the self reference, final field accesses whose receiver
+   * is {@link #isUnassignableByOtherCode}, and operations whose operands are all not {@link
+   * #isModifiableByOtherCode}.
+   *
+   * @see #isModifiableByOtherCode
    */
   @Pure
-  public abstract boolean isUnassignableByOtherCode();
+  public abstract boolean isAssignableByOtherCode() {
+    return !isUnassignableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the value this expression stands for cannot be changed by a method
@@ -139,9 +158,29 @@ public abstract class JavaExpression {
    * its type is immutable.
    *
    * @see #isUnassignableByOtherCode
+   * @deprecated use {@link #isModifiableByOtherCode}
    */
+  @Deprecated // 2024-04-30
   @Pure
-  public abstract boolean isUnmodifiableByOtherCode();
+  public boolean isUnmodifiableByOtherCode() {
+    return !isModifiableByOtherCode();
+  }
+
+  /**
+   * Returns true if the value this expression stands for can be changed by a method call;
+   * equivalently, if the value this expression evaluates to can be changed by a side effect from
+   * outside the containing method.
+   *
+   * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
+   * its type is mutable.  ({@code String) is an immutable type.)
+   *
+   * @see #isUnassignableByOtherCode
+   */
+  // TODO: Make abstract when isUnmodifiableByOtherCode is removed.
+  @Pure
+  public boolean isModifiableByOtherCode() {
+    return !isUnmodifiableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.

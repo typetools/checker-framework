@@ -73,13 +73,13 @@ public class UnaryOperation extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return operand.isUnassignableByOtherCode();
+  public boolean isAssignableByOtherCode() {
+    return operand.isAssignableByOtherCode();
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return operand.isUnmodifiableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return operand.isModifiableByOtherCode();
   }
 
   @Override
