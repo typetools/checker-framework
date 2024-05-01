@@ -7,7 +7,6 @@ export SHELLOPTS
 echo "SHELLOPTS=${SHELLOPTS}"
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# shellcheck disable=SC1090 # In newer shellcheck than 0.6.0, pass: "-P SCRIPTDIR" (literally)
 export ORG_GRADLE_PROJECT_useJdk17Compiler=true
 source "$SCRIPTDIR"/clone-related.sh
 
@@ -47,10 +46,13 @@ else
 fi
 if [ $status -ne 0 ]; then exit $status; fi
 
+# Shell script style
+make -C checker/bin shell-script-style
+make -C checker/bin-devel shell-script-style
 
 ## User documentation
 ./gradlew manual
-git diff  --exit-code docs/manual/contributors.tex || \
+git diff --exit-code docs/manual/contributors.tex || \
     (set +x && set +v &&
      echo "docs/manual/contributors.tex is not up to date." &&
      echo "If the above suggestion is appropriate, run: make -C docs/manual contributors.tex" &&
@@ -58,6 +60,6 @@ git diff  --exit-code docs/manual/contributors.tex || \
      echo "  * Update your git configuration by running:  git config --global user.name \"YOURFULLNAME\"" &&
      echo "  * Add your name to your GitHub account profile at https://github.com/settings/profile" &&
      echo "  * Make a pull request to add your GitHub ID to" &&
-     echo "    https://github.com/plume-lib/plume-scripts/blob/master/git-authors.sed" &&
+     echo "    https://github.com/plume-lib/git-scripts/blob/master/git-authors.sed" &&
      echo "    and remake contributors.tex after that pull request is merged." &&
      false)
