@@ -625,7 +625,7 @@ class MustCallConsistencyAnalyzer {
       incrementNumMustCall(node);
     }
 
-    if (!shouldTrackInvocationResult(obligations, node)) {
+    if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;
     }
 
@@ -921,9 +921,11 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which may be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
+   * @param isMustCallInference true if this call is invoked as part of a MustCall inference
    * @return true iff the result of {@code node} should be tracked in {@code obligations}
    */
-  private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
+  public boolean shouldTrackInvocationResult(
+      Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
     if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
       // Constructor results from new expressions are tracked as long as the declared type has
@@ -939,8 +941,12 @@ class MustCallConsistencyAnalyzer {
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
     MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
-    if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
-        || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
+    // For must call inference, we do not want to bail-out on tracking the obligations for 'this()'
+    // or 'super()' calls because this tracking is necessary to correctly infer the @MustCallAlias
+    // annotation for the constructor and its aliasing parameter.
+    if (!isMustCallInference
+        && (TreeUtils.isSuperConstructorCall(methodInvokeTree)
+            || TreeUtils.isThisConstructorCall(methodInvokeTree))) {
       List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
       // If there is a MustCallAlias argument that is also in the set of Obligations, then
       // remove it; its must-call obligation has been fulfilled by being passed on to the
