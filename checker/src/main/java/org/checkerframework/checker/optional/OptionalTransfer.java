@@ -231,7 +231,7 @@ public class OptionalTransfer extends CFTransfer {
   private void makePresent(CFStore store, Node node) {
     JavaExpression internalRepr = JavaExpression.fromNode(node);
     System.out.printf("Attempting to insert value into store = %s\n", internalRepr);
-    store.insertValue(internalRepr, PRESENT);
+    store.insertValuePermitNondeterministic(internalRepr, PRESENT);
     System.out.printf("Store after insertion = %s\n", store);
   }
 
