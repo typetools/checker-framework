@@ -1,10 +1,10 @@
 package org.checkerframework.checker.resourceleak;
 
+import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import com.sun.source.tree.MethodInvocationTree;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
