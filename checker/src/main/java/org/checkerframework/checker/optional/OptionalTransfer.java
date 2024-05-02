@@ -25,7 +25,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -173,7 +172,8 @@ public class OptionalTransfer extends CFTransfer {
           .anyMatch(am -> AnnotationUtils.areSameByName(am, NonEmpty.class.getCanonicalName()))) {
         // TODO: the receiver of the stream operation is @Non-Empty, therefore the result is
         // @Present
-        makePresent(result, n);
+        JavaExpression internalRepr = JavaExpression.fromNode(n);
+        insertIntoStores(result, internalRepr, PRESENT);
       }
     }
     assert result != null;
@@ -205,47 +205,5 @@ public class OptionalTransfer extends CFTransfer {
       }
     }
     return null;
-  }
-
-  /**
-   * Sets {@code node} to {@code @Present} in the given {@link TransferResult}.
-   *
-   * @param result the transfer result to side effect
-   * @param node the node to make {@code @Present}
-   */
-  private void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
-    if (result.containsTwoStores()) {
-      makePresent(result.getThenStore(), node);
-      makePresent(result.getElseStore(), node);
-    } else {
-      makePresent(result.getRegularStore(), node);
-    }
-  }
-
-  /**
-   * Sets a given {@link Node} to {@code @Present} in the given {@code store}.
-   *
-   * @param store the store to update
-   * @param node the node that should be absent (non-present)
-   */
-  private void makePresent(CFStore store, Node node) {
-    JavaExpression internalRepr = JavaExpression.fromNode(node);
-    System.out.printf("Attempting to insert value into store = %s\n", internalRepr);
-    store.insertValuePermitNondeterministic(internalRepr, PRESENT);
-    System.out.printf("Store after insertion = %s\n", store);
-  }
-
-  /**
-   * Refine the given result to {@code @Present}.
-   *
-   * @param result the result to refine to {@code @Present}.
-   */
-  @SuppressWarnings("UnusedMethod")
-  private void refineToPresent(TransferResult<CFValue, CFStore> result) {
-    CFValue oldResultValue = result.getResultValue();
-    CFValue refinedResultValue =
-        analysis.createSingleAnnotationValue(PRESENT, oldResultValue.getUnderlyingType());
-    CFValue newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
-    result.setResultValue(newResultValue);
   }
 }
