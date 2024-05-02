@@ -137,6 +137,8 @@ public class OptionalTransfer extends CFTransfer {
       return result;
     }
     refineStreamOperations(n, result);
+    System.out.printf(
+        "Visiting method invocation = %s, with store = %s\n", n, in.getRegularStore());
     return result;
   }
 
@@ -177,7 +179,23 @@ public class OptionalTransfer extends CFTransfer {
     assert result != null;
   }
 
+  /**
+   * Find the declaration of the receiver of a method call in a method tree.
+   *
+   * <p>The receiver should appear in one of two places, either as a formal parameter to the method,
+   * or as a local variable.
+   *
+   * @param tree the method tree
+   * @param receiver the receiver for which to look up a declaration
+   * @return the declaration of the receiver of the method call, if found. Otherwise, null
+   */
   private @Nullable VariableTree getReceiverDeclaration(MethodTree tree, JavaExpression receiver) {
+    List<? extends VariableTree> params = tree.getParameters();
+    for (VariableTree param : params) {
+      if (param.getName().toString().equals(receiver.toString())) {
+        return param;
+      }
+    }
     for (StatementTree statement : tree.getBody().getStatements()) {
       if (statement instanceof VariableTree) {
         VariableTree localVariableTree = (VariableTree) statement;
@@ -195,7 +213,6 @@ public class OptionalTransfer extends CFTransfer {
    * @param result the transfer result to side effect
    * @param node the node to make {@code @Present}
    */
-  @SuppressWarnings("UnusedMethod")
   private void makePresent(TransferResult<CFValue, CFStore> result, Node node) {
     if (result.containsTwoStores()) {
       makePresent(result.getThenStore(), node);
@@ -213,7 +230,9 @@ public class OptionalTransfer extends CFTransfer {
    */
   private void makePresent(CFStore store, Node node) {
     JavaExpression internalRepr = JavaExpression.fromNode(node);
+    System.out.printf("Attempting to insert value into store = %s\n", internalRepr);
     store.insertValue(internalRepr, PRESENT);
+    System.out.printf("Store after insertion = %s\n", store);
   }
 
   /**
