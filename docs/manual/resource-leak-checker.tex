@@ -633,9 +633,32 @@ for (int i = 0; i < s.length; i++) {
 }
 // 2. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 \end{verbatim}
-The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods or return for successful pattern-matching.
+The loop must iterate from 0 to \<s.length> or \<n>, where \<n> is the effectively final variable used for the initialization of the array size. The update must be either a pre-increment or post-increment.  There must be exactly one statement in the body (which may be a try-catch construct) that contains the assignment. The right-hand side of the assignment must be the immediate construction of the object (not simply any expression evaluating to one). If there is a try-catch construct, the catch and finally blocks may not throw any exceptions, break out of the loop, call any methods or return for successful pattern-matching. In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements.
 
-In order to assign the elements of an \<@OwningArray>, the array must have no open calling obligations on its elements.
+\noindent Any other assignment to the elements of an \<@OwningArray>, outside of such a loop, is prohibited.
+
+An \<@OwningArray> reference may be reassigned after an initial assignment, but only to allocate a new array (and of course only if the array has no open must-call-on-elements obligations). Any other assignment with the left-hand side being an \<@OwningArray> reference is prohibited. In particular is an aliasing of two \<@OwningArray> references prohibited:
+
+\begin{verbatim}
+@OwningArray Socket[] s1 = new Socket[n];
+@OwningArray Socket[] s2 = new Socket[n];
+s2 = s1; // prohibited assignment
+\end{verbatim}
+
+\noindent However, the following is allowed:
+
+\begin{verbatim}
+@OwningArray Socket[] s = new Socket[n]; // initial assignment
+s = new Socket[n]; // no open obligations for s, hence this is allowed
+\end{verbatim}
+
+\subsectionAndLabel{Aliasing of \<@OwningArray> references}{resource-leak-arrays-aliasing}
+We've seen in the previous Section~\ref{resource-leak-arrays-declaration} that an \<@OwningArray> reference may not alias, i.e. be assigned to, another \<@OwningArray> reference. However, it is allowed for a non-\<@OwningArray> reference to be assigned to, and alias, an \<@OwningArray> reference:
+
+\begin{verbatim}
+@OwningArray Socket[] s_owning = new Socket[n];
+Socket[] s_alias = s_owning; // this assignment is allowed
+\end{verbatim}
 
 \subsectionAndLabel{Must-call and called-methods for arrays}{resource-leak-arrays-mcoe-cmoe}
 Must-call-on-elements and called-methods-on-elements provide similar semantics for arrays as must-call and called-methods do for objects.
@@ -671,13 +694,13 @@ The MustCallOnElements obligations can be fulfilled in the following way:
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
 for (int i = 0; i < arr.length; i++) {
-    arr[i].someMethod();
+    arr[i].close();
 }
 // 2. @MustCallOnElements({}) @CalledMethodsOnElements({"close"})
 \end{verbatim}
 
 The same pattern-match rules as for the assignment of elements apply (see Section~\ref{resource-leak-arrays-declaration}).
-The operation has no precondition. The semantics is that "someMethod" is added to the \<@CalledMethodsOnElements> type of arr and removed from the \<@MustCallOnElements> type of arr.
+The operation has no precondition. The semantics is that "close" is added to the \<@CalledMethodsOnElements> type of arr and removed from the \<@MustCallOnElements> type of arr.
 
 The obligation can also be fulfilled by calling a single-parameter method, which has an \<@EnsuresCalledMethods> annotation, with the array element as an argument:
 \begin{verbatim}
@@ -712,7 +735,7 @@ void m1(@OwningArray Socket[] s) {
 }
 \end{verbatim}
 
-To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the obligation for the passed argument, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and add the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
+To call a method with an \<@OwningArray> parameter, the argument must also be \<@OwningArray>. The called method only borrows the ownership of the \<@OwningArray> parameter, since the \<@OwningArray> parameter cannot leave the method scope and its obligations have to be fulfilled by the time of method exit. Thus, not only can the caller keep the ownership for the passed argument, but due to the calling guarantees, the call also resets the \<@MustCallOnElements> type to an empty value and add the methods guaranteed to have been called to the \<CalledMethodsOnElements> type:
 
 \begin{verbatim}
 // 1. @MustCallOnElements({"close"}) @CalledMethodsOnElements({})
@@ -791,7 +814,7 @@ Now, the elements of \textit{s} may not be reassigned. The following throws an e
 // s: @MustCallOnElementsUnknown @CalledMethodsOnElements({})
 for (int i = 0; i < s.length; i++) {
   try {
-    s = new Socket(myHost, myPort);  // this assignment throws an error
+    s[i] = new Socket(myHost, myPort);  // this assignment throws an error
   } catch {}
 }
 \end{verbatim}
