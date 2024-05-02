@@ -1,5 +1,6 @@
-Version 3.43.1 (?? ??, 2024)
-----------------------------
+
+Version 3.43.1 (June 1, 2024)
+-----------------------------
 
 **User-visible changes:**
 
@@ -7,6 +8,8 @@ Version 3.43.1 (?? ??, 2024)
 
 Renamed `CFAbstractStore#methodValues` to
 `CFAbstractStore#methodCallExpressions`.
+
+**Closed issues:**
 
 Version 3.43.0 (May 1, 2024)
 ----------------------------
