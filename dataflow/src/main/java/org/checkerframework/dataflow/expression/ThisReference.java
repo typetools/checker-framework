@@ -43,13 +43,13 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return TypesUtils.isImmutableTypeInJdk(type);
+  public boolean isModifiableByOtherCode() {
+    return !TypesUtils.isImmutableTypeInJdk(type);
   }
 
   @Override

@@ -1,7 +1,24 @@
-Version 3.43.0 (?? ??, 2024)
+Version 3.43.1 (June 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
+Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
+
+**Closed issues:**
+
+
+Version 3.43.0 (May 1, 2024)
 ----------------------------
 
 **User-visible changes:**
+
+Method, constructor, lambda, and method reference type inference has been
+greatly improved.  The `-AconservativeUninferredTypeArguments` option is
+no longer necessary and has been removed.
 
 Renamed command-line arguments:
  * `-AskipDirs` has been renamed to `-AskipFiles`.
@@ -9,10 +26,6 @@ Renamed command-line arguments:
 
 New command-line arguments:
  * `-AonlyFiles` complements `-AskipFiles`
-
-Method, constructor, lambda, and method reference type inference has been
-greatly improved.  The `-AconservativeUninferredTypeArguments` option is
-no longer necessary and has been removed.
 
 A specialized inference algorithm for the Resource Leak Checker runs
 automatically as part of whole-program inference.
@@ -34,6 +47,11 @@ Renamed `BaseTypeVisitor.checkForPolymorphicQualifiers()` to
 `warnInvalidPolymorphicQualifier()`.
 
 **Closed issues:**
+
+#979, #4559, #4593, #5058, #5734, #5781, #6071, #6093, #6239, #6297, #6317,
+#6322, #6346, #6373, #6376, #6378, #6379, #6380, #6389, #6393, #6396, #6402,
+#6406, #6407, #6417, #6421, #6430, #6433, #6438, #6442, #6473, #6480, #6507,
+#6531, #6535.
 
 
 Version 3.42.0 (December 15, 2023)

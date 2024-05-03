@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
-    errorprone : '2.27.0',
+    errorprone : '2.27.1',
   ]
 }
 
@@ -114,7 +114,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.43.0-SNAPSHOT'
+  version '3.43.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -967,10 +967,10 @@ subprojects {
       } else {
         // Running under Azure Pipelines CI.
 
-        // On CI, parallelism seems to lead to flaky failures.
+        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
         maxParallelForks = 1
 
-        // Diagnose Azure flaky failures.
+        // Azure seems to time out when a task doesn't produce periodic output.
         if (project.name.is('checker')) {
           // Disable all test parallelism
           systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
