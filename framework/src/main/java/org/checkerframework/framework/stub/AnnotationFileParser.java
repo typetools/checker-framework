@@ -555,7 +555,7 @@ public class AnnotationFileParser {
               // Find compile time constant fields, or values of an enum
               putAllNew(result, annosInType(element));
               importedConstants.addAll(getImportableMembers(element));
-              addEnclosingTypesToImportedTypes(element);
+              addEnclosedTypesToImportedTypes(element);
             }
 
           } else {
@@ -563,7 +563,7 @@ public class AnnotationFileParser {
             PackageElement element = findPackage(imported, importDecl);
             if (element != null) {
               putAllNew(result, annosInPackage(element));
-              addEnclosingTypesToImportedTypes(element);
+              addEnclosedTypesToImportedTypes(element);
             }
           }
         } else {
@@ -626,10 +626,14 @@ public class AnnotationFileParser {
     return result;
   }
 
-  // If a member is imported, then consider every containing class to also be imported.
-  private void addEnclosingTypesToImportedTypes(Element element) {
+  /**
+   * Handle wildcard imports by adding, to {@link #importedTypes}, every enclosed type.
+   *
+   * @param element an element for a type or package
+   */
+  private void addEnclosedTypesToImportedTypes(Element element) {
     for (Element enclosedEle : element.getEnclosedElements()) {
-      if (enclosedEle.getKind().isClass()) {
+      if (enclosedEle.getKind().isClass() || enclosedEle.getKind().isInterface()) {
         importedTypes.put(enclosedEle.getSimpleName().toString(), (TypeElement) enclosedEle);
       }
     }

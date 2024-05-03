@@ -50,7 +50,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right < left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -85,7 +85,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right is less than left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -111,7 +111,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
     LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
     JavaExpression leftJe = JavaExpression.fromNode(n.getLeftOperand());
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
       Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
       if (right != null && 0 < right) {

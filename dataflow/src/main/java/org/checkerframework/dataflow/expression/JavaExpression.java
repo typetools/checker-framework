@@ -126,10 +126,34 @@ public abstract class JavaExpression {
    * final field accesses whose receiver is {@link #isUnassignableByOtherCode}, and operations whose
    * operands are all {@link #isUnmodifiableByOtherCode}.
    *
+   * @return true if no subexpression of this can be assigned to from outside the current method
+   *     body
    * @see #isUnmodifiableByOtherCode
+   * @deprecated use {@link #isAssignableByOtherCode}
    */
+  @Deprecated // 2024-04-30
   @Pure
-  public abstract boolean isUnassignableByOtherCode();
+  public boolean isUnassignableByOtherCode() {
+    return !isAssignableByOtherCode();
+  }
+
+  /**
+   * Returns true if some subexpression of this can be assigned to from outside the current method
+   * body.
+   *
+   * <p>This is false for local variables, the self reference, final field accesses whose receiver
+   * is {@link #isUnassignableByOtherCode}, and operations whose operands are all not {@link
+   * #isModifiableByOtherCode}.
+   *
+   * @return true if some subexpression of this can be assigned to from outside the current method
+   *     body
+   * @see #isModifiableByOtherCode
+   */
+  // TODO: Make abstract when isUnassignableByOtherCode is removed.
+  @Pure
+  public boolean isAssignableByOtherCode() {
+    return !isUnassignableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the value this expression stands for cannot be changed by a method
@@ -138,10 +162,34 @@ public abstract class JavaExpression {
    * <p>Approximately, this returns true if the expression is {@link #isUnassignableByOtherCode} and
    * its type is immutable.
    *
+   * @return true if the value of this expression cannot be changed from outside the current method
+   *     body
+   * @see #isUnassignableByOtherCode
+   * @deprecated use {@link #isModifiableByOtherCode}
+   */
+  @Deprecated // 2024-04-30
+  @Pure
+  public boolean isUnmodifiableByOtherCode() {
+    return !isModifiableByOtherCode();
+  }
+
+  /**
+   * Returns true if the value this expression stands for can be changed by a method call;
+   * equivalently, if the value this expression evaluates to can be changed by a side effect from
+   * outside the containing method.
+   *
+   * <p>Approximately, this returns true if the expression is {@link #isAssignableByOtherCode} or
+   * its type is mutable. ({@code String} is an immutable type.)
+   *
+   * @return true if the value of this expression can be changed from outside the current method
+   *     body
    * @see #isUnassignableByOtherCode
    */
+  // TODO: Make abstract when isUnmodifiableByOtherCode is removed.
   @Pure
-  public abstract boolean isUnmodifiableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return !isUnmodifiableByOtherCode();
+  }
 
   /**
    * Returns true if and only if the two Java expressions are syntactically identical.
