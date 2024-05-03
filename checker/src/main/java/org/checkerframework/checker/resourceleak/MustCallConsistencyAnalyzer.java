@@ -921,7 +921,7 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which may be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
-   * @param isMustCallInference true if this call is invoked as part of a MustCall inference
+   * @param isMustCallInference true if this method is invoked as part of a MustCall inference
    * @return true iff the result of {@code node} should be tracked in {@code obligations}
    */
   public boolean shouldTrackInvocationResult(
@@ -941,7 +941,7 @@ class MustCallConsistencyAnalyzer {
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
     MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
-    // For must call inference, we do not want to bail-out on tracking the obligations for 'this()'
+    // For must call inference, we do not want to bail out on tracking the obligations for 'this()'
     // or 'super()' calls because this tracking is necessary to correctly infer the @MustCallAlias
     // annotation for the constructor and its aliasing parameter.
     if (!isMustCallInference
