@@ -631,7 +631,6 @@ public class AnnotationFileParser {
    *
    * @param element an element for a type or package
    */
-
   private void addEnclosedTypesToImportedTypes(Element element) {
     for (Element enclosedEle : element.getEnclosedElements()) {
       if (enclosedEle.getKind().isClass() || enclosedEle.getKind().isInterface()) {
