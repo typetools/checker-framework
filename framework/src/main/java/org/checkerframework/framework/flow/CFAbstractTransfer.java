@@ -65,6 +65,7 @@ import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -302,6 +303,7 @@ public abstract class CFAbstractTransfer<
         // TODO: what about the other information? Can code further down be simplified?
         store.classValues.clear();
         store.arrayValues.clear();
+        store.methodValues.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         // Is there a way to check whether the CF is being run with -AassumePure here?
         // Best-effort check, ideally we should remove a methodValue if it's impure (not just
         // non-deterministic)
@@ -311,15 +313,9 @@ public abstract class CFAbstractTransfer<
         // lambda.getParent() is marked with @DoesNotEscape
         // - And the lambda body does not have side effects
         boolean isLambdaLeaked = isLambdaLeaked(lambda, atypeFactory);
-        if (isLambdaLeaked) {
+        if (!isLambdaLeaked) {
           System.out.printf("Non-leaked lambda found for = %s\n", lambda);
         }
-
-        store
-            .methodValues
-            .keySet()
-            .removeIf(methodValue -> !methodValue.isUnmodifiableByOtherCode());
-
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
@@ -409,8 +405,9 @@ public abstract class CFAbstractTransfer<
               .getChecker()
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
+        // Check whether any parameter is NOT annotated with @NonLeaked
         return methodElt.getParameters().stream()
-            .allMatch(
+            .anyMatch(
                 param ->
                     aliasingAtf.getAnnotatedType(param).getPrimaryAnnotation(NonLeaked.class)
                         == null);
