@@ -3,6 +3,7 @@ package org.checkerframework.framework.flow;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -25,6 +26,9 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
+import org.checkerframework.common.aliasing.AliasingChecker;
+import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -289,6 +293,7 @@ public abstract class CFAbstractTransfer<
       }
 
     } else if (underlyingAST.getKind() == UnderlyingAST.Kind.LAMBDA) {
+      CFGLambda lambda = (CFGLambda) underlyingAST;
       if (fixedInitialStore != null) {
         // Create a copy and keep only the field values (nothing else applies).
         store = analysis.createCopiedStore(fixedInitialStore);
@@ -300,24 +305,21 @@ public abstract class CFAbstractTransfer<
         // Is there a way to check whether the CF is being run with -AassumePure here?
         // Best-effort check, ideally we should remove a methodValue if it's impure (not just
         // non-deterministic)
-        store
-            .methodValues
-            .keySet()
-            .removeIf(methodValue -> !methodValue.isUnmodifiableByOtherCode());
+        // Scratch work here.
         // Remove iff the lambda is immediately used + does not have side effects
         // Add new annotation called @DoesNotEscape
         // lambda.getParent() is marked with @DoesNotEscape
         // - And the lambda body does not have side effects
-
-        // Scratch work here.
-        CFGLambda lambda = (CFGLambda) underlyingAST;
-        LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
-        TreePath lambdaPath = atypeFactory.getPath(lambdaTree);
-        Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
-        if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
-          // TODO: check if any of the formal params to the method to which the lambda is passed is
-          // marked with @NonLeaked
+        boolean isLambdaLeaked = isLambdaLeaked(lambda, atypeFactory);
+        if (isLambdaLeaked) {
+          System.out.printf("Non-leaked lambda found for = %s\n", lambda);
         }
+
+        store
+            .methodValues
+            .keySet()
+            .removeIf(methodValue -> !methodValue.isUnmodifiableByOtherCode());
+
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
       }
@@ -327,7 +329,6 @@ public abstract class CFAbstractTransfer<
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
       }
 
-      CFGLambda lambda = (CFGLambda) underlyingAST;
       @SuppressWarnings("interning:assignment") // used in == tests
       @InternedDistinct Tree enclosingTree =
           TreePathUtil.enclosingOfKind(
@@ -386,18 +387,37 @@ public abstract class CFAbstractTransfer<
     return store;
   }
 
-  //  private boolean isAnyFormalAnnotatedWithNonEmpty(MethodInvocationTree methodInvok,
-  // AnnotatedTypeFactory aTypeFactory) {
-  //    ExecutableElement methodElement = TreeUtils.elementFromUse(methodInvok);
-  //    AnnotationMirrorSet annotationMirrors = new AnnotationMirrorSet();
-  //    for (VariableTree vt : params) {
-  //      annotationMirrors.addAll(
-  //          TreeUtils.annotationsFromTypeAnnotationTrees(vt.getModifiers().getAnnotations()));
-  //    }
-  //    return annotationMirrors.stream()
-  //        .anyMatch(am -> atypeFactory.areSameByClass(am, NonEmpty.class));
-  //  }
-  //
+  /**
+   * Determine whether a lambda expression is leaked.
+   *
+   * <p>This currently checks for the {@link NonLeaked} annotation, which is trusted.
+   *
+   * @param lambda the lambda expression
+   * @param aTypeFactory an annotated type factory
+   * @return true if the lambda expression is found to be annotated with {@link NonLeaked}
+   */
+  private boolean isLambdaLeaked(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+    LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
+    TreePath lambdaPath = aTypeFactory.getPath(lambdaTree);
+    Tree lambdaParent = lambdaPath.getParentPath().getLeaf();
+    if (lambdaParent.getKind() == Tree.Kind.METHOD_INVOCATION) {
+      MethodInvocationTree invok = (MethodInvocationTree) lambdaParent;
+      ExecutableElement methodElt = TreeUtils.elementFromUse(invok);
+      AliasingAnnotatedTypeFactory aliasingAtf =
+          analysis
+              .atypeFactory
+              .getChecker()
+              .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
+      if (aliasingAtf != null) {
+        return methodElt.getParameters().stream()
+            .allMatch(
+                param ->
+                    aliasingAtf.getAnnotatedType(param).getPrimaryAnnotation(NonLeaked.class)
+                        == null);
+      }
+    }
+    return true;
+  }
 
   /**
    * Add field values to the initial store before {@code methodTree}.
