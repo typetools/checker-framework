@@ -11,6 +11,9 @@ Deprecated methods:
  * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
  * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
 
+Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
+Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
+
 **Closed issues:**
 
 
