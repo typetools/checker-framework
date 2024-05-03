@@ -1,9 +1,12 @@
-Version 3.43.1 (June 1, 2024)
+Version 3.43.1 (June 3, 2024)
 -----------------------------
 
 **User-visible changes:**
 
 **Implementation details:**
+
+Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
+Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
 
 **Closed issues:**
 
