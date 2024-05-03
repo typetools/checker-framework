@@ -89,13 +89,13 @@ public class BinaryOperation extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return left.isUnassignableByOtherCode() && right.isUnassignableByOtherCode();
+  public boolean isAssignableByOtherCode() {
+    return left.isAssignableByOtherCode() || right.isAssignableByOtherCode();
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return left.isUnmodifiableByOtherCode() && right.isUnmodifiableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return left.isModifiableByOtherCode() || right.isModifiableByOtherCode();
   }
 
   @Override

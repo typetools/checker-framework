@@ -117,13 +117,13 @@ public class LocalVariable extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+  public boolean isModifiableByOtherCode() {
+    return !TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
   }
 
   @Override
