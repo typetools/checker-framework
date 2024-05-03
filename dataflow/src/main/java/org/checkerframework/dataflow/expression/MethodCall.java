@@ -93,16 +93,18 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
+  public boolean isAssignableByOtherCode() {
+    // TODO: The following comment is no longer accurate.  It should be removed and the
+    // implementation changed.
     // There is no need to check that the method is deterministic, because a MethodCall is
     // only created for deterministic methods.
-    return receiver.isUnmodifiableByOtherCode()
-        && arguments.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
+    return receiver.isModifiableByOtherCode()
+        || arguments.stream().anyMatch(JavaExpression::isModifiableByOtherCode);
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return isUnassignableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return isAssignableByOtherCode();
   }
 
   @Override

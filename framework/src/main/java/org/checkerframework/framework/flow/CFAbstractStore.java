@@ -256,7 +256,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
       if (sideEffectsUnrefineAliases) {
-        localVariableValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+        localVariableValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
       }
 
       // update this value
@@ -266,7 +266,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
       // update field values
       if (sideEffectsUnrefineAliases) {
-        fieldValues.entrySet().removeIf(e -> !e.getKey().isUnmodifiableByOtherCode());
+        fieldValues.entrySet().removeIf(e -> e.getKey().isModifiableByOtherCode());
       } else {
         // Case 2 (unassignable fields) and case 3 (monotonic fields)
         updateFieldValuesForMethodCall(gatypeFactory);
@@ -302,7 +302,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected V newFieldValueAfterMethodCall(
       FieldAccess fieldAccess, GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory, V value) {
     // Handle unassignable fields.
-    if (fieldAccess.isUnassignableByOtherCode()) {
+    if (!fieldAccess.isAssignableByOtherCode()) {
       return value;
     }
 
@@ -634,7 +634,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
-      if (sequentialSemantics || isMonotonic || fieldAcc.isUnassignableByOtherCode()) {
+      if (sequentialSemantics || isMonotonic || !fieldAcc.isAssignableByOtherCode()) {
         V oldValue = fieldValues.get(fieldAcc);
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -662,7 +662,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     } else if (expr instanceof ThisReference) {
       ThisReference thisRef = (ThisReference) expr;
-      if (sequentialSemantics || thisRef.isUnassignableByOtherCode()) {
+      if (sequentialSemantics || !thisRef.isAssignableByOtherCode()) {
         V oldValue = thisValue;
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -671,7 +671,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     } else if (expr instanceof ClassName) {
       ClassName className = (ClassName) expr;
-      if (sequentialSemantics || className.isUnassignableByOtherCode()) {
+      if (sequentialSemantics || !className.isAssignableByOtherCode()) {
         V oldValue = classValues.get(className);
         V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
@@ -906,7 +906,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // also fixed) if concurrent semantics are enabled.
       if (sequentialSemantics
           || isMonotonicUpdate(fieldAccess, val)
-          || fieldAccess.isUnassignableByOtherCode()) {
+          || !fieldAccess.isAssignableByOtherCode()) {
         fieldValues.put(fieldAccess, val);
       }
     }
