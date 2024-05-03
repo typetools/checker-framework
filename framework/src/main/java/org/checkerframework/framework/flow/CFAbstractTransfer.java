@@ -315,6 +315,7 @@ public abstract class CFAbstractTransfer<
         boolean isLambdaLeaked = isLambdaLeaked(lambda, atypeFactory);
         if (!isLambdaLeaked) {
           System.out.printf("Non-leaked lambda found for = %s\n", lambda);
+          isLambdaPure(lambda, atypeFactory);
         }
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
@@ -414,6 +415,27 @@ public abstract class CFAbstractTransfer<
       }
     }
     return true;
+  }
+
+  private boolean isLambdaPure(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
+    LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
+    if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
+      ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
+      JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
+      System.out.printf("Lambda expression class = %s\n", internalRepr.getClass());
+      System.out.printf(
+          "Lambda expression is = %s, isModifiableByOtherCode = %s\n",
+          lambdaExpression, JavaExpression.fromTree(lambdaExpression).isModifiableByOtherCode());
+      if (internalRepr instanceof MethodCall) {}
+
+      // r.m(p1, p2)
+      // if params are non-assignable and the method (m) is pure, we're ok -> entire thing is
+      // non-modifiable
+      // all params are non-modifiable and m does not depend on any state (no fields)
+      assert aTypeFactory != null;
+      return false;
+    }
+    return false; // stub
   }
 
   /**
