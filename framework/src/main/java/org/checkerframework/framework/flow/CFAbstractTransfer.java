@@ -312,7 +312,7 @@ public abstract class CFAbstractTransfer<
         // If the lambda is leaked, or the lambda is impure, remove any information about modifiable
         // method values from the store
         if (isLambdaLeaked(lambda, atypeFactory) || !isLambdaPure(lambda, atypeFactory)) {
-          store.methodValues.keySet().removeIf(MethodCall::isModifiableByOtherCode);
+          store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
