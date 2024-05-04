@@ -124,6 +124,9 @@ public abstract class CFAbstractTransfer<
   /** Indicates that the whole-program inference is on. */
   private final boolean infer;
 
+  /** Command-line flag passed to indicate whether to assume every called method is pure. */
+  private final String assumePure = "assumePure";
+
   /**
    * Create a CFAbstractTransfer.
    *
@@ -486,6 +489,9 @@ public abstract class CFAbstractTransfer<
    */
   private boolean areAllMethodsPure(
       JavaExpression methodCallSequence, AnnotatedTypeFactory aTypeFactory) {
+    if (aTypeFactory.getChecker().hasOption(assumePure)) {
+      return true;
+    }
     List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(methodCallSequence);
     return methodsInvoked.stream()
         .allMatch(method -> aTypeFactory.getDeclAnnotation(method, Pure.class) != null);
