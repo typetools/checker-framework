@@ -1,11 +1,14 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -429,17 +432,64 @@ public abstract class CFAbstractTransfer<
     if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
       ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
       JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
-      List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(internalRepr);
-      List<JavaExpression> methodArguments = JavaExpression.argumentsFromMethodCall(internalRepr);
-      boolean areAllArgumentsUnassignable =
-          methodArguments.stream().allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
-      boolean isMethodCallSequencePure =
-          methodsInvoked.stream()
-              .allMatch(
-                  methodInvok -> aTypeFactory.getDeclAnnotation(methodInvok, Pure.class) != null);
-      return isMethodCallSequencePure && areAllArgumentsUnassignable;
+      return areAllMethodsPure(internalRepr, aTypeFactory)
+          && areAllArgumentsUnassignable(internalRepr);
+    } else {
+      StatementTree lambdaStatement = (StatementTree) lambdaTree.getBody();
+      return this.isStatementPure(lambdaStatement, aTypeFactory);
     }
-    return false;
+  }
+
+  private boolean isStatementPure(
+      StatementTree lambdaStatement, AnnotatedTypeFactory aTypeFactory) {
+    if (!(lambdaStatement instanceof BlockTree)) {
+      return false;
+    }
+    BlockTree lambdaBlock = (BlockTree) lambdaStatement;
+    for (StatementTree stmt : lambdaBlock.getStatements()) {
+      if (stmt instanceof ExpressionStatementTree) {
+        JavaExpression internalRepr =
+            JavaExpression.fromTree(((ExpressionStatementTree) stmt).getExpression());
+        if (!areAllMethodsPure(internalRepr, aTypeFactory)
+            || !areAllArgumentsUnassignable(internalRepr)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Determine whether a sequence of method calls is pure (i.e., has no side effects and is
+   * deterministic).
+   *
+   * <p>This is solely determined by checking whether the declaration of each method call in the
+   * sequence is annotated with {@link Pure}.
+   *
+   * @param methodCallSequence the sequence of method calls to check for purity
+   * @param aTypeFactory an annotated type factory
+   * @return true if the method call sequence is comprised entirely of methods annotated with {@link
+   *     Pure}
+   */
+  private boolean areAllMethodsPure(
+      JavaExpression methodCallSequence, AnnotatedTypeFactory aTypeFactory) {
+    List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(methodCallSequence);
+    return methodsInvoked.stream()
+        .allMatch(method -> aTypeFactory.getDeclAnnotation(method, Pure.class) != null);
+  }
+
+  /**
+   * Given a method call sequence (e.g., m.foo(p1).bar().baz(p2)), determine whether all the
+   * arguments are unassignable.
+   *
+   * @param methodCallSequence the method call sequence to extract arguments from
+   * @return true if all the arguments in the method call sequence are unassignable
+   */
+  private boolean areAllArgumentsUnassignable(JavaExpression methodCallSequence) {
+    List<JavaExpression> argumentsToMethodCalls =
+        JavaExpression.argumentsFromMethodCall(methodCallSequence);
+    return argumentsToMethodCalls.stream()
+        .allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
   }
 
   /**

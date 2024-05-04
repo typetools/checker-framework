@@ -18,6 +18,37 @@ class Main {
     }
   }
 
+  void test3(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            container.getOpt().get(); // OK
+          });
+    }
+  }
+
+  void test4(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            container.sideEffect();
+            // :: error: (method.invocation)
+            container.getOpt().get(); // Not ok
+          });
+    }
+  }
+
+  void test5(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            container.getOpt();
+            container.name();
+            container.getOpt().get(); // OK
+          });
+    }
+  }
+
   class OptContainer {
 
     @SuppressWarnings("optional:field") // Don't care about this warning, unrelated to the test case
@@ -32,9 +63,16 @@ class Main {
       return this.opt;
     }
 
+    @Pure
+    public String name() {
+      return "name";
+    }
+
     public Optional<String> getOptImpure() {
-      System.out.println("Test");
+      System.out.println("Side effect");
       return this.opt;
     }
+
+    public void sideEffect() {}
   }
 }
