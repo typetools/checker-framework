@@ -305,7 +305,8 @@ public abstract class CFAbstractTransfer<
         // TODO: what about the other information? Can code further down be simplified?
         store.classValues.clear();
         store.arrayValues.clear();
-        // If the lambda is NOT leaked, and the lambda is pure, then don't remove any method values
+        // If the lambda is leaked, or the lambda is impure, remove any information about modifiable
+        // method values from the store
         if (isLambdaLeaked(lambda, atypeFactory) || !isLambdaPure(lambda, atypeFactory)) {
           store.methodValues.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
@@ -431,7 +432,7 @@ public abstract class CFAbstractTransfer<
                   methodInvok -> aTypeFactory.getDeclAnnotation(methodInvok, Pure.class) != null);
       return isMethodCallSequencePure && areAllArgumentsUnassignable;
     }
-    return false; // stub
+    return false;
   }
 
   /**
