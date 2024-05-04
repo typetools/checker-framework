@@ -756,6 +756,59 @@ public abstract class JavaExpression {
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiver);
   }
 
+  ///
+  /// Operations on Method Calls and Methods
+  ///
+
+  /**
+   * Returns a list of {@code MethodCall} subexpressions from a {@code MethodCall} expression.
+   *
+   * <p>For example, given the method call obj.foo(), this method will return a list containing the
+   * element representing foo(). This method also works for chained method calls, e.g.,
+   * obj.foo().bar().baz(p1) will return a list containing the elements representing foo(), bar(),
+   * and baz(p1).
+   *
+   * @param expr a {@code MethodCall} expression
+   * @return a list of {@code MethodCall} subexpressions
+   */
+  public static List<Element> methodsFromMethodCall(JavaExpression expr) {
+    List<Element> methods = new ArrayList<>();
+    while (expr instanceof MethodCall) {
+      MethodCall methodCall = (MethodCall) expr;
+      methods.add(methodCall.getElement());
+      JavaExpression receiver = methodCall.getReceiver();
+      if (!(receiver instanceof MethodCall)) {
+        break;
+      }
+      expr = receiver;
+    }
+    return methods;
+  }
+
+  /**
+   * Returns a list of expressions passed to a {@code MethodCall} expression.
+   *
+   * <p>For example, given the method call obj.foo(), an empty list will be returned. For a method
+   * call chain like obj.foo().bar(p1).baz(p2,p3), a list containing the expressions p1, p2, and p3
+   * will be returned.
+   *
+   * @param expr a {@code MethodCall} expression
+   * @return a list of arguments passed to each method call subexpression in {@code expr}
+   */
+  public static List<JavaExpression> argumentsFromMethodCall(JavaExpression expr) {
+    List<JavaExpression> arguments = new ArrayList<>();
+    while (expr instanceof MethodCall) {
+      MethodCall methodCall = (MethodCall) expr;
+      arguments.addAll(methodCall.getArguments());
+      JavaExpression receiver = methodCall.getReceiver();
+      if (!(receiver instanceof MethodCall)) {
+        break;
+      }
+      expr = receiver;
+    }
+    return arguments;
+  }
+
   /**
    * Viewpoint-adapts {@code this} to the {@code methodTree} by converting any {@code
    * FormalParameter} into {@code LocalVariable}s.

@@ -12,7 +12,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -415,17 +414,10 @@ public abstract class CFAbstractTransfer<
     if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
       ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
       JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
-      Set<Element> methodsInvoked = new HashSet<>();
-      Set<JavaExpression> methodArguments = new HashSet<>();
-      while (internalRepr instanceof MethodCall) {
-        methodsInvoked.add(((MethodCall) internalRepr).getElement());
-        methodArguments.addAll(((MethodCall) internalRepr).getArguments());
-        internalRepr = ((MethodCall) internalRepr).getReceiver();
-      }
+      List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(internalRepr);
+      List<JavaExpression> methodArguments = JavaExpression.argumentsFromMethodCall(internalRepr);
       boolean areAllArgumentsUnassignable =
-          methodArguments.isEmpty()
-              || methodArguments.stream()
-                  .allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
+          methodArguments.stream().allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
       boolean isMethodCallSequencePure =
           methodsInvoked.stream()
               .allMatch(
