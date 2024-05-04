@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
-    errorprone : '2.27.0',
+    errorprone : '2.27.1',
   ]
 }
 
@@ -114,7 +114,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.43.0'
+  version '3.43.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -953,6 +953,9 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
+      // maxParallelForks controls the parallelism of a single Test
+      // task. --parallel controls parallelism for the entire build.
+
       // Run tests in parallel, except on CI where it seems to lead to flaky failures.
       // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
       if (!System.getenv('TF_BUILD')?.equals('True')) {
@@ -963,6 +966,9 @@ subprojects {
         maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
       } else {
         // Running under Azure Pipelines CI.
+
+        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
+        maxParallelForks = 1
 
         // Azure seems to time out when a task doesn't produce periodic output.
         if (project.name.is('checker')) {

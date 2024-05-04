@@ -1,3 +1,18 @@
+Version 3.43.1 (June 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Renamed `CFAbstractStore#methodValues` to
+`CFAbstractStore#methodCallExpressions`.
+
+Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
+Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
+
+**Closed issues:**
+
 Version 3.43.0 (May 1, 2024)
 ----------------------------
 

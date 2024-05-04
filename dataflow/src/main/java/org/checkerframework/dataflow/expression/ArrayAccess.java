@@ -58,13 +58,13 @@ public class ArrayAccess extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return false;
+  public boolean isAssignableByOtherCode() {
+    return true;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return false;
+  public boolean isModifiableByOtherCode() {
+    return true;
   }
 
   @Override
