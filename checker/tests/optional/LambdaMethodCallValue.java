@@ -5,11 +5,16 @@ import org.checkerframework.dataflow.qual.*;
 
 class Main {
 
-  @SuppressWarnings(
-      "optional:parameter") // Don't care about this warning, unrelated to the test case
   void test(OptContainer container, List<String> strs) {
     if (container.getOpt().isPresent()) {
       strs.forEach(s -> container.getOpt().get()); // Legal
+    }
+  }
+
+  void test2(OptContainer container, List<String> strs) {
+    if (container.getOpt().isPresent()) {
+      // :: error: (method.invocation)
+      strs.forEach(s -> container.getOptImpure().get());
     }
   }
 
@@ -24,6 +29,11 @@ class Main {
 
     @Pure
     public Optional<String> getOpt() {
+      return this.opt;
+    }
+
+    public Optional<String> getOptImpure() {
+      System.out.println("Test");
       return this.opt;
     }
   }

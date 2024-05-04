@@ -409,6 +409,21 @@ public abstract class CFAbstractTransfer<
     return true;
   }
 
+  /**
+   * Determine whether a given lambda expression is pure.
+   *
+   * <p>The purity of a lambda expression depends on whether:
+   *
+   * <ol>
+   *   <li><i>All</i> methods invoked within the lambda expression are known to be pure.
+   *   <li><i>All</i> arguments to the methods within the lambda expression are not assignable by
+   *       other code
+   * </ol>
+   *
+   * @param lambda a lambda expression
+   * @param aTypeFactory an annotated type factory
+   * @return true if the given lambda expression is pure
+   */
   private boolean isLambdaPure(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
     if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
