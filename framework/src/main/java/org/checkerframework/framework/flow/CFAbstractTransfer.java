@@ -12,9 +12,11 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -303,19 +305,9 @@ public abstract class CFAbstractTransfer<
         // TODO: what about the other information? Can code further down be simplified?
         store.classValues.clear();
         store.arrayValues.clear();
-        store.methodValues.keySet().removeIf(MethodCall::isModifiableByOtherCode);
-        // Is there a way to check whether the CF is being run with -AassumePure here?
-        // Best-effort check, ideally we should remove a methodValue if it's impure (not just
-        // non-deterministic)
-        // Scratch work here.
-        // Remove iff the lambda is immediately used + does not have side effects
-        // Add new annotation called @DoesNotEscape
-        // lambda.getParent() is marked with @DoesNotEscape
-        // - And the lambda body does not have side effects
-        boolean isLambdaLeaked = isLambdaLeaked(lambda, atypeFactory);
-        if (!isLambdaLeaked) {
-          System.out.printf("Non-leaked lambda found for = %s\n", lambda);
-          isLambdaPure(lambda, atypeFactory);
+        // If the lambda is NOT leaked, and the lambda is pure, then don't remove any method values
+        if (isLambdaLeaked(lambda, atypeFactory) || !isLambdaPure(lambda, atypeFactory)) {
+          store.methodValues.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
       } else {
         store = analysis.createEmptyStore(sequentialSemantics);
@@ -422,18 +414,22 @@ public abstract class CFAbstractTransfer<
     if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
       ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
       JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
-      System.out.printf("Lambda expression class = %s\n", internalRepr.getClass());
-      System.out.printf(
-          "Lambda expression is = %s, isModifiableByOtherCode = %s\n",
-          lambdaExpression, JavaExpression.fromTree(lambdaExpression).isModifiableByOtherCode());
-      if (internalRepr instanceof MethodCall) {}
-
-      // r.m(p1, p2)
-      // if params are non-assignable and the method (m) is pure, we're ok -> entire thing is
-      // non-modifiable
-      // all params are non-modifiable and m does not depend on any state (no fields)
-      assert aTypeFactory != null;
-      return false;
+      Set<Element> methodsInvoked = new HashSet<>();
+      Set<JavaExpression> methodArguments = new HashSet<>();
+      while (internalRepr instanceof MethodCall) {
+        methodsInvoked.add(((MethodCall) internalRepr).getElement());
+        methodArguments.addAll(((MethodCall) internalRepr).getArguments());
+        internalRepr = ((MethodCall) internalRepr).getReceiver();
+      }
+      boolean areAllArgumentsUnassignable =
+          methodArguments.isEmpty()
+              || methodArguments.stream()
+                  .allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
+      boolean isMethodCallSequencePure =
+          methodsInvoked.stream()
+              .allMatch(
+                  methodInvok -> aTypeFactory.getDeclAnnotation(methodInvok, Pure.class) != null);
+      return isMethodCallSequencePure && areAllArgumentsUnassignable;
     }
     return false; // stub
   }
