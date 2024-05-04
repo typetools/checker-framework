@@ -17,6 +17,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -920,5 +921,19 @@ public abstract class JavaExpression {
     VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
     return TypesUtils.getArrayDepth(ElementUtils.getType(lastParamElt))
         != TypesUtils.getArrayDepth(lastArgType);
+  }
+
+  /**
+   * Given a method call sequence (e.g., m.foo(p1).bar().baz(p2)), determine whether all the
+   * arguments are unassignable.
+   *
+   * @param methodCallSequence the method call sequence to extract arguments from
+   * @return true if all the arguments in the method call sequence are unassignable
+   */
+  public static boolean areAllArgumentsUnassignable(JavaExpression methodCallSequence) {
+    List<JavaExpression> argumentsToMethodCalls =
+        JavaExpression.argumentsFromMethodCall(methodCallSequence);
+    return argumentsToMethodCalls.stream()
+        .allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
   }
 }

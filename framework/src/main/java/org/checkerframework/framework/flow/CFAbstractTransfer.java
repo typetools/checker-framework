@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -436,7 +435,7 @@ public abstract class CFAbstractTransfer<
       ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
       JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
       return areAllMethodsPure(internalRepr, aTypeFactory)
-          && areAllArgumentsUnassignable(internalRepr);
+          && JavaExpression.areAllArgumentsUnassignable(internalRepr);
     } else {
       StatementTree lambdaStatement = (StatementTree) lambdaTree.getBody();
       return this.isStatementPure(lambdaStatement, aTypeFactory);
@@ -467,7 +466,7 @@ public abstract class CFAbstractTransfer<
         JavaExpression internalRepr =
             JavaExpression.fromTree(((ExpressionStatementTree) stmt).getExpression());
         if (!areAllMethodsPure(internalRepr, aTypeFactory)
-            || !areAllArgumentsUnassignable(internalRepr)) {
+            || !JavaExpression.areAllArgumentsUnassignable(internalRepr)) {
           return false;
         }
       }
@@ -495,20 +494,6 @@ public abstract class CFAbstractTransfer<
     List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(methodCallSequence);
     return methodsInvoked.stream()
         .allMatch(method -> aTypeFactory.getDeclAnnotation(method, Pure.class) != null);
-  }
-
-  /**
-   * Given a method call sequence (e.g., m.foo(p1).bar().baz(p2)), determine whether all the
-   * arguments are unassignable.
-   *
-   * @param methodCallSequence the method call sequence to extract arguments from
-   * @return true if all the arguments in the method call sequence are unassignable
-   */
-  private boolean areAllArgumentsUnassignable(JavaExpression methodCallSequence) {
-    List<JavaExpression> argumentsToMethodCalls =
-        JavaExpression.argumentsFromMethodCall(methodCallSequence);
-    return argumentsToMethodCalls.stream()
-        .allMatch(Predicate.not(JavaExpression::isAssignableByOtherCode));
   }
 
   /**
