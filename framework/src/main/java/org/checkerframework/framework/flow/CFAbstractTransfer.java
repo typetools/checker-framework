@@ -440,13 +440,26 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  private boolean isStatementPure(
-      StatementTree lambdaStatement, AnnotatedTypeFactory aTypeFactory) {
-    if (!(lambdaStatement instanceof BlockTree)) {
+  /**
+   * Determine whether a given statement is pure.
+   *
+   * <p>The purity of a statement depends on whether:
+   *
+   * <ol>
+   *   <li><i>All</i> methods invoked within the statement are known to be pure.
+   *   <li><i>All</i> arguments to the methods within the statement are not assignable by other code
+   * </ol>
+   *
+   * @param statementTree s statement
+   * @param aTypeFactory an annotated type factory
+   * @return true if the given statement is pure
+   */
+  private boolean isStatementPure(StatementTree statementTree, AnnotatedTypeFactory aTypeFactory) {
+    if (!(statementTree instanceof BlockTree)) {
       return false;
     }
-    BlockTree lambdaBlock = (BlockTree) lambdaStatement;
-    for (StatementTree stmt : lambdaBlock.getStatements()) {
+    BlockTree statementBlock = (BlockTree) statementTree;
+    for (StatementTree stmt : statementBlock.getStatements()) {
       if (stmt instanceof ExpressionStatementTree) {
         JavaExpression internalRepr =
             JavaExpression.fromTree(((ExpressionStatementTree) stmt).getExpression());
