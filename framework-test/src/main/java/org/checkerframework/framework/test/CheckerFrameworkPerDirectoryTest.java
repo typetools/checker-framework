@@ -80,7 +80,13 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
       Class<? extends AbstractProcessor> checker,
       String testDir,
       String... checkerOptions) {
-    this(testFiles, checker, testDir, Collections.emptyList(), checkerOptions);
+    this(
+        testFiles,
+        checker,
+        testDir,
+        Collections.emptyList(),
+        // TODO: depend on an environment variable
+        ArarysPlume.concat(checkerOptions, new String[] {"-Afilenames"}));
   }
 
   /**
