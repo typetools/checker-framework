@@ -10,6 +10,8 @@ Deprecated methods:
  * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
  * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
  * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
+ * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
+ * `JavaExpression.isUnmodifiableByOtherCode()` => `isModifiableByOtherCode()`
 
 **Closed issues:**
 
