@@ -145,7 +145,8 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     if (System.getenv("CF_TEST_DEBUG") != null) {
       // Unfortunately, `-Afilenames` causes all tests to fail because of unexpected diagnostics
       // (that is, the `-Afilenames` output).
-      this.checkerOptions.add("-Afilenames");
+      // this.checkerOptions.add("-Afilenames");
+      // By default, JUnit does not show this output.
       String gcMessage = SystemPlume.gcUsageMessage(0.1, 60);
       if (gcMessage != null) {
         System.err.println(gcMessage);

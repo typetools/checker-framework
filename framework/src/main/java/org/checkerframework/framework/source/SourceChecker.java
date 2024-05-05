@@ -1032,8 +1032,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    if (!warnedAboutGarbageCollection) {
-      String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
+    if (!warnedAboutGarbageCollection || System.getenv("CF_TEST_DEBUG")) {
+      String gcUsageMessage = SystemPlume.gcUsageMessage(.1, 10);
       if (gcUsageMessage != null) {
         boolean noWarnMemoryConstraints =
             (processingEnv != null
