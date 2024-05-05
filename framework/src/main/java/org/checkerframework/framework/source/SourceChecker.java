@@ -1010,6 +1010,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected int errsOnLastExit = 0;
 
+  private boolean cfTestDebug = System.getenv("CF_TEST_DEBUG") != null;
+
   /**
    * Type-check the code using this checker's visitor.
    *
@@ -1032,9 +1034,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       return;
     }
 
-    if (!warnedAboutGarbageCollection || System.getenv("CF_TEST_DEBUG") != null) {
+    if (!warnedAboutGarbageCollection || cfTestDebug) {
       String gcUsageMessage = SystemPlume.gcUsageMessage(.1, 10);
       if (gcUsageMessage != null) {
+        if (cfTestDebug) {
+          gcUsageMessage = gcUsageMessage.replaceAll("\\R", " ");
+        }
         boolean noWarnMemoryConstraints =
             (processingEnv != null
                 && processingEnv.getOptions() != null

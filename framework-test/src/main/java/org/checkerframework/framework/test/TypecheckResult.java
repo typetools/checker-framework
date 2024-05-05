@@ -69,10 +69,7 @@ public class TypecheckResult {
 
     // none of these should be true if the test didn't fail
     if (didTestFail()) {
-      if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
-        errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
-
-      } else if (!compilationResult.compiledWithoutError() && expectedDiagnostics.isEmpty()) {
+      if (!compilationResult.compiledWithoutError() && expectedDiagnostics.isEmpty()) {
         errorHeaders.add("The test run was not expected to issue errors/warnings, but it did.");
       }
 
