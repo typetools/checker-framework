@@ -5,6 +5,9 @@ Version 3.43.1 (June 3, 2024)
 
 **Implementation details:**
 
+Renamed methods:
+ * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
+
 Deprecated methods:
  * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
  * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
@@ -13,8 +16,8 @@ Deprecated methods:
  * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
  * `JavaExpression.isUnmodifiableByOtherCode()` => `isModifiableByOtherCode()`
 
-**Closed issues:**
 
+**Closed issues:**
 
 Version 3.43.0 (May 1, 2024)
 ----------------------------
