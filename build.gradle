@@ -59,7 +59,7 @@ ext {
     hashmapUtil : '0.0.1',
     reflectionUtil : '1.1.3',
     plumeUtil : '1.9.3',
-    errorprone : '2.27.0',
+    errorprone : '2.27.1',
   ]
 }
 
@@ -114,7 +114,7 @@ allprojects { currentProj ->
   //   * any new checkers have been added, or
   //   * backward-incompatible changes have been made to APIs or elsewhere.
   // To make a snapshot release: ./gradlew publish
-  version '3.43.0-SNAPSHOT'
+  version '3.43.1-SNAPSHOT'
 
   tasks.withType(JavaCompile).configureEach {
     options.fork = true
@@ -953,42 +953,6 @@ subprojects {
     tasks.withType(Test) {
       jvmArgs += compilerArgsForRunningCF
 
-      // maxParallelForks controls the parallelism of a single Test
-      // task. --parallel controls parallelism for the entire build.
-
-      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
-      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
-      if (!System.getenv('TF_BUILD')?.equals('True')) {
-        // Not running under Azure Pipelines CI.
-
-        // This uses Gradle's recommended value for `maxParallelForks`:
-        // https://docs.gradle.org/current/userguide/performance.html#optimize_java_projects
-        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
-      } else {
-        // Running under Azure Pipelines CI.
-
-        // On CI, parallelism seems to lead to flaky failures.
-        maxParallelForks = 1
-
-        // Diagnose Azure flaky failures.
-        if (project.name.is('checker')) {
-          // Disable all test parallelism
-          systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
-          systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
-          systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'same_thread'
-
-          testLogging {
-            events "started", "skipped", "failed", "passed"
-            displayGranularity 2
-          }
-          afterSuite { descriptor, result ->
-            def duration = java.util.concurrent.TimeUnit.MILLISECONDS
-                .toSeconds(result.endTime - result.startTime)
-            println "Duration of $descriptor: $duration seconds"
-          }
-        }
-      }
-
       if (project.name.is('checker')) {
         dependsOn('assembleForJavac')
       }
@@ -1008,6 +972,44 @@ subprojects {
 
         // Don't show the uninteresting stack traces from the exceptions.
         showStackTraces = false
+      }
+
+      // Run tests in parallel, except on CI where it seems to lead to flaky failures.
+      // maxParallelForks controls the parallelism of a single Test
+      // task. --parallel controls parallelism for the entire build.
+      // The TF_BUILD environment variable is set to 'True' for jobs running on Azure Pipelines.
+      if (!System.getenv('TF_BUILD')?.equals('True')) {
+        // Not running under Azure Pipelines CI.
+
+        // This uses Gradle's recommended value for `maxParallelForks`:
+        // https://docs.gradle.org/current/userguide/performance.html#optimize_java_projects
+        maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+      } else {
+        // Running under Azure Pipelines CI.
+
+        // Per Manu's comment above, on CI, parallelism seems to lead to flaky failures.
+        maxParallelForks = 1
+
+        // Diagnose Azure flaky failures.
+        if (project.name.is('checker')) {
+          // Disable all test parallelism
+          systemProperty 'junit.jupiter.execution.parallel.enabled', 'false'
+          systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+          systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'same_thread'
+
+          testLogging {
+            events "started", "skipped", "failed", "passed"
+            // Higher displayGranularity trims from the beginning of the output,
+            // but doesn't actually affect granularity.  See
+            // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.logging.TestLogging.html .
+            displayGranularity 2
+          }
+          afterSuite { descriptor, result ->
+            def duration = java.util.concurrent.TimeUnit.MILLISECONDS
+                .toSeconds(result.endTime - result.startTime)
+            println "Duration of $descriptor: $duration seconds"
+          }
+        }
       }
     }
 

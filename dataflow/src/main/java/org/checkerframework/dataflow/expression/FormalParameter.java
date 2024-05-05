@@ -106,13 +106,13 @@ public class FormalParameter extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return true;
+  public boolean isModifiableByOtherCode() {
+    return false;
   }
 
   @Override

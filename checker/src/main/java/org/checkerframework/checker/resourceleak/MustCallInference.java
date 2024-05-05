@@ -251,7 +251,9 @@ public class MustCallInference {
         // the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
         // consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          mcca.updateObligationsWithInvocationResult(obligations, node);
+          if (mcca.shouldTrackInvocationResult(obligations, node, true)) {
+            mcca.updateObligationsWithInvocationResult(obligations, node);
+          }
           inferOwningFromInvocation(obligations, node);
         } else if (node instanceof AssignmentNode) {
           analyzeAssignmentNode(obligations, (AssignmentNode) node);
