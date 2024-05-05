@@ -1096,6 +1096,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     // Visit the attributed tree.
     try {
       visitor.visit(p);
+      if (printFilenames) {
+        message(Diagnostic.Kind.NOTE, Instant.now().toString());
+        message(
+            Diagnostic.Kind.NOTE,
+            "%s finished visiting %s",
+            (Object) this.getClass().getSimpleName(),
+            currentRoot.getSourceFile().getName());
+      }
+
       warnUnneededSuppressions();
     } catch (UserError ce) {
       logUserError(ce);
@@ -1109,6 +1118,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       // Also add possibly deferred diagnostics, which will get published back in
       // AbstractTypeProcessor.
       this.errsOnLastExit = log.nerrors;
+
+      if (printFilenames) {
+        message(Diagnostic.Kind.NOTE, Instant.now().toString());
+        message(
+            Diagnostic.Kind.NOTE,
+            "%s finished type-checking %s",
+            (Object) this.getClass().getSimpleName(),
+            currentRoot.getSourceFile().getName());
+      }
     }
   }
 
