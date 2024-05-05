@@ -9,6 +9,7 @@ import javax.annotation.processing.AbstractProcessor;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.plumelib.util.ArraysPlume;
 
 /**
  * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest} to
@@ -86,7 +87,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
         testDir,
         Collections.emptyList(),
         // TODO: depend on an environment variable
-        ArarysPlume.concat(checkerOptions, new String[] {"-Afilenames"}));
+        ArraysPlume.concat(checkerOptions, new String[] {"-Afilenames"}));
   }
 
   /**
