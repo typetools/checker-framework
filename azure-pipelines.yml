@@ -34,9 +34,9 @@ jobs:
     displayName: canary_jobs
 
 - job: junit_jdk11
-  dependsOn:
-   - canary_jobs
-   - junit_jdk21
+#   dependsOn:
+#    - canary_jobs
+#    - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
@@ -47,9 +47,9 @@ jobs:
   - bash: export CF_TEST_DEBUG=1; ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk17
-  dependsOn:
-   - canary_jobs
-   - junit_jdk21
+#   dependsOn:
+#    - canary_jobs
+#    - junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
