@@ -9,6 +9,7 @@ import javax.annotation.processing.AbstractProcessor;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.plumelib.util.SystemPlume;
 
 /**
  * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest} to
@@ -145,10 +146,10 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
       // Unfortunately, `-Afilenames` causes all tests to fail because of unexpected diagnostics
       // (that is, the `-Afilenames` output).
       this.checkerOptions.add("-Afilenames");
-      String gcMessage = gcUsageMessage(0.1, 60);
+      String gcMessage = SystemPlume.gcUsageMessage(0.1, 60);
       if (gcMessage != null) {
-        system.err.println(gcMessage);
-        system.out.println(gcMessage);
+        System.err.println(gcMessage);
+        System.out.println(gcMessage);
       }
     }
   }
