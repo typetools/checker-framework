@@ -142,7 +142,14 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.checkerOptions.add("-AconvertTypeArgInferenceCrashToWarning=false");
     // Read an environment variable to make this easy to enable in continuous integration.
     if (System.getenv("CF_TEST_DEBUG") != null) {
+      // Unfortunately, `-Afilenames` causes all tests to fail because of unexpected diagnostics
+      // (that is, the `-Afilenames` output).
       this.checkerOptions.add("-Afilenames");
+      String gcMessage = gcUsageMessage(0.1, 60);
+      if (gcMessage != null) {
+        system.err.println(gcMessage);
+        system.out.println(gcMessage);
+      }
     }
   }
 
