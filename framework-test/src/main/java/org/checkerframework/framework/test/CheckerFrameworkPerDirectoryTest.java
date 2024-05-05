@@ -9,7 +9,6 @@ import javax.annotation.processing.AbstractProcessor;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.plumelib.util.ArraysPlume;
 
 /**
  * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest} to
@@ -81,13 +80,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
       Class<? extends AbstractProcessor> checker,
       String testDir,
       String... checkerOptions) {
-    this(
-        testFiles,
-        checker,
-        testDir,
-        Collections.emptyList(),
-        // TODO: depend on an environment variable
-        ArraysPlume.concat(checkerOptions, new String[] {"-Afilenames"}));
+    this(testFiles, checker, testDir, Collections.emptyList(), checkerOptions);
   }
 
   /**
@@ -147,6 +140,10 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
     this.checkerOptions.add("-AajavaChecks");
     this.checkerOptions.add("-AconvertTypeArgInferenceCrashToWarning=false");
+    // Read an environment variable to make this easy to enable in continuous integration.
+    if (System.getenv("CF_TEST_DEBUG") != null) {
+      this.checkerOptions.add("-Afilenames");
+    }
   }
 
   /** Run the tests. */
