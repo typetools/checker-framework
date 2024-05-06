@@ -44,7 +44,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk17
   dependsOn:
@@ -57,7 +57,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk21
   pool:
@@ -67,7 +67,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 # - job: junit_jdk20
 #  dependsOn:
