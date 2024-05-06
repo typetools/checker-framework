@@ -86,9 +86,10 @@ public class FormalParameter extends JavaExpression {
         + "]";
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override

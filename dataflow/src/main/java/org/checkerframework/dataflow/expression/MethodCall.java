@@ -70,20 +70,25 @@ public class MethodCall extends JavaExpression {
     return Collections.unmodifiableList(arguments);
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+
     if (getClass() == clazz) {
-      return true;
+      return (T) this;
     }
-    if (receiver.containsOfClass(clazz)) {
-      return true;
+
+    T result = receiver.containedOfClass(clazz);
+    if (result != null) {
+      return result;
     }
     for (JavaExpression p : arguments) {
-      if (p.containsOfClass(clazz)) {
-        return true;
+      result = p.containedOfClass(clazz);
+      if (result != null) {
+        return result;
       }
     }
-    return false;
+    return null;
   }
 
   @Override
