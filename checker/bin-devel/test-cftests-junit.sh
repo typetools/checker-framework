@@ -12,4 +12,4 @@ source "$SCRIPTDIR"/clone-related.sh
 
 
 
-./gradlew test --console=plain --warning-mode=all
+./gradlew test --console=plain --warning-mode=all "-Dorg.gradle.parallel=false"
