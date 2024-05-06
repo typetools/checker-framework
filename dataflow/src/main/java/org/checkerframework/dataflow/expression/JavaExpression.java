@@ -91,12 +91,55 @@ public abstract class JavaExpression {
     return type;
   }
 
+  /**
+   * Returns true if some subexpression is of given class.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedOfClass}.
+   *
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression's class is the given class
+   */
   @Pure
-  public abstract boolean containsOfClass(Class<? extends JavaExpression> clazz);
+  public final boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+    return containedOfClass(clazz) != null;
+  }
 
+  /**
+   * Returns the first subexpression whose class is the given class, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsOfClass}.
+   *
+   * @param <T> the type corresponding to {@code clazz}
+   * @param clazz the JavaExpression subclass to search for
+   * @return true if some subexpression whose class is the given class
+   */
   @Pure
-  public boolean containsUnknown() {
+  public abstract <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz);
+
+  /**
+   * Returns true if some subexpression is {@link Unknown}.
+   *
+   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * {@link #containedUnknown}.
+   *
+   * @return true if some subexpression is {@link Unknown}
+   */
+  @Pure
+  public final boolean containsUnknown() {
     return containsOfClass(Unknown.class);
+  }
+
+  /**
+   * Returns the first subexpression whose class is {@link Unknown}, or null.
+   *
+   * <p>This is intended as a diagnostic aid; most clients will use {@link #containsUnknown}.
+   *
+   * @return the first subexpression whose class is {@link Unknown}, or null
+   */
+  @Pure
+  public final @Nullable Unknown containedUnknown() {
+    return containedOfClass(Unknown.class);
   }
 
   /**

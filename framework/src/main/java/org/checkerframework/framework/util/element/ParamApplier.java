@@ -263,7 +263,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    *
    * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a
    *     parameter or return type)
-   * @return the MethodSymbol of the method containing methodChildElem
+   * @return the MethodSymbol of the method enclosing methodChildElem
    */
   public static Symbol.MethodSymbol getParentMethod(Element methodChildElem) {
     if (!(methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {

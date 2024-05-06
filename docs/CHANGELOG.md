@@ -5,11 +5,17 @@ Version 3.43.1 (June 3, 2024)
 
 **Implementation details:**
 
-Renamed `CFAbstractStore#methodValues` to
-`CFAbstractStore#methodCallExpressions`.
+Renamed methods:
+ * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
 
-Deprecated `isUnassignableByOtherCode()` in favor of `isAssignableByOtherCode()`.
-Deprecated `isUnmodifiableByOtherCode()` in favor of `isModifiableByOtherCode()`.
+Deprecated methods:
+ * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
+ * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
+ * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
+ * `JavaExpression.isUnmodifiableByOtherCode()` => `isModifiableByOtherCode()`
+
 
 **Closed issues:**
 
