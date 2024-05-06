@@ -510,7 +510,10 @@ public class ResourceLeakAnnotatedTypeFactory extends CalledMethodsAnnotatedType
             .getPrimaryAnnotationInHierarchy(mustCallAnnotatedTypeFactory.TOP);
     List<String> mcValues =
         AnnotationUtils.getElementValueArray(
-            mcAnno, mustCallAnnotatedTypeFactory.getMustCallValueElement(), String.class);
+            mcAnno,
+            mustCallAnnotatedTypeFactory.getMustCallValueElement(),
+            String.class,
+            Collections.emptyList());
     String methodName = elt.getSimpleName().toString();
     return mcValues.contains(methodName);
   }
