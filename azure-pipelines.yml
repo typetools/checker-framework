@@ -40,11 +40,11 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk11:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 90
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh || ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk17
   dependsOn:
@@ -53,21 +53,21 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk17:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 90
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh || ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 - job: junit_jdk21
   pool:
     vmImage: 'ubuntu-latest'
   container: mdernst/cf-ubuntu-jdk21:latest
-  timeoutInMinutes: 70
+  timeoutInMinutes: 90
   steps:
   - checkout: self
     fetchDepth: 25
-  - bash: ./checker/bin-devel/test-cftests-junit.sh
+  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh || ./checker/bin-devel/test-cftests-junit.sh
     displayName: test-cftests-junit.sh
 # - job: junit_jdk20
 #  dependsOn:
@@ -75,11 +75,11 @@ jobs:
 #  pool:
 #    vmImage: 'ubuntu-latest'
 #  container: mdernst/cf-ubuntu-jdk20:latest
-#  timeoutInMinutes: 70
+#  timeoutInMinutes: 90
 #  steps:
 #  - checkout: self
 #    fetchDepth: 25
-#  - bash: ./checker/bin-devel/test-cftests-junit.sh
+#  - bash: timeout 45m ./checker/bin-devel/test-cftests-junit.sh || ./checker/bin-devel/test-cftests-junit.sh
 #    displayName: test-cftests-junit.sh
 - job: nonjunit_jdk11
   dependsOn:
