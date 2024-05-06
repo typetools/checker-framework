@@ -973,7 +973,7 @@ subprojects {
         // Azure seems to time out when a task doesn't produce periodic output.
         if (project.name.is('checker')) {
           testLogging {
-            events "started", "skipped", "failed"
+            events "started", "skipped", "failed", "passed"
             displayGranularity 3
           }
         }
