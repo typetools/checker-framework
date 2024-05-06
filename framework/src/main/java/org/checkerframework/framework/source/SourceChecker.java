@@ -477,8 +477,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
   /**
-   * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly, call
-   * {@link #getSuppressWarningsStringsFromOption()}.
+   * SuppressWarnings strings supplied via the {@code -AsuppressWarnings} option. Do not use
+   * directly, call {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
@@ -1011,6 +1011,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    */
   protected int errsOnLastExit = 0;
 
+  /** True if the environment variable CF_TEST_DEBUG is set. */
   private boolean cfTestDebug = System.getenv("CF_TEST_DEBUG") != null;
 
   /**
@@ -1036,7 +1037,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     if (!warnedAboutGarbageCollection || cfTestDebug) {
-      String gcUsageMessage = SystemPlume.gcUsageMessage(.1, 10);
+      String gcUsageMessage = SystemPlume.gcUsageMessage(.25, 60);
       if (gcUsageMessage != null) {
         if (cfTestDebug) {
           gcUsageMessage = gcUsageMessage.replaceAll("\\R", " ");

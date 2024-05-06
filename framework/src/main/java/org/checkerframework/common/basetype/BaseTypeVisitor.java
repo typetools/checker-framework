@@ -46,10 +46,13 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.TreeInfo;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,6 +77,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -151,6 +155,7 @@ import org.plumelib.util.ArraySet;
 import org.plumelib.util.ArraysPlume;
 import org.plumelib.util.CollectionsPlume;
 import org.plumelib.util.IPair;
+import org.plumelib.util.StringsPlume;
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
@@ -382,10 +387,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // Responsible for updating the factory for the location (for performance)
   // **********************************************************************
 
+  /** When {@link #setRoot} ran. */
+  protected Instant rootInstant;
+
   @Override
   public void setRoot(CompilationUnitTree root) {
     atypeFactory.setRoot(root);
     super.setRoot(root);
+    this.rootInstant = Instant.now();
     testJointJavacJavaParserVisitor();
     testAnnotationInsertion();
   }
@@ -398,6 +407,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
+
+    if (Instant.now().minusSeconds(1).compareTo(rootInstant) > 0) {
+      try (StringWriter sw = new StringWriter();
+          PrintWriter pw = new PrintWriter(sw)) {
+        new Error("more than one second").printStackTrace(pw);
+        for (String line : StringsPlume.splitLines(sw.toString())) {
+          checker.message(Diagnostic.Kind.NOTE, line);
+        }
+      } catch (IOException e) {
+        throw new Error(e);
+      }
+    }
+
     // TODO: use JCP to add version-specific behavior
     if (tree != null
         && SystemUtil.jreVersion >= 14
