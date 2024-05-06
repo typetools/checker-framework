@@ -411,10 +411,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (Instant.now().minusSeconds(1).compareTo(rootInstant) > 0) {
       try (StringWriter sw = new StringWriter();
           PrintWriter pw = new PrintWriter(sw)) {
-        new Error("more than one second").printStackTrace(pw);
+        new Error("more than one second for " + root.getSourceFile()).printStackTrace(pw);
         for (String line : StringsPlume.splitLines(sw.toString())) {
           checker.message(Diagnostic.Kind.NOTE, line);
         }
+        rootInstant = Instant.now();
       } catch (IOException e) {
         throw new Error(e);
       }
