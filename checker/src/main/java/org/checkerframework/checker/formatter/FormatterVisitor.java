@@ -167,7 +167,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
    *
    * @param fc an invocation of a format method
    * @param enclosingMethod the method that contains the call
-   * @return true if {@code fc} is a call to a format method that forwards its containing method's
+   * @return true if {@code fc} is a call to a format method that forwards its enclosing method's
    *     arguments
    */
   private boolean isWrappedFormatCall(FormatCall fc, @Nullable MethodTree enclosingMethod) {
