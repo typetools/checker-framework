@@ -75,12 +75,17 @@ public class BinaryOperation extends JavaExpression {
     return right;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
     if (getClass() == clazz) {
-      return true;
+      return (T) this;
     }
-    return left.containsOfClass(clazz) || right.containsOfClass(clazz);
+    T result = left.containedOfClass(clazz);
+    if (result != null) {
+      return result;
+    }
+    return right.containedOfClass(clazz);
   }
 
   @Override
