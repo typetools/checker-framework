@@ -576,7 +576,7 @@ public final class SceneToStubWriter {
    *
    * @param innermostTypeElt the innermost type element: either an inner class or an outer class
    *     without any inner classes that should be printed
-   * @param classNames the names of the containing classes, from outer to inner
+   * @param classNames the names of the enclosing classes, from outer to inner
    * @return an array of TypeElements whose entry at a given index represents the type named at that
    *     index in {@code classNames}
    */
