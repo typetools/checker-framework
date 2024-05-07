@@ -78,7 +78,7 @@ public class MustCallVisitor extends BaseTypeVisitor<MustCallAnnotatedTypeFactor
   public Void visitAssignment(AssignmentTree tree, Void p) {
     // This code implements the following rule:
     //  * It is always safe to assign a MustCallAlias parameter of a constructor
-    //    to an owning field of the containing class.
+    //    to an owning field of the enclosing class.
     // It is necessary to special case this because MustCallAlias is translated
     // into @PolyMustCall, so the common assignment check will fail when assigning
     // an @MustCallAlias parameter to an owning field: the parameter is polymorphic,
