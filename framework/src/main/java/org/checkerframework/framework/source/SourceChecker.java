@@ -476,8 +476,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   private @Nullable Pattern warnUnneededSuppressionsExceptions;
 
   /**
-   * SuppressWarnings strings supplied via the -AsuppressWarnings option. Do not use directly, call
-   * {@link #getSuppressWarningsStringsFromOption()}.
+   * SuppressWarnings strings supplied via the {@code -AsuppressWarnings} option. Do not use
+   * directly, call {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
