@@ -977,6 +977,12 @@ subprojects {
             displayGranularity 3
           }
         }
+
+        // Fork the test to try to improve performance.
+        // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
+        tasks.withType(Test).configureEach {
+          forkEvery = 25
+        }
       }
 
       if (project.name.is('checker')) {
