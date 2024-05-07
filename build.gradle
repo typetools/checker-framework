@@ -419,7 +419,7 @@ allprojects { currentProj ->
       // -options: To not get a warning about missing bootstrap classpath (when using Java 9 and `-source 8`).
       // -fallthrough: Don't check fallthroughs.  Instead, use Error Prone.  Its
       //   warnings are suppressible with a "// fall through" comment.
-      String lint =     '-Xlint:-options,-fallthrough'
+      String lint = '-Xlint:-options,-fallthrough'
       if (isJava21orHigher && !jdk17Compiler) {
         // TODO: Ignore this-escape for now, we may want to review and suppress each one later.
         lint +=',-this-escape'
@@ -976,6 +976,12 @@ subprojects {
             events "started", "skipped", "failed", "passed"
             displayGranularity 3
           }
+        }
+
+        // Fork the test to try to improve performance.
+        // https://docs.gradle.org/current/userguide/performance.html#fork_tests_into_multiple_processes
+        tasks.withType(Test).configureEach {
+          forkEvery = 25
         }
       }
 

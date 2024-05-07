@@ -228,7 +228,7 @@ public class NullnessTransfer
         thenStore = thenStore == null ? res.getThenStore() : thenStore;
         elseStore = elseStore == null ? res.getElseStore() : elseStore;
         // TODO: methodTree is null for lambdas.  Handle that case.  See Issue3850.java.
-        MethodTree methodTree = analysis.getContainingMethod(secondNode.getTree());
+        MethodTree methodTree = analysis.getEnclosingMethod(secondNode.getTree());
         ExecutableElement methodElem =
             methodTree == null ? null : TreeUtils.elementFromDeclaration(methodTree);
         if (notEqualTo) {

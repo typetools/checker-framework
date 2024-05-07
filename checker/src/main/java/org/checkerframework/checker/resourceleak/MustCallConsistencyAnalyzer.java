@@ -458,8 +458,8 @@ class MustCallConsistencyAnalyzer {
      *
      * <ul>
      *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
-     *       the containing method returns that method’s result, or the call is a super()
-     *       constructor call annotated with {@link MustCallAlias}, or
+     *       the enclosing method returns that method’s result, or the call is a super() constructor
+     *       call annotated with {@link MustCallAlias}, or
      *   <li>it is stored in an owning field of the class under analysis
      * </ul>
      */
@@ -1066,7 +1066,7 @@ class MustCallConsistencyAnalyzer {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the
-            // containing method must actually return the value.
+            // enclosing method must actually return the value.
             if (!localObligation.derivedFromMustCallAlias()) {
               // Transfer ownership!
               obligations.remove(localObligation);
@@ -1178,9 +1178,8 @@ class MustCallConsistencyAnalyzer {
 
         LocalVariableNode rhsVar = (LocalVariableNode) rhs;
 
-        MethodTree containingMethod = cfg.getContainingMethod(assignmentNode.getTree());
-        boolean inConstructor =
-            containingMethod != null && TreeUtils.isConstructor(containingMethod);
+        MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
+        boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
 
         // Determine which obligations this field assignment can clear.  In a constructor,
         // assignments to `this.field` only clears obligations on normal return, since
@@ -1489,7 +1488,7 @@ class MustCallConsistencyAnalyzer {
 
     // TODO: it would be better to defer getting the path until after checking
     // for a CreatesMustCallFor annotation, because getting the path can be expensive.
-    // It might be possible to exploit the CFG structure to find the containing
+    // It might be possible to exploit the CFG structure to find the enclosing
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
     TreePath currentPath = typeFactory.getPath(node.getTree());
