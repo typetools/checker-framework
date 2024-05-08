@@ -955,10 +955,7 @@ subprojects {
 
       // maxParallelForks controls the parallelism of a single Test
       // task. --parallel controls parallelism for the entire build.
-
-      // This is Gradle's recommended value for `maxParallelForks`:
-      // https://docs.gradle.org/current/userguide/performance.html#optimize_java_projects
-      maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+      maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
 
       if (System.getenv('TF_BUILD')?.equals('True')) {
         // Running under Azure Pipelines CI.
