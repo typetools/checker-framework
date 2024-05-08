@@ -257,6 +257,7 @@ public class Resolution {
     BoundSet resolvedBoundSet = new BoundSet(context);
     for (Variable ai : as) {
       assert !ai.getBounds().hasInstantiation();
+      ai.getBounds().applyInstantiationsToBounds();
       resolveNoCapture(ai);
       if (!ai.getBounds().hasInstantiation()) {
         resolvedBoundSet.addFalse();
