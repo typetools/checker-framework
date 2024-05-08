@@ -84,9 +84,8 @@ public class MethodReferenceScope {
     if (expression != null) {
       return expression.toString();
     }
-    if (type != null) {
-      return type.toString();
-    }
-    return null;
+    // One of expression or type has to be non-null
+    assert type != null;
+    return type.toString();
   }
 }
