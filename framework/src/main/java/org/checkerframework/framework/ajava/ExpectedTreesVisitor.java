@@ -4,6 +4,7 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -397,6 +398,16 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // JavaParser does not parse yields correctly:
     // https://github.com/javaparser/javaparser/issues/3364
     // So skip yields.
+    return null;
+  }
+
+  @Override
+  public Void visitEmptyStatement(EmptyStatementTree tree, Void p) {
+    // JavaParser doesn't seem to include completely-empty classes.
+    // See https://github.com/typetools/checker-framework/issues/6570
+    // for a discussion of our motivation for excluding empty statements.
+    // Also, empty statements don't have semantics, so it's okay if there
+    // are arbitraily-many extra empty statements in one of the inputs.
     return null;
   }
 }
