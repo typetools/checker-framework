@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13">Java Method
  * Reference expression</a>
  *
- * <p>A Java method Reference expression can have the following forms:
+ * <p>The right-hand side of a Java method Reference expression can have the following forms:
  *
  * <ul>
  *   <li>{@literal [TypeArguments] Identifier}, which may be represented by a standard {@link
