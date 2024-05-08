@@ -239,7 +239,7 @@ public class OptionalVisitor
           tree,
           "prefer.map.and.orelse",
           receiver,
-          // The literal "CONTAININGCLASS::" is gross.
+          // The literal "ENCLOSINGCLASS::" is gross.
           // TODO: add this to the error message.
           // ElementUtils.getQualifiedClassName(ele);
           ele.getSimpleName(),

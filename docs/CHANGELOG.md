@@ -1,3 +1,24 @@
+Version 3.43.1 (June 3, 2024)
+-----------------------------
+
+**User-visible changes:**
+
+**Implementation details:**
+
+Renamed methods:
+ * `CFAbstractStore.methodValues()` => `methodCallExpressions()`
+
+Deprecated methods:
+ * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
+ * `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
+ * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
+ * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
+ * `JavaExpression.isUnmodifiableByOtherCode()` => `isModifiableByOtherCode()`
+
+
+**Closed issues:**
+
 Version 3.43.0 (May 1, 2024)
 ----------------------------
 

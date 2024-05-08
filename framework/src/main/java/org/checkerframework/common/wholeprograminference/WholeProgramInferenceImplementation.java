@@ -416,14 +416,14 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
 
     // This code handles fields of "this" and method parameters (including the receiver
     // parameter "this"), for now.  In the future, extend it to other expressions.
-    TypeElement containingClass = (TypeElement) methodElt.getEnclosingElement();
-    ThisReference thisReference = new ThisReference(containingClass.asType());
-    ClassName classNameReceiver = new ClassName(containingClass.asType());
+    TypeElement enclosingClass = (TypeElement) methodElt.getEnclosingElement();
+    ThisReference thisReference = new ThisReference(enclosingClass.asType());
+    ClassName classNameReceiver = new ClassName(enclosingClass.asType());
     // Fields of "this":
     for (VariableElement fieldElement :
-        ElementFilter.fieldsIn(containingClass.getEnclosedElements())) {
+        ElementFilter.fieldsIn(enclosingClass.getEnclosedElements())) {
       if (atypeFactory.wpiOutputFormat == OutputFormat.JAIF
-          && containingClass.getNestingKind().isNested()) {
+          && enclosingClass.getNestingKind().isNested()) {
         // Don't infer facts about fields of inner classes, because IndexFileWriter
         // places the annotations incorrectly on the class declarations.
         continue;
