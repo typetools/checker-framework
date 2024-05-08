@@ -13,8 +13,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <ul>
  *   <li>{@literal [TypeArguments] Identifier}, which may be represented by a standard {@link
  *       JavaExpression}
- *   <li>{@literal [TypeArguments] new}, which is a constructor call and cannot be represented by an
- *       arbitrary {@link JavaExpression}
+ *   <li>{@literal [TypeArguments] "new"}, which is a constructor call and cannot be represented by
+ *       an arbitrary {@link JavaExpression}
  * </ul>
  */
 public class MethodReferenceTarget {
