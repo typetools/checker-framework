@@ -830,7 +830,7 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns a list of expressions passed to a {@code MethodCall} expression.
+   * Returns a list of expressions passed as arguments to certain method calls within {@code expr}.
    *
    * <p>For example, given the method call obj.foo(), an empty list will be returned. For a method
    * call chain like obj.foo().bar(p1).baz(p2,p3), a list containing the expressions p1, p2, and p3
@@ -967,8 +967,8 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Given a method call sequence (e.g., m.foo(p1).bar().baz(p2)), determine whether all the
-   * arguments are unassignable.
+   * Given a chained, or "fluent", method call sequence (e.g., m.foo(p1).bar().baz(p2)), determine
+   * whether all the arguments are unassignable.
    *
    * @param methodCallSequence the method call sequence to extract arguments from
    * @return true if all the arguments in the method call sequence are unassignable

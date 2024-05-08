@@ -123,9 +123,6 @@ public abstract class CFAbstractTransfer<
   /** Indicates that the whole-program inference is on. */
   private final boolean infer;
 
-  /** Command-line flag passed to indicate whether to assume every called method is pure. */
-  private final String assumePure = "assumePure";
-
   /**
    * Create a CFAbstractTransfer.
    *
@@ -309,8 +306,8 @@ public abstract class CFAbstractTransfer<
         // TODO: what about the other information? Can code further down be simplified?
         store.classValues.clear();
         store.arrayValues.clear();
-        // If the lambda is leaked, or the lambda is impure, remove any information about modifiable
-        // method values from the store
+        // If the lambda is leaked or the lambda is impure, remove any information about modifiable
+        // method values from the initial store.
         if (isLambdaLeaked(lambda, atypeFactory) || !isLambdaPure(lambda, atypeFactory)) {
           store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
@@ -415,14 +412,12 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determine whether a given lambda expression is pure.
-   *
-   * <p>The purity of a lambda expression depends on whether:
+   * Returns true if a given lambda expression is pure. A lambda expression is pure if:
    *
    * <ol>
-   *   <li><i>All</i> methods invoked within the lambda expression are known to be pure.
-   *   <li><i>All</i> arguments to the methods within the lambda expression are not assignable by
-   *       other code
+   *   <li>All methods invoked within the lambda expression are known to be pure.
+   *   <li>All arguments to method calls within the lambda expression are not assignable by other
+   *       code
    * </ol>
    *
    * @param lambda a lambda expression
@@ -488,7 +483,7 @@ public abstract class CFAbstractTransfer<
    */
   private boolean areAllMethodsPure(
       JavaExpression methodCallSequence, AnnotatedTypeFactory aTypeFactory) {
-    if (aTypeFactory.getChecker().hasOption(assumePure)) {
+    if (aTypeFactory.getChecker().hasOption("assumePure")) {
       return true;
     }
     List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(methodCallSequence);
