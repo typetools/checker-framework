@@ -1,19 +1,17 @@
 package org.checkerframework.framework.flow;
 
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +70,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
+import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -308,7 +307,9 @@ public abstract class CFAbstractTransfer<
         store.arrayValues.clear();
         // If the lambda is leaked or the lambda is impure, remove any information about modifiable
         // method values from the initial store.
-        if (isLambdaLeaked(lambda, atypeFactory) || !isLambdaPure(lambda, atypeFactory)) {
+        TreePath lambdaBody = atypeFactory.getPath(lambda.getLambdaTree().getBody());
+        if (isLambdaLeaked(lambda, atypeFactory)
+            || !isExpressionOrStatementPure(lambdaBody, atypeFactory)) {
           store.methodCallExpressions.keySet().removeIf(MethodCall::isModifiableByOtherCode);
         }
       } else {
@@ -412,83 +413,22 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a given lambda expression is pure. A lambda expression is pure if:
+   * Returns true if the given expression or statement is pure.
    *
-   * <ol>
-   *   <li>All methods invoked within the lambda expression are known to be pure.
-   *   <li>All arguments to method calls within the lambda expression are not assignable by other
-   *       code
-   * </ol>
-   *
-   * @param lambda a lambda expression
+   * @param expressionOrStatement an expression or statement
    * @param aTypeFactory an annotated type factory
-   * @return true if the given lambda expression is pure
+   * @return true if the given expression or statement is pure
    */
-  private boolean isLambdaPure(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
-    LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
-    if (lambdaTree.getBodyKind() == LambdaExpressionTree.BodyKind.EXPRESSION) {
-      ExpressionTree lambdaExpression = (ExpressionTree) lambdaTree.getBody();
-      JavaExpression internalRepr = JavaExpression.fromTree(lambdaExpression);
-      return areAllMethodsPure(internalRepr, aTypeFactory)
-          && JavaExpression.areAllArgumentsUnassignable(internalRepr);
-    } else {
-      StatementTree lambdaStatement = (StatementTree) lambdaTree.getBody();
-      return this.isStatementPure(lambdaStatement, aTypeFactory);
-    }
-  }
-
-  /**
-   * Determine whether a given statement is pure.
-   *
-   * <p>The purity of a statement depends on whether:
-   *
-   * <ol>
-   *   <li><i>All</i> methods invoked within the statement are known to be pure.
-   *   <li><i>All</i> arguments to the methods within the statement are not assignable by other code
-   * </ol>
-   *
-   * @param statementTree s statement
-   * @param aTypeFactory an annotated type factory
-   * @return true if the given statement is pure
-   */
-  private boolean isStatementPure(StatementTree statementTree, AnnotatedTypeFactory aTypeFactory) {
-    if (!(statementTree instanceof BlockTree)) {
-      return false;
-    }
-    BlockTree statementBlock = (BlockTree) statementTree;
-    for (StatementTree stmt : statementBlock.getStatements()) {
-      if (stmt instanceof ExpressionStatementTree) {
-        JavaExpression internalRepr =
-            JavaExpression.fromTree(((ExpressionStatementTree) stmt).getExpression());
-        if (!areAllMethodsPure(internalRepr, aTypeFactory)
-            || !JavaExpression.areAllArgumentsUnassignable(internalRepr)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Determine whether a sequence of method calls is pure (i.e., has no side effects and is
-   * deterministic).
-   *
-   * <p>This is solely determined by checking whether the declaration of each method call in the
-   * sequence is annotated with {@link Pure}.
-   *
-   * @param methodCallSequence the sequence of method calls to check for purity
-   * @param aTypeFactory an annotated type factory
-   * @return true if the method call sequence is comprised entirely of methods annotated with {@link
-   *     Pure}
-   */
-  private boolean areAllMethodsPure(
-      JavaExpression methodCallSequence, AnnotatedTypeFactory aTypeFactory) {
-    if (aTypeFactory.getChecker().hasOption("assumePure")) {
-      return true;
-    }
-    List<Element> methodsInvoked = JavaExpression.methodsFromMethodCall(methodCallSequence);
-    return methodsInvoked.stream()
-        .allMatch(method -> aTypeFactory.getDeclAnnotation(method, Pure.class) != null);
+  private boolean isExpressionOrStatementPure(
+      TreePath expressionOrStatement, AnnotatedTypeFactory aTypeFactory) {
+    PurityChecker.PurityResult result =
+        PurityChecker.checkPurity(
+            expressionOrStatement,
+            aTypeFactory,
+            aTypeFactory.getChecker().hasOption("assumeSideEffectFree"),
+            aTypeFactory.getChecker().hasOption("assumeDeterministic"),
+            aTypeFactory.getChecker().hasOption("assumePureGetters"));
+    return result.isPure(EnumSet.allOf(Pure.Kind.class));
   }
 
   /**
