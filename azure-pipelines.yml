@@ -8,6 +8,9 @@ pr:
     include:
     - '*'
 
+variables:
+  system.debug: true
+
 jobs:
 
 # The dependsOn clauses are:
