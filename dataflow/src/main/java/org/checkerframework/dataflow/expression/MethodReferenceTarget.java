@@ -71,4 +71,13 @@ public class MethodReferenceTarget {
   public boolean isConstructorCall() {
     return this.isConstructorCall;
   }
+
+  @Override
+  public String toString() {
+    String targetName = isConstructorCall() ? "new" : identifier.toString();
+    if (typeArguments != null) {
+      return typeArguments + targetName;
+    }
+    return targetName;
+  }
 }

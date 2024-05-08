@@ -75,4 +75,18 @@ public class MethodReferenceScope {
   public boolean isScopeSuper() {
     return this.isSuper;
   }
+
+  @Override
+  public String toString() {
+    if (isScopeSuper()) {
+      return "super";
+    }
+    if (expression != null) {
+      return expression.toString();
+    }
+    if (type != null) {
+      return type.toString();
+    }
+    return null;
+  }
 }
