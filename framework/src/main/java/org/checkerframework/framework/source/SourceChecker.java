@@ -29,6 +29,7 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1079,7 +1080,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // Duplicate messages are suppressed, so this might not appear in front of every
         // " is type-checking " message (when a file takes less than a second to
         // type-check).
-        message(Diagnostic.Kind.NOTE, Instant.now().toString());
+        message(Diagnostic.Kind.NOTE, Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
         message(
             Diagnostic.Kind.NOTE,
             "%s is type-checking %s",
