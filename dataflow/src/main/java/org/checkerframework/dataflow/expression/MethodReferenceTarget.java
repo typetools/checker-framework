@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * The right-hand side of a <a
@@ -49,6 +49,7 @@ public class MethodReferenceTarget {
    *
    * @return the type arguments for this method reference target
    */
+  @Pure
   public @Nullable JavaExpression getTypeArguments() {
     return this.typeArguments;
   }
@@ -58,6 +59,7 @@ public class MethodReferenceTarget {
    *
    * @return the identifier for this method reference target
    */
+  @Pure
   public @Nullable JavaExpression getIdentifier() {
     return this.identifier;
   }
@@ -67,12 +69,14 @@ public class MethodReferenceTarget {
    *
    * @return true if this method reference target is a constructor call
    */
-  @EnsuresNonNullIf(result = false, expression = "this.identifier")
   public boolean isConstructorCall() {
     return this.isConstructorCall;
   }
 
   @Override
+  @SuppressWarnings(
+      "nullness:dereference.of.nullable") // If the target is not a constructor call, the identifier
+  // is non-null
   public String toString() {
     String targetName = isConstructorCall() ? "new" : identifier.toString();
     if (typeArguments != null) {

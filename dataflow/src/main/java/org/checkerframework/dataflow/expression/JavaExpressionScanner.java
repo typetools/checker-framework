@@ -89,6 +89,11 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
   }
 
   @Override
+  protected Void visitMethodReference(MethodReference methodReferenceExpr, P p) {
+    return null; // Stub?
+  }
+
+  @Override
   protected Void visitUnaryOperation(UnaryOperation unaryOpExpr, P p) {
     visit(unaryOpExpr.getOperand(), p);
     return null;

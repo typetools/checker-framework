@@ -101,6 +101,15 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitThisReference(ThisReference thisExpr, P p);
 
   /**
+   * Visit a {@link MethodReference}.
+   *
+   * @param methodReferenceExpr the JavaExpression to visit
+   * @param p the parameter to pass to the visit method
+   * @return the result of visiting the {@code thisExpr}
+   */
+  protected abstract R visitMethodReference(MethodReference methodReferenceExpr, P p);
+
+  /**
    * Visit an {@link UnaryOperation}.
    *
    * @param unaryOpExpr the JavaExpression to visit

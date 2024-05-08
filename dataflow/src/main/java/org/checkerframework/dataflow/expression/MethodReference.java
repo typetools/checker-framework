@@ -102,7 +102,7 @@ public class MethodReference extends JavaExpression {
 
   @Override
   public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
-    return null;
+    return visitor.visitMethodReference(this, p); // Stub?
   }
 
   @Override

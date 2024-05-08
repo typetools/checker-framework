@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.expression;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 /**
  * The left-hand side of a <a
@@ -54,6 +55,7 @@ public class MethodReferenceScope {
    *
    * @return the expression for this method reference scope
    */
+  @Pure
   public @Nullable JavaExpression getExpression() {
     return this.expression;
   }
@@ -63,6 +65,7 @@ public class MethodReferenceScope {
    *
    * @return the type for this method reference scope
    */
+  @Pure
   public @Nullable JavaExpression getType() {
     return this.type;
   }
@@ -77,6 +80,8 @@ public class MethodReferenceScope {
   }
 
   @Override
+  @SuppressWarnings(
+      "nullness:dereference.of.nullable") // Invariant: one of expression or type must be non-null
   public String toString() {
     if (isScopeSuper()) {
       return "super";
